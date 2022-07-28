@@ -27,24 +27,31 @@ namespace SourceGeneratorPlayground
 {
     public partial class TestClass : IRealmObject
     {
-        public RealmInteger<int> RealmValueInt { get; set; }
+        //public byte[] DataProp { get; set; }
 
-        public RealmInteger<int>? RealmValueIntNullable { get; set; }
+        public IList<OtherTestClass> ListObjProp { get; }
 
-        [Indexed]
-        public int IntProp { get; set; }
+        public ISet<OtherTestClass> SetObjProp { get; }
 
-        [PrimaryKey]
-        public Guid GuidPrimaryKey { get; set; }
+        public IDictionary<string, OtherTestClass> DictObjProp { get; }
 
-        public IList<int> ListIntProp { get; }
+        //public RealmInteger<OtherTestClass> RealmValueInt { get; set; }
 
-        public ISet<int?> SetIntProp { get; }
+        //public RealmInteger<int>? RealmValueIntNullable { get; set; }
 
-        public IDictionary<string, int> DictIntProp { get; }
+        //[Indexed]
+        //public int IntProp { get; set; }
 
+        //[PrimaryKey]
+        //public Guid GuidPrimaryKey { get; set; }
 
-        public OtherTestClass OtherClass { get; set; }
+        //public IList<int> ListIntProp { get; }
+
+        //public ISet<int?> SetIntProp { get; }
+
+        //public IDictionary<string, int> DictIntProp { get; }
+
+        //public OtherTestClass OtherClass { get; set; }
     }
 
     public partial class OtherTestClass : IRealmObject
@@ -52,7 +59,7 @@ namespace SourceGeneratorPlayground
         [PrimaryKey]
         public int Id { get; set; }
 
-        [Backlink(nameof(TestClass.OtherClass))]
-        public IQueryable<TestClass> BacklinkProperty { get; }
+        //[Backlink(nameof(TestClass.OtherClass))]
+        //public IQueryable<TestClass> BacklinkProperty { get; }
     }
 }

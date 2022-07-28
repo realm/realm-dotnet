@@ -146,23 +146,36 @@ namespace Realms.Generated
 
                     var internalTypeIsObject = internalType.SimpleType == SimpleTypeEnum.Object;
 
-                    var collectionString = property.TypeInfo.CollectionType switch
+                    if (internalTypeIsObject)
                     {
-                        CollectionTypeEnum.List => "List",
-                        CollectionTypeEnum.Set => "Set",
-                        CollectionTypeEnum.Dictionary => "Dictionary",
-                        _ => throw new NotImplementedException(),
-                    };
+                        var builderMethodName = property.TypeInfo.CollectionType switch
+                        {
+                            CollectionTypeEnum.List => "ObjectList",
+                            CollectionTypeEnum.Set => "ObjectSet",
+                            CollectionTypeEnum.Dictionary => "ObjectDictionary",
+                            _ => throw new NotImplementedException(),
+                        };
 
-                    var prefix = internalTypeIsObject ? "Object" : "Primitive";
-                    var builderMethodName = $"{prefix}{collectionString}";
+                        var internalTypeString = internalType.CompleteTypeString;
 
-                    var internalTypeString = internalTypeIsObject ? internalType.CompleteTypeString : GetRealmValueType(internalType);
+                        schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+                    }
+                    else
+                    {
+                        var builderMethodName = property.TypeInfo.CollectionType switch
+                        {
+                            CollectionTypeEnum.List => "PrimitiveList",
+                            CollectionTypeEnum.Set => "PrimitiveSet",
+                            CollectionTypeEnum.Dictionary => "PrimitiveDictionary",
+                            _ => throw new NotImplementedException(),
+                        };
 
-                    var internalTypeNullable = internalType.IsNullable.ToCodeString();
+                        var internalTypeString = GetRealmValueType(internalType);
 
-                    schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                        var internalTypeNullable = internalType.IsNullable.ToCodeString();
 
+                        schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                    }
 
                     skipDefaultsContent.AppendLine($"                    {property.Name}.Clear();");
                     copyToRealm.AppendLine($@"                foreach(var val in unmanagedAccessor.{property.Name})
@@ -475,7 +488,7 @@ namespace Realms.Generated
 
             if (getValueLines.Length == 0)
             {
-                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),";
+                getValueBody = $@"throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}"");";
             }
             else
             {
@@ -492,7 +505,7 @@ namespace Realms.Generated
 
             if (setValueLines.Length == 0)
             {
-                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}""),";
+                setValueBody = $@"throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");";
             }
             else
             {
@@ -508,7 +521,7 @@ namespace Realms.Generated
 
             if (setValueUniqueLines.Length == 0)
             {
-                setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique""),");
+                setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
             }
 
             var setValueUniqueBody = setValueUniqueLines.ToString();
