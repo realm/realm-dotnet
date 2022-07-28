@@ -25,11 +25,7 @@ namespace Realms.SourceGenerator
     /* What do do:
      * - Connect weaver
      * - Add weaver-tests
-     * - Add IQueryable parts
-     * - Add collections parts
-     * - Add backlinks parts
      * - Check nullability (later)
-     * - Fix schema creation
      */
     internal class Generator
     {
@@ -420,7 +416,7 @@ namespace Realms.Generated
                     var propertyString = $@"        public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
 
                     propertiesString.AppendLine(propertyString);
-                    propertiesString.AppendLine().AppendLine();
+                    propertiesString.AppendLine();
                 }
                 else if (property.TypeInfo.IsIQueryable)
                 {
@@ -451,7 +447,7 @@ namespace Realms.Generated
 
                     propertiesString.AppendLine(backingFieldString);
                     propertiesString.Append(propertyString);
-                    propertiesString.AppendLine().AppendLine();
+                    propertiesString.AppendLine();
 
                     //GetValue
                     getValueLines.AppendLine(@$"                ""{stringName}"" => {backingFieldName},");
@@ -689,7 +685,6 @@ namespace Realms.Generated
                     propertiesBuilder.Append(propertyString);
                 }
 
-                propertiesBuilder.AppendLine();
                 propertiesBuilder.AppendLine();
             }
 

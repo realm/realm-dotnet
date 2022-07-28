@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Realms.SourceGenerator
 {
@@ -101,7 +103,11 @@ namespace Realms.SourceGenerator
 
                     var generator = new Generator(classInfo);
                     var generatedFile = generator.GenerateSource();
-                    context.AddSource($"{classInfo.Name}_generated.cs", generatedFile);
+
+                    //TODO This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (look at the schema definition for example)
+                    var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedFile, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+
+                    context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
                 }
                 catch (Exception ex)
                 {
