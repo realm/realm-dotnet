@@ -15,7 +15,6 @@
 // // limitations under the License.
 // //
 // ////////////////////////////////////////////////////////////////////////////
-
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Realms;
@@ -26,40 +25,21 @@ using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
-   
+    [ToWeave]
     [Woven(typeof(TestClassObjectHelper))]
     public partial class TestClass : IRealmObject, INotifyPropertyChanged
     {
-
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("TestClass", isEmbedded: false)
-        {
-            Property.Primitive("RealmValueInt", RealmValueType., isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("RealmValueIntNullable", RealmValueType., isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("IntProp", RealmValueType.Int, isPrimaryKey: false, isIndexed: true, isNullable: false),
-            Property.Primitive("GuidPrimaryKey", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.PrimitiveList("ListIntProp", RealmValueType.Int, areElementsNullable: false),
-            Property.PrimitiveSet("SetIntProp", RealmValueType.Int, areElementsNullable: false),
-            Property.PrimitiveDictionary("DictIntProp", RealmValueType.Int, areElementsNullable: false),
-
-        }.Build();
-
-        #region IRealmObject implementation
-
+        {Property.ObjectList("ListObjProp", "OtherTestClass"), Property.ObjectSet("SetObjProp", "OtherTestClass"), Property.ObjectDictionary("DictObjProp", "OtherTestClass"), }.Build();
+#region IRealmObject implementation
         private ITestClassAccessor _accessor;
-
         public IRealmAccessor Accessor => _accessor;
-
         public bool IsManaged => _accessor.IsManaged;
-
         public bool IsValid => _accessor.IsValid;
-
         public bool IsFrozen => _accessor.IsFrozen;
-
         public Realm Realm => _accessor.Realm;
-
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public TestClassObjectHelper()
+        public TestClass()
         {
             _accessor = new TestClassUnmanagedAccessor(typeof(TestClassObjectHelper));
         }
@@ -68,34 +48,29 @@ namespace SourceGeneratorPlayground
         {
             var unmanagedAccessor = _accessor;
             _accessor = (TestClassManagedAccessor)managedAccessor;
-
             if (helper != null)
             {
-                if(!skipDefaults)
+                if (!skipDefaults)
                 {
-                    ListIntProp.Clear();
-                    SetIntProp.Clear();
-                    DictIntProp.Clear();
-
+                    ListObjProp.Clear();
+                    SetObjProp.Clear();
+                    DictObjProp.Clear();
                 }
 
-                RealmValueInt = unmanagedAccessor.RealmValueInt;
-                RealmValueIntNullable = unmanagedAccessor.RealmValueIntNullable;
-                IntProp = unmanagedAccessor.IntProp;
-                GuidPrimaryKey = unmanagedAccessor.GuidPrimaryKey;
-                foreach(var val in unmanagedAccessor.ListIntProp)
+                foreach (var val in unmanagedAccessor.ListObjProp)
                 {
-                    ListIntProp.Add(val);
-                }
-                foreach(var val in unmanagedAccessor.SetIntProp)
-                {
-                    SetIntProp.Add(val);
-                }
-                foreach(var val in unmanagedAccessor.DictIntProp)
-                {
-                    DictIntProp.Add(val);
+                    ListObjProp.Add(val);
                 }
 
+                foreach (var val in unmanagedAccessor.SetObjProp)
+                {
+                    SetObjProp.Add(val);
+                }
+
+                foreach (var val in unmanagedAccessor.DictObjProp)
+                {
+                    DictObjProp.Add(val);
+                }
             }
 
             if (_propertyChanged != null)
@@ -106,10 +81,8 @@ namespace SourceGeneratorPlayground
             OnManaged();
         }
 
-        #endregion
-
+#endregion
         private event PropertyChangedEventHandler _propertyChanged;
-
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -125,7 +98,6 @@ namespace SourceGeneratorPlayground
             remove
             {
                 _propertyChanged -= value;
-
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
@@ -134,7 +106,6 @@ namespace SourceGeneratorPlayground
         }
 
         partial void OnPropertyChanged(string propertyName);
-
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -142,7 +113,6 @@ namespace SourceGeneratorPlayground
         }
 
         partial void OnManaged();
-
         private void SubscribeForNotifications()
         {
             _accessor.SubscribeForNotifications(RaisePropertyChanged);
@@ -152,12 +122,14 @@ namespace SourceGeneratorPlayground
         {
             _accessor.UnsubscribeFromNotifications();
         }
+
+        public static explicit operator TestClass(RealmValue val) => val.AsRealmObject<TestClass>();
+        public static implicit operator RealmValue(TestClass val) => RealmValue.Object(val);
     }
 }
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class TestClassObjectHelper : IRealmObjectHelper
     {
@@ -167,7 +139,6 @@ namespace Realms.Generated
         }
 
         public ManagedAccessor CreateAccessor() => new TestClassManagedAccessor();
-
         public IRealmObjectBase CreateInstance()
         {
             return new TestClass();
@@ -175,244 +146,119 @@ namespace Realms.Generated
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = ((ITestClassAccessor)instance.Accessor).GuidPrimaryKey;
-            return true;
+            value = null;
+            return false;
         }
     }
-
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface ITestClassAccessor : IRealmAccessor
     {
-        RealmInteger<int> RealmValueInt { get; set; }
+        IList<OtherTestClass> ListObjProp { get; }
 
-        RealmInteger<int>? RealmValueIntNullable { get; set; }
+        ISet<OtherTestClass> SetObjProp { get; }
 
-        int IntProp { get; set; }
-
-        Guid GuidPrimaryKey { get; set; }
-
-        IList<int> ListIntProp { get; }
-
-        ISet<int> SetIntProp { get; }
-
-        IDictionary<string, int> DictIntProp { get; }
+        IDictionary<string, OtherTestClass> DictObjProp { get; }
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class TestClassManagedAccessor : ManagedAccessor, ITestClassAccessor
     {
-        public RealmInteger<int> RealmValueInt
-        {
-            get => (RealmInteger<int>)GetValue("RealmValueInt");
-            set => SetValue("RealmValueInt", value);
-        }
-
-        public RealmInteger<int>? RealmValueIntNullable
-        {
-            get => (RealmInteger<int>?)GetValue("RealmValueIntNullable");
-            set => SetValue("RealmValueIntNullable", value);
-        }
-
-        public int IntProp
-        {
-            get => (int)GetValue("IntProp");
-            set => SetValue("IntProp", value);
-        }
-
-        public Guid GuidPrimaryKey
-        {
-            get => (Guid)GetValue("GuidPrimaryKey");
-            set => SetValueUnique("GuidPrimaryKey", value);
-        }
-
-        private IList<int> _listIntProp;
-        public IList<int> ListIntProp
+        private IList<OtherTestClass> _listObjProp;
+        public IList<OtherTestClass> ListObjProp
         {
             get
             {
-                if(_listIntProp == null)
+                if (_listObjProp == null)
                 {
-                    _listIntProp = GetListValue<int>("ListIntProp");
+                    _listObjProp = GetListValue<OtherTestClass>("ListObjProp");
                 }
 
-                return _listIntProp;
+                return _listObjProp;
             }
         }
 
-
-        private ISet<int> _setIntProp;
-        public ISet<int> SetIntProp
+        private ISet<OtherTestClass> _setObjProp;
+        public ISet<OtherTestClass> SetObjProp
         {
             get
             {
-                if(_setIntProp == null)
+                if (_setObjProp == null)
                 {
-                    _setIntProp = GetSetValue<int>("SetIntProp");
+                    _setObjProp = GetSetValue<OtherTestClass>("SetObjProp");
                 }
 
-                return _setIntProp;
+                return _setObjProp;
             }
         }
 
-
-        private IDictionary<string, int> _dictIntProp;
-        public IDictionary<string, int> DictIntProp
+        private IDictionary<string, OtherTestClass> _dictObjProp;
+        public IDictionary<string, OtherTestClass> DictObjProp
         {
             get
             {
-                if(_dictIntProp == null)
+                if (_dictObjProp == null)
                 {
-                    _dictIntProp = GetDictionaryValue<int>("DictIntProp");
+                    _dictObjProp = GetDictionaryValue<OtherTestClass>("DictObjProp");
                 }
 
-                return _dictIntProp;
+                return _dictObjProp;
             }
         }
-
-
-
     }
 
-    
     internal class TestClassUnmanagedAccessor : UnmanagedAccessor, ITestClassAccessor
     {
-        private RealmInteger<int> _realmValueInt;
-        public RealmInteger<int> RealmValueInt
-        {
-            get => _realmValueInt;
-            set
-            {
-                _realmValueInt = value;
-                RaisePropertyChanged("RealmValueInt");
-            }
-        }
-
-        private RealmInteger<int>? _realmValueIntNullable;
-        public RealmInteger<int>? RealmValueIntNullable
-        {
-            get => _realmValueIntNullable;
-            set
-            {
-                _realmValueIntNullable = value;
-                RaisePropertyChanged("RealmValueIntNullable");
-            }
-        }
-
-        private int _intProp;
-        public int IntProp
-        {
-            get => _intProp;
-            set
-            {
-                _intProp = value;
-                RaisePropertyChanged("IntProp");
-            }
-        }
-
-        private Guid _guidPrimaryKey;
-        public Guid GuidPrimaryKey
-        {
-            get => _guidPrimaryKey;
-            set
-            {
-                _guidPrimaryKey = value;
-                RaisePropertyChanged("GuidPrimaryKey");
-            }
-        }
-
-        public IList<int> ListIntProp { get; } = new List<int>();
-
-
-        public ISet<int> SetIntProp { get; } = new HashSet<int>(RealmSet<int>.Comparer);
-
-
-        public IDictionary<string, int> DictIntProp { get; } = new Dictionary<string, int>();
-
-
-
-
+        public IList<OtherTestClass> ListObjProp { get; } = new List<OtherTestClass>();
+        public ISet<OtherTestClass> SetObjProp { get; } = new HashSet<OtherTestClass>(RealmSet<OtherTestClass>.Comparer);
+        public IDictionary<string, OtherTestClass> DictObjProp { get; } = new Dictionary<string, OtherTestClass>();
         public TestClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
         public override RealmValue GetValue(string propertyName)
         {
-            return propertyName switch
-            {
-                "RealmValueInt" => _realmValueInt,
-                "RealmValueIntNullable" => _realmValueIntNullable,
-                "IntProp" => _intProp,
-                "GuidPrimaryKey" => _guidPrimaryKey,
-
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
         public override void SetValue(string propertyName, RealmValue val)
         {
-            switch (propertyName)
-            {
-                case "RealmValueInt":
-                    RealmValueInt = (RealmInteger<int>)val;
-                    return;
-                case "RealmValueIntNullable":
-                    RealmValueIntNullable = (RealmInteger<int>?)val;
-                    return;
-                case "IntProp":
-                    IntProp = (int)val;
-                    return;
-                case "GuidPrimaryKey":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-
-                default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
+            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            if (propertyName != "GuidPrimaryKey")
-            {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-            }
-
-            GuidPrimaryKey = (Guid)val;
+            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
             {
-                "ListIntProp" => (IList<T>)ListIntProp,
-
-                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-            }
+                "ListObjProp" => (IList<T>)ListObjProp,
+                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+            };
         }
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             return propertyName switch
             {
-                "SetIntProp" => (ISet<T>)SetIntProp,
-
-                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-            }
+                "SetObjProp" => (ISet<T>)SetObjProp,
+                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+            };
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return propertyName switch
             {
-                "DictIntProp" => (IDictionary<string, TValue>)DictIntProp,
-
-                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
-            }
+                "DictObjProp" => (IDictionary<string, TValue>)DictObjProp,
+                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+            };
         }
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
-            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed(persisted) objects.");
-
+        public IQueryable<T> GetBacklinks<T>(string propertyName)
+            where T : IRealmObjectBase => throw new NotSupportedException("Using the GetBacklinks is only possible for managed(persisted) objects.");
     }
 }

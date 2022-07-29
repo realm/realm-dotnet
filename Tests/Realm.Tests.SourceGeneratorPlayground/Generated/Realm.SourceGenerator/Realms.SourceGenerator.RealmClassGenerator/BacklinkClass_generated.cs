@@ -33,7 +33,7 @@ namespace SourceGeneratorPlayground
 
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkClass", isEmbedded: false)
         {
-            Property.Object("InverseLink", UnsupportedBacklink),
+            Property.Object("InverseLink", "UnsupportedBacklink"),
 
         }.Build();
 
@@ -53,7 +53,7 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public BacklinkClassObjectHelper()
+        public BacklinkClass()
         {
             _accessor = new BacklinkClassUnmanagedAccessor(typeof(BacklinkClassObjectHelper));
         }
