@@ -260,7 +260,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 std::vector<SchemaProperty> schema_properties;
 
                 for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.is_embedded));
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
                 }
 
                 SchemaForMarshaling schema_for_marshaling {
