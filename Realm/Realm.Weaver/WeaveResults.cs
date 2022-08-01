@@ -122,6 +122,11 @@ namespace RealmWeaver
 
     internal class WeavePropertyResult
     {
+        public static WeavePropertyResult GeneratorSuccess(PropertyDefinition property)
+        {
+            return new WeavePropertyResult(property, null, false, false); //TODO Needs to be done differently...
+        }
+
         public static WeavePropertyResult Success(PropertyDefinition property, FieldReference field, bool isPrimaryKey, bool isIndexed)
         {
             return new WeavePropertyResult(property, field, isPrimaryKey, isIndexed);

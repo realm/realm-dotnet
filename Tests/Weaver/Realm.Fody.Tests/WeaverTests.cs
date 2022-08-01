@@ -35,11 +35,11 @@ using Realms.Weaving;
 namespace RealmWeaver
 {
     [TestFixture(PropertyChangedWeaver.NoPropertyChanged, false)]
-    [TestFixture(PropertyChangedWeaver.NoPropertyChanged, true)]
-    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, false)]
-    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, true)]
-    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, false)]
-    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, true)]
+    //[TestFixture(PropertyChangedWeaver.NoPropertyChanged, true)]
+    //[TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, false)]
+    //[TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, true)]
+    //[TestFixture(PropertyChangedWeaver.AfterRealmWeaver, false)]
+    //[TestFixture(PropertyChangedWeaver.AfterRealmWeaver, true)]
     public class Tests : WeaverTestBase
     {
         #region helpers
@@ -188,6 +188,27 @@ namespace RealmWeaver
         private static IEnumerable<object[]> RandomValues()
         {
             return RandomAndDefaultValues.Select(a => new[] { a[0], a[1] });
+        }
+
+
+        //TODO Needs to be moved somewhere
+        [Test]
+        public void CheckSourceGeneration()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Name = "Maria";
+            //SetPropertyValue(o, "Name", "Maria");
+            GetPropertyValue(o, "Name");
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "Set Name",
+                "Get Name"
+            }));
         }
 
         [TestCaseSource(nameof(RandomValues))]
