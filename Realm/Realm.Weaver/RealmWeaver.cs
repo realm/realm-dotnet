@@ -409,7 +409,7 @@ Analytics payload
         private WeavePropertyResult WeaveGeneratedProperty(PropertyDefinition prop, TypeDefinition type, TypeDefinition interfaceType)
         {
             ReplaceGeneratedGetter(prop, interfaceType);
-            //ReplaceGeneratedSetter(prop, interfaceType);
+            ReplaceGeneratedSetter(prop, interfaceType);
 
             return WeavePropertyResult.GeneratorSuccess(prop);
         }
@@ -432,11 +432,8 @@ Analytics payload
             var start = prop.GetMethod.Body.Instructions.First();
             var il = prop.GetMethod.Body.GetILProcessor();
 
-            //TODO Maybe we need also the declaring type
-            //var a = _moduleDefinition.ImportReference(interfaceType);
-            var accessorReference = new FieldReference("_accessor", interfaceType);
+            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
 
-            //What does HasThis do?
             var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
 
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
@@ -463,7 +460,6 @@ Analytics payload
             //// This is equivalent to:
             ////   set => accessor.Property = value;
 
-
             // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
             // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
             var il = prop.SetMethod.Body.GetILProcessor();
@@ -475,8 +471,7 @@ Analytics payload
             // PropertyChanged.Fody will respect.
             prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
 
-            //TODO Maybe we need also the declaring type
-            var accessorReference = new FieldReference("_accessor", interfaceType);
+            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
 
             var propertySetterAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
             propertySetterAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));

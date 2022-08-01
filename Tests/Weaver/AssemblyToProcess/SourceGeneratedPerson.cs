@@ -74,12 +74,12 @@ namespace Realms.Generated
         {
             get
             {
-                LogString($"Get {nameof(Name)}");
+                LogString($"Get {nameof(Id)}");
                 return _id;
             }
             set
             {
-                LogString($"Set {nameof(Name)}");
+                LogString($"Set {nameof(Id)}");
                 _id = value;
             }
         }

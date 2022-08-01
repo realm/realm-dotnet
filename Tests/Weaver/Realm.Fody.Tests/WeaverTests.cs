@@ -200,8 +200,7 @@ namespace RealmWeaver
 
             // Act
             o.Name = "Maria";
-            //SetPropertyValue(o, "Name", "Maria");
-            GetPropertyValue(o, "Name");
+            var name = o.Name;
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
