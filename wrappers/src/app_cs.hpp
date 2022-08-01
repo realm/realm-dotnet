@@ -195,7 +195,7 @@ namespace binding {
                 marshaled_key.id = to_capi_value(id_storage[i]);
 
                 if (api_key.key) {
-                    marshaled_key.key = to_capi_value(api_key.key.value());
+                    marshaled_key.key = to_capi_value(*api_key.key);
                 }
  
                 marshaled_key.name = to_capi_value(api_key.name);
