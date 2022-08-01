@@ -141,7 +141,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             }
         };
 
-        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, SharedRealm after, bool did_recover) {
+        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
+            auto after = Realm::get_shared_realm(std::move(after_reference));
             if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle())) {
                 throw ManagedExceptionDuringClientReset();
             }
@@ -634,7 +635,7 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
         std::vector<SchemaProperty> schema_properties;
 
         for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.is_embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
         }
 
         s_get_native_schema(SchemaForMarshaling {

@@ -42,6 +42,10 @@ namespace {
             throw PropertyTypeMismatchException(to_string(set.get_type()), to_string(value.type));
         }
     }
+
+    const object_store::Set& hack_remove_me(const object_store::Collection& other_collection) {
+        return static_cast<const object_store::Set&>(other_collection);
+    }
 }
 
 extern "C" {
@@ -187,10 +191,6 @@ REALM_EXPORT object_store::Set* realm_set_freeze(const object_store::Set& set, c
     return handle_errors(ex, [&]() {
         return new object_store::Set(set.freeze(realm));
     });
-}
-
-const object_store::Set& hack_remove_me(const object_store::Collection& other_collection) {
-    return static_cast<const object_store::Set&>(other_collection);
 }
 
 REALM_EXPORT void realm_set_except_with(object_store::Set& set, const object_store::Collection& other_collection, NativeException::Marshallable& ex)
