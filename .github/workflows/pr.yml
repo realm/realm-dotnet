@@ -26,11 +26,11 @@ jobs:
     with:
       differentiators: '["code-coverage"]'
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -125,10 +125,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
@@ -136,8 +136,8 @@ jobs:
     needs:
     - test-code-coverage
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
