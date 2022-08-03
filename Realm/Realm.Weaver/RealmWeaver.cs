@@ -279,11 +279,11 @@ Analytics payload
                         $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                         sequencePoint);
 
-                    return WeaveTypeResult.Error(type.Name);
+                    return WeaveTypeResult.Error(type.Name, isGenerated: true);
                 }
             }
 
-            return WeaveTypeResult.Success(type.Name, persistedProperties);
+            return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
 
         private WeavePropertyResult WeaveGeneratedProperty(PropertyDefinition prop, TypeDefinition interfaceType)
@@ -291,7 +291,7 @@ Analytics payload
             ReplaceGeneratedGetter(prop, interfaceType);
             ReplaceGeneratedSetter(prop, interfaceType);
 
-            return WeavePropertyResult.GeneratorSuccess(prop);
+            return WeavePropertyResult.Success(prop);
         }
 
         private void ReplaceGeneratedGetter(PropertyDefinition prop, TypeDefinition interfaceType)

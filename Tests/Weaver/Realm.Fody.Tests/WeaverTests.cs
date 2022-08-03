@@ -190,46 +190,6 @@ namespace RealmWeaver
             return RandomAndDefaultValues.Select(a => new[] { a[0], a[1] });
         }
 
-
-        //TODO Needs to be moved somewhere
-        [Test]
-        public void SourceGeneratorWeaverShouldWeavePropertiesInInterface()
-        {
-            // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
-
-            // Act
-            o.Name = "Maria";
-            var name = o.Name;
-
-            o.Id = 20;
-            var id = o.Id;
-
-            // Assert
-            Assert.That(o.LogList, Is.EqualTo(new List<string>
-            {
-                "Set Name",
-                "Get Name",
-                "Set Id",
-                "Get Id"
-            }));
-        }
-
-        //TODO Needs to be moved somewhere
-        [Test]
-        public void SourceGeneratorWeaverShouldIgnorePropertiesNotInInterface()
-        {
-            // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
-
-            // Act
-            o.Nickname = "Julius";
-            var nickname = o.Nickname;
-
-            // Assert
-            Assert.That(o.LogList, Is.Empty);
-        }
-
         [TestCaseSource(nameof(RandomValues))]
         public void GetValueUnmanagedShouldGetBackingField(string typeName, object propertyValue)
         {
@@ -699,6 +659,47 @@ namespace RealmWeaver
 
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
         }
+
+        #region Source Generator Weaver tests
+
+        [Test]
+        public void SourceGeneratorWeaverShouldWeavePropertiesInInterface()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Name = "Maria";
+            _ = o.Name;
+
+            o.Id = 20;
+            _ = o.Id;
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "Set Name",
+                "Get Name",
+                "Set Id",
+                "Get Id"
+            }));
+        }
+
+        [Test]
+        public void SourceGeneratorWeaverShouldIgnorePropertiesNotInInterface()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Nickname = "Julius";
+            _ = o.Nickname;
+
+            // Assert
+            Assert.That(o.LogList, Is.Empty);
+        }
+
+        #endregion
 
         private static void CopyToRealm(Type objectType, dynamic instance)
         {
