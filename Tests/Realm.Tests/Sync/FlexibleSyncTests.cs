@@ -1962,7 +1962,7 @@ namespace Realms.Tests.Sync
 
             Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
 
-            await realm.Subscriptions.WaitForSynchronizationAsync();
+            await WaitForSubscriptionsAsync(realm);
 
             Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
         }
