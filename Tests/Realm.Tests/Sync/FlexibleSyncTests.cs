@@ -1137,7 +1137,7 @@ namespace Realms.Tests.Sync
                         realm.Subscriptions.Add(query);
                     });
 
-                    waitTask = realm.Subscriptions.WaitForSynchronizationAsync();
+                    waitTask = WaitForSubscriptionsAsync(realm);
                 }
 
                 await waitTask;
@@ -1294,7 +1294,7 @@ namespace Realms.Tests.Sync
                     realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
                 });
 
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
+                await WaitForSubscriptionsAsync(realm2);
 
                 var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
                 CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
@@ -1308,7 +1308,7 @@ namespace Realms.Tests.Sync
                     realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int <= 2));
                 });
 
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
+                await WaitForSubscriptionsAsync(realm2);
 
                 CollectionAssert.AreEqual(new[] { 2, 3 }, atos.AsEnumerable().Select(o => o.Int64Property));
 
@@ -1370,10 +1370,11 @@ namespace Realms.Tests.Sync
                     realm2.Subscriptions.Add(realm2.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid && o.Int64Property >= 2));
                 });
 
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
+                await WaitForSubscriptionsAsync(realm2);
 
                 var atos = realm2.All<SyncAllTypesObject>().OrderBy(o => o.Int64Property);
 
+                Assert.That(atos.Count(), Is.EqualTo(2));
                 Assert.That(atos.ElementAt(0).Int64Property, Is.EqualTo(2));
                 Assert.That(atos.ElementAt(0).EmbeddedObjectProperty.Int, Is.EqualTo(2));
 
@@ -1458,7 +1459,7 @@ namespace Realms.Tests.Sync
                     realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int >= 2));
                 });
 
-                await realm2.Subscriptions.WaitForSynchronizationAsync();
+                await WaitForSubscriptionsAsync(realm2);
 
                 Assert.That(realm2.All<SyncCollectionsObject>().Count(), Is.EqualTo(1));
                 Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(2));
@@ -1664,7 +1665,7 @@ namespace Realms.Tests.Sync
 
                 try
                 {
-                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    await WaitForSubscriptionsAsync(realm);
                     Assert.Fail("Expected an error to be thrown.");
                 }
                 catch (SubscriptionException ex)
@@ -1793,7 +1794,7 @@ namespace Realms.Tests.Sync
                 else
                 {
                     Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
-                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    await WaitForSubscriptionsAsync(realm);
                 }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
@@ -1831,7 +1832,7 @@ namespace Realms.Tests.Sync
                 else
                 {
                     Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending));
-                    await realm.Subscriptions.WaitForSynchronizationAsync();
+                    await WaitForSubscriptionsAsync(realm);
                 }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);

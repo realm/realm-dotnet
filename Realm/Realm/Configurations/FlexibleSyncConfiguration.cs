@@ -100,6 +100,8 @@ namespace Realms.Sync
                 await result.Subscriptions.WaitForSynchronizationAsync();
             }
 
+            result.Refresh();
+
             return result;
         }
 

@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
@@ -93,6 +92,12 @@ namespace Realms.Tests.Sync
             var session = realm.SyncSession;
             await session.WaitForDownloadAsync();
             session.CloseHandle();
+        }
+
+        protected static async Task WaitForSubscriptionsAsync(Realm realm)
+        {
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+            realm.Refresh();
         }
 
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
