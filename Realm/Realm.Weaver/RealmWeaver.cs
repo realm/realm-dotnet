@@ -136,31 +136,32 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
 
-        private IEnumerable<TypeDefinition> GetMatchingTypes()
+        private IEnumerable<(TypeDefinition Type, bool IsGenerated)> GetMatchingTypes()
         {
-            foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsRealmObjectDescendant(_references)))
+            foreach (var type in _moduleDefinition.GetTypes())
             {
                 if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
                 {
                     continue;
                 }
-                else if (type.IsValidRealmObjectBaseInheritor(_references))
-                {
-                    yield return type;
-                }
-                else
-                {
-                    _logger.Error($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
-                }
-            }
-        }
 
-        private IEnumerable<TypeDefinition> GetGeneratedTypes()
-        {
-            foreach (var type in _moduleDefinition.GetTypes().Where(t =>
-            t.CustomAttributes.Any(a => a.AttributeType.Name == "ToWeaveAttribute")))
-            {
-                yield return type;
+                if (type.IsRealmObjectDescendant(_references))
+                {
+                    // Classic types
+                    if (type.IsValidRealmObjectBaseInheritor(_references))
+                    {
+                        yield return (type, false);
+                    }
+                    else
+                    {
+                        _logger.Error($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
+                    }
+                }
+                else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
+                {
+                    // Generated types
+                    yield return (type, true);
+                }
             }
         }
 
@@ -214,11 +215,20 @@ Analytics payload
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            var weaveResults = matchingTypes.Select(type =>
+            var weaveResults = matchingTypes.Select(tuple =>
             {
+                var (type, isGenerated) = tuple;
+
                 try
                 {
-                    return WeaveType(type);
+                    if (isGenerated)
+                    {
+                        return WeaveGeneratedType(type);
+                    }
+                    else
+                    {
+                        return WeaveType(type);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -227,24 +237,7 @@ Analytics payload
                 }
             }).ToArray();
 
-            WeaveSchema(matchingTypes);
-
-            var generatedTypes = GetGeneratedTypes().ToArray();
-
-            var generatedWeaveResults = generatedTypes.Select(type =>
-            {
-                try
-                {
-                    return WeaveGeneratedType(type);
-                }
-                catch (Exception e)
-                {
-                    _logger.Error($"An unexpected error occurred while weaving '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
-                    return WeaveTypeResult.Error(type.Name);
-                }
-            }).ToArray();
-
-            //WeaveSchema(matchingTypes);
+            WeaveSchema(matchingTypes.Select(t => t.Type).ToArray());
 
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
@@ -258,6 +251,116 @@ Analytics payload
             }
 
             return WeaveModuleResult.Success(weaveResults);
+        }
+
+        private WeaveTypeResult WeaveGeneratedType(TypeDefinition type)
+        {
+            _logger.Debug("Weaving generated " + type.Name);
+
+            var interfaceName = $"I{type.Name}Accessor";
+            var interfaceType = _moduleDefinition.GetType("Realms.Generated", interfaceName);
+
+            var persistedProperties = new List<WeavePropertyResult>();
+
+            // We need to weave all (and only) the properties in the accessor interface
+            foreach (var interfaceProperty in interfaceType.Properties)
+            {
+                var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
+
+                try
+                {
+                    var weaveResult = WeaveGeneratedProperty(prop, interfaceType);
+                    persistedProperties.Add(weaveResult);
+                }
+                catch (Exception e)
+                {
+                    var sequencePoint = prop.GetSequencePoint();
+                    _logger.Error(
+                        $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
+                        sequencePoint);
+
+                    return WeaveTypeResult.Error(type.Name);
+                }
+            }
+
+            return WeaveTypeResult.Success(type.Name, persistedProperties);
+        }
+
+        private WeavePropertyResult WeaveGeneratedProperty(PropertyDefinition prop, TypeDefinition interfaceType)
+        {
+            ReplaceGeneratedGetter(prop, interfaceType);
+            ReplaceGeneratedSetter(prop, interfaceType);
+
+            return WeavePropertyResult.GeneratorSuccess(prop);
+        }
+
+        private void ReplaceGeneratedGetter(PropertyDefinition prop, TypeDefinition interfaceType)
+        {
+            //// A synthesized property getter looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld <backingField>
+            ////   2: ret
+            //// We want to change it so it looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld _accessor
+            ////   2: call property getter on accessor
+            ////   3: ret
+            ////
+            //// This is equivalent to:
+            ////   get => accessor.Property;
+
+            var start = prop.GetMethod.Body.Instructions.First();
+            var il = prop.GetMethod.Body.GetILProcessor();
+
+            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
+
+            var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
+
+            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(start, il.Create(OpCodes.Ldfld, accessorReference));
+            il.InsertBefore(start, il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
+            il.InsertBefore(start, il.Create(OpCodes.Ret));
+        }
+
+        private void ReplaceGeneratedSetter(PropertyDefinition prop, TypeDefinition interfaceType)
+        {
+            //// A synthesized property setter looks like this:
+            ////   0: ldarg.0
+            ////   1: ldarg.1
+            ////   2: stfld <backingField>
+            ////   3: ret
+            ////
+            //// We want to change it so it looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld _accessor
+            ////   2: ldarg.1
+            ////   4: call property setter on accessor
+            ////   5: ret
+            ////
+            //// This is equivalent to:
+            ////   set => accessor.Property = value;
+
+            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
+            var il = prop.SetMethod.Body.GetILProcessor();
+            prop.SetMethod.Body.Instructions.Clear();
+            prop.SetMethod.Body.Variables.Clear();
+
+            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
+            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
+            // PropertyChanged.Fody will respect.
+            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
+
+            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
+
+            var propertySetterAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
+            propertySetterAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldfld, accessorReference));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Callvirt, propertySetterAccessorReference));
+            il.Append(il.Create(OpCodes.Ret));
         }
 
         private WeaveTypeResult WeaveType(TypeDefinition type)
@@ -361,128 +464,6 @@ Analytics payload
 
             return didSucceed ? WeaveTypeResult.Success(type.Name, persistedProperties) : WeaveTypeResult.Error(type.Name);
         }
-
-        private WeaveTypeResult WeaveGeneratedType(TypeDefinition type)
-        {
-            _logger.Debug("Weaving " + type.Name);
-
-            var interfaceName = $"I{type.Name}Accessor";
-            var interfaceType = _moduleDefinition.GetType("Realms.Generated", interfaceName);
-
-            var didSucceed = true;
-            var persistedProperties = new List<WeavePropertyResult>();
-
-            // This should be an easy way to get all the properties we're interest into, without doing additional checks
-            foreach (var interfaceProperty in interfaceType.Properties)
-            {
-                var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
-
-                try
-                {
-                    var weaveResult = WeaveGeneratedProperty(prop, type, interfaceType);
-                    if (weaveResult.Woven)
-                    {
-                        persistedProperties.Add(weaveResult);
-                    }
-                    else
-                    {
-
-                        //What do do here?
-
-
-                    }
-                }
-                catch (Exception e)
-                {
-                    var sequencePoint = prop.GetSequencePoint();
-                    _logger.Error(
-                        $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
-                        sequencePoint);
-
-                    return WeaveTypeResult.Error(type.Name);
-                }
-            }
-
-            return didSucceed ? WeaveTypeResult.Success(type.Name, persistedProperties) : WeaveTypeResult.Error(type.Name);
-        }
-
-        private WeavePropertyResult WeaveGeneratedProperty(PropertyDefinition prop, TypeDefinition type, TypeDefinition interfaceType)
-        {
-            ReplaceGeneratedGetter(prop, interfaceType);
-            ReplaceGeneratedSetter(prop, interfaceType);
-
-            return WeavePropertyResult.GeneratorSuccess(prop);
-        }
-
-        private void ReplaceGeneratedGetter(PropertyDefinition prop, TypeDefinition interfaceType)
-        {
-            //// A synthesized property getter looks like this:
-            ////   0: ldarg.0
-            ////   1: ldfld <backingField>
-            ////   2: ret
-            //// We want to change it so it looks like this:
-            ////   0: ldarg.0
-            ////   1: ldfld _accessor
-            ////   2: call property getter on accessor
-            ////   3: ret
-            ////
-            //// This is equivalent to:
-            ////   get => accessor.Property;
-
-            var start = prop.GetMethod.Body.Instructions.First();
-            var il = prop.GetMethod.Body.GetILProcessor();
-
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
-
-            var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
-
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
-            il.InsertBefore(start, il.Create(OpCodes.Ldfld, accessorReference));
-            il.InsertBefore(start, il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
-            il.InsertBefore(start, il.Create(OpCodes.Ret));
-        }
-
-        private void ReplaceGeneratedSetter(PropertyDefinition prop, TypeDefinition interfaceType)
-        {
-            //// A synthesized property setter looks like this:
-            ////   0: ldarg.0
-            ////   1: ldarg.1
-            ////   2: stfld <backingField>
-            ////   3: ret
-            ////
-            //// We want to change it so it looks like this:
-            ////   0: ldarg.0
-            ////   1: ldfld _accessor
-            ////   2: ldarg.1
-            ////   4: call property setter on accessor
-            ////   5: ret
-            ////
-            //// This is equivalent to:
-            ////   set => accessor.Property = value;
-
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
-            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
-            var il = prop.SetMethod.Body.GetILProcessor();
-            prop.SetMethod.Body.Instructions.Clear();
-            prop.SetMethod.Body.Variables.Clear();
-
-            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
-            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
-            // PropertyChanged.Fody will respect.
-            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
-
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
-
-            var propertySetterAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
-            propertySetterAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
-
-            il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldfld, accessorReference));
-            il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Callvirt, propertySetterAccessorReference));
-            il.Append(il.Create(OpCodes.Ret));
-        }
-
 
         private WeavePropertyResult WeaveProperty(PropertyDefinition prop, TypeDefinition type)
         {

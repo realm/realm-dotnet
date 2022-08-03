@@ -27,9 +27,12 @@ namespace AssemblyToProcess
         public string Name { get; set; }
 
         public int Id { get; set; }
+
+        [Ignored]
+        public string Nickname { get; set; }
     }
 
-    [ToWeave]
+    [Generated]
     public partial class SourceGeneratedPerson : IRealmObject
     {
         private ISourceGeneratedPersonAccessor _accessor;

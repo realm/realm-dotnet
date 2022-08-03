@@ -25,7 +25,7 @@ using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
-    [ToWeave]
+    [Generated]
     [Woven(typeof(TestClassObjectHelper))]
     public partial class TestClass : IRealmObject, INotifyPropertyChanged
     {

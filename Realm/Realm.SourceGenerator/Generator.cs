@@ -226,7 +226,7 @@ namespace Realms.Generated
         }}.Build();";
 
             return $@"
-    [ToWeave]
+    [Generated]
     [Woven(typeof({_helperClassName}))]
     public partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
     {{

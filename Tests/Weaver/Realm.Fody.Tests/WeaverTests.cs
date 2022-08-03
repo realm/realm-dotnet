@@ -35,11 +35,11 @@ using Realms.Weaving;
 namespace RealmWeaver
 {
     [TestFixture(PropertyChangedWeaver.NoPropertyChanged, false)]
-    //[TestFixture(PropertyChangedWeaver.NoPropertyChanged, true)]
-    //[TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, false)]
-    //[TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, true)]
-    //[TestFixture(PropertyChangedWeaver.AfterRealmWeaver, false)]
-    //[TestFixture(PropertyChangedWeaver.AfterRealmWeaver, true)]
+    [TestFixture(PropertyChangedWeaver.NoPropertyChanged, true)]
+    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, false)]
+    [TestFixture(PropertyChangedWeaver.BeforeRealmWeaver, true)]
+    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, false)]
+    [TestFixture(PropertyChangedWeaver.AfterRealmWeaver, true)]
     public class Tests : WeaverTestBase
     {
         #region helpers
@@ -193,7 +193,7 @@ namespace RealmWeaver
 
         //TODO Needs to be moved somewhere
         [Test]
-        public void CheckSourceGeneration()
+        public void SourceGeneratorWeaverShouldWeavePropertiesInInterface()
         {
             // Arrange
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
@@ -202,12 +202,32 @@ namespace RealmWeaver
             o.Name = "Maria";
             var name = o.Name;
 
+            o.Id = 20;
+            var id = o.Id;
+
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "Set Name",
-                "Get Name"
+                "Get Name",
+                "Set Id",
+                "Get Id"
             }));
+        }
+
+        //TODO Needs to be moved somewhere
+        [Test]
+        public void SourceGeneratorWeaverShouldIgnorePropertiesNotInInterface()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Nickname = "Julius";
+            var nickname = o.Nickname;
+
+            // Assert
+            Assert.That(o.LogList, Is.Empty);
         }
 
         [TestCaseSource(nameof(RandomValues))]

@@ -21,10 +21,9 @@ using System.ComponentModel;
 
 namespace Realms
 {
-    // TODO Maybe we can find a better way to help the weaver
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class)]
-    public class ToWeaveAttribute : Attribute
+    public class GeneratedAttribute : Attribute
     {
     }
 }
