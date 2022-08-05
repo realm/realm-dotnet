@@ -98,6 +98,9 @@ namespace Realms.Sync
             if (tracker.PopulateInitialDataInvoked)
             {
                 await result.Subscriptions.WaitForSynchronizationAsync();
+
+                // TODO: remove the wait once https://github.com/realm/realm-core/issues/5705 is resolved
+                await result.SyncSession.WaitForDownloadAsync();
             }
 
             return result;

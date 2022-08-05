@@ -67,13 +67,14 @@ namespace binding {
         handle_errors(ex, [&] {
             auto sub = lambda();
             if (sub) {
+                auto sub_value = *sub;
                 auto csharp_sub = CSharpSubscription{
-                    to_capi_value(sub.value().id()),
-                    to_capi_value(sub.value().name()),
-                    to_capi_value(sub.value().object_class_name()),
-                    to_capi_value(sub.value().query_string()),
-                    to_capi_value(sub.value().created_at()),
-                    to_capi_value(sub.value().updated_at()),
+                    to_capi_value(sub_value.id()),
+                    to_capi_value(sub_value.name()),
+                    to_capi_value(sub_value.object_class_name()),
+                    to_capi_value(sub_value.query_string()),
+                    to_capi_value(sub_value.created_at()),
+                    to_capi_value(sub_value.updated_at()),
                     true
                 };
                 s_get_subscription_callback(callback, csharp_sub);
