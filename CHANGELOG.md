@@ -2,15 +2,23 @@
 
 ### Enhancements
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
+* Reduce use of memory mappings and virtual address space (Core upgrade)
 
 ### Fixed
-* None
+* Fix a data race when opening a flexible sync Realm (Core upgrade).
+* Fixed a missing backlink removal when setting a `RealmValue` from a `RealmObject` to null or any other non-RealmObject value. Users may have seen exception of "key not found" or assertion failures such as `mixed.hpp:165: [realm-core-12.1.0] Assertion failed: m_type` when removing the destination object. (Core upgrade)
+* Fixed an issue on Windows that would cause high CPU usage by the sync client when there are no active sync sessions. (Core upgrade)
+* Improved performance of sync clients during integration of changesets with many small strings (totalling > 1024 bytes per changeset) on iOS 14, and devices which have restrictive or fragmented memory. (Core upgrade)
+* Fix exception when decoding interned strings in realm-apply-to-state tool. (Core upgrade)
+* Fix a data race when committing a transaction while multiple threads are waiting for the write lock on platforms using emulated interprocess condition variables (most platforms other than non-Android Linux). (Core upgrade)
+* Fix some cases of running out of virtual address space (seen/reported as mmap failures) (Core upgrade)
+* Decimal128 values with more than 110 significant bits were not synchronized correctly with the server (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core 12.1.0.
+* Using Core 12.4.0.
 
 ## 10.14.0 (2022-06-02)
 
