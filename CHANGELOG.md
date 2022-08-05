@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.15.0 (2022-08-05)
 
 ### Enhancements
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
