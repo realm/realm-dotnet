@@ -65,7 +65,6 @@ with:
 - name: Add msbuild to PATH
   uses: #@ actionSetupMSBuild
   if: ${{ runner.os == 'Windows' }}
-- #@ setupNugetCache(projectPaths)
 #@ for projectPath in projectPaths:
 - name: #@ "Build " + projectPath
   run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
@@ -77,7 +76,6 @@ with:
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
-  - #@ setupNugetCache([ projectPath ])
   - name: #@ "Publish " + projectPath
     run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg + " --no-self-contained"
   - name: Output executable path

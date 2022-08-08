@@ -9,7 +9,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-unity:
+  prepare-unity-packages:
     runs-on: windows-latest
     name: Unity
     timeout-minutes: 30
@@ -43,10 +43,6 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tools/SetupUnityPackage/*.csproj') }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
     - name: Store artifacts for io.realm.unity-${{ inputs.version }}.tgz

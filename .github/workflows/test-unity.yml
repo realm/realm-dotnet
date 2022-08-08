@@ -1,0 +1,102 @@
+name: test-unity
+"on":
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      platform:
+        type: string
+        required: true
+      settings:
+        type: string
+        required: true
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  build-tests:
+    runs-on:
+    - unity
+    - ${{ matrix.platform.os }}
+    name: Build Unity ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform: ${{ fromJson(inputs.platform) }}
+        settings: ${{ fromJson(inputs.settings) }}
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch Unity Package
+      uses: actions/download-artifact@v2
+      with:
+        name: io.realm.unity-${{ inputs.version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch Unity Tests
+      uses: actions/download-artifact@v2
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: |
+        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+        ${{ matrix.platform.os == 'windows' && 'cat build.log' || ''}}
+    - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: UnityTestsRunner.${{ matrix.platform.os }}
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+  run-tests-windows:
+    runs-on: windows-latest
+    name: Unity Windows
+    timeout-minutes: 30
+    needs:
+    - build-tests
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Download Test Runner
+      uses: actions/download-artifact@v2
+      with:
+        name: UnityTestsRunner.windows
+        path: TestRunner
+    - name: Run Tests
+      run: |
+        Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
+        cat ${{ github.workspace }}\test.log
+      shell: powershell
+    - name: Store artifacts for UnityResults.xml
+      uses: actions/upload-artifact@v2
+      with:
+        name: UnityResults.xml
+        path: ${{ github.workspace }}/TestResults.xml
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results Unity Windows Mono_Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
