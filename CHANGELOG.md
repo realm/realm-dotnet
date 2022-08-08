@@ -4,7 +4,9 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue introduced in 10.15.0 that would prevent non-anonoymous user authentication against Atlas App Services. (Issue [#2987](https://github.com/realm/realm-dotnet/issues/2987))
+* Added override to `User.ToString()` that outputs the user id and provider. (PR [#2988](https://github.com/realm/realm-dotnet/pull/2988))
+* Added == and != operator overloads to `User` that matches the behavior of `User.Equals`. (PR [#2988](https://github.com/realm/realm-dotnet/pull/2988))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.

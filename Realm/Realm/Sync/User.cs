@@ -274,25 +274,25 @@ namespace Realms.Sync
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as User);
-        }
+        public override bool Equals(object obj) => Equals(obj as User);
 
         /// <summary>
         /// Determines whether this instance and another <see cref="User"/> instance are equal by comparing their identities.
         /// </summary>
         /// <param name="other">The <see cref="User"/> instance to compare with.</param>
         /// <returns>true if the two instances are equal; false otherwise.</returns>
-        public bool Equals(User other)
-        {
-            return Id.Equals(other?.Id);
-        }
+        public bool Equals(User other) => Id.Equals(other?.Id);
 
         /// <inheritdoc />
-        public override int GetHashCode()
+        public override int GetHashCode() => Id.GetHashCode();
+
+        public static bool operator ==(User user1, User user2) => user1?.Id == user2?.Id;
+
+        public static bool operator !=(User user1, User user2) => !(user1 == user2);
+
+        public override string ToString()
         {
-            return Id.GetHashCode();
+            return $"User {Id}, State: {State}, Provider: {Provider}";
         }
 
         /// <summary>

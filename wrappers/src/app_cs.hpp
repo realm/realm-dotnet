@@ -69,8 +69,10 @@ namespace binding {
         AppCredentials to_app_credentials() {
             switch (provider)
             {
-            case AuthProvider::ANONYMOUS:
-                return AppCredentials::anonymous();
+            case AuthProvider::ANONYMOUS: {
+                Utf16StringAccessor reuse_existing(additional_info, additional_info_len);
+                return AppCredentials::anonymous(reuse_existing == "true");
+            }
 
             case AuthProvider::FACEBOOK:
                 return AppCredentials::facebook(Utf16StringAccessor(token, token_len));
