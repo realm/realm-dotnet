@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
+## 10.15.1 (2022-08-08)
 
 ### Fixed
 * Fixed an issue introduced in 10.15.0 that would prevent non-anonoymous user authentication against Atlas App Services. (Issue [#2987](https://github.com/realm/realm-dotnet/issues/2987))
