@@ -7,7 +7,7 @@
 * None
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.
@@ -29,7 +29,7 @@
 * Decimal128 values with more than 110 significant bits were not synchronized correctly with the server (Core upgrade)
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.4.0.
@@ -67,7 +67,7 @@
 * Partially fix a performance regression in write performance on Apple platforms. Committing an empty write transaction is ~10x faster than 10.13.0, but still slower than pre-10.7.1 due to using more crash-safe file synchronization (since v10.7.1). (Swift issue [#7740](https://github.com/realm/realm-swift/issues/7740)).
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.1.0.
