@@ -21,6 +21,7 @@ jobs:
     - ${{ matrix.platform.os }}
     name: Build Unity ${{ matrix.platform.os }}
     strategy:
+      fail-fast: false
       matrix:
         platform: ${{ fromJson(inputs.platform) }}
         settings: ${{ fromJson(inputs.settings) }}
