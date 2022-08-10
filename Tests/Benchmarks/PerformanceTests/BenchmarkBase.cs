@@ -34,6 +34,11 @@ namespace PerformanceTests
         static BenchmarkBase()
         {
             Randomizer.Seed = new Random(12345);
+
+            // Store test files in the tmp directory for local development and in the current directory on CI.
+            var basePath = Environment.GetEnvironmentVariable("CI") == null ? Path.GetTempPath() : Path.Combine(Directory.GetCurrentDirectory(), "tmp");
+            InteropConfig.DefaultStorageFolder = Path.Combine(basePath, $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}");
+            Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
         }
 
         [GlobalSetup]
