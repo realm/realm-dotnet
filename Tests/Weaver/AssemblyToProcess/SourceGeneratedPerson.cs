@@ -22,6 +22,7 @@ using Realms.Generated;
 
 namespace AssemblyToProcess
 {
+    //TODO We can add more property types
     public partial class SourceGeneratedPerson : IRealmObject
     {
         public string Name { get; set; }

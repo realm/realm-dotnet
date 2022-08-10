@@ -18,15 +18,9 @@
 
 using System;
 using System.Text;
-using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
-    /* What do do:
-     * - Connect weaver
-     * - Add weaver-tests
-     * - Check nullability (later)
-     */
     internal class Generator
     {
         private ClassInfo _classInfo;
@@ -104,9 +98,8 @@ namespace Realms.Generated
         {
             var propertiesBuilder = new StringBuilder();
 
-            for (var i = 0; i < _classInfo.Properties.Count; i++)
+            foreach (var property in _classInfo.Properties)
             {
-                var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
@@ -114,10 +107,7 @@ namespace Realms.Generated
 
                 var propertyString = @$"        {type} {name} {{ get;{setterString}}}";
                 propertiesBuilder.Append(propertyString);
-                if (i != _classInfo.Properties.Count - 1)
-                {
-                    propertiesBuilder.AppendLine().AppendLine();
-                }
+                propertiesBuilder.AppendLine().AppendLine();
             }
             
             return $@"
@@ -365,11 +355,6 @@ namespace Realms.Generated
             {tryGetPrimaryKeyBody}
         }}
     }}";
-        }
-
-        private string GetBackingFieldName(string propertyName)
-        {
-            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
         }
 
         private string GeneratedUnmanagedAccessor()
@@ -695,6 +680,11 @@ namespace Realms.Generated
     {{
 {propertiesBuilder}
     }}";
+        }
+
+        private string GetBackingFieldName(string propertyName)
+        {
+            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
         }
 
         private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)

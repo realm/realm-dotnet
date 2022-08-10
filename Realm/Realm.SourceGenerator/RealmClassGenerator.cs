@@ -12,17 +12,12 @@ namespace Realms.SourceGenerator
     [Generator]
     public class RealmClassGenerator : ISourceGenerator
     {
-        /* General notes:
-         * - We can repurpose the Weaver Tests once we have an initial generation so that we can have a feeling if it works or not
-         * The tests allow us to see if the correct methods are getting called or not
-         * - Given that we need to use the weaver anyways, maybe we can simplify the weaving process by emitting something useful from the SG.
-         * For example the schema, the list of classes to weave and so on. In case we could also add properties on the generated class, as those
-         * can be easily retrieved by the weaver (in that case we can add those to the Content of the nuget package, so it will be included in the compilation
-         * of the final project)
-         * - Check VSCode if it solves the caching issue
-         * 
-         * - The idea about testing is correct, just need to set it up
+        /* Not explicitly supported:
+         * - Inheritance of any kind (classes cannot derive from anything)
+         * - Partial classes
+         * - Full nullability support
          */
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
@@ -53,7 +48,6 @@ namespace Realms.SourceGenerator
 
                     if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
                     {
-                        // We will expand this later
                         classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
@@ -76,9 +70,8 @@ namespace Realms.SourceGenerator
 
                     //Properties
                     var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
-                    //By using the property syntax, what happens if the class is partial? What happens if it derives from another class?
 
-                    FillPropertyInfo(semanticModel, classInfo, propertiesSyntax);
+                    FillPropertyInfo(classInfo, propertiesSyntax, semanticModel);
 
                     var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));  //TODO For testing
 
@@ -102,10 +95,10 @@ namespace Realms.SourceGenerator
                     }
 
                     var generator = new Generator(classInfo);
-                    var generatedFile = generator.GenerateSource();
+                    var generatedSource = generator.GenerateSource();
 
-                    //TODO This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (look at the schema definition for example)
-                    var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedFile, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+                    // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
+                    var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
 
                     context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
                 }
@@ -117,7 +110,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private void FillPropertyInfo(SemanticModel model, ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes)
+        private void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {

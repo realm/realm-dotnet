@@ -125,7 +125,6 @@ namespace Realms.SourceGenerator
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
 
-
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
         public virtual string CompleteTypeString => CompleteTypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
@@ -221,36 +220,6 @@ namespace Realms.SourceGenerator
             }
 
             return true;
-        }
-        
-        //TODO This was for testing, could not be updated
-        public sealed override string ToString()
-        {
-            if (this is UnsupportedTypeInfo)
-            {
-                return "Unsupported";
-            }
-
-            var nullabilityString = NullableAnnotation == NullableAnnotation.Annotated ? "?" : "";
-            string desc;
-            if (IsCollection)
-            {
-                desc = $"{CollectionType}{nullabilityString} of {InternalType}";
-            }
-            else if (IsRealmInteger)
-            {
-                desc = $"RealmInteger{nullabilityString} of {InternalType}";
-            }
-            else if (SimpleType == SimpleTypeEnum.Object)
-            {
-                desc = $"Object of type {TypeSymbol.Name}{nullabilityString} of";
-            }
-            else
-            {
-                desc = $"Scalar of type {SimpleType}{nullabilityString}";
-            }
-
-            return $"{TypeSymbol.ToReadableName()} ({desc})";
         }
     }
 

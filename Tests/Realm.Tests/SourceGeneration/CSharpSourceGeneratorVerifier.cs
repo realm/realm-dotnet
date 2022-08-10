@@ -25,6 +25,7 @@ using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace Realms.Tests.SourceGeneration
 {
+    // Heavily inspired from Source Generators Cookbook (https://github.com/dotnet/roslyn/blob/main/docs/features/source-generators.cookbook.md#unit-testing-of-generators)
     public static class CSharpSourceGeneratorVerifier<TSourceGenerator>
             where TSourceGenerator : ISourceGenerator, new()
     {
@@ -33,6 +34,8 @@ namespace Realms.Tests.SourceGeneration
             public Test()
             {
                 TestState.AdditionalReferences.Add(typeof(Realm).Assembly.Location);
+
+                // Removes the emission of the usual compiler diagnostics
                 CompilerDiagnostics = Microsoft.CodeAnalysis.Testing.CompilerDiagnostics.None;
             }
 
