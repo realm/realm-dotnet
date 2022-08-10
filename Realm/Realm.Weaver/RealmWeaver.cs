@@ -269,7 +269,7 @@ Analytics payload
 
                 try
                 {
-                    var weaveResult = WeaveGeneratedProperty(prop, interfaceType);
+                    var weaveResult = WeaveGeneratedClassProperty(prop, interfaceType);
                     persistedProperties.Add(weaveResult);
                 }
                 catch (Exception e)
@@ -286,15 +286,17 @@ Analytics payload
             return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
 
-        private WeavePropertyResult WeaveGeneratedProperty(PropertyDefinition prop, TypeDefinition interfaceType)
+        private WeavePropertyResult WeaveGeneratedClassProperty(PropertyDefinition prop, TypeDefinition interfaceType)
         {
-            ReplaceGeneratedGetter(prop, interfaceType);
-            ReplaceGeneratedSetter(prop, interfaceType);
+            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
+
+            ReplaceGeneratedClassGetter(prop, interfaceType, accessorReference);
+            ReplaceGeneratedClassSetter(prop, interfaceType, accessorReference);
 
             return WeavePropertyResult.Success(prop);
         }
 
-        private void ReplaceGeneratedGetter(PropertyDefinition prop, TypeDefinition interfaceType)
+        private void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, FieldReference accessorReference)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -312,8 +314,6 @@ Analytics payload
             var start = prop.GetMethod.Body.Instructions.First();
             var il = prop.GetMethod.Body.GetILProcessor();
 
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
-
             var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
 
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
@@ -322,7 +322,7 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ret));
         }
 
-        private void ReplaceGeneratedSetter(PropertyDefinition prop, TypeDefinition interfaceType)
+        private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, FieldReference accessorReference)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0
@@ -350,8 +350,6 @@ Analytics payload
             // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
             // PropertyChanged.Fody will respect.
             prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
-
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
 
             var propertySetterAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
             propertySetterAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
