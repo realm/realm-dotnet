@@ -17,6 +17,16 @@
 		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
 		<None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
 
+		<!-- Useful for testing, so we don't get all the unnecessary compiler errors -->
+		<Compile Remove="ErrorClasses/*.cs" />
+
+
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Person.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="Person.cs" />
 	</ItemGroup>
 </Project>
 
