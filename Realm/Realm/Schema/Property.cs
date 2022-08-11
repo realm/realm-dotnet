@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -301,6 +302,16 @@ namespace Realms.Schema
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property ObjectDictionary(string name, string objectType)
             => ObjectCore(name, objectType, PropertyType.Dictionary | PropertyType.Nullable);
+
+
+        // TODO Add docs
+        [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The property type describes an object.")]
+        public static Property RealmValue(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return new Property(name, PropertyType.RealmValue);
+        }
 
         /// <summary>
         /// Initializes a new property describing a collection of backlinks (all objects linking to this one via the specified property).

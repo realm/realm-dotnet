@@ -17,6 +17,7 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Data.SqlTypes;
 using System.Text;
 
 namespace Realms.SourceGenerator
@@ -48,6 +49,7 @@ using Realms;
 using Realms.Weaving;
 using Realms.Generated;
 using Realms.Schema;
+using MongoDB.Bson;
 using {_classInfo.Namespace};";
 
             var partialClassString = GeneratePartialClass();
@@ -183,6 +185,12 @@ namespace Realms.Generated
                 {
                     var objectName = property.TypeInfo.CompleteTypeString;
                     schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
+
+                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
+                }
+                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.RealmValue)
+                {
+                    schemaProperties.AppendLine(@$"            Property.RealmValue(""{property.MapTo ?? property.Name}""),");
 
                     copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
                 }
@@ -690,7 +698,25 @@ namespace Realms.Generated
         private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
         {
             var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.SimpleType : propertyTypeInfo.SimpleType;
-            return "RealmValueType." + simpleType.ToString(); // This could be more robust
+
+            var endString = simpleType switch
+            {
+                SimpleTypeEnum.Int => "Int",
+                SimpleTypeEnum.Bool => "Bool",
+                SimpleTypeEnum.String => "String",
+                SimpleTypeEnum.Data => "Data",
+                SimpleTypeEnum.Date => "Date",
+                SimpleTypeEnum.Float => "Float",
+                SimpleTypeEnum.Double => "Double",
+                SimpleTypeEnum.Object => "Object",
+                SimpleTypeEnum.RealmValue => "RealmValue",
+                SimpleTypeEnum.ObjectId => "ObjectId",
+                SimpleTypeEnum.Decimal => "Decimal128",
+                SimpleTypeEnum.Guid => "Guid",
+                _ => throw new NotImplementedException(),
+            };
+
+            return "RealmValueType." + endString;
         }
     }
 }

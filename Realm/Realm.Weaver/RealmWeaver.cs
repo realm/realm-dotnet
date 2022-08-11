@@ -291,7 +291,11 @@ Analytics payload
             var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
 
             ReplaceGeneratedClassGetter(prop, interfaceType, accessorReference);
-            ReplaceGeneratedClassSetter(prop, interfaceType, accessorReference);
+
+            if (prop.SetMethod != null)
+            {
+                ReplaceGeneratedClassSetter(prop, interfaceType, accessorReference);
+            }
 
             return WeavePropertyResult.Success(prop);
         }
