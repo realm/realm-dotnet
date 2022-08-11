@@ -48,7 +48,7 @@ namespace Realms.Tests.SourceGeneration
         public void TestBaseUnmanagedWithAccessor()
         {
             var mgc = new ManualllyGeneratedClass();
-            mgc.Accessor.SetValue("PrimaryKeyValue", 1);
+            mgc.Accessor.SetValueUnique("PrimaryKeyValue", 1);
             mgc.Accessor.SetValue("_string", "Mario");
             mgc.Accessor.SetValue("IntValue", 24);
             mgc.Accessor.GetListValue<int>("ListValue").Add(10);
