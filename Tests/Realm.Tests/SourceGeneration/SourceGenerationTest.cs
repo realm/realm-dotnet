@@ -43,16 +43,16 @@ namespace Realms.Tests.SourceGeneration
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
             _testClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
             _generatedFilesPath = Path.Combine(_testClassesPath, "Generated",
-                "Realm.SourceGenerator", "Realm.SourceGenerator.RealmClassGenerator");
+                "Realm.SourceGenerator", "Realms.SourceGenerator.RealmClassGenerator");
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
-        protected string GetSourceForClass(string className) =>
-            File.ReadAllText(Path.Combine(_testClassesPath, $"{className}.cs"));
+        protected string GetSource(string filename) =>
+            File.ReadAllText(Path.Combine(_testClassesPath, $"{filename}.cs"));
 
         protected string GetGeneratedForClass(string className)
         {
-            var fileName = Path.Combine(_testClassesPath, $"{className}_generated.cs");
+            var fileName = Path.Combine(_generatedFilesPath, $"{className}_generated.cs");
             return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
         }
 
@@ -80,36 +80,9 @@ namespace Realms.Tests.SourceGeneration
             return File.ReadAllText(fileName);
         }
 
-        //TODO Probably it makes sense to make methods that can accept multiple class names (in case there are multiple classes in the same file)
-        public async Task RunSimpleComparisonTest(string className)
+        public async Task RunComparisonTest(string fileName, params string[] classNames)
         {
-            var source = GetSourceForClass(className);
-            var generated = GetGeneratedForClass(className);
-            var generatedFileName = $"{className}_generated.cs";
-
-            await new RealmClassGeneratorVerifier.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        source
-                    },
-                    GeneratedSources =
-                    {
-                        (typeof(RealmClassGenerator), generatedFileName, generated),
-                    },
-                },
-            }.RunAsync();
-        }
-
-        //TODO Probably I can make a generic method and make thise and the previous in relation to that
-        public async Task RunSimpleErrorTest(string className)
-        {
-            var source = GetSourceForClass(className);
-            var diagnosticFileName = $"{className}.diagnostics.cs";
-
-            var diagnostics = GetDiagnosticsForClass(className);
+            var source = GetSource(fileName);
 
             var test = new RealmClassGeneratorVerifier.Test
             {
@@ -122,9 +95,51 @@ namespace Realms.Tests.SourceGeneration
                 },
             };
 
-            test.TestState.ExpectedDiagnostics.AddRange(diagnostics.Select(Convert));
+            foreach (var className in classNames)
+            {
+                var generated = GetGeneratedForClass(className);
+                var generatedFileName = $"{className}_generated.cs";
+
+                test.TestState.GeneratedSources.Add((typeof(RealmClassGenerator), generatedFileName, generated));
+            }
 
             await test.RunAsync();
+        }
+
+        public async Task RunSimpleComparisonTest(string className)
+        {
+            await RunComparisonTest(className, className);
+        }
+
+        public async Task RunErrorTest(string fileName, params string[] classNames)
+        {
+            var source = GetSource(fileName);
+
+            var test = new RealmClassGeneratorVerifier.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        source
+                    },
+                },
+            };
+
+            foreach (var className in classNames)
+            {
+                var diagnosticFileName = $"{className}.diagnostics.cs";
+                var diagnostics = GetDiagnosticsForClass(className);
+
+                test.TestState.ExpectedDiagnostics.AddRange(diagnostics.Select(Convert));
+            }
+
+            await test.RunAsync();
+        }
+
+        public async Task RunSimpleErrorTest(string className)
+        {
+            await RunErrorTest(className, className);
         }
 
         public static DiagnosticResult Convert(DiagnosticInfo info)

@@ -30,10 +30,16 @@ namespace Realms.Tests.SourceGeneration
     [TestFixture, Preserve(AllMembers = true)]
     public class ComparisonTests : SourceGenerationTest
     {
-        [Test]
-        public async Task SimpleTest()
+        [TestCase("AllTypesClass")]
+        public async Task SimpleComparisonTest(string className)
         {
-            await RunSimpleComparisonTest("AllTypesClass");
+            await RunSimpleComparisonTest(className);
+        }
+
+        [TestCase("PersonWithDog")]
+        public async Task ComparisonTest(string filename, params string[] classNames)
+        {
+            await RunComparisonTest(filename, classNames);
         }
 
         [Test]

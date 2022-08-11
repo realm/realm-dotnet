@@ -98,7 +98,9 @@ namespace Realms.SourceGenerator
                     var generatedSource = generator.GenerateSource();
 
                     // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
-                    var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+                    //var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
+
+                    var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
 
                     context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
                 }
