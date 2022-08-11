@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using NUnit.Framework;
@@ -172,11 +173,11 @@ namespace Realms.Tests.Sync
                     ServerCertificateCustomValidationCallback = (message, certificate, chain, policyErrors) =>
                     {
                         validationInvoked = true;
-                        return false;
+                        return true;
                     }
                 };
 
-                var app = App.Create(new AppConfiguration("abc")
+                var app = CreateApp(new AppConfiguration("abc")
                 {
                     HttpClientHandler = handler
                 });
@@ -184,10 +185,10 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => app.LogInAsync(Credentials.Anonymous()));
 
                 // Http error
-                Assert.That(ex.Message, Does.Contain("code 998"));
+                Assert.That(ex.Message, Does.Contain("cannot find app"));
 
                 // We rejected the SSL connection, so there should be no response from the server
-                Assert.That(ex.StatusCode, Is.Null);
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 
                 Assert.That(validationInvoked, Is.True);
             });
