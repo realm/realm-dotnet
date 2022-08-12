@@ -31,6 +31,10 @@ namespace Realms
     {
     }
 
+    public class AsymmetricObject : RealmObjectBase
+    {
+    }
+
     public interface IRealmObjectBase
     {
     }

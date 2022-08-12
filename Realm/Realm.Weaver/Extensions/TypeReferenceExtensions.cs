@@ -46,29 +46,32 @@ internal static class TypeReferenceExtensions
         }
     }
 
-    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
+    private static bool IsTObjectDescendant(TypeReference target, params TypeReference[] instanceOf)
     {
         try
         {
             while (true)
             {
-                if (@this == null || !Weaver.ShouldTraverseAssembly(@this.Module.Assembly.Name))
+                if (target == null || !Weaver.ShouldTraverseAssembly(target.Module.Assembly.Name))
                 {
                     return false;
                 }
 
-                var definition = @this?.Resolve();
+                var definition = target?.Resolve();
                 if (definition == null)
                 {
                     return false;
                 }
 
-                if (definition.BaseType.IsSameAs(references.RealmObject) || definition.BaseType.IsSameAs(references.EmbeddedObject))
+                foreach (var typeRef in instanceOf)
                 {
-                    return true;
+                    if (definition.BaseType.IsSameAs(typeRef))
+                    {
+                        return true;
+                    }
                 }
 
-                @this = definition.BaseType;
+                target = definition.BaseType;
             }
         }
         catch
@@ -78,6 +81,16 @@ internal static class TypeReferenceExtensions
         }
 
         return false;
+    }
+
+    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
+    {
+        return IsTObjectDescendant(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
+    }
+
+    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references)
+    {
+        return IsTObjectDescendant(@this, references.AsymmetricObject);
     }
 
     public static bool IsSameAs(this TypeReference @this, TypeReference other)

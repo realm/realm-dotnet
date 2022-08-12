@@ -346,7 +346,7 @@ namespace Realms
             }
             else
             {
-                helper = DynamicRealmObjectHelper.Instance(schema.IsEmbedded);
+                helper = DynamicRealmObjectHelper.Instance(schema);
             }
 
             var initPropertyMap = new Dictionary<string, IntPtr>(schema.Count);
@@ -599,6 +599,19 @@ namespace Realms
             }
         }
 
+        // TODO andrea:
+        // 1. write documentation for new methods
+        // 2. add other push signatures
+        // 3. add checks against push on non-asymmetric objects
+        public void Add<T>(T obj)
+            where T : IAsymmetricObject
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(obj, nameof(obj));
+
+            AddInternal(obj, obj.GetType(), update: false);
+        }
+
         internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
         {
             var objectType = obj.GetType();
@@ -608,9 +621,11 @@ namespace Realms
             obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata), metadata.Helper, false, true);
         }
 
-        private void AddInternal(IRealmObject obj, Type objectType, bool update)
+        // TODO andrea: see if revert this to IRealmObject and have another AddInternal with different rules
+        private void AddInternal<T>(T obj, Type objectType, bool update)
+            where T : IRealmObjectBase
         {
-            if (!ShouldAddNewObject(obj))
+            if (!ShouldAddNewObject(obj) || obj.GetType().IsEmbeddedObject())
             {
                 return;
             }
@@ -1748,7 +1763,7 @@ namespace Realms
                 Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
                 Argument.Ensure(parent.GetObjectMetadata().Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
-                Argument.Ensure(metadata.Schema.IsEmbedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
+                Argument.Ensure(metadata.Schema.RealmSchemaType == ObjectSchema.ObjectSchemaType.Embedded, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
@@ -1878,7 +1893,8 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
-                Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
+                Argument.Ensure(metadata.Schema.RealmSchemaType != ObjectSchema.ObjectSchemaType.Embedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
+                Argument.Ensure(metadata.Schema.RealmSchemaType != ObjectSchema.ObjectSchemaType.TopLevelAsymmetric, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
 
                 return new RealmResults<RealmObject>(_realm, metadata);
             }

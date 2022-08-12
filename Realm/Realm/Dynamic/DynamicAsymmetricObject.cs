@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,22 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
+using System.ComponentModel;
+using System.Dynamic;
+using System.Linq.Expressions;
 
-namespace Realms.Native
+namespace Realms.Dynamic
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Ignored]
+    public class DynamicAsymmetricObject : AsymmetricObject, IDynamicMetaObjectProvider
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
-
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
-
-        internal int properties_start;
-        internal int properties_end;
-
-        [MarshalAs(UnmanagedType.U1)]
-        internal byte table_type;
+        public DynamicMetaObject GetMetaObject(Expression parameter)
+        {
+            return new MetaRealmObject(parameter, this);
+        }
     }
 }

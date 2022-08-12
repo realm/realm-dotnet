@@ -259,7 +259,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
-            Assert.That(ex.Message, Does.Contain("must descend directly from RealmObject or EmbeddedObject"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject or AsymmetricObject"));
         }
 
         [TestCase(true)]
@@ -689,7 +689,8 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
-            Assert.That(allTypesSchema.IsEmbedded, Is.False);
+            Assert.That(allTypesSchema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(allTypesSchema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
             Assert.That(hasExpectedProp);
@@ -706,7 +707,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-            Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
+            Assert.That(embeddedAllTypesSchema.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
 
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));

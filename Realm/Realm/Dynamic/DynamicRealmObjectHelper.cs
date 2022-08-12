@@ -17,22 +17,31 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Schema;
 using Realms.Weaving;
 
 namespace Realms.Dynamic
 {
     internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
-        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(embedded: true);
-        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(embedded: false);
+        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.Embedded);
+        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.TopLevel);
+        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric);
 
-        private readonly bool _embedded;
+        private readonly ObjectSchema.ObjectSchemaType _schemaType;
 
-        internal static DynamicRealmObjectHelper Instance(bool embedded) => embedded ? _embeddedInstance : _objectInstance;
+        internal static DynamicRealmObjectHelper Instance(ObjectSchema schema) =>
+            schema.RealmSchemaType switch
+            {
+                ObjectSchema.ObjectSchemaType.TopLevel => _objectInstance,
+                ObjectSchema.ObjectSchemaType.Embedded => _embeddedInstance,
+                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => _asymmetricInstance,
+                _ => throw new NotSupportedException($"{schema.RealmSchemaType} type not supported, yet."),
+            };
 
-        private DynamicRealmObjectHelper(bool embedded)
+        private DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType realmSchemaType)
         {
-            _embedded = embedded;
+            _schemaType = realmSchemaType;
         }
 
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool setPrimaryKey)
@@ -40,15 +49,14 @@ namespace Realms.Dynamic
             throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
         }
 
-        public IRealmObjectBase CreateInstance()
-        {
-            if (_embedded)
+        public IRealmObjectBase CreateInstance() =>
+            _schemaType switch
             {
-                return new DynamicEmbeddedObject();
-            }
-
-            return new DynamicRealmObject();
-        }
+                ObjectSchema.ObjectSchemaType.TopLevel => new DynamicRealmObject(),
+                ObjectSchema.ObjectSchemaType.Embedded => new DynamicEmbeddedObject(),
+                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => new DynamicAsymmetricObject(),
+                _ => throw new NotSupportedException($"{_schemaType} type not supported, yet."),
+            };
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {

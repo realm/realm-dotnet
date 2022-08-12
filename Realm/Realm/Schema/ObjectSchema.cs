@@ -35,6 +35,16 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
+        // TODO andrea:
+        // 1 - move this to the right place
+        // 2- add documentation
+        public enum ObjectSchemaType : byte
+        {
+            TopLevel = 0,
+            Embedded = 1,
+            TopLevelAsymmetric = 2,
+        }
+
         private static readonly ConcurrentDictionary<Type, ObjectSchema> _cache = new ConcurrentDictionary<Type, ObjectSchema>();
 
         private readonly ReadOnlyDictionary<string, Property> _properties;
@@ -59,12 +69,22 @@ namespace Realms.Schema
         /// Gets a value indicating whether this <see cref="ObjectSchema"/> describes an embedded object.
         /// </summary>
         /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
+        [Obsolete("Check against RealmSchemaType instead.")]
         public bool IsEmbedded { get; }
 
-        private ObjectSchema(string name, bool isEmbedded, IDictionary<string, Property> properties)
+        // TODO andrea: review this documentation
+        /// <summary>
+        /// Gets a <see cref="ObjectSchemaType"/> indicating whether this <see cref="ObjectSchema"/> describes
+        /// a top level object, an embedded object or an asymmetric object.
+        /// </summary>
+        /// <value>The type of ObjectSchema.</value>
+        public ObjectSchemaType RealmSchemaType { get; }
+
+        private ObjectSchema(string name, ObjectSchemaType schemaType, IDictionary<string, Property> properties)
         {
             Name = name;
-            IsEmbedded = isEmbedded;
+            RealmSchemaType = schemaType;
+            IsEmbedded = schemaType == ObjectSchemaType.Embedded;
 
             _properties = new ReadOnlyDictionary<string, Property>(properties);
 
@@ -104,7 +124,7 @@ namespace Realms.Schema
         /// </returns>
         public Builder GetBuilder()
         {
-            var builder = new Builder(Name, IsEmbedded);
+            var builder = new Builder(Name, RealmSchemaType);
             foreach (var prop in this)
             {
                 builder.Add(prop);
@@ -145,7 +165,30 @@ namespace Realms.Schema
             /// Gets or sets a value indicating whether this <see cref="Builder"/> describes an embedded object.
             /// </summary>
             /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
+            [Obsolete("Check against RealmSchemaType instead.")]
             public bool IsEmbedded { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the object's <see cref="ObjectSchemaType"/> this <see cref="Builder"/> describes.
+            /// </summary>
+            /// <value><see cref="ObjectSchemaType"/> of the schema of the object.</value>
+            public ObjectSchemaType RealmSchemaType { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
+            /// </summary>
+            /// <param name="name">The name of the <see cref="ObjectSchema"/> this builder describes.</param>
+            /// <param name="schemaType">The <see cref="ObjectSchemaType"/> of the object this builder describes.</param>
+            /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
+            /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
+            public Builder(string name, ObjectSchemaType schemaType)
+            {
+                Argument.NotNullOrEmpty(name, nameof(name));
+
+                Name = name;
+                RealmSchemaType = schemaType;
+                IsEmbedded = schemaType == ObjectSchemaType.Embedded;
+            }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
@@ -155,21 +198,21 @@ namespace Realms.Schema
             /// <seealso cref="EmbeddedObject"/>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
             /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
-            public Builder(string name, bool isEmbedded = false)
+            [Obsolete("Use Builder(string name, ObjectSchemaType schemaType) instead.")]
+            public Builder(string name, bool isEmbedded = false) : this(
+                name,
+                isEmbedded ? ObjectSchemaType.Embedded : ObjectSchemaType.TopLevel)
             {
-                Argument.NotNullOrEmpty(name, nameof(name));
-
-                Name = name;
-                IsEmbedded = isEmbedded;
             }
 
+            // TODO andrea: review the documentation
             /// <summary>
             /// Initializes a new instance of the <see cref="Builder"/> class populated with properties from the
             /// provided <paramref name="type"/>.
             /// </summary>
             /// <param name="type">
-            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>
-            /// or <see cref="EmbeddedObject"/> inheritor.
+            /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>,
+            /// an <see cref="EmbeddedObject"/>  or a <see cref="AsymmetricObject"/>inheritor.
             /// </param>
             /// <remarks>
             /// If you want to use strongly typed API, such as <see cref="Realm.Add{T}(T, bool)">Realm.Add&lt;T&gt;</see> or
@@ -212,10 +255,13 @@ namespace Realms.Schema
             public Builder(Type type)
             {
                 Argument.NotNull(type, nameof(type));
-                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject(), $"The class {type.FullName} must descend directly from RealmObject or EmbeddedObject", nameof(type));
+                Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject() || type.IsAsymmetricObject(),
+                    $"The class {type.FullName} must descend directly from either RealmObject, EmbeddedObject or AsymmetricObject", nameof(type));
 
                 Name = type.GetMappedOrOriginalName();
-                IsEmbedded = type.IsEmbeddedObject();
+                RealmSchemaType = type.GetRealmSchemaType();
+                IsEmbedded = type.GetRealmSchemaType() == ObjectSchemaType.Embedded;
+
                 foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
                 {
                     Add(Property.FromPropertyInfo(property));
@@ -234,7 +280,7 @@ namespace Realms.Schema
             /// Constructs an <see cref="ObjectSchema"/> from the properties added to this <see cref="Builder"/>.
             /// </summary>
             /// <returns>An immutable <see cref="ObjectSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
-            public ObjectSchema Build() => new ObjectSchema(Name, IsEmbedded, _values) { Type = Type };
+            public ObjectSchema Build() => new ObjectSchema(Name, RealmSchemaType, _values) { Type = Type };
 
             /// <summary>
             /// Adds a new <see cref="Property"/> to this <see cref="Builder"/>.

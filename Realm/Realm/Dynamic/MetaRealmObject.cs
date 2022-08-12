@@ -29,6 +29,7 @@ using Realms.Schema;
 
 namespace Realms.Dynamic
 {
+    // TODO andrea: this class may need adjustment as there are no tests written yet
     internal class MetaRealmObject : DynamicMetaObject
     {
         private const BindingFlags PrivateBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -98,7 +99,7 @@ namespace Realms.Dynamic
                     PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<ObjectId?>) : GetGetMethod(DummyHandle.GetList<ObjectId>),
                     PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Decimal128?>) : GetGetMethod(DummyHandle.GetList<Decimal128>),
                     PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetList<Guid?>) : GetGetMethod(DummyHandle.GetList<Guid>),
-                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetList<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetList<DynamicRealmObject>),
+                    PropertyType.Object => GetObjectGetCollectionMethod(property, CollectionType.List),
                     _ => throw new NotSupportedException($"Unable to get a list of {property.Type.UnderlyingType()}."),
                 };
             }
@@ -117,7 +118,7 @@ namespace Realms.Dynamic
                     PropertyType.String => GetGetMethod(DummyHandle.GetSet<string>),
                     PropertyType.Data => GetGetMethod(DummyHandle.GetSet<byte[]>),
                     PropertyType.Date => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetSet<DateTimeOffset>),
-                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetSet<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetSet<DynamicRealmObject>),
+                    PropertyType.Object => GetObjectGetCollectionMethod(property, CollectionType.Set),
                     PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<ObjectId?>) : GetGetMethod(DummyHandle.GetSet<ObjectId>),
                     PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Decimal128?>) : GetGetMethod(DummyHandle.GetSet<Decimal128>),
                     PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetSet<Guid?>) : GetGetMethod(DummyHandle.GetSet<Guid>),
@@ -139,7 +140,7 @@ namespace Realms.Dynamic
                     PropertyType.String => GetGetMethod(DummyHandle.GetDictionary<string>),
                     PropertyType.Data => GetGetMethod(DummyHandle.GetDictionary<byte[]>),
                     PropertyType.Date => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<DateTimeOffset?>) : GetGetMethod(DummyHandle.GetDictionary<DateTimeOffset>),
-                    PropertyType.Object => IsTargetEmbedded(property) ? GetGetMethod(DummyHandle.GetDictionary<DynamicEmbeddedObject>) : GetGetMethod(DummyHandle.GetDictionary<DynamicRealmObject>),
+                    PropertyType.Object => GetObjectGetCollectionMethod(property, CollectionType.Dictionary),
                     PropertyType.ObjectId => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<ObjectId?>) : GetGetMethod(DummyHandle.GetDictionary<ObjectId>),
                     PropertyType.Decimal => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<Decimal128?>) : GetGetMethod(DummyHandle.GetDictionary<Decimal128>),
                     PropertyType.Guid => property.Type.IsNullable() ? GetGetMethod(DummyHandle.GetDictionary<Guid?>) : GetGetMethod(DummyHandle.GetDictionary<Guid>),
@@ -160,6 +161,7 @@ namespace Realms.Dynamic
 
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
+                // no AsymmetricObjects involved here
                 expression = IsTargetEmbedded(property)
                     ? Expression.Call(RealmObjectGetBacklinksForHandle_EmbeddedObject, self, Expression.Constant(binder.Name), expression)
                     : Expression.Call(RealmObjectGetBacklinksForHandle_RealmObject, self, Expression.Constant(binder.Name), expression);
@@ -170,7 +172,7 @@ namespace Realms.Dynamic
                 Type targetType;
                 if (property.Type.UnderlyingType() == PropertyType.Object)
                 {
-                    targetType = IsTargetEmbedded(property) ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject);
+                    targetType = GetDynamicObjectType(property);
                 }
                 else
                 {
@@ -226,7 +228,7 @@ namespace Realms.Dynamic
 
         private BindingRestrictions GetBindingRestrictions(Expression self)
         {
-            var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, _metadata.Schema.IsEmbedded ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject));
+            var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, GetDynamicObjectType(_metadata.Schema));
             var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Property(self, RealmObjectRealmProperty), _realm);
             var argumentShouldBeTheSameType = BindingRestrictions.GetExpressionRestriction(
                 Expression.Equal(
@@ -261,7 +263,59 @@ namespace Realms.Dynamic
                 throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
             }
 
-            return metadata.Schema.IsEmbedded;
+            return metadata.Schema.RealmSchemaType == ObjectSchema.ObjectSchemaType.Embedded;
+        }
+
+        private static Type GetDynamicObjectType(ObjectSchema schema) =>
+            schema.RealmSchemaType switch
+            {
+                ObjectSchema.ObjectSchemaType.TopLevel => typeof(DynamicRealmObject),
+                ObjectSchema.ObjectSchemaType.Embedded => typeof(DynamicEmbeddedObject),
+                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => typeof(DynamicAsymmetricObject),
+                _ => throw new NotSupportedException($"{schema.RealmSchemaType} not supported yet."),
+            };
+
+        private Type GetDynamicObjectType(Property property)
+        {
+            if (!_realm.Metadata.TryGetValue(property.ObjectType, out var metadata))
+            {
+                throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
+            }
+
+            return GetDynamicObjectType(metadata.Schema);
+        }
+
+        private MethodInfo GetObjectGetCollectionMethod(Property property, CollectionType collectionType)
+        {
+            if (!_realm.Metadata.TryGetValue(property.ObjectType, out var metadata))
+            {
+                throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
+            }
+
+            return metadata.Schema.RealmSchemaType switch
+            {
+                ObjectSchema.ObjectSchemaType.TopLevel => GetCollectionGetter<DynamicRealmObject>(collectionType),
+                ObjectSchema.ObjectSchemaType.Embedded => GetCollectionGetter<DynamicEmbeddedObject>(collectionType),
+                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => GetCollectionGetter<DynamicAsymmetricObject>(collectionType),
+                _ => throw new NotSupportedException($"{metadata.Schema.RealmSchemaType} not supported yet."),
+            };
+
+            MethodInfo GetCollectionGetter<T>(CollectionType collectionType)
+                where T : IDynamicMetaObjectProvider =>
+                collectionType switch
+                {
+                    CollectionType.List => GetGetMethod(DummyHandle.GetList<T>),
+                    CollectionType.Set => GetGetMethod(DummyHandle.GetSet<T>),
+                    CollectionType.Dictionary => GetGetMethod(DummyHandle.GetDictionary<T>),
+                    _ => throw new NotSupportedException($"Collection {collectionType} not supported yet."),
+                };
+        }
+
+        private enum CollectionType
+        {
+            List = 0,
+            Set = 1,
+            Dictionary = 2,
         }
 
         // GetBacklinks(propertyIndex)

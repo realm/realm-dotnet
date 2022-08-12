@@ -184,10 +184,10 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
-        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null, FlexibleSyncConfiguration flxConfig = null)
         {
-            var config = await GetFLXIntegrationConfigAsync(app);
-            return await GetRealmAsync(config);
+            flxConfig ??= await GetFLXIntegrationConfigAsync(app);
+            return await GetRealmAsync(flxConfig);
         }
 
         private static T UpdateConfig<T>(T config)

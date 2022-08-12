@@ -385,9 +385,17 @@ Analytics payload
             }
 
             var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
-            if (backlinkAttribute != null && !prop.IsIQueryable())
+            if (backlinkAttribute != null)
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
+                if (!prop.IsIQueryable())
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
+                }
+
+                if (type.IsAsymmetricObjectDescendant(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied which is not allowed on AsymmetricObject.");
+                }
             }
 
             if (_realmValueTypes.Contains(prop.PropertyType.FullName))
@@ -418,6 +426,10 @@ Analytics payload
                     {
                         return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                     }
+                }
+                else if (elementType.IsAsymmetricObjectDescendant(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in {type.BaseType.ToString().Split('.').Last()}.");
                 }
 
                 if (prop.SetMethod != null)
@@ -451,6 +463,10 @@ Analytics payload
                                             new GenericInstanceMethod(_references.RealmObject_GetDictionaryValue) { GenericArguments = { elementType } });
                         break;
                 }
+            }
+            else if (prop.ContainsAsymmetricObject(_references))
+            {
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be contained in {type.BaseType.ToString().Split('.').Last()}.");
             }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {

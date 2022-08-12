@@ -359,7 +359,7 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Id", "PartitionLike" },
                     permissions = new
                     {
                         rules = new { },

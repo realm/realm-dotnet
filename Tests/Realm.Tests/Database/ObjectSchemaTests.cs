@@ -498,7 +498,8 @@ namespace Realms.Tests.Database
         {
             var builder = new ObjectSchema.Builder(typeof(ClassWithUnqueryableMembers));
             Assert.That(builder.Name, Is.EqualTo(nameof(ClassWithUnqueryableMembers)));
-            Assert.That(builder.IsEmbedded, Is.False);
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
 
             Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicField)), Is.False);
             Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicMethod)), Is.False);
@@ -521,7 +522,8 @@ namespace Realms.Tests.Database
         {
             var builder = new ObjectSchema.Builder(typeof(PrimaryKeyGuidObject));
             Assert.That(builder.Name, Is.EqualTo(nameof(PrimaryKeyGuidObject)));
-            Assert.That(builder.IsEmbedded, Is.False);
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
 
             Assert.That(builder.Count, Is.EqualTo(1));
 
@@ -548,7 +550,7 @@ namespace Realms.Tests.Database
 
             Assert.That(schema.Count, Is.Zero);
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
-            Assert.That(schema.IsEmbedded, Is.True);
+            Assert.That(builder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
         }
 
         [Test]
@@ -822,8 +824,9 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
-            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
             Assert.That(schema.Type, Is.EqualTo(type));
+            Assert.That(schema.RealmSchemaType == ObjectSchema.ObjectSchemaType.Embedded,
+                Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
         }
 
         [Test]
@@ -832,7 +835,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(RemappedTypeObject));
 
             Assert.That(schema.Name, Is.EqualTo("__RemappedTypeObject"));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
             Assert.That(schema.TryFindProperty("__mappedLink", out var remappedProp), Is.True);
             Assert.That(remappedProp.Type, Is.EqualTo(PropertyType.Object | PropertyType.Nullable));
             Assert.That(remappedProp.ObjectType, Is.EqualTo("__RemappedTypeObject"));
@@ -844,7 +848,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject));
 
             Assert.That(schema.Name, Is.EqualTo(nameof(PrimaryKeyStringObject)));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
             Assert.That(schema.PrimaryKeyProperty, Is.Not.Null);
             Assert.That(schema.PrimaryKeyProperty.Value.IsPrimaryKey, Is.True);
             Assert.That(schema.PrimaryKeyProperty.Value.Type, Is.EqualTo(PropertyType.NullableString));
@@ -884,7 +889,8 @@ namespace Realms.Tests.Database
 
             Assert.That(originalSchema, Is.EquivalentTo(builder));
             Assert.That(originalSchema.Name, Is.EqualTo(builder.Name));
-            Assert.That(originalSchema.IsEmbedded, Is.EqualTo(builder.IsEmbedded));
+            Assert.That(originalSchema.RealmSchemaType == ObjectSchema.ObjectSchemaType.Embedded,
+                Is.EqualTo(builder.RealmSchemaType == ObjectSchema.ObjectSchemaType.Embedded));
         }
 
         [Test]
@@ -1504,7 +1510,8 @@ namespace Realms.Tests.Database
         {
             var schema = builder.Build();
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.Embedded));
+            Assert.That(schema.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric));
             Assert.That(schema.Count, Is.EqualTo(expectedProperties.Length));
 
             foreach (var prop in expectedProperties)

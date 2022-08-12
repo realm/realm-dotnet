@@ -26,6 +26,7 @@ using Realms.Helpers;
 
 namespace Realms.Schema
 {
+    // TODO andrea: this documentation needs to be updated to mention asymmetric objects
     /// <summary>
     /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or,
     /// dynamically, by evaluating a Realm from disk. To construct a new <see cref="RealmSchema"/> instance, use the
@@ -77,9 +78,9 @@ namespace Realms.Schema
 
             foreach (var type in types)
             {
-                if (!type.IsRealmObject() && !type.IsEmbeddedObject())
+                if (!type.IsRealmObject() && !type.IsEmbeddedObject() && !type.IsAsymmetricObject())
                 {
-                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject or EmbeddedObject to be used in the Realm schema.");
+                    throw new ArgumentException($"The type {type.FullName} must inherit directly from RealmObject, AsymmetricObject or EmbeddedObject to be used in the Realm schema.");
                 }
 
                 if (_defaultTypes.Add(type) &&
@@ -176,7 +177,7 @@ namespace Realms.Schema
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                var osBuilder = new ObjectSchema.Builder(objectSchema.name, objectSchema.is_embedded);
+                var osBuilder = new ObjectSchema.Builder(objectSchema.name, (ObjectSchema.ObjectSchemaType)objectSchema.table_type);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {

@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Realms.Schema;
 
 namespace Realms
 {
@@ -47,7 +48,25 @@ namespace Realms
 
         public static bool IsEmbeddedObject(this Type type) => typeof(IEmbeddedObject).IsAssignableFrom(type);
 
+        public static bool IsAsymmetricObject(this Type type) => typeof(IAsymmetricObject).IsAssignableFrom(type);
+
         public static bool IsRealmObject(this Type type) => typeof(IRealmObject).IsAssignableFrom(type);
+
+        public static ObjectSchema.ObjectSchemaType GetRealmSchemaType(this Type type)
+        {
+            if (type.IsAsymmetricObject())
+            {
+                return ObjectSchema.ObjectSchemaType.TopLevelAsymmetric;
+            }
+            else if (type.IsEmbeddedObject())
+            {
+                return ObjectSchema.ObjectSchemaType.Embedded;
+            }
+            else
+            {
+                return ObjectSchema.ObjectSchemaType.TopLevel;
+            }
+        }
 
         public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }
