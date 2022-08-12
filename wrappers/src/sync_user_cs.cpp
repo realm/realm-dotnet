@@ -146,7 +146,7 @@ extern "C" {
         return handle_errors(ex, [&] {
             if (user->custom_data()) {
                 is_null = false;
-                std::string serialized_data = bson::Bson(user->custom_data().value()).to_string();
+                std::string serialized_data = bson::Bson(*user->custom_data()).to_string();
                 return stringdata_to_csharpstringbuffer(serialized_data, buffer, buffer_length);
             }
 
@@ -215,7 +215,7 @@ extern "C" {
                 return (size_t)0;
             }
 
-            return stringdata_to_csharpstringbuffer(field.value(), string_buffer, buffer_size);
+            return stringdata_to_csharpstringbuffer(*field, string_buffer, buffer_size);
         });
     }
 
