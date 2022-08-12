@@ -30,7 +30,7 @@ using RealmClassGeneratorVerifier = Realms.Tests.SourceGeneration.CSharpSourceGe
 
 namespace Realms.Tests.SourceGeneration
 {
-    public abstract class SourceGenerationTest
+    internal abstract class SourceGenerationTest
     {
         private string _testClassesPath;
 
@@ -156,31 +156,6 @@ namespace Realms.Tests.SourceGeneration
             }
 
             return dr;
-        }
-
-        //TODO Can we keep this in one place? (it's in the source generators project)
-        public class DiagnosticInfo
-        {
-            public string Id { get; set; }
-
-            public DiagnosticSeverity Severity { get; set; }
-
-            public string Message { get; set; }
-
-            public DiagnosticLocation Location { get; set; }
-        }
-
-        public class DiagnosticLocation
-        {
-            public string Path { get; set; }
-
-            public int StartLine { get; set; }
-
-            public int StartColumn { get; set; }
-
-            public int EndLine { get; set; }
-
-            public int EndColumn { get; set; }
         }
     }
 }
