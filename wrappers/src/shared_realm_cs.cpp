@@ -261,7 +261,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 std::vector<SchemaProperty> schema_properties;
 
                 for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
                 }
 
                 SchemaForMarshaling schema_for_marshaling {
@@ -635,7 +635,7 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
         std::vector<SchemaProperty> schema_properties;
 
         for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
         }
 
         s_get_native_schema(SchemaForMarshaling {
