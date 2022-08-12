@@ -11,7 +11,7 @@ namespace Realms.SourceGenerator
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            if (context.Node is not ClassDeclarationSyntax cds)// || cds.Identifier.ToString() != "TestClass")
+            if (context.Node is not ClassDeclarationSyntax cds)
             {
                 return;
             }

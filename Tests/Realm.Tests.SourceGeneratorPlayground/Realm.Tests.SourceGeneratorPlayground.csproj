@@ -19,10 +19,6 @@
 
 		<!-- Useful for testing, so we don't get all the unnecessary compiler errors -->
 		<Compile Remove="ErrorClasses/*.cs" />
-
-
-	</ItemGroup>
-	<ItemGroup>
 	</ItemGroup>
 </Project>
 
