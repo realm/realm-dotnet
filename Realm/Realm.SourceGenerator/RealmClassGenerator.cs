@@ -393,6 +393,7 @@ namespace Realms.SourceGenerator
             var serializedJson = Diagnostics.GetSerializedDiagnostics(classInfo.Diagnostics);
             if (!string.IsNullOrEmpty(serializedJson))
             {
+                // Discussion about emitting non-source files: https://github.com/dotnet/roslyn/issues/57608
                 context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
             }
         }

@@ -34,6 +34,8 @@ namespace Realms.Tests.SourceGeneration
             public Test()
             {
                 TestState.AdditionalReferences.Add(typeof(Realm).Assembly.Location);
+                //TestState.ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies
+                //    .Default.WithAssemblies(ImmutableArray.Create(typeof(Realm).Assembly.Location));
 
                 // Removes the emission of the usual compiler diagnostics
                 CompilerDiagnostics = Microsoft.CodeAnalysis.Testing.CompilerDiagnostics.None;

@@ -27,7 +27,7 @@ namespace SourceGeneratorPlayground
 
         public string Name { get; set; }
 
-        [Backlink("Owner")]
+        [Realms.Backlink(nameof(Dog.Owner))]
         public IQueryable<Dog> Dogs { get; }
     }
 
