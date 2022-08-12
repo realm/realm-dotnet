@@ -21,6 +21,8 @@ using System.ComponentModel;
 
 namespace Realms
 {
+
+    //TODO Add documentation
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class)]
     public class GeneratedAttribute : Attribute

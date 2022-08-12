@@ -104,8 +104,6 @@ namespace Realms.SourceGenerator
 
         public static string ToReadableName(this ITypeSymbol symbol)
         {
-            //Better to have it in one place, in case we want to modify how it looks
-
             // This has also the complete namespace
             // We can use also ToMinimalDisplayString, but it requires the semantic model;
             return symbol.ToDisplayString();
