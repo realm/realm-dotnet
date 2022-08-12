@@ -22,24 +22,28 @@ using Realms;
 using Realms.Weaving;
 using Realms.Generated;
 using Realms.Schema;
+using MongoDB.Bson;
 using SourceGeneratorPlayground;
 
 namespace SourceGeneratorPlayground
 {
-   
-    [Woven(typeof(BacklinkClassObjectHelper))]
-    public partial class BacklinkClass : IRealmObject, INotifyPropertyChanged
+
+    [Generated]
+    [Woven(typeof(PersonObjectHelper))]
+    public partial class Person : IRealmObject, INotifyPropertyChanged
     {
 
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
         {
-            Property.Object("InverseLink", "UnsupportedBacklink"),
+            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Backlinks("Dogs", "Dog", "Owner"),
 
         }.Build();
 
         #region IRealmObject implementation
 
-        private IBacklinkClassAccessor _accessor;
+        private IPersonAccessor _accessor;
 
         public IRealmAccessor Accessor => _accessor;
 
@@ -53,21 +57,22 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public BacklinkClass()
+        public Person()
         {
-            _accessor = new BacklinkClassUnmanagedAccessor(typeof(BacklinkClassObjectHelper));
+            _accessor = new PersonUnmanagedAccessor(typeof(PersonObjectHelper));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var unmanagedAccessor = _accessor;
-            _accessor = (BacklinkClassManagedAccessor)managedAccessor;
+            _accessor = (PersonManagedAccessor)managedAccessor;
 
             if (helper != null)
             {
 
 
-                InverseLink = unmanagedAccessor.InverseLink;
+                Id = unmanagedAccessor.Id;
+                Name = unmanagedAccessor.Name;
 
             }
 
@@ -125,6 +130,10 @@ namespace SourceGeneratorPlayground
         {
             _accessor.UnsubscribeFromNotifications();
         }
+
+        public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
+
+        public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
     }
 }
 
@@ -132,64 +141,99 @@ namespace Realms.Generated
 {
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class BacklinkClassObjectHelper : IRealmObjectHelper
+    internal class PersonObjectHelper : IRealmObjectHelper
     {
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
         {
             throw new InvalidOperationException("This method should not be called for source generated classes.");
         }
 
-        public ManagedAccessor CreateAccessor() => new BacklinkClassManagedAccessor();
+        public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
 
         public IRealmObjectBase CreateInstance()
         {
-            return new BacklinkClass();
+            return new Person();
         }
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = null;
-            return false;
+            value = ((IPersonAccessor)instance.Accessor).Id;
+            return true;
         }
     }
 
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IBacklinkClassAccessor : IRealmAccessor
+    internal interface IPersonAccessor : IRealmAccessor
     {
-        UnsupportedBacklink InverseLink { get; set; }
+        int Id { get; set; }
+
+        string Name { get; set; }
+
+        IQueryable<Dog> Dogs { get; }
+
+
     }
 
     
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class BacklinkClassManagedAccessor : ManagedAccessor, IBacklinkClassAccessor
+    internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
     {
-        public UnsupportedBacklink InverseLink
+        public int Id
         {
-            get => (UnsupportedBacklink)GetValue("InverseLink");
-            set => SetValue("InverseLink", value);
+            get => (int)GetValue("Id");
+            set => SetValueUnique("Id", value);
         }
-
-
-    }
-
-    
-    internal class BacklinkClassUnmanagedAccessor : UnmanagedAccessor, IBacklinkClassAccessor
-    {
-        private UnsupportedBacklink _inverseLink;
-        public UnsupportedBacklink InverseLink
+        public string Name
         {
-            get => _inverseLink;
-            set
+            get => (string)GetValue("Name");
+            set => SetValue("Name", value);
+        }
+        private IQueryable<Dog> _dogs;
+        public IQueryable<Dog> Dogs
+        {
+            get
             {
-                _inverseLink = value;
-                RaisePropertyChanged("InverseLink");
+                if(_dogs == null)
+                {
+                    _dogs = GetBacklinks<Dog>("Dogs");
+                }
+
+                return _dogs;
             }
         }
 
 
+    }
 
-        public BacklinkClassUnmanagedAccessor(Type objectType) : base(objectType)
+    
+    internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
+    {
+        private int _id;
+        public int Id
+        {
+            get => _id;
+            set
+            {
+                _id = value;
+                RaisePropertyChanged("Id");
+            }
+        }
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                RaisePropertyChanged("Name");
+            }
+        }
+        public IQueryable<Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+
+
+
+        public PersonUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
@@ -197,7 +241,9 @@ namespace Realms.Generated
         {
             return propertyName switch
             {
-                "InverseLink" => _inverseLink,
+                "Id" => _id,
+                "Name" => _name,
+                "Dogs" =>  throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
 
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
@@ -207,8 +253,10 @@ namespace Realms.Generated
         {
             switch (propertyName)
             {
-                case "InverseLink":
-                    InverseLink = (UnsupportedBacklink)val;
+                case "Id":
+                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                case "Name":
+                    Name = (string)val;
                     return;
 
                 default:
@@ -218,7 +266,12 @@ namespace Realms.Generated
 
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            if (propertyName != "Id")
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            Id = (int)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
