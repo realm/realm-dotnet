@@ -290,6 +290,7 @@ namespace Realms.Sync
 
         public static bool operator !=(User user1, User user2) => !(user1 == user2);
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return $"User {Id}, State: {State}, Provider: {Provider}";
