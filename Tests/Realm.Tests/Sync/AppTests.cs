@@ -17,9 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
@@ -161,21 +164,23 @@ namespace Realms.Tests.Sync
             });
         }
 
-#if !NETFRAMEWORK || NET471_OR_GREATER
+        private class TestHttpClientHandler : HttpClientHandler
+        {
+            public readonly List<(HttpMethod Method, string Url)> Requests = new();
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                Requests.Add((request.Method, request.RequestUri.AbsoluteUri));
+                return base.SendAsync(request, cancellationToken);
+            }
+        }
+
         [Test]
         public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var validationInvoked = false;
-                var handler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = (message, certificate, chain, policyErrors) =>
-                    {
-                        validationInvoked = true;
-                        return true;
-                    }
-                };
+                var handler = new TestHttpClientHandler();
 
                 var app = CreateApp(new AppConfiguration("abc")
                 {
@@ -187,13 +192,16 @@ namespace Realms.Tests.Sync
                 // Http error
                 Assert.That(ex.Message, Does.Contain("cannot find app"));
 
-                // We rejected the SSL connection, so there should be no response from the server
+                // The app doesn't exist, so we expect 404
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 
-                Assert.That(validationInvoked, Is.True);
+                Assert.That(handler.Requests.Count, Is.EqualTo(1));
+
+                // https://realm.mongodb.com/api/client/v2.0/app/abc/location
+                Assert.That(handler.Requests[0].Method, Is.EqualTo(HttpMethod.Get));
+                Assert.That(handler.Requests[0].Url, Does.Contain("abc/location"));
             });
         }
-#endif
 
         [Test]
         public void RealmConfiguration_HttpClientHandler_IsNotSet()
