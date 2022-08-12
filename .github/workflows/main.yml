@@ -25,11 +25,11 @@ jobs:
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid", "maccatalyst"]'
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -92,10 +92,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-uwp-managed:
     uses: ./.github/workflows/test-uwp-managed.yml
     name: Test
@@ -107,10 +107,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       Pfx_Password: ${{ secrets.Pfx_Password }}
       Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
@@ -133,10 +133,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-ios:
     uses: ./.github/workflows/test-ios.yml
     name: Test
@@ -148,10 +148,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-xamarinandroid:
     uses: ./.github/workflows/test-xamarinandroid.yml
     name: Test
@@ -163,10 +163,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
       AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
@@ -227,10 +227,10 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   benchmark-linux:
     name: Benchmark Linux
     needs: build-packages
@@ -301,12 +301,12 @@ jobs:
     - test-net-framework
     - test-code-coverage
     - test-uwp-managed
-    - test-xamarinmacos
+    - test-macos
     - test-ios
     - test-xamarinandroid
     secrets:
-      AtlasProjectId: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}
-      BaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}
-      AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
-      AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
-      AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
