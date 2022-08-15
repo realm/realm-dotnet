@@ -164,7 +164,11 @@ namespace Realms.Tests.Sync
             });
         }
 
+#if MONOANDROID
+        private class TestHttpClientHandler : Xamarin.Android.Net.AndroidClientHandler
+#else
         private class TestHttpClientHandler : HttpClientHandler
+#endif
         {
             public readonly List<(HttpMethod Method, string Url)> Requests = new();
 
