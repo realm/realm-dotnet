@@ -1,4 +1,4 @@
-// ////////////////////////////////////////////////////////////////////////////
+﻿// ////////////////////////////////////////////////////////////////////////////
 // //
 // // Copyright 2022 Realm Inc.
 // //
@@ -16,19 +16,31 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-namespace Realm.SourceGenerator.Tests
+using System.Threading.Tasks;
+using NUnit.Framework;
+
+namespace SourceGeneratorTests
 {
-    public class Tests
+    //TODO Move them out, we don't need to test them on each platform
+    [TestFixture]
+    internal class ComparisonTests : SourceGenerationTest
     {
-        [SetUp]
-        public void Setup()
+        [TestCase("AllTypesClass")]
+        public async Task SimpleComparisonTest(string className)
         {
+            await RunSimpleComparisonTest(className);
+        }
+
+        [TestCase("PersonWithDog", "Person", "Dog")]
+        public async Task ComparisonTest(string filename, params string[] classNames)
+        {
+            await RunComparisonTest(filename, classNames);
         }
 
         [Test]
-        public void Test1()
+        public async Task ErrorTest()
         {
-            Assert.Pass();
+            await RunSimpleErrorTest("NoPartialClass");
         }
     }
 }
