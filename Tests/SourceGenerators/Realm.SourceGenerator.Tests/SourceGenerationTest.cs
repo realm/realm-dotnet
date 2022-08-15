@@ -40,7 +40,7 @@ namespace SourceGeneratorTests
         public void Setup()
         {
             var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location);
-            var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.Tests", StringComparison.InvariantCulture));
+            var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
             _testClassesPath = Path.Combine(testFolder, "Realm.Tests.SourceGeneratorPlayground");
             _generatedFilesPath = Path.Combine(_testClassesPath, "Generated",
                 "Realm.SourceGenerator", "Realms.SourceGenerator.RealmClassGenerator");
