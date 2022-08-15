@@ -285,9 +285,9 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
-                        syncConfig.ClientResetHandler is AutomaticRecoveryHandler ||
-                        syncConfig.ClientResetHandler is AutomaticOrDiscardRecoveryHandler ||
+                    if (syncConfig.ClientResetHandler is DiscardUnsyncedChangesHandler ||
+                        syncConfig.ClientResetHandler is RecoverUnsyncedChangesHandler ||
+                        syncConfig.ClientResetHandler is RecoverOrDiscardUnsyncedChangesHandler ||
                         syncConfig.ClientResetHandler.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
@@ -330,15 +330,18 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
         private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
+            ClientResetHandlerBase.BeforeResetCallback cb = null;
+            SyncConfigurationBase syncConfig = null;
+
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-                var cb = syncConfig.ClientResetHandler switch
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                cb = syncConfig.ClientResetHandler switch
                 {
-                    DiscardLocalResetHandler handler => handler.OnBeforeReset,
-                    AutomaticRecoveryHandler handler => handler.OnBeforeReset,
-                    AutomaticOrDiscardRecoveryHandler handler => handler.OnBeforeReset,
+                    DiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
+                    RecoverUnsyncedChangesHandler handler => handler.OnBeforeReset,
+                    RecoverOrDiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
@@ -351,7 +354,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnBeforeReset during a client reset: {ex}");
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {syncConfig.ClientResetHandler.GetType().Name}.{cb.GetType().Name} during a client reset: {ex}");
                 return false;
             }
 
@@ -361,16 +364,19 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
         private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
         {
+            ClientResetHandlerBase.AfterResetCallback cb = null;
+            SyncConfigurationBase syncConfig = null;
+
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-                var cb = syncConfig.ClientResetHandler switch
+                cb = syncConfig.ClientResetHandler switch
                 {
-                    DiscardLocalResetHandler handler => handler.OnAfterReset,
-                    AutomaticRecoveryHandler handler => handler.OnAfterReset,
-                    AutomaticOrDiscardRecoveryHandler handler => didRecover ? handler.OnAfterAutomaticReset : handler.OnAfterDiscardLocalReset,
+                    DiscardUnsyncedChangesHandler handler => handler.OnAfterReset,
+                    RecoverUnsyncedChangesHandler handler => handler.OnAfterReset,
+                    RecoverOrDiscardUnsyncedChangesHandler handler => didRecover ? handler.OnAfterRecovery : handler.OnAfterDiscard,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
@@ -384,7 +390,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnAfterReset during a client reset: {ex}");
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {syncConfig.ClientResetHandler.GetType().Name}.{cb.GetType().Name} during a client reset: {ex}");
                 return false;
             }
 

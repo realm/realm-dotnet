@@ -21,8 +21,8 @@ namespace Realms.Sync
     internal enum ClientResyncMode : byte
     {
         Manual = 0,
-        DiscardLocal = 1,
-        AutomaticRecovery = 2,
-        AutomaticRecoveryOrDiscardLocal = 3,
+        Discard = 1,
+        Recover = 2,
+        RecoverOrDiscard = 3,
     }
 }
