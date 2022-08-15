@@ -383,6 +383,7 @@ namespace Realms.SourceGenerator
 
         public static string GetSerializedDiagnostics(IEnumerable<Diagnostic> diagnostics)
         {
+            //TODO Check why we don't use System.Json
 #if DEBUG
             if (Environment.GetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS") != null)
             {

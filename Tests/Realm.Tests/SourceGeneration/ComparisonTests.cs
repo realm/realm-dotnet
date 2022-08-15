@@ -21,8 +21,9 @@ using NUnit.Framework;
 
 namespace Realms.Tests.SourceGeneration
 {
+    //TODO Move them out, we don't need to test them on each platform
     [TestFixture, Preserve(AllMembers = true)]
-    public class ComparisonTests : SourceGenerationTest
+    internal class ComparisonTests : SourceGenerationTest
     {
         [TestCase("AllTypesClass")]
         public async Task SimpleComparisonTest(string className)
@@ -30,7 +31,7 @@ namespace Realms.Tests.SourceGeneration
             await RunSimpleComparisonTest(className);
         }
 
-        [TestCase("PersonWithDog")]
+        [TestCase("PersonWithDog", "Person", "Dog")]
         public async Task ComparisonTest(string filename, params string[] classNames)
         {
             await RunComparisonTest(filename, classNames);

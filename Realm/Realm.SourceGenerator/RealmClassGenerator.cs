@@ -18,6 +18,8 @@ namespace Realms.SourceGenerator
          * - Full nullability support
          */
 
+        //TODO Add comment on what to install for launch profile
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
