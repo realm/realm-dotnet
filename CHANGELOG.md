@@ -16,11 +16,11 @@
       },
       OnAfterRecovery = (beforeFrozen, after) =>
       {
-        // executed right after an automatic client reset has completed
+        // executed right after an automatic recovery from a client reset has completed
       },
       OnAfterDiscard = (beforeFrozen, after) =>
       {
-        // executed after an automatic client reset has failed but a discard local one has completed
+        // executed after an automatic recovery from a client reset has failed but the DiscardUnsyncedChanges fallback has completed
       },
       ManualResetFallback = (session, err) =>
       {
