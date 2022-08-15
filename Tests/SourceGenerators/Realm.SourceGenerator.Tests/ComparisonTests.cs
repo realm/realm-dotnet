@@ -16,12 +16,8 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System.Threading.Tasks;
-using NUnit.Framework;
-
 namespace SourceGeneratorTests
 {
-    //TODO Move them out, we don't need to test them on each platform
     [TestFixture]
     internal class ComparisonTests : SourceGenerationTest
     {
