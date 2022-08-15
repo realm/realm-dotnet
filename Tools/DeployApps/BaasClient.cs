@@ -421,8 +421,8 @@ namespace Baas
             config[syncType]["is_recovery_mode_disabled"] = !enabled;
 
             // An empty fragment with just the sync configuration is necessary,
-            // as the "conf" document that we retrieve has bunch of extra fields that we are supposed
-            // to be use/returne to the server when PATCH-ing
+            // as the "conf" document that we retrieve has a bunch of extra fields that we are supposed
+            // to be use/return to the server when PATCH-ing
             var fragment = new BsonDocument();
             fragment[syncType] = config[syncType];
 
