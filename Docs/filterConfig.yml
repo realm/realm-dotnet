@@ -15,6 +15,9 @@ apiRules:
     uidRegex: ^Realms\.PreserveAttribute$
     type: Type
 - exclude:
+    uidRegex: ^Realms\.GeneratedAttribute$
+    type: Type
+- exclude:
     uidRegex: ^Realms\.WovenAttribute$
     type: Type
 - exclude:

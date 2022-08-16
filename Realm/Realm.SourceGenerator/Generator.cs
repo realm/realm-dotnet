@@ -93,7 +93,7 @@ namespace Realms.Generated
                 propertiesBuilder.Append(propertyString);
                 propertiesBuilder.AppendLine().AppendLine();
             }
-            
+
             return $@"
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface {_accessorInterfaceName} : IRealmAccessor
@@ -152,7 +152,6 @@ namespace Realms.Generated
                 {{
                     {property.Name}.Add(val);
                 }}");
-
                 }
                 else if (property.TypeInfo.IsIQueryable)
                 {
@@ -196,7 +195,6 @@ namespace Realms.Generated
                 {{
 {skipDefaultsContent}
                 }}";
-
             }
 
             var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
@@ -403,7 +401,7 @@ namespace Realms.Generated
                     propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine();
 
-                    //GetValue
+                    // GetValue
                     getValueLines.AppendLine(@$"                ""{stringName}"" =>  throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
                 }
                 else 
@@ -425,10 +423,10 @@ namespace Realms.Generated
                     propertiesString.Append(propertyString);
                     propertiesString.AppendLine();
 
-                    //GetValue
+                    // GetValue
                     getValueLines.AppendLine(@$"                ""{stringName}"" => {backingFieldName},");
 
-                    //SetValue/SetValueUnique
+                    // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"                case ""{stringName}"":");
 
                     if (property.IsPrimaryKey)
@@ -450,11 +448,11 @@ namespace Realms.Generated
                 }
             }
 
-            //Properties
+            // Properties
 
             var propertyBody = propertiesString.ToString();
 
-            //GetValue
+            // GetValue
 
             string getValueBody;
 
@@ -471,7 +469,7 @@ namespace Realms.Generated
             }};";
             }
 
-            //SetValue
+            // SetValue
 
             string setValueBody;
 
@@ -489,7 +487,7 @@ namespace Realms.Generated
             }}";
             }
 
-            //SetValueUnique
+            // SetValueUnique
 
             if (setValueUniqueLines.Length == 0)
             {
@@ -498,7 +496,7 @@ namespace Realms.Generated
 
             var setValueUniqueBody = setValueUniqueLines.ToString();
 
-            //GetListValue
+            // GetListValue
 
             string getListValueBody;
 
@@ -515,7 +513,7 @@ namespace Realms.Generated
             }};";
             }
 
-            //GetSetValue
+            // GetSetValue
 
             string getSetValueBody;
 
@@ -532,7 +530,7 @@ namespace Realms.Generated
             }};";
             }
 
-            //GetDictionaryValue
+            // GetDictionaryValue
 
             string getDictionaryValueBody;
 
@@ -643,7 +641,6 @@ namespace Realms.Generated
         }}";
 
                     propertiesBuilder.AppendLine(propertyString);
-
                 }
                 else
                 {

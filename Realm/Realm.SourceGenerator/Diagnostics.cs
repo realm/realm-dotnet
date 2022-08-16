@@ -39,8 +39,7 @@ namespace Realms.SourceGenerator
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true,
-                description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}"
-                );
+                description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}");
 
             return Diagnostic.Create(descriptor, Location.None);
         }
@@ -53,8 +52,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                isEnabledByDefault: true
-                );
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -67,8 +65,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is a Realm class but it is not declared as partial",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                isEnabledByDefault: true
-                );
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -81,8 +78,7 @@ namespace Realms.SourceGenerator
                 $"{className} derives from another class and this is not yet supported",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                isEnabledByDefault: true
-                );
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -155,8 +151,7 @@ namespace Realms.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "[Required] cannot be used together with nullability annotations",
-                $"{className}.{propertyName} is marked as [Required], but the type {propertyType} supports nullability annotations. " +
-                $"Please use nullability annotations instead of the attribute.",
+                $"{className}.{propertyName} is marked as [Required], but the type {propertyType} supports nullability annotations. " + $"Please use nullability annotations instead of the attribute.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
@@ -191,7 +186,7 @@ namespace Realms.SourceGenerator
         {
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
-                "[Backlink] property must be of type IQueryable",
+                "[Backlink] property must be of type IQueryable<Type>",
                 $"{className}.{propertyName} has [Backlink] applied, but it's not IQueryable.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
@@ -244,7 +239,7 @@ namespace Realms.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "RealmInteger type is not allowed",
-                $"{className}.{propertyName} is a RealmInteger<{internalType}> which is not supported.",
+                $"{className}.{propertyName} is a RealmInteger<{internalType}> which is not supported. The type argument can be of type byte, short, int, or long.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
@@ -341,7 +336,7 @@ namespace Realms.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "Type not supported",
-                $"{className}.{propertyName} is a is a '{propertyType}' which is not yet supported.",
+                $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
                 isEnabledByDefault: true);
@@ -383,11 +378,11 @@ namespace Realms.SourceGenerator
 
         public static string GetSerializedDiagnostics(IEnumerable<Diagnostic> diagnostics)
         {
-            //TODO Check why we don't use System.Json
+            // TODO Check why we don't use System.Json
 #if DEBUG
             if (Environment.GetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS") != null)
             {
-                return null; 
+                return null;
             }
 
             var diagnosticInfos = diagnostics.Select(Convert);

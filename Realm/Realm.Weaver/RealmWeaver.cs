@@ -221,14 +221,7 @@ Analytics payload
 
                 try
                 {
-                    if (isGenerated)
-                    {
-                        return WeaveGeneratedType(type);
-                    }
-                    else
-                    {
-                        return WeaveType(type);
-                    }
+                    return isGenerated ? WeaveGeneratedType(type) : WeaveType(type);
                 }
                 catch (Exception e)
                 {

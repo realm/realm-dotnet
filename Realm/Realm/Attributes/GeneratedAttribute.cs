@@ -21,8 +21,9 @@ using System.ComponentModel;
 
 namespace Realms
 {
-
-    //TODO Add documentation
+    /// <summary>
+    /// An attribute that indicates that a class has been generated. It is applied automatically by the Source Generator and should not be used manually.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class)]
     public class GeneratedAttribute : Attribute

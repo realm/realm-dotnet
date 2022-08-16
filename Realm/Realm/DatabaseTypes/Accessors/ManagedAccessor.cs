@@ -247,6 +247,5 @@ namespace Realms
 
     internal class GenericManagedAccessor : ManagedAccessor
     {
-
     }
 }

@@ -144,7 +144,7 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        //TODO This is public to be able to have conversions defined on the generated classes
+        // TODO This is public to be able to have conversions defined on the generated classes
         public static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)

@@ -31,15 +31,15 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     {
         #region Original class
 
-        //public int Integer { get; set; }
+        // public int Integer { get; set; }
 
-        //public IList<int> IntegerList { get; }
+        // public IList<int> IntegerList { get; }
 
-        //[MapTo("_name")]
-        //public string Name { get; set; }
+        // [MapTo("_name")]
+        // public string Name { get; set; }
 
-        //[PrimaryKey]
-        //public int PKey { get; set; }
+        // [PrimaryKey]
+        // public int PKey { get; set; }
 
         #endregion
 
