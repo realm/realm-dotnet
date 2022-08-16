@@ -25,7 +25,7 @@ namespace Realms.SourceGenerator
 {
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
     {
-        public IList<(ClassDeclarationSyntax, ITypeSymbol)> RealmClasses { get; } = new List<(ClassDeclarationSyntax, ITypeSymbol)>();
+        public IList<(ClassDeclarationSyntax ClassSyntax, ITypeSymbol ClassSymbol)> RealmClasses { get; } = new List<(ClassDeclarationSyntax, ITypeSymbol)>();
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
@@ -36,7 +36,7 @@ namespace Realms.SourceGenerator
 
             var classSymbol = context.SemanticModel.GetDeclaredSymbol(cds) as ITypeSymbol;
 
-            //This looks for the interfaces of the base class too (recursively)
+            // This looks for the interfaces of the base class too (recursively)
             if (classSymbol.IsRealmObject() || classSymbol.IsEmbeddedObject())
             {
                 RealmClasses.Add((cds, classSymbol));

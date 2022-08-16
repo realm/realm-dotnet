@@ -25,7 +25,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Realms.SourceGenerator
 {
-    internal static class SymbolUtils
+    internal static class Utils
     {
         private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
         {
@@ -142,14 +142,10 @@ namespace Realms.SourceGenerator
             // "Identifier" points only to the class name
             return cds.Identifier.GetLocation();
         }
-    }
 
-    internal static class ExtensionUtils
-    {
         public static string ToCodeString(this bool boolean)
         {
             return boolean.ToString().ToLower();
         }
     }
-
 }
