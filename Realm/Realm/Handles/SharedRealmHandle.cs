@@ -734,7 +734,6 @@ namespace Realms
             {
                 tcsHandle.Free();
             }
-
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
@@ -837,7 +836,8 @@ namespace Realms
                 {
                     HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
                 }, null);
-            } else
+            }
+            else
             {
                 HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
             }
