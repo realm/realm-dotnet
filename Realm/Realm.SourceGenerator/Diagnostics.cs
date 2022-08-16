@@ -83,19 +83,6 @@ namespace Realms.SourceGenerator
             return Diagnostic.Create(descriptor, location);
         }
 
-        public static Diagnostic ObjectWithNoProperties(string className, Location location)
-        {
-            DiagnosticDescriptor descriptor = new
-                ("RLM005",
-                "Realm objects need to have properties",
-                $"Class {className} is a Realm object but has no persisted properties",
-                "RealmClassGeneration",
-                DiagnosticSeverity.Error,
-                isEnabledByDefault: true);
-
-            return Diagnostic.Create(descriptor, location);
-        }
-
         public static Diagnostic MultiplePrimaryKeys(string className, Location location)
         {
             DiagnosticDescriptor descriptor = new

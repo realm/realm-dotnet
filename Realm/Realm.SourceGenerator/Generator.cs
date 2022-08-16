@@ -208,7 +208,6 @@ namespace Realms.Generated
     [Woven(typeof({_helperClassName}))]
     public partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
     {{
-
 {schema}
 
         #region IRealmObject implementation

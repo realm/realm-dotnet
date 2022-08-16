@@ -92,13 +92,6 @@ namespace Realms.SourceGenerator
 
                     FillPropertyInfo(classInfo, propertiesSyntax, semanticModel);
 
-                    var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));  // TODO For testing
-
-                    if (!classInfo.Properties.Any())
-                    {
-                        classInfo.Diagnostics.Add(Diagnostics.ObjectWithNoProperties(classInfo.Name, classSyntax.GetIdentifierLocation()));
-                    }
-
                     if (classInfo.Properties.Count(p => p.IsPrimaryKey) > 1)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));

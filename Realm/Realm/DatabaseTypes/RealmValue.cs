@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -144,7 +145,7 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        // TODO This is public to be able to have conversions defined on the generated classes
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
