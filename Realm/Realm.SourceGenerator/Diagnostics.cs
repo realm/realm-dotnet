@@ -38,7 +38,7 @@ namespace Realms.SourceGenerator
                 $"There was an unexpected error during source generation of class {className}",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true,
+                isEnabledByDefault: true,
                 description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}"
                 );
 
@@ -53,7 +53,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true
+                isEnabledByDefault: true
                 );
 
             return Diagnostic.Create(descriptor, location);
@@ -67,7 +67,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is a Realm class but it is not declared as partial",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true
+                isEnabledByDefault: true
                 );
 
             return Diagnostic.Create(descriptor, location);
@@ -81,7 +81,7 @@ namespace Realms.SourceGenerator
                 $"{className} derives from another class and this is not yet supported",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true
+                isEnabledByDefault: true
                 );
 
             return Diagnostic.Create(descriptor, location);
@@ -95,7 +95,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is a Realm object but has no persisted properties",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -108,7 +108,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} has more than one property marked with [PrimaryKey].",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -121,7 +121,7 @@ namespace Realms.SourceGenerator
                 $"Class {className} is an EmbeddedObject but has a primary key defined on property {propertyName}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -134,7 +134,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {propertyType}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -143,10 +143,10 @@ namespace Realms.SourceGenerator
             DiagnosticDescriptor descriptor = new
                 ("REALM001",
                 "[Required] is only allowed on specific types",
-                $"{className}.{propertyName} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {propertyType}.",
+                $"{className}.{propertyName} is marked as [Required] which is only allowed on strings or byte[] types, not on {propertyType}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -159,7 +159,7 @@ namespace Realms.SourceGenerator
                 $"Please use nullability annotations instead of the attribute.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -171,7 +171,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has type {propertyType}, that does not support the assigned nullability annotiation.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -183,7 +183,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {propertyType}.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -195,7 +195,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has [Backlink] applied, but it's not IQueryable.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -208,7 +208,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has a setter but also has [Backlink] applied, which only supports getters.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -221,7 +221,7 @@ namespace Realms.SourceGenerator
                 $"The property '{elementType}.{inversePropertyName}' does not constitute a link to '{className}' as described by '{className}.{propertyName}'.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -234,7 +234,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is of type IQueryable, but the argument is not a realm object.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -247,7 +247,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is a RealmInteger<{internalType}> which is not supported.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -259,7 +259,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is an {collectionType}<RealmInteger> which is not supported.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -271,7 +271,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is an {collectionType} but its generic type is {elementType} which is not supported by Realm.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -283,7 +283,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has a setter but its type is a {collectionType} which only supports getters.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -295,7 +295,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName}  is a Dictionary<{keyType}, {valueType}> but only string keys are currently supported by Realm.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -307,7 +307,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -319,7 +319,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is declared as List which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList, otherwise annotate the property with the [Ignored] attribute.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
             return Diagnostic.Create(descriptor, location);
         }
 
@@ -331,7 +331,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is a DateTime which is not supported - use DateTimeOffset instead.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -344,7 +344,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is a is a '{propertyType}' which is not yet supported.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -361,7 +361,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Warning,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
@@ -374,7 +374,7 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has one or more Realm attributes applied, but it's not persisted, so those attributes will be ignored.",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Warning,
-                true);
+                isEnabledByDefault: true);
 
             return Diagnostic.Create(descriptor, location);
         }
