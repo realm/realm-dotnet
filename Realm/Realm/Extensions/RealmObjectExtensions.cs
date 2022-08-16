@@ -45,7 +45,7 @@ namespace Realms.Extensions
         }
 
         public static void CreateAndSetAccessor(this ISettableManagedAccessor iro,
-            ObjectHandle handle, Realm realm, Metadata metadata, 
+            ObjectHandle handle, Realm realm, Metadata metadata,
             bool copyToRealm = false, bool update = false, bool skipDefaults = false)
         {
             var accessor = metadata.Helper.CreateAccessor() ?? new GenericManagedAccessor();

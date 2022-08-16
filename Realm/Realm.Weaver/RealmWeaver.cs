@@ -502,7 +502,7 @@ Analytics payload
                 prop.PropertyType.FullName != StringTypeName &&
                 prop.PropertyType.FullName != ByteArrayTypeName)
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {prop.PropertyType.FullName}.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or byte[] types, not on {prop.PropertyType.FullName}.");
             }
 
             if (!prop.IsAutomatic())
