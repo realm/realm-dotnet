@@ -36,8 +36,7 @@ namespace Realms.SourceGenerator
          * - Full nullability support
          */
 
-        //TODO Add comment on what to install for launch profile
-
+        // TODO Add comment on what to install for launch profile
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
@@ -80,7 +79,7 @@ namespace Realms.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
-                    //General info
+                    // General info
                     classInfo.Namespace = classSymbol.ContainingNamespace.ToDisplayString();
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
@@ -88,12 +87,12 @@ namespace Realms.SourceGenerator
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.IsEmbedded = isEmbedded;
 
-                    //Properties
+                    // Properties
                     var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
 
                     FillPropertyInfo(classInfo, propertiesSyntax, semanticModel);
 
-                    var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));  //TODO For testing
+                    var props = string.Join(Environment.NewLine, classInfo.Properties.Select(t => t.Name + " " + t.TypeInfo.ToString()));  // TODO For testing
 
                     if (!classInfo.Properties.Any())
                     {
@@ -118,8 +117,7 @@ namespace Realms.SourceGenerator
                     var generatedSource = generator.GenerateSource();
 
                     // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
-                    //var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-
+                    // var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
                     var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
 
                     context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
@@ -132,7 +130,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        private static void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -226,7 +224,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -249,7 +247,7 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
                 }
 
-                return propertyType;  //We are sure we can't produce more diagnostics
+                return propertyType;  // We are sure we can't produce more diagnostics
             }
 
             if (!propertyType.SupportsNullability())
@@ -318,7 +316,7 @@ namespace Realms.SourceGenerator
                 }
                 else
                 {
-                    //List or Set
+                    // List or Set
                     argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
@@ -357,7 +355,7 @@ namespace Realms.SourceGenerator
             return propertyType;
         }
 
-        private PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
+        private static PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
         {
             var completeTypeSymbol = typeSymbol;
             var nullableAnnotation = typeSymbol.NullableAnnotation;
@@ -369,7 +367,7 @@ namespace Realms.SourceGenerator
                 }
                 else
                 {
-                    //This happens only when nullability annotations are enabled
+                    // This happens only when nullability annotations are enabled
                     typeSymbol = typeSymbol.OriginalDefinition;
                 }
             }
@@ -403,7 +401,7 @@ namespace Realms.SourceGenerator
             return propInfo;
         }
 
-        private void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)
+        private static void SerializeDiagnostics(GeneratorExecutionContext context, ClassInfo classInfo)
         {
             if (!classInfo.Diagnostics.Any())
             {

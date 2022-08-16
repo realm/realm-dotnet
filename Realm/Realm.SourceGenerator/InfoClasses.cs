@@ -89,13 +89,13 @@ namespace Realms.SourceGenerator
             SimpleTypeEnum.Data,
         };
 
-        public virtual SimpleTypeEnum? SimpleType { get; set; } = null;
+        public virtual SimpleTypeEnum? SimpleType { get; set; }
 
-        public virtual CollectionTypeEnum? CollectionType { get; set; } = null;
+        public virtual CollectionTypeEnum? CollectionType { get; set; }
 
-        public virtual bool IsRealmInteger { get; set; } = false;
+        public virtual bool IsRealmInteger { get; set; }
 
-        public virtual bool IsIQueryable { get; set; } = false;
+        public virtual bool IsIQueryable { get; set; }
 
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
 
@@ -109,7 +109,7 @@ namespace Realms.SourceGenerator
         // This includes the eventual nullability annotation
         public ITypeSymbol CompleteTypeSymbol { get; set; }
 
-        public virtual PropertyTypeInfo InternalType { get; set; } = null;
+        public virtual PropertyTypeInfo InternalType { get; set; }
 
         public bool IsCollection => CollectionType != null;
 

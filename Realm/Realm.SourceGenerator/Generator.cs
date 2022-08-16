@@ -395,7 +395,6 @@ namespace Realms.Generated
                 else if (property.TypeInfo.IsIQueryable)
                 {
                     // Properties
-
                     var propertyString = @$"        public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
 
                     propertiesString.AppendLine(propertyString);
@@ -404,7 +403,7 @@ namespace Realms.Generated
                     // GetValue
                     getValueLines.AppendLine(@$"                ""{stringName}"" =>  throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
                 }
-                else 
+                else
                 {
                     // Properties
                     var backingFieldString = $"        private {type} {backingFieldName};";
@@ -433,7 +432,7 @@ namespace Realms.Generated
                     {
                         setValueLines.AppendLine($@"                    throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");");
 
-                setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
+                        setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
             {{
                 throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");
             }}
@@ -449,11 +448,9 @@ namespace Realms.Generated
             }
 
             // Properties
-
             var propertyBody = propertiesString.ToString();
 
             // GetValue
-
             string getValueBody;
 
             if (getValueLines.Length == 0)
@@ -470,7 +467,6 @@ namespace Realms.Generated
             }
 
             // SetValue
-
             string setValueBody;
 
             if (setValueLines.Length == 0)
@@ -488,7 +484,6 @@ namespace Realms.Generated
             }
 
             // SetValueUnique
-
             if (setValueUniqueLines.Length == 0)
             {
                 setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
@@ -497,7 +492,6 @@ namespace Realms.Generated
             var setValueUniqueBody = setValueUniqueLines.ToString();
 
             // GetListValue
-
             string getListValueBody;
 
             if (getListValueLines.Length == 0)
@@ -514,7 +508,6 @@ namespace Realms.Generated
             }
 
             // GetSetValue
-
             string getSetValueBody;
 
             if (getSetValueLines.Length == 0)
@@ -531,7 +524,6 @@ namespace Realms.Generated
             }
 
             // GetDictionaryValue
-
             string getDictionaryValueBody;
 
             if (getDictionaryValueLines.Length == 0)
@@ -669,12 +661,12 @@ namespace Realms.Generated
     }}";
         }
 
-        private string GetBackingFieldName(string propertyName)
+        private static string GetBackingFieldName(string propertyName)
         {
             return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
         }
 
-        private string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
+        private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
         {
             var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.SimpleType : propertyTypeInfo.SimpleType;
 
