@@ -49,7 +49,7 @@ namespace Realms.SourceGenerator
         {
             DiagnosticDescriptor descriptor = new
                 ("RLM002",
-                "Realm classes cannot implement both class interfaces",
+                "Realm classes cannot implement multiple class interfaces",
                 $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
                 "RealmClassGeneration",
                 DiagnosticSeverity.Error,
