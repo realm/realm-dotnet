@@ -14,7 +14,6 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(DogObjectHelper))]
     public partial class Dog : IRealmObject, INotifyPropertyChanged
     {
-
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Dog", isEmbedded: false)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),

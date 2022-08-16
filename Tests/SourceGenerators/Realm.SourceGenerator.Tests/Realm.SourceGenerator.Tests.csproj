@@ -4,7 +4,6 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>disable</Nullable>
-
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 	<Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />

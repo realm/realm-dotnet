@@ -14,7 +14,6 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged
     {
-
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),

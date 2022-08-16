@@ -14,7 +14,6 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(AllTypesClassObjectHelper))]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged
     {
-
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", isEmbedded: false)
         {
             Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
