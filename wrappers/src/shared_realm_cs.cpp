@@ -770,12 +770,12 @@ REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_t
     return handle_errors(ex, [&]() {
         const util::Optional<DB::version_type>& latest_snapshot_version = realm->latest_snapshot_version();
         const util::Optional<realm::VersionID> current_version = realm->current_transaction_version();
-        if (!latest_snapshot_version || !current_version || latest_snapshot_version.value() == current_version.value().version || realm->is_frozen()) {
+        if (!latest_snapshot_version || !current_version || *latest_snapshot_version == (*current_version).version || realm->is_frozen()) {
             return false;
         }
 
         auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
-        csharp_context->realm_pending_refresh_callbacks().add(latest_snapshot_version.value(), managed_tcs);
+        csharp_context->realm_pending_refresh_callbacks().add(*latest_snapshot_version, managed_tcs);
 
         return true;
     });
