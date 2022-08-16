@@ -135,6 +135,43 @@ private:
     void* m_handle;
 };
 
+class TcsRegistryWithVersion {
+public:
+    uint64_t add(DB::version_type version, void* tcs)
+    {
+        uint64_t token = m_next_token++;
+        m_tcs.emplace_hint(m_tcs.end(), token, std::make_pair(version, tcs));
+        return token;
+    }
+
+    void remove(uint64_t token)
+    {
+        m_tcs.erase(token);
+    }
+
+    std::vector<void*> remove_for_version(DB::version_type version)
+    {
+        std::vector<uint64_t> tokens;
+        std::vector<void*> tcs_vector;
+        tokens.reserve(m_tcs.size());
+        for (const auto& [token, request] : m_tcs) {
+            if (auto& [expected, tcs] = request; expected <= version) {
+                tcs_vector.push_back(tcs);
+                tokens.push_back(token);
+            }
+        }
+        for (const auto& token : tokens) {
+            remove(token);
+        }
+
+        return tcs_vector;
+    }
+
+private:
+    std::map<uint64_t, std::pair<uint64_t, void*>> m_tcs;
+    uint64_t m_next_token = 0;
+};
+
 class CSharpBindingContext: public BindingContext {
 public:
     CSharpBindingContext(GCHandleHolder managed_state_handle);
@@ -145,11 +182,17 @@ public:
         return m_managed_state_handle.handle();
     }
 
+    TcsRegistryWithVersion& realm_pending_refresh_callbacks()
+    {
+        return m_realm_pending_refresh_callbacks;
+    }
+
     // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
     Schema m_realm_schema;
 
 private:
     GCHandleHolder m_managed_state_handle;
+    TcsRegistryWithVersion m_realm_pending_refresh_callbacks;
 };
 
 void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
