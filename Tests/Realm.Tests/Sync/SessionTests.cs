@@ -53,6 +53,13 @@ namespace Realms.Tests.Sync
             typeof(DiscardLocalResetHandler),
         };
 
+        // TODO: just to check that we don't break previous code. Remove in next major version
+        public static readonly object[] ObosoleteHandlerCoexistence = new object[]
+        {
+            typeof(DiscardUnsyncedChangesHandler),
+            typeof(DiscardLocalResetHandler),
+        };
+
         [Preserve]
         static SessionTests()
         {
@@ -628,15 +635,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_ClientResetDiscard_TriggersNotifications()
+        [TestCaseSource(nameof(ObosoleteHandlerCoexistence))]
+        public void Session_ClientResetDiscard_TriggersNotifications(Type handlerType)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 // We'll add an object with the wrong partition
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-                config.ClientResetHandler = new DiscardUnsyncedChangesHandler();
+                config.ClientResetHandler = (ClientResetHandlerBase)Activator.CreateInstance(handlerType);
 
                 using var realm = await GetRealmAsync(config);
 
