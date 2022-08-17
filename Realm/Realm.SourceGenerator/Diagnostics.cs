@@ -34,7 +34,7 @@ namespace Realms.SourceGenerator
         {
             return CreateDiagnosticError(
                 "RLM001",
-                "Unexpcted error during source generation",
+                "Unexpected error during source generation",
                 $"There was an unexpected error during source generation of class {className}",
                 Location.None,
                 description: $"Exception Message: {message}. \r\nCallstack:\r\n{stackTrace}");
