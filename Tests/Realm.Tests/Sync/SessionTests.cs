@@ -49,11 +49,11 @@ namespace Realms.Tests.Sync
             typeof(RecoverUnsyncedChangesHandler),
             typeof(RecoverOrDiscardUnsyncedChangesHandler),
 
-            // TODO: just to check that we don't break previous code. Remove in next major version
+            // Just to check that we don't break previous code. Remove in next major version
             typeof(DiscardLocalResetHandler),
         };
 
-        // TODO: just to check that we don't break previous code. Remove in next major version
+        // Just to check that we don't break previous code. Remove in next major version
         public static readonly object[] ObosoleteHandlerCoexistence = new object[]
         {
             typeof(DiscardUnsyncedChangesHandler),
@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
                 ManualResetFallback = (clientResetException) => { },
             };
 
-            // TODO: just to check that we don't break previous code. Remove in next major version
+            // Just to check that we don't break previous code. Remove in next major version
             var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
