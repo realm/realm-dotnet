@@ -285,9 +285,7 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    if (syncConfig.ClientResetHandler.ClientResetMode is ClientResyncMode.Discard ||
-                        syncConfig.ClientResetHandler.ClientResetMode is ClientResyncMode.Recover ||
-                        syncConfig.ClientResetHandler.ClientResetMode is ClientResyncMode.RecoverOrDiscard ||
+                    if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
                         syncConfig.ClientResetHandler.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
