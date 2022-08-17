@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Linq;
 using Realms;
 using Realms.Weaving;
 using Realms.Generated;
@@ -11,18 +13,19 @@ namespace SourceGeneratorPlayground
 {
 
     [Generated]
-    [Woven(typeof(AllTypesClassObjectHelper))]
-    public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(DogObjectHelper))]
+    public partial class Dog : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Dog", isEmbedded: false)
         {
-            Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Object("Owner", "Person"),
 
         }.Build();
 
         #region IRealmObject implementation
 
-        private IAllTypesClassAccessor _accessor;
+        private IDogAccessor _accessor;
 
         public IRealmAccessor Accessor => _accessor;
 
@@ -36,21 +39,22 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public AllTypesClass()
+        public Dog()
         {
-            _accessor = new AllTypesClassUnmanagedAccessor(typeof(AllTypesClassObjectHelper));
+            _accessor = new DogUnmanagedAccessor(typeof(DogObjectHelper));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var unmanagedAccessor = _accessor;
-            _accessor = (AllTypesClassManagedAccessor)managedAccessor;
+            _accessor = (DogManagedAccessor)managedAccessor;
 
             if (helper != null)
             {
 
 
-                CharProperty = unmanagedAccessor.CharProperty;
+                Name = unmanagedAccessor.Name;
+                Owner = unmanagedAccessor.Owner;
 
             }
 
@@ -109,9 +113,9 @@ namespace SourceGeneratorPlayground
             _accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AllTypesClass(RealmValue val) => val.AsRealmObject<AllTypesClass>();
+        public static explicit operator Dog(RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator RealmValue(AllTypesClass val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(Dog val) => RealmValue.Object(val);
     }
 }
 
@@ -119,18 +123,18 @@ namespace Realms.Generated
 {
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AllTypesClassObjectHelper : IRealmObjectHelper
+    internal class DogObjectHelper : IRealmObjectHelper
     {
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
         {
             throw new InvalidOperationException("This method should not be called for source generated classes.");
         }
 
-        public ManagedAccessor CreateAccessor() => new AllTypesClassManagedAccessor();
+        public ManagedAccessor CreateAccessor() => new DogManagedAccessor();
 
         public IRealmObjectBase CreateInstance()
         {
-            return new AllTypesClass();
+            return new Dog();
         }
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
@@ -142,41 +146,58 @@ namespace Realms.Generated
 
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAllTypesClassAccessor : IRealmAccessor
+    internal interface IDogAccessor : IRealmAccessor
     {
-        char CharProperty { get; set; }
+        string Name { get; set; }
+
+        Person Owner { get; set; }
 
 
     }
 
     
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AllTypesClassManagedAccessor : ManagedAccessor, IAllTypesClassAccessor
+    internal class DogManagedAccessor : ManagedAccessor, IDogAccessor
     {
-        public char CharProperty
+        public string Name
         {
-            get => (char)GetValue("CharProperty");
-            set => SetValue("CharProperty", value);
+            get => (string)GetValue("Name");
+            set => SetValue("Name", value);
+        }
+        public Person Owner
+        {
+            get => (Person)GetValue("Owner");
+            set => SetValue("Owner", value);
         }
 
     }
 
     
-    internal class AllTypesClassUnmanagedAccessor : UnmanagedAccessor, IAllTypesClassAccessor
+    internal class DogUnmanagedAccessor : UnmanagedAccessor, IDogAccessor
     {
-        private char _charProperty;
-        public char CharProperty
+        private string _name;
+        public string Name
         {
-            get => _charProperty;
+            get => _name;
             set
             {
-                _charProperty = value;
-                RaisePropertyChanged("CharProperty");
+                _name = value;
+                RaisePropertyChanged("Name");
+            }
+        }
+        private Person _owner;
+        public Person Owner
+        {
+            get => _owner;
+            set
+            {
+                _owner = value;
+                RaisePropertyChanged("Owner");
             }
         }
 
 
-        public AllTypesClassUnmanagedAccessor(Type objectType) : base(objectType)
+        public DogUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
@@ -184,7 +205,8 @@ namespace Realms.Generated
         {
             return propertyName switch
             {
-                "CharProperty" => _charProperty,
+                "Name" => _name,
+                "Owner" => _owner,
 
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
@@ -194,8 +216,11 @@ namespace Realms.Generated
         {
             switch (propertyName)
             {
-                case "CharProperty":
-                    CharProperty = (char)val;
+                case "Name":
+                    Name = (string)val;
+                    return;
+                case "Owner":
+                    Owner = (Person)val;
                     return;
 
                 default:

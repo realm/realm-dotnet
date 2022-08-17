@@ -20,7 +20,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Newtonsoft.Json;
 using Realms.SourceGenerator;
-using RealmClassGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmClassGenerator>;
+using RealmGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmGenerator>;
 
 namespace SourceGeneratorTests
 {
@@ -78,7 +78,7 @@ namespace SourceGeneratorTests
         {
             var source = GetSource(fileName);
 
-            var test = new RealmClassGeneratorVerifier.Test
+            var test = new RealmGeneratorVerifier.Test
             {
                 TestState =
                 {
@@ -94,7 +94,7 @@ namespace SourceGeneratorTests
                 var generated = GetGeneratedForClass(className);
                 var generatedFileName = $"{className}_generated.cs";
 
-                test.TestState.GeneratedSources.Add((typeof(RealmClassGenerator), generatedFileName, generated));
+                test.TestState.GeneratedSources.Add((typeof(RealmGenerator), generatedFileName, generated));
             }
 
             await test.RunAsync();
@@ -109,7 +109,7 @@ namespace SourceGeneratorTests
         {
             var source = GetSource(fileName);
 
-            var test = new RealmClassGeneratorVerifier.Test
+            var test = new RealmGeneratorVerifier.Test
             {
                 TestState =
                 {

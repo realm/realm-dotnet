@@ -17,12 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Data.SqlTypes;
 using System.Text;
 
 namespace Realms.SourceGenerator
 {
-    internal class Generator
+    internal class ClassCodeBuilder
     {
         private ClassInfo _classInfo;
 
@@ -31,7 +30,7 @@ namespace Realms.SourceGenerator
         private string _managedAccessorClassName;
         private string _unmanagedAccessorClassName;
 
-        public Generator(ClassInfo classInfo)
+        public ClassCodeBuilder(ClassInfo classInfo)
         {
             _classInfo = classInfo;
 
@@ -45,6 +44,9 @@ namespace Realms.SourceGenerator
         {
             var usings = @$"using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 using Realms;
 using Realms.Weaving;
 using Realms.Generated;

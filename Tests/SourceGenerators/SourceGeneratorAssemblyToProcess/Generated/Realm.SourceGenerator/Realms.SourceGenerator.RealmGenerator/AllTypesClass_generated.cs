@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using System.Linq;
 using Realms;
 using Realms.Weaving;
 using Realms.Generated;
@@ -11,20 +13,18 @@ namespace SourceGeneratorPlayground
 {
 
     [Generated]
-    [Woven(typeof(PersonObjectHelper))]
-    public partial class Person : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(AllTypesClassObjectHelper))]
+    public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Backlinks("Dogs", "Dog", "Owner"),
+            Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
 
         }.Build();
 
         #region IRealmObject implementation
 
-        private IPersonAccessor _accessor;
+        private IAllTypesClassAccessor _accessor;
 
         public IRealmAccessor Accessor => _accessor;
 
@@ -38,22 +38,21 @@ namespace SourceGeneratorPlayground
 
         public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
 
-        public Person()
+        public AllTypesClass()
         {
-            _accessor = new PersonUnmanagedAccessor(typeof(PersonObjectHelper));
+            _accessor = new AllTypesClassUnmanagedAccessor(typeof(AllTypesClassObjectHelper));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var unmanagedAccessor = _accessor;
-            _accessor = (PersonManagedAccessor)managedAccessor;
+            _accessor = (AllTypesClassManagedAccessor)managedAccessor;
 
             if (helper != null)
             {
 
 
-                Id = unmanagedAccessor.Id;
-                Name = unmanagedAccessor.Name;
+                CharProperty = unmanagedAccessor.CharProperty;
 
             }
 
@@ -112,9 +111,9 @@ namespace SourceGeneratorPlayground
             _accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
+        public static explicit operator AllTypesClass(RealmValue val) => val.AsRealmObject<AllTypesClass>();
 
-        public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(AllTypesClass val) => RealmValue.Object(val);
     }
 }
 
@@ -122,99 +121,64 @@ namespace Realms.Generated
 {
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonObjectHelper : IRealmObjectHelper
+    internal class AllTypesClassObjectHelper : IRealmObjectHelper
     {
         public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
         {
             throw new InvalidOperationException("This method should not be called for source generated classes.");
         }
 
-        public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
+        public ManagedAccessor CreateAccessor() => new AllTypesClassManagedAccessor();
 
         public IRealmObjectBase CreateInstance()
         {
-            return new Person();
+            return new AllTypesClass();
         }
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
         {
-            value = ((IPersonAccessor)instance.Accessor).Id;
-            return true;
+            value = null;
+            return false;
         }
     }
 
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPersonAccessor : IRealmAccessor
+    internal interface IAllTypesClassAccessor : IRealmAccessor
     {
-        int Id { get; set; }
-
-        string Name { get; set; }
-
-        IQueryable<Dog> Dogs { get; }
+        char CharProperty { get; set; }
 
 
     }
 
     
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
+    internal class AllTypesClassManagedAccessor : ManagedAccessor, IAllTypesClassAccessor
     {
-        public int Id
+        public char CharProperty
         {
-            get => (int)GetValue("Id");
-            set => SetValueUnique("Id", value);
+            get => (char)GetValue("CharProperty");
+            set => SetValue("CharProperty", value);
         }
-        public string Name
-        {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
-        }
-        private IQueryable<Dog> _dogs;
-        public IQueryable<Dog> Dogs
-        {
-            get
-            {
-                if(_dogs == null)
-                {
-                    _dogs = GetBacklinks<Dog>("Dogs");
-                }
-
-                return _dogs;
-            }
-        }
-
 
     }
 
     
-    internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
+    internal class AllTypesClassUnmanagedAccessor : UnmanagedAccessor, IAllTypesClassAccessor
     {
-        private int _id;
-        public int Id
+        private char _charProperty;
+        public char CharProperty
         {
-            get => _id;
+            get => _charProperty;
             set
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                _charProperty = value;
+                RaisePropertyChanged("CharProperty");
             }
         }
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
-            }
-        }
-        public IQueryable<Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
 
-
-        public PersonUnmanagedAccessor(Type objectType) : base(objectType)
+        public AllTypesClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
@@ -222,9 +186,7 @@ namespace Realms.Generated
         {
             return propertyName switch
             {
-                "Id" => _id,
-                "Name" => _name,
-                "Dogs" =>  throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                "CharProperty" => _charProperty,
 
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
@@ -234,10 +196,8 @@ namespace Realms.Generated
         {
             switch (propertyName)
             {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Name":
-                    Name = (string)val;
+                case "CharProperty":
+                    CharProperty = (char)val;
                     return;
 
                 default:
@@ -247,12 +207,7 @@ namespace Realms.Generated
 
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-            }
-
-            Id = (int)val;
+            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

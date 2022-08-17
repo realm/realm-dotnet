@@ -27,28 +27,22 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Realms.SourceGenerator
 {
-    [Generator]
-    public class RealmClassGenerator : ISourceGenerator
+    internal class Parser
     {
-        /* Not explicitly supported:
-         * - Inheritance of any kind (classes cannot derive from anything)
-         * - Partial classes
-         * - Full nullability support
-         */
+        private List<RealmClassDefinition> realmClasses;
+        private GeneratorExecutionContext context;
 
-        public void Initialize(GeneratorInitializationContext context)
+        public Parser(GeneratorExecutionContext context, List<RealmClassDefinition> realmClasses)
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
+            this.context = context;
+            this.realmClasses = realmClasses;
         }
 
-        public void Execute(GeneratorExecutionContext context)
+        public ParsingResults Parse()
         {
-            if (context.SyntaxContextReceiver is not SyntaxContextReceiver scr || scr.RealmClasses == null)
-            {
-                return;
-            }
+            var result = new ParsingResults();
 
-            foreach (var (classSyntax, classSymbol) in scr.RealmClasses)
+            foreach (var (classSyntax, classSymbol) in realmClasses)
             {
                 try
                 {
@@ -61,12 +55,12 @@ namespace Realms.SourceGenerator
 
                     if (!classSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        context.ReportDiagnostic(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        context.ReportDiagnostic(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     var semanticModel = context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
@@ -75,7 +69,7 @@ namespace Realms.SourceGenerator
 
                     if (isEmbedded && classSymbol.IsRealmObject())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        context.ReportDiagnostic(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     // General info
@@ -93,7 +87,7 @@ namespace Realms.SourceGenerator
 
                     if (classInfo.Properties.Count(p => p.IsPrimaryKey) > 1)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));
+                        context.ReportDiagnostic(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));
                     }
 
                     SerializeDiagnostics(context, classInfo);
@@ -105,14 +99,7 @@ namespace Realms.SourceGenerator
                         continue;
                     }
 
-                    var generator = new Generator(classInfo);
-                    var generatedSource = generator.GenerateSource();
-
-                    // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
-                    // var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-                    var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
-
-                    context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
+                    result.ClassInfo.Add(classInfo);
                 }
                 catch (Exception ex)
                 {
@@ -120,9 +107,11 @@ namespace Realms.SourceGenerator
                     throw;
                 }
             }
+
+            return result;
         }
 
-        private static void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        private void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -151,7 +140,7 @@ namespace Realms.SourceGenerator
 
                 if (!propSyntax.IsAutomaticProperty() && info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    context.ReportDiagnostic(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     continue;
                 }
 
@@ -164,7 +153,7 @@ namespace Realms.SourceGenerator
                 {
                     if (!info.TypeInfo.IsIQueryable)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
 
                     var backlinkType = info.TypeInfo.InternalType.TypeSymbol;
@@ -178,7 +167,7 @@ namespace Realms.SourceGenerator
 
                     if (inversePropertyTypeInfo == null || (!isSameType && !isCollectionOfSameType))
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.BacklinkWrongRelationship(classInfo.Name, info.Name, backlinkType.Name, inversePropertyName, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.BacklinkWrongRelationship(classInfo.Name, info.Name, backlinkType.Name, inversePropertyName, propSyntax.GetLocation()));
                     }
                 }
 
@@ -186,29 +175,29 @@ namespace Realms.SourceGenerator
                 {
                     if (classInfo.IsEmbedded)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
 
                     if (!info.TypeInfo.IsSupportedPrimaryKeyType())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.PrimaryKeyWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.PrimaryKeyWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
                 }
 
                 if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexType())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                    context.ReportDiagnostic(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
 
                 if (info.IsRequired)
                 {
                     if (info.TypeInfo.NullableAnnotation != NullableAnnotation.None)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.RequiredWithNullability(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.RequiredWithNullability(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
                     else if (!info.TypeInfo.IsSupportedRequiredType())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                        context.ReportDiagnostic(Diagnostics.RequiredWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
                 }
 
@@ -216,7 +205,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -228,15 +217,15 @@ namespace Realms.SourceGenerator
             {
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
                 else if (propertySymbol.Type.Name == "List")
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.ListWithoutInterface(classInfo.Name, propertySymbol.Name, propertyLocation));
                 }
                 else
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
                 }
 
                 return propertyType;  // We are sure we can't produce more diagnostics
@@ -244,7 +233,7 @@ namespace Realms.SourceGenerator
 
             if (!propertyType.SupportsNullability())
             {
-                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
+                context.ReportDiagnostic(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             if (propertyType.IsRealmInteger)
@@ -253,7 +242,7 @@ namespace Realms.SourceGenerator
 
                 if (!argument.IsValidRealmIntgerType())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RealmIntegerTypeUnsupported(classInfo.Name, propertySymbol.Name,
+                    context.ReportDiagnostic(Diagnostics.RealmIntegerTypeUnsupported(classInfo.Name, propertySymbol.Name,
                         argument.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat), propertyLocation));
                     return PropertyTypeInfo.Unsupported;
                 }
@@ -268,13 +257,13 @@ namespace Realms.SourceGenerator
 
                 if (internalType.SimpleType != SimpleTypeEnum.Object)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
                     return PropertyTypeInfo.Unsupported;
                 }
 
                 if (propertySyntax.HasSetter())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.BacklinkWithSetter(classInfo.Name, propertySymbol.Name, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.BacklinkWithSetter(classInfo.Name, propertySymbol.Name, propertyLocation));
                     return PropertyTypeInfo.Unsupported;
                 }
 
@@ -296,7 +285,7 @@ namespace Realms.SourceGenerator
 
                     if (keyArgument.SpecialType != SpecialType.System_String)
                     {
-                        classInfo.Diagnostics.Add(
+                        context.ReportDiagnostic(
                             Diagnostics.DictionaryWithNonStringKeys(classInfo.Name, propertySymbol.Name,
                             keyArgument.ToReadableName(), valueArgument.ToReadableName(), propertyLocation));
                         isUnsupported = true;
@@ -314,7 +303,7 @@ namespace Realms.SourceGenerator
 
                     if (propertyType.IsSet && internalPropertyType.SimpleType == SimpleTypeEnum.Object && argument.IsEmbeddedObject())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
+                        context.ReportDiagnostic(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                         isUnsupported = true;
                     }
 
@@ -323,18 +312,18 @@ namespace Realms.SourceGenerator
 
                 if (argument.IsRealmInteger())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
                     isUnsupported = true;
                 }
                 else if (internalPropertyType.IsUnsupported)
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionTypeString, argument.ToReadableName(), propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.CollectionUnsupportedType(classInfo.Name, propertySymbol.Name, collectionTypeString, argument.ToReadableName(), propertyLocation));
                     isUnsupported = true;
                 }
 
                 if (propertySyntax.HasSetter())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
+                    context.ReportDiagnostic(Diagnostics.CollectionWithSetter(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
                     isUnsupported = true;
                 }
 
@@ -407,5 +396,10 @@ namespace Realms.SourceGenerator
                 context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
             }
         }
+    }
+
+    internal record ParsingResults
+    {
+        public List<ClassInfo> ClassInfo { get; } = new();
     }
 }
