@@ -48,6 +48,9 @@ namespace Realms.Tests.Sync
             typeof(DiscardUnsyncedChangesHandler),
             typeof(RecoverUnsyncedChangesHandler),
             typeof(RecoverOrDiscardUnsyncedChangesHandler),
+
+            // TODO: just to check that we don't break previous code. Remove in next major version
+            typeof(DiscardLocalResetHandler),
         };
 
         [Preserve]
@@ -69,6 +72,14 @@ namespace Realms.Tests.Sync
             };
 
             var preserveDiscardHandler = new DiscardUnsyncedChangesHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+
+            // TODO: just to check that we don't break previous code. Remove in next major version
+            var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterReset = (beforeFrozen, after) => { },

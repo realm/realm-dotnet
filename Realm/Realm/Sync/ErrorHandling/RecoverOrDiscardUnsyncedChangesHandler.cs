@@ -33,9 +33,12 @@ namespace Realms.Sync.ErrorHandling
     /// are properly propagated through the standard Realm's change notifications.
     /// The <see cref="RecoverOrDiscardUnsyncedChangesHandler"/> strategy supplies four callbacks: <see cref="OnBeforeReset"/>, <see cref="OnAfterRecovery"/>,
     /// <see cref="OnAfterDiscard"/> and <see cref="ManualResetFallback"/>.
-    /// The first callback is invoked just before the client reset happens. While the second and third callbacks are respectively called after an automatic
-    /// client reset succeeded, or the automatic client reset failed and instead the discard unsynced one succeded.
-    /// The last callback is invoked whenever an error occurs in either of the recovery stragegies and the system needs to fallback to a manual mode.
+    /// <see cref="OnBeforeReset"/>, is invoked just before the client reset happens.
+    /// <see cref="OnAfterRecovery"/>, is invoke if and only if an automatic client reset succeeded. The callback is never called
+    /// if the automatic client reset fails.
+    /// <see cref="OnAfterDiscard"/> is invoked if and only if an automatic client reset failed and instead the discard unsynced one succeded.
+    /// The callback is never called if the discard unsynced client reset fails.
+    /// <see cref="ManualResetFallback"/> is invoked whenever an error occurs in either of the recovery stragegies and the system needs to fallback to a manual mode.
     /// The overall recommendation for using this strategy is that using the three available callbacks should only be considered when:
     /// 1. The user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming potential data loss
     ///    of unsynced data as a result of a merge or a complete discard of unsynced local changes

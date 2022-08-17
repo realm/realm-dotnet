@@ -63,6 +63,7 @@ namespace Realms.Sync.ErrorHandling
     }
 
 #pragma warning disable SA1402 // This type is now obsolete and will be deleted in the next major version
+
     /// <summary>
     /// A client reset strategy where all the not yet synchronized data is automatically discarded and a fresh copy of the synchronized Realm is obtained.
     /// </summary>
@@ -106,4 +107,5 @@ namespace Realms.Sync.ErrorHandling
         }
     }
 #pragma warning restore SA1402 // This type is now obsolete and will be deleted in the next major version
+
 }

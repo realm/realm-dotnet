@@ -193,9 +193,7 @@ namespace Realms.Sync
             get => base.ClientResetHandler;
             set
             {
-                if (value is DiscardUnsyncedChangesHandler ||
-                    value is RecoverUnsyncedChangesHandler ||
-                    value is RecoverOrDiscardUnsyncedChangesHandler)
+                if (value is not ManualRecoveryHandler)
                 {
                     throw new NotSupportedException($"Flexible sync does not yet support {value.GetType().Name}");
                 }

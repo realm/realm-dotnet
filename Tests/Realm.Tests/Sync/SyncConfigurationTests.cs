@@ -113,6 +113,7 @@ namespace Realms.Tests.Sync
         {
             var conf = GetFakeFLXConfig();
             Assert.That(() => conf.ClientResetHandler = new DiscardUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
             Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
             Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
         }
