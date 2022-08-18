@@ -306,7 +306,7 @@ namespace Realms.SourceGenerator
 #endif
         }
 
-        public static DiagnosticInfo Convert(Diagnostic diag)
+        private static DiagnosticInfo Convert(Diagnostic diag)
         {
             return new DiagnosticInfo
             {
@@ -317,7 +317,7 @@ namespace Realms.SourceGenerator
             };
         }
 
-        public static DiagnosticLocation Convert(this Location location)
+        private static DiagnosticLocation Convert(this Location location)
         {
             // The +1 are necessary because line position start counting at 0
             var mapped = location.GetLineSpan();

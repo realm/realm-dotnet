@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+    <Import Project="..\AssemblyInfo.props" />
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Realm.SourceGenerator</AssemblyName>
@@ -49,5 +50,4 @@
     <ItemGroup>
         <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
     </ItemGroup>
-    <Import Project="..\AssemblyInfo.props" />
 </Project>
