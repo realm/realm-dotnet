@@ -56,16 +56,15 @@ namespace Realms
         {
             if (type.IsAsymmetricObject())
             {
-                return ObjectSchema.ObjectSchemaType.TopLevelAsymmetric;
+                return ObjectSchema.ObjectSchemaType.AsymmetricObject;
             }
-            else if (type.IsEmbeddedObject())
+
+            if (type.IsEmbeddedObject())
             {
-                return ObjectSchema.ObjectSchemaType.Embedded;
+                return ObjectSchema.ObjectSchemaType.EmbeddedObject;
             }
-            else
-            {
-                return ObjectSchema.ObjectSchemaType.TopLevel;
-            }
+
+            return ObjectSchema.ObjectSchemaType.RealmObject;
         }
 
         public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();

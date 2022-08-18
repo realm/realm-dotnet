@@ -46,24 +46,24 @@ internal static class TypeReferenceExtensions
         }
     }
 
-    private static bool IsTObjectDescendant(TypeReference target, params TypeReference[] instanceOf)
+    private static bool IsDescendantOf(TypeReference @this, params TypeReference[] targetTypes)
     {
         try
         {
             while (true)
             {
-                if (target == null || !Weaver.ShouldTraverseAssembly(target.Module.Assembly.Name))
+                if (@this == null || !Weaver.ShouldTraverseAssembly(@this.Module.Assembly.Name))
                 {
                     return false;
                 }
 
-                var definition = target?.Resolve();
+                var definition = @this?.Resolve();
                 if (definition == null)
                 {
                     return false;
                 }
 
-                foreach (var typeRef in instanceOf)
+                foreach (var typeRef in targetTypes)
                 {
                     if (definition.BaseType.IsSameAs(typeRef))
                     {
@@ -71,7 +71,7 @@ internal static class TypeReferenceExtensions
                     }
                 }
 
-                target = definition.BaseType;
+                @this = definition.BaseType;
             }
         }
         catch
@@ -85,12 +85,12 @@ internal static class TypeReferenceExtensions
 
     public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
     {
-        return IsTObjectDescendant(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
+        return IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
     }
 
     public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references)
     {
-        return IsTObjectDescendant(@this, references.AsymmetricObject);
+        return IsDescendantOf(@this, references.AsymmetricObject);
     }
 
     public static bool IsSameAs(this TypeReference @this, TypeReference other)

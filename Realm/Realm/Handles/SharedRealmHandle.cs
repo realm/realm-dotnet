@@ -899,7 +899,7 @@ namespace Realms
                         name = @object.Name,
                         properties_start = start,
                         properties_end = properties.Count,
-                        table_type = (byte)@object.RealmSchemaType,
+                        table_type = @object.ObjectType,
                     };
                 }).ToArray();
                 Properties = properties.ToArray();

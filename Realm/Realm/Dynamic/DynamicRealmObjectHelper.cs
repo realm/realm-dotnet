@@ -24,19 +24,19 @@ namespace Realms.Dynamic
 {
     internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
-        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.Embedded);
-        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.TopLevel);
-        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.TopLevelAsymmetric);
+        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.EmbeddedObject);
+        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.RealmObject);
+        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType.AsymmetricObject);
 
         private readonly ObjectSchema.ObjectSchemaType _schemaType;
 
         internal static DynamicRealmObjectHelper Instance(ObjectSchema schema) =>
-            schema.RealmSchemaType switch
+            schema.ObjectType switch
             {
-                ObjectSchema.ObjectSchemaType.TopLevel => _objectInstance,
-                ObjectSchema.ObjectSchemaType.Embedded => _embeddedInstance,
-                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => _asymmetricInstance,
-                _ => throw new NotSupportedException($"{schema.RealmSchemaType} type not supported, yet."),
+                ObjectSchema.ObjectSchemaType.RealmObject => _objectInstance,
+                ObjectSchema.ObjectSchemaType.EmbeddedObject => _embeddedInstance,
+                ObjectSchema.ObjectSchemaType.AsymmetricObject => _asymmetricInstance,
+                _ => throw new NotSupportedException($"{schema.ObjectType} type not supported, yet."),
             };
 
         private DynamicRealmObjectHelper(ObjectSchema.ObjectSchemaType realmSchemaType)
@@ -52,9 +52,9 @@ namespace Realms.Dynamic
         public IRealmObjectBase CreateInstance() =>
             _schemaType switch
             {
-                ObjectSchema.ObjectSchemaType.TopLevel => new DynamicRealmObject(),
-                ObjectSchema.ObjectSchemaType.Embedded => new DynamicEmbeddedObject(),
-                ObjectSchema.ObjectSchemaType.TopLevelAsymmetric => new DynamicAsymmetricObject(),
+                ObjectSchema.ObjectSchemaType.RealmObject => new DynamicRealmObject(),
+                ObjectSchema.ObjectSchemaType.EmbeddedObject => new DynamicEmbeddedObject(),
+                ObjectSchema.ObjectSchemaType.AsymmetricObject => new DynamicAsymmetricObject(),
                 _ => throw new NotSupportedException($"{_schemaType} type not supported, yet."),
             };
 
