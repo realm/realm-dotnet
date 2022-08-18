@@ -43,6 +43,8 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
         public static readonly object[] AllClientResetHandlers = new object[]
         {
             typeof(DiscardUnsyncedChangesHandler),
@@ -59,6 +61,8 @@ namespace Realms.Tests.Sync
             typeof(DiscardUnsyncedChangesHandler),
             typeof(DiscardLocalResetHandler),
         };
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [Preserve]
         static SessionTests()
@@ -85,6 +89,8 @@ namespace Realms.Tests.Sync
                 ManualResetFallback = (clientResetException) => { },
             };
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
             // Just to check that we don't break previous code. Remove in next major version
             var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler
             {
@@ -92,6 +98,9 @@ namespace Realms.Tests.Sync
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
         }
 
         [Test]

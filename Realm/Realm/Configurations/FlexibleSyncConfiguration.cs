@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Helpers;
 using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
@@ -193,6 +194,7 @@ namespace Realms.Sync
             get => base.ClientResetHandler;
             set
             {
+                Argument.NotNull(value, nameof(value));
                 if (value is not ManualRecoveryHandler)
                 {
                     throw new NotSupportedException($"Flexible sync does not yet support {value.GetType().Name}");
