@@ -177,7 +177,7 @@ namespace Realms.Schema
             {
                 var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
 
-                var osBuilder = new ObjectSchema.Builder(objectSchema.name, (ObjectSchema.ObjectSchemaType)objectSchema.table_type);
+                var osBuilder = new ObjectSchema.Builder(objectSchema.name, objectSchema.table_type);
 
                 for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
                 {

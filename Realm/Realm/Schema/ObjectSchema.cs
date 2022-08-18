@@ -175,7 +175,7 @@ namespace Realms.Schema
                 set
                 {
                     // being an obsolete method, it's assumed that it's old code that doesn't use AsymmetricObject-s
-                    if (value == true)
+                    if (value)
                     {
                         RealmSchemaType = ObjectSchemaType.EmbeddedObject;
                     }

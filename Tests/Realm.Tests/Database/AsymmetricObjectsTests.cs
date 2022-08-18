@@ -193,7 +193,6 @@ namespace Realms.Tests.Database
             public Guid Id { get; set; } = Guid.NewGuid();
 
             public string PartitionLike { get; set; }
-
         }
     }
 }

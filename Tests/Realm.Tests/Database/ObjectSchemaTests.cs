@@ -25,7 +25,6 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-
 #pragma warning disable CS0618 // ObjectSchema.Builder(string, bool) is obsolete, Builder(string, ObjectSchemaType) should be used instead
 
     [TestFixture, Preserve(AllMembers = true)]
