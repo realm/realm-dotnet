@@ -62,8 +62,6 @@ namespace Realms.Tests.Sync
             typeof(DiscardLocalResetHandler),
         };
 
-#pragma warning restore CS0618 // Type or member is obsolete
-
         [Preserve]
         static SessionTests()
         {
@@ -88,8 +86,6 @@ namespace Realms.Tests.Sync
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
-
-#pragma warning disable CS0618 // Type or member is obsolete
 
             // Just to check that we don't break previous code. Remove in next major version
             var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler

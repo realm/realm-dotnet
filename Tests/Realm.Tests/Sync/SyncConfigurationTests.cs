@@ -113,7 +113,13 @@ namespace Realms.Tests.Sync
         {
             var conf = GetFakeFLXConfig();
             Assert.That(() => conf.ClientResetHandler = new DiscardUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
             Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
             Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
             Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
         }
