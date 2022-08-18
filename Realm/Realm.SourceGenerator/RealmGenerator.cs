@@ -41,14 +41,14 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            var parser = new Parser(context, scr.RealmClasses);
-            var parsingResults = parser.Parse();
+            var parser = new Parser(context);
+            var parsingResults = parser.Parse(scr.RealmClasses);
 
-            if (parsingResults != null)
-            {
-                var emitter = new Emitter(context, parsingResults);
-                emitter.Emit();
-            }
+            var diagnosticsEmitter = new DiagnosticsEmitter(context);
+            diagnosticsEmitter.Emit(parsingResults);
+
+            var codeEmitter = new CodeEmitter(context);
+            codeEmitter.Emit(parsingResults);
         }
     }
 }

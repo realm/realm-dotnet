@@ -17,29 +17,31 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Realms.SourceGenerator
 {
-    internal class Emitter
+    internal class CodeEmitter
     {
-        private GeneratorExecutionContext context;
-        private ParsingResults parsingResults;
+        private GeneratorExecutionContext _context;
 
-        public Emitter(GeneratorExecutionContext context, ParsingResults parsingResults)
+        public CodeEmitter(GeneratorExecutionContext context)
         {
-            this.context = context;
-            this.parsingResults = parsingResults;
+            _context = context;
         }
 
-        public void Emit()
+        public void Emit(ParsingResults parsingResults)
         {
             foreach (var classInfo in parsingResults.ClassInfo)
             {
+                if (!ShouldEmit(classInfo))
+                {
+                    continue;
+                }
+
                 try
                 {
                     var generator = new ClassCodeBuilder(classInfo);
@@ -49,15 +51,19 @@ namespace Realms.SourceGenerator
                     // var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
                     var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
 
-                    context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
+                    _context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
                 }
                 catch (Exception ex)
                 {
-                    context.ReportDiagnostic(Diagnostics.UnexpectedError(classInfo.Name, ex.Message, ex.StackTrace));
+                    _context.ReportDiagnostic(Diagnostics.UnexpectedError(classInfo.Name, ex.Message, ex.StackTrace));
                     throw;
                 }
             }
+        }
 
+        private static bool ShouldEmit(ClassInfo classInfo)
+        {
+            return !classInfo.Diagnostics.Any(d => d.Severity == DiagnosticSeverity.Error);
         }
     }
 }
