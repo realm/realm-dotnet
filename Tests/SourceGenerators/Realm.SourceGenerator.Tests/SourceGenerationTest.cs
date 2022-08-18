@@ -27,7 +27,7 @@ namespace SourceGeneratorTests
     internal abstract class SourceGenerationTest
     {
         private string _testClassesPath;
-
+        private string _errorTestClassesPath;
         private string _generatedFilesPath;
 
         [OneTimeSetUp]
@@ -36,13 +36,14 @@ namespace SourceGeneratorTests
             var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location);
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
             _testClassesPath = Path.Combine(testFolder, "SourceGeneratorAssemblyToProcess");
+            _errorTestClassesPath = Path.Combine(_testClassesPath, "ErrorClasses");
             _generatedFilesPath = Path.Combine(_testClassesPath, "Generated",
-                "Realm.SourceGenerator", "Realms.SourceGenerator.RealmClassGenerator");
+                "Realm.SourceGenerator", "Realms.SourceGenerator.RealmGenerator");
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
-        protected string GetSource(string filename) =>
-            File.ReadAllText(Path.Combine(_testClassesPath, $"{filename}.cs"));
+        protected string GetSource(string filename, bool errorFolder = false) =>
+            File.ReadAllText(Path.Combine(errorFolder ? _errorTestClassesPath : _testClassesPath, $"{filename}.cs"));
 
         protected string GetGeneratedForClass(string className)
         {
@@ -74,7 +75,7 @@ namespace SourceGeneratorTests
             return File.ReadAllText(fileName);
         }
 
-        public async Task RunComparisonTest(string fileName, params string[] classNames)
+        protected async Task RunComparisonTest(string fileName, params string[] classNames)
         {
             var source = GetSource(fileName);
 
@@ -100,14 +101,14 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
-        public async Task RunSimpleComparisonTest(string className)
+        protected async Task RunSimpleComparisonTest(string className)
         {
             await RunComparisonTest(className, className);
         }
 
-        public async Task RunErrorTest(string fileName, params string[] classNames)
+        protected async Task RunErrorTest(string fileName, params string[] classNames)
         {
-            var source = GetSource(fileName);
+            var source = GetSource(fileName, true);
 
             var test = new RealmGeneratorVerifier.Test
             {
@@ -131,12 +132,12 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
-        public async Task RunSimpleErrorTest(string className)
+        protected async Task RunSimpleErrorTest(string className)
         {
             await RunErrorTest(className, className);
         }
 
-        public static DiagnosticResult Convert(DiagnosticInfo info)
+        private static DiagnosticResult Convert(DiagnosticInfo info)
         {
             var dr = new DiagnosticResult(info.Id, info.Severity)
                 .WithMessage(info.Message);

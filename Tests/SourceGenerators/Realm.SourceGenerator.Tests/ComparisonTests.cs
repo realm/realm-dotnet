@@ -33,10 +33,22 @@ namespace SourceGeneratorTests
             await RunComparisonTest(filename, classNames);
         }
 
-        [Test]
-        public async Task ErrorTest()
+        static List<string> ErrorClassNames = new()
         {
-            await RunSimpleErrorTest("NoPartialClass");
+            "ClassWithBaseType",
+            "MultiplePrimaryKeys",
+            "NoPartialClass",
+            "RealmintegerErrors",
+            "RealmObjectAndEmbeddedObjectClass",
+            "UnsupportedIndexableTypes",
+            "UnsupportedPrimaryKeyTypes",
+            "UnsupportedRequiredTypes"
+        };
+
+        [TestCaseSource(nameof(ErrorClassNames))]
+        public async Task ErrorTest(string className)
+        {
+            await RunSimpleErrorTest(className);
         }
     }
 }
