@@ -29,7 +29,7 @@ To facilitate local development setups, the following files are ignored, but it 
   ```xml
   <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-      <AdditionalFrameworks Condition="'$(AdditionalFrameworks)' == ''">net461</LocalDev>
+      <AdditionalFrameworks Condition="'$(AdditionalFrameworks)' == ''">net461</AdditionalFrameworks>
     </PropertyGroup>
   </Project>
   ```
