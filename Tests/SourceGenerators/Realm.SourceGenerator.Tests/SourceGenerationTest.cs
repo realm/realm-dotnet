@@ -27,7 +27,8 @@ namespace SourceGeneratorTests
     internal abstract class SourceGenerationTest
     {
         private string _testClassesPath;
-        private string _errorTestClassesPath;
+        private string _errorClassesPath;
+        private string _supportClassesPath;
         private string _generatedFilesPath;
 
         [OneTimeSetUp]
@@ -35,23 +36,35 @@ namespace SourceGeneratorTests
         {
             var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location);
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
-            _testClassesPath = Path.Combine(testFolder, "SourceGeneratorAssemblyToProcess");
-            _errorTestClassesPath = Path.Combine(_testClassesPath, "ErrorClasses");
-            _generatedFilesPath = Path.Combine(_testClassesPath, "Generated",
+            var assemblyToProcessFolder = Path.Combine(testFolder, "SourceGeneratorAssemblyToProcess");
+            _testClassesPath = Path.Combine(assemblyToProcessFolder, "TestClasses");
+            _errorClassesPath = Path.Combine(assemblyToProcessFolder, "ErrorClasses");
+            _supportClassesPath = Path.Combine(assemblyToProcessFolder, "SupportClasses");
+            _generatedFilesPath = Path.Combine(assemblyToProcessFolder, "Generated",
                 "Realm.SourceGenerator", "Realms.SourceGenerator.RealmGenerator");
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
-        protected string GetSource(string filename, bool errorFolder = false) =>
-            File.ReadAllText(Path.Combine(errorFolder ? _errorTestClassesPath : _testClassesPath, $"{filename}.cs"));
+        private string GetSource(string filename, ClassFolder classFolder)
+        {
+            var folder = classFolder switch
+            {
+                ClassFolder.Test => _testClassesPath,
+                ClassFolder.Error => _errorClassesPath,
+                ClassFolder.Support => _supportClassesPath,
+                _ => throw new NotImplementedException(),
+            };
 
-        protected string GetGeneratedForClass(string className)
+            return File.ReadAllText(Path.Combine(folder, $"{filename}.cs"));
+        }
+
+        private string GetGeneratedForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, $"{className}_generated.cs");
             return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
         }
 
-        protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
+        private List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
 
@@ -63,7 +76,7 @@ namespace SourceGeneratorTests
             return JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName));
         }
 
-        protected string GetDiagnosticFile(string className)
+        private string GetDiagnosticFile(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
 
@@ -77,18 +90,10 @@ namespace SourceGeneratorTests
 
         protected async Task RunComparisonTest(string fileName, params string[] classNames)
         {
-            var source = GetSource(fileName);
+            var source = GetSource(fileName, ClassFolder.Test);
 
-            var test = new RealmGeneratorVerifier.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        source
-                    },
-                },
-            };
+            var test = new RealmGeneratorVerifier.Test();
+            test.TestState.Sources.Add(source);
 
             foreach (var className in classNames)
             {
@@ -108,18 +113,10 @@ namespace SourceGeneratorTests
 
         protected async Task RunErrorTest(string fileName, params string[] classNames)
         {
-            var source = GetSource(fileName, true);
+            var source = GetSource(fileName, ClassFolder.Error);
 
-            var test = new RealmGeneratorVerifier.Test
-            {
-                TestState =
-                {
-                    Sources =
-                    {
-                        source
-                    },
-                },
-            };
+            var test = new RealmGeneratorVerifier.Test();
+            test.TestState.Sources.Add(source);
 
             foreach (var className in classNames)
             {
@@ -151,6 +148,13 @@ namespace SourceGeneratorTests
             }
 
             return dr;
+        }
+
+        private enum ClassFolder
+        {
+            Test,
+            Error,
+            Support,
         }
     }
 }
