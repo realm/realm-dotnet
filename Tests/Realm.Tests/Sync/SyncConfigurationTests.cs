@@ -109,10 +109,19 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
+        public void FlexibleSyncConfiguration_WhenAssignedNewRecoveryHandlers_Throws()
         {
             var conf = GetFakeFLXConfig();
+            Assert.That(() => conf.ClientResetHandler = new DiscardUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
             Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

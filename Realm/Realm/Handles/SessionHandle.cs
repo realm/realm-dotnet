@@ -56,10 +56,15 @@ namespace Realms.Sync
             public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle);
+            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle, bool did_recover);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback, SessionProgressCallback progress_callback, SessionWaitCallback wait_callback, SessionPropertyChangedCallback property_changed_callback, NotifyBeforeClientReset notify_before, NotifyAfterClientReset notify_after);
+            public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback,
+                                                                    SessionProgressCallback progress_callback,
+                                                                    SessionWaitCallback wait_callback,
+                                                                    SessionPropertyChangedCallback property_changed_callback,
+                                                                    NotifyBeforeClientReset notify_before,
+                                                                    NotifyAfterClientReset notify_after);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_get_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user(SessionHandle session);
@@ -280,8 +285,8 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    if (syncConfig.ClientResetHandler is DiscardLocalResetHandler ||
-                        syncConfig.ClientResetHandler?.ManualClientReset != null)
+                    if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
+                        syncConfig.ClientResetHandler.ManualClientReset != null)
                     {
                         syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
                     }
@@ -323,22 +328,37 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
         private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
+            SyncConfigurationBase syncConfig = null;
+
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-                if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
-                    discardLocalHandler.OnBeforeReset != null)
+#pragma warning disable CS0618 // Type or member is obsolete
+
+                var cb = syncConfig.ClientResetHandler switch
+                {
+                    DiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
+                    DiscardLocalResetHandler handler => handler.OnBeforeReset,
+                    RecoverUnsyncedChangesHandler handler => handler.OnBeforeReset,
+                    RecoverOrDiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
+                    _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
+                };
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                if (cb != null)
                 {
                     var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
-                    discardLocalHandler.OnBeforeReset(realmBefore);
+                    cb.Invoke(realmBefore);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnBeforeReset during a client reset: {ex}");
+                var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnBeforeReset during a client reset: {ex}");
                 return false;
             }
 
@@ -346,25 +366,40 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
-        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle)
+        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
         {
+            SyncConfigurationBase syncConfig = null;
+
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-                if (syncConfig.ClientResetHandler is DiscardLocalResetHandler discardLocalHandler &&
-                    discardLocalHandler.OnAfterReset != null)
+#pragma warning disable CS0618 // Type or member is obsolete
+
+                var cb = syncConfig.ClientResetHandler switch
+                {
+                    DiscardUnsyncedChangesHandler handler => handler.OnAfterReset,
+                    DiscardLocalResetHandler handler => handler.OnAfterReset,
+                    RecoverUnsyncedChangesHandler handler => handler.OnAfterReset,
+                    RecoverOrDiscardUnsyncedChangesHandler handler => didRecover ? handler.OnAfterRecovery : handler.OnAfterDiscard,
+                    _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
+                };
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                if (cb != null)
                 {
                     var schema = syncConfig.GetSchema();
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfig, schema);
-                    discardLocalHandler.OnAfterReset(realmBefore, realmAfter);
+                    cb.Invoke(realmBefore, realmAfter);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing DiscardLocalResetHandler.OnAfterReset during a client reset: {ex}");
+                var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
+                Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnAfterReset during a client reset: {ex}");
                 return false;
             }
 

@@ -133,7 +133,9 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
     config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
 
-    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal) {
+    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal ||
+        sync_configuration.client_resync_mode == ClientResyncMode::Recover ||
+        sync_configuration.client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
 
         config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
             if (!s_notify_before_callback(before_frozen, configuration_handle->handle())) {
@@ -143,7 +145,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
         config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
             auto after = Realm::get_shared_realm(std::move(after_reference));
-            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle())) {
+            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover)) {
                 throw ManagedExceptionDuringClientReset();
             }
         };

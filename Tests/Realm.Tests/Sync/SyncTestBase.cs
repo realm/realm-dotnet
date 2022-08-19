@@ -21,6 +21,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
+using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -31,6 +32,7 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<Session> _sessions = new();
         private readonly ConcurrentQueue<App> _apps = new();
+        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
 
         private App _defaultApp;
 
@@ -66,6 +68,14 @@ namespace Realms.Tests.Sync
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
+
+            AsyncContext.Run(async () =>
+            {
+                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
+                {
+                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
+                }
+            });
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -150,12 +160,12 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -194,6 +204,12 @@ namespace Realms.Tests.Sync
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
+        }
+
+        protected async Task DisableClientResetRecoveryOnServer(string appConfigType)
+        {
+            await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, false);
+            _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
         private static T UpdateConfig<T>(T config)
