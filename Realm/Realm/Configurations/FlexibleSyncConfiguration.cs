@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Helpers;
 using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
@@ -98,6 +99,9 @@ namespace Realms.Sync
             if (tracker.PopulateInitialDataInvoked)
             {
                 await result.Subscriptions.WaitForSynchronizationAsync();
+
+                // TODO: remove the wait once https://github.com/realm/realm-core/issues/5705 is resolved
+                await result.SyncSession.WaitForDownloadAsync();
             }
 
             return result;
@@ -170,6 +174,7 @@ namespace Realms.Sync
         {
             var config = base.CreateNativeSyncConfiguration();
             config.is_flexible_sync = true;
+            config.client_resync_mode = ClientResyncMode.Manual;
             return config;
         }
 

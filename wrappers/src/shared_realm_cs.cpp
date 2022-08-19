@@ -143,10 +143,9 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             }
         };
 
-        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after, bool did_recover) {
-            SharedRealm after_reset = after.resolve<SharedRealm>(nullptr);
-
-            if (!s_notify_after_callback(before_frozen, after_reset, configuration_handle->handle(), did_recover)) {
+        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
+            auto after = Realm::get_shared_realm(std::move(after_reference));
+            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover)) {
                 throw ManagedExceptionDuringClientReset();
             }
         };
@@ -264,8 +263,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 std::vector<SchemaProperty> schema_properties;
 
                 for (auto& object : oldRealm->schema()) {
-                    auto is_embedded = object.table_type == ObjectSchema::ObjectType::Embedded;
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, is_embedded));
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
                 }
 
                 SchemaForMarshaling schema_for_marshaling {
@@ -639,8 +637,7 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
         std::vector<SchemaProperty> schema_properties;
 
         for (auto& object : realm->schema()) {
-            auto is_embedded = object.table_type == ObjectSchema::ObjectType::Embedded;
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, is_embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
         }
 
         s_get_native_schema(SchemaForMarshaling {

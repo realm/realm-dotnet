@@ -104,6 +104,13 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
+        // TODO: this method should go away once https://github.com/realm/realm-core/issues/5705 is resolved.
+        protected static async Task WaitForSubscriptionsAsync(Realm realm)
+        {
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+            await WaitForDownloadAsync(realm);
+        }
+
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
             where T : RealmObject
         {

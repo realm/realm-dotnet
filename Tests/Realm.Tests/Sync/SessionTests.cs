@@ -42,37 +42,60 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
         public static readonly object[] AllClientResetHandlers = new object[]
         {
+            typeof(DiscardUnsyncedChangesHandler),
+            typeof(RecoverUnsyncedChangesHandler),
+            typeof(RecoverOrDiscardUnsyncedChangesHandler),
+
+            // Just to check that we don't break previous code. Remove in next major version
             typeof(DiscardLocalResetHandler),
-            typeof(AutomaticRecoveryHandler),
-            typeof(AutomaticOrDiscardRecoveryHandler),
+        };
+
+        // Just to check that we don't break previous code. Remove in next major version
+        public static readonly object[] ObosoleteHandlerCoexistence = new object[]
+        {
+            typeof(DiscardUnsyncedChangesHandler),
+            typeof(DiscardLocalResetHandler),
         };
 
         [Preserve]
         static SessionTests()
         {
-            var preserveAutomaticHandler = new AutomaticRecoveryHandler
+            var preserveRecoverHandler = new RecoverUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
 
-            var preserveAutomaticOrDiscardHandler = new AutomaticOrDiscardRecoveryHandler
+            var preserveRecoverOrDiscardHandler = new RecoverOrDiscardUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
-                OnAfterAutomaticReset = (beforeFrozen, after) => { },
-                OnAfterDiscardLocalReset = (beforeFrozen, after) => { },
+                OnAfterRecovery = (beforeFrozen, after) => { },
+                OnAfterDiscard = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
 
-            var preserveDiscardLocalHandler = new DiscardLocalResetHandler
+            var preserveDiscardHandler = new DiscardUnsyncedChangesHandler
             {
                 OnBeforeReset = (beforeFrozen) => { },
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
+
+            // Just to check that we don't break previous code. Remove in next major version
+            var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler
+            {
+                OnBeforeReset = (beforeFrozen) => { },
+                OnAfterReset = (beforeFrozen, after) => { },
+                ManualResetFallback = (clientResetException) => { },
+            };
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
         }
 
         public static readonly string[] AppTypes = new[]
@@ -347,10 +370,10 @@ namespace Realms.Tests.Sync
                     Assert.That(after.All<ObjectWithPartitionValue>().Count, Is.EqualTo(0));
                 });
 
-                config.ClientResetHandler = new AutomaticOrDiscardRecoveryHandler
+                config.ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler
                 {
-                    OnAfterAutomaticReset = afterAutomaticResetCb,
-                    OnAfterDiscardLocalReset = afterDiscardLocalResetCb,
+                    OnAfterRecovery = afterAutomaticResetCb,
+                    OnAfterDiscard = afterDiscardLocalResetCb,
                 };
 
                 var realm = await GetRealmAsync(config);
@@ -407,7 +430,7 @@ namespace Realms.Tests.Sync
                     Assert.That(list, Is.EqualTo(new[] { "0", "1" }));
                 });
 
-                configA.ClientResetHandler = new AutomaticRecoveryHandler()
+                configA.ClientResetHandler = new RecoverUnsyncedChangesHandler()
                 {
                     OnAfterReset = afterCbA
                 };
@@ -445,7 +468,7 @@ namespace Realms.Tests.Sync
                     // We added an object in the tail, that should be merged
                     Assert.That(list, Is.EqualTo(new[] { "0", "1", "3" }));
                 });
-                configB.ClientResetHandler = new AutomaticRecoveryHandler()
+                configB.ClientResetHandler = new RecoverUnsyncedChangesHandler()
                 {
                     OnAfterReset = afterCbB
                 };
@@ -564,7 +587,7 @@ namespace Realms.Tests.Sync
                 Assert.That(onBeforeTriggered, Is.True);
 
                 var objs = realm.All<ObjectWithPartitionValue>();
-                var isDiscardLocal = config.ClientResetHandler.ClientResetMode == ClientResyncMode.DiscardLocal;
+                var isDiscardLocal = config.ClientResetHandler.ClientResetMode == ClientResyncMode.Discard;
                 var objectsCount = isDiscardLocal ? 1 : 2;
 
                 await TestHelpers.WaitForConditionAsync(() => objs.Count() == objectsCount);
@@ -660,7 +683,7 @@ namespace Realms.Tests.Sync
 
                 void AssertHelper(Realm realm)
                 {
-                    var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.DiscardLocal ?
+                    var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.Discard ?
                         new[] { alwaysSynced } : new[] { alwaysSynced, maybeSynced };
 
                     Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
@@ -668,15 +691,15 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
-        public void Session_ClientResetDiscard_TriggersNotifications()
+        [TestCaseSource(nameof(ObosoleteHandlerCoexistence))]
+        public void Session_ClientResetDiscard_TriggersNotifications(Type handlerType)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 // We'll add an object with the wrong partition
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-                config.ClientResetHandler = new DiscardLocalResetHandler();
+                config.ClientResetHandler = (ClientResetHandlerBase)Activator.CreateInstance(handlerType);
 
                 using var realm = await GetRealmAsync(config);
 
@@ -1671,20 +1694,20 @@ namespace Realms.Tests.Sync
 
             if (beforeCb != null)
             {
-                type.GetProperty(nameof(DiscardLocalResetHandler.OnBeforeReset)).SetValue(handler, beforeCb);
+                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.OnBeforeReset)).SetValue(handler, beforeCb);
             }
 
             if (afterCb != null)
             {
                 var cbName = string.Empty;
 
-                if (type == typeof(AutomaticOrDiscardRecoveryHandler))
+                if (type == typeof(RecoverOrDiscardUnsyncedChangesHandler))
                 {
-                    cbName = nameof(AutomaticOrDiscardRecoveryHandler.OnAfterAutomaticReset);
+                    cbName = nameof(RecoverOrDiscardUnsyncedChangesHandler.OnAfterRecovery);
                 }
                 else
                 {
-                    cbName = nameof(DiscardLocalResetHandler.OnAfterReset);
+                    cbName = nameof(DiscardUnsyncedChangesHandler.OnAfterReset);
                 }
 
                 type.GetProperty(cbName).SetValue(handler, afterCb);
@@ -1692,7 +1715,7 @@ namespace Realms.Tests.Sync
 
             if (manualCb != null)
             {
-                type.GetProperty(nameof(DiscardLocalResetHandler.ManualResetFallback)).SetValue(handler, manualCb);
+                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.ManualResetFallback)).SetValue(handler, manualCb);
             }
 
             return handler;

@@ -77,7 +77,7 @@ REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary,
         auto mixed_value = dictionary.try_get_any(from_capi(key.string));
         if (mixed_value)
         {
-            *value = to_capi(dictionary, mixed_value.value());
+            *value = to_capi(dictionary, *mixed_value);
             return true;
         }
 
@@ -118,7 +118,7 @@ REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictio
         auto dict_key = from_capi(key.string);
         auto dict_value = dictionary.try_get_any(dict_key);
 
-        if (dict_value && are_equal(value, dict_value.value()))
+        if (dict_value && are_equal(value, *dict_value))
         {
             dictionary.erase(dict_key);
             return true;
