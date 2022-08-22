@@ -23,6 +23,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Testing;
 using Realms;
+using MongoDB.Bson;
 
 namespace SourceGeneratorTests
 {
@@ -35,6 +36,7 @@ namespace SourceGeneratorTests
             public Test()
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60;
+                TestState.AdditionalReferences.Add(typeof(ObjectId).Assembly.Location);
                 TestState.AdditionalReferences.Add(typeof(Realm).Assembly.Location);
 
                 // Removes the emission of the usual compiler diagnostics
