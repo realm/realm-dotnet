@@ -174,7 +174,6 @@ namespace Realms.Sync
         {
             var config = base.CreateNativeSyncConfiguration();
             config.is_flexible_sync = true;
-            config.client_resync_mode = ClientResyncMode.Manual;
             return config;
         }
 
