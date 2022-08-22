@@ -734,6 +734,7 @@ namespace Realms.Tests.Sync
 
                 session.Start();
 
+                await session.WaitForDownloadAsync();
                 await tcs.Task;
                 Assert.That(onAfterTriggered, Is.True);
 
