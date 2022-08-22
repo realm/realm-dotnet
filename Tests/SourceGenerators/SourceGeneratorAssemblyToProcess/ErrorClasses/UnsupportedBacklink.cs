@@ -16,21 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Linq;
 using Realms;
 
 namespace SourceGeneratorPlayground
 {
-    public partial class BacklinkClass : IRealmObject
-    {
-        public UnsupportedBacklink InverseLink { get; set; }
-    }
-
     public partial class UnsupportedBacklink : IRealmObject
     {
         [Backlink("WrongPropertyName")]
-        public IQueryable<BacklinkClass> WrongBacklinkProp { get; }
+        public IQueryable<BacklinkObj> WrongBacklinkProp { get; }
 
-        [Backlink(nameof(BacklinkClass.InverseLink))]
-        public IQueryable<BacklinkClass> CorrectBacklinkProp { get; }
+        [Backlink(nameof(BacklinkObj.InverseLink))]
+        public IQueryable<BacklinkObj> CorrectBacklinkProp { get; }
+    }
+
+    public partial class BacklinkObj : IRealmObject
+    {
+        public int Id { get; set; }
+
+        [PrimaryKey]
+        public UnsupportedBacklink InverseLink { get; set; }
     }
 }

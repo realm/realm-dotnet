@@ -24,10 +24,6 @@ namespace SourceGeneratorPlayground
     {
         public IQueryable<char> QueryableOfUnsupported { get; }
 
-        public IQueryable<OtherObject> QueryableWithGetters { get; set; }
-    }
-
-    public partial class OtherObject : IRealmObject
-    {
+        public IQueryable<RealmObj> QueryableWithGetters { get; set; }
     }
 }

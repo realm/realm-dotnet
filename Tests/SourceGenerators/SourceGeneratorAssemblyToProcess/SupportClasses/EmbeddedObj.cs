@@ -15,34 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+
 using Realms;
 
 namespace SourceGeneratorPlayground
 {
-    public partial class UnsupportedIndexableTypes : IRealmObject
+    public partial class EmbeddedObj : IEmbeddedObject
     {
-        [Indexed]
-        public RealmInteger<int>? NullableRealmIntegerProp { get; set; }
+        public int Id { get; set; }
 
-        [Indexed]
-        public byte[] ByteArrayProp { get; set; }
-
-        [Indexed]
-        public float FloatProp { get; set; }
-
-        [Indexed]
-        public double DoubleProp { get; set; }
-
-        [Indexed]
-        public RealmObj ObjectProp { get; set; }
-
-        [Indexed]
-        public RealmValue RealmvalueProp { get; set; }
-
-        [Indexed]
-        public decimal DecimalProp { get; set; }
-
-        [Indexed]
-        public int[] UnsupportedProp { get; set; }
     }
 }

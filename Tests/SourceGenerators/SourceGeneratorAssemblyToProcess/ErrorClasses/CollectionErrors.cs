@@ -39,9 +39,4 @@ namespace SourceGeneratorPlayground
         
         public List<int> ListInsteadOfIlist { get; }
     }
-
-    public partial class EmbeddedObj : IEmbeddedObject
-    {
-
-    }
 }

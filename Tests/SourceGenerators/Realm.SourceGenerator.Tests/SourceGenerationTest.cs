@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Newtonsoft.Json;
 using Realms.SourceGenerator;
@@ -31,6 +30,11 @@ namespace SourceGeneratorTests
         private string _supportClassesPath;
         private string _generatedFilesPath;
 
+        private string[] _supportClasses = new[] {
+            "RealmObj",
+            "EmbeddedObj",
+        };
+
         [OneTimeSetUp]
         public void Setup()
         {
@@ -44,6 +48,10 @@ namespace SourceGeneratorTests
                 "Realm.SourceGenerator", "Realms.SourceGenerator.RealmGenerator");
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
+
+        private string GetGeneratedFileNameForClass(string className) => $"{className}_generated.cs";
+
+        private string GetDiagnosticFileNameForClass(string className) => $"{className}.diagnostics.cs";
 
         private string GetSource(string filename, ClassFolder classFolder)
         {
@@ -60,36 +68,23 @@ namespace SourceGeneratorTests
 
         private string GetGeneratedForClass(string className)
         {
-            var fileName = Path.Combine(_generatedFilesPath, $"{className}_generated.cs");
-            return File.Exists(fileName) ? File.ReadAllText(fileName) : string.Empty;
+            var fileName = Path.Combine(_generatedFilesPath, GetGeneratedFileNameForClass(className));
+            return File.Exists(fileName) ? File.ReadAllText(fileName) : null;
         }
 
         private List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
-            var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
-
-            if (!File.Exists(fileName))
-            {
-                return null;
-            }
-
-            return JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName));
+            var fileName = Path.Combine(_generatedFilesPath, GetDiagnosticFileNameForClass(className));
+            return File.Exists(fileName) ? JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName)) : null;
         }
 
-        private string GetDiagnosticFile(string className)
+        protected async Task RunComparisonTest(string fileName, IEnumerable<string> classNames)
         {
-            var fileName = Path.Combine(_generatedFilesPath, $"{className}.diagnostics.cs");
-
-            if (!File.Exists(fileName))
+            if (!classNames.Any())
             {
-                return null;
+                classNames = classNames.Append(fileName);
             }
 
-            return File.ReadAllText(fileName);
-        }
-
-        protected async Task RunComparisonTest(string fileName, params string[] classNames)
-        {
             var source = GetSource(fileName, ClassFolder.Test);
 
             var test = new RealmGeneratorVerifier.Test();
@@ -98,7 +93,7 @@ namespace SourceGeneratorTests
             foreach (var className in classNames)
             {
                 var generated = GetGeneratedForClass(className);
-                var generatedFileName = $"{className}_generated.cs";
+                var generatedFileName = GetGeneratedFileNameForClass(className);
 
                 test.TestState.GeneratedSources.Add((typeof(RealmGenerator), generatedFileName, generated));
             }
@@ -106,13 +101,13 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
-        protected async Task RunSimpleComparisonTest(string className)
+        protected async Task RunErrorTest(string fileName, IEnumerable<string> classNames)
         {
-            await RunComparisonTest(className, className);
-        }
+            if (!classNames.Any())
+            {
+                classNames = classNames.Append(fileName);
+            }
 
-        protected async Task RunErrorTest(string fileName, params string[] classNames)
-        {
             var source = GetSource(fileName, ClassFolder.Error);
 
             var test = new RealmGeneratorVerifier.Test();
@@ -120,18 +115,28 @@ namespace SourceGeneratorTests
 
             foreach (var className in classNames)
             {
-                var diagnosticFileName = $"{className}.diagnostics.cs";
                 var diagnostics = GetDiagnosticsForClass(className);
 
                 test.TestState.ExpectedDiagnostics.AddRange(diagnostics.Select(Convert));
             }
 
+            AddSupportClasses(test);
+
             await test.RunAsync();
         }
 
-        protected async Task RunSimpleErrorTest(string className)
+        private void AddSupportClasses(RealmGeneratorVerifier.Test test)
         {
-            await RunErrorTest(className, className);
+            foreach (var supportClassName in _supportClasses)
+            {
+                var source = GetSource(supportClassName, ClassFolder.Support);
+                test.TestState.Sources.Add(source);
+
+                var generated = GetGeneratedForClass(supportClassName);
+                var generatedFileName = GetGeneratedFileNameForClass(supportClassName);
+
+                test.TestState.GeneratedSources.Add((typeof(RealmGenerator), generatedFileName, generated));
+            }
         }
 
         private static DiagnosticResult Convert(DiagnosticInfo info)

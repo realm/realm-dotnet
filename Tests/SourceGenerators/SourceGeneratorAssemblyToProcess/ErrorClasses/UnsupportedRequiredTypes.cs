@@ -43,7 +43,7 @@ namespace SourceGeneratorPlayground
         public double DoubleProp { get; set; }
 
         [Required]
-        public MultiplePrimaryKeys ObjectProp { get; set; }
+        public RealmObj ObjectProp { get; set; }
 
         [Required]
         public RealmValue RealmvalueProp { get; set; }

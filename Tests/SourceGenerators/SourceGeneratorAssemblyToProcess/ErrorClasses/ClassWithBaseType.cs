@@ -20,7 +20,7 @@ using Realms;
 
 namespace SourceGeneratorPlayground
 {
-    public partial class ClassWithBaseType : NoPropertiesClass, IRealmObject
+    public partial class ClassWithBaseType : RealmObj, IRealmObject
     {
     }
 

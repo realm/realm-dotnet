@@ -22,33 +22,24 @@ namespace SourceGeneratorTests
     internal class ComparisonTests : SourceGenerationTest
     {
         [TestCase("AllTypesClass")]
-        public async Task SimpleComparisonTest(string className)
-        {
-            await RunSimpleComparisonTest(className);
-        }
-
         [TestCase("PersonWithDog", "Person", "Dog")]
         public async Task ComparisonTest(string filename, params string[] classNames)
         {
             await RunComparisonTest(filename, classNames);
         }
 
-        static List<string> ErrorClassNames = new()
+        [TestCase("ClassWithBaseType")]
+        [TestCase("MultiplePrimaryKeys")]
+        [TestCase("NoPartialClass")]
+        [TestCase("RealmintegerErrors")]
+        [TestCase("RealmObjectAndEmbeddedObjectClass")]
+        [TestCase("UnsupportedIndexableTypes")]
+        [TestCase("UnsupportedPrimaryKeyTypes")]
+        [TestCase("UnsupportedRequiredTypes")]
+        [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
+        public async Task ErrorComparisonTest(string filename, params string[] classNames)
         {
-            "ClassWithBaseType",
-            "MultiplePrimaryKeys",
-            "NoPartialClass",
-            "RealmintegerErrors",
-            "RealmObjectAndEmbeddedObjectClass",
-            "UnsupportedIndexableTypes",
-            "UnsupportedPrimaryKeyTypes",
-            "UnsupportedRequiredTypes"
-        };
-
-        [TestCaseSource(nameof(ErrorClassNames))]
-        public async Task ErrorTest(string className)
-        {
-            await RunSimpleErrorTest(className);
+            await RunErrorTest(filename, classNames);
         }
     }
 }
