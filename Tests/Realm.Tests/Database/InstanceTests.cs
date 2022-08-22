@@ -1146,6 +1146,8 @@ namespace Realms.Tests.Database
             var oldLastModified = embedded.DynamicApi.Get<DateTimeOffset>("LastModified");
             Assert.That(oldLastModified, Is.LessThanOrEqualTo(DateTimeOffset.UtcNow));
 
+            Task.Delay(1).Wait();
+
             realm.Write(() =>
             {
                 embedded.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
