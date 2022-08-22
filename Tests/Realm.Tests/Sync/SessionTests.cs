@@ -296,42 +296,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [TestCaseSource(nameof(AllClientResetHandlers))]
-        public void Session_ClientResetHandlers_OnBefore_And_OnAfter(Type handlerType)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var onBeforeTriggered = false;
-                var onAfterTriggered = false;
-                var tcs = new TaskCompletionSource<object>();
-                var config = await GetIntegrationConfigAsync();
-
-                var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
-                {
-                    Assert.That(onBeforeTriggered, Is.False);
-                    Assert.That(onAfterTriggered, Is.False);
-                    onBeforeTriggered = true;
-                });
-
-                var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
-                {
-                    Assert.That(onBeforeTriggered, Is.True);
-                    Assert.That(onAfterTriggered, Is.False);
-                    onAfterTriggered = true;
-                });
-
-                config.ClientResetHandler = GetClientResetHandler(handlerType, beforeCb, afterCb);
-                using var realm = await GetRealmAsync(config);
-
-                GetSession(realm).SimulateClientReset("simulated client reset");
-
-                await tcs.Task;
-
-                Assert.That(onBeforeTriggered, Is.True);
-                Assert.That(onAfterTriggered, Is.True);
-            });
-        }
-
         [TestCaseSource(nameof(PbsAndFlexSyncClientResetHandlers))]
         public void Session_ClientResetHandlers_OnBefore_And_OnAfter(SyncConfigurationSetup setup)
         {
@@ -356,7 +320,6 @@ namespace Realms.Tests.Sync
                     Assert.That(onAfterTriggered, Is.False);
                     onAfterTriggered = true;
                 });
-
                 config.ClientResetHandler = GetClientResetHandler(setup.HandlerType, beforeCb, afterCb);
                 using var realm = await GetRealmAsync(config);
 
@@ -554,31 +517,10 @@ namespace Realms.Tests.Sync
             });
         }
 
+
+
         [TestCaseSource(nameof(PbsAndFlexSyncClientResetHandlers))]
         public void Session_ClientResetHandlers_AccessRealm_OnBeforeReset(SyncConfigurationSetup setup)
-        {
-            const string alwaysSynced = "always synced";
-            const string maybeSynced = "deleted only on discardLocal";
-
-                    var list = realmA.All<SyncObjectWithRequiredStringList>().Single().Strings;
-
-                    // After clientB merges and uploads the changes,
-                    // clientA should receive the updated status
-                    Assert.That(list, Is.EqualTo(new[] { "0", "1", "3" }));
-
-                    tcsAfterRemoteUpdateA.TrySetResult(null);
-                });
-
-                // ===== clientB =====
-                sessionB.Start();
-
-                await tcsAfterClientResetB.Task;
-                await tcsAfterRemoteUpdateA.Task;
-            });
-        }
-
-        [TestCaseSource(nameof(AllClientResetHandlers))]
-        public void Session_ClientResetHandlers_AccessRealm_OnBeforeReset(Type handlerType)
         {
             const string alwaysSynced = "always synced";
             const string maybeSynced = "deleted only on discardLocal";
@@ -717,9 +659,6 @@ namespace Realms.Tests.Sync
                 var session = GetSession(realm);
                 session.Stop();
 
-                var session = GetSession(realm);
-                session.Stop();
-
                 realm.Write(() =>
                 {
                     realm.Add(new ObjectWithPartitionValue
@@ -734,7 +673,6 @@ namespace Realms.Tests.Sync
 
                 session.Start();
 
-                await session.WaitForDownloadAsync();
                 await tcs.Task;
                 Assert.That(onAfterTriggered, Is.True);
 
@@ -1914,16 +1852,6 @@ namespace Realms.Tests.Sync
             public string Partition { get; set; }
 
             public Guid Guid { get; set; }
-        }
-
-        public class SyncObjectWithRequiredStringList : RealmObject
-        {
-            [PrimaryKey]
-            [MapTo("_id")]
-            public string Id { get; set; }
-
-            [Required]
-            public IList<string> Strings { get; }
         }
 
         public class SyncObjectWithRequiredStringList : RealmObject
