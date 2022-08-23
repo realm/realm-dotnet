@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard local strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. An example is as follows
+* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard unsynced strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. More info on the aforementioned strategies can be found in our [docs page](https://www.mongodb.com/docs/realm/sdk/dotnet/advanced-guides/client-reset/). An example usage of one of the new handler is as follows:
   ```cs
   var conf = new PartitionSyncConfiguration(partition, user)
   {
@@ -29,7 +29,6 @@
   };
   ```
   (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
-* None
 
 ### Fixed
 * None
@@ -56,36 +55,7 @@
 ## 10.15.0 (2022-08-05)
 
 ### Enhancements
-* Added support in flexible sync for all the new client reset handlers (`AutomaticRecoveryHandler` and `DiscardLocalResetHandler`). (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
-* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard local strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. An example is as follows
-  ```cs
-  var conf = new PartitionSyncConfiguration(partition, user)
-  {
-    ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler
-    {
-      // As always, the following callbacks are optional
-
-      OnBeforeReset = (beforeFrozen) =>
-      {
-        // executed right before a client reset is about to happen
-      },
-      OnAfterRecovery = (beforeFrozen, after) =>
-      {
-        // executed right after an automatic recovery from a client reset has completed
-      },
-      OnAfterDiscard = (beforeFrozen, after) =>
-      {
-        // executed after an automatic recovery from a client reset has failed but the DiscardUnsyncedChanges fallback has completed
-      },
-      ManualResetFallback = (session, err) =>
-      {
-        // handle the reset manually
-      }
-    }
-  };
-  ```
-  (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
 * Reduce use of memory mappings and virtual address space (Core upgrade)
 
