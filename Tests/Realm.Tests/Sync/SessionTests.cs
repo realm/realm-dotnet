@@ -517,8 +517,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-
-
         [TestCaseSource(nameof(PbsAndFlexSyncClientResetHandlers))]
         public void Session_ClientResetHandlers_AccessRealm_OnBeforeReset(SyncConfigurationSetup setup)
         {
@@ -956,8 +954,8 @@ namespace Realms.Tests.Sync
                 CleanupOnTearDown(onSessionError);
 
                 session.SimulateClientReset("simulated client reset");
+                await Task.Delay(1000);
                 session.SimulateAutomaticClientResetFailure("failure #2");
-
                 await Task.Delay(1000);
 
                 Assert.That(obsoleteSessionErrorTriggered, Is.False);
