@@ -203,7 +203,7 @@ namespace Realms.Tests.Sync
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
             var user = await GetUserAsync(app);
-            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+            return GetFLXIntegrationConfig(user, optionalPath);
         }
 
         protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)

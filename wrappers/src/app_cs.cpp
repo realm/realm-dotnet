@@ -319,17 +319,8 @@ extern "C" {
             user->log_out();
         }
 
-        // TODO andrea: ask why this is assumed to always finish.
-        // How bad is it if we can't properly finish the clean up?
-        for (int i = 0; i < 200; i++) {
-            if (!app->sync_manager()->has_existing_sessions()) break;
-
+        while (app->sync_manager()->has_existing_sessions()) {
             sleep_ms(5);
-        }
-
-        if (app->sync_manager()->has_existing_sessions()) {
-            // TODO andrea: is returning just fine here?
-            return;
         }
 
         bool did_reset = false;
