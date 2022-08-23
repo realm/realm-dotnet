@@ -56,7 +56,6 @@
 
 ### Enhancements
 * Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
-* Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
 * Reduce use of memory mappings and virtual address space (Core upgrade)
 
 ### Fixed
