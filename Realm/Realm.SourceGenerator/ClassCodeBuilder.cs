@@ -613,9 +613,8 @@ namespace Realms.Generated
         {
             var propertiesBuilder = new StringBuilder();
 
-            for (var i = 0; i < _classInfo.Properties.Count; i++)
+            foreach (var property in _classInfo.Properties)
             {
-                var property = _classInfo.Properties[i];
                 var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;

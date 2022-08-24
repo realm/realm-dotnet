@@ -79,7 +79,7 @@ namespace Realms.SourceGenerator
                     // Properties
                     var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
 
-                    FillPropertyInfo(classInfo, propertiesSyntax, semanticModel);
+                    classInfo.Properties = GetProperties(classInfo, propertiesSyntax, semanticModel).ToArray();
 
                     if (classInfo.Properties.Count(p => p.IsPrimaryKey) > 1)
                     {
@@ -98,7 +98,7 @@ namespace Realms.SourceGenerator
             return result;
         }
 
-        private static void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        private static IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -109,17 +109,18 @@ namespace Realms.SourceGenerator
                     continue;
                 }
 
-                var info = new PropertyInfo();
-
-                info.Name = propSymbol.Name;
-                info.Accessibility = propSymbol.DeclaredAccessibility;
-                info.IsIndexed = propSymbol.HasAttribute("IndexedAttribute");
-                info.IsRequired = propSymbol.HasAttribute("RequiredAttribute");
-                info.IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute");
-                info.MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute");
-                info.Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute");
-                info.Initializer = propSyntax.Initializer?.ToString();
-                info.TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax);
+                var info = new PropertyInfo
+                {
+                    Name = propSymbol.Name,
+                    Accessibility = propSymbol.DeclaredAccessibility,
+                    IsIndexed = propSymbol.HasAttribute("IndexedAttribute"),
+                    IsRequired = propSymbol.HasAttribute("RequiredAttribute"),
+                    IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute"),
+                    MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute"),
+                    Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute"),
+                    Initializer = propSyntax.Initializer?.ToString(),
+                    TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax)
+                };
 
                 if (info.TypeInfo.IsUnsupported)
                 {
@@ -189,7 +190,7 @@ namespace Realms.SourceGenerator
                     }
                 }
 
-                classInfo.Properties.Add(info);
+                yield return info;
             }
         }
 
@@ -219,14 +220,14 @@ namespace Realms.SourceGenerator
                 return propertyType;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyType.SupportsNullability())
+            if (!propertyType.HasCorrectNullabilityAnnotation())
             {
                 classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             if (propertyType.IsRealmInteger)
             {
-                var argument = (propertyType.TypeSymbol as INamedTypeSymbol).TypeArguments.Single();
+                var argument = propertyType.TypeSymbol.AsNamed().TypeArguments.Single();
 
                 if (!argument.IsValidRealmIntgerType())
                 {
@@ -239,7 +240,10 @@ namespace Realms.SourceGenerator
             }
             else if (propertyType.IsIQueryable)
             {
-                var argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
+                // TODO: these checks are a bit too restrictive as they operate on IQueryable that may not have
+                // been annotated with [Backlink] - e.g. IQueryable<string> Foo { get; set; }
+                // We should make sure we only return unsupported if the property is actually a backlink.
+                var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
                 var internalType = GetSingleLevelPropertyTypeInfo(argument);
 
@@ -261,13 +265,11 @@ namespace Realms.SourceGenerator
             {
                 PropertyTypeInfo internalPropertyType;
                 ITypeSymbol argument;
-                bool isUnsupported = false;
-
-                var collectionTypeString = propertyType.CollectionType.ToString();
+                var isUnsupported = false;
 
                 if (propertyType.IsDictionary)
                 {
-                    var dictionaryArguments = (typeSymbol as INamedTypeSymbol).TypeArguments;
+                    var dictionaryArguments = typeSymbol.AsNamed().TypeArguments;
                     var keyArgument = dictionaryArguments[0];
                     var valueArgument = dictionaryArguments[1];
 
@@ -286,7 +288,7 @@ namespace Realms.SourceGenerator
                 else
                 {
                     // List or Set
-                    argument = (typeSymbol as INamedTypeSymbol).TypeArguments.Single();
+                    argument = typeSymbol.AsNamed().TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
                     if (propertyType.IsSet && internalPropertyType.SimpleType == SimpleTypeEnum.Object && argument.IsEmbeddedObject())
@@ -298,6 +300,7 @@ namespace Realms.SourceGenerator
                     propertyType.InternalType = internalPropertyType;
                 }
 
+                var collectionTypeString = propertyType.CollectionType.ToString();
                 if (argument.IsRealmInteger())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
