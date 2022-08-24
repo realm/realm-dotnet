@@ -49,9 +49,9 @@ namespace SourceGeneratorTests
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
-        private string GetGeneratedFileNameForClass(string className) => $"{className}_generated.cs";
+        private static string GetGeneratedFileNameForClass(string className) => $"{className}_generated.cs";
 
-        private string GetDiagnosticFileNameForClass(string className) => $"{className}.diagnostics.cs";
+        private static string GetDiagnosticFileNameForClass(string className) => $"{className}.diagnostics.cs";
 
         private string GetSource(string filename, ClassFolder classFolder)
         {
