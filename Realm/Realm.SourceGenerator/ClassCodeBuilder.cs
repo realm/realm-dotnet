@@ -17,12 +17,28 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Realms.SourceGenerator
 {
     internal class ClassCodeBuilder
     {
+        private readonly string[] _defaultNamespaces = new string[]
+        {
+            "System",
+            "System.Collections.Generic",
+            "System.Linq",
+            "System.Runtime.CompilerServices",
+            "System.ComponentModel",
+            "Realms",
+            "Realms.Weaving",
+            "Realms.Generated",
+            "Realms.Schema",
+           // "MongoDB.Bson",
+        };
+
         private ClassInfo _classInfo;
 
         private string _helperClassName;
@@ -42,17 +58,7 @@ namespace Realms.SourceGenerator
 
         public string GenerateSource()
         {
-            var usings = @$"using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Collections.Generic;
-using System.Linq;
-using System;
-using Realms;
-using Realms.Weaving;
-using Realms.Generated;
-using Realms.Schema;
-using MongoDB.Bson;
-using {_classInfo.Namespace};";
+            var usings = GetUsings();
 
             var partialClassString = GeneratePartialClass();
             var interfaceString = GenerateInterface();
@@ -78,6 +84,23 @@ namespace Realms.Generated
 {unmanagedAccessorString}
 }}
 ";
+        }
+
+        private string GetUsings()
+        {
+            var namespaces = new HashSet<string>() { _classInfo.Namespace };
+            namespaces.UnionWith(_defaultNamespaces);
+
+            foreach (var property in _classInfo.Properties)
+            {
+                namespaces.Add(property.TypeInfo.Namespace);
+                if (property.TypeInfo.InternalType != null)
+                {
+                    namespaces.Add(property.TypeInfo.InternalType.Namespace);
+                }
+            }
+
+            return string.Join(Environment.NewLine, namespaces.Select(s => $"using {s};"));
         }
 
         private string GenerateInterface()

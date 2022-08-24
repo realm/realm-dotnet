@@ -40,6 +40,8 @@ namespace Realms.SourceGenerator
 
         public List<Diagnostic> Diagnostics { get; set; } = new List<Diagnostic>();
 
+        public List<string> Usings { get; set; } = new List<string>();
+
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 
@@ -104,6 +106,8 @@ namespace Realms.SourceGenerator
         public virtual NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
 
         public bool HasNullabilityAnnotation => NullableAnnotation == NullableAnnotation.Annotated;
+
+        public string Namespace { get; set; }
 
         public ITypeSymbol TypeSymbol { get; set; }
 
