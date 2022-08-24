@@ -36,9 +36,9 @@ namespace Realms.SourceGenerator
 
         public ITypeSymbol TypeSymbol { get; set; }
 
-        public List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
+        public PropertyInfo[] Properties { get; set; }
 
-        public List<Diagnostic> Diagnostics { get; set; } = new List<Diagnostic>();
+        public List<Diagnostic> Diagnostics { get; } = new();
 
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
@@ -206,7 +206,7 @@ namespace Realms.SourceGenerator
             return _requiredTypes.Contains(SimpleType);
         }
 
-        public bool SupportsNullability()
+        public bool HasCorrectNullabilityAnnotation()
         {
             if (NullableAnnotation == NullableAnnotation.Annotated &&
                 (IsCollection || IsIQueryable || SimpleType == SimpleTypeEnum.RealmValue))

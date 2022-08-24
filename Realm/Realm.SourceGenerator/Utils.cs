@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -86,6 +87,16 @@ namespace Realms.SourceGenerator
         public static bool IsEmbeddedObject(this ITypeSymbol symbol)
         {
             return symbol.AllInterfaces.Any(i => i.Name == "IEmbeddedObject");
+        }
+
+        public static INamedTypeSymbol AsNamed(this ITypeSymbol symbol)
+        {
+            if (symbol is INamedTypeSymbol namedSymbol)
+            {
+                return namedSymbol;
+            }
+
+            throw new Exception($"symbol is not INamedTypeSymbol. Actual type: {symbol.GetType().Name}");
         }
 
         public static string ToDisplayString(this Accessibility acc)
