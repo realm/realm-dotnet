@@ -60,6 +60,8 @@ namespace Realms.SourceGenerator
         public PropertyTypeInfo TypeInfo { get; set; }
 
         public Accessibility Accessibility { get; set; }
+
+        public string Initializer { get; set; }
     }
 
     internal abstract record PropertyTypeInfo

@@ -98,7 +98,7 @@ namespace Realms.SourceGenerator
             return result;
         }
 
-        private void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        private static void FillPropertyInfo(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -118,6 +118,7 @@ namespace Realms.SourceGenerator
                 info.IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute");
                 info.MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute");
                 info.Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute");
+                info.Initializer = propSyntax.Initializer?.ToString();
                 info.TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax);
 
                 if (info.TypeInfo.IsUnsupported)
@@ -192,7 +193,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;

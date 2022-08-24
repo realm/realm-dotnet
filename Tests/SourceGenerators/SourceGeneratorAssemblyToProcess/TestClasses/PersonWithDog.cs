@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
 using Realms;
 
@@ -24,7 +25,7 @@ namespace SourceGeneratorPlayground
     public partial class Person : IRealmObject
     {
         [PrimaryKey]
-        public int Id { set; get; }
+        public Guid Id { set; get; } = Guid.NewGuid();
 
         public string Name { get; set; }
 

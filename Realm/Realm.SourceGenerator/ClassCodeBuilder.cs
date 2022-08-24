@@ -407,7 +407,8 @@ namespace Realms.Generated
                 else
                 {
                     // Properties
-                    var backingFieldString = $"        private {type} {backingFieldName};";
+                    var initializerString = string.IsNullOrEmpty(property.Initializer) ? string.Empty : $" {property.Initializer}";
+                    var backingFieldString = $"        private {type} {backingFieldName}{initializerString};";
 
                     var propertyString = @$"        public {type} {name}
         {{

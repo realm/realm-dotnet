@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
+            Property.Primitive("Id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Backlinks("Dogs", "Dog", "Owner"),
 
@@ -150,7 +150,7 @@ namespace Realms.Generated
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IPersonAccessor : IRealmAccessor
     {
-        int Id { get; set; }
+        Guid Id { get; set; }
 
         string Name { get; set; }
 
@@ -163,9 +163,9 @@ namespace Realms.Generated
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
     {
-        public int Id
+        public Guid Id
         {
-            get => (int)GetValue("Id");
+            get => (Guid)GetValue("Id");
             set => SetValueUnique("Id", value);
         }
         public string Name
@@ -193,8 +193,8 @@ namespace Realms.Generated
     
     internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
     {
-        private int _id;
-        public int Id
+        private Guid _id = Guid.NewGuid();
+        public Guid Id
         {
             get => _id;
             set
@@ -255,7 +255,7 @@ namespace Realms.Generated
                 throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
             }
 
-            Id = (int)val;
+            Id = (Guid)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
