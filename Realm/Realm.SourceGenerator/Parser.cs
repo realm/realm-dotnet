@@ -34,7 +34,7 @@ namespace Realms.SourceGenerator
             _context = context;
         }
 
-        public ParsingResults Parse(List<RealmClassDefinition> realmClasses)
+        public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
         {
             var result = new ParsingResults();
 
@@ -369,7 +369,6 @@ namespace Realms.SourceGenerator
             propInfo.TypeSymbol = typeSymbol;
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
-            propInfo.Namespace = typeSymbol.ContainingNamespace.ToString();
 
             return propInfo;
         }

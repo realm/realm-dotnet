@@ -25,7 +25,9 @@ namespace Realms.SourceGenerator
 {
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
     {
-        public List<RealmClassDefinition> RealmClasses { get; } = new();
+        private List<RealmClassDefinition> _realmClasses = new();
+
+        public IReadOnlyCollection<RealmClassDefinition> RealmClasses => _realmClasses;
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
@@ -39,7 +41,7 @@ namespace Realms.SourceGenerator
             // This looks for the interfaces of the base class too (recursively)
             if (classSymbol.IsRealmObject() || classSymbol.IsEmbeddedObject())
             {
-                RealmClasses.Add(new (classSyntax, classSymbol));
+                _realmClasses.Add(new (classSyntax, classSymbol));
             }
         }
     }

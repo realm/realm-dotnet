@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.RealmIntegerProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmInteger<int>.",
     "Location": {
@@ -12,7 +12,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.BoolProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on bool.",
     "Location": {
@@ -24,7 +24,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.ByteArrayProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on byte[].",
     "Location": {
@@ -36,7 +36,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.DateProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on DateTimeOffset.",
     "Location": {
@@ -48,7 +48,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.FloatProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on float.",
     "Location": {
@@ -60,7 +60,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.DoubleProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on double.",
     "Location": {
@@ -72,7 +72,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.ObjectProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmObj.",
     "Location": {
@@ -84,7 +84,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.RealmvalueProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmValue.",
     "Location": {
@@ -96,7 +96,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM011",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.DecimalProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on decimal.",
     "Location": {
@@ -108,7 +108,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM024",
     "Severity": 3,
     "Message": "UnsupportedPrimaryKeyTypes.UnsupportedProp is of type 'int[]' which is not yet supported.",
     "Location": {
@@ -120,7 +120,7 @@
     }
   },
   {
-    "Id": "RLM006",
+    "Id": "RLM005",
     "Severity": 3,
     "Message": "Class UnsupportedPrimaryKeyTypes has more than one property marked with [PrimaryKey].",
     "Location": {

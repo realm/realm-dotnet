@@ -36,7 +36,7 @@ namespace Realms.SourceGenerator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            if (context.SyntaxContextReceiver is not SyntaxContextReceiver scr || scr.RealmClasses == null)
+            if (context.SyntaxContextReceiver is not SyntaxContextReceiver scr)
             {
                 return;
             }

@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Id": "RLM006",
+    "Id": "RLM005",
     "Severity": 3,
     "Message": "Class MultiplePrimaryKeys has more than one property marked with [PrimaryKey].",
     "Location": {
