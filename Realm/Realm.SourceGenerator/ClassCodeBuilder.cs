@@ -88,6 +88,7 @@ namespace Realms.Generated
 
         private string GetUsings()
         {
+            // TODO We're just sorting the usings alphabetically, we can work on this to put the Systems namespaces in front
             var namespaces = new HashSet<string>() { _classInfo.Namespace };
             namespaces.UnionWith(_defaultNamespaces);
 
