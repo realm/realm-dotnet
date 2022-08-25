@@ -19,20 +19,15 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-#if NETCOREAPP || NETFRAMEWORK
-using System.Runtime.InteropServices;
-#endif
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {
@@ -166,54 +161,13 @@ namespace Realms.Tests
             Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
-        public static bool IsWindows
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsMacOS
-        {
-            get
-            {
-#if __MACOS__
-                return true;
-#elif NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsLinux
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#else
-                return false;
-#endif
-            }
-        }
-
         public static bool IsAOTTarget
         {
-            get
-            {
-#if __IOS__
-                return true;
+#if NETSTANDARD2_1_OR_GREATER
+            get => !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
 #else
-                return false;
+            get => false;
 #endif
-            }
         }
 
         public static bool IsUnity

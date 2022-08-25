@@ -307,7 +307,7 @@ namespace SetupUnityPackage
 
             var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
             var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
-            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
+            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName.StartsWith(".NETStandard,Version=v2."))?.Packages;
             return (version, packages, extractedFiles);
         }
 
@@ -344,6 +344,7 @@ namespace SetupUnityPackage
                 arguments = command;
             }
 
+            Console.WriteLine($"{fileName} {arguments}");
 #pragma warning disable CA1416
             var runner = Process.Start(new ProcessStartInfo
             {

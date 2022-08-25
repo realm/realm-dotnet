@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -202,7 +203,7 @@ namespace Realms.Tests.Database
         [Test]
         public void GetInstanceShouldThrowWithBadPath()
         {
-            var path = TestHelpers.IsWindows ? "C:\\Windows" : "/";
+            var path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C:\\Windows" : "/";
 
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => GetRealm(path));

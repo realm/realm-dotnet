@@ -26,6 +26,7 @@ public class AppDelegate : MauiUIApplicationDelegate
     protected override MauiApp CreateMauiApp()
     {
         var arguments = NSProcessInfo.ProcessInfo.Arguments
+                             .Skip(1) // the first argument is always the executable itself
                              .Select(a => a.Replace("-app-arg=", string.Empty))
                              .ToArray();
 
