@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.NullableRealmIntegerProp is marked as [Required], but the type RealmInteger<int> supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -12,7 +12,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.BoolProp is marked as [Required], but the type bool supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -24,7 +24,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DateProp is marked as [Required], but the type DateTimeOffset supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -36,7 +36,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.FloatProp is marked as [Required], but the type float supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -48,7 +48,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DoubleProp is marked as [Required], but the type double supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -60,7 +60,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM008",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.ObjectProp is marked as [Required] which is only allowed on strings or byte[] types, not on RealmObj.",
     "Location": {
@@ -72,7 +72,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.RealmvalueProp is marked as [Required], but the type RealmValue supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -84,7 +84,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DecimalProp is marked as [Required], but the type decimal supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -96,7 +96,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.ObjectIdProp is marked as [Required], but the type ObjectId supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -108,7 +108,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM009",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.GuidProp is marked as [Required], but the type Guid supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
@@ -120,7 +120,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM024",
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.UnsupportedProp is of type 'int[]' which is not yet supported.",
     "Location": {

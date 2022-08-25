@@ -374,7 +374,6 @@ namespace Realms.SourceGenerator
             propInfo.TypeSymbol = typeSymbol;
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
-            propInfo.Namespace = typeSymbol.ContainingNamespace.ToString();
 
             return propInfo;
         }

@@ -16,21 +16,48 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
     internal static class Diagnostics
     {
+        private enum Id
+        {
+            UnexpectedError = 1,
+            ClassUnclearDefinition = 2,
+            ClassNotPartial = 3,
+            ClassWithBaseType = 4,
+            MultiplePrimaryKeys = 5,
+            EmbeddedObjectWithPrimaryKey = 6,
+            IndexedWrongType = 7,
+            RequiredWrongType = 8,
+            RequiredWithNullability = 9,
+            NullabilityNotSupported = 10,
+            PrimaryKeyWrongType = 11,
+            BacklinkNotQueryable = 12,
+            BacklinkWithSetter = 13,
+            BacklinkWrongRelationship = 14,
+            IQueryableUnsupportedType = 15,
+            RealmIntegerTypeUnsupported = 16,
+            CollectionRealmInteger = 17,
+            CollectionUnsupportedType = 18,
+            CollectionWithSetter = 19,
+            DictionaryWithNonStringKeys = 20,
+            SetWithEmbedded = 21,
+            ListWithoutInterface = 22,
+            DateTimeNotSupported = 23,
+            TypeNotSupported = 24,
+            RealmObjectWithoutAutomaticProperty = 25,
+            NotPersistedPropertyWithRealmAttributes = 26,
+        }
+
         #region Errors
 
         public static Diagnostic UnexpectedError(string className, string message, string stackTrace)
         {
             return CreateDiagnosticError(
-                "RLM001",
+                Id.UnexpectedError,
                 "Unexpected error during source generation",
                 $"There was an unexpected error during source generation of class {className}",
                 Location.None,
@@ -40,7 +67,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic ClassUnclearDefinition(string className, Location location)
         {
             return CreateDiagnosticError(
-                "RLM002",
+                Id.ClassUnclearDefinition,
                 "Realm classes cannot implement multiple class interfaces",
                 $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
                 location);
@@ -49,7 +76,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic ClassNotPartial(string className, Location location)
         {
             return CreateDiagnosticError(
-                "RLM003",
+                Id.ClassNotPartial,
                 "Realm classes need to be defined as partial",
                 $"Class {className} is a Realm class but it is not declared as partial",
                 location);
@@ -58,7 +85,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic ClassWithBaseType(string className, Location location)
         {
             return CreateDiagnosticError(
-                "RLM004",
+                Id.ClassWithBaseType,
                 "Realm classes cannot derive from other classes",
                 $"{className} derives from another class and this is not yet supported",
                 location);
@@ -67,7 +94,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic MultiplePrimaryKeys(string className, Location location)
         {
             return CreateDiagnosticError(
-                "RLM006",
+                Id.MultiplePrimaryKeys,
                 "Realm classes cannot have multiple primary keys",
                 $"Class {className} has more than one property marked with [PrimaryKey].",
                 location);
@@ -76,7 +103,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic EmbeddedObjectWithPrimaryKey(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.EmbeddedObjectWithPrimaryKey,
                 "Embedded objects cannot have primary keys",
                 $"Class {className} is an EmbeddedObject but has a primary key defined on property {propertyName}.",
                 location);
@@ -85,7 +112,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic IndexedWrongType(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.IndexedWrongType,
                 "[Indexed] is only allowed on specific types",
                 $"{className}.{propertyName} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {propertyType}.",
                 location);
@@ -94,7 +121,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic RequiredWrongType(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.RequiredWrongType,
                 "[Required] is only allowed on specific types",
                 $"{className}.{propertyName} is marked as [Required] which is only allowed on strings or byte[] types, not on {propertyType}.",
                 location);
@@ -103,7 +130,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic RequiredWithNullability(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.RequiredWithNullability,
                 "[Required] cannot be used together with nullability annotations",
                 $"{className}.{propertyName} is marked as [Required], but the type {propertyType} supports nullability annotations. " + $"Please use nullability annotations instead of the attribute.",
                 location);
@@ -112,7 +139,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic NullabilityNotSupported(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.NullabilityNotSupported,
                 "Nullability annotation is not valid for this type",
                 $"{className}.{propertyName} has type {propertyType}, that does not support the assigned nullability annotiation.",
                 location);
@@ -121,7 +148,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic PrimaryKeyWrongType(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.PrimaryKeyWrongType,
                 "[PrimaryKey] is only allowed on specific types",
                 $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {propertyType}.",
                 location);
@@ -130,7 +157,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic BacklinkNotQueryable(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.BacklinkNotQueryable,
                 "[Backlink] property must be of type IQueryable<Type>",
                 $"{className}.{propertyName} has [Backlink] applied, but it's not IQueryable.",
                 location);
@@ -139,7 +166,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic BacklinkWithSetter(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.BacklinkWithSetter,
                 "[Backlink] property cannot have a setter",
                 $"{className}.{propertyName} has a setter but also has [Backlink] applied, which only supports getters.",
                 location);
@@ -148,7 +175,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic BacklinkWrongRelationship(string className, string propertyName, string elementType, string inversePropertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.BacklinkWrongRelationship,
                 "Wrong definition of inverse relationship",
                 $"The property '{elementType}.{inversePropertyName}' does not constitute a link to '{className}' as described by '{className}.{propertyName}'.",
                 location);
@@ -157,7 +184,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic IQueryableUnsupportedType(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.IQueryableUnsupportedType,
                 "IQueryable property is not a realm object",
                 $"{className}.{propertyName} is of type IQueryable, but the argument is not a realm object.",
                 location);
@@ -166,7 +193,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic RealmIntegerTypeUnsupported(string className, string propertyName, string internalType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.RealmIntegerTypeUnsupported,
                 "RealmInteger type is not allowed",
                 $"{className}.{propertyName} is a RealmInteger<{internalType}> which is not supported. The type argument can be of type byte, short, int, or long.",
                 location);
@@ -175,7 +202,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic CollectionRealmInteger(string className, string propertyName, string collectionType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.CollectionRealmInteger,
                 "Collections of RealmInteger are not allowed",
                 $"{className}.{propertyName} is an {collectionType}<RealmInteger> which is not supported.",
                 location);
@@ -184,7 +211,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic CollectionUnsupportedType(string className, string propertyName, string collectionType, string elementType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.CollectionUnsupportedType,
                 "Unsupported element type in collection",
                 $"{className}.{propertyName} is an {collectionType} but its generic type is {elementType} which is not supported by Realm.",
                 location);
@@ -193,7 +220,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic CollectionWithSetter(string className, string propertyName, string collectionType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.CollectionWithSetter,
                 "Collections cannot have setters",
                 $"{className}.{propertyName} has a setter but its type is a {collectionType} which only supports getters.",
                 location);
@@ -202,7 +229,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic DictionaryWithNonStringKeys(string className, string propertyName, string keyType, string valueType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.DictionaryWithNonStringKeys,
                 "Dictionary can only have strings as keys",
                 $"{className}.{propertyName}  is a Dictionary<{keyType}, {valueType}> but only string keys are currently supported by Realm.",
                 location);
@@ -211,7 +238,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic SetWithEmbedded(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.SetWithEmbedded,
                 "Embedded objects cannot be used in sets",
                 $"{className}.{propertyName} is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
                 location);
@@ -220,7 +247,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic ListWithoutInterface(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.ListWithoutInterface,
                 "List properties must be declared as IList",
                 $"{className}.{propertyName} is declared as List which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList, otherwise annotate the property with the [Ignored] attribute.",
                 location);
@@ -229,7 +256,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic DateTimeNotSupported(string className, string propertyName, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.DateTimeNotSupported,
                 "DateTime is not supported",
                 $"{className}.{propertyName} is a DateTime which is not supported - use DateTimeOffset instead.",
                 location);
@@ -238,7 +265,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic TypeNotSupported(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
-                "REALM001",
+                Id.TypeNotSupported,
                 "Type not supported",
                 $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported.",
                 location);
@@ -251,7 +278,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic RealmObjectWithoutAutomaticProperty(string className, string propertyName, Location location)
         {
             return CreateDiagnosticWarning(
-                "REALM001",
+                Id.RealmObjectWithoutAutomaticProperty,
                 "RealmObject/EmbeddedObject properties usually indicate a relationship",
                 $"{className}.{propertyName} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
                 location);
@@ -260,7 +287,7 @@ namespace Realms.SourceGenerator
         public static Diagnostic NotPersistedPropertyWithRealmAttributes(string className, string propertyName, Location location)
         {
             return CreateDiagnosticWarning(
-                "REALM001",
+                Id.NotPersistedPropertyWithRealmAttributes,
                 "Not persisted property with Realm attributes",
                 $"{className}.{propertyName} has one or more Realm attributes applied, but it's not persisted, so those attributes will be ignored.",
                 location);
@@ -268,24 +295,21 @@ namespace Realms.SourceGenerator
 
         #endregion
 
-        private static Diagnostic CreateDiagnostic(string id, string title, string messageFormat, DiagnosticSeverity severity,
+        private static Diagnostic CreateDiagnostic(Id id, string title, string messageFormat, DiagnosticSeverity severity,
             Location location, string category, string description)
         {
-            DiagnosticDescriptor descriptor = new(id, title, messageFormat, category, severity, isEnabledByDefault: true, description: description);
+            var reportedId = $"RLM{(int)id:000}";
+            DiagnosticDescriptor descriptor = new(reportedId, title, messageFormat, category, severity, isEnabledByDefault: true, description: description);
 
             return Diagnostic.Create(descriptor, location);
         }
 
-        private static Diagnostic CreateDiagnosticError(string id, string title, string messageFormat,
+        private static Diagnostic CreateDiagnosticError(Id id, string title, string messageFormat,
             Location location, string category = "RealmClassGeneration", string description = null)
-        {
-            return CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Error, location, category, description);
-        }
+            => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Error, location, category, description);
 
-        private static Diagnostic CreateDiagnosticWarning(string id, string title, string messageFormat,
+        private static Diagnostic CreateDiagnosticWarning(Id id, string title, string messageFormat,
             Location location, string category = "RealmClassGeneration", string description = null)
-        {
-            return CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Warning, location, category, description);
-        }
+            => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Warning, location, category, description);
     }
 }

@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.NullableRealmIntegerProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on RealmInteger<int>.",
     "Location": {
@@ -12,7 +12,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.ByteArrayProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on byte[].",
     "Location": {
@@ -24,7 +24,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.FloatProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on float.",
     "Location": {
@@ -36,7 +36,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.DoubleProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on double.",
     "Location": {
@@ -48,7 +48,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.ObjectProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on RealmObj.",
     "Location": {
@@ -60,7 +60,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.RealmvalueProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on RealmValue.",
     "Location": {
@@ -72,7 +72,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM007",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.DecimalProp is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on decimal.",
     "Location": {
@@ -84,7 +84,7 @@
     }
   },
   {
-    "Id": "REALM001",
+    "Id": "RLM024",
     "Severity": 3,
     "Message": "UnsupportedIndexableTypes.UnsupportedProp is of type 'int[]' which is not yet supported.",
     "Location": {
