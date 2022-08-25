@@ -600,9 +600,6 @@ namespace Realms.Generated
             {getDictionaryValueBody}
         }}
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
-            => throw new NotSupportedException(""Using the GetBacklinks is only possible for managed(persisted) objects."");
-
     }}";
         }
 

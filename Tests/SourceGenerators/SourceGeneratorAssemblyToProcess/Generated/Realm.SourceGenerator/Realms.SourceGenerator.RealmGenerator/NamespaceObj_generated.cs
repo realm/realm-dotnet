@@ -249,8 +249,5 @@ namespace Realms.Generated
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
-            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed(persisted) objects.");
-
     }
 }
