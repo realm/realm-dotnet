@@ -94,13 +94,10 @@ namespace Realms.Generated
             foreach (var property in _classInfo.Properties)
             {
                 namespaces.Add(property.TypeInfo.Namespace);
-                if (property.TypeInfo.InternalType != null)
-                {
-                    namespaces.Add(property.TypeInfo.InternalType.Namespace);
-                }
+                namespaces.Add(property.TypeInfo.InternalType?.Namespace);
             }
 
-            return string.Join(Environment.NewLine, namespaces.Select(s => $"using {s};"));
+            return string.Join(Environment.NewLine, namespaces.Where(n => !string.IsNullOrWhiteSpace(n)).Select(s => $"using {s};"));
         }
 
         private string GenerateInterface()

@@ -1,6 +1,6 @@
 ﻿[
   {
-    "Id": "RLM011",
+    "Id": "RLM006",
     "Severity": 3,
     "Message": "Class EmbeddedWithPrimaryKey is an EmbeddedObject but has a primary key defined on property PrimaryKey1.",
     "Location": {
