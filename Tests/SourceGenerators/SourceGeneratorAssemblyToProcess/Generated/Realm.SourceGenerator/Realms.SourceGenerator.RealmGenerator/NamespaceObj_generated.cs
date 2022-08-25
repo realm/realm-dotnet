@@ -8,6 +8,7 @@ using Realms;
 using Realms.Weaving;
 using Realms.Generated;
 using Realms.Schema;
+using OtherNamespace;
 
 namespace SourceGeneratorAssemblyToProcess
 {
