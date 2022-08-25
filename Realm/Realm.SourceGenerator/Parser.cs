@@ -38,9 +38,12 @@ namespace Realms.SourceGenerator
         {
             var result = new ParsingResults();
 
-            foreach (var (classSyntax, classSymbol) in realmClasses)
+            foreach (var (classSymbol, classDeclarations) in realmClasses)
             {
                 var classInfo = new ClassInfo();
+
+                // We tie the diagnostics to the first class declaration only.
+                var firstClassDeclarationSyntax = classDeclarations.First();
 
                 try
                 {
@@ -49,23 +52,21 @@ namespace Realms.SourceGenerator
                         continue;
                     }
 
-                    if (!classSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+                    if (!firstClassDeclarationSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassNotPartial(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.ClassNotPartial(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
                     if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
-
-                    var semanticModel = _context.Compilation.GetSemanticModel(classSyntax.SyntaxTree);
 
                     var isEmbedded = classSymbol.IsEmbeddedObject();
 
                     if (isEmbedded && classSymbol.IsRealmObject())
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, classSyntax.GetIdentifierLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
                     // General info
@@ -77,13 +78,17 @@ namespace Realms.SourceGenerator
                     classInfo.IsEmbedded = isEmbedded;
 
                     // Properties
-                    var propertiesSyntax = classSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                    foreach (var classDeclarationSyntax in classDeclarations)
+                    {
+                        var semanticModel = _context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
+                        var propertiesSyntax = classDeclarationSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
 
-                    classInfo.Properties = GetProperties(classInfo, propertiesSyntax, semanticModel).ToArray();
+                        classInfo.Properties.AddRange(GetProperties(classInfo, propertiesSyntax, semanticModel));
+                    }
 
                     if (classInfo.Properties.Count(p => p.IsPrimaryKey) > 1)
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, classSyntax.GetIdentifierLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.MultiplePrimaryKeys(classInfo.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
                     result.ClassInfo.Add(classInfo);

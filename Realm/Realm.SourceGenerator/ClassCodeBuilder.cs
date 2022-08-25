@@ -36,7 +36,6 @@ namespace Realms.SourceGenerator
             "Realms.Weaving",
             "Realms.Generated",
             "Realms.Schema",
-           // "MongoDB.Bson",
         };
 
         private ClassInfo _classInfo;

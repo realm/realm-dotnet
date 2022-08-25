@@ -36,11 +36,11 @@ namespace Realms.SourceGenerator
 
         public ITypeSymbol TypeSymbol { get; set; }
 
-        public PropertyInfo[] Properties { get; set; }
+        public List<PropertyInfo> Properties { get; } = new();
 
         public List<Diagnostic> Diagnostics { get; } = new();
 
-        public List<string> Usings { get; set; } = new List<string>();
+        public List<string> Usings { get; } = new();
 
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
