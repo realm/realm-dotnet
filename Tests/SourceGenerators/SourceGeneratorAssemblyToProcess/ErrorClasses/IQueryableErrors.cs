@@ -22,8 +22,10 @@ namespace SourceGeneratorPlayground
 {
     public partial class IQueryableErrors : IRealmObject
     {
+        [Backlink("test")]
         public IQueryable<char> QueryableOfUnsupported { get; }
 
+        [Backlink("test")]
         public IQueryable<RealmObj> QueryableWithGetters { get; set; }
     }
 }

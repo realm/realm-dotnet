@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Realms.SourceGenerator
 {
@@ -219,6 +220,7 @@ namespace Realms.Generated
                 }}";
             }
 
+            var accessibilityString = SyntaxFacts.GetText(_classInfo.Accessibility);
             var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
             var schema = @$"        public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {isEmbedded})
         {{
@@ -228,7 +230,7 @@ namespace Realms.Generated
             return $@"
     [Generated]
     [Woven(typeof({_helperClassName}))]
-    public partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
+    {accessibilityString} partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
     {{
 {schema}
 
