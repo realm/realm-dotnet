@@ -11,7 +11,6 @@ using Realms.Schema;
 
 namespace SourceGeneratorPlayground
 {
-
     [Generated]
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged
@@ -21,43 +20,47 @@ namespace SourceGeneratorPlayground
             Property.Primitive("Id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Backlinks("Dogs", "Dog", "Owner"),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private IPersonAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public Person()
+        public IRealmAccessor Accessor
         {
-            _accessor = new PersonUnmanagedAccessor(typeof(PersonObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new PersonUnmanagedAccessor(typeof(PersonObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (PersonManagedAccessor)managedAccessor;
+            var newAccessor = (IPersonAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                Id = unmanagedAccessor.Id;
-                Name = unmanagedAccessor.Name;
-
+                var oldAccessor = (IPersonAccessor)Accessor;
+                newAccessor.Id = oldAccessor.Id;
+                newAccessor.Name = oldAccessor.Name;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -106,12 +109,12 @@ namespace SourceGeneratorPlayground
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
@@ -122,7 +125,6 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class PersonObjectHelper : IRealmObjectHelper
     {
@@ -145,7 +147,6 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IPersonAccessor : IRealmAccessor
     {
@@ -154,11 +155,8 @@ namespace Realms.Generated
         string Name { get; set; }
 
         IQueryable<Dog> Dogs { get; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
     {
@@ -167,17 +165,19 @@ namespace Realms.Generated
             get => (Guid)GetValue("Id");
             set => SetValueUnique("Id", value);
         }
+
         public string Name
         {
             get => (string)GetValue("Name");
             set => SetValue("Name", value);
         }
+
         private IQueryable<Dog> _dogs;
         public IQueryable<Dog> Dogs
         {
             get
             {
-                if(_dogs == null)
+                if (_dogs == null)
                 {
                     _dogs = GetBacklinks<Dog>("Dogs");
                 }
@@ -185,11 +185,8 @@ namespace Realms.Generated
                 return _dogs;
             }
         }
-
-
     }
 
-    
     internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
     {
         private Guid _id = Guid.NewGuid();
@@ -202,6 +199,7 @@ namespace Realms.Generated
                 RaisePropertyChanged("Id");
             }
         }
+
         private string _name;
         public string Name
         {
@@ -212,9 +210,8 @@ namespace Realms.Generated
                 RaisePropertyChanged("Name");
             }
         }
+
         public IQueryable<Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-
 
         public PersonUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -226,8 +223,7 @@ namespace Realms.Generated
             {
                 "Id" => _id,
                 "Name" => _name,
-                "Dogs" =>  throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-
+                "Dogs" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -241,9 +237,8 @@ namespace Realms.Generated
                 case "Name":
                     Name = (string)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
@@ -251,7 +246,7 @@ namespace Realms.Generated
         {
             if (propertyName != "Id")
             {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+                throw new InvalidOperationException($"Cannot set the value of an non primary key property ({propertyName}) with SetValueUnique");
             }
 
             Id = (Guid)val;

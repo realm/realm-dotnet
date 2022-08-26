@@ -11,7 +11,6 @@ using Realms.Schema;
 
 namespace SourceGeneratorPlayground
 {
-
     [Generated]
     [Woven(typeof(DogObjectHelper))]
     public partial class Dog : IRealmObject, INotifyPropertyChanged
@@ -20,43 +19,47 @@ namespace SourceGeneratorPlayground
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Object("Owner", "Person"),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private IDogAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public Dog()
+        public IRealmAccessor Accessor
         {
-            _accessor = new DogUnmanagedAccessor(typeof(DogObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new DogUnmanagedAccessor(typeof(DogObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (DogManagedAccessor)managedAccessor;
+            var newAccessor = (IDogAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                Name = unmanagedAccessor.Name;
-                Owner = unmanagedAccessor.Owner;
-
+                var oldAccessor = (IDogAccessor)Accessor;
+                newAccessor.Name = oldAccessor.Name;
+                newAccessor.Owner = oldAccessor.Owner;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -105,12 +108,12 @@ namespace SourceGeneratorPlayground
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator Dog(RealmValue val) => val.AsRealmObject<Dog>();
@@ -121,7 +124,6 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class DogObjectHelper : IRealmObjectHelper
     {
@@ -144,18 +146,14 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IDogAccessor : IRealmAccessor
     {
         string Name { get; set; }
 
         Person Owner { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class DogManagedAccessor : ManagedAccessor, IDogAccessor
     {
@@ -164,15 +162,14 @@ namespace Realms.Generated
             get => (string)GetValue("Name");
             set => SetValue("Name", value);
         }
+
         public Person Owner
         {
             get => (Person)GetValue("Owner");
             set => SetValue("Owner", value);
         }
-
     }
 
-    
     internal class DogUnmanagedAccessor : UnmanagedAccessor, IDogAccessor
     {
         private string _name;
@@ -185,6 +182,7 @@ namespace Realms.Generated
                 RaisePropertyChanged("Name");
             }
         }
+
         private Person _owner;
         public Person Owner
         {
@@ -196,7 +194,6 @@ namespace Realms.Generated
             }
         }
 
-
         public DogUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -207,7 +204,6 @@ namespace Realms.Generated
             {
                 "Name" => _name,
                 "Owner" => _owner,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -222,9 +218,8 @@ namespace Realms.Generated
                 case "Owner":
                     Owner = (Person)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 

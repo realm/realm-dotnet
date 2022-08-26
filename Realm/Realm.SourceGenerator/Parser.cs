@@ -148,7 +148,7 @@ namespace Realms.SourceGenerator
                     continue;
                 }
 
-                if (info.TypeInfo.IsIQueryable && info.Backlink == null )
+                if (info.TypeInfo.IsIQueryable && info.Backlink == null)
                 {
                     continue;
                 }
