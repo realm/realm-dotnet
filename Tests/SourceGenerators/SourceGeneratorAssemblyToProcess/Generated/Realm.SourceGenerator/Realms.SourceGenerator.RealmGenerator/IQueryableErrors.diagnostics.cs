@@ -7,7 +7,7 @@
       "Path": null,
       "StartLine": 25,
       "StartColumn": 9,
-      "EndLine": 25,
+      "EndLine": 26,
       "EndColumn": 64
     }
   },
@@ -17,9 +17,9 @@
     "Message": "IQueryableErrors.QueryableWithGetters has a setter but also has [Backlink] applied, which only supports getters.",
     "Location": {
       "Path": null,
-      "StartLine": 27,
+      "StartLine": 28,
       "StartColumn": 9,
-      "EndLine": 27,
+      "EndLine": 29,
       "EndColumn": 71
     }
   }
