@@ -27,6 +27,8 @@ using Realms.Weaving;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
 {
+#pragma warning disable CA1507 // Use nameof to express symbol names
+
     public partial class ManualllyGeneratedClass : IRealmObject
     {
         #region Original class
@@ -40,7 +42,6 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         // [PrimaryKey]
         // public int PKey { get; set; }
-
         #endregion
 
         #region Weaved class
@@ -359,4 +360,5 @@ namespace Realms.Generated
             PrimaryKeyValue = (int)val;
         }
     }
+#pragma warning restore CA1507 // Use nameof to express symbol names
 }

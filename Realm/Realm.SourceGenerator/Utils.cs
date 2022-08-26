@@ -75,17 +75,17 @@ namespace Realms.SourceGenerator
 
         public static bool IsRealmObjectBase(this ITypeSymbol symbol)
         {
-            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObjectBase");
+            return symbol.Interfaces.Any(i => i.Name == "IRealmObjectBase");
         }
 
         public static bool IsRealmObject(this ITypeSymbol symbol)
         {
-            return symbol.AllInterfaces.Any(i => i.Name == "IRealmObject");
+            return symbol.Interfaces.Any(i => i.Name == "IRealmObject");
         }
 
         public static bool IsEmbeddedObject(this ITypeSymbol symbol)
         {
-            return symbol.AllInterfaces.Any(i => i.Name == "IEmbeddedObject");
+            return symbol.Interfaces.Any(i => i.Name == "IEmbeddedObject");
         }
 
         public static INamedTypeSymbol AsNamed(this ITypeSymbol symbol)
