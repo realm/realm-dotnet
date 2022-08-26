@@ -156,7 +156,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" />
+    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"  />
     <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
       <Link>Sync\BaasClient.cs</Link>
       <SubType></SubType>
