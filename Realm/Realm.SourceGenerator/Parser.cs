@@ -132,9 +132,13 @@ namespace Realms.SourceGenerator
                     continue;
                 }
 
-                if (!propSyntax.IsAutomaticProperty() && info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                if (!propSyntax.IsAutomaticProperty())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    if (info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    }
+
                     continue;
                 }
 
