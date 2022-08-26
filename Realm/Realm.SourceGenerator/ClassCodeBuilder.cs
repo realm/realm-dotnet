@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
-
 using static Realms.SourceGenerator.Utils;
 
 namespace Realms.SourceGenerator
@@ -329,9 +328,11 @@ public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealm
 
 public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);";
 
+            var accessibilityString = SyntaxFacts.GetText(_classInfo.Accessibility);
+
             return $@"[Generated]
 [Woven(typeof({_helperClassName}))]
-public partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
+{accessibilityString} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
 {{
 {contents.Indent()}
 }}";
