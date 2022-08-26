@@ -363,7 +363,7 @@ namespace Realms.SourceGenerator
                 INamedTypeSymbol when typeSymbol.Name == "Guid" => PropertyTypeInfo.Guid,
                 INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" => PropertyTypeInfo.Date,
                 INamedTypeSymbol when typeSymbol.Name == "RealmValue" => PropertyTypeInfo.RealmValue,
-                INamedTypeSymbol when typeSymbol.IsRealmObjectBase() => PropertyTypeInfo.Object,
+                INamedTypeSymbol when typeSymbol.IsRealmObjectOrEmbeddedObject() => PropertyTypeInfo.Object,
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
