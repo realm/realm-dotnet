@@ -124,8 +124,9 @@ namespace Realms.SourceGenerator
                     MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute"),
                     Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute"),
                     Initializer = propSyntax.Initializer?.ToString(),
-                    TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax)
                 };
+
+                info.TypeInfo = GetPropertyTypeInfo(classInfo, info, propSymbol, propSyntax);
 
                 if (info.TypeInfo.IsUnsupported)
                 {
@@ -143,6 +144,11 @@ namespace Realms.SourceGenerator
                 }
 
                 if (!propSyntax.HasSetter() && !info.TypeInfo.IsCollection && !info.TypeInfo.IsIQueryable)
+                {
+                    continue;
+                }
+
+                if (info.TypeInfo.IsIQueryable && info.Backlink == null )
                 {
                     continue;
                 }
@@ -203,7 +209,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -247,11 +253,8 @@ namespace Realms.SourceGenerator
 
                 propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            else if (propertyType.IsIQueryable)
+            else if (propertyType.IsIQueryable && propertyInfo.Backlink != null)
             {
-                // TODO: these checks are a bit too restrictive as they operate on IQueryable that may not have
-                // been annotated with [Backlink] - e.g. IQueryable<string> Foo { get; set; }
-                // We should make sure we only return unsupported if the property is actually a backlink.
                 var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
                 var internalType = GetSingleLevelPropertyTypeInfo(argument);
