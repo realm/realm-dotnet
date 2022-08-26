@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
@@ -27,6 +28,9 @@ using Realms.Schema;
 
 namespace Realms
 {
+    /// <summary>
+    /// Represents the base class for an accessor to be used with a managed object.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class ManagedAccessor
         : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
@@ -39,24 +43,33 @@ namespace Realms
 
         internal ObjectHandle ObjectHandle { get; private set; }
 
+        /// <inheritdoc/>
         public bool IsManaged => true;
 
+        /// <inheritdoc/>
         public bool IsValid => ObjectHandle?.IsValid != false;
 
+        /// <inheritdoc/>
         public bool IsFrozen => Realm?.IsFrozen == true;
 
+        /// <inheritdoc/>
         public Realm Realm { get; private set; }
 
+        /// <inheritdoc/>
         public ObjectSchema ObjectSchema => Metadata?.Schema;
 
+        /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
 
+        /// <inheritdoc/>
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
         internal Metadata Metadata { get; private set; }
 
+        /// <inheritdoc/>
         public RealmObjectBase.Dynamic DynamicApi => new(this);
 
+        /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
 
         internal void Initialize(Realm realm,
@@ -69,16 +82,19 @@ namespace Realms
             _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
         }
 
+        /// <inheritdoc/>
         public RealmValue GetValue(string propertyName)
         {
             return ObjectHandle.GetValue(propertyName, Metadata, Realm);
         }
 
+        /// <inheritdoc/>
         public void SetValue(string propertyName, RealmValue val)
         {
             ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
         }
 
+        /// <inheritdoc/>
         public void SetValueUnique(string propertyName, RealmValue val)
         {
             if (Realm.IsInMigration)
@@ -91,24 +107,28 @@ namespace Realms
             }
         }
 
+        /// <inheritdoc/>
         public IList<T> GetListValue<T>(string propertyName)
         {
             Metadata.Schema.TryFindProperty(propertyName, out var property);
             return ObjectHandle.GetList<T>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public ISet<T> GetSetValue<T>(string propertyName)
         {
             Metadata.Schema.TryFindProperty(propertyName, out var property);
             return ObjectHandle.GetSet<T>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             Metadata.Schema.TryFindProperty(propertyName, out var property);
             return ObjectHandle.GetDictionary<TValue>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : IRealmObjectBase
         {
@@ -125,6 +145,7 @@ namespace Realms
             return new RealmResults<T>(Realm, resultsHandle, relatedMeta);
         }
 
+        /// <inheritdoc/>
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
@@ -146,6 +167,7 @@ namespace Realms
             });
         }
 
+        /// <inheritdoc/>
         public void UnsubscribeFromNotifications()
         {
             _notificationToken?.Dispose();
@@ -203,13 +225,22 @@ namespace Realms
             _onNotifyPropertyChanged(propertyName);
         }
 
+        /// <summary>
+        /// Returns all the objects that link to this object in the specified relationship.
+        /// </summary>
+        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
+        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return _hashCode.Value;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             var typeName = Metadata.Schema.Type.Name;
@@ -229,6 +260,7 @@ namespace Realms
             return typeName;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             if (obj is not ManagedAccessor ma)
@@ -245,6 +277,7 @@ namespace Realms
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]
     internal class GenericManagedAccessor : ManagedAccessor
     {
     }

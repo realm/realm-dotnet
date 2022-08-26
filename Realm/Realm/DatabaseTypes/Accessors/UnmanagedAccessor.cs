@@ -20,12 +20,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Schema;
 
 namespace Realms
 {
-    // Should be used by generator and undocumented
+    /// <summary>
+    /// Represents the base class for an accessor to be used with an unmanaged object.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public abstract class UnmanagedAccessor : IRealmAccessor
     {
@@ -33,18 +36,25 @@ namespace Realms
 
         private Action<string> _onNotifyPropertyChanged;
 
+        /// <inheritdoc/>
         public bool IsManaged => false;
 
+        /// <inheritdoc/>
         public bool IsValid => true;
 
+        /// <inheritdoc/>
         public bool IsFrozen => false;
 
+        /// <inheritdoc/>
         public Realm Realm => null;
 
+        /// <inheritdoc/>
         public ObjectSchema ObjectSchema => null;
 
+        /// <inheritdoc/>
         public int BacklinksCount => 0;
 
+        /// <inheritdoc/>
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
         public UnmanagedAccessor(Type objectType)
@@ -52,26 +62,36 @@ namespace Realms
             _objectType = objectType;
         }
 
-        public IQueryable<T> GetBacklinks<T>(string propertyName) where T : IRealmObjectBase
+        /// <inheritdoc/>
+        public IQueryable<T> GetBacklinks<T>(string propertyName)
+            where T : IRealmObjectBase
             => throw new NotSupportedException("Using the GetBacklinks is only possible for managed (persisted) objects.");
 
+        /// <inheritdoc/>
         public abstract IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
 
+        /// <inheritdoc/>
         public abstract IList<T> GetListValue<T>(string propertyName);
 
+        /// <inheritdoc/>
         public abstract ISet<T> GetSetValue<T>(string propertyName);
 
+        /// <inheritdoc/>
         public abstract RealmValue GetValue(string propertyName);
 
+        /// <inheritdoc/>
         public abstract void SetValue(string propertyName, RealmValue val);
 
+        /// <inheritdoc/>
         public abstract void SetValueUnique(string propertyName, RealmValue val);
 
+        /// <inheritdoc/>
         public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
             _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
         }
 
+        /// <inheritdoc/>
         public virtual void UnsubscribeFromNotifications()
         {
             _onNotifyPropertyChanged = null;
@@ -82,18 +102,20 @@ namespace Realms
             _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{_objectType.Name} (unmanaged)";
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             return ReferenceEquals(this, obj);
         }
     }
 
-    // Should be used by the weaver and undocumented
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]
     internal class GenericUnmanagedAccessor : UnmanagedAccessor
     {
         public GenericUnmanagedAccessor(Type type) : base(type)

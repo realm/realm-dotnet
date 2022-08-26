@@ -599,7 +599,6 @@ namespace Realms.Generated
         {{
             {getDictionaryValueBody}
         }}
-
     }}";
         }
 

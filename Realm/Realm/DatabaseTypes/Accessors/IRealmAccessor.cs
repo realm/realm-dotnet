@@ -23,10 +23,8 @@ using Realms.Schema;
 
 namespace Realms
 {
-
     /// <summary>
     /// Represents an accessor that encapsulates the methods and properties necessary for interfacing with the associated Realm object.
-    /// This interface is used only internally for now.
     /// </summary>
     public interface IRealmAccessor
     {
