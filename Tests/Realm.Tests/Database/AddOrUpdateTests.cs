@@ -1090,7 +1090,7 @@ namespace Realms.Tests.Database
             public string StringValue { get; set; }
         }
 
-        private class PrimaryKeyObject : RealmObject
+        private partial class PrimaryKeyObject : IRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }

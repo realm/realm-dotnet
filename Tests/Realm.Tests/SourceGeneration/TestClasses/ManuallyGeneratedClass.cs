@@ -29,6 +29,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 {
 #pragma warning disable CA1507 // Use nameof to express symbol names
 
+    [Ignored]
     public partial class ManualllyGeneratedClass : IRealmObject
     {
         #region Original class
