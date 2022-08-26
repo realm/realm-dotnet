@@ -28,6 +28,8 @@ namespace SourceGeneratorPlayground
 
         [Backlink(nameof(BacklinkObj.InverseLink))]
         public IQueryable<BacklinkObj> CorrectBacklinkProp { get; }
+
+        public IQueryable<string> IgnoredBacklink { get; }
     }
 
     public partial class BacklinkObj : IRealmObject

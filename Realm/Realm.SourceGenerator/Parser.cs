@@ -124,21 +124,31 @@ namespace Realms.SourceGenerator
                     MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute"),
                     Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute"),
                     Initializer = propSyntax.Initializer?.ToString(),
-                    TypeInfo = GetPropertyTypeInfo(classInfo, propSymbol, propSyntax)
                 };
+
+                info.TypeInfo = GetPropertyTypeInfo(classInfo, info, propSymbol, propSyntax);
 
                 if (info.TypeInfo.IsUnsupported)
                 {
                     continue;
                 }
 
-                if (!propSyntax.IsAutomaticProperty() && info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                if (!propSyntax.IsAutomaticProperty())
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    if (info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    }
+
                     continue;
                 }
 
                 if (!propSyntax.HasSetter() && !info.TypeInfo.IsCollection && !info.TypeInfo.IsIQueryable)
+                {
+                    continue;
+                }
+
+                if (info.TypeInfo.IsIQueryable && info.Backlink == null )
                 {
                     continue;
                 }
@@ -199,7 +209,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -243,11 +253,8 @@ namespace Realms.SourceGenerator
 
                 propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            else if (propertyType.IsIQueryable)
+            else if (propertyType.IsIQueryable && propertyInfo.Backlink != null)
             {
-                // TODO: these checks are a bit too restrictive as they operate on IQueryable that may not have
-                // been annotated with [Backlink] - e.g. IQueryable<string> Foo { get; set; }
-                // We should make sure we only return unsupported if the property is actually a backlink.
                 var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
                 var internalType = GetSingleLevelPropertyTypeInfo(argument);
@@ -363,7 +370,7 @@ namespace Realms.SourceGenerator
                 INamedTypeSymbol when typeSymbol.Name == "Guid" => PropertyTypeInfo.Guid,
                 INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" => PropertyTypeInfo.Date,
                 INamedTypeSymbol when typeSymbol.Name == "RealmValue" => PropertyTypeInfo.RealmValue,
-                INamedTypeSymbol when typeSymbol.IsRealmObjectBase() => PropertyTypeInfo.Object,
+                INamedTypeSymbol when typeSymbol.IsRealmObjectOrEmbeddedObject() => PropertyTypeInfo.Object,
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,

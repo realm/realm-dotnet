@@ -224,6 +224,5 @@ namespace Realms.Generated
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
-
     }
 }

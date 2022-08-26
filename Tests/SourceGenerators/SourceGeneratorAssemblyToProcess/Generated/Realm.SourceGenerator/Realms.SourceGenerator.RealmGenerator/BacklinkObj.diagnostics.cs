@@ -5,9 +5,9 @@
     "Message": "BacklinkObj.InverseLink is marked as [PrimaryKey] which is only allowed on integral and string types, not on UnsupportedBacklink.",
     "Location": {
       "Path": null,
-      "StartLine": 37,
+      "StartLine": 39,
       "StartColumn": 9,
-      "EndLine": 38,
+      "EndLine": 40,
       "EndColumn": 61
     }
   }

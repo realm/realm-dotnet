@@ -73,9 +73,9 @@ namespace Realms.SourceGenerator
                 && namedSymbol.ConstructUnboundGenericType().ToDisplayString() == "Realms.RealmInteger<>";
         }
 
-        public static bool IsRealmObjectBase(this ITypeSymbol symbol)
+        public static bool IsRealmObjectOrEmbeddedObject(this ITypeSymbol symbol)
         {
-            return symbol.Interfaces.Any(i => i.Name == "IRealmObjectBase");
+            return symbol.IsRealmObject() || symbol.IsEmbeddedObject();
         }
 
         public static bool IsRealmObject(this ITypeSymbol symbol)
