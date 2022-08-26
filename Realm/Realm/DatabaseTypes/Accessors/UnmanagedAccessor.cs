@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Schema;
@@ -57,6 +56,10 @@ namespace Realms
         /// <inheritdoc/>
         public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
+        /// </summary>
+        /// <param name="objectType">The runtype type of the realm object.</param>
         public UnmanagedAccessor(Type objectType)
         {
             _objectType = objectType;
@@ -97,6 +100,10 @@ namespace Realms
             _onNotifyPropertyChanged = null;
         }
 
+        /// <summary>
+        /// Invokes the property changed delegate.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to notify about.</param>
         protected void RaisePropertyChanged(string propertyName)
         {
             _onNotifyPropertyChanged?.Invoke(propertyName);
