@@ -25,14 +25,6 @@ To facilitate local development setups, the following files are ignored, but it 
     <add key="BaasUrl" value="http://*your-local-ip*:9090" />
   </appSettings>
   ```
-- `LocalDev.props`: this file sets `AdditionalFrameworks` to a specific value, which greatly speeds up msbuild compiles for the TestExplorer as it excludes all platforms except for the ones specified:
-  ```xml
-  <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-      <AdditionalFrameworks Condition="'$(AdditionalFrameworks)' == ''">net461</LocalDev>
-    </PropertyGroup>
-  </Project>
-  ```
 
 After adding them, restart VS (if running) to have it pick up the changes.
 

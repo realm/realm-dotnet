@@ -5,7 +5,7 @@
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
-    <LangVersion>Latest</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <GenerateProgramFile>false</GenerateProgramFile>
@@ -18,7 +18,6 @@
 
    <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
     <PackageId>Realm.Tests</PackageId>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
