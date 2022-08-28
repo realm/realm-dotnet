@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <UnityBuild>false</UnityBuild>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
@@ -17,7 +17,7 @@
   </PropertyGroup>
 
    <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
-    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <PackageId>Realm.Tests</PackageId>
     <IsPackable>true</IsPackable>
@@ -28,7 +28,8 @@
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnitLite" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" 
+      Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
@@ -92,7 +93,7 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition="('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp') AND '$(UseRealmNupkgsWithVersion)' == ''">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

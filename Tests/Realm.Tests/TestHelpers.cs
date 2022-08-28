@@ -161,26 +161,7 @@ namespace Realms.Tests
             Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
-        public static bool IsAOTTarget
-        {
-#if NETSTANDARD2_1_OR_GREATER
-            get => !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
-#else
-            get => false;
-#endif
-        }
-
-        public static bool IsUnity
-        {
-            get
-            {
-#if UNITY
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
+        public static bool IsAOTTarget;
 
         public static void IgnoreOnAOT(string message)
         {
@@ -190,12 +171,10 @@ namespace Realms.Tests
             }
         }
 
+        [System.Diagnostics.Conditional("UNITY")]
         public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
         {
-            if (IsUnity)
-            {
-                Assert.Ignore(message);
-            }
+            Assert.Ignore(message);
         }
 
         private static readonly decimal _decimalValue = 1.23456789M;

@@ -307,7 +307,7 @@ namespace SetupUnityPackage
 
             var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
             var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
-            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName.StartsWith(".NETStandard,Version=v2."))?.Packages;
+            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
             return (version, packages, extractedFiles);
         }
 

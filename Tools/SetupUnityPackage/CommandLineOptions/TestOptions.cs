@@ -51,8 +51,8 @@ namespace SetupUnityPackage
         {
             new PackageInfo("Realm.Tests", new Dictionary<string, string>
             {
-                { "lib/netstandard2.1/Realm.Tests.dll", "Tests/Realm.Tests.dll" },
-                { "lib/netstandard2.1/Realm.Tests.pdb", "Tests/Realm.Tests.pdb" },
+                { "lib/netstandard2.0/Realm.Tests.dll", "Tests/Realm.Tests.dll" },
+                { "lib/netstandard2.0/Realm.Tests.pdb", "Tests/Realm.Tests.pdb" },
             }, _testsDependencies)
         };
     }
