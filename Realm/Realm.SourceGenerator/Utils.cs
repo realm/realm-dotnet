@@ -28,8 +28,6 @@ namespace Realms.SourceGenerator
 {
     internal static class Utils
     {
-        public static readonly string DefaultIndent = new(' ', 4);
-
         private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
         {
             SpecialType.System_Byte,
@@ -163,24 +161,10 @@ namespace Realms.SourceGenerator
 
         public static string Indent(this string str, int indents = 1, bool trimNewLines = false)
         {
-            var sb = new StringBuilder();
-            var lines = str.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            foreach (var line in lines)
-            {
-                if (!string.IsNullOrEmpty(line))
-                {
-                    for (var i = 0; i < indents; i++)
-                    {
-                        sb.Append(DefaultIndent);
-                    }
-                }
+            var indentString = new string(' ', indents * 4);
 
-                sb.AppendLine(line);
-            }
+            var result = indentString + str.Replace(Environment.NewLine, $"{Environment.NewLine}{indentString}");
 
-            sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
-
-            var result = sb.ToString();
             if (trimNewLines)
             {
                 result = result.TrimEnd();
