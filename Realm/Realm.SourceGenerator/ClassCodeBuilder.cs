@@ -456,7 +456,7 @@ internal class {_helperClassName} : IRealmObjectHelper
 
                         setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
 {{
-    throw new InvalidOperationException($""Cannot set the value of an non primary key property ({{propertyName}}) with SetValueUnique"");
+    throw new InvalidOperationException($""Cannot set the value of non primary key property ({{propertyName}}) with SetValueUnique"");
 }}
 
 {name} = ({type})val;");
