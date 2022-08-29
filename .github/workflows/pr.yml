@@ -108,8 +108,8 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
-  test-xamarinandroid:
-    uses: ./.github/workflows/test-xamarinandroid.yml
+  test-android:
+    uses: ./.github/workflows/test-android.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:

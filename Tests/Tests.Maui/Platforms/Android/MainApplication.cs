@@ -18,16 +18,23 @@
 
 using Android.App;
 using Android.Runtime;
+using Realms.Tests;
 
 namespace Tests.Maui;
 
 [Application]
 public class MainApplication : MauiApplication
 {
+    internal string[] Args { get; set; } = Array.Empty<string>();
+
     public MainApplication(IntPtr handle, JniHandleOwnership ownership)
         : base(handle, ownership)
     {
     }
 
-    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+    protected override MauiApp CreateMauiApp()
+    {
+        TestHelpers.TestHttpHandlerFactory = () => new Xamarin.Android.Net.AndroidMessageHandler();
+        return MauiProgram.CreateMauiApp(Args);
+    }
 }
