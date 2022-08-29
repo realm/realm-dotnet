@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Helpers;
 using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
@@ -182,10 +183,10 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
         /// <remarks>
-        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for <see cref="DiscardLocalResetHandler"/> will come in the future.
+        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for the newer modes will come in the future.
         /// </remarks>
         /// <exception cref="NotSupportedException">
-        /// Flexible sync is still in beta, so at the moment <see cref="DiscardLocalResetHandler"/> is not supported.
+        /// Flexible sync is still in beta, so only <see cref="ManualRecoveryHandler"/> is supported.
         /// </exception>
         /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
         public override ClientResetHandlerBase ClientResetHandler
@@ -193,9 +194,10 @@ namespace Realms.Sync
             get => base.ClientResetHandler;
             set
             {
-                if (value is DiscardLocalResetHandler)
+                Argument.NotNull(value, nameof(value));
+                if (value is not ManualRecoveryHandler)
                 {
-                    throw new NotSupportedException($"Flexible sync does not yet support {nameof(DiscardLocalResetHandler)}");
+                    throw new NotSupportedException($"Flexible sync does not yet support {value.GetType().Name}");
                 }
 
                 base.ClientResetHandler = value;

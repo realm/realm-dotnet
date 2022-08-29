@@ -19,20 +19,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-#if NETCOREAPP || NETFRAMEWORK
-using System.Runtime.InteropServices;
-#endif
 using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {
@@ -198,67 +194,7 @@ namespace Realms.Tests
             Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
-        public static bool IsWindows
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsMacOS
-        {
-            get
-            {
-#if __MACOS__
-                return true;
-#elif NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsLinux
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsAOTTarget
-        {
-            get
-            {
-#if __IOS__
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsUnity
-        {
-            get
-            {
-#if UNITY
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
+        public static bool IsAOTTarget;
 
         public static void IgnoreOnAOT(string message)
         {
@@ -268,13 +204,13 @@ namespace Realms.Tests
             }
         }
 
+        [System.Diagnostics.Conditional("UNITY")]
         public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
         {
-            if (IsUnity)
-            {
-                Assert.Ignore(message);
-            }
+            Assert.Ignore(message);
         }
+
+        public static Func<HttpMessageHandler> TestHttpHandlerFactory = () => new HttpClientHandler();
 
         private static readonly decimal _decimalValue = 1.23456789M;
 

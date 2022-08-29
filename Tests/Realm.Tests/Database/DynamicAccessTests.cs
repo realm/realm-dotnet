@@ -82,11 +82,7 @@ namespace Realms.Tests.Database
                 Assert.That(allTypesObject.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
                 Assert.That(allTypesObject.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
                     dynamic ato = realm.DynamicApi.CreateObject("AllTypesObject", null);
@@ -109,6 +105,7 @@ namespace Realms.Tests.Database
                 Assert.That((char)dynamicAto.CharProperty, Is.EqualTo('F'));
                 Assert.That((char)dynamicAto.NullableCharProperty, Is.EqualTo('o'));
                 Assert.That(dynamicAto.StringProperty, Is.EqualTo("o"));
+#endif
             });
         }
 
@@ -244,11 +241,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(allTypesObject.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicAto = realm.Write(() =>
                 {
                     dynamic ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
@@ -259,6 +252,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That((RealmValue)dynamicAto.RealmValueProperty, Is.EqualTo(rv));
+#endif
             });
         }
 
@@ -279,11 +273,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ato.DynamicApi.Get<RealmValue>(nameof(AllTypesObject.RealmValueProperty)), Is.EqualTo(rv));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var (dynamicAto, dynamicRV) = realm.Write(() =>
                 {
                     dynamic intObject = realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
@@ -296,6 +286,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That((RealmValue)dynamicAto.RealmValueProperty, Is.EqualTo(dynamicRV));
+#endif
             });
         }
 

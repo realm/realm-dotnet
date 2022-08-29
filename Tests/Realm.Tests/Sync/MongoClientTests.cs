@@ -1125,22 +1125,19 @@ namespace Realms.Tests.Sync
                 };
 
                 object projection;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                projection = new BsonDocument
                 {
-                    projection = new BsonDocument
-                    {
-                        { "_id",  0 },
-                        { "LongValue", 1 }
-                    };
-                }
-                else
+                    { "_id",  0 },
+                    { "LongValue", 1 }
+                };
+#else
+                projection = new
                 {
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1
-                    };
-                }
+                    _id = 0,
+                    LongValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {
@@ -1164,24 +1161,21 @@ namespace Realms.Tests.Sync
 
                 object projection;
                 object sort;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 1 },
-                        { "LongValue", 1 }
-                    };
-                }
-                else
+                    { "_id", 1 },
+                    { "LongValue", 1 }
+                };
+#else
+                sort = new { LongValue = -1 };
+                projection = new
                 {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 1,
-                        LongValue = 1
-                    };
-                }
+                    _id = 1,
+                    LongValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {
@@ -1214,26 +1208,23 @@ namespace Realms.Tests.Sync
 
                 object projection;
                 object sort;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 0 },
-                        { "LongValue", 1 },
-                        { "StringValue", 1 },
-                    };
-                }
-                else
+                    { "_id", 0 },
+                    { "LongValue", 1 },
+                    { "StringValue", 1 },
+                };
+#else
+                sort = new { LongValue = -1 };
+                projection = new
                 {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1,
-                        StringValue = 1
-                    };
-                }
+                    _id = 0,
+                    LongValue = 1,
+                    StringValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {

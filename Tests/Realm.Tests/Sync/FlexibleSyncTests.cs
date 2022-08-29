@@ -1853,7 +1853,7 @@ namespace Realms.Tests.Sync
                     invocations++;
                 };
 
-                for (var i = 0; i < 5; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
                     Assert.That(invocations, Is.EqualTo(1));

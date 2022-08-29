@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
@@ -202,7 +203,7 @@ namespace Realms.Tests.Database
         [Test]
         public void GetInstanceShouldThrowWithBadPath()
         {
-            var path = TestHelpers.IsWindows ? "C:\\Windows" : "/";
+            var path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C:\\Windows" : "/";
 
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => GetRealm(path));
@@ -699,11 +700,10 @@ namespace Realms.Tests.Database
             var ato = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
             Assert.That(ato.DynamicApi.Get<string>(nameof(AllTypesObject.RequiredStringProperty)), Is.EqualTo("This is required!"));
 
-            if (!TestHelpers.IsUnity)
-            {
-                dynamic dynamicAto = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
-                Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
-            }
+#if !UNITY
+            dynamic dynamicAto = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
+            Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
+#endif
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
@@ -716,11 +716,10 @@ namespace Realms.Tests.Database
             var embeddedChild = embeddedParent.DynamicApi.Get<EmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
             Assert.That(embeddedChild.DynamicApi.Get<string>(nameof(EmbeddedAllTypesObject.StringProperty)), Is.EqualTo("This is not required!"));
 
-            if (!TestHelpers.IsUnity)
-            {
-                dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
-                Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
-            }
+#if !UNITY
+            dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
+            Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
+#endif
         }
 
         [Test]
@@ -1146,6 +1145,8 @@ namespace Realms.Tests.Database
             Assert.That(embedded.Int, Is.EqualTo(999));
             var oldLastModified = embedded.DynamicApi.Get<DateTimeOffset>("LastModified");
             Assert.That(oldLastModified, Is.LessThanOrEqualTo(DateTimeOffset.UtcNow));
+
+            Task.Delay(1).Wait();
 
             realm.Write(() =>
             {
