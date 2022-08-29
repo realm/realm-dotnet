@@ -18,10 +18,10 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
+using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -32,6 +32,7 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<Session> _sessions = new();
         private readonly ConcurrentQueue<App> _apps = new();
+        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
 
         private App _defaultApp;
 
@@ -67,6 +68,14 @@ namespace Realms.Tests.Sync
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
+
+            AsyncContext.Run(async () =>
+            {
+                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
+                {
+                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
+                }
+            });
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -93,6 +102,13 @@ namespace Realms.Tests.Sync
             var session = realm.SyncSession;
             await session.WaitForDownloadAsync();
             session.CloseHandle();
+        }
+
+        // TODO: this method should go away once https://github.com/realm/realm-core/issues/5705 is resolved.
+        protected static async Task WaitForSubscriptionsAsync(Realm realm)
+        {
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+            await WaitForDownloadAsync(realm);
         }
 
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
@@ -144,12 +160,12 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -188,6 +204,12 @@ namespace Realms.Tests.Sync
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
+        }
+
+        protected async Task DisableClientResetRecoveryOnServer(string appConfigType)
+        {
+            await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, false);
+            _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
         private static T UpdateConfig<T>(T config)
