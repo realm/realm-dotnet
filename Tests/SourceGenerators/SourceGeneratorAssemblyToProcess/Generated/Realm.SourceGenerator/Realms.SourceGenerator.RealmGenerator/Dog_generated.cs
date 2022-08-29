@@ -48,6 +48,8 @@ namespace SourceGeneratorPlayground
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        private Dog() {}
+        
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDogAccessor)managedAccessor;
@@ -120,33 +122,33 @@ namespace SourceGeneratorPlayground
         public static explicit operator Dog(RealmValue val) => val.AsRealmObject<Dog>();
         
         public static implicit operator RealmValue(Dog val) => RealmValue.Object(val);
+    
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class DogObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+        
+            public ManagedAccessor CreateAccessor() => new DogManagedAccessor();
+        
+            public IRealmObjectBase CreateInstance()
+            {
+                return new Dog();
+            }
+        
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = null;
+                return false;
+            }
+        }
     }
 }
 
 namespace Realms.Generated
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DogObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-    
-        public ManagedAccessor CreateAccessor() => new DogManagedAccessor();
-    
-        public IRealmObjectBase CreateInstance()
-        {
-            return new Dog();
-        }
-    
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = null;
-            return false;
-        }
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IDogAccessor : IRealmAccessor
     {

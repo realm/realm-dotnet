@@ -47,6 +47,8 @@ namespace SourceGeneratorPlayground
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        private EmbeddedObj() {}
+        
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedObjAccessor)managedAccessor;
@@ -118,33 +120,33 @@ namespace SourceGeneratorPlayground
         public static explicit operator EmbeddedObj(RealmValue val) => val.AsRealmObject<EmbeddedObj>();
         
         public static implicit operator RealmValue(EmbeddedObj val) => RealmValue.Object(val);
+    
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class EmbeddedObjObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+        
+            public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
+        
+            public IRealmObjectBase CreateInstance()
+            {
+                return new EmbeddedObj();
+            }
+        
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = null;
+                return false;
+            }
+        }
     }
 }
 
 namespace Realms.Generated
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class EmbeddedObjObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-    
-        public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
-    
-        public IRealmObjectBase CreateInstance()
-        {
-            return new EmbeddedObj();
-        }
-    
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = null;
-            return false;
-        }
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IEmbeddedObjAccessor : IRealmAccessor
     {

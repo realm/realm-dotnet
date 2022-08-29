@@ -42,6 +42,8 @@ namespace Realms.SourceGenerator
 
         public List<string> Usings { get; } = new();
 
+        public bool HasParameterlessConstructor { get; set; }
+
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 

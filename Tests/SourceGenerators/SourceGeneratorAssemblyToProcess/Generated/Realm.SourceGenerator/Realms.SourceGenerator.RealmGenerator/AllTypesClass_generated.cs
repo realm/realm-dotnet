@@ -47,6 +47,8 @@ namespace SourceGeneratorPlayground
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        private AllTypesClass() {}
+        
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAllTypesClassAccessor)managedAccessor;
@@ -118,33 +120,33 @@ namespace SourceGeneratorPlayground
         public static explicit operator AllTypesClass(RealmValue val) => val.AsRealmObject<AllTypesClass>();
         
         public static implicit operator RealmValue(AllTypesClass val) => RealmValue.Object(val);
+    
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class AllTypesClassObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+        
+            public ManagedAccessor CreateAccessor() => new AllTypesClassManagedAccessor();
+        
+            public IRealmObjectBase CreateInstance()
+            {
+                return new AllTypesClass();
+            }
+        
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = null;
+                return false;
+            }
+        }
     }
 }
 
 namespace Realms.Generated
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AllTypesClassObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-    
-        public ManagedAccessor CreateAccessor() => new AllTypesClassManagedAccessor();
-    
-        public IRealmObjectBase CreateInstance()
-        {
-            return new AllTypesClass();
-        }
-    
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = null;
-            return false;
-        }
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IAllTypesClassAccessor : IRealmAccessor
     {

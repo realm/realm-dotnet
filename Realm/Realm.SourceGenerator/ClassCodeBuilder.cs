@@ -62,7 +62,6 @@ namespace Realms.SourceGenerator
             var usings = GetUsings();
 
             var partialClassString = GeneratePartialClass().Indent();
-            var objectHelperString = GenerateClassObjectHelper().Indent();
             var interfaceString = GenerateInterface().Indent();
             var managedAccessorString = GenerateManagedAccessor().Indent();
             var unmanagedAccessorString = GenerateUnmanagedAccessor().Indent();
@@ -76,8 +75,6 @@ namespace {_classInfo.Namespace}
 
 namespace Realms.Generated
 {{
-{objectHelperString}
-
 {interfaceString}
 
 {managedAccessorString}
@@ -226,8 +223,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 }}.Build();";
 
             var baseInterface = _classInfo.IsEmbedded ? "IEmbeddedObject" : "IRealmObject";
+            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
-            // TODO: we may need to generate a parameterless ctor. We should check if there are any user-defined ctors and/or if they are parameterless.
             var contents = $@"{schema}
 
 #region {baseInterface} implementation
@@ -256,6 +253,8 @@ public bool IsFrozen => Accessor.IsFrozen;
 public Realm Realm => Accessor.Realm;
 
 public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+
+{parameterlessConstructorString}
 
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
@@ -336,6 +335,8 @@ public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.
 {accessibilityString} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
 {{
 {contents.Indent()}
+
+{GenerateClassObjectHelper().Indent()}
 }}";
         }
 
@@ -345,7 +346,7 @@ public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.
             var valueAccessor = primaryKeyProperty == null ? "null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never)]
-internal class {_helperClassName} : IRealmObjectHelper
+private class {_helperClassName} : IRealmObjectHelper
 {{
     public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
     {{

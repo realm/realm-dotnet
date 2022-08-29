@@ -12,18 +12,17 @@ using Realms.Schema;
 namespace SourceGeneratorAssemblyToProcess.TestClasses
 {
     [Generated]
-    [Woven(typeof(PartialClassObjectHelper))]
-    public partial class PartialClass : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(ClassWithParameterlessConstructorObjectHelper))]
+    public partial class ClassWithParameterlessConstructor : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PartialClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithParameterlessConstructor", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
         }.Build();
         
         #region IRealmObject implementation
         
-        private IPartialClassAccessor _accessor;
+        private IClassWithParameterlessConstructorAccessor _accessor;
         
         public IRealmAccessor Accessor
         {
@@ -31,7 +30,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             {
                 if (_accessor == null)
                 {
-                    _accessor = new PartialClassUnmanagedAccessor(typeof(PartialClassObjectHelper));
+                    _accessor = new ClassWithParameterlessConstructorUnmanagedAccessor(typeof(ClassWithParameterlessConstructorObjectHelper));
                 }
         
                 return _accessor;
@@ -48,17 +47,16 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
-        private PartialClass() {}
+        
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IPartialClassAccessor)managedAccessor;
+            var newAccessor = (IClassWithParameterlessConstructorAccessor)managedAccessor;
         
             if (helper != null)
             {
-                var oldAccessor = (IPartialClassAccessor)Accessor;
+                var oldAccessor = (IClassWithParameterlessConstructorAccessor)Accessor;
                 
-                newAccessor.Id = oldAccessor.Id;
                 newAccessor.Name = oldAccessor.Name;
             }
         
@@ -119,23 +117,23 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             Accessor.UnsubscribeFromNotifications();
         }
         
-        public static explicit operator PartialClass(RealmValue val) => val.AsRealmObject<PartialClass>();
+        public static explicit operator ClassWithParameterlessConstructor(RealmValue val) => val.AsRealmObject<ClassWithParameterlessConstructor>();
         
-        public static implicit operator RealmValue(PartialClass val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(ClassWithParameterlessConstructor val) => RealmValue.Object(val);
     
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PartialClassObjectHelper : IRealmObjectHelper
+        private class ClassWithParameterlessConstructorObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
         
-            public ManagedAccessor CreateAccessor() => new PartialClassManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new ClassWithParameterlessConstructorManagedAccessor();
         
             public IRealmObjectBase CreateInstance()
             {
-                return new PartialClass();
+                return new ClassWithParameterlessConstructor();
             }
         
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
@@ -150,22 +148,14 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPartialClassAccessor : IRealmAccessor
+    internal interface IClassWithParameterlessConstructorAccessor : IRealmAccessor
     {
-        int Id { get; set; }
-        
         string Name { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PartialClassManagedAccessor : ManagedAccessor, IPartialClassAccessor
+    internal class ClassWithParameterlessConstructorManagedAccessor : ManagedAccessor, IClassWithParameterlessConstructorAccessor
     {
-        public int Id
-        {
-            get => (int)GetValue("Id");
-            set => SetValue("Id", value);
-        }
-        
         public string Name
         {
             get => (string)GetValue("Name");
@@ -173,19 +163,8 @@ namespace Realms.Generated
         }
     }
 
-    internal class PartialClassUnmanagedAccessor : UnmanagedAccessor, IPartialClassAccessor
+    internal class ClassWithParameterlessConstructorUnmanagedAccessor : UnmanagedAccessor, IClassWithParameterlessConstructorAccessor
     {
-        private int _id;
-        public int Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-        
         private string _name;
         public string Name
         {
@@ -197,7 +176,7 @@ namespace Realms.Generated
             }
         }
     
-        public PartialClassUnmanagedAccessor(Type objectType) : base(objectType)
+        public ClassWithParameterlessConstructorUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
     
@@ -205,7 +184,6 @@ namespace Realms.Generated
         {
             return propertyName switch
             {
-                "Id" => _id,
                 "Name" => _name,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
@@ -215,9 +193,6 @@ namespace Realms.Generated
         {
             switch (propertyName)
             {
-                case "Id":
-                    Id = (int)val;
-                    return;
                 case "Name":
                     Name = (string)val;
                     return;

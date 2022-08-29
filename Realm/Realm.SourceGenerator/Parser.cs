@@ -76,12 +76,13 @@ namespace Realms.SourceGenerator
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.IsEmbedded = isEmbedded;
+                    classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
 
                     // Properties
                     foreach (var classDeclarationSyntax in classDeclarations)
                     {
                         var semanticModel = _context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
-                        var propertiesSyntax = classDeclarationSyntax.DescendantNodes().OfType<PropertyDeclarationSyntax>();
+                        var propertiesSyntax = classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>();
 
                         classInfo.Properties.AddRange(GetProperties(classInfo, propertiesSyntax, semanticModel));
                     }
@@ -384,6 +385,12 @@ namespace Realms.SourceGenerator
             propInfo.Namespace = typeSymbol.ContainingNamespace?.ToString();
 
             return propInfo;
+        }
+
+        private static bool HasParameterlessConstructor(List<ClassDeclarationSyntax> classDeclarations)
+        {
+            return classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>())
+                .Any(c => !c.ParameterList.Parameters.Any());
         }
     }
 

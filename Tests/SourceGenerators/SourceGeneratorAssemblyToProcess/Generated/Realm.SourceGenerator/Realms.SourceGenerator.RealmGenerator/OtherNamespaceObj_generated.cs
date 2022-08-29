@@ -47,6 +47,8 @@ namespace OtherNamespace
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        private OtherNamespaceObj() {}
+        
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOtherNamespaceObjAccessor)managedAccessor;
@@ -118,33 +120,33 @@ namespace OtherNamespace
         public static explicit operator OtherNamespaceObj(RealmValue val) => val.AsRealmObject<OtherNamespaceObj>();
         
         public static implicit operator RealmValue(OtherNamespaceObj val) => RealmValue.Object(val);
+    
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class OtherNamespaceObjObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+        
+            public ManagedAccessor CreateAccessor() => new OtherNamespaceObjManagedAccessor();
+        
+            public IRealmObjectBase CreateInstance()
+            {
+                return new OtherNamespaceObj();
+            }
+        
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = null;
+                return false;
+            }
+        }
     }
 }
 
 namespace Realms.Generated
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OtherNamespaceObjObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-    
-        public ManagedAccessor CreateAccessor() => new OtherNamespaceObjManagedAccessor();
-    
-        public IRealmObjectBase CreateInstance()
-        {
-            return new OtherNamespaceObj();
-        }
-    
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = null;
-            return false;
-        }
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IOtherNamespaceObjAccessor : IRealmAccessor
     {
