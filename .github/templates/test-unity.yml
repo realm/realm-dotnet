@@ -70,9 +70,9 @@ jobs:
         run: sudo apt-get install xvfb
       - name: Run Tests
         run: |
-          Start-Process ${{ github.workspace }}/TestRunner/PlayerWithTests -Wait -ArgumentList "-logFile","${{ github.workspace }}/test.log","--result=${{ github.workspace }}/TestResults.xml"
+          ${{ github.workspace }}/TestRunner/PlayerWithTests -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
           cat ${{ github.workspace }}/test.log
-        shell: powershell
+      - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
 
   run-tests-windows:
     runs-on: windows-latest
@@ -93,5 +93,4 @@ jobs:
           Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
           cat ${{ github.workspace }}\test.log
         shell: powershell
-      - #@ uploadArtifacts("UnityResults.xml", "TestResults.xml")
       - #@ publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4")
