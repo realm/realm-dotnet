@@ -164,13 +164,13 @@ namespace Realms.Tests.Sync
             });
         }
 
-#if MONOANDROID
-        private class TestHttpClientHandler : Xamarin.Android.Net.AndroidClientHandler
-#else
-        private class TestHttpClientHandler : HttpClientHandler
-#endif
+        private class TestHttpClientHandler : DelegatingHandler
         {
             public readonly List<(HttpMethod Method, string Url)> Requests = new();
+
+            public TestHttpClientHandler() : base(TestHelpers.TestHttpHandlerFactory())
+            {
+            }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {

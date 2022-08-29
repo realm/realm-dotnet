@@ -18,6 +18,7 @@
 
 using Android.App;
 using Android.Runtime;
+using Realms.Tests;
 
 namespace Tests.Maui;
 
@@ -31,5 +32,9 @@ public class MainApplication : MauiApplication
     {
     }
 
-    protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp(Args);
+    protected override MauiApp CreateMauiApp()
+    {
+        TestHelpers.TestHttpHandlerFactory = () => new Xamarin.Android.Net.AndroidMessageHandler();
+        return MauiProgram.CreateMauiApp(Args);
+    }
 }

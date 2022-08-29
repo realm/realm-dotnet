@@ -21,6 +21,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -176,6 +177,8 @@ namespace Realms.Tests
         {
             Assert.Ignore(message);
         }
+
+        public static Func<HttpMessageHandler> TestHttpHandlerFactory = () => new HttpClientHandler();
 
         private static readonly decimal _decimalValue = 1.23456789M;
 

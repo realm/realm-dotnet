@@ -41,6 +41,8 @@ namespace Realms.Tests.Android
 
             Forms.Init(this, savedInstanceState);
 
+            TestHelpers.TestHttpHandlerFactory = () => new Xamarin.Android.Net.AndroidClientHandler();
+
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
