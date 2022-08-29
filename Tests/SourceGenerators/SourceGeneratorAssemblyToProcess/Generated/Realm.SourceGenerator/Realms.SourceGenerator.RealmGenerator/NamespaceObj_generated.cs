@@ -12,7 +12,6 @@ using OtherNamespace;
 
 namespace SourceGeneratorAssemblyToProcess
 {
-
     [Generated]
     [Woven(typeof(NamespaceObjObjectHelper))]
     public partial class NamespaceObj : IRealmObject, INotifyPropertyChanged
@@ -21,43 +20,47 @@ namespace SourceGeneratorAssemblyToProcess
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Object("OtherNamespaceObj", "OtherNamespaceObj"),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private INamespaceObjAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public NamespaceObj()
+        public IRealmAccessor Accessor
         {
-            _accessor = new NamespaceObjUnmanagedAccessor(typeof(NamespaceObjObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new NamespaceObjUnmanagedAccessor(typeof(NamespaceObjObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (NamespaceObjManagedAccessor)managedAccessor;
+            var newAccessor = (INamespaceObjAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                Id = unmanagedAccessor.Id;
-                OtherNamespaceObj = unmanagedAccessor.OtherNamespaceObj;
-
+                var oldAccessor = (INamespaceObjAccessor)Accessor;
+                newAccessor.Id = oldAccessor.Id;
+                newAccessor.OtherNamespaceObj = oldAccessor.OtherNamespaceObj;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -106,12 +109,12 @@ namespace SourceGeneratorAssemblyToProcess
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator NamespaceObj(RealmValue val) => val.AsRealmObject<NamespaceObj>();
@@ -122,7 +125,6 @@ namespace SourceGeneratorAssemblyToProcess
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class NamespaceObjObjectHelper : IRealmObjectHelper
     {
@@ -145,18 +147,14 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface INamespaceObjAccessor : IRealmAccessor
     {
         int Id { get; set; }
 
         OtherNamespaceObj OtherNamespaceObj { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class NamespaceObjManagedAccessor : ManagedAccessor, INamespaceObjAccessor
     {
@@ -165,15 +163,14 @@ namespace Realms.Generated
             get => (int)GetValue("Id");
             set => SetValue("Id", value);
         }
+
         public OtherNamespaceObj OtherNamespaceObj
         {
             get => (OtherNamespaceObj)GetValue("OtherNamespaceObj");
             set => SetValue("OtherNamespaceObj", value);
         }
-
     }
 
-    
     internal class NamespaceObjUnmanagedAccessor : UnmanagedAccessor, INamespaceObjAccessor
     {
         private int _id;
@@ -186,6 +183,7 @@ namespace Realms.Generated
                 RaisePropertyChanged("Id");
             }
         }
+
         private OtherNamespaceObj _otherNamespaceObj;
         public OtherNamespaceObj OtherNamespaceObj
         {
@@ -197,7 +195,6 @@ namespace Realms.Generated
             }
         }
 
-
         public NamespaceObjUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -208,7 +205,6 @@ namespace Realms.Generated
             {
                 "Id" => _id,
                 "OtherNamespaceObj" => _otherNamespaceObj,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -223,9 +219,8 @@ namespace Realms.Generated
                 case "OtherNamespaceObj":
                     OtherNamespaceObj = (OtherNamespaceObj)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 

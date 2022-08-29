@@ -11,7 +11,6 @@ using Realms.Schema;
 
 namespace SourceGeneratorPlayground
 {
-
     [Generated]
     [Woven(typeof(RealmObjObjectHelper))]
     public partial class RealmObj : IRealmObject, INotifyPropertyChanged
@@ -19,42 +18,46 @@ namespace SourceGeneratorPlayground
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RealmObj", isEmbedded: false)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private IRealmObjAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public RealmObj()
+        public IRealmAccessor Accessor
         {
-            _accessor = new RealmObjUnmanagedAccessor(typeof(RealmObjObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new RealmObjUnmanagedAccessor(typeof(RealmObjObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (RealmObjManagedAccessor)managedAccessor;
+            var newAccessor = (IRealmObjAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                Id = unmanagedAccessor.Id;
-
+                var oldAccessor = (IRealmObjAccessor)Accessor;
+                newAccessor.Id = oldAccessor.Id;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -103,12 +106,12 @@ namespace SourceGeneratorPlayground
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator RealmObj(RealmValue val) => val.AsRealmObject<RealmObj>();
@@ -119,7 +122,6 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class RealmObjObjectHelper : IRealmObjectHelper
     {
@@ -142,16 +144,12 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IRealmObjAccessor : IRealmAccessor
     {
         int Id { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class RealmObjManagedAccessor : ManagedAccessor, IRealmObjAccessor
     {
@@ -160,10 +158,8 @@ namespace Realms.Generated
             get => (int)GetValue("Id");
             set => SetValue("Id", value);
         }
-
     }
 
-    
     internal class RealmObjUnmanagedAccessor : UnmanagedAccessor, IRealmObjAccessor
     {
         private int _id;
@@ -177,7 +173,6 @@ namespace Realms.Generated
             }
         }
 
-
         public RealmObjUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -187,7 +182,6 @@ namespace Realms.Generated
             return propertyName switch
             {
                 "Id" => _id,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -199,9 +193,8 @@ namespace Realms.Generated
                 case "Id":
                     Id = (int)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 

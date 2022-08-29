@@ -11,7 +11,6 @@ using Realms.Schema;
 
 namespace SourceGeneratorAssemblyToProcess.TestClasses
 {
-
     [Generated]
     [Woven(typeof(PartialClassObjectHelper))]
     public partial class PartialClass : IRealmObject, INotifyPropertyChanged
@@ -20,43 +19,47 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private IPartialClassAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public PartialClass()
+        public IRealmAccessor Accessor
         {
-            _accessor = new PartialClassUnmanagedAccessor(typeof(PartialClassObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new PartialClassUnmanagedAccessor(typeof(PartialClassObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (PartialClassManagedAccessor)managedAccessor;
+            var newAccessor = (IPartialClassAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                Id = unmanagedAccessor.Id;
-                Name = unmanagedAccessor.Name;
-
+                var oldAccessor = (IPartialClassAccessor)Accessor;
+                newAccessor.Id = oldAccessor.Id;
+                newAccessor.Name = oldAccessor.Name;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -105,12 +108,12 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator PartialClass(RealmValue val) => val.AsRealmObject<PartialClass>();
@@ -121,7 +124,6 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class PartialClassObjectHelper : IRealmObjectHelper
     {
@@ -144,18 +146,14 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IPartialClassAccessor : IRealmAccessor
     {
         int Id { get; set; }
 
         string Name { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class PartialClassManagedAccessor : ManagedAccessor, IPartialClassAccessor
     {
@@ -164,15 +162,14 @@ namespace Realms.Generated
             get => (int)GetValue("Id");
             set => SetValue("Id", value);
         }
+
         public string Name
         {
             get => (string)GetValue("Name");
             set => SetValue("Name", value);
         }
-
     }
 
-    
     internal class PartialClassUnmanagedAccessor : UnmanagedAccessor, IPartialClassAccessor
     {
         private int _id;
@@ -185,6 +182,7 @@ namespace Realms.Generated
                 RaisePropertyChanged("Id");
             }
         }
+
         private string _name;
         public string Name
         {
@@ -196,7 +194,6 @@ namespace Realms.Generated
             }
         }
 
-
         public PartialClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -207,7 +204,6 @@ namespace Realms.Generated
             {
                 "Id" => _id,
                 "Name" => _name,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -222,9 +218,8 @@ namespace Realms.Generated
                 case "Name":
                     Name = (string)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 

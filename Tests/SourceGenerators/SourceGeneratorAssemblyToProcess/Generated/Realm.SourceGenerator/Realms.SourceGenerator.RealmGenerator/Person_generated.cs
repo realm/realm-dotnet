@@ -246,7 +246,7 @@ namespace Realms.Generated
         {
             if (propertyName != "Id")
             {
-                throw new InvalidOperationException($"Cannot set the value of an non primary key property ({propertyName}) with SetValueUnique");
+                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
             Id = (Guid)val;
