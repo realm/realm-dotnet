@@ -54,7 +54,8 @@ namespace SourceGeneratorPlayground
             if (helper != null)
             {
                 var oldAccessor = (IEmbeddedObjAccessor)Accessor;
-                        newAccessor.Id = oldAccessor.Id;
+                
+                newAccessor.Id = oldAccessor.Id;
             }
         
             _accessor = newAccessor;

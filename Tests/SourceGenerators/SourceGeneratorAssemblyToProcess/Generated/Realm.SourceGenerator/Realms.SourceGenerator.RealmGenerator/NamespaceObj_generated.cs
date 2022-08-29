@@ -56,7 +56,8 @@ namespace SourceGeneratorAssemblyToProcess
             if (helper != null)
             {
                 var oldAccessor = (INamespaceObjAccessor)Accessor;
-                        newAccessor.Id = oldAccessor.Id;
+                
+                newAccessor.Id = oldAccessor.Id;
                 newAccessor.OtherNamespaceObj = oldAccessor.OtherNamespaceObj;
             }
         

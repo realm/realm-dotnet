@@ -264,7 +264,8 @@ public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelpe
     if (helper != null)
     {{
         var oldAccessor = ({_accessorInterfaceName})Accessor;
-{skipDefaults.Indent(2)}{copyToRealm.Indent(2, trimNewLines: true)}
+{skipDefaults.Indent(2)}
+{copyToRealm.Indent(2, trimNewLines: true)}
     }}
 
     _accessor = newAccessor;

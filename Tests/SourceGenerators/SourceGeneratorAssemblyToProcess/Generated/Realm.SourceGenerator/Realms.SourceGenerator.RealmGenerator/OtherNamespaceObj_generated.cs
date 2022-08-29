@@ -54,7 +54,8 @@ namespace OtherNamespace
             if (helper != null)
             {
                 var oldAccessor = (IOtherNamespaceObjAccessor)Accessor;
-                        newAccessor.Id = oldAccessor.Id;
+                
+                newAccessor.Id = oldAccessor.Id;
             }
         
             _accessor = newAccessor;

@@ -55,7 +55,8 @@ namespace SourceGeneratorPlayground
             if (helper != null)
             {
                 var oldAccessor = (IDogAccessor)Accessor;
-                        newAccessor.Name = oldAccessor.Name;
+                
+                newAccessor.Name = oldAccessor.Name;
                 newAccessor.Owner = oldAccessor.Owner;
             }
         

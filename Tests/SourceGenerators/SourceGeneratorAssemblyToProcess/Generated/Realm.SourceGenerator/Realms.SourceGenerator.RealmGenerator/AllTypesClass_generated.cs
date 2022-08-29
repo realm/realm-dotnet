@@ -54,7 +54,8 @@ namespace SourceGeneratorPlayground
             if (helper != null)
             {
                 var oldAccessor = (IAllTypesClassAccessor)Accessor;
-                        newAccessor.CharProperty = oldAccessor.CharProperty;
+                
+                newAccessor.CharProperty = oldAccessor.CharProperty;
             }
         
             _accessor = newAccessor;

@@ -56,7 +56,8 @@ namespace SourceGeneratorPlayground
             if (helper != null)
             {
                 var oldAccessor = (IPersonAccessor)Accessor;
-                        newAccessor.Id = oldAccessor.Id;
+                
+                newAccessor.Id = oldAccessor.Id;
                 newAccessor.Name = oldAccessor.Name;
             }
         

@@ -55,7 +55,8 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             if (helper != null)
             {
                 var oldAccessor = (IPartialClassAccessor)Accessor;
-                        newAccessor.Id = oldAccessor.Id;
+                
+                newAccessor.Id = oldAccessor.Id;
                 newAccessor.Name = oldAccessor.Name;
             }
         
