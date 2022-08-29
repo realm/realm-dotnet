@@ -152,3 +152,4 @@ jobs:
       AtlasBaseUrl: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}
       AtlasPublicKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ (contains(github.head_ref, 'release') && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}
+
