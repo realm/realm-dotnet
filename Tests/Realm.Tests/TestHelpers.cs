@@ -38,6 +38,38 @@ namespace Realms.Tests
 {
     public static class TestHelpers
     {
+        public static object[] SetAndGetValueCases =
+        {
+            new object[] { "CharProperty", '0' },
+            new object[] { "ByteProperty", (byte)100 },
+            new object[] { "Int16Property", (short)100 },
+            new object[] { "Int32Property", 100 },
+            new object[] { "Int64Property", 100L },
+            new object[] { "SingleProperty", 123.123f },
+            new object[] { "DoubleProperty", 123.123 },
+            new object[] { "BooleanProperty", true },
+            new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
+            new object[] { "ByteArrayProperty", Array.Empty<byte>() },
+            new object[] { "StringProperty", "hello" },
+            new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
+            new object[] { "DecimalProperty", 123.456M },
+            new object[] { "DecimalProperty", decimal.MinValue },
+            new object[] { "DecimalProperty", decimal.MaxValue },
+            new object[] { "DecimalProperty", decimal.One },
+            new object[] { "DecimalProperty", decimal.MinusOne },
+            new object[] { "DecimalProperty", decimal.Zero },
+            new object[] { "Decimal128Property", new Decimal128(564.42343424323) },
+            new object[] { "Decimal128Property", new Decimal128(decimal.MinValue) },
+            new object[] { "Decimal128Property", new Decimal128(decimal.MaxValue) },
+            new object[] { "Decimal128Property", Decimal128.MinValue },
+            new object[] { "Decimal128Property", Decimal128.MaxValue },
+            new object[] { "Decimal128Property", Decimal128.Zero },
+            new object[] { "ObjectIdProperty", ObjectId.Empty },
+            new object[] { "ObjectIdProperty", new ObjectId("5f63e882536de46d71877979") },
+            new object[] { "GuidProperty", Guid.Empty },
+            new object[] { "GuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") },
+        };
+
         public static readonly Random Random = new Random();
 
         public static TextWriter Output { get; set; } = Console.Out;

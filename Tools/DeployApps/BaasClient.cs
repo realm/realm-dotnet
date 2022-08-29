@@ -353,7 +353,7 @@ namespace Baas
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
-            var (app, _) = await CreateAppCore(name, new
+            var (app, mongoServiceId) = await CreateAppCore(name, new
             {
                 flexible_sync = new
                 {
@@ -376,6 +376,12 @@ namespace Baas
                     }
                 }
             });
+
+            var asymmetricObjAllTypes = Schemas.AsymmetricObjectWithAllTypesBaasRule(Differentiator);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", asymmetricObjAllTypes);
+
+            var hugeSyncAsymmetricObj = Schemas.HugeSyncAsymmetricObjectBaasRule(Differentiator);
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", hugeSyncAsymmetricObj);
 
             return app;
         }
@@ -640,6 +646,18 @@ namespace Baas
                 additional_fields = new { }
             };
 
+            private static object _flxDefaultRoles => new
+            {
+                name = "default",
+                apply_when = new { },
+                read = true,
+                write = false,
+                insert = true,
+                delete = true,
+                search = true,
+                additional_fields = new { }
+            };
+
             private static object Metadata(string differentiator, string collectionName) => new
             {
                 database = $"Schema_{differentiator}",
@@ -653,6 +671,17 @@ namespace Baas
                 database = $"Schema_{differentiator}",
                 roles = new[] { _defaultRoles }
             };
+
+            private static object GenericFlxBaasRule(string differentiator, string collectionName) => new
+            {
+                collection = collectionName,
+                database = $"FLX_{differentiator}",
+                roles = new[] { _flxDefaultRoles }
+            };
+
+            public static object AsymmetricObjectWithAllTypesBaasRule(string differentiator) => GenericFlxBaasRule(differentiator, "AsymmetricObjectWithAllTypes");
+
+            public static object HugeSyncAsymmetricObjectBaasRule(string differentiator) => GenericFlxBaasRule(differentiator, "HugeSyncAsymmetricObject");
 
             public static (object Schema, object Rules) Sales(string partitionKeyType, string differentiator) =>
             (new

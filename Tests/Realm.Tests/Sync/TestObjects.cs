@@ -39,4 +39,24 @@ namespace Realms.Tests.Sync
             Data = data;
         }
     }
+
+    public class HugeSyncAsymmetricObject : AsymmetricObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+        public byte[] Data { get; set; }
+
+        public HugeSyncAsymmetricObject()
+        {
+        }
+
+        public HugeSyncAsymmetricObject(int dataSize)
+        {
+            var data = new byte[dataSize];
+            TestHelpers.Random.NextBytes(data);
+            Data = data;
+        }
+    }
 }

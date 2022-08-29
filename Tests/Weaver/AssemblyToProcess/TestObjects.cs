@@ -470,7 +470,6 @@ namespace AssemblyToProcess
         public Guid? NullableGuidProperty { get; set; }
     }
 
-    // TODO andrea: this needs to be extended to have all types
     public class Sensor : AsymmetricObject
     {
         [PrimaryKey, MapTo("_id")]

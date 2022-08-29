@@ -31,6 +31,5 @@ namespace Realms
     /// <seealso cref="TODO andrea: add asymmetric sync link page here"/>
     public class AsymmetricObject : RealmObjectBase, IAsymmetricObject
     {
-        // TODO andrea: should this be only instantiated in a write transaction? Since we want to enforce them to be short-lived
     }
 }
