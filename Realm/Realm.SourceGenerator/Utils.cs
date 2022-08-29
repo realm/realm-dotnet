@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,6 +28,8 @@ namespace Realms.SourceGenerator
 {
     internal static class Utils
     {
+        public static readonly string DefaultIndent = new(' ', 4);
+
         private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
         {
             SpecialType.System_Byte,
@@ -157,5 +160,35 @@ namespace Realms.SourceGenerator
         {
             return boolean.ToString().ToLower();
         }
+
+        public static string Indent(this string str, int indents = 1, bool trimNewLines = false)
+        {
+            var sb = new StringBuilder();
+            var lines = str.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrEmpty(line))
+                {
+                    for (var i = 0; i < indents; i++)
+                    {
+                        sb.Append(DefaultIndent);
+                    }
+                }
+
+                sb.AppendLine(line);
+            }
+
+            sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
+
+            var result = sb.ToString();
+            if (trimNewLines)
+            {
+                result = result.TrimEnd();
+            }
+
+            return result;
+        }
+
+        public static string Indent(this StringBuilder sb, int indents = 1, bool trimNewLines = false) => sb.ToString().Indent(indents, trimNewLines);
     }
 }

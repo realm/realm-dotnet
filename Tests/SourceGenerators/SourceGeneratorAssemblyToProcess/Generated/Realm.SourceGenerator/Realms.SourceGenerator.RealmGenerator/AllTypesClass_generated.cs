@@ -11,7 +11,6 @@ using Realms.Schema;
 
 namespace SourceGeneratorPlayground
 {
-
     [Generated]
     [Woven(typeof(AllTypesClassObjectHelper))]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged
@@ -19,42 +18,46 @@ namespace SourceGeneratorPlayground
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", isEmbedded: false)
         {
             Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-
         }.Build();
 
         #region IRealmObject implementation
 
         private IAllTypesClassAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public AllTypesClass()
+        public IRealmAccessor Accessor
         {
-            _accessor = new AllTypesClassUnmanagedAccessor(typeof(AllTypesClassObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new AllTypesClassUnmanagedAccessor(typeof(AllTypesClassObjectHelper));
+                }
+
+                return _accessor;
+            }
         }
+
+        public bool IsManaged => Accessor.IsManaged;
+
+        public bool IsValid => Accessor.IsValid;
+
+        public bool IsFrozen => Accessor.IsFrozen;
+
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (AllTypesClassManagedAccessor)managedAccessor;
+            var newAccessor = (IAllTypesClassAccessor)managedAccessor;
 
             if (helper != null)
             {
-
-
-                CharProperty = unmanagedAccessor.CharProperty;
-
+                var oldAccessor = (IAllTypesClassAccessor)Accessor;
+                newAccessor.CharProperty = oldAccessor.CharProperty;
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -103,12 +106,12 @@ namespace SourceGeneratorPlayground
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
 
         public static explicit operator AllTypesClass(RealmValue val) => val.AsRealmObject<AllTypesClass>();
@@ -119,7 +122,6 @@ namespace SourceGeneratorPlayground
 
 namespace Realms.Generated
 {
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class AllTypesClassObjectHelper : IRealmObjectHelper
     {
@@ -142,16 +144,12 @@ namespace Realms.Generated
         }
     }
 
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IAllTypesClassAccessor : IRealmAccessor
     {
         char CharProperty { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class AllTypesClassManagedAccessor : ManagedAccessor, IAllTypesClassAccessor
     {
@@ -160,10 +158,8 @@ namespace Realms.Generated
             get => (char)GetValue("CharProperty");
             set => SetValue("CharProperty", value);
         }
-
     }
 
-    
     internal class AllTypesClassUnmanagedAccessor : UnmanagedAccessor, IAllTypesClassAccessor
     {
         private char _charProperty;
@@ -177,7 +173,6 @@ namespace Realms.Generated
             }
         }
 
-
         public AllTypesClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -187,7 +182,6 @@ namespace Realms.Generated
             return propertyName switch
             {
                 "CharProperty" => _charProperty,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -199,9 +193,8 @@ namespace Realms.Generated
                 case "CharProperty":
                     CharProperty = (char)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 

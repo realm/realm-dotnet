@@ -33,11 +33,6 @@ namespace Realms.Extensions
             return (iro.Accessor as IMetadataObject)?.Metadata;
         }
 
-        public static void SetManagedAccessor(this IRealmObjectBase iro, IRealmAccessor accessor, Action copyToRealmAction = null)
-        {
-            iro.SetManagedAccessor(accessor, copyToRealmAction);
-        }
-
         public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObjectBase iro, string propertyName, ResultsHandle resultsHandle)
             where T : IRealmObjectBase
         {
