@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -157,5 +158,21 @@ namespace Realms.SourceGenerator
         {
             return boolean.ToString().ToLower();
         }
+
+        public static string Indent(this string str, int indents = 1, bool trimNewLines = false)
+        {
+            var indentString = new string(' ', indents * 4);
+
+            var result = indentString + str.Replace(Environment.NewLine, $"{Environment.NewLine}{indentString}");
+
+            if (trimNewLines)
+            {
+                result = result.TrimEnd();
+            }
+
+            return result;
+        }
+
+        public static string Indent(this StringBuilder sb, int indents = 1, bool trimNewLines = false) => sb.ToString().Indent(indents, trimNewLines);
     }
 }

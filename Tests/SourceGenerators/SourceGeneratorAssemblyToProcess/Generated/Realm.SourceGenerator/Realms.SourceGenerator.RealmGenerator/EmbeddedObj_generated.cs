@@ -11,63 +11,69 @@ using Realms.Schema;
 
 namespace SourceGeneratorPlayground
 {
-
     [Generated]
     [Woven(typeof(EmbeddedObjObjectHelper))]
-    public partial class EmbeddedObj : IRealmObject, INotifyPropertyChanged
+    public partial class EmbeddedObj : IEmbeddedObject, INotifyPropertyChanged
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedObj", isEmbedded: true)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-
         }.Build();
-
-        #region IRealmObject implementation
-
+        
+        #region IEmbeddedObject implementation
+        
         private IEmbeddedObjAccessor _accessor;
-
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public EmbeddedObj()
+        
+        public IRealmAccessor Accessor
         {
-            _accessor = new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObjObjectHelper));
+            get
+            {
+                if (_accessor == null)
+                {
+                    _accessor = new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObjObjectHelper));
+                }
+        
+                return _accessor;
+            }
         }
-
+        
+        public bool IsManaged => Accessor.IsManaged;
+        
+        public bool IsValid => Accessor.IsValid;
+        
+        public bool IsFrozen => Accessor.IsFrozen;
+        
+        public Realm Realm => Accessor.Realm;
+        
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        
+        private EmbeddedObj() {}
+        
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (EmbeddedObjManagedAccessor)managedAccessor;
-
+            var newAccessor = (IEmbeddedObjAccessor)managedAccessor;
+        
             if (helper != null)
             {
-
-
-                Id = unmanagedAccessor.Id;
-
+                var oldAccessor = (IEmbeddedObjAccessor)Accessor;
+                
+                newAccessor.Id = oldAccessor.Id;
             }
-
+        
+            _accessor = newAccessor;
+        
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-
+        
             OnManaged();
         }
-
+        
         #endregion
-
+        
         private event PropertyChangedEventHandler _propertyChanged;
-
+        
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -76,82 +82,77 @@ namespace SourceGeneratorPlayground
                 {
                     SubscribeForNotifications();
                 }
-
+        
                 _propertyChanged += value;
             }
-
+        
             remove
             {
                 _propertyChanged -= value;
-
+        
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-
+        
         partial void OnPropertyChanged(string propertyName);
-
+        
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-
+        
         partial void OnManaged();
-
+        
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-
+        
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
         }
-
+        
         public static explicit operator EmbeddedObj(RealmValue val) => val.AsRealmObject<EmbeddedObj>();
-
+        
         public static implicit operator RealmValue(EmbeddedObj val) => RealmValue.Object(val);
+    
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class EmbeddedObjObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+        
+            public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
+        
+            public IRealmObjectBase CreateInstance()
+            {
+                return new EmbeddedObj();
+            }
+        
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = null;
+                return false;
+            }
+        }
     }
 }
 
 namespace Realms.Generated
 {
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class EmbeddedObjObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-
-        public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
-
-        public IRealmObjectBase CreateInstance()
-        {
-            return new EmbeddedObj();
-        }
-
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = null;
-            return false;
-        }
-    }
-
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IEmbeddedObjAccessor : IRealmAccessor
     {
         int Id { get; set; }
-
-
     }
 
-    
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal class EmbeddedObjManagedAccessor : ManagedAccessor, IEmbeddedObjAccessor
     {
@@ -160,10 +161,8 @@ namespace Realms.Generated
             get => (int)GetValue("Id");
             set => SetValue("Id", value);
         }
-
     }
 
-    
     internal class EmbeddedObjUnmanagedAccessor : UnmanagedAccessor, IEmbeddedObjAccessor
     {
         private int _id;
@@ -176,22 +175,20 @@ namespace Realms.Generated
                 RaisePropertyChanged("Id");
             }
         }
-
-
+    
         public EmbeddedObjUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-
+    
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
                 "Id" => _id,
-
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-
+    
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -199,27 +196,26 @@ namespace Realms.Generated
                 case "Id":
                     Id = (int)val;
                     return;
-
                 default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-
+    
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-
+    
         public override IList<T> GetListValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
-
+    
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-
+    
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");

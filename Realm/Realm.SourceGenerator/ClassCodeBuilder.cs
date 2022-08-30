@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
+using static Realms.SourceGenerator.Utils;
 
 namespace Realms.SourceGenerator
 {
@@ -60,11 +61,10 @@ namespace Realms.SourceGenerator
         {
             var usings = GetUsings();
 
-            var partialClassString = GeneratePartialClass();
-            var interfaceString = GenerateInterface();
-            var managedAccessorString = GenerateManagedAccessor();
-            var unmanagedAccessorString = GeneratedUnmanagedAccessor();
-            var objectHelperString = GenerateClassObjectHelper();
+            var partialClassString = GeneratePartialClass().Indent();
+            var interfaceString = GenerateInterface().Indent();
+            var managedAccessorString = GenerateManagedAccessor().Indent();
+            var unmanagedAccessorString = GenerateUnmanagedAccessor().Indent();
 
             return $@"{usings}
 
@@ -75,8 +75,6 @@ namespace {_classInfo.Namespace}
 
 namespace Realms.Generated
 {{
-{objectHelperString}
-
 {interfaceString}
 
 {managedAccessorString}
@@ -112,17 +110,15 @@ namespace Realms.Generated
                 var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
                 var setterString = hasSetter ? " set; " : " ";
 
-                var propertyString = @$"        {type} {name} {{ get;{setterString}}}";
-                propertiesBuilder.Append(propertyString);
-                propertiesBuilder.AppendLine().AppendLine();
+                propertiesBuilder.AppendLine($@"{type} {name} {{ get;{setterString}}}");
+                propertiesBuilder.AppendLine();
             }
 
-            return $@"
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface {_accessorInterfaceName} : IRealmAccessor
-    {{
-{propertiesBuilder}
-    }}";
+            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+internal interface {_accessorInterfaceName} : IRealmAccessor
+{{
+{propertiesBuilder.Indent(trimNewLines: true)}
+}}";
         }
 
         private string GeneratePartialClass()
@@ -151,7 +147,7 @@ namespace Realms.Generated
 
                         var internalTypeString = internalType.CompleteTypeString;
 
-                        schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+                        schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
                     }
                     else
                     {
@@ -167,36 +163,36 @@ namespace Realms.Generated
 
                         var internalTypeNullable = internalType.IsNullable.ToCodeString();
 
-                        schemaProperties.AppendLine(@$"            Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                        schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
                     }
 
-                    skipDefaultsContent.AppendLine($"                    {property.Name}.Clear();");
-                    copyToRealm.AppendLine($@"                foreach(var val in unmanagedAccessor.{property.Name})
-                {{
-                    {property.Name}.Add(val);
-                }}");
+                    skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
+                    copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
+{{
+    newAccessor.{property.Name}.Add(val);
+}}");
                 }
                 else if (property.TypeInfo.IsIQueryable)
                 {
                     var backlinkProperty = property.Backlink;
                     var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
 
-                    schemaProperties.AppendLine(@$"            Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
+                    schemaProperties.AppendLine(@$"Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
 
                     // Nothing to do for the copy to realm part
                 }
                 else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
                 {
                     var objectName = property.TypeInfo.CompleteTypeString;
-                    schemaProperties.AppendLine(@$"            Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
+                    schemaProperties.AppendLine(@$"Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
 
-                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
+                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
                 else if (property.TypeInfo.SimpleType == SimpleTypeEnum.RealmValue)
                 {
-                    schemaProperties.AppendLine(@$"            Property.RealmValue(""{property.MapTo ?? property.Name}""),");
+                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.MapTo ?? property.Name}""),");
 
-                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
+                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
                 else
                 {
@@ -204,9 +200,9 @@ namespace Realms.Generated
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
                     var isIndexed = property.IsIndexed.ToCodeString();
                     var isNullable = property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"            Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
+                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
 
-                    copyToRealm.AppendLine(@$"                {property.Name} = unmanagedAccessor.{property.Name};");
+                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
             }
 
@@ -214,161 +210,165 @@ namespace Realms.Generated
 
             if (skipDefaultsContent.Length != 0)
             {
-                skipDefaults = $@"                if(!skipDefaults)
-                {{
-{skipDefaultsContent}
-                }}";
+                skipDefaults = $@"if (!skipDefaults)
+{{
+{skipDefaultsContent.Indent(trimNewLines: true)}
+}}
+";
             }
 
-            var accessibilityString = SyntaxFacts.GetText(_classInfo.Accessibility);
-            var isEmbedded = _classInfo.IsEmbedded ? "true" : "false";
-            var schema = @$"        public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {isEmbedded})
-        {{
-{schemaProperties}
-        }}.Build();";
+            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {BoolToString(_classInfo.IsEmbedded)})
+{{
+{schemaProperties.Indent(trimNewLines: true)}
+}}.Build();";
 
-            return $@"
-    [Generated]
-    [Woven(typeof({_helperClassName}))]
-    {accessibilityString} partial class {_classInfo.Name} : IRealmObject, INotifyPropertyChanged
+            var baseInterface = _classInfo.IsEmbedded ? "IEmbeddedObject" : "IRealmObject";
+            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
+
+            var contents = $@"{schema}
+
+#region {baseInterface} implementation
+
+private {_accessorInterfaceName} _accessor;
+
+public IRealmAccessor Accessor
+{{
+    get
     {{
-{schema}
-
-        #region IRealmObject implementation
-
-        private {_accessorInterfaceName} _accessor;
-
-        public IRealmAccessor Accessor => _accessor;
-
-        public bool IsManaged => _accessor.IsManaged;
-
-        public bool IsValid => _accessor.IsValid;
-
-        public bool IsFrozen => _accessor.IsFrozen;
-
-        public Realm Realm => _accessor.Realm;
-
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
-
-        public {_classInfo.Name}()
+        if (_accessor == null)
         {{
             _accessor = new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
         }}
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        return _accessor;
+    }}
+}}
+
+public bool IsManaged => Accessor.IsManaged;
+
+public bool IsValid => Accessor.IsValid;
+
+public bool IsFrozen => Accessor.IsFrozen;
+
+public Realm Realm => Accessor.Realm;
+
+public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+
+{parameterlessConstructorString}
+
+public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+{{
+    var newAccessor = ({_accessorInterfaceName})managedAccessor;
+
+    if (helper != null)
+    {{
+        var oldAccessor = ({_accessorInterfaceName})Accessor;
+{skipDefaults.Indent(2)}
+{copyToRealm.Indent(2, trimNewLines: true)}
+    }}
+
+    _accessor = newAccessor;
+
+    if (_propertyChanged != null)
+    {{
+        SubscribeForNotifications();
+    }}
+
+    OnManaged();
+}}
+
+#endregion
+
+private event PropertyChangedEventHandler _propertyChanged;
+
+public event PropertyChangedEventHandler PropertyChanged
+{{
+    add
+    {{
+        if (_propertyChanged == null)
         {{
-            var unmanagedAccessor = _accessor;
-            _accessor = ({_managedAccessorClassName})managedAccessor;
-
-            if (helper != null)
-            {{
-{skipDefaults}
-
-{copyToRealm}
-            }}
-
-            if (_propertyChanged != null)
-            {{
-                SubscribeForNotifications();
-            }}
-
-            OnManaged();
+            SubscribeForNotifications();
         }}
 
-        #endregion
+        _propertyChanged += value;
+    }}
 
-        private event PropertyChangedEventHandler _propertyChanged;
+    remove
+    {{
+        _propertyChanged -= value;
 
-        public event PropertyChangedEventHandler PropertyChanged
+        if (_propertyChanged == null)
         {{
-            add
-            {{
-                if (_propertyChanged == null)
-                {{
-                    SubscribeForNotifications();
-                }}
-
-                _propertyChanged += value;
-            }}
-
-            remove
-            {{
-                _propertyChanged -= value;
-
-                if (_propertyChanged == null)
-                {{
-                    UnsubscribeFromNotifications();
-                }}
-            }}
+            UnsubscribeFromNotifications();
         }}
+    }}
+}}
 
-        partial void OnPropertyChanged(string propertyName);
+partial void OnPropertyChanged(string propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
-        {{
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            OnPropertyChanged(propertyName);
-        }}
+private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+{{
+    _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    OnPropertyChanged(propertyName);
+}}
 
-        partial void OnManaged();
+partial void OnManaged();
 
-        private void SubscribeForNotifications()
-        {{
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
-        }}
+private void SubscribeForNotifications()
+{{
+    Accessor.SubscribeForNotifications(RaisePropertyChanged);
+}}
 
-        private void UnsubscribeFromNotifications()
-        {{
-            _accessor.UnsubscribeFromNotifications();
-        }}
+private void UnsubscribeFromNotifications()
+{{
+    Accessor.UnsubscribeFromNotifications();
+}}
 
-        public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 
-        public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
-    }}";
+public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);";
+
+            var accessibilityString = SyntaxFacts.GetText(_classInfo.Accessibility);
+
+            return $@"[Generated]
+[Woven(typeof({_helperClassName}))]
+{accessibilityString} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
+{{
+{contents.Indent()}
+
+{GenerateClassObjectHelper().Indent()}
+}}";
         }
 
         private string GenerateClassObjectHelper()
         {
             var primaryKeyProperty = _classInfo.PrimaryKey;
-            string tryGetPrimaryKeyBody;
+            var valueAccessor = primaryKeyProperty == null ? "null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
-            if (primaryKeyProperty != null)
-            {
-                var valueString = $"value = (({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name};";
-                tryGetPrimaryKeyBody = $@"{valueString}
-            return true;";
-            }
-            else
-            {
-                tryGetPrimaryKeyBody = @"value = null;
-            return false;";
-            }
-
-            return $@"
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class {_helperClassName} : IRealmObjectHelper
+            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+private class {_helperClassName} : IRealmObjectHelper
+{{
+    public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
     {{
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {{
-            throw new InvalidOperationException(""This method should not be called for source generated classes."");
-        }}
+        throw new InvalidOperationException(""This method should not be called for source generated classes."");
+    }}
 
-        public ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
+    public ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
 
-        public IRealmObjectBase CreateInstance()
-        {{
-            return new {_classInfo.Name}();
-        }}
+    public IRealmObjectBase CreateInstance()
+    {{
+        return new {_classInfo.Name}();
+    }}
 
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {{
-            {tryGetPrimaryKeyBody}
-        }}
-    }}";
+    public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+    {{
+        value = {valueAccessor};
+        return {BoolToString(primaryKeyProperty != null)};
+    }}
+}}";
         }
 
-        private string GeneratedUnmanagedAccessor()
+        private string GenerateUnmanagedAccessor()
         {
             var propertiesString = new StringBuilder();
             var getValueLines = new StringBuilder();
@@ -396,21 +396,21 @@ namespace Realms.Generated
                     {
                         case CollectionTypeEnum.List:
                             constructorString = $"new List<{parameterString}>()";
-                            getListValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IList<T>){property.Name},");
+                            getListValueLines.AppendLine($@"""{propertyMapToName}"" => (IList<T>){property.Name},");
                             break;
                         case CollectionTypeEnum.Set:
                             constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
-                            getSetValueLines.AppendLine($@"                ""{propertyMapToName}"" => (ISet<T>){property.Name},");
+                            getSetValueLines.AppendLine($@"""{propertyMapToName}"" => (ISet<T>){property.Name},");
                             break;
                         case CollectionTypeEnum.Dictionary:
                             constructorString = $"new Dictionary<string, {parameterString}>()";
-                            getDictionaryValueLines.AppendLine($@"                ""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
+                            getDictionaryValueLines.AppendLine($@"""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
                             break;
                         default:
-                            throw new NotImplementedException();
+                            throw new NotImplementedException($"Collection {property.TypeInfo.CollectionType} is not supported yet");
                     }
 
-                    var propertyString = $@"        public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
+                    var propertyString = $@"public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
 
                     propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine();
@@ -418,61 +418,58 @@ namespace Realms.Generated
                 else if (property.TypeInfo.IsIQueryable)
                 {
                     // Properties
-                    var propertyString = @$"        public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
+                    var propertyString = @$"public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
 
                     propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine();
 
                     // GetValue
-                    getValueLines.AppendLine(@$"                ""{stringName}"" =>  throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
+                    getValueLines.AppendLine(@$"""{stringName}"" => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
                 }
                 else
                 {
                     // Properties
                     var initializerString = string.IsNullOrEmpty(property.Initializer) ? string.Empty : $" {property.Initializer}";
-                    var backingFieldString = $"        private {type} {backingFieldName}{initializerString};";
+                    var backingFieldString = $"private {type} {backingFieldName}{initializerString};";
 
-                    var propertyString = @$"        public {type} {name}
-        {{
-            get => {backingFieldName};
-            set
-            {{
-                {backingFieldName} = value;
-                RaisePropertyChanged(""{stringName}"");
-            }}
-        }}";
+                    var propertyString = @$"public {type} {name}
+{{
+    get => {backingFieldName};
+    set
+    {{
+        {backingFieldName} = value;
+        RaisePropertyChanged(""{stringName}"");
+    }}
+}}";
 
                     propertiesString.AppendLine(backingFieldString);
-                    propertiesString.Append(propertyString);
+                    propertiesString.AppendLine(propertyString);
                     propertiesString.AppendLine();
 
                     // GetValue
-                    getValueLines.AppendLine(@$"                ""{stringName}"" => {backingFieldName},");
+                    getValueLines.AppendLine(@$"""{stringName}"" => {backingFieldName},");
 
                     // SetValue/SetValueUnique
-                    setValueLines.AppendLine($@"                case ""{stringName}"":");
+                    setValueLines.AppendLine($@"case ""{stringName}"":");
 
                     if (property.IsPrimaryKey)
                     {
-                        setValueLines.AppendLine($@"                    throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");");
+                        setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
 
                         setValueUniqueLines.Append($@"if (propertyName != ""{stringName}"")
-            {{
-                throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");
-            }}
+{{
+    throw new InvalidOperationException($""Cannot set the value of non primary key property ({{propertyName}}) with SetValueUnique"");
+}}
 
-            {name} = ({type})val;");
+{name} = ({type})val;");
                     }
                     else
                     {
-                        setValueLines.AppendLine($@"                    {name} = ({type})val;
-                    return;");
+                        setValueLines.AppendLine(@$"{name} = ({type})val;
+return;".Indent());
                     }
                 }
             }
-
-            // Properties
-            var propertyBody = propertiesString.ToString();
 
             // GetValue
             string getValueBody;
@@ -484,10 +481,10 @@ namespace Realms.Generated
             else
             {
                 getValueBody = $@"return propertyName switch
-            {{
-{getValueLines}
-                _ => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
-            }};";
+{{
+{getValueLines.Indent(1, trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a gettable Realm property with name {{propertyName}}""),
+}};";
             }
 
             // SetValue
@@ -500,11 +497,11 @@ namespace Realms.Generated
             else
             {
                 setValueBody = $@"switch (propertyName)
-            {{
-{setValueLines}
-                default:
-                        throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
-            }}";
+{{
+{setValueLines.Indent(1, trimNewLines: true)}
+    default:
+        throw new MissingMemberException($""The object does not have a settable Realm property with name {{propertyName}}"");
+}}";
             }
 
             // SetValueUnique
@@ -512,8 +509,6 @@ namespace Realms.Generated
             {
                 setValueUniqueLines.Append(@"throw new InvalidOperationException(""Cannot set the value of an non primary key property with SetValueUnique"");");
             }
-
-            var setValueUniqueBody = setValueUniqueLines.ToString();
 
             // GetListValue
             string getListValueBody;
@@ -557,51 +552,50 @@ namespace Realms.Generated
             else
             {
                 getDictionaryValueBody = $@"return propertyName switch
-            {{
-{getDictionaryValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
-            }};";
+{{
+{getDictionaryValueLines.Indent(1, trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
+}};";
             }
 
-            return $@"    
-    internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
+            return $@"internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
+{{
+{propertiesString.Indent(trimNewLines: true)}
+
+    public {_unmanagedAccessorClassName}(Type objectType) : base(objectType)
     {{
-{propertyBody}
+    }}
 
-        public {_unmanagedAccessorClassName}(Type objectType) : base(objectType)
-        {{
-        }}
+    public override RealmValue GetValue(string propertyName)
+    {{
+{getValueBody.Indent(2, trimNewLines: true)}
+    }}
 
-        public override RealmValue GetValue(string propertyName)
-        {{
-            {getValueBody}
-        }}
+    public override void SetValue(string propertyName, RealmValue val)
+    {{
+{setValueBody.Indent(2, trimNewLines: true)}
+    }}
 
-        public override void SetValue(string propertyName, RealmValue val)
-        {{
-            {setValueBody}
-        }}
+    public override void SetValueUnique(string propertyName, RealmValue val)
+    {{
+{setValueUniqueLines.Indent(2, trimNewLines: true)}
+    }}
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
-        {{
-            {setValueUniqueBody}
-        }}
+    public override IList<T> GetListValue<T>(string propertyName)
+    {{
+{getListValueBody.Indent(2, trimNewLines: true)}
+    }}
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {{
-            {getListValueBody}
-        }}
+    public override ISet<T> GetSetValue<T>(string propertyName)
+    {{
+{getSetValueBody.Indent(2, trimNewLines: true)}
+    }}
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {{
-            {getSetValueBody}
-        }}
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {{
-            {getDictionaryValueBody}
-        }}
-    }}";
+    public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+    {{
+{getDictionaryValueBody.Indent(2, trimNewLines: true)}
+    }}
+}}";
         }
 
         private string GenerateManagedAccessor()
@@ -637,21 +631,19 @@ namespace Realms.Generated
                         getFieldString = "GetBacklinks";
                     }
 
-                    var propertyString = @$"        {backingFieldString}
-        public {type} {name}
+                    propertiesBuilder.AppendLine(@$"{backingFieldString}
+public {type} {name}
+{{
+    get
+    {{
+        if ({backingFieldName} == null)
         {{
-            get
-            {{
-                if({backingFieldName} == null)
-                {{
-                    {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.MapTo ?? property.Name}"");
-                }}
+            {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.MapTo ?? property.Name}"");
+        }}
 
-                return {backingFieldName};
-            }}
-        }}";
-
-                    propertiesBuilder.AppendLine(propertyString);
+        return {backingFieldName};
+    }}
+}}");
                 }
                 else
                 {
@@ -660,24 +652,21 @@ namespace Realms.Generated
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
                     var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
 
-                    var propertyString = @$"        public {type} {name}
-        {{
-            {getterString}
-            {setterString}
-        }}";
-
-                    propertiesBuilder.Append(propertyString);
+                    propertiesBuilder.AppendLine(@$"public {type} {name}
+{{
+    {getterString}
+    {setterString}
+}}");
                 }
 
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"    
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfaceName}
-    {{
-{propertiesBuilder}
-    }}";
+            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfaceName}
+{{
+{propertiesBuilder.Indent(trimNewLines: true)}
+}}";
         }
 
         private static string GetBackingFieldName(string propertyName)
@@ -708,5 +697,7 @@ namespace Realms.Generated
 
             return "RealmValueType." + endString;
         }
+
+        private static string BoolToString(bool value) => value ? "true" : "false";
     }
 }
