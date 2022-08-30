@@ -51,7 +51,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
                 
                 public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
                 
-                private InnerClass() {}
+                
                 
                 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
                 {

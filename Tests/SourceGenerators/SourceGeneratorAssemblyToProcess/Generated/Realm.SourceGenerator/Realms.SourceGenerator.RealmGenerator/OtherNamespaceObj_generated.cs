@@ -47,7 +47,7 @@ namespace OtherNamespace
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
-        private OtherNamespaceObj() {}
+        
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {

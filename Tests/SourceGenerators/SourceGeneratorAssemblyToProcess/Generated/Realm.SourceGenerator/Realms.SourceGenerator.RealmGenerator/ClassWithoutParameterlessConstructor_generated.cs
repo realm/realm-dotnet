@@ -12,17 +12,17 @@ using Realms.Schema;
 namespace SourceGeneratorAssemblyToProcess.TestClasses
 {
     [Generated]
-    [Woven(typeof(ClassWithParameterlessConstructorObjectHelper))]
-    public partial class ClassWithParameterlessConstructor : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(ClassWithoutParameterlessConstructorObjectHelper))]
+    public partial class ClassWithoutParameterlessConstructor : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithParameterlessConstructor", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithoutParameterlessConstructor", isEmbedded: false)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
         }.Build();
         
         #region IRealmObject implementation
         
-        private IClassWithParameterlessConstructorAccessor _accessor;
+        private IClassWithoutParameterlessConstructorAccessor _accessor;
         
         public IRealmAccessor Accessor
         {
@@ -30,7 +30,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             {
                 if (_accessor == null)
                 {
-                    _accessor = new ClassWithParameterlessConstructorUnmanagedAccessor(typeof(ClassWithParameterlessConstructorObjectHelper));
+                    _accessor = new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructorObjectHelper));
                 }
         
                 return _accessor;
@@ -47,15 +47,15 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
-        
+        private ClassWithoutParameterlessConstructor() {}
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IClassWithParameterlessConstructorAccessor)managedAccessor;
+            var newAccessor = (IClassWithoutParameterlessConstructorAccessor)managedAccessor;
         
             if (helper != null)
             {
-                var oldAccessor = (IClassWithParameterlessConstructorAccessor)Accessor;
+                var oldAccessor = (IClassWithoutParameterlessConstructorAccessor)Accessor;
                 
                 newAccessor.Name = oldAccessor.Name;
             }
@@ -117,23 +117,23 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             Accessor.UnsubscribeFromNotifications();
         }
         
-        public static explicit operator ClassWithParameterlessConstructor(RealmValue val) => val.AsRealmObject<ClassWithParameterlessConstructor>();
+        public static explicit operator ClassWithoutParameterlessConstructor(RealmValue val) => val.AsRealmObject<ClassWithoutParameterlessConstructor>();
         
-        public static implicit operator RealmValue(ClassWithParameterlessConstructor val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(ClassWithoutParameterlessConstructor val) => RealmValue.Object(val);
     
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ClassWithParameterlessConstructorObjectHelper : IRealmObjectHelper
+        private class ClassWithoutParameterlessConstructorObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
         
-            public ManagedAccessor CreateAccessor() => new ClassWithParameterlessConstructorManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new ClassWithoutParameterlessConstructorManagedAccessor();
         
             public IRealmObjectBase CreateInstance()
             {
-                return new ClassWithParameterlessConstructor();
+                return new ClassWithoutParameterlessConstructor();
             }
         
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
@@ -148,13 +148,13 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IClassWithParameterlessConstructorAccessor : IRealmAccessor
+    internal interface IClassWithoutParameterlessConstructorAccessor : IRealmAccessor
     {
         string Name { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ClassWithParameterlessConstructorManagedAccessor : ManagedAccessor, IClassWithParameterlessConstructorAccessor
+    internal class ClassWithoutParameterlessConstructorManagedAccessor : ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
     {
         public string Name
         {
@@ -163,7 +163,7 @@ namespace Realms.Generated
         }
     }
 
-    internal class ClassWithParameterlessConstructorUnmanagedAccessor : UnmanagedAccessor, IClassWithParameterlessConstructorAccessor
+    internal class ClassWithoutParameterlessConstructorUnmanagedAccessor : UnmanagedAccessor, IClassWithoutParameterlessConstructorAccessor
     {
         private string _name;
         public string Name
@@ -176,7 +176,7 @@ namespace Realms.Generated
             }
         }
     
-        public ClassWithParameterlessConstructorUnmanagedAccessor(Type objectType) : base(objectType)
+        public ClassWithoutParameterlessConstructorUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
     
