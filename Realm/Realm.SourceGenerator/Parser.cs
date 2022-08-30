@@ -77,6 +77,7 @@ namespace Realms.SourceGenerator
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.IsEmbedded = isEmbedded;
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
+                    classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
 
                     // Properties
                     foreach (var classDeclarationSyntax in classDeclarations)
@@ -391,6 +392,26 @@ namespace Realms.SourceGenerator
         {
             return classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>())
                 .Any(c => !c.ParameterList.Parameters.Any());
+        }
+
+        private static IList<EnclosingClassInfo> GetEnclosingClassList(ITypeSymbol classSymbol)
+        {
+            var enclosingClassList = new List<EnclosingClassInfo>();
+            var currentSymbol = classSymbol;
+
+            while (currentSymbol.ContainingSymbol is ITypeSymbol ts)
+            {
+                var enclosingClassinfo = new EnclosingClassInfo
+                {
+                    Name = ts.Name,
+                    Accessibility = ts.DeclaredAccessibility
+                };
+                enclosingClassList.Add(enclosingClassinfo);
+
+                currentSymbol = ts;
+            }
+
+            return enclosingClassList;
         }
     }
 

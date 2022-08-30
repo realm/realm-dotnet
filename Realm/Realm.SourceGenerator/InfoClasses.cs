@@ -42,9 +42,18 @@ namespace Realms.SourceGenerator
 
         public List<string> Usings { get; } = new();
 
+        public List<EnclosingClassInfo> EnclosingClasses { get; } = new();
+
         public bool HasParameterlessConstructor { get; set; }
 
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
+    }
+
+    internal record EnclosingClassInfo
+    {
+        public string Name { get; set; }
+
+        public Accessibility Accessibility { get; set; }
     }
 
     internal record PropertyInfo
