@@ -110,8 +110,8 @@ with:
     #@yaml/text-templated-strings
     with:
       path: wrappers/realm-core/tools/vcpkg/ports
-      cache-key: vcpkg-(@= preset @)-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-      cache-restore-keys: vcpkg-(@= preset @)-
+      cache-key: vcpkg2-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+      cache-restore-keys: vcpkg2-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}
 #@ end
 
 #@ def downloadAllArtifacts(conclusion = "completed"):
