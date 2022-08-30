@@ -68,6 +68,7 @@ jobs:
           path: TestRunner
       - name: Run Tests
         run: |
+          chmod +x TestRunner/PlayerWithTests.x86_64
           ./TestRunner/PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
           cat ${{ github.workspace }}/test.log
       - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
