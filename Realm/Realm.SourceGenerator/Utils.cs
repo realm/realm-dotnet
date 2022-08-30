@@ -161,6 +161,11 @@ namespace Realms.SourceGenerator
 
         public static string Indent(this string str, int indents = 1, bool trimNewLines = false)
         {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                return str;
+            }
+
             var indentString = new string(' ', indents * 4);
 
             var result = indentString + str.Replace(Environment.NewLine, $"{Environment.NewLine}{indentString}");

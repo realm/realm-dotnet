@@ -23,13 +23,15 @@ namespace Realm.SourceGenerator.Tests
     [TestFixture]
     internal class UtilsTests
     {
+        private static string DefaultIndent = new string(' ', 4);
+
         public static (string Input, string Expected)[] IndentTestCases = new[]
         {
             ("", ""),
-            ("abc", $"{Utils.DefaultIndent}abc"),
-            ($"a{Environment.NewLine}b", $"{Utils.DefaultIndent}a{Environment.NewLine}{Utils.DefaultIndent}b"),
-            ($"  abc{Environment.NewLine}{Environment.NewLine}", $"{Utils.DefaultIndent}  abc{Environment.NewLine}{Environment.NewLine}"),
-            ($"a{Environment.NewLine}{Environment.NewLine}b", $"{Utils.DefaultIndent}a{Environment.NewLine}{Environment.NewLine}{Utils.DefaultIndent}b"),
+            ("abc", $"{DefaultIndent}abc"),
+            ($"a{Environment.NewLine}b", $"{DefaultIndent}a{Environment.NewLine}{DefaultIndent}b"),
+            ($"  abc{Environment.NewLine}{Environment.NewLine}", $"{DefaultIndent}  abc{Environment.NewLine}{DefaultIndent}{Environment.NewLine}{DefaultIndent}"),
+            ($"a{Environment.NewLine}{Environment.NewLine}b", $"{DefaultIndent}a{Environment.NewLine}{DefaultIndent}{Environment.NewLine}{DefaultIndent}b"),
         };
 
         [TestCaseSource(nameof(IndentTestCases))]
