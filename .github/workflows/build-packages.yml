@@ -153,30 +153,35 @@ jobs:
         name: Realm.Fody.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for Realm.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
         name: Realm.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
         name: Realm.UnityUtils.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityUtils.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v2
       with:
         name: Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for ExtractedChangelog
       uses: actions/upload-artifact@v2
       with:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Check Docfx cache
       id: check-docfx-cache
       if: inputs.build-docs
@@ -201,4 +206,5 @@ jobs:
         name: Docs.zip
         path: ${{ github.workspace }}/Realm/packages/Docs.zip
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
       if: inputs.build-docs

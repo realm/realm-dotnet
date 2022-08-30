@@ -51,6 +51,7 @@ jobs:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -67,6 +68,7 @@ jobs:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-linux.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -83,6 +85,7 @@ jobs:
         name: wrappers-ios-Simulator
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Simulator.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -99,6 +102,7 @@ jobs:
         name: wrappers-ios-Device
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Device.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -115,6 +119,7 @@ jobs:
         name: wrappers-ios-Catalyst
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Catalyst.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -131,6 +136,7 @@ jobs:
         name: wrappers-android-armeabi-v7a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -147,6 +153,7 @@ jobs:
         name: wrappers-android-arm64-v8a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -163,6 +170,7 @@ jobs:
         name: wrappers-android-x86
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -179,6 +187,7 @@ jobs:
         name: wrappers-android-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
@@ -195,6 +204,7 @@ jobs:
         name: wrappers-windows-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -211,6 +221,7 @@ jobs:
         name: wrappers-windows-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -227,6 +238,7 @@ jobs:
         name: wrappers-windows-ARM64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -243,6 +255,7 @@ jobs:
         name: wrappers-windows-uwp-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -259,6 +272,7 @@ jobs:
         name: wrappers-windows-uwp-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -275,6 +289,7 @@ jobs:
         name: wrappers-windows-uwp-ARM
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -291,6 +306,7 @@ jobs:
         name: wrappers-windows-uwp-ARM64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
@@ -322,6 +338,7 @@ jobs:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
   ios:
     runs-on: macos-latest
     name: iOS
@@ -355,6 +372,7 @@ jobs:
         name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-ios-Simulator != 'true' || needs.check-cache.outputs.wrappers-ios-Device != 'true' || needs.check-cache.outputs.wrappers-ios-Catalyst != 'true'
   linux:
     runs-on: ubuntu-latest
@@ -403,6 +421,7 @@ jobs:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
   android:
     runs-on: ubuntu-20.04
     name: Android
@@ -437,6 +456,7 @@ jobs:
         name: wrappers-android-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
   windows:
     runs-on: windows-latest
@@ -468,11 +488,16 @@ jobs:
       shell: bash
       run: echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Setup Vcpkg
+      id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg2-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg2-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+        cache-key: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+        cache-restore-keys: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+    - name: Refetch vcpkg
+      if: ${{ setup-vcpkg.outputs.cache-hit == false }}
+      run: git fetch
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -482,6 +507,7 @@ jobs:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
   uwp:
     runs-on: windows-latest
@@ -514,11 +540,16 @@ jobs:
       shell: bash
       run: echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Setup Vcpkg
+      id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg2-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg2-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+        cache-key: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+        cache-restore-keys: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+    - name: Refetch vcpkg
+      if: ${{ setup-vcpkg.outputs.cache-hit == false }}
+      run: git fetch
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -528,4 +559,5 @@ jobs:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'

@@ -293,6 +293,7 @@ jobs:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
         retention-days: 30
+        if-no-files-found: error
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
