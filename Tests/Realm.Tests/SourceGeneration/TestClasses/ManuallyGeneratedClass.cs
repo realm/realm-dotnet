@@ -22,7 +22,6 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Realms.Generated;
 using Realms.Schema;
-using Realms.Tests.SourceGeneration.TestClasses;
 using Realms.Weaving;
 
 namespace Realms.Tests.SourceGeneration.TestClasses
@@ -48,24 +47,24 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public int IntValue
         {
-            get => _accessor.IntValue;
-            set => _accessor.IntValue = value;
+            get => ((IManuallyGeneratedClassAccessor)Accessor).IntValue;
+            set => ((IManuallyGeneratedClassAccessor)Accessor).IntValue = value;
         }
 
-        public IList<int> ListValue => _accessor.ListValue;
+        public IList<int> ListValue => ((IManuallyGeneratedClassAccessor)Accessor).ListValue;
 
         [MapTo("_string")]
         public string StringValue
         {
-            get => _accessor.StringValue;
-            set => _accessor.StringValue = value;
+            get => ((IManuallyGeneratedClassAccessor)Accessor).StringValue;
+            set => ((IManuallyGeneratedClassAccessor)Accessor).StringValue = value;
         }
 
         [PrimaryKey]
         public int PrimaryKeyValue
         {
-            get => _accessor.PrimaryKeyValue;
-            set => _accessor.PrimaryKeyValue = value;
+            get => ((IManuallyGeneratedClassAccessor)Accessor).PrimaryKeyValue;
+            set => ((IManuallyGeneratedClassAccessor)Accessor).PrimaryKeyValue = value;
         }
 
         #endregion
@@ -88,43 +87,53 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         private IManuallyGeneratedClassAccessor _accessor;
 
-        public IRealmAccessor Accessor => _accessor;
+        public IRealmAccessor Accessor
+        {
+            get
+            {
+                _accessor ??= new ManuallyGeneratedClassUnmanagedAccessor(typeof(ManualllyGeneratedClass));
 
-        public bool IsManaged => _accessor.IsManaged;
+                return _accessor;
+            }
+        }
 
-        public bool IsValid => _accessor.IsValid;
+        public bool IsManaged => Accessor.IsManaged;
 
-        public bool IsFrozen => _accessor.IsFrozen;
+        public bool IsValid => Accessor.IsValid;
 
-        public Realm Realm => _accessor.Realm;
+        public bool IsFrozen => Accessor.IsFrozen;
 
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
+        public Realm Realm => Accessor.Realm;
+
+        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         public ManualllyGeneratedClass()
         {
-            _accessor = new ManuallyGeneratedClassUnmanagedAccessor(typeof(ManualllyGeneratedClass));
         }
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var unmanagedAccessor = _accessor;
-            _accessor = (IManuallyGeneratedClassAccessor)managedAccessor;
+            var newAccessor = (IManuallyGeneratedClassAccessor)managedAccessor;
 
             if (helper != null)
             {
-                IntValue = unmanagedAccessor.IntValue;
-                StringValue = unmanagedAccessor.StringValue;
+                var oldAccessor = (IManuallyGeneratedClassAccessor)Accessor;
+
+                newAccessor.IntValue = oldAccessor.IntValue;
+                newAccessor.StringValue = oldAccessor.StringValue;
 
                 if (!skipDefaults)
                 {
-                    ListValue.Clear();
+                    newAccessor.ListValue.Clear();
                 }
 
-                foreach (var val in unmanagedAccessor.ListValue)
+                foreach (var val in oldAccessor.ListValue)
                 {
-                    ListValue.Add(val);
+                    newAccessor.ListValue.Add(val);
                 }
             }
+
+            _accessor = newAccessor;
 
             if (_propertyChanged != null)
             {
@@ -172,12 +181,34 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         private void SubscribeForNotifications()
         {
-            _accessor.SubscribeForNotifications(RaisePropertyChanged);
+            Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
 
         private void UnsubscribeFromNotifications()
         {
-            _accessor.UnsubscribeFromNotifications();
+            Accessor.UnsubscribeFromNotifications();
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        private class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
+        {
+            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            {
+                throw new InvalidOperationException("This method should not be called for source generated classes.");
+            }
+
+            public ManagedAccessor CreateAccessor() => new ManuallyGeneratedClassManagedAccessor();
+
+            public IRealmObjectBase CreateInstance()
+            {
+                return new ManualllyGeneratedClass();
+            }
+
+            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            {
+                value = ((IManuallyGeneratedClassAccessor)instance.Accessor).PrimaryKeyValue;
+                return true;
+            }
         }
     }
 }
@@ -185,28 +216,6 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 // Having a separate namespace allows to hide the implementation details better.
 namespace Realms.Generated
 {
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ManuallyGeneratedClassObjectHelper : IRealmObjectHelper
-    {
-        public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
-        {
-            throw new InvalidOperationException("This method should not be called for source generated classes.");
-        }
-
-        public ManagedAccessor CreateAccessor() => new ManuallyGeneratedClassManagedAccessor();
-
-        public IRealmObjectBase CreateInstance()
-        {
-            return new ManualllyGeneratedClass();
-        }
-
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
-        {
-            value = ((IManuallyGeneratedClassAccessor)instance.Accessor).PrimaryKeyValue;
-            return true;
-        }
-    }
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface IManuallyGeneratedClassAccessor : IRealmAccessor
     {
