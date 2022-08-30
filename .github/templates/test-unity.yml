@@ -71,6 +71,7 @@ jobs:
           chmod +x TestRunner/PlayerWithTests.x86_64
           ./TestRunner/PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
       - run: cat ${{ github.workspace }}/test.log
+        if: always()
       - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
 
   run-tests-windows:
