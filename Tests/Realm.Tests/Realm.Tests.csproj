@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <UnityBuild>false</UnityBuild>
-	<!--
-	The Visual Studio Run Tests context menu command (Ctrl+R, T) always picks the first target framework
-	in the project file, but the NUnit test adapter doesn't support .NET Standard 2.0, so it should never be
-	first in the list.
-	-->
+    <!--
+    The Visual Studio Run Tests context menu command (Ctrl+R, T) always picks the first target framework
+    in the project file, but the NUnit test adapter doesn't support .NET Standard 2.0, so it should never be
+    first in the list.
+    -->
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
-	<TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Realms.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
@@ -100,19 +100,19 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
-		  Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so"
-		  Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+      Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll"
-		  Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll"
-		  Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
