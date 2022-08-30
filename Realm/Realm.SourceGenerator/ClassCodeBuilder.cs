@@ -20,8 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using static Realms.SourceGenerator.Utils;
 
 namespace Realms.SourceGenerator
 {
@@ -328,16 +328,35 @@ public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealm
 
 public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);";
 
-            var accessibilityString = SyntaxFacts.GetText(_classInfo.Accessibility);
-
-            return $@"[Generated]
+            var classString = $@"[Generated]
 [Woven(typeof({_helperClassName}))]
-{accessibilityString} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
+{SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
 {{
 {contents.Indent()}
 
 {GenerateClassObjectHelper().Indent()}
 }}";
+
+            //TODO Need to make this look nicer, and add diagnostics for this too
+            var problematicAccessibilityies = new List<Accessibility>
+            {
+                Accessibility.Private, Accessibility.Protected, Accessibility.ProtectedAndInternal,
+                Accessibility.ProtectedOrInternal
+            };
+
+            if (problematicAccessibilityies.Contains(_classInfo.Accessibility))
+            {
+                foreach (var enclosingClassInfo in _classInfo.EnclosingClasses)
+                {
+                    classString = $@"{SyntaxFacts.GetText(enclosingClassInfo.Accessibility)} partial class {enclosingClassInfo.Name}
+{{
+{classString.Indent()}
+}}
+";
+                }
+            }
+
+            return classString;
         }
 
         private string GenerateClassObjectHelper()
