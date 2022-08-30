@@ -83,7 +83,7 @@ jobs:
       run: |
         chmod +x TestRunner/PlayerWithTests.x86_64
         ./TestRunner/PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
-        cat ${{ github.workspace }}/test.log
+    - run: cat ${{ github.workspace }}/test.log
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
