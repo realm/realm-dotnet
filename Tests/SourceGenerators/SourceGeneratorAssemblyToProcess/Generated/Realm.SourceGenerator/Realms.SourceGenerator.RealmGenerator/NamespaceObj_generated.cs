@@ -49,7 +49,7 @@ namespace SourceGeneratorAssemblyToProcess
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
-        private NamespaceObj() {}
+        
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {

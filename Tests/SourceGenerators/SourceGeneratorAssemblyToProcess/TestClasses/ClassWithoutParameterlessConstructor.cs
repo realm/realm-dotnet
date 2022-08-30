@@ -25,12 +25,13 @@ using Realms;
 
 namespace SourceGeneratorAssemblyToProcess.TestClasses
 {
-    public partial class ClassWithParameterlessConstructor : IRealmObject
+    public partial class ClassWithoutParameterlessConstructor : IRealmObject
     {
         public string Name { get; set; }
 
-        public ClassWithParameterlessConstructor()
+        public ClassWithoutParameterlessConstructor(string name)
         {
+            Name = name;
         }
     }
 }

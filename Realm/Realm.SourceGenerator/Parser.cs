@@ -390,8 +390,8 @@ namespace Realms.SourceGenerator
 
         private static bool HasParameterlessConstructor(List<ClassDeclarationSyntax> classDeclarations)
         {
-            return classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>())
-                .Any(c => !c.ParameterList.Parameters.Any());
+            var constructors = classDeclarations.SelectMany(cd => cd.ChildNodes().OfType<ConstructorDeclarationSyntax>());
+            return !constructors.Any() || constructors.Any(c => !c.ParameterList.Parameters.Any());
         }
 
         private static IList<EnclosingClassInfo> GetEnclosingClassList(ITypeSymbol classSymbol)
