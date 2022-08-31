@@ -60,7 +60,7 @@ jobs:
   run-tests-linux:
     runs-on: ubuntu-latest
     name: Unity Linux
-    timeout-minutes: 30
+    timeout-minutes: 10
     needs:
     - build-tests
     if: ${{ contains(inputs.platform, 'Linux') }}
@@ -80,11 +80,12 @@ jobs:
         name: UnityTestsRunner.linux
         path: TestRunner
     - name: Install xvfb
-      run: sudo apt install -y xvfb
+      run: sudo apt install -y xvfb libglu1 libxcursor1
     - name: Run Tests
       run: |
-        chmod +x TestRunner/PlayerWithTests.x86_64
-        ./TestRunner/PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
+        chmod +x PlayerWithTests.x86_64
+        xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
+      working-directory: TestRunner
     - run: cat ${{ github.workspace }}/test.log
       if: always()
     - name: Publish Unit Test Results
