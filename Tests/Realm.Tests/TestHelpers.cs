@@ -245,12 +245,12 @@ namespace Realms.Tests
             }
         }
 
-        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
-            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts);
+            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts, errorMessage);
         }
 
-        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100)
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
             var value = producer();
             var success = tester(value);
@@ -265,7 +265,8 @@ namespace Realms.Tests
 
             if (!success)
             {
-                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+                var message = $"Failed to meet condition after {timeout} ms" + (errorMessage == null ? "." : $": {errorMessage}");
+                throw new TimeoutException(message);
             }
 
             return value;
