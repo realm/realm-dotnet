@@ -35,7 +35,7 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Xamarin.Android", "MacCatalyst"]))
+  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Android", "MacCatalyst"]))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -104,4 +104,4 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Xamarin.Android"]))
+  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Android"]))
