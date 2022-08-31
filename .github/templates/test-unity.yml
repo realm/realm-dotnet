@@ -50,8 +50,7 @@ jobs:
       - name: Build Unity Tests
         run: |
           unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
-          tar -zcvf player.tar.gz -C ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/ .
-      - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.platform.os }}", "player.tar.gz")
+      - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.platform.os }}", "Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/")
 
   run-tests-linux:
     runs-on: ubuntu-latest
@@ -71,7 +70,7 @@ jobs:
         run: sudo apt install -y xvfb libglu1 libxcursor1
       - name: Run Tests
         run: |
-          tar -xzvf TestRunner/player.tar.gz -C ${{ github.workspace }}/TestRunner/
+          chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
       - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
 
