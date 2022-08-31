@@ -495,7 +495,6 @@ jobs:
         cache-key: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
         cache-restore-keys: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
     - name: Refetch vcpkg
-      if: ${{ steps.setup-vcpkg.outputs.cache-hit == false }}
       run: git fetch
       working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
@@ -547,7 +546,6 @@ jobs:
         cache-key: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
         cache-restore-keys: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
     - name: Refetch vcpkg
-      if: ${{ steps.setup-vcpkg.outputs.cache-hit == false }}
       run: git fetch
       working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
