@@ -55,7 +55,7 @@ jobs:
   run-tests-linux:
     runs-on: ubuntu-latest
     name: Unity Linux
-    timeout-minutes: 10
+    timeout-minutes: 30
     needs:
       - build-tests
     if: ${{ contains(inputs.platform, 'Linux') }}
@@ -70,9 +70,8 @@ jobs:
         run: sudo apt install -y xvfb libglu1 libxcursor1
       - name: Run Tests
         run: |
-          chmod +x PlayerWithTests.x86_64
+          chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile ${{ github.workspace }}/test.log --result=${{ github.workspace }}/TestResults.xml
-        working-directory: TestRunner
       - run: cat ${{ github.workspace }}/test.log
         if: always()
       - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")
