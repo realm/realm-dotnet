@@ -32,8 +32,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AsymmetricObjectTests : SyncTestBase
     {
-        // name format: Action_OptionalCondition_Expectation
-
         public static object[] SetAndGetValueCases =
         {
             new object[] { "CharProperty", '0' },
