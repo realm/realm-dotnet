@@ -29,7 +29,6 @@ using Realms.Schema;
 
 namespace Realms.Dynamic
 {
-    // TODO andrea: this class may need adjustment as there are no tests written yet
     internal class MetaRealmObject : DynamicMetaObject
     {
         private const BindingFlags PrivateBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;

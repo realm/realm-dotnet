@@ -72,7 +72,6 @@ namespace Realms.Schema
         [Obsolete("Check against RealmSchemaType instead.")]
         public bool IsEmbedded => ObjectType == ObjectSchemaType.EmbeddedObject;
 
-        // TODO andrea: review this documentation
         /// <summary>
         /// Gets a <see cref="ObjectSchemaType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
@@ -222,14 +221,13 @@ namespace Realms.Schema
             {
             }
 
-            // TODO andrea: review the documentation
             /// <summary>
             /// Initializes a new instance of the <see cref="Builder"/> class populated with properties from the
             /// provided <paramref name="type"/>.
             /// </summary>
             /// <param name="type">
             /// The <see cref="System.Type"/> that will be used to populate the builder. It must be a <see cref="RealmObject"/>,
-            /// an <see cref="EmbeddedObject"/>, or an <see cref="AsymmetricObject"/>inheritor.
+            /// an <see cref="EmbeddedObject"/>, or an <see cref="AsymmetricObject"/> inheritor.
             /// </param>
             /// <remarks>
             /// If you want to use strongly typed API, such as <see cref="Realm.Add{T}(T, bool)">Realm.Add&lt;T&gt;</see> or

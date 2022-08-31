@@ -40,6 +40,7 @@ namespace Realms.Tests.Sync
         }
     }
 
+    [Explicit]
     public class HugeSyncAsymmetricObject : AsymmetricObject
     {
         [PrimaryKey]

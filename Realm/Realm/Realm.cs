@@ -595,14 +595,36 @@ namespace Realms
 
             foreach (var obj in objs)
             {
-                AddInternal(obj, typeof(T), update);
+                AddInternal(obj, obj.GetType(), update);
             }
         }
 
-        // TODO andrea:
-        // 1. write documentation for new methods
-        // 2. add other push signatures
-        // 3. add checks against push on non-asymmetric objects
+        /// <summary>
+        /// This <see cref="Realm"/> will start managing a <see cref="AsymmetricObject"/> which has been created as a standalone object.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The Type T must not only be a <see cref="AsymmetricObject"/> but also have been processed by the Fody weaver,
+        /// so it has persistent properties.
+        /// </typeparam>
+        /// <param name="obj">Must be a standalone <see cref="AsymmetricObject"/>, <c>null</c> not allowed.</param>
+        /// <exception cref="RealmInvalidTransactionException">
+        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">
+        /// You can't manage an object with more than one <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        /// If you invoke this method on a closed <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// If you pass a null argument to this method.
+        /// </exception>
+        /// <remarks>
+        /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
+        /// This method modifies the object in-place, meaning that after it has run, <see cref="AsymmetricObject"/> will be managed.
+        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing the original <see cref="AsymmetricObject"/>
+        /// reference throws an exception.
+        /// </remarks>
         public void Add<T>(T obj)
             where T : IAsymmetricObject
         {
@@ -610,6 +632,45 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
 
             AddInternal(obj, obj.GetType(), update: false);
+        }
+
+        /// <summary>
+        /// Add a collection of standalone <see cref="AsymmetricObject"/>s to this <see cref="Realm"/>.
+        /// </summary>
+        /// <typeparam name="T">
+        /// The Type T must not only be a <see cref="AsymmetricObject"/> but also have been processed by the Fody weaver,
+        /// so it has persistent properties.
+        /// </typeparam>
+        /// <param name="objs">A collection of <see cref="RealmObject"/> instances that will be added to this <see cref="Realm"/>.</param>
+        /// <exception cref="RealmInvalidTransactionException">
+        /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">
+        /// You can't manage an object with more than one <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="ObjectDisposedException">
+        /// If you invoke this method on a closed <see cref="Realm"/>.
+        /// </exception>
+        /// <exception cref="ArgumentNullException">
+        /// If you pass a null argument to this method.
+        /// </exception>
+        /// <remarks>
+        /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
+        /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
+        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing the original <see cref="AsymmetricObject"/>
+        /// reference throw an exeception. Hence, none of the elements in the collection can be dereferenced once this method has finished.
+        /// </remarks>
+        public void Add<T>(IEnumerable<T> objs)
+            where T : IAsymmetricObject
+        {
+            ThrowIfDisposed();
+            Argument.NotNull(objs, nameof(objs));
+            Argument.Ensure(objs.All(o => o != null), $"{nameof(objs)} must not contain null values.", nameof(objs));
+
+            foreach (var obj in objs)
+            {
+                AddInternal(obj, obj.GetType(), update: false);
+            }
         }
 
         internal void ManageEmbedded(IEmbeddedObject obj, ObjectHandle handle)
@@ -621,7 +682,6 @@ namespace Realms
             obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata), metadata.Helper, false, true);
         }
 
-        // TODO andrea: see if revert this to IRealmObject and have another AddInternal with different rules
         private void AddInternal<T>(T obj, Type objectType, bool update)
             where T : IRealmObjectBase
         {

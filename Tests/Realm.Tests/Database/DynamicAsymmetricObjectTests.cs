@@ -61,11 +61,7 @@ namespace Realms.Tests.Database
                     Assert.That(asymmetricObj.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
                 });
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 realm.Write(() =>
                 {
                     dynamic asymmetricObj = realm.DynamicApi.CreateObject("AsymmetricObjectWithAllTypes", Guid.NewGuid());
@@ -86,6 +82,7 @@ namespace Realms.Tests.Database
                     Assert.That((char)asymmetricObj.NullableCharProperty, Is.EqualTo('o'));
                     Assert.That(asymmetricObj.StringProperty, Is.EqualTo("o"));
                 });
+#endif
             });
         }
     }

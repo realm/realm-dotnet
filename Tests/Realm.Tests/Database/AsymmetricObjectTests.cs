@@ -23,6 +23,7 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using Realms.Exceptions;
+using Realms.Sync;
 using Realms.Sync.Exceptions;
 using Realms.Tests.Sync;
 
@@ -33,16 +34,9 @@ namespace Realms.Tests.Database
     {
         // name format: Action_OptionalCondition_Expectation
 
-
-        // TODO andrea:
-        // 1. STARTED, RAN INTO ISSUES - add server side check to see if content on server is fine
-        // 2. DONE - enlarge Asymmetric test classes to have all types
-        // 3. dynamic tests for AsymmetricObjects
-        // 4. DONE - AsymmetricObject after being written in a transaction it'll raise an exception is accessed
-
         public static object[] SetAndGetValueCases =
         {
-            new object[] { "CharProperty", '0', typeof(char) },
+            new object[] { "CharProperty", '0' },
             new object[] { "ByteProperty", (byte)100 },
             new object[] { "Int16Property", (short)100 },
             new object[] { "Int32Property", 100 },
@@ -53,7 +47,6 @@ namespace Realms.Tests.Database
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
             new object[] { "ByteArrayProperty", Array.Empty<byte>() },
             new object[] { "StringProperty", "hello" },
-            new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) },
             new object[] { "DecimalProperty", 123.456M },
             new object[] { "DecimalProperty", decimal.MinValue },
             new object[] { "DecimalProperty", decimal.MaxValue },
@@ -73,12 +66,11 @@ namespace Realms.Tests.Database
         };
 
         [Test]
-        public void AddAsymmetricObj_NotInSchema_Throws()
+        public void AddAsymmetricObjNotInSchema_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
                 using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
 
                 Assert.Throws<ArgumentException>(() =>
@@ -88,6 +80,38 @@ namespace Realms.Tests.Database
                         realm.Add(new BasicAsymmetricObject());
                     });
                 });
+            });
+        }
+
+        [Test]
+        public void AddCollectionOfAsymmetricObjs()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
+                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                var partitionLike = Guid.NewGuid().ToString();
+
+                Assert.DoesNotThrow(() =>
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(new BasicAsymmetricObject[]
+                        {
+                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
+                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
+                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
+                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
+                        });
+                    });
+                });
+
+                var documents = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
+                    flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+
+                Assert.That(documents.Length, Is.EqualTo(4));
+                Assert.That(documents.Where(x => x.PartitionLike == partitionLike), Is.EqualTo(4));
             });
         }
 
@@ -112,36 +136,8 @@ namespace Realms.Tests.Database
                 });
 
                 await realm.SyncSession.WaitForUploadAsync();
-
-                try
-                {
-
-                    var mongoClient = flxConfig.User.GetMongoClient("BackingDB");
-                    var db = mongoClient.GetDatabase("FLX_local");
-                    var collection = db.GetCollection<HugeSyncAsymmetricObject>(nameof(HugeSyncAsymmetricObject));
-                    var filter = new BsonDocument
-                    {
-                        {
-                            "_id", new BsonDocument
-                            {
-                                { "$eq", objId }
-                            }
-                        }
-                    };
-                    HugeSyncAsymmetricObject[] documents = null;
-                    do
-                    {
-                        documents = await collection.FindAsync(filter);
-                        await Task.Delay(100);
-                    }
-                    while (documents.Length == 0);
-
-                    Assert.That(documents.Single().Data.Count, Is.EqualTo(ObjectSize));
-                }
-                catch(Exception e)
-                {
-                    var gg = 3;
-                }
+                var documents = await GetObjFromRemoteThroughMongoClient<HugeSyncAsymmetricObject>(flxConfig, "_id", objId);
+                Assert.That(documents.Single().Data.Count, Is.EqualTo(ObjectSize));
             });
         }
 
@@ -172,8 +168,42 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        public void AddSameAsymmetricObjTwice_DoesntThrow()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
+                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                var partitionLike = Guid.NewGuid().ToString();
+                var asymmetricObj = new BasicAsymmetricObject
+                {
+                    PartitionLike = partitionLike
+                };
+
+                Assert.DoesNotThrow(() =>
+                {
+                    realm.Write(() =>
+                    {
+                        realm.Add(asymmetricObj);
+                    });
+
+                    realm.Write(() =>
+                    {
+                        realm.Add(asymmetricObj);
+                    });
+                });
+
+                var foundObjects = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
+                    flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+
+                Assert.That(foundObjects.Single().PartitionLike, Is.EqualTo(partitionLike));
+            });
+        }
+
         [TestCaseSource(nameof(SetAndGetValueCases))]
-        public void SetAndRemotelyReadValue(string propertyName, object propertyValue, Type type)
+        public void SetAndRemotelyReadValue(string propertyName, dynamic propertyValue)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -192,54 +222,10 @@ namespace Realms.Tests.Database
                 });
 
                 await realm.SyncSession.WaitForUploadAsync();
-                Exception e = null;
-                AsymmetricObjectWithAllTypes[] documents = null;
+                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(flxConfig, propertyName, (Decimal128)propertyValue);
 
-                do
-                {
-                    e = null;
-                    var mongoClient = flxConfig.User.GetMongoClient("BackingDB");
-                    var db = mongoClient.GetDatabase("FLX_local");
-                    var collection = db.GetCollection<AsymmetricObjectWithAllTypes>(nameof(AsymmetricObjectWithAllTypes));
-                    BsonDocument filter = null;
-                    try
-                    {
-
-                        filter = new BsonDocument
-                        {
-                            {
-                                propertyName, new BsonDocument
-                                {
-                                    new BsonElement("$eq", (char)propertyValue)//(object)propertyValue)
-                                }
-                            },
-                        };
-
-                        //{
-                        //    {
-                        //        "_id", new BsonDocument
-                        //        {
-                        //            { "$eq", new BsonBinaryData(objId, GuidRepresentation.Standard) }
-                        //        }
-                        //    },
-                        //};
-
-
-                        documents = await collection.FindAsync(filter);
-                        await Task.Delay(2000);
-
-
-                        Assert.That(TestHelpers.GetPropertyValue(documents.Single(), propertyName), Is.EqualTo(propertyValue));
-                    }
-                    catch (Exception ex)
-                    {
-                        e = ex;
-                        var d = 1;
-                    }
-                } while (e != null || documents.Length == 0);
-
-
-            }, 999999999);
+                Assert.That(TestHelpers.GetPropertyValue(documents.Single(), propertyName), Is.EqualTo(propertyValue));
+            });
         }
 
         [Test]
@@ -320,6 +306,29 @@ namespace Realms.Tests.Database
                 Assert.That(ex, Is.InstanceOf<RealmSchemaValidationException>());
                 Assert.That(ex.Message.Contains($"Asymmetric table \'{nameof(BasicAsymmetricObject)}\'"), Is.True);
             });
+        }
+
+        private static Task<T[]> GetObjFromRemoteThroughMongoClient<T>(FlexibleSyncConfiguration config, string remoteFieldName, BsonValue fieldValue, string mongoClientCondition = MongoClientCondition.Equality)
+            where T : class
+        {
+            var mongoClient = config.User.GetMongoClient("BackingDB");
+            var db = mongoClient.GetDatabase("FLX_local");
+            var collection = db.GetCollection<T>(typeof(T).Name);
+            var filter = new BsonDocument
+            {
+                {
+                    remoteFieldName, new BsonDocument
+                    {
+                        { mongoClientCondition, fieldValue }
+                    }
+                }
+            };
+            return collection.FindAsync(filter);
+        }
+
+        private static class MongoClientCondition
+        {
+            public const string Equality = "$eq";
         }
 
         [Explicit]

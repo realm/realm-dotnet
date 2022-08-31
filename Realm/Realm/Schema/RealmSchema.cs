@@ -26,15 +26,14 @@ using Realms.Helpers;
 
 namespace Realms.Schema
 {
-    // TODO andrea: this documentation needs to be updated to mention asymmetric objects
     /// <summary>
     /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or,
     /// dynamically, by evaluating a Realm from disk. To construct a new <see cref="RealmSchema"/> instance, use the
     /// <see cref="Builder">RealmSchema.Builder</see> API.
     /// </summary>
     /// <remarks>
-    /// By default this will be all the <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s in all your assemblies
-    /// unless you restrict with <see cref="RealmConfigurationBase.Schema"/>. Just because a given class <em>may</em>
+    /// By default this will be all the <see cref="RealmObject"/>s, <see cref="EmbeddedObject"/>s and <see cref="AsymmetricObject"/>s
+    /// in all your assemblies. Unless you restrict with <see cref="RealmConfigurationBase.Schema"/>. Just because a given class <em>may</em>
     /// be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
     /// </remarks>

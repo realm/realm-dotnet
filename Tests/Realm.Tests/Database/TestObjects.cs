@@ -1062,8 +1062,6 @@ namespace Realms.Tests
 
         public bool BooleanProperty { get; set; }
 
-        public DateTimeOffset DateTimeOffsetProperty { get; set; }
-
         public decimal DecimalProperty { get; set; }
 
         public Decimal128 Decimal128Property { get; set; }
@@ -1106,12 +1104,6 @@ namespace Realms.Tests
         public Guid? NullableGuidProperty { get; set; }
 
         public RealmInteger<byte> ByteCounterProperty { get; set; }
-
-        //public RealmInteger<short> Int16CounterProperty { get; set; }
-
-        //public RealmInteger<int> Int32CounterProperty { get; set; }
-
-        //public RealmInteger<long> Int64CounterProperty { get; set; }
 
         public RealmValue RealmValueProperty { get; set; }
     }
