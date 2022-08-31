@@ -66,6 +66,8 @@ jobs:
         with:
           name: UnityTestsRunner.linux
           path: TestRunner
+      - name: Install xvfb
+        run: sudo apt install -y xvfb
       - name: Run Tests
         run: |
           chmod +x TestRunner/PlayerWithTests.x86_64
