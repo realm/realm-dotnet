@@ -45,7 +45,7 @@ jobs:
         cache-key: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
         cache-restore-keys: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}
     - name: Refetch vcpkg
-      run: git fetch
+      run: git fetch --unshallow
       working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
