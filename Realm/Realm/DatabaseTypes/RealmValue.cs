@@ -195,7 +195,7 @@ namespace Realms
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 case RealmValueType.Object:
-                    if (!AsRealmObject().IsManaged)
+                    if (!AsIRealmObject().IsManaged)
                     {
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }

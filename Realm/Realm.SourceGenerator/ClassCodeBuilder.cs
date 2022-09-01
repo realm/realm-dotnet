@@ -233,7 +233,7 @@ private {_accessorInterfaceName} _accessor;
 
 IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-internal {_accessorInterfaceName} Accessor => _accessor ??= new new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
+internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
 public bool IsManaged => Accessor.IsManaged;
 
@@ -317,7 +317,47 @@ private void UnsubscribeFromNotifications()
 
 public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 
-public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);";
+public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
+
+public override bool Equals(object obj)
+{{
+    // If parameter is null, return false.
+    if (obj is null)
+    {{
+        return false;
+    }}
+
+    // Optimization for a common success case.
+    if (ReferenceEquals(this, obj))
+    {{
+        return true;
+    }}
+
+    // Special case to cover possible bugs similar to WPF (#1903)
+    if (obj is InvalidObject)
+    {{
+        return !IsValid;
+    }}
+
+    if (obj is not IRealmObjectBase iro)
+    {{
+        return false;
+    }}
+
+    return Accessor.Equals(iro.Accessor);
+}}
+
+public override int GetHashCode()
+{{
+    // _hashCode is only set for managed objects - for unmanaged ones, we
+    // fall back to the default behavior.
+    return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+}}
+
+public override string ToString()
+{{
+    return Accessor.ToString();
+}}";
 
             var classString = $@"[Generated]
 [Woven(typeof({_helperClassName}))]
