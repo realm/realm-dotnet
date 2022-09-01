@@ -27,8 +27,6 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
-            TestHelpers.IgnoreOnUnity("Seems to lock up on Linux - investigate");
-
             TestHelpers.RunAsyncTest(async () =>
             {
                 await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
@@ -53,8 +51,6 @@ namespace Realms.Tests.Database
         [Test]
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
-            TestHelpers.IgnoreOnUnity("Seems to lock up on Linux - investigate");
-
             TestHelpers.RunAsyncTest(async () =>
             {
                 using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
@@ -82,8 +78,6 @@ namespace Realms.Tests.Database
         [Test]
         public void TransactionShouldHoldStrongReferenceToRealm()
         {
-            TestHelpers.IgnoreOnUnity("Seems to lock up on Linux - investigate");
-
             TestHelpers.RunAsyncTest(async () =>
             {
                 await TestHelpers.EnsurePreserverKeepsObjectAlive(() =>
