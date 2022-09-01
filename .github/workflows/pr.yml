@@ -46,6 +46,17 @@ jobs:
     needs:
     - build-packages
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+  test-unity:
+    uses: ./.github/workflows/test-unity.yml
+    name: Test
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      settings: '["Mono-Net4"]'
+      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
+    needs:
+    - build-packages
+    - build-unity
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
   test-net-framework:
     uses: ./.github/workflows/test-net-framework.yml
     name: Test

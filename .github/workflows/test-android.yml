@@ -56,10 +56,6 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: ${{ runner.os == 'Windows' }}
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.Android/*.csproj') }}
     - name: Build Tests/Tests.Android
       run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=armeabi-v7a -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
     - name: Configure AWS Credentials
