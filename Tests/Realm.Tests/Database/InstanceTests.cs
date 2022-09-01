@@ -1034,7 +1034,7 @@ namespace Realms.Tests.Database
             {
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("MyType")
+                    new ObjectSchema.Builder("MyType", ObjectSchema.ObjectSchemaType.RealmObject)
                     {
                         Property.Primitive("IntValue", RealmValueType.Int),
                         Property.PrimitiveList("ListValue", RealmValueType.Date),
@@ -1045,7 +1045,7 @@ namespace Realms.Tests.Database
                         Property.ObjectSet("ObjectSetValue", "OtherObject"),
                         Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
                     },
-                    new ObjectSchema.Builder("OtherObject")
+                    new ObjectSchema.Builder("OtherObject", ObjectSchema.ObjectSchemaType.RealmObject)
                     {
                         Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
                         Property.Backlinks("MyTypes", "MyType", "ObjectValue")

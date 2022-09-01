@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -34,6 +33,8 @@ namespace Realms.Tests
 {
     public static class TestHelpers
     {
+        public static readonly Random Random = new Random();
+
         public static object[] SetAndGetValueCases =
         {
             new object[] { "CharProperty", '0' },
@@ -65,8 +66,6 @@ namespace Realms.Tests
             new object[] { "GuidProperty", Guid.Empty },
             new object[] { "GuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") },
         };
-
-        public static readonly Random Random = new Random();
 
         public static TextWriter Output { get; set; } = Console.Out;
 
