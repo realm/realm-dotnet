@@ -25,8 +25,11 @@ using Realms.Exceptions;
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AddOrUpdateTests : RealmInstanceTest
+    public partial class AddOrUpdateTests : RealmInstanceTest
     {
+        //TODO There are different issues with realm classes inside other classes:
+        // -If private then it can't be accessed, and it's a problem if it's used as a link in another class
+        // -If public then if it's used as a link in another class then we need the full name (that we don't have at the moment)
         [Test]
         public void AddOrUpdate_WhenDoesntExist_ShouldAdd()
         {
@@ -1055,109 +1058,111 @@ namespace Realms.Tests.Database
             Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
         }
 
-        private class Parent : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        
+    }
 
-            public string Name { get; set; }
+    public partial class Parent : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public Child Child { get; set; }
-        }
+        public string Name { get; set; }
 
-        private class Child : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public Child Child { get; set; }
+    }
 
-            public string Name { get; set; }
+    public partial class Child : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public Parent Parent { get; set; }
-        }
+        public string Name { get; set; }
 
-        private class PrimaryKeyWithNonPKChildWithPKGrandChild : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public Parent Parent { get; set; }
+    }
 
-            public string StringValue { get; set; }
+    public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
-        }
+        public string StringValue { get; set; }
 
-        private class NonPrimaryKeyObject : RealmObject
-        {
-            public string StringValue { get; set; }
-        }
+        public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
+    }
 
-        private partial class PrimaryKeyObject : IRealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+    public partial class NonPrimaryKeyObject : IRealmObject
+    {
+        public string StringValue { get; set; }
+    }
 
-            public string StringValue { get; set; }
-        }
+    public partial class PrimaryKeyObject : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-        private class NullablePrimaryKeyObject : RealmObject
-        {
-            [PrimaryKey]
-            public long? Id { get; set; }
+        public string StringValue { get; set; }
+    }
 
-            public string StringValue { get; set; }
-        }
+    public partial class NullablePrimaryKeyObject : IRealmObject
+    {
+        [PrimaryKey]
+        public long? Id { get; set; }
 
-        private class PrimaryKeyWithPKRelation : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public string StringValue { get; set; }
+    }
 
-            public string StringValue { get; set; }
+    public partial class PrimaryKeyWithPKRelation : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public PrimaryKeyObject OtherObject { get; set; }
-        }
+        public string StringValue { get; set; }
 
-        private class PrimaryKeyWithNonPKRelation : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public PrimaryKeyObject OtherObject { get; set; }
+    }
 
-            public string StringValue { get; set; }
+    public partial class PrimaryKeyWithNonPKRelation : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public NonPrimaryKeyObject OtherObject { get; set; }
-        }
+        public string StringValue { get; set; }
 
-        private class PrimaryKeyWithPKList : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public NonPrimaryKeyObject OtherObject { get; set; }
+    }
 
-            public string StringValue { get; set; }
+    public partial class PrimaryKeyWithPKList : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public IList<PrimaryKeyObject> ListValue { get; }
-        }
+        public string StringValue { get; set; }
 
-        private class PrimaryKeyWithNoPKList : RealmObject
-        {
-            [PrimaryKey]
-            public long Id { get; set; }
+        public IList<PrimaryKeyObject> ListValue { get; }
+    }
 
-            public string StringValue { get; set; }
+    public partial class PrimaryKeyWithNoPKList : IRealmObject
+    {
+        [PrimaryKey]
+        public long Id { get; set; }
 
-            public IList<NonPrimaryKeyObject> ListValue { get; }
-        }
+        public string StringValue { get; set; }
 
-        private class NonPrimaryKeyWithPKRelation : RealmObject
-        {
-            public string StringValue { get; set; }
+        public IList<NonPrimaryKeyObject> ListValue { get; }
+    }
 
-            public PrimaryKeyObject OtherObject { get; set; }
-        }
+    public partial class NonPrimaryKeyWithPKRelation : IRealmObject
+    {
+        public string StringValue { get; set; }
 
-        private class NonPrimaryKeyWithNonPKRelation : RealmObject
-        {
-            public string StringValue { get; set; }
+        public PrimaryKeyObject OtherObject { get; set; }
+    }
 
-            public NonPrimaryKeyObject OtherObject { get; set; }
-        }
+    public partial class NonPrimaryKeyWithNonPKRelation : IRealmObject
+    {
+        public string StringValue { get; set; }
+
+        public NonPrimaryKeyObject OtherObject { get; set; }
     }
 }
