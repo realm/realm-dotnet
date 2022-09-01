@@ -47,24 +47,24 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public int IntValue
         {
-            get => ((IManuallyGeneratedClassAccessor)Accessor).IntValue;
-            set => ((IManuallyGeneratedClassAccessor)Accessor).IntValue = value;
+            get => Accessor.IntValue;
+            set => Accessor.IntValue = value;
         }
 
-        public IList<int> ListValue => ((IManuallyGeneratedClassAccessor)Accessor).ListValue;
+        public IList<int> ListValue => Accessor.ListValue;
 
         [MapTo("_string")]
         public string StringValue
         {
-            get => ((IManuallyGeneratedClassAccessor)Accessor).StringValue;
-            set => ((IManuallyGeneratedClassAccessor)Accessor).StringValue = value;
+            get => Accessor.StringValue;
+            set => Accessor.StringValue = value;
         }
 
         [PrimaryKey]
         public int PrimaryKeyValue
         {
-            get => ((IManuallyGeneratedClassAccessor)Accessor).PrimaryKeyValue;
-            set => ((IManuallyGeneratedClassAccessor)Accessor).PrimaryKeyValue = value;
+            get => Accessor.PrimaryKeyValue;
+            set => Accessor.PrimaryKeyValue = value;
         }
 
         #endregion
@@ -87,7 +87,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         private IManuallyGeneratedClassAccessor _accessor;
 
-        public IRealmAccessor Accessor
+        IRealmAccessor IRealmObjectBase.Accessor
         {
             get
             {
@@ -96,6 +96,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
                 return _accessor;
             }
         }
+
+        internal IManuallyGeneratedClassAccessor Accessor => _accessor ??= new ManuallyGeneratedClassUnmanagedAccessor(typeof(ManualllyGeneratedClass));
 
         public bool IsManaged => Accessor.IsManaged;
 
@@ -117,7 +119,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
             if (helper != null)
             {
-                var oldAccessor = (IManuallyGeneratedClassAccessor)Accessor;
+                var oldAccessor = Accessor;
 
                 newAccessor.IntValue = oldAccessor.IntValue;
                 newAccessor.StringValue = oldAccessor.StringValue;
