@@ -231,18 +231,9 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
 private {_accessorInterfaceName} _accessor;
 
-public IRealmAccessor Accessor
-{{
-    get
-    {{
-        if (_accessor == null)
-        {{
-            _accessor = new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
-        }}
+IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        return _accessor;
-    }}
-}}
+internal {_accessorInterfaceName} Accessor => _accessor ??= new new {_unmanagedAccessorClassName}(typeof({_helperClassName}));
 
 public bool IsManaged => Accessor.IsManaged;
 

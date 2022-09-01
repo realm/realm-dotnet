@@ -22,7 +22,6 @@ using Realms.Generated;
 
 namespace AssemblyToProcess
 {
-    //TODO We can add more property types
     public partial class SourceGeneratedPerson : IRealmObject
     {
         public string Name { get; set; }
@@ -38,12 +37,9 @@ namespace AssemblyToProcess
     {
         private ISourceGeneratedPersonAccessor _accessor;
 
-        public List<string> LogList => (_accessor as SourceGeneratedPersonAccessor).LogList;
+        internal ISourceGeneratedPersonAccessor Accessor => _accessor = _accessor ?? new SourceGeneratedPersonAccessor();
 
-        public SourceGeneratedPerson()
-        {
-            _accessor = new SourceGeneratedPersonAccessor();
-        }
+        public List<string> LogList => (Accessor as SourceGeneratedPersonAccessor).LogList;
     }
 }
 

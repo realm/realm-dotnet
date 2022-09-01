@@ -262,7 +262,7 @@ Analytics payload
 
                 try
                 {
-                    var weaveResult = WeaveGeneratedClassProperty(prop, interfaceType);
+                    var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
                     persistedProperties.Add(weaveResult);
                 }
                 catch (Exception e)
@@ -279,21 +279,22 @@ Analytics payload
             return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
 
-        private WeavePropertyResult WeaveGeneratedClassProperty(PropertyDefinition prop, TypeDefinition interfaceType)
+        private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
         {
             var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
+            var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
 
-            ReplaceGeneratedClassGetter(prop, interfaceType, accessorReference);
+            ReplaceGeneratedClassGetter(type, prop, interfaceType, accessorGetter);
 
             if (prop.SetMethod != null)
             {
-                ReplaceGeneratedClassSetter(prop, interfaceType, accessorReference);
+                ReplaceGeneratedClassSetter(type, prop, interfaceType, accessorGetter);
             }
 
             return WeavePropertyResult.Success(prop);
         }
 
-        private void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, FieldReference accessorReference)
+        private void ReplaceGeneratedClassGetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -306,7 +307,7 @@ Analytics payload
             ////   3: ret
             ////
             //// This is equivalent to:
-            ////   get => accessor.Property;
+            ////   get => Accessor.Property;
 
             var start = prop.GetMethod.Body.Instructions.First();
             var il = prop.GetMethod.Body.GetILProcessor();
@@ -314,12 +315,12 @@ Analytics payload
             var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
 
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Ldfld, accessorReference));
+            il.InsertBefore(start, il.Create(OpCodes.Call, accessorGetter));
             il.InsertBefore(start, il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
             il.InsertBefore(start, il.Create(OpCodes.Ret));
         }
 
-        private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, FieldReference accessorReference)
+        private void ReplaceGeneratedClassSetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0
@@ -335,7 +336,7 @@ Analytics payload
             ////   5: ret
             ////
             //// This is equivalent to:
-            ////   set => accessor.Property = value;
+            ////   set => Accessor.Property = value;
 
             // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
             // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
@@ -348,13 +349,13 @@ Analytics payload
             // PropertyChanged.Fody will respect.
             prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
 
-            var propertySetterAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
-            propertySetterAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
+            var propertySetterOnAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
+            propertySetterOnAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
 
             il.Append(il.Create(OpCodes.Ldarg_0));
-            il.Append(il.Create(OpCodes.Ldfld, accessorReference));
+            il.Append(il.Create(OpCodes.Call, accessorGetter));
             il.Append(il.Create(OpCodes.Ldarg_1));
-            il.Append(il.Create(OpCodes.Callvirt, propertySetterAccessorReference));
+            il.Append(il.Create(OpCodes.Callvirt, propertySetterOnAccessorReference));
             il.Append(il.Create(OpCodes.Ret));
         }
 
