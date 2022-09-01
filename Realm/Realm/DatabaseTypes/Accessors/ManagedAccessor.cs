@@ -155,15 +155,9 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
         {
-            var managedException = exception?.Convert();
-
-            if (managedException != null)
-            {
-                Realm.NotifyError(managedException);
-            }
-            else if (changes.HasValue)
+            if (changes.HasValue)
             {
                 foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
                 {

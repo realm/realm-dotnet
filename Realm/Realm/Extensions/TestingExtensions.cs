@@ -44,7 +44,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal);
+            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal, ServerRequestsAction.ApplicationBug);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
+            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false, ServerRequestsAction.ClientReset);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false);
+            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false, ServerRequestsAction.NoAction);
         }
     }
 }
