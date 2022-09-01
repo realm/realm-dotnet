@@ -111,7 +111,7 @@ namespace Realms.Tests
 
         private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
         {
-            IgnoreOnUnity("Waiting on GC seems to lock up on Unity on Linux.", PlatformID.Unix);
+            IgnoreOnUnity("Waiting on GC seems to lock up on Unity on Linux.", OSPlatform.Linux);
 
             using var cts = new CancellationTokenSource(milliseconds);
 
@@ -175,9 +175,9 @@ namespace Realms.Tests
         }
 
         [System.Diagnostics.Conditional("UNITY")]
-        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity", PlatformID? platform = null)
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity", OSPlatform? platform = null)
         {
-            if (platform == null || Environment.OSVersion.Platform == platform)
+            if (platform == null || RuntimeInformation.IsOSPlatform(platform.Value))
             {
                 Assert.Ignore(message);
             }
