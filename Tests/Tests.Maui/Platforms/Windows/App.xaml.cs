@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.IO;
 using Microsoft.UI.Xaml;
 
 namespace Tests.Maui.WinUI;
@@ -29,12 +31,17 @@ public partial class App : MauiWinUIApplication
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        File.AppendAllText(@"D:\a\realm-dotnet\realm-dotnet\args.txt", args.Arguments);
+
         base.OnLaunched(args);
+
+        // Try to attach to a parent process's console, for logging
+        PInvoke.Kernel32.AttachConsole(-1);
     }
 
     protected override MauiApp CreateMauiApp()
     {
-        var args = Environment.GetCommandLineArgs();
+        var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
 
         return MauiProgram.CreateMauiApp(args);
     }

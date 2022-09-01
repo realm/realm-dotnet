@@ -67,8 +67,8 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
-  test-uwp-managed:
-    uses: ./.github/workflows/test-uwp-managed.yml
+  test-windows:
+    uses: ./.github/workflows/test-windows.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
@@ -76,9 +76,7 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-    secrets:
-      Pfx_Password: ${{ secrets.Pfx_Password }}
-      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
+    secrets: {}
   test-net-core:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test

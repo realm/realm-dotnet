@@ -53,7 +53,7 @@ jobs:
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
-  _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
+  _: #@ template.replace(runTests("Windows", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
   _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net6.0\"]"))
   _: #@ template.replace(runTests("macOS"))
   _: #@ template.replace(runTests("iOS"))
@@ -87,7 +87,7 @@ jobs:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ setupDotnet()
-      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
+      - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version", RealmTestsStandaloneExe="true"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
       - name: Find Results file
