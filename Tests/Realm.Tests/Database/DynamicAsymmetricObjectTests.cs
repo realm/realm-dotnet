@@ -26,8 +26,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAsymmetricObjectTests : SyncTestBase
     {
-        // name format: Action_OptionalCondition_Expectation
-
         [TestCase(true)]
         [TestCase(false)]
         public void ReadWriteVarsInWriteTransaction(bool isDynamic)

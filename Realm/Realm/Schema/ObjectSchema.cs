@@ -35,13 +35,24 @@ namespace Realms.Schema
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
-        // TODO andrea:
-        // 1 - move this to the right place
-        // 2- add documentation
+        /// <summary>
+        /// Represents the object schema type of an <see cref="ObjectSchema"/>.
+        /// </summary>
         public enum ObjectSchemaType : byte
         {
+            /// <summary>
+            /// The value represents a <see cref="RealmObject"/> schema type.
+            /// </summary>
             RealmObject = 0,
+
+            /// <summary>
+            /// The value represents a <see cref="EmbeddedObject"/> schema type.
+            /// </summary>
             EmbeddedObject = 1,
+
+            /// <summary>
+            /// The value represents a <see cref="AsymmetricObject"/> schema type.
+            /// </summary>
             AsymmetricObject = 2,
         }
 

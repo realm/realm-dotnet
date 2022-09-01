@@ -260,7 +260,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
-            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject or AsymmetricObject"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject"));
         }
 
         [TestCase(true)]

@@ -97,19 +97,21 @@ namespace Realms.Tests.Database
                     {
                         realm.Add(new BasicAsymmetricObject[]
                         {
-                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
-                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
-                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
-                            new BasicAsymmetricObject{ PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
                         });
                     });
                 });
+
+                await realm.SyncSession.WaitForUploadAsync();
 
                 var documents = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
                     flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
 
                 Assert.That(documents.Length, Is.EqualTo(4));
-                Assert.That(documents.Where(x => x.PartitionLike == partitionLike), Is.EqualTo(4));
+                Assert.That(documents.Where(x => x.PartitionLike == partitionLike).Count, Is.EqualTo(4));
             });
         }
 
@@ -161,7 +163,7 @@ namespace Realms.Tests.Database
 
                 Assert.Throws<RealmInvalidObjectException>(() =>
                 {
-                    var _ = asymmetribObj.PartitionLike;
+                    _ = asymmetribObj.PartitionLike;
                 }, "Attempted to access a detached row");
             });
         }
@@ -193,6 +195,8 @@ namespace Realms.Tests.Database
                     });
                 });
 
+                await realm.SyncSession.WaitForUploadAsync();
+
                 var foundObjects = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
                     flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
 
@@ -220,9 +224,12 @@ namespace Realms.Tests.Database
                 });
 
                 await realm.SyncSession.WaitForUploadAsync();
-                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(flxConfig, propertyName, (Decimal128)propertyValue);
+                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(flxConfig, propertyName, propertyValue);
 
-                Assert.That(TestHelpers.GetPropertyValue(documents.Single(), propertyName), Is.EqualTo(propertyValue));
+                foreach (var doc in documents)
+                {
+                    Assert.That(TestHelpers.GetPropertyValue(doc, propertyName), Is.EqualTo(propertyValue));
+                }
             });
         }
 
@@ -274,7 +281,8 @@ namespace Realms.Tests.Database
                 config.OnSessionError = (session, error) =>
                 {
                     Assert.That(error, Is.InstanceOf<SessionException>());
-                    //Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.ApplicationBug));
+
+                    // Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.ApplicationBug));
                 };
 
                 using var realm = await GetRealmAsync(config);

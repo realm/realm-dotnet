@@ -1102,9 +1102,5 @@ namespace Realms.Tests
         public ObjectId? NullableObjectIdProperty { get; set; }
 
         public Guid? NullableGuidProperty { get; set; }
-
-        public RealmInteger<byte> ByteCounterProperty { get; set; }
-
-        public RealmValue RealmValueProperty { get; set; }
     }
 }
