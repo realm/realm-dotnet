@@ -258,15 +258,14 @@ public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;
+    var oldAccessor = _accessor as {_accessorInterfaceName};
+    _accessor = newAccessor;
 
     if (helper != null)
     {{
-        var oldAccessor = ({_accessorInterfaceName})Accessor;
 {skipDefaults.Indent(2)}
 {copyToRealm.Indent(2, trimNewLines: true)}
     }}
-
-    _accessor = newAccessor;
 
     if (_propertyChanged != null)
     {{
