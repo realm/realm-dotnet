@@ -776,3 +776,4 @@ REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, 
 }
 
 }
+

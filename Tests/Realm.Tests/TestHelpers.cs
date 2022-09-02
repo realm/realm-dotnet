@@ -110,6 +110,8 @@ namespace Realms.Tests
 
         private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
         {
+            IgnoreOnUnity("Waiting on GC seems to lock up on Unity on Linux.", OSPlatform.Linux);
+
             using var cts = new CancellationTokenSource(milliseconds);
 
             try
@@ -172,9 +174,12 @@ namespace Realms.Tests
         }
 
         [System.Diagnostics.Conditional("UNITY")]
-        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity", OSPlatform? platform = null)
         {
-            Assert.Ignore(message);
+            if (platform == null || RuntimeInformation.IsOSPlatform(platform.Value))
+            {
+                Assert.Ignore(message);
+            }
         }
 
         public static Func<HttpMessageHandler> TestHttpHandlerFactory = () => new HttpClientHandler();
@@ -244,12 +249,12 @@ namespace Realms.Tests
             }
         }
 
-        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
-            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts);
+            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts, errorMessage);
         }
 
-        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100)
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
             var value = producer();
             var success = tester(value);
@@ -264,7 +269,8 @@ namespace Realms.Tests
 
             if (!success)
             {
-                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+                var message = $"Failed to meet condition after {timeout} ms" + (errorMessage == null ? "." : $": {errorMessage}");
+                throw new TimeoutException(message);
             }
 
             return value;

@@ -23,7 +23,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid", "maccatalyst"]'
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
@@ -202,10 +202,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.XUnit/*.csproj') }}
     - name: Publish Tests/Tests.XUnit
       run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
@@ -263,10 +259,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Benchmarks/PerformanceTests/*.csproj') }}
     - name: Publish Tests/Benchmarks/PerformanceTests
       run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
@@ -293,6 +285,7 @@ jobs:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
         retention-days: 30
+        if-no-files-found: error
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
@@ -303,7 +296,7 @@ jobs:
     - test-uwp-managed
     - test-macos
     - test-ios
-    - test-xamarinandroid
+    - test-android
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}

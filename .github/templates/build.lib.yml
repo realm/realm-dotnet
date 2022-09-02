@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "setupNugetCache")
+#@ load("common.lib.yml", "checkoutCode")
 
 #@ isRelease = "contains(github.head_ref, 'release')"
 
@@ -108,5 +108,19 @@ build-unity:
     version: ${{ needs.build-packages.outputs.package_version }}
   needs:
   - build-packages
+  if: #@ ignoreSkippedJobsCondition
+#@ end
+
+#@ def testUnity(settings, platforms):
+test-unity:
+  uses: ./.github/workflows/test-unity.yml
+  name: Test
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+    settings: #@ settings
+    platform: #@ platforms
+  needs:
+  - build-packages
+  - build-unity
   if: #@ ignoreSkippedJobsCondition
 #@ end

@@ -65,7 +65,6 @@ with:
 - name: Add msbuild to PATH
   uses: #@ actionSetupMSBuild
   if: ${{ runner.os == 'Windows' }}
-- #@ setupNugetCache(projectPaths)
 #@ for projectPath in projectPaths:
 - name: #@ "Build " + projectPath
   run: #@ "msbuild " + projectPath + target + " -p:Configuration=" + configuration + " -restore" + parsedProps
@@ -77,7 +76,6 @@ with:
 #@ for prop in properties.keys():
 #@   propsArg += " -p:" + prop + "=" + properties[prop]
 #@ end
-  - #@ setupNugetCache([ projectPath ])
   - name: #@ "Publish " + projectPath
     run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg + " --no-self-contained"
   - name: Output executable path
@@ -106,12 +104,16 @@ with:
     shell: bash
     run: echo "::set-output name=commit::$(git rev-parse HEAD)"
   - name: Setup Vcpkg
+    id: setup-vcpkg
     uses: friendlyanon/setup-vcpkg@v1
     #@yaml/text-templated-strings
     with:
       path: wrappers/realm-core/tools/vcpkg/ports
-      cache-key: vcpkg-(@= preset @)-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-      cache-restore-keys: vcpkg-(@= preset @)-
+      cache-key: vcpkg3-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+      cache-restore-keys: vcpkg3-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}
+  - name: Refetch vcpkg
+    run: git fetch --unshallow
+    working-directory: wrappers/realm-core/tools/vcpkg/ports
 #@ end
 
 #@ def downloadAllArtifacts(conclusion = "completed"):
@@ -196,6 +198,7 @@ with:
   name: #@ artifactName
   path: #@ "${{ github.workspace }}/" + relPath
   retention-days: #@ retentionDays
+  if-no-files-found: error
 #@ end
 ---
 #@ def setupDotnet(version = "6.0.x", ifCondition = ""):

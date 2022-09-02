@@ -31,4 +31,11 @@ namespace Realms.Exceptions.Sync
         ClientError = 0,
         SessionError = 1
     }
+
+    internal enum ServerRequestsAction
+    {
+        NoAction = 0,
+        ApplicationBug = 2,
+        ClientReset = 6
+    }
 }
