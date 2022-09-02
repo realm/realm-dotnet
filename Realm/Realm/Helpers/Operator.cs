@@ -406,12 +406,12 @@ namespace Realms.Helpers
                     return Convert<RealmValue, TResult>(RealmValue.Null);
                 }
 
-                /* This is another special case where `value` is inheritable from RealmObjectBase. There's
-                 * no direct conversion from T to RealmValue, but there's conversion if we go through RealmObjectBase.
+                /* This is another special case where `value` is inheritable from IRealmObjectBase. There's
+                 * no direct conversion from T to RealmValue, but there's conversion if we go through IRealmObjectBase.
                  */
-                if (value is RealmObjectBase robj)
+                if (value is IRealmObjectBase irobj)
                 {
-                    return Convert<RealmValue, TResult>(robj);
+                    return Convert<RealmValue, TResult>(RealmValue.Object(irobj));
                 }
             }
 
