@@ -180,6 +180,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
                         copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
 {{
+    newAccessor.Realm.Add(val, update);
     newAccessor.{property.Name}.Add(val);
 }}");
                     }
@@ -189,6 +190,10 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                     var objectName = property.TypeInfo.CompleteTypeString;
                     schemaProperties.AppendLine(@$"Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
 
+                    copyToRealm.AppendLine(@$"if(oldAccessor.{property.Name} != null)
+{{
+    newAccessor.Realm.Add(oldAccessor.{property.Name}, update);
+}}");
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)

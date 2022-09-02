@@ -1057,8 +1057,6 @@ namespace Realms.Tests.Database
 
             Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
         }
-
-        
     }
 
     public partial class Parent : IRealmObject
