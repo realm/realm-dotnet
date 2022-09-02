@@ -26,18 +26,9 @@ namespace SourceGeneratorAssemblyToProcess
         
         private INamespaceObjAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new NamespaceObjUnmanagedAccessor(typeof(NamespaceObjObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal INamespaceObjAccessor Accessor => _accessor = _accessor ?? new NamespaceObjUnmanagedAccessor(typeof(NamespaceObj));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -123,6 +114,36 @@ namespace SourceGeneratorAssemblyToProcess
         public static explicit operator NamespaceObj(RealmValue val) => val.AsRealmObject<NamespaceObj>();
         
         public static implicit operator RealmValue(NamespaceObj val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class NamespaceObjObjectHelper : IRealmObjectHelper

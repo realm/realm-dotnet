@@ -233,7 +233,7 @@ private {_accessorInterfaceName} _accessor;
 
 IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
+internal {_accessorInterfaceName} Accessor => _accessor = _accessor ?? new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
 public bool IsManaged => Accessor.IsManaged;
 
@@ -321,22 +321,14 @@ public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.
 
 public override bool Equals(object obj)
 {{
-    // If parameter is null, return false.
     if (obj is null)
     {{
         return false;
     }}
 
-    // Optimization for a common success case.
     if (ReferenceEquals(this, obj))
     {{
         return true;
-    }}
-
-    // Special case to cover possible bugs similar to WPF (#1903)
-    if (obj is InvalidObject)
-    {{
-        return !IsValid;
     }}
 
     if (obj is not IRealmObjectBase iro)
@@ -349,8 +341,6 @@ public override bool Equals(object obj)
 
 public override int GetHashCode()
 {{
-    // _hashCode is only set for managed objects - for unmanaged ones, we
-    // fall back to the default behavior.
     return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 }}
 

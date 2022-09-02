@@ -24,18 +24,9 @@ namespace SourceGeneratorPlayground
         
         private IAllTypesClassAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new AllTypesClassUnmanagedAccessor(typeof(AllTypesClassObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal IAllTypesClassAccessor Accessor => _accessor = _accessor ?? new AllTypesClassUnmanagedAccessor(typeof(AllTypesClass));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -120,6 +111,36 @@ namespace SourceGeneratorPlayground
         public static explicit operator AllTypesClass(RealmValue val) => val.AsRealmObject<AllTypesClass>();
         
         public static implicit operator RealmValue(AllTypesClass val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class AllTypesClassObjectHelper : IRealmObjectHelper

@@ -25,18 +25,9 @@ namespace SourceGeneratorPlayground
         
         private IDogAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new DogUnmanagedAccessor(typeof(DogObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal IDogAccessor Accessor => _accessor = _accessor ?? new DogUnmanagedAccessor(typeof(Dog));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -122,6 +113,36 @@ namespace SourceGeneratorPlayground
         public static explicit operator Dog(RealmValue val) => val.AsRealmObject<Dog>();
         
         public static implicit operator RealmValue(Dog val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DogObjectHelper : IRealmObjectHelper
