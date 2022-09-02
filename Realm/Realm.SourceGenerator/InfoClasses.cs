@@ -79,33 +79,33 @@ namespace Realms.SourceGenerator
 
     internal abstract record PropertyTypeInfo
     {
-        private static HashSet<ScalarType?> _indexableTypes = new()
+        private static HashSet<ScalarType> _indexableTypes = new()
         {
-            SourceGenerator.ScalarType.Int,
-            SourceGenerator.ScalarType.Bool,
-            SourceGenerator.ScalarType.String,
-            SourceGenerator.ScalarType.ObjectId,
-            SourceGenerator.ScalarType.Guid,
-            SourceGenerator.ScalarType.Date,
+            ScalarType.Int,
+            ScalarType.Bool,
+            ScalarType.String,
+            ScalarType.ObjectId,
+            ScalarType.Guid,
+            ScalarType.Date,
         };
 
-        private static HashSet<ScalarType?> _primaryKeyTypes = new()
+        private static HashSet<ScalarType> _primaryKeyTypes = new()
         {
-            SourceGenerator.ScalarType.Int,
-            SourceGenerator.ScalarType.String,
-            SourceGenerator.ScalarType.ObjectId,
-            SourceGenerator.ScalarType.Guid,
+            ScalarType.Int,
+            ScalarType.String,
+            ScalarType.ObjectId,
+            ScalarType.Guid,
         };
 
-        private static HashSet<ScalarType?> _requiredTypes = new()
+        private static HashSet<ScalarType> _requiredTypes = new()
         {
-            SourceGenerator.ScalarType.String,
-            SourceGenerator.ScalarType.Data,
+            ScalarType.String,
+            ScalarType.Data,
         };
 
-        public virtual ScalarType? ScalarType { get; set; }
+        public virtual ScalarType ScalarType { get; set; }
 
-        public virtual CollectionType? CollectionType { get; }
+        public virtual CollectionType CollectionType { get; }
 
         public virtual bool IsRealmInteger { get; set; }
 
@@ -122,22 +122,22 @@ namespace Realms.SourceGenerator
 
         public ITypeSymbol TypeSymbol { get; set; }
 
-        // This includes the eventual nullability annotation
+        // This includes the eventual nullability annotation ("?")
         public ITypeSymbol CompleteTypeSymbol { get; set; }
 
         public PropertyTypeInfo InternalType { get; set; }
 
-        public bool IsCollection => CollectionType != null;
+        public bool IsCollection => CollectionType != CollectionType.None;
+
+        public bool IsSimpleType => ScalarType != ScalarType.None;
 
         public bool IsListOrSet => IsList || IsSet;
 
-        public bool IsSimpleType => ScalarType != null;
+        public bool IsSet => CollectionType == CollectionType.Set;
 
-        public bool IsSet => CollectionType == SourceGenerator.CollectionType.Set;
+        public bool IsList => CollectionType == CollectionType.List;
 
-        public bool IsList => CollectionType == SourceGenerator.CollectionType.List;
-
-        public bool IsDictionary => CollectionType == SourceGenerator.CollectionType.Dictionary;
+        public bool IsDictionary => CollectionType == CollectionType.Dictionary;
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
 
@@ -153,29 +153,29 @@ namespace Realms.SourceGenerator
 
         public static PropertyTypeInfo Dictionary => new DictionaryTypeInfo();
 
-        public static PropertyTypeInfo Int => new ScalarTypeInfo(SourceGenerator.ScalarType.Int);
+        public static PropertyTypeInfo Int => new ScalarTypeInfo(ScalarType.Int);
 
-        public static PropertyTypeInfo Bool => new ScalarTypeInfo(SourceGenerator.ScalarType.Bool);
+        public static PropertyTypeInfo Bool => new ScalarTypeInfo(ScalarType.Bool);
 
-        public static PropertyTypeInfo String => new ScalarTypeInfo(SourceGenerator.ScalarType.String);
+        public static PropertyTypeInfo String => new ScalarTypeInfo(ScalarType.String);
 
-        public static PropertyTypeInfo Data => new ScalarTypeInfo(SourceGenerator.ScalarType.Data);
+        public static PropertyTypeInfo Data => new ScalarTypeInfo(ScalarType.Data);
 
-        public static PropertyTypeInfo Date => new ScalarTypeInfo(SourceGenerator.ScalarType.Date);
+        public static PropertyTypeInfo Date => new ScalarTypeInfo(ScalarType.Date);
 
-        public static PropertyTypeInfo Float => new ScalarTypeInfo(SourceGenerator.ScalarType.Float);
+        public static PropertyTypeInfo Float => new ScalarTypeInfo(ScalarType.Float);
 
-        public static PropertyTypeInfo Double => new ScalarTypeInfo(SourceGenerator.ScalarType.Double);
+        public static PropertyTypeInfo Double => new ScalarTypeInfo(ScalarType.Double);
 
-        public static PropertyTypeInfo Object => new ScalarTypeInfo(SourceGenerator.ScalarType.Object);
+        public static PropertyTypeInfo Object => new ScalarTypeInfo(ScalarType.Object);
 
-        public static PropertyTypeInfo RealmValue => new ScalarTypeInfo(SourceGenerator.ScalarType.RealmValue);
+        public static PropertyTypeInfo RealmValue => new ScalarTypeInfo(ScalarType.RealmValue);
 
-        public static PropertyTypeInfo ObjectId => new ScalarTypeInfo(SourceGenerator.ScalarType.ObjectId);
+        public static PropertyTypeInfo ObjectId => new ScalarTypeInfo(ScalarType.ObjectId);
 
-        public static PropertyTypeInfo Decimal => new ScalarTypeInfo(SourceGenerator.ScalarType.Decimal);
+        public static PropertyTypeInfo Decimal => new ScalarTypeInfo(ScalarType.Decimal);
 
-        public static PropertyTypeInfo Guid => new ScalarTypeInfo(SourceGenerator.ScalarType.Guid);
+        public static PropertyTypeInfo Guid => new ScalarTypeInfo(ScalarType.Guid);
 
         public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
 
@@ -193,7 +193,7 @@ namespace Realms.SourceGenerator
                 return InternalType.IsSupportedIndexType();
             }
 
-            if (ScalarType == SourceGenerator.ScalarType.String)
+            if (ScalarType == ScalarType.String)
             {
                 return true;
             }
@@ -224,13 +224,13 @@ namespace Realms.SourceGenerator
         public bool HasCorrectNullabilityAnnotation()
         {
             if (NullableAnnotation == NullableAnnotation.Annotated &&
-                (IsCollection || IsIQueryable || ScalarType == SourceGenerator.ScalarType.RealmValue))
+                (IsCollection || IsIQueryable || ScalarType == ScalarType.RealmValue))
             {
                 return false;
             }
 
             if (NullableAnnotation == NullableAnnotation.NotAnnotated &&
-                (ScalarType == SourceGenerator.ScalarType.Object))
+                (ScalarType == ScalarType.Object))
             {
                 return false;
             }
@@ -249,17 +249,17 @@ namespace Realms.SourceGenerator
 
     internal record ListTypeInfo : CollectionTypeInfo
     {
-        public override CollectionType? CollectionType => SourceGenerator.CollectionType.List;
+        public override CollectionType CollectionType => CollectionType.List;
     }
 
     internal record SetTypeInfo : CollectionTypeInfo
     {
-        public override CollectionType? CollectionType => SourceGenerator.CollectionType.Set;
+        public override CollectionType CollectionType => CollectionType.Set;
     }
 
     internal record DictionaryTypeInfo : CollectionTypeInfo
     {
-        public override CollectionType? CollectionType => SourceGenerator.CollectionType.Dictionary;
+        public override CollectionType CollectionType => CollectionType.Dictionary;
     }
 
     internal record RealmIntegerTypeInfo : PropertyTypeInfo
@@ -282,6 +282,7 @@ namespace Realms.SourceGenerator
 
     internal enum CollectionType
     {
+        None,
         List,
         Set,
         Dictionary
@@ -289,6 +290,7 @@ namespace Realms.SourceGenerator
 
     internal enum ScalarType
     {
+        None,
         Int,
         Bool,
         String,
