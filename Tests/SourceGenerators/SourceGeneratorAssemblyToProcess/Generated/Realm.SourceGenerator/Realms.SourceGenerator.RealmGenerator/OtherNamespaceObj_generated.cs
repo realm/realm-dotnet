@@ -24,18 +24,9 @@ namespace OtherNamespace
         
         private IOtherNamespaceObjAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObjObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal IOtherNamespaceObjAccessor Accessor => _accessor = _accessor ?? new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObj));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -120,6 +111,36 @@ namespace OtherNamespace
         public static explicit operator OtherNamespaceObj(RealmValue val) => val.AsRealmObject<OtherNamespaceObj>();
         
         public static implicit operator RealmValue(OtherNamespaceObj val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class OtherNamespaceObjObjectHelper : IRealmObjectHelper

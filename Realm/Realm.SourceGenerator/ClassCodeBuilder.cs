@@ -107,7 +107,7 @@ namespace Realms.Generated
             {
                 var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
-                var hasSetter = !property.TypeInfo.IsCollection && !property.TypeInfo.IsIQueryable;
+                var hasSetter = !property.TypeInfo.IsCollection;
                 var setterString = hasSetter ? " set; " : " ";
 
                 propertiesBuilder.AppendLine($@"{type} {name} {{ get;{setterString}}}");
@@ -131,64 +131,67 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
             {
                 if (property.TypeInfo.IsCollection)
                 {
-                    var internalType = property.TypeInfo.InternalType;
-
-                    var internalTypeIsObject = internalType.SimpleType == SimpleTypeEnum.Object;
-
-                    if (internalTypeIsObject)
+                    if (property.TypeInfo.IsBacklink)
                     {
-                        var builderMethodName = property.TypeInfo.CollectionType switch
-                        {
-                            CollectionTypeEnum.List => "ObjectList",
-                            CollectionTypeEnum.Set => "ObjectSet",
-                            CollectionTypeEnum.Dictionary => "ObjectDictionary",
-                            _ => throw new NotImplementedException(),
-                        };
+                        var backlinkProperty = property.Backlink;
+                        var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
 
-                        var internalTypeString = internalType.CompleteTypeString;
+                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
 
-                        schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+                        // Nothing to do for the copy to realm part
                     }
                     else
                     {
-                        var builderMethodName = property.TypeInfo.CollectionType switch
+                        var internalType = property.TypeInfo.InternalType;
+
+                        var internalTypeIsObject = internalType.ScalarType == ScalarType.Object;
+
+                        if (internalTypeIsObject)
                         {
-                            CollectionTypeEnum.List => "PrimitiveList",
-                            CollectionTypeEnum.Set => "PrimitiveSet",
-                            CollectionTypeEnum.Dictionary => "PrimitiveDictionary",
-                            _ => throw new NotImplementedException(),
-                        };
+                            var builderMethodName = property.TypeInfo.CollectionType switch
+                            {
+                                CollectionType.List => "ObjectList",
+                                CollectionType.Set => "ObjectSet",
+                                CollectionType.Dictionary => "ObjectDictionary",
+                                _ => throw new NotImplementedException(),
+                            };
 
-                        var internalTypeString = GetRealmValueType(internalType);
+                            var internalTypeString = internalType.CompleteTypeString;
 
-                        var internalTypeNullable = internalType.IsNullable.ToCodeString();
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+                        }
+                        else
+                        {
+                            var builderMethodName = property.TypeInfo.CollectionType switch
+                            {
+                                CollectionType.List => "PrimitiveList",
+                                CollectionType.Set => "PrimitiveSet",
+                                CollectionType.Dictionary => "PrimitiveDictionary",
+                                _ => throw new NotImplementedException(),
+                            };
 
-                        schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
-                    }
+                            var internalTypeString = GetRealmValueType(internalType);
 
-                    skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
-                    copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
+                            var internalTypeNullable = internalType.IsNullable.ToCodeString();
+
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                        }
+
+                        skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
+                        copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
 {{
     newAccessor.{property.Name}.Add(val);
 }}");
+                    }
                 }
-                else if (property.TypeInfo.IsIQueryable)
-                {
-                    var backlinkProperty = property.Backlink;
-                    var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
-
-                    schemaProperties.AppendLine(@$"Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
-
-                    // Nothing to do for the copy to realm part
-                }
-                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
                     var objectName = property.TypeInfo.CompleteTypeString;
                     schemaProperties.AppendLine(@$"Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
-                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.RealmValue)
+                else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {
                     schemaProperties.AppendLine(@$"Property.RealmValue(""{property.MapTo ?? property.Name}""),");
 
@@ -233,7 +236,7 @@ private {_accessorInterfaceName} _accessor;
 
 IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
+internal {_accessorInterfaceName} Accessor => _accessor = _accessor ?? new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
 public bool IsManaged => Accessor.IsManaged;
 
@@ -321,22 +324,14 @@ public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.
 
 public override bool Equals(object obj)
 {{
-    // If parameter is null, return false.
     if (obj is null)
     {{
         return false;
     }}
 
-    // Optimization for a common success case.
     if (ReferenceEquals(this, obj))
     {{
         return true;
-    }}
-
-    // Special case to cover possible bugs similar to WPF (#1903)
-    if (obj is InvalidObject)
-    {{
-        return !IsValid;
     }}
 
     if (obj is not IRealmObjectBase iro)
@@ -349,8 +344,6 @@ public override bool Equals(object obj)
 
 public override int GetHashCode()
 {{
-    // _hashCode is only set for managed objects - for unmanaged ones, we
-    // fall back to the default behavior.
     return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 }}
 
@@ -437,44 +430,47 @@ private class {_helperClassName} : IRealmObjectHelper
 
                 if (property.TypeInfo.IsCollection)
                 {
-                    var propertyMapToName = property.MapTo ?? property.Name;
-                    var parameterString = property.TypeInfo.InternalType.CompleteTypeString;
-
-                    string constructorString;
-
-                    switch (property.TypeInfo.CollectionType)
+                    if (property.TypeInfo.IsBacklink)
                     {
-                        case CollectionTypeEnum.List:
-                            constructorString = $"new List<{parameterString}>()";
-                            getListValueLines.AppendLine($@"""{propertyMapToName}"" => (IList<T>){property.Name},");
-                            break;
-                        case CollectionTypeEnum.Set:
-                            constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
-                            getSetValueLines.AppendLine($@"""{propertyMapToName}"" => (ISet<T>){property.Name},");
-                            break;
-                        case CollectionTypeEnum.Dictionary:
-                            constructorString = $"new Dictionary<string, {parameterString}>()";
-                            getDictionaryValueLines.AppendLine($@"""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
-                            break;
-                        default:
-                            throw new NotImplementedException($"Collection {property.TypeInfo.CollectionType} is not supported yet");
+                        // Properties
+                        var propertyString = @$"public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
+
+                        propertiesString.AppendLine(propertyString);
+                        propertiesString.AppendLine();
+
+                        // GetValue
+                        getValueLines.AppendLine(@$"""{stringName}"" => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
                     }
+                    else
+                    {
+                        var propertyMapToName = property.MapTo ?? property.Name;
+                        var parameterString = property.TypeInfo.InternalType.CompleteTypeString;
 
-                    var propertyString = $@"public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
+                        string constructorString;
 
-                    propertiesString.AppendLine(propertyString);
-                    propertiesString.AppendLine();
-                }
-                else if (property.TypeInfo.IsIQueryable)
-                {
-                    // Properties
-                    var propertyString = @$"public {type} {name} => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects."");";
+                        switch (property.TypeInfo.CollectionType)
+                        {
+                            case CollectionType.List:
+                                constructorString = $"new List<{parameterString}>()";
+                                getListValueLines.AppendLine($@"""{propertyMapToName}"" => (IList<T>){property.Name},");
+                                break;
+                            case CollectionType.Set:
+                                constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
+                                getSetValueLines.AppendLine($@"""{propertyMapToName}"" => (ISet<T>){property.Name},");
+                                break;
+                            case CollectionType.Dictionary:
+                                constructorString = $"new Dictionary<string, {parameterString}>()";
+                                getDictionaryValueLines.AppendLine($@"""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
+                                break;
+                            default:
+                                throw new NotImplementedException($"Collection {property.TypeInfo.CollectionType} is not supported yet");
+                        }
 
-                    propertiesString.AppendLine(propertyString);
-                    propertiesString.AppendLine();
+                        var propertyString = $@"public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
 
-                    // GetValue
-                    getValueLines.AppendLine(@$"""{stringName}"" => throw new NotSupportedException(""Using backlinks is only possible for managed(persisted) objects.""),");
+                        propertiesString.AppendLine(propertyString);
+                        propertiesString.AppendLine();
+                    }
                 }
                 else
                 {
@@ -658,7 +654,7 @@ return;".Indent());
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
-                if (property.TypeInfo.IsCollection || property.TypeInfo.IsIQueryable)
+                if (property.TypeInfo.IsCollection)
                 {
                     var backingFieldName = GetBackingFieldName(property.Name);
                     var backingFieldString = $@"private {type} {backingFieldName};";
@@ -666,19 +662,19 @@ return;".Indent());
 
                     string getFieldString;
 
-                    if (property.TypeInfo.IsCollection)
+                    if (property.TypeInfo.IsBacklink)
                     {
-                        getFieldString = property.TypeInfo.CollectionType switch
-                        {
-                            CollectionTypeEnum.List => "GetListValue",
-                            CollectionTypeEnum.Set => "GetSetValue",
-                            CollectionTypeEnum.Dictionary => "GetDictionaryValue",
-                            _ => throw new NotImplementedException(),
-                        };
+                        getFieldString = "GetBacklinks";
                     }
                     else
                     {
-                        getFieldString = "GetBacklinks";
+                        getFieldString = property.TypeInfo.CollectionType switch
+                        {
+                            CollectionType.List => "GetListValue",
+                            CollectionType.Set => "GetSetValue",
+                            CollectionType.Dictionary => "GetDictionaryValue",
+                            _ => throw new NotImplementedException(),
+                        };
                     }
 
                     propertiesBuilder.AppendLine(@$"{backingFieldString}
@@ -726,22 +722,22 @@ internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfac
 
         private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
         {
-            var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.SimpleType : propertyTypeInfo.SimpleType;
+            var scalarType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.ScalarType : propertyTypeInfo.ScalarType;
 
-            var endString = simpleType switch
+            var endString = scalarType switch
             {
-                SimpleTypeEnum.Int => "Int",
-                SimpleTypeEnum.Bool => "Bool",
-                SimpleTypeEnum.String => "String",
-                SimpleTypeEnum.Data => "Data",
-                SimpleTypeEnum.Date => "Date",
-                SimpleTypeEnum.Float => "Float",
-                SimpleTypeEnum.Double => "Double",
-                SimpleTypeEnum.Object => "Object",
-                SimpleTypeEnum.RealmValue => "RealmValue",
-                SimpleTypeEnum.ObjectId => "ObjectId",
-                SimpleTypeEnum.Decimal => "Decimal128",
-                SimpleTypeEnum.Guid => "Guid",
+                ScalarType.Int => "Int",
+                ScalarType.Bool => "Bool",
+                ScalarType.String => "String",
+                ScalarType.Data => "Data",
+                ScalarType.Date => "Date",
+                ScalarType.Float => "Float",
+                ScalarType.Double => "Double",
+                ScalarType.Object => "Object",
+                ScalarType.RealmValue => "RealmValue",
+                ScalarType.ObjectId => "ObjectId",
+                ScalarType.Decimal => "Decimal128",
+                ScalarType.Guid => "Guid",
                 _ => throw new NotImplementedException(),
             };
 

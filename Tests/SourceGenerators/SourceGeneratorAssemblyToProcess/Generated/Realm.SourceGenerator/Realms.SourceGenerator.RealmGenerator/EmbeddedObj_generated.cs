@@ -24,18 +24,9 @@ namespace SourceGeneratorPlayground
         
         private IEmbeddedObjAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObjObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal IEmbeddedObjAccessor Accessor => _accessor = _accessor ?? new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -120,6 +111,36 @@ namespace SourceGeneratorPlayground
         public static explicit operator EmbeddedObj(RealmValue val) => val.AsRealmObject<EmbeddedObj>();
         
         public static implicit operator RealmValue(EmbeddedObj val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedObjObjectHelper : IRealmObjectHelper

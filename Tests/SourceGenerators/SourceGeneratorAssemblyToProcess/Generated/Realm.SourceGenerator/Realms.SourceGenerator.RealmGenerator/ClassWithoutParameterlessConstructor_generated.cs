@@ -24,18 +24,9 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         
         private IClassWithoutParameterlessConstructorAccessor _accessor;
         
-        public IRealmAccessor Accessor
-        {
-            get
-            {
-                if (_accessor == null)
-                {
-                    _accessor = new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructorObjectHelper));
-                }
+        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-                return _accessor;
-            }
-        }
+        internal IClassWithoutParameterlessConstructorAccessor Accessor => _accessor = _accessor ?? new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -120,6 +111,36 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         public static explicit operator ClassWithoutParameterlessConstructor(RealmValue val) => val.AsRealmObject<ClassWithoutParameterlessConstructor>();
         
         public static implicit operator RealmValue(ClassWithoutParameterlessConstructor val) => RealmValue.Object(val);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+        
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+        
+            if (obj is not IRealmObjectBase iro)
+            {
+                return false;
+            }
+        
+            return Accessor.Equals(iro.Accessor);
+        }
+        
+        public override int GetHashCode()
+        {
+            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+        }
+        
+        public override string ToString()
+        {
+            return Accessor.ToString();
+        }
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class ClassWithoutParameterlessConstructorObjectHelper : IRealmObjectHelper

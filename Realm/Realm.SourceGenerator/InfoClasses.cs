@@ -79,65 +79,63 @@ namespace Realms.SourceGenerator
 
     internal abstract record PropertyTypeInfo
     {
-        private static HashSet<SimpleTypeEnum?> _indexableTypes = new()
+        private static HashSet<ScalarType> _indexableTypes = new()
         {
-            SimpleTypeEnum.Int,
-            SimpleTypeEnum.Bool,
-            SimpleTypeEnum.String,
-            SimpleTypeEnum.ObjectId,
-            SimpleTypeEnum.Guid,
-            SimpleTypeEnum.Date,
+            ScalarType.Int,
+            ScalarType.Bool,
+            ScalarType.String,
+            ScalarType.ObjectId,
+            ScalarType.Guid,
+            ScalarType.Date,
         };
 
-        private static HashSet<SimpleTypeEnum?> _primaryKeyTypes = new()
+        private static HashSet<ScalarType> _primaryKeyTypes = new()
         {
-            SimpleTypeEnum.Int,
-            SimpleTypeEnum.String,
-            SimpleTypeEnum.ObjectId,
-            SimpleTypeEnum.Guid,
+            ScalarType.Int,
+            ScalarType.String,
+            ScalarType.ObjectId,
+            ScalarType.Guid,
         };
 
-        private static HashSet<SimpleTypeEnum?> _requiredTypes = new()
+        private static HashSet<ScalarType> _requiredTypes = new()
         {
-            SimpleTypeEnum.String,
-            SimpleTypeEnum.Data,
+            ScalarType.String,
+            ScalarType.Data,
         };
 
-        public virtual SimpleTypeEnum? SimpleType { get; set; }
+        public virtual ScalarType ScalarType { get; set; }
 
-        public virtual CollectionTypeEnum? CollectionType { get; set; }
+        public virtual CollectionType CollectionType { get; }
 
         public virtual bool IsRealmInteger { get; set; }
 
-        public virtual bool IsIQueryable { get; set; }
+        // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
+        public NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
 
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
-
-        // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
-        public virtual NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
-
-        public bool HasNullabilityAnnotation => NullableAnnotation == NullableAnnotation.Annotated;
 
         public string Namespace { get; set; }
 
         public ITypeSymbol TypeSymbol { get; set; }
 
-        // This includes the eventual nullability annotation
+        // This includes the eventual nullability annotation ("?")
         public ITypeSymbol CompleteTypeSymbol { get; set; }
 
-        public virtual PropertyTypeInfo InternalType { get; set; }
+        public PropertyTypeInfo InternalType { get; set; }
 
-        public bool IsCollection => CollectionType != null;
+        public bool IsCollection => CollectionType != CollectionType.None;
+
+        public bool IsSimpleType => ScalarType != ScalarType.None;
 
         public bool IsListOrSet => IsList || IsSet;
 
-        public bool IsSimpleType => SimpleType != null;
+        public bool IsSet => CollectionType == CollectionType.Set;
 
-        public bool IsSet => CollectionType == CollectionTypeEnum.Set;
+        public bool IsList => CollectionType == CollectionType.List;
 
-        public bool IsList => CollectionType == CollectionTypeEnum.List;
+        public bool IsDictionary => CollectionType == CollectionType.Dictionary;
 
-        public bool IsDictionary => CollectionType == CollectionTypeEnum.Dictionary;
+        public bool IsBacklink => CollectionType == CollectionType.Backlink;
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
 
@@ -153,39 +151,39 @@ namespace Realms.SourceGenerator
 
         public static PropertyTypeInfo Dictionary => new DictionaryTypeInfo();
 
-        public static PropertyTypeInfo Int => new SimpleTypeInfo(SimpleTypeEnum.Int);
+        public static PropertyTypeInfo Int => new ScalarTypeInfo(ScalarType.Int);
 
-        public static PropertyTypeInfo Bool => new SimpleTypeInfo(SimpleTypeEnum.Bool);
+        public static PropertyTypeInfo Bool => new ScalarTypeInfo(ScalarType.Bool);
 
-        public static PropertyTypeInfo String => new SimpleTypeInfo(SimpleTypeEnum.String);
+        public static PropertyTypeInfo String => new ScalarTypeInfo(ScalarType.String);
 
-        public static PropertyTypeInfo Data => new SimpleTypeInfo(SimpleTypeEnum.Data);
+        public static PropertyTypeInfo Data => new ScalarTypeInfo(ScalarType.Data);
 
-        public static PropertyTypeInfo Date => new SimpleTypeInfo(SimpleTypeEnum.Date);
+        public static PropertyTypeInfo Date => new ScalarTypeInfo(ScalarType.Date);
 
-        public static PropertyTypeInfo Float => new SimpleTypeInfo(SimpleTypeEnum.Float);
+        public static PropertyTypeInfo Float => new ScalarTypeInfo(ScalarType.Float);
 
-        public static PropertyTypeInfo Double => new SimpleTypeInfo(SimpleTypeEnum.Double);
+        public static PropertyTypeInfo Double => new ScalarTypeInfo(ScalarType.Double);
 
-        public static PropertyTypeInfo Object => new SimpleTypeInfo(SimpleTypeEnum.Object);
+        public static PropertyTypeInfo Object => new ScalarTypeInfo(ScalarType.Object);
 
-        public static PropertyTypeInfo RealmValue => new SimpleTypeInfo(SimpleTypeEnum.RealmValue);
+        public static PropertyTypeInfo RealmValue => new ScalarTypeInfo(ScalarType.RealmValue);
 
-        public static PropertyTypeInfo ObjectId => new SimpleTypeInfo(SimpleTypeEnum.ObjectId);
+        public static PropertyTypeInfo ObjectId => new ScalarTypeInfo(ScalarType.ObjectId);
 
-        public static PropertyTypeInfo Decimal => new SimpleTypeInfo(SimpleTypeEnum.Decimal);
+        public static PropertyTypeInfo Decimal => new ScalarTypeInfo(ScalarType.Decimal);
 
-        public static PropertyTypeInfo Guid => new SimpleTypeInfo(SimpleTypeEnum.Guid);
+        public static PropertyTypeInfo Guid => new ScalarTypeInfo(ScalarType.Guid);
 
         public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
 
-        public static PropertyTypeInfo IQueryable => new IQueryableTypeInfo();
+        public static PropertyTypeInfo Backlink => new BacklinkTypeInfo();
 
         public bool IsSupportedIndexType()
         {
             if (IsRealmInteger)
             {
-                if (HasNullabilityAnnotation)
+                if (IsNullable)
                 {
                     return false;
                 }
@@ -193,44 +191,34 @@ namespace Realms.SourceGenerator
                 return InternalType.IsSupportedIndexType();
             }
 
-            if (SimpleType == SimpleTypeEnum.String)
-            {
-                return true;
-            }
-
-            if (_indexableTypes.Contains(SimpleType))
-            {
-                return !HasNullabilityAnnotation;
-            }
-
-            return false;
+            return _indexableTypes.Contains(ScalarType);
         }
 
         public bool IsSupportedPrimaryKeyType()
         {
-            return _primaryKeyTypes.Contains(SimpleType);
+            return _primaryKeyTypes.Contains(ScalarType);
         }
 
         public bool IsSupportedRequiredType()
         {
-            if (IsListOrSet)
+            if (IsCollection)
             {
                 return InternalType.IsSupportedRequiredType();
             }
 
-            return _requiredTypes.Contains(SimpleType);
+            return _requiredTypes.Contains(ScalarType);
         }
 
         public bool HasCorrectNullabilityAnnotation()
         {
             if (NullableAnnotation == NullableAnnotation.Annotated &&
-                (IsCollection || IsIQueryable || SimpleType == SimpleTypeEnum.RealmValue))
+                (IsCollection || ScalarType == ScalarType.RealmValue))
             {
                 return false;
             }
 
-            if (NullableAnnotation == NullableAnnotation.NotAnnotated &&
-                (SimpleType == SimpleTypeEnum.Object))
+            if (!IsNullable &&
+                (ScalarType == ScalarType.Object))
             {
                 return false;
             }
@@ -249,17 +237,22 @@ namespace Realms.SourceGenerator
 
     internal record ListTypeInfo : CollectionTypeInfo
     {
-        public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.List;
+        public override CollectionType CollectionType => CollectionType.List;
     }
 
     internal record SetTypeInfo : CollectionTypeInfo
     {
-        public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.Set;
+        public override CollectionType CollectionType => CollectionType.Set;
     }
 
     internal record DictionaryTypeInfo : CollectionTypeInfo
     {
-        public override CollectionTypeEnum? CollectionType => CollectionTypeEnum.Dictionary;
+        public override CollectionType CollectionType => CollectionType.Dictionary;
+    }
+
+    internal record BacklinkTypeInfo : PropertyTypeInfo
+    {
+        public override CollectionType CollectionType => CollectionType.Backlink;
     }
 
     internal record RealmIntegerTypeInfo : PropertyTypeInfo
@@ -267,28 +260,26 @@ namespace Realms.SourceGenerator
         public override bool IsRealmInteger => true;
     }
 
-    internal record IQueryableTypeInfo : PropertyTypeInfo
+    internal record ScalarTypeInfo : PropertyTypeInfo
     {
-        public override bool IsIQueryable => true;
-    }
-
-    internal record SimpleTypeInfo : PropertyTypeInfo
-    {
-        public SimpleTypeInfo(SimpleTypeEnum type)
+        public ScalarTypeInfo(ScalarType type)
         {
-            SimpleType = type;
+            ScalarType = type;
         }
     }
 
-    internal enum CollectionTypeEnum
+    internal enum CollectionType
     {
+        None,
         List,
         Set,
-        Dictionary
+        Dictionary,
+        Backlink
     }
 
-    internal enum SimpleTypeEnum
+    internal enum ScalarType
     {
+        None,
         Int,
         Bool,
         String,
