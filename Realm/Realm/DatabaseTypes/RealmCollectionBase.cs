@@ -146,7 +146,7 @@ namespace Realms
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
-            _isEmbedded = metadata?.Schema.ObjectType == ObjectSchema.ObjectSchemaType.EmbeddedObject;
+            _isEmbedded = metadata?.Schema.SchemaType == ObjectSchema.ObjectType.EmbeddedObject;
         }
 
         ~RealmCollectionBase()

@@ -38,7 +38,7 @@ namespace Realms.Schema
         /// <summary>
         /// Represents the object schema type of an <see cref="ObjectSchema"/>.
         /// </summary>
-        public enum ObjectSchemaType : byte
+        public enum ObjectType : byte
         {
             /// <summary>
             /// The value represents a <see cref="RealmObject"/> schema type.
@@ -81,19 +81,19 @@ namespace Realms.Schema
         /// </summary>
         /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
         [Obsolete("Check against RealmSchemaType instead.")]
-        public bool IsEmbedded => ObjectType == ObjectSchemaType.EmbeddedObject;
+        public bool IsEmbedded => SchemaType == ObjectType.EmbeddedObject;
 
         /// <summary>
-        /// Gets a <see cref="ObjectSchemaType"/> indicating whether this <see cref="ObjectSchema"/> describes
+        /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
         /// </summary>
         /// <value>The type of ObjectSchema.</value>
-        public ObjectSchemaType ObjectType { get; }
+        public ObjectType SchemaType { get; }
 
-        private ObjectSchema(string name, ObjectSchemaType schemaType, IDictionary<string, Property> properties)
+        private ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
         {
             Name = name;
-            ObjectType = schemaType;
+            SchemaType = schemaType;
 
             _properties = new ReadOnlyDictionary<string, Property>(properties);
 
@@ -133,7 +133,7 @@ namespace Realms.Schema
         /// </returns>
         public Builder GetBuilder()
         {
-            var builder = new Builder(Name, ObjectType);
+            var builder = new Builder(Name, SchemaType);
             foreach (var prop in this)
             {
                 builder.Add(prop);
@@ -179,37 +179,30 @@ namespace Realms.Schema
             {
                 get
                 {
-                    return RealmSchemaType == ObjectSchemaType.EmbeddedObject;
+                    return RealmSchemaType == ObjectType.EmbeddedObject;
                 }
 
                 set
                 {
                     // being an obsolete method, it's assumed that it's old code that doesn't use AsymmetricObject-s
-                    if (value)
-                    {
-                        RealmSchemaType = ObjectSchemaType.EmbeddedObject;
-                    }
-                    else
-                    {
-                        RealmSchemaType = ObjectSchemaType.RealmObject;
-                    }
+                    _ = value ? RealmSchemaType = ObjectType.EmbeddedObject : RealmSchemaType = ObjectType.RealmObject;
                 }
             }
 
             /// <summary>
-            /// Gets or sets a value indicating the object's <see cref="ObjectSchemaType"/> this <see cref="Builder"/> describes.
+            /// Gets or sets a value indicating the object's <see cref="ObjectType"/> this <see cref="Builder"/> describes.
             /// </summary>
-            /// <value><see cref="ObjectSchemaType"/> of the schema of the object.</value>
-            public ObjectSchemaType RealmSchemaType { get; set; }
+            /// <value><see cref="ObjectType"/> of the schema of the object.</value>
+            public ObjectType RealmSchemaType { get; set; }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="Builder"/> class with the provided name.
             /// </summary>
             /// <param name="name">The name of the <see cref="ObjectSchema"/> this builder describes.</param>
-            /// <param name="schemaType">The <see cref="ObjectSchemaType"/> of the object this builder describes.</param>
+            /// <param name="schemaType">The <see cref="ObjectType"/> of the object this builder describes.</param>
             /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
             /// <exception cref="ArgumentException">Thrown if <paramref name="name"/> is the empty string.</exception>
-            public Builder(string name, ObjectSchemaType schemaType)
+            public Builder(string name, ObjectType schemaType)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
@@ -228,7 +221,7 @@ namespace Realms.Schema
             [Obsolete("Use Builder(string name, ObjectSchemaType schemaType) instead.")]
             public Builder(string name, bool isEmbedded = false)
                 : this(name,
-                      isEmbedded ? ObjectSchemaType.EmbeddedObject : ObjectSchemaType.RealmObject)
+                      isEmbedded ? ObjectType.EmbeddedObject : ObjectType.RealmObject)
             {
             }
 

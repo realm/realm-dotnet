@@ -256,16 +256,16 @@ namespace Realms.Dynamic
                 throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
             }
 
-            return metadata.Schema.ObjectType == ObjectSchema.ObjectSchemaType.EmbeddedObject;
+            return metadata.Schema.SchemaType == ObjectSchema.ObjectType.EmbeddedObject;
         }
 
         private static Type GetDynamicObjectType(ObjectSchema schema) =>
-            schema.ObjectType switch
+            schema.SchemaType switch
             {
-                ObjectSchema.ObjectSchemaType.RealmObject => typeof(DynamicRealmObject),
-                ObjectSchema.ObjectSchemaType.EmbeddedObject => typeof(DynamicEmbeddedObject),
-                ObjectSchema.ObjectSchemaType.AsymmetricObject => typeof(DynamicAsymmetricObject),
-                _ => throw new NotSupportedException($"{schema.ObjectType} not supported yet."),
+                ObjectSchema.ObjectType.RealmObject => typeof(DynamicRealmObject),
+                ObjectSchema.ObjectType.EmbeddedObject => typeof(DynamicEmbeddedObject),
+                ObjectSchema.ObjectType.AsymmetricObject => typeof(DynamicAsymmetricObject),
+                _ => throw new NotSupportedException($"{schema.SchemaType} not supported yet."),
             };
 
         private Type GetDynamicObjectType(Property property)
@@ -285,12 +285,12 @@ namespace Realms.Dynamic
                 throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
             }
 
-            return metadata.Schema.ObjectType switch
+            return metadata.Schema.SchemaType switch
             {
-                ObjectSchema.ObjectSchemaType.RealmObject => GetCollectionGetter<DynamicRealmObject>(collectionType),
-                ObjectSchema.ObjectSchemaType.EmbeddedObject => GetCollectionGetter<DynamicEmbeddedObject>(collectionType),
-                ObjectSchema.ObjectSchemaType.AsymmetricObject => GetCollectionGetter<DynamicAsymmetricObject>(collectionType),
-                _ => throw new NotSupportedException($"{metadata.Schema.ObjectType} not supported yet."),
+                ObjectSchema.ObjectType.RealmObject => GetCollectionGetter<DynamicRealmObject>(collectionType),
+                ObjectSchema.ObjectType.EmbeddedObject => GetCollectionGetter<DynamicEmbeddedObject>(collectionType),
+                ObjectSchema.ObjectType.AsymmetricObject => GetCollectionGetter<DynamicAsymmetricObject>(collectionType),
+                _ => throw new NotSupportedException($"{metadata.Schema.SchemaType} not supported yet."),
             };
 
             MethodInfo GetCollectionGetter<T>(CollectionType collectionType)

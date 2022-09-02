@@ -52,19 +52,19 @@ namespace Realms
 
         public static bool IsRealmObject(this Type type) => typeof(IRealmObject).IsAssignableFrom(type);
 
-        public static ObjectSchema.ObjectSchemaType GetRealmSchemaType(this Type type)
+        public static ObjectSchema.ObjectType GetRealmSchemaType(this Type type)
         {
             if (type.IsAsymmetricObject())
             {
-                return ObjectSchema.ObjectSchemaType.AsymmetricObject;
+                return ObjectSchema.ObjectType.AsymmetricObject;
             }
 
             if (type.IsEmbeddedObject())
             {
-                return ObjectSchema.ObjectSchemaType.EmbeddedObject;
+                return ObjectSchema.ObjectType.EmbeddedObject;
             }
 
-            return ObjectSchema.ObjectSchemaType.RealmObject;
+            return ObjectSchema.ObjectType.RealmObject;
         }
 
         public static T[] GetEnumValues<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToArray();

@@ -690,8 +690,8 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
-            Assert.That(allTypesSchema.ObjectType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.EmbeddedObject));
-            Assert.That(allTypesSchema.ObjectType, Is.Not.EqualTo(ObjectSchema.ObjectSchemaType.AsymmetricObject));
+            Assert.That(allTypesSchema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(allTypesSchema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
             Assert.That(hasExpectedProp);
@@ -707,7 +707,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-            Assert.That(embeddedAllTypesSchema.ObjectType, Is.EqualTo(ObjectSchema.ObjectSchemaType.EmbeddedObject));
+            Assert.That(embeddedAllTypesSchema.SchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
 
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
@@ -1034,7 +1034,7 @@ namespace Realms.Tests.Database
             {
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("MyType", ObjectSchema.ObjectSchemaType.RealmObject)
+                    new ObjectSchema.Builder("MyType", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.Primitive("IntValue", RealmValueType.Int),
                         Property.PrimitiveList("ListValue", RealmValueType.Date),
@@ -1045,7 +1045,7 @@ namespace Realms.Tests.Database
                         Property.ObjectSet("ObjectSetValue", "OtherObject"),
                         Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
                     },
-                    new ObjectSchema.Builder("OtherObject", ObjectSchema.ObjectSchemaType.RealmObject)
+                    new ObjectSchema.Builder("OtherObject", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
                         Property.Backlinks("MyTypes", "MyType", "ObjectValue")

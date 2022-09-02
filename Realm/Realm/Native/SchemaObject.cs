@@ -32,6 +32,6 @@ namespace Realms.Native
         internal int properties_start;
         internal int properties_end;
 
-        internal ObjectSchema.ObjectSchemaType table_type;
+        internal ObjectSchema.ObjectType table_type;
     }
 }

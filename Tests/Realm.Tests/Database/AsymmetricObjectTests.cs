@@ -302,9 +302,17 @@ namespace Realms.Tests.Database
 
                 config.OnSessionError = (session, error) =>
                 {
-                    Assert.That(error, Is.InstanceOf<SessionException>());
+                    try
+                    {
+                        Assert.That(error, Is.InstanceOf<SessionException>());
+                        // Assert.That(error.ErrorCode, Is.EqualTo(/*Category*/.ApplicationBug));
+                    }
+                    catch(Exception e)
+                    {
+                        tcs.TrySetException(e);
+                    }
 
-                    // Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.ApplicationBug));
+                    tcs.TrySetResult(null);
                 };
 
                 using var realm = await GetRealmAsync(config);
