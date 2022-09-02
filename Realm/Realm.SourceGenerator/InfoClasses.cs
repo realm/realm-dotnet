@@ -109,14 +109,13 @@ namespace Realms.SourceGenerator
 
         public virtual bool IsRealmInteger { get; set; }
 
+        //TODO This could be part of Collection
         public virtual bool IsIQueryable { get; set; }
 
         // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
         public NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
 
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
-
-        public bool HasNullabilityAnnotation => NullableAnnotation == NullableAnnotation.Annotated;
 
         public string Namespace { get; set; }
 
@@ -185,7 +184,7 @@ namespace Realms.SourceGenerator
         {
             if (IsRealmInteger)
             {
-                if (HasNullabilityAnnotation)
+                if (IsNullable)
                 {
                     return false;
                 }
@@ -193,17 +192,7 @@ namespace Realms.SourceGenerator
                 return InternalType.IsSupportedIndexType();
             }
 
-            if (ScalarType == ScalarType.String)
-            {
-                return true;
-            }
-
-            if (_indexableTypes.Contains(ScalarType))
-            {
-                return !HasNullabilityAnnotation;
-            }
-
-            return false;
+            return _indexableTypes.Contains(ScalarType);
         }
 
         public bool IsSupportedPrimaryKeyType()
@@ -213,7 +202,7 @@ namespace Realms.SourceGenerator
 
         public bool IsSupportedRequiredType()
         {
-            if (IsListOrSet)
+            if (IsCollection)
             {
                 return InternalType.IsSupportedRequiredType();
             }
@@ -229,7 +218,8 @@ namespace Realms.SourceGenerator
                 return false;
             }
 
-            if (NullableAnnotation == NullableAnnotation.NotAnnotated &&
+            //If !isNullable
+            if (!IsNullable &&
                 (ScalarType == ScalarType.Object))
             {
                 return false;
