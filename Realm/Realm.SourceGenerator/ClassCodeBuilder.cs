@@ -722,9 +722,9 @@ internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfac
 
         private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
         {
-            var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.ScalarType : propertyTypeInfo.ScalarType;
+            var scalarType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.ScalarType : propertyTypeInfo.ScalarType;
 
-            var endString = simpleType switch
+            var endString = scalarType switch
             {
                 ScalarType.Int => "Int",
                 ScalarType.Bool => "Bool",
