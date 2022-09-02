@@ -86,7 +86,7 @@ namespace Realms
     /// You should use this base when you have a write-heavy use case.
     /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
     /// </remarks>
-    /// <seealso href="https://www.mongodb.com/docs/realm-sdks/dotnet/latest/reference/Realms.AsymmetricObject.html"/>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
     public interface IAsymmetricObject : IRealmObjectBase
     {
     }

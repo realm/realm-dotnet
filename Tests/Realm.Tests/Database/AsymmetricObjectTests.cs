@@ -63,6 +63,26 @@ namespace Realms.Tests.Database
             new object[] { "GuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") },
         };
 
+        public static object[] SetAndReplaceWithNullCases =
+        {
+            new object[] { "NullableCharProperty", '0' },
+            new object[] { "NullableByteProperty", (byte)100 },
+            new object[] { "NullableInt16Property", (short)100 },
+            new object[] { "NullableInt32Property", 100 },
+            new object[] { "NullableInt64Property", 100L },
+            new object[] { "NullableSingleProperty", 123.123f },
+            new object[] { "NullableDoubleProperty", 123.123 },
+            new object[] { "NullableBooleanProperty", true },
+            new object[] { "NullableDecimalProperty", 123.456M },
+            new object[] { "NullableDecimal128Property", new Decimal128(123.456) },
+            new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
+            new object[] { "ByteArrayProperty", Array.Empty<byte>() },
+            new object[] { "StringProperty", "hello" },
+            new object[] { "StringProperty", string.Empty },
+            new object[] { "NullableObjectIdProperty", new ObjectId("5f63e882536de46d71877979") },
+            new object[] { "NullableGuidProperty", Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}") }
+        };
+
         [Test]
         public void AddAsymmetricObjNotInSchema_Throws()
         {
@@ -205,7 +225,8 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(SetAndGetValueCases))]
-        public void SetAndRemotelyReadValue(string propertyName, dynamic propertyValue)
+        [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
+        public void SetAndRemotelyReadValue(string propertyName, object propertyValue)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -224,7 +245,8 @@ namespace Realms.Tests.Database
                 });
 
                 await realm.SyncSession.WaitForUploadAsync();
-                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(flxConfig, propertyName, propertyValue);
+                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(
+                    flxConfig, propertyName, BsonValue.Create(propertyValue));
 
                 foreach (var doc in documents)
                 {

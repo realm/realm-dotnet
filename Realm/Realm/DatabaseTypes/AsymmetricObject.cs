@@ -28,7 +28,7 @@ namespace Realms
     /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
     /// RealmObjects and EmbeddedObjects can't link (or backlink) to AsymmetricObjects. AsymmetricObjects can only link to EmbeddedObjects.
     /// </remarks>
-    /// <seealso href="https://www.mongodb.com/docs/realm-sdks/dotnet/latest/reference/Realms.AsymmetricObject.html"/>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
     public class AsymmetricObject : RealmObjectBase, IAsymmetricObject
     {
     }
