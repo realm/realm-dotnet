@@ -381,6 +381,11 @@ Analytics payload
                     return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
                 }
 
+                if (prop.ContainsAsymmetricObject(_references))
+                {
+                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObject-s are not allowed to be the receiving end of any relationships.");
+                }
+
                 return WeavePropertyResult.Skipped();
             }
 
@@ -390,11 +395,6 @@ Analytics payload
                 if (!prop.IsIQueryable())
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
-                }
-
-                if (type.IsAsymmetricObjectDescendant(_references))
-                {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied which is not allowed on AsymmetricObject.");
                 }
             }
 
@@ -429,7 +429,7 @@ Analytics payload
                 }
                 else if (elementType.IsAsymmetricObjectDescendant(_references))
                 {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in {type.BaseType.ToString().Split('.').Last()}.");
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.");
                 }
 
                 if (prop.SetMethod != null)
@@ -466,7 +466,7 @@ Analytics payload
             }
             else if (prop.ContainsAsymmetricObject(_references))
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be contained in {type.BaseType.ToString().Split('.').Last()}.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObject-s aren't allowed to be the receiving end of any relationship.");
             }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
@@ -489,6 +489,11 @@ Analytics payload
                 if (prop.SetMethod != null)
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has a setter but also has [Backlink] applied, which only supports getters.");
+                }
+
+                if (type.IsAsymmetricObjectDescendant(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied which is not allowed on AsymmetricObject.");
                 }
 
                 var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();

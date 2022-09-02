@@ -476,6 +476,7 @@ namespace RealmWeaver
             var expectedWarnings = new[]
             {
                 "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
+                "Sensor.FirstMeasurement is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObject-s are not allowed to be the receiving end of any relationships.",
                 "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
@@ -522,14 +523,14 @@ namespace RealmWeaver
                 "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
                 "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm.",
                 "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
-                "Measurement.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be contained in AsymmetricObject.",
-                "Coordinates.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be contained in EmbeddedObject.",
-                "Measurement.ListOfAsymmetrics is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in AsymmetricObject.",
-                "Measurement.SetOfAsymmetrics is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in AsymmetricObject.",
-                "ResearchFacility.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in RealmObject.",
-                "Department.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in EmbeddedObject.",
-                "ResearchFacility.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in RealmObject.",
-                "Department.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in EmbeddedObject.",
+                "Measurement.Sensor is of type AsymmetricObject, but AsymmetricObject-s aren't allowed to be the receiving end of any relationship.",
+                "Coordinates.Sensor is of type AsymmetricObject, but AsymmetricObject-s aren't allowed to be the receiving end of any relationship.",
+                "Measurement.ListOfAsymmetrics is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Measurement.SetOfAsymmetrics is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
                 "Sensor.Measurements has [Backlink] applied which is not allowed on AsymmetricObject."
             };
 

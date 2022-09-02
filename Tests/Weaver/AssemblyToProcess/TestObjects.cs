@@ -470,13 +470,22 @@ namespace AssemblyToProcess
         public Guid? NullableGuidProperty { get; set; }
     }
 
-    public class Sensor : AsymmetricObject
+    public class ResearchFacility : RealmObject
     {
         [PrimaryKey, MapTo("_id")]
         public Guid Id { get; set; } = Guid.NewGuid();
 
-        [Backlink(nameof(Measurement.Sensor))]
-        public IQueryable<Measurement> Measurements { get; set; }
+        public IList<Sensor> SensorsList { get; }
+
+        public ISet<Sensor> SensorsSet { get; }
+    }
+
+    public class ContainedAsymmetricTest : AsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        public string JustAString { get; set; }
     }
 
     public class Measurement : AsymmetricObject
@@ -495,41 +504,5 @@ namespace AssemblyToProcess
         public string UnitMeasure { get; set; }
 
         public IList<double> Records { get; }
-    }
-
-    public class ContainedAsymmetricTest : AsymmetricObject
-    {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public string JustAString { get; set; }
-    }
-
-    public class Coordinates : EmbeddedObject
-    {
-        public double X { get; set; }
-
-        public double Y { get; set; }
-
-        public Sensor Sensor { get; set; }
-    }
-
-    public class ResearchFacility : RealmObject
-    {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
-
-        public IList<Sensor> SensorsList { get; }
-
-        public ISet<Sensor> SensorsSet { get; }
-    }
-
-    public class Department : EmbeddedObject
-    {
-        public IList<Sensor> SensorsList { get; }
-
-        public ISet<Sensor> SensorsSet { get; }
-
-        public string Name { get; set; }
     }
 }
