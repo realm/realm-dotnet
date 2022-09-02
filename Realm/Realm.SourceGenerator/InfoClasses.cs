@@ -109,9 +109,6 @@ namespace Realms.SourceGenerator
 
         public virtual bool IsRealmInteger { get; set; }
 
-        //TODO This could be part of Collection
-        public virtual bool IsIQueryable { get; set; }
-
         // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
         public NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
 
@@ -137,6 +134,8 @@ namespace Realms.SourceGenerator
         public bool IsList => CollectionType == CollectionType.List;
 
         public bool IsDictionary => CollectionType == CollectionType.Dictionary;
+
+        public bool IsBacklink => CollectionType == CollectionType.Backlink;
 
         public bool IsUnsupported => this is UnsupportedTypeInfo;
 
@@ -178,7 +177,7 @@ namespace Realms.SourceGenerator
 
         public static PropertyTypeInfo RealmInteger => new RealmIntegerTypeInfo();
 
-        public static PropertyTypeInfo IQueryable => new IQueryableTypeInfo();
+        public static PropertyTypeInfo Backlink => new BacklinkTypeInfo();
 
         public bool IsSupportedIndexType()
         {
@@ -213,12 +212,11 @@ namespace Realms.SourceGenerator
         public bool HasCorrectNullabilityAnnotation()
         {
             if (NullableAnnotation == NullableAnnotation.Annotated &&
-                (IsCollection || IsIQueryable || ScalarType == ScalarType.RealmValue))
+                (IsCollection || ScalarType == ScalarType.RealmValue))
             {
                 return false;
             }
 
-            //If !isNullable
             if (!IsNullable &&
                 (ScalarType == ScalarType.Object))
             {
@@ -252,14 +250,14 @@ namespace Realms.SourceGenerator
         public override CollectionType CollectionType => CollectionType.Dictionary;
     }
 
+    internal record BacklinkTypeInfo : PropertyTypeInfo
+    {
+        public override CollectionType CollectionType => CollectionType.Backlink;
+    }
+
     internal record RealmIntegerTypeInfo : PropertyTypeInfo
     {
         public override bool IsRealmInteger => true;
-    }
-
-    internal record IQueryableTypeInfo : PropertyTypeInfo
-    {
-        public override bool IsIQueryable => true;
     }
 
     internal record ScalarTypeInfo : PropertyTypeInfo
@@ -275,7 +273,8 @@ namespace Realms.SourceGenerator
         None,
         List,
         Set,
-        Dictionary
+        Dictionary,
+        Backlink
     }
 
     internal enum ScalarType

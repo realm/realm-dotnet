@@ -145,19 +145,19 @@ namespace Realms.SourceGenerator
                     continue;
                 }
 
-                if (!propSyntax.HasSetter() && !info.TypeInfo.IsCollection && !info.TypeInfo.IsIQueryable)
+                if (!propSyntax.HasSetter() && !info.TypeInfo.IsCollection)
                 {
                     continue;
                 }
 
-                if (info.TypeInfo.IsIQueryable && info.Backlink == null)
+                if (info.TypeInfo.IsBacklink && info.Backlink == null)
                 {
                     continue;
                 }
 
                 if (info.Backlink != null)
                 {
-                    if (!info.TypeInfo.IsIQueryable)
+                    if (!info.TypeInfo.IsBacklink)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
@@ -255,7 +255,7 @@ namespace Realms.SourceGenerator
 
                 propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            else if (propertyType.IsIQueryable && propertyInfo.Backlink != null)
+            else if (propertyType.IsBacklink && propertyInfo.Backlink != null)
             {
                 var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
@@ -376,7 +376,7 @@ namespace Realms.SourceGenerator
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
-                INamedTypeSymbol when typeSymbol.Name == "IQueryable" => PropertyTypeInfo.IQueryable,
+                INamedTypeSymbol when typeSymbol.Name == "IQueryable" => PropertyTypeInfo.Backlink,
                 _ => PropertyTypeInfo.Unsupported
             };
 
