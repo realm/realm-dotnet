@@ -133,15 +133,15 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 {
                     var internalType = property.TypeInfo.InternalType;
 
-                    var internalTypeIsObject = internalType.SimpleType == SimpleTypeEnum.Object;
+                    var internalTypeIsObject = internalType.ScalarType == ScalarType.Object;
 
                     if (internalTypeIsObject)
                     {
                         var builderMethodName = property.TypeInfo.CollectionType switch
                         {
-                            CollectionTypeEnum.List => "ObjectList",
-                            CollectionTypeEnum.Set => "ObjectSet",
-                            CollectionTypeEnum.Dictionary => "ObjectDictionary",
+                            CollectionType.List => "ObjectList",
+                            CollectionType.Set => "ObjectSet",
+                            CollectionType.Dictionary => "ObjectDictionary",
                             _ => throw new NotImplementedException(),
                         };
 
@@ -153,9 +153,9 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                     {
                         var builderMethodName = property.TypeInfo.CollectionType switch
                         {
-                            CollectionTypeEnum.List => "PrimitiveList",
-                            CollectionTypeEnum.Set => "PrimitiveSet",
-                            CollectionTypeEnum.Dictionary => "PrimitiveDictionary",
+                            CollectionType.List => "PrimitiveList",
+                            CollectionType.Set => "PrimitiveSet",
+                            CollectionType.Dictionary => "PrimitiveDictionary",
                             _ => throw new NotImplementedException(),
                         };
 
@@ -181,14 +181,14 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                     // Nothing to do for the copy to realm part
                 }
-                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
                     var objectName = property.TypeInfo.CompleteTypeString;
                     schemaProperties.AppendLine(@$"Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
-                else if (property.TypeInfo.SimpleType == SimpleTypeEnum.RealmValue)
+                else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {
                     schemaProperties.AppendLine(@$"Property.RealmValue(""{property.MapTo ?? property.Name}""),");
 
@@ -444,15 +444,15 @@ private class {_helperClassName} : IRealmObjectHelper
 
                     switch (property.TypeInfo.CollectionType)
                     {
-                        case CollectionTypeEnum.List:
+                        case CollectionType.List:
                             constructorString = $"new List<{parameterString}>()";
                             getListValueLines.AppendLine($@"""{propertyMapToName}"" => (IList<T>){property.Name},");
                             break;
-                        case CollectionTypeEnum.Set:
+                        case CollectionType.Set:
                             constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
                             getSetValueLines.AppendLine($@"""{propertyMapToName}"" => (ISet<T>){property.Name},");
                             break;
-                        case CollectionTypeEnum.Dictionary:
+                        case CollectionType.Dictionary:
                             constructorString = $"new Dictionary<string, {parameterString}>()";
                             getDictionaryValueLines.AppendLine($@"""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
                             break;
@@ -670,9 +670,9 @@ return;".Indent());
                     {
                         getFieldString = property.TypeInfo.CollectionType switch
                         {
-                            CollectionTypeEnum.List => "GetListValue",
-                            CollectionTypeEnum.Set => "GetSetValue",
-                            CollectionTypeEnum.Dictionary => "GetDictionaryValue",
+                            CollectionType.List => "GetListValue",
+                            CollectionType.Set => "GetSetValue",
+                            CollectionType.Dictionary => "GetDictionaryValue",
                             _ => throw new NotImplementedException(),
                         };
                     }
@@ -726,22 +726,22 @@ internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfac
 
         private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)
         {
-            var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.SimpleType : propertyTypeInfo.SimpleType;
+            var simpleType = propertyTypeInfo.IsRealmInteger ? propertyTypeInfo.InternalType.ScalarType : propertyTypeInfo.ScalarType;
 
             var endString = simpleType switch
             {
-                SimpleTypeEnum.Int => "Int",
-                SimpleTypeEnum.Bool => "Bool",
-                SimpleTypeEnum.String => "String",
-                SimpleTypeEnum.Data => "Data",
-                SimpleTypeEnum.Date => "Date",
-                SimpleTypeEnum.Float => "Float",
-                SimpleTypeEnum.Double => "Double",
-                SimpleTypeEnum.Object => "Object",
-                SimpleTypeEnum.RealmValue => "RealmValue",
-                SimpleTypeEnum.ObjectId => "ObjectId",
-                SimpleTypeEnum.Decimal => "Decimal128",
-                SimpleTypeEnum.Guid => "Guid",
+                ScalarType.Int => "Int",
+                ScalarType.Bool => "Bool",
+                ScalarType.String => "String",
+                ScalarType.Data => "Data",
+                ScalarType.Date => "Date",
+                ScalarType.Float => "Float",
+                ScalarType.Double => "Double",
+                ScalarType.Object => "Object",
+                ScalarType.RealmValue => "RealmValue",
+                ScalarType.ObjectId => "ObjectId",
+                ScalarType.Decimal => "Decimal128",
+                ScalarType.Guid => "Guid",
                 _ => throw new NotImplementedException(),
             };
 

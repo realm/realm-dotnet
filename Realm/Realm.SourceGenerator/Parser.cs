@@ -137,7 +137,7 @@ namespace Realms.SourceGenerator
 
                 if (!propSyntax.IsAutomaticProperty())
                 {
-                    if (info.TypeInfo.SimpleType == SimpleTypeEnum.Object)
+                    if (info.TypeInfo.ScalarType == ScalarType.Object)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.RealmObjectWithoutAutomaticProperty(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
@@ -261,7 +261,7 @@ namespace Realms.SourceGenerator
 
                 var internalType = GetSingleLevelPropertyTypeInfo(argument);
 
-                if (internalType.SimpleType != SimpleTypeEnum.Object)
+                if (internalType.ScalarType != ScalarType.Object)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IQueryableUnsupportedType(classInfo.Name, propertySymbol.Name, propertyLocation));
                     return PropertyTypeInfo.Unsupported;
@@ -305,7 +305,7 @@ namespace Realms.SourceGenerator
                     argument = typeSymbol.AsNamed().TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
-                    if (propertyType.IsSet && internalPropertyType.SimpleType == SimpleTypeEnum.Object && argument.IsEmbeddedObject())
+                    if (propertyType.IsSet && internalPropertyType.ScalarType == ScalarType.Object && argument.IsEmbeddedObject())
                     {
                         classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                         isUnsupported = true;
