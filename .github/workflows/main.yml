@@ -23,7 +23,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "xamarinandroid", "maccatalyst"]'
+      differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
@@ -121,7 +121,7 @@ jobs:
     uses: ./.github/workflows/test-net-core.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["netcoreapp3.1", "net5.0", "net6.0"]'
+      framework: '["netcoreapp3.1", "net6.0"]'
   test-macos:
     uses: ./.github/workflows/test-macos.yml
     name: Test
@@ -152,8 +152,8 @@ jobs:
       BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
-  test-xamarinandroid:
-    uses: ./.github/workflows/test-xamarinandroid.yml
+  test-android:
+    uses: ./.github/workflows/test-android.yml
     name: Test
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
@@ -202,10 +202,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.XUnit/*.csproj') }}
     - name: Publish Tests/Tests.XUnit
       run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
@@ -263,12 +259,8 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Benchmarks/PerformanceTests/*.csproj') }}
     - name: Publish Tests/Benchmarks/PerformanceTests
-      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:AdditionalFrameworks=net6.0 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
+      run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64'
@@ -293,6 +285,7 @@ jobs:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
         retention-days: 30
+        if-no-files-found: error
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
@@ -303,7 +296,7 @@ jobs:
     - test-uwp-managed
     - test-macos
     - test-ios
-    - test-xamarinandroid
+    - test-android
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}

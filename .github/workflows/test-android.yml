@@ -1,4 +1,4 @@
-name: test-ios
+name: test-android
 "on":
   workflow_call:
     inputs:
@@ -17,14 +17,22 @@ name: test-ios
         required: false
       AtlasPrivateKey:
         required: false
+      AWS_DEVICEFARM_ACCESS_KEY_ID:
+        required: true
+      AWS_DEVICEFARM_SECRET_ACCESS_KEY:
+        required: true
+      DEVICEFARM_PROJECT_ARN:
+        required: true
+      DEVICEFARM_ANDROID_POOL_ARN:
+        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
   test-xamarin:
-    runs-on: macos-latest
-    name: Xamarin.iOS
-    timeout-minutes: 45
+    runs-on: windows-latest
+    name: Xamarin.Android
+    timeout-minutes: 60
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -48,30 +56,38 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.iOS
-      run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
-    - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@v1
+    - name: Build Tests/Tests.Android
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=armeabi-v7a -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
-        bundleId: io.realm.dotnettests
-        iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=ios
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      uses: ./.github/actions/run-android-device-farm-test
+      id: run_tests
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Android/bin/Release/io.realm.xamarintests-Signed.apk
+        app-id: io.realm.xamarintests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+        arguments: ' --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=android'
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        name: Results Xamarin.iOS
-        path: TestResults.iOS.xml
+        name: Results Xamarin.Android
+        path: artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
   test-maui:
-    runs-on: macos-12
-    name: Maui.iOS
-    timeout-minutes: 45
+    runs-on: windows-latest
+    name: Maui.Android
+    timeout-minutes: 60
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -100,20 +116,27 @@ jobs:
       run: |
         dotnet workload install maui
     - name: Build the tests
-      run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
-    - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@v1
+      run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
-        bundleId: io.realm.mauitests
-        iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --labels=After
+        aws-access-key-id: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2
+    - name: Run the tests
+      uses: ./.github/actions/run-android-device-farm-test
+      id: run_tests
+      with:
+        apk-path: ${{ github.workspace }}/Tests/Tests.Maui/bin/Release/net6.0-android/publish/io.realm.mauitests-Signed.apk
+        app-id: io.realm.mauitests
+        project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+        device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
       with:
-        name: Results Maui.iOS
-        path: TestResults.iOS.xml
+        name: Results Maui.Android
+        path: ${{ steps.run_tests.outputs.test-results-path }}
         reporter: java-junit
         list-suites: failed
         list-tests: failed

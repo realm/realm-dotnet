@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 
-namespace Realms.Tests.Android
+namespace Tests.Maui.Platforms.Android
 {
-    [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
+    [Instrumentation(Name = "io.realm.mauitests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
     {
-        private List<string> _args = new List<string>()
-        {
+        private List<string> _args = new() {
             "--headless",
             "--result=/storage/emulated/0/Documents/TestResults.Android.xml"
         };
@@ -45,24 +42,24 @@ namespace Realms.Tests.Android
             var args = arguments.GetString("args");
             if (args != null)
             {
-                _args.AddRange(TestHelpers.SplitArguments(args));
+                _args.AddRange(Realms.Tests.TestHelpers.SplitArguments(args));
             }
 
             Start();
         }
 
+        public override void CallApplicationOnCreate(global::Android.App.Application app)
+        {
+            ((MainApplication)app).Args = _args.ToArray();
+            base.CallApplicationOnCreate(app);
+        }
+
         public override void OnStart()
         {
-
             var intent = new Intent(Context, typeof(MainActivity));
-            intent.PutExtra("args", _args.ToArray());
             intent.SetFlags(ActivityFlags.NewTask);
             var activity = (MainActivity)StartActivitySync(intent);
-            activity.OnFinished = result =>
-            {
-                Console.WriteLine("Instrumentation finished...");
-                Finish(result, null);
-            };
         }
     }
 }
+

@@ -183,7 +183,7 @@ enum class SessionErrorCategory : uint8_t {
     SessionError = 1
 };
 
-REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, SessionErrorCategory error_category, const uint16_t* message_buf, size_t message_len, bool is_fatal)
+REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSession& session, int err, SessionErrorCategory error_category, const uint16_t* message_buf, size_t message_len, bool is_fatal, int server_requests_action)
 {
     Utf16StringAccessor message(message_buf, message_len);
     std::error_code error_code;
@@ -200,7 +200,10 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
         return;
     }
 
-    SyncSession::OnlyForTesting::handle_error(*session, SyncError{error_code, std::move(message), is_fatal});
+    SyncError error{ error_code, std::move(message), is_fatal };
+    error.server_requests_action = static_cast<realm::sync::ProtocolErrorInfo::Action>(server_requests_action);
+
+    SyncSession::OnlyForTesting::handle_error(*session, error);
 }
 
 REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)

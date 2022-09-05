@@ -892,7 +892,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.InstanceOf<Session>());
                     Assert.That(e, Is.InstanceOf<SessionException>());
-                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.PermissionDenied));
+                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.NoSuchRealm));
                     Assert.That(e.Message, Is.EqualTo(errorMsg));
                     Assert.That(e.InnerException, Is.Null);
                     Assert.That(sessionErrorTriggered, Is.False);
@@ -902,7 +902,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config);
                 var session = GetSession(realm);
-                session.SimulateError(ErrorCode.PermissionDenied, errorMsg);
+                session.SimulateError(ErrorCode.NoSuchRealm, errorMsg);
 
                 await tcs.Task;
 
@@ -1105,7 +1105,7 @@ namespace Realms.Tests.Sync
 
                 var handler = GetErrorEventHandler(tcs, (session, error) =>
                 {
-                    Assert.That(error.ErrorCode == ErrorCode.PermissionDenied);
+                    Assert.That(error.ErrorCode == ErrorCode.NoSuchRealm);
                     Assert.That(error.Message == errorMsg);
                     Assert.That(error.InnerException == null);
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
@@ -1117,7 +1117,7 @@ namespace Realms.Tests.Sync
                 using var realm = await GetRealmAsync(config);
 
                 var session = GetSession(realm);
-                session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
+                session.SimulateError(ErrorCode.NoSuchRealm, "simulated sync issue");
 
                 await tcs.Task;
                 Assert.That(obsoleteSessionErrorTriggered, Is.True);
@@ -1195,7 +1195,7 @@ namespace Realms.Tests.Sync
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
                 Session.Error += handler;
 
-                session.SimulateError(ErrorCode.PermissionDenied, "simulated sync issue");
+                session.SimulateError(ErrorCode.NoSuchRealm, "simulated sync issue");
 
                 // to avoid a race condition where e.g. both methods are called but because of timing differences `tcs.TrySetResult(true);` is reached
                 // earlier in a call not letting the other finish to run. This would hide an issue.
@@ -1585,7 +1585,7 @@ namespace Realms.Tests.Sync
             Assert.Throws<ObjectDisposedException>(() => _ = session.Equals(session));
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForDownloadAsync());
             Assert.Throws<ObjectDisposedException>(() => _ = session.WaitForUploadAsync());
-            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, SessionErrorCategory.SessionError, "test", false));
+            Assert.Throws<ObjectDisposedException>(() => session.ReportErrorForTesting(1, SessionErrorCategory.SessionError, "test", false, ServerRequestsAction.ApplicationBug));
 
             // Calling CloseHandle multiple times should be fine
             session.CloseHandle();

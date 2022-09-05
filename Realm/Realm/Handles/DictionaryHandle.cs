@@ -34,7 +34,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
+        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes);
 
         private static class NativeMethods
         {
@@ -334,11 +334,11 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
+        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value);
             }
         }
     }
