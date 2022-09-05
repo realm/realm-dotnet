@@ -206,7 +206,7 @@ namespace Realms.Tests.Sync
                     errorTcs.TrySetResult(e);
                 });
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 
@@ -246,7 +246,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 // This should be removed when we remove Session.Error
                 var obsoleteSessionErrorTriggered = false;
@@ -298,7 +298,7 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 
@@ -352,7 +352,7 @@ namespace Realms.Tests.Sync
                     OnAfterDiscard = afterDiscardLocalResetCb,
                 };
 
-                var realm = await GetRealmAsync(config);
+                var realm = await GetRealmAsync(config, waitForSync: true);
 
                 var session = GetSession(realm);
                 session.Stop();
@@ -408,7 +408,7 @@ namespace Realms.Tests.Sync
                 {
                     OnAfterReset = afterCbA
                 };
-                using var realmA = await GetRealmAsync(configA);
+                using var realmA = await GetRealmAsync(configA, waitForSync: true);
 
                 var originalObj = realmA.Write(() =>
                 {
@@ -447,7 +447,7 @@ namespace Realms.Tests.Sync
                     OnAfterReset = afterCbB
                 };
 
-                using var realmB = await GetRealmAsync(configB);
+                using var realmB = await GetRealmAsync(configB, waitForSync: true);
                 await WaitForDownloadAsync(realmB);
 
                 var originalObjStr = realmB.All<SyncObjectWithRequiredStringList>().Single().Strings;
@@ -552,7 +552,7 @@ namespace Realms.Tests.Sync
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb);
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
@@ -643,7 +643,7 @@ namespace Realms.Tests.Sync
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, afterCb: afterCb);
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
@@ -694,7 +694,7 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
                 config.ClientResetHandler = (ClientResetHandlerBase)Activator.CreateInstance(handlerType);
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
@@ -786,7 +786,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb, manualCb);
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 
@@ -840,7 +840,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb, manualCb);
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 
@@ -873,7 +873,7 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
                 session.SimulateError(ErrorCode.NoSuchRealm, errorMsg);
 
@@ -921,7 +921,7 @@ namespace Realms.Tests.Sync
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
                 Session.Error += handler;
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 
@@ -948,7 +948,7 @@ namespace Realms.Tests.Sync
                 var config = await GetConfigForApp(appType);
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType);
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
@@ -979,7 +979,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.ClientResetHandler = new ManualRecoveryHandler();
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 // Session.Error is set after obtaining a realm as it truly tests coexistence given that
                 // the resync mode is set at creation of the configuration.
@@ -1031,7 +1031,7 @@ namespace Realms.Tests.Sync
 
                 Session.Error += handler;
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 var session = GetSession(realm);
                 session.SimulateError(ErrorCode.NoSuchRealm, "simulated sync issue");
@@ -1057,7 +1057,7 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 });
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 var session = GetSession(realm);
 
@@ -1100,7 +1100,7 @@ namespace Realms.Tests.Sync
                     tcs.TrySetResult(true);
                 };
 
-                using var realm = await GetRealmAsync(config);
+                using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
 
                 var handler = GetErrorEventHandler(tcs, (session, error) =>

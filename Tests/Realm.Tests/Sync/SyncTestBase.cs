@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
@@ -220,6 +221,17 @@ namespace Realms.Tests.Sync
             _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, CancellationToken cancellationToken = default)
+        {
+            var realm = await GetRealmAsync(config, cancellationToken);
+            if (waitForSync)
+            {
+                await WaitForUploadAsync(realm);
+            }
+
+            return realm;
+        }
+
         private static T UpdateConfig<T>(T config)
             where T : SyncConfigurationBase
         {
@@ -229,19 +241,19 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
-        public async Task TriggerClientReset(Realm realm, bool restartSession = true)
+        protected async Task TriggerClientReset(Realm realm, bool restartSession = true)
         {
             if (realm.Config is not SyncConfigurationBase syncConfig)
             {
@@ -262,6 +274,5 @@ namespace Realms.Tests.Sync
                 session.Start();
             }
         }
-
     }
 }
