@@ -240,5 +240,28 @@ namespace Realms.Tests.Sync
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
+
+        public async Task TriggerClientReset(Realm realm, bool restartSession = true)
+        {
+            if (realm.Config is not SyncConfigurationBase syncConfig)
+            {
+                throw new Exception("This should only be invoked for sync realms.");
+            }
+
+            var session = GetSession(realm);
+
+            if (restartSession)
+            {
+                session.Stop();
+            }
+
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig);
+
+            if (restartSession)
+            {
+                session.Start();
+            }
+        }
+
     }
 }
