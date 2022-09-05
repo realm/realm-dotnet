@@ -621,9 +621,10 @@ namespace Realms
         /// </exception>
         /// <remarks>
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <see cref="AsymmetricObject"/> will be managed.
-        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing the original <see cref="AsymmetricObject"/>
-        /// reference throws an exception.
+        /// This method modifies the object in-place,
+        /// meaning that after it has run, <see cref="AsymmetricObject"/> will be managed.
+        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing any property
+        /// of the original <see cref="AsymmetricObject"/> reference throws an exception.
         /// </remarks>
         public void Add<T>(T obj)
             where T : IAsymmetricObject
@@ -657,8 +658,9 @@ namespace Realms
         /// <remarks>
         /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
         /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
-        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing the original <see cref="AsymmetricObject"/>
-        /// reference throw an exeception. Hence, none of the elements in the collection can be dereferenced once this method has finished.
+        /// Once an <see cref="AsymmetricObject"/> becomes managed and the transaction is committed,
+        /// dereferencing any property of the original <see cref="AsymmetricObject"/> reference throw an exeception.
+        /// Hence, none of the properties of the elements in the collection can be deferenced anymore after the transaction.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs)
             where T : IAsymmetricObject

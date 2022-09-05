@@ -180,11 +180,12 @@ namespace Realms.Tests.Database
                 {
                     realm.Add(asymmetribObj);
 
-                    Assert.Throws<RealmInvalidObjectException>(() =>
-                    {
-                        _ = asymmetribObj;
-                    }, "Attempted to access a detached row");
                 });
+
+                Assert.Throws<RealmInvalidObjectException>(() =>
+                {
+                    _ = asymmetribObj.PartitionLike;
+                }, "Attempted to access a detached row");
             });
         }
 
