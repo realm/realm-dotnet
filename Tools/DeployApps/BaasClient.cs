@@ -29,6 +29,8 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using Realms.Tests;
+using Realms.Tests.Sync;
 
 namespace Baas
 {
@@ -408,10 +410,10 @@ namespace Baas
                 }
             });
 
-            var asymmetricObjAllTypes = Schemas.AsymmetricObjectWithAllTypesBaasRule(Differentiator);
+            var asymmetricObjAllTypes = Schemas.GenericFlxBaasRule(Differentiator, nameof(AsymmetricObjectWithAllTypes));
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", asymmetricObjAllTypes);
 
-            var hugeSyncAsymmetricObj = Schemas.HugeSyncAsymmetricObjectBaasRule(Differentiator);
+            var hugeSyncAsymmetricObj = Schemas.GenericFlxBaasRule(Differentiator, nameof(HugeSyncAsymmetricObject));
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", hugeSyncAsymmetricObj);
 
             return app;
@@ -717,16 +719,12 @@ namespace Baas
                 roles = new[] { _defaultRoles }
             };
 
-            private static object GenericFlxBaasRule(string differentiator, string collectionName) => new
+            public static object GenericFlxBaasRule(string differentiator, string collectionName) => new
             {
                 collection = collectionName,
                 database = $"FLX_{differentiator}",
                 roles = new[] { _flxDefaultRoles }
             };
-
-            public static object AsymmetricObjectWithAllTypesBaasRule(string differentiator) => GenericFlxBaasRule(differentiator, "AsymmetricObjectWithAllTypes");
-
-            public static object HugeSyncAsymmetricObjectBaasRule(string differentiator) => GenericFlxBaasRule(differentiator, "HugeSyncAsymmetricObject");
 
             public static (object Schema, object Rules) Sales(string partitionKeyType, string differentiator) =>
             (new

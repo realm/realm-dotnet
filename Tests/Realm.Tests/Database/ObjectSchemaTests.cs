@@ -891,8 +891,7 @@ namespace Realms.Tests.Database
 
             Assert.That(originalSchema, Is.EquivalentTo(builder));
             Assert.That(originalSchema.Name, Is.EqualTo(builder.Name));
-            Assert.That(originalSchema.SchemaType == ObjectSchema.ObjectType.EmbeddedObject,
-                Is.EqualTo(builder.RealmSchemaType == ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(originalSchema.SchemaType, Is.EqualTo(builder.RealmSchemaType));
         }
 
         [Test]

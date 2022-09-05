@@ -34,7 +34,7 @@ namespace Realms.Tests.Database
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.IsDynamic = isDynamic;
                 flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
                 {

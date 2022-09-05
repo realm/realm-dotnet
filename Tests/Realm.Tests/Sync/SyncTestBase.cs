@@ -197,10 +197,10 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
-        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null, FlexibleSyncConfiguration flxConfig = null)
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
         {
-            flxConfig ??= await GetFLXIntegrationConfigAsync(app);
-            return await GetRealmAsync(flxConfig);
+            var config = await GetFLXIntegrationConfigAsync(app);
+            return await GetRealmAsync(config);
         }
 
         protected async Task DisableClientResetRecoveryOnServer(string appConfigType)

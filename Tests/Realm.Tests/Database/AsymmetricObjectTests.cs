@@ -89,7 +89,7 @@ namespace Realms.Tests.Database
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 Assert.Throws<ArgumentException>(() =>
                 {
@@ -108,7 +108,7 @@ namespace Realms.Tests.Database
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
                 var partitionLike = Guid.NewGuid().ToString();
 
                 Assert.DoesNotThrow(() =>
@@ -146,7 +146,7 @@ namespace Realms.Tests.Database
 
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(HugeSyncAsymmetricObject) };
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
                 {
@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
                 var partitionLike = Guid.NewGuid().ToString();
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 var asymmetribObj = new BasicAsymmetricObject
                 {
@@ -185,7 +185,6 @@ namespace Realms.Tests.Database
                         _ = asymmetribObj;
                     }, "Attempted to access a detached row");
                 });
-
             });
         }
 
@@ -196,7 +195,7 @@ namespace Realms.Tests.Database
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
                 var partitionLike = Guid.NewGuid().ToString();
                 var asymmetricObj = new BasicAsymmetricObject
                 {
@@ -235,7 +234,7 @@ namespace Realms.Tests.Database
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
 
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
                 {
@@ -272,7 +271,7 @@ namespace Realms.Tests.Database
                     realm.Subscriptions.Add(query);
                 };
 
-                using var realm = await GetFLXIntegrationRealmAsync(flxConfig: flxConfig);
+                using var realm = await GetRealmAsync(flxConfig);
 
                 Assert.DoesNotThrow(() =>
                 {
