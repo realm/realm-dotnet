@@ -291,7 +291,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, NUnit.Framework.Explicit("Once Daniel Tabacaru's work is done on \"error actions\" this will be an \"application bug\" action: https://github.com/10gen/baas/blob/9f32d54aa79aff6dfb36a6c07742594e38b07441/realm/sync/protocol/protocol_errors.go#L439")]
+        [Test]
         public void AsymmetricObjectInPbs_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
