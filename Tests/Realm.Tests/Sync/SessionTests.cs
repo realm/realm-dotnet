@@ -111,7 +111,6 @@ namespace Realms.Tests.Sync
             if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
             {
                 Logger.Default = Logger.File(SyncTestHelpers.SyncLogsPath);
-                Logger.LogLevel = LogLevel.Debug;
             }
         }
 
@@ -119,7 +118,6 @@ namespace Realms.Tests.Sync
         public void OneTimeTearDown()
         {
             Logger.Default = Logger.Console;
-            Logger.LogLevel = LogLevel.Info;
         }
 
         [Test]

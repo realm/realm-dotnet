@@ -40,7 +40,7 @@ namespace Realms.Tests.Sync
         private static Uri _baseUri;
         private static BaasClient _baasClient;
 
-        public static string SyncLogsPath => _baasClient.SyncLogsPath;
+        public static string SyncLogsPath => _baasClient?.SyncLogsPath;
 
         static SyncTestHelpers()
         {
