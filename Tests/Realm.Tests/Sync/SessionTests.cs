@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using Baas;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
+using Realms.Logging;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
@@ -103,6 +104,23 @@ namespace Realms.Tests.Sync
             AppConfigType.Default,
             AppConfigType.FlexibleSync
         };
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
+            {
+                Logger.Default = Logger.File(SyncTestHelpers.SyncLogsPath);
+                Logger.LogLevel = LogLevel.Debug;
+            }
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            Logger.Default = Logger.Console;
+            Logger.LogLevel = LogLevel.Info;
+        }
 
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
