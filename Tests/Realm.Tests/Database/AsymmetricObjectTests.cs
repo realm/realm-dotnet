@@ -179,12 +179,13 @@ namespace Realms.Tests.Database
                 realm.Write(() =>
                 {
                     realm.Add(asymmetribObj);
+
+                    Assert.Throws<RealmInvalidObjectException>(() =>
+                    {
+                        _ = asymmetribObj;
+                    }, "Attempted to access a detached row");
                 });
 
-                Assert.Throws<RealmInvalidObjectException>(() =>
-                {
-                    _ = asymmetribObj.PartitionLike;
-                }, "Attempted to access a detached row");
             });
         }
 
@@ -305,7 +306,8 @@ namespace Realms.Tests.Database
                     try
                     {
                         Assert.That(error, Is.InstanceOf<SessionException>());
-                        // Assert.That(error.ErrorCode, Is.EqualTo(/*Category*/.ApplicationBug));
+                        Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
+                        Assert.That(error.Message.Contains("asymmetric tables are not supported for partition-based sync"), Is.True);
                     }
                     catch(Exception e)
                     {
