@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
@@ -55,6 +56,7 @@ namespace Realms.Sync.Testing
         /// <remarks>
         /// You still need to set up a Realm integration testing environment, namely a testing app to connect to.
         /// </remarks>
+        [Obsolete("This method will not work with the automatic client reset handlers.")]
         public static void SimulateClientReset(this Session session, string message)
         {
             Argument.NotNull(session, nameof(session));
@@ -68,6 +70,7 @@ namespace Realms.Sync.Testing
         /// </summary>
         /// <param name="session">The session where the simulated client reset will occur.</param>
         /// <param name="message">Error message.</param>
+        [Obsolete("This method will not work with the automatic client reset handlers.")]
         public static void SimulateAutomaticClientResetFailure(this Session session, string message)
         {
             Argument.NotNull(session, nameof(session));

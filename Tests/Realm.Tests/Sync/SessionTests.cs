@@ -110,7 +110,7 @@ namespace Realms.Tests.Sync
         {
             if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
             {
-                Logger.Default = Logger.File(SyncTestHelpers.SyncLogsPath);
+                Logger.Default = Logger.Function(msg => TestHelpers.Output.WriteLine(msg));
             }
         }
 

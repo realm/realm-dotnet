@@ -302,7 +302,9 @@ namespace Realms.Sync
                 if (errorCode == ErrorCode.PermissionDenied)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+#pragma warning disable CS0618 // Type or member is obsolete
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 else
                 {
