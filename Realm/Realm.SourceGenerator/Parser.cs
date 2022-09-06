@@ -167,6 +167,11 @@ namespace Realms.SourceGenerator
                     var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
                     var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
 
+                    if (inversePropertyTypeInfo?.IsListOrSet == true)
+                    {
+                        inversePropertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(inverseProperty.Type.AsNamed().TypeArguments.Single());
+                    }
+
                     var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.TypeSymbol, classInfo.TypeSymbol);
                     var isCollectionOfSameType = inversePropertyTypeInfo?.IsListOrSet == true
                         && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.InternalType.TypeSymbol, classInfo.TypeSymbol);

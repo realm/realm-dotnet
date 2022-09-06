@@ -233,6 +233,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
             var baseInterface = _classInfo.IsEmbedded ? "IEmbeddedObject" : "IRealmObject";
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
+            //TODO ToString, GetHashCode and Equals should be defined only if not defined already... At the moment toString is commented out for testing
+
             var contents = $@"{schema}
 
 #region {baseInterface} implementation
@@ -351,10 +353,13 @@ public override int GetHashCode()
     return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 }}
 
+/***
 public override string ToString()
 {{
     return Accessor.ToString();
-}}";
+}}
+**/
+";
 
             var classString = $@"[Generated]
 [Woven(typeof({_helperClassName}))]

@@ -364,7 +364,7 @@ namespace Realms.Tests
 
     // This is a stripped-down version of SetsObject because Sync doesn't support
     // collections of nullable primitives
-    public class SyncCollectionsObject : RealmObject
+    public partial class SyncCollectionsObject : IRealmObject
     {
         [MapTo("_id")]
         [PrimaryKey]
@@ -846,7 +846,7 @@ namespace Realms.Tests
         public IList<IntPropertyObject> Items { get; }
     }
 
-    public class IntPropertyObject : RealmObject
+    public partial class IntPropertyObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -869,7 +869,7 @@ namespace Realms.Tests
         public EmbeddedIntPropertyObject EmbeddedObject { get; set; }
     }
 
-    public class EmbeddedIntPropertyObject : EmbeddedObject
+    public partial class EmbeddedIntPropertyObject : IEmbeddedObject
     {
         public int Int { get; set; }
 

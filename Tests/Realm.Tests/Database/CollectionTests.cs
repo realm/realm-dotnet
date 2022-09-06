@@ -1782,17 +1782,17 @@ namespace Realms.Tests.Database
 
             return container;
         }
+    }
 
-        private class A : RealmObject
-        {
-            public bool Value { get; set; }
+    public partial class A : IRealmObject
+    {
+        public bool Value { get; set; }
 
-            public B B { get; set; }
-        }
+        public B B { get; set; }
+    }
 
-        private class B : RealmObject
-        {
-            public IntPropertyObject C { get; set; }
-        }
+    public partial class B : IRealmObject
+    {
+        public IntPropertyObject C { get; set; }
     }
 }
