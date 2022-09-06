@@ -631,6 +631,7 @@ namespace Realms
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
+            Argument.Ensure(!obj.IsManaged, $"{nameof(obj)} must not be already managed by a Realm.", nameof(obj));
 
             AddInternal(obj, obj.GetType(), update: false);
         }
@@ -668,6 +669,7 @@ namespace Realms
             ThrowIfDisposed();
             Argument.NotNull(objs, nameof(objs));
             Argument.Ensure(objs.All(o => o != null), $"{nameof(objs)} must not contain null values.", nameof(objs));
+            Argument.Ensure(objs.All(o => !o.IsManaged), $"{nameof(objs)} must not contain already managed objects by a Realm.", nameof(objs));
 
             foreach (var obj in objs)
             {

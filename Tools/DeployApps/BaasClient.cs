@@ -410,10 +410,10 @@ namespace Baas
                 }
             });
 
-            var asymmetricObjAllTypes = Schemas.GenericFlxBaasRule(Differentiator, nameof(AsymmetricObjectWithAllTypes));
+            var asymmetricObjAllTypes = Schemas.GenericFlxBaasRule(Differentiator, "AsymmetricObjectWithAllTypes");
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", asymmetricObjAllTypes);
 
-            var hugeSyncAsymmetricObj = Schemas.GenericFlxBaasRule(Differentiator, nameof(HugeSyncAsymmetricObject));
+            var hugeSyncAsymmetricObj = Schemas.GenericFlxBaasRule(Differentiator, "HugeSyncAsymmetricObject");
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", hugeSyncAsymmetricObj);
 
             return app;

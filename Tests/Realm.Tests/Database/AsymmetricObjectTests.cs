@@ -136,6 +136,41 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void AddCollection_WithSomeObjectsAlreadyAdded_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
+                using var realm = await GetRealmAsync(flxConfig);
+                var partitionLike = Guid.NewGuid().ToString();
+
+                Assert.Throws<ArgumentException>(() =>
+                {
+                    realm.Write(() =>
+                    {
+                        var doubleObj = new BasicAsymmetricObject { PartitionLike = partitionLike };
+                        realm.Add(new BasicAsymmetricObject[]
+                        {
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            doubleObj,
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                        });
+
+                        realm.Add(new BasicAsymmetricObject[]
+                        {
+                            new BasicAsymmetricObject { PartitionLike = partitionLike },
+                            doubleObj,
+                            new BasicAsymmetricObject { PartitionLike = partitionLike }
+                        });
+                    });
+                });
+            });
+        }
+
+        [Test]
         public void AddHugeAsymmetricObj()
         {
             const int ObjectSize = 1_000_000;
@@ -182,15 +217,13 @@ namespace Realms.Tests.Database
 
                 });
 
-                Assert.Throws<RealmInvalidObjectException>(() =>
-                {
-                    _ = asymmetribObj.PartitionLike;
-                }, "Attempted to access a detached row");
+                var ex = Assert.Throws<RealmInvalidObjectException>(() => _ = asymmetribObj.PartitionLike);
+                Assert.That(ex.Message.Contains("Attempted to access detached row"), Is.True);
             });
         }
 
         [Test]
-        public void AddSameAsymmetricObjTwice_DoesntThrow()
+        public void AddSameAsymmetricObjTwice_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -203,25 +236,14 @@ namespace Realms.Tests.Database
                     PartitionLike = partitionLike
                 };
 
-                Assert.DoesNotThrow(() =>
+                Assert.Throws<ArgumentException>(() =>
                 {
                     realm.Write(() =>
                     {
                         realm.Add(asymmetricObj);
-                    });
-
-                    realm.Write(() =>
-                    {
                         realm.Add(asymmetricObj);
                     });
                 });
-
-                await realm.SyncSession.WaitForUploadAsync();
-
-                var foundObjects = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
-                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
-
-                Assert.That(foundObjects.Single().PartitionLike, Is.EqualTo(partitionLike));
             });
         }
 
@@ -231,7 +253,7 @@ namespace Realms.Tests.Database
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                Guid objId = Guid.Empty;
+                var objId = Guid.Empty;
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
 
@@ -326,24 +348,11 @@ namespace Realms.Tests.Database
         [Test]
         public void AsymmetricObjectInLocalRealm_Throws()
         {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
-                config.Schema = new[] { typeof(BasicAsymmetricObject) };
+            var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
+            config.Schema = new[] { typeof(BasicAsymmetricObject) };
 
-                Exception ex = null;
-                try
-                {
-                    using var realm = await GetRealmAsync(config);
-                }
-                catch (Exception e)
-                {
-                    ex = e;
-                }
-
-                Assert.That(ex, Is.InstanceOf<RealmSchemaValidationException>());
-                Assert.That(ex.Message.Contains($"Asymmetric table \'{nameof(BasicAsymmetricObject)}\'"), Is.True);
-            });
+            var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+            Assert.That(ex.Message.Contains($"Asymmetric table \'{typeof(BasicAsymmetricObject).Name}\' not allowed in a local Realm"), Is.True);
         }
 
         private static Task<T[]> GetObjFromRemoteThroughMongoClient<T>(User user, string remoteFieldName, BsonValue fieldValue, string mongoClientCondition = MongoClientCondition.Equality)

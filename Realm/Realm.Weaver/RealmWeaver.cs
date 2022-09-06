@@ -383,7 +383,7 @@ Analytics payload
 
                 if (prop.ContainsAsymmetricObject(_references))
                 {
-                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObject-s are not allowed to be the receiving end of any relationships.");
+                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.");
                 }
 
                 return WeavePropertyResult.Skipped();
@@ -466,7 +466,7 @@ Analytics payload
             }
             else if (prop.ContainsAsymmetricObject(_references))
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObject-s aren't allowed to be the receiving end of any relationship.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.");
             }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
