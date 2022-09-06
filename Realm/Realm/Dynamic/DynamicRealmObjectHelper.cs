@@ -31,12 +31,12 @@ namespace Realms.Dynamic
         private readonly ObjectSchema.ObjectType _schemaType;
 
         internal static DynamicRealmObjectHelper Instance(ObjectSchema schema) =>
-            schema.SchemaType switch
+            schema.BaseType switch
             {
                 ObjectSchema.ObjectType.RealmObject => _objectInstance,
                 ObjectSchema.ObjectType.EmbeddedObject => _embeddedInstance,
                 ObjectSchema.ObjectType.AsymmetricObject => _asymmetricInstance,
-                _ => throw new NotSupportedException($"{schema.SchemaType} type not supported, yet."),
+                _ => throw new NotSupportedException($"{schema.BaseType} type not supported, yet."),
             };
 
         private DynamicRealmObjectHelper(ObjectSchema.ObjectType realmSchemaType)

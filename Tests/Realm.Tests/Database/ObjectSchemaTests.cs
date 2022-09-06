@@ -845,7 +845,7 @@ namespace Realms.Tests.Database
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
             Assert.That(schema.Type, Is.EqualTo(type));
-            Assert.That(schema.SchemaType == ObjectSchema.ObjectType.EmbeddedObject,
+            Assert.That(schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject,
                 Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
         }
 
@@ -855,8 +855,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(RemappedTypeObject));
 
             Assert.That(schema.Name, Is.EqualTo("__RemappedTypeObject"));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.TryFindProperty("__mappedLink", out var remappedProp), Is.True);
             Assert.That(remappedProp.Type, Is.EqualTo(PropertyType.Object | PropertyType.Nullable));
             Assert.That(remappedProp.ObjectType, Is.EqualTo("__RemappedTypeObject"));
@@ -868,8 +868,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject));
 
             Assert.That(schema.Name, Is.EqualTo(nameof(PrimaryKeyStringObject)));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.PrimaryKeyProperty, Is.Not.Null);
             Assert.That(schema.PrimaryKeyProperty.Value.IsPrimaryKey, Is.True);
             Assert.That(schema.PrimaryKeyProperty.Value.Type, Is.EqualTo(PropertyType.NullableString));
@@ -909,7 +909,7 @@ namespace Realms.Tests.Database
 
             Assert.That(originalSchema, Is.EquivalentTo(builder));
             Assert.That(originalSchema.Name, Is.EqualTo(builder.Name));
-            Assert.That(originalSchema.SchemaType, Is.EqualTo(builder.RealmSchemaType));
+            Assert.That(originalSchema.BaseType, Is.EqualTo(builder.RealmSchemaType));
         }
 
         [Test]
@@ -1529,8 +1529,8 @@ namespace Realms.Tests.Database
         {
             var schema = builder.Build();
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-            Assert.That(schema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.Count, Is.EqualTo(expectedProperties.Length));
 
             foreach (var prop in expectedProperties)

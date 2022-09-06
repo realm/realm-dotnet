@@ -690,8 +690,8 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
-            Assert.That(allTypesSchema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-            Assert.That(allTypesSchema.SchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
+            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
             Assert.That(hasExpectedProp);
@@ -707,7 +707,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-            Assert.That(embeddedAllTypesSchema.SchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(embeddedAllTypesSchema.BaseType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
 
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));

@@ -81,19 +81,19 @@ namespace Realms.Schema
         /// </summary>
         /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
         [Obsolete("Check against RealmSchemaType instead.")]
-        public bool IsEmbedded => SchemaType == ObjectType.EmbeddedObject;
+        public bool IsEmbedded => BaseType == ObjectType.EmbeddedObject;
 
         /// <summary>
         /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
         /// a top level object, an embedded object or an asymmetric object.
         /// </summary>
         /// <value>The type of ObjectSchema.</value>
-        public ObjectType SchemaType { get; }
+        public ObjectType BaseType { get; }
 
         private ObjectSchema(string name, ObjectType schemaType, IDictionary<string, Property> properties)
         {
             Name = name;
-            SchemaType = schemaType;
+            BaseType = schemaType;
 
             _properties = new ReadOnlyDictionary<string, Property>(properties);
 
@@ -133,7 +133,7 @@ namespace Realms.Schema
         /// </returns>
         public Builder GetBuilder()
         {
-            var builder = new Builder(Name, SchemaType);
+            var builder = new Builder(Name, BaseType);
             foreach (var prop in this)
             {
                 builder.Add(prop);

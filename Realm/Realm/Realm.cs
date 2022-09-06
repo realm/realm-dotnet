@@ -1832,7 +1832,7 @@ namespace Realms
                 Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
                 Argument.Ensure(parent.GetObjectMetadata().Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
-                Argument.Ensure(metadata.Schema.SchemaType == ObjectSchema.ObjectType.EmbeddedObject, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
+                Argument.Ensure(metadata.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
@@ -1962,8 +1962,8 @@ namespace Realms
                 _realm.ThrowIfDisposed();
 
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
-                Argument.Ensure(metadata.Schema.SchemaType != ObjectSchema.ObjectType.EmbeddedObject, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
-                Argument.Ensure(metadata.Schema.SchemaType != ObjectSchema.ObjectType.AsymmetricObject, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
+                Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
+                Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.AsymmetricObject, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
 
                 return new RealmResults<RealmObject>(_realm, metadata);
             }
