@@ -128,7 +128,7 @@ namespace Realms.Tests.Database
                 await realm.SyncSession.WaitForUploadAsync();
 
                 var documents = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
-                    flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
 
                 Assert.That(documents.Length, Is.EqualTo(4));
                 Assert.That(documents.Where(x => x.PartitionLike == partitionLike).Count, Is.EqualTo(4));
@@ -156,7 +156,7 @@ namespace Realms.Tests.Database
                 });
 
                 await realm.SyncSession.WaitForUploadAsync();
-                var documents = await GetObjFromRemoteThroughMongoClient<HugeSyncAsymmetricObject>(flxConfig, "_id", objId);
+                var documents = await GetObjFromRemoteThroughMongoClient<HugeSyncAsymmetricObject>(flxConfig.User, "_id", objId);
                 Assert.That(documents.Single().Data.Count, Is.EqualTo(ObjectSize));
             });
         }
@@ -219,7 +219,7 @@ namespace Realms.Tests.Database
                 await realm.SyncSession.WaitForUploadAsync();
 
                 var foundObjects = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
-                    flxConfig, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
 
                 Assert.That(foundObjects.Single().PartitionLike, Is.EqualTo(partitionLike));
             });
@@ -247,7 +247,7 @@ namespace Realms.Tests.Database
 
                 await realm.SyncSession.WaitForUploadAsync();
                 var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(
-                    flxConfig, propertyName, BsonValue.Create(propertyValue));
+                    flxConfig.User, "_id", BsonValue.Create(objId));
 
                 foreach (var doc in documents)
                 {
@@ -346,10 +346,10 @@ namespace Realms.Tests.Database
             });
         }
 
-        private static Task<T[]> GetObjFromRemoteThroughMongoClient<T>(FlexibleSyncConfiguration config, string remoteFieldName, BsonValue fieldValue, string mongoClientCondition = MongoClientCondition.Equality)
+        private static Task<T[]> GetObjFromRemoteThroughMongoClient<T>(User user, string remoteFieldName, BsonValue fieldValue, string mongoClientCondition = MongoClientCondition.Equality)
             where T : class
         {
-            var mongoClient = config.User.GetMongoClient("BackingDB");
+            var mongoClient = user.GetMongoClient("BackingDB");
             var db = mongoClient.GetDatabase("FLX_local");
             var collection = db.GetCollection<T>(typeof(T).Name);
             var filter = new BsonDocument
