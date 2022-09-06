@@ -302,14 +302,52 @@ namespace Realms.Schema
         public static Property ObjectDictionary(string name, string objectType)
             => ObjectCore(name, objectType, PropertyType.Dictionary | PropertyType.Nullable);
 
-
-        // TODO Add docs
-        [SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The property type describes an object.")]
+        /// <summary>
+        /// Initializes a new property of RealmValue type.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property RealmValue(string name)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
             return new Property(name, PropertyType.RealmValue);
+        }
+
+        /// <summary>
+        /// Initializes a new property describing a list of RealmValues.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property RealmValueList(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return new Property(name, PropertyType.RealmValue | PropertyType.Array);
+        }
+
+        /// <summary>
+        /// Initializes a new property describing a set of RealmValues.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property RealmValueSet(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return new Property(name, PropertyType.RealmValue | PropertyType.Set);
+        }
+
+        /// <summary>
+        /// Initializes a new property describing a dictionary of RealmValues.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
+        public static Property RealmValueDictionary(string name)
+        {
+            Argument.NotNullOrEmpty(name, nameof(name));
+
+            return new Property(name, PropertyType.RealmValue | PropertyType.Dictionary);
         }
 
         /// <summary>

@@ -66,7 +66,8 @@ namespace Realms.SourceGenerator
             var managedAccessorString = GenerateManagedAccessor().Indent();
             var unmanagedAccessorString = GenerateUnmanagedAccessor().Indent();
 
-            return $@"{usings}
+            return $@"#pragma warning disable
+{usings}
 
 namespace {_classInfo.Namespace}
 {{
@@ -81,6 +82,8 @@ namespace Realms.Generated
 
 {unmanagedAccessorString}
 }}
+
+#pragma warning restore
 ";
         }
 
@@ -145,6 +148,9 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         var internalType = property.TypeInfo.InternalType;
 
                         var internalTypeIsObject = internalType.ScalarType == ScalarType.Object;
+                        var internalTypeIsRealmValue = internalType.ScalarType == ScalarType.RealmValue;
+
+                        string addValLine = string.Empty;
 
                         if (internalTypeIsObject)
                         {
@@ -157,8 +163,26 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             };
 
                             var internalTypeString = internalType.CompleteTypeString;
-
                             schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+
+                            addValLine = "newAccessor.Realm.Add(val, update);";
+                        }
+                        else if (internalTypeIsRealmValue)
+                        {
+                            var builderMethodName = property.TypeInfo.CollectionType switch
+                            {
+                                CollectionType.List => "RealmValueList",
+                                CollectionType.Set => "RealmValueSet",
+                                CollectionType.Dictionary => "RealmValueDictionary",
+                                _ => throw new NotImplementedException(),
+                            };
+
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}""),");
+
+                            addValLine = $@"if(val.Type == RealmValueType.Object)
+{{
+    newAccessor.Realm.Add(val.AsIRealmObject(), update);
+}}";
                         }
                         else
                         {
@@ -180,7 +204,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
                         copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
 {{
-    newAccessor.Realm.Add(val, update);
+{addValLine.Indent()}
     newAccessor.{property.Name}.Add(val);
 }}");
                     }
