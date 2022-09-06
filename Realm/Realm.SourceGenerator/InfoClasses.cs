@@ -26,7 +26,9 @@ namespace Realms.SourceGenerator
     {
         public string Name { get; set; }
 
-        public bool IsEmbedded { get; set; }
+        public ObjectType ObjectType { get; set; }
+
+        public bool IsEmbedded => ObjectType == ObjectType.EmbeddedObject;
 
         public string MapTo { get; set; }
 
@@ -115,6 +117,8 @@ namespace Realms.SourceGenerator
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
 
         public string Namespace { get; set; }
+
+        public ObjectType ObjectType { get; set; }
 
         public ITypeSymbol TypeSymbol { get; set; }
 
@@ -266,6 +270,13 @@ namespace Realms.SourceGenerator
         {
             ScalarType = type;
         }
+    }
+
+    internal enum ObjectType
+    {
+        None,
+        RealmObject,
+        EmbeddedObject
     }
 
     internal enum CollectionType

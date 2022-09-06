@@ -75,7 +75,7 @@ namespace Realms.SourceGenerator
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.TypeSymbol = classSymbol;
-                    classInfo.IsEmbedded = isEmbedded;
+                    classInfo.ObjectType = isEmbedded ? ObjectType.EmbeddedObject : ObjectType.RealmObject;
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
                     classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
 
@@ -389,6 +389,11 @@ namespace Realms.SourceGenerator
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
             propInfo.Namespace = typeSymbol.ContainingNamespace?.ToString();
+
+            if (propInfo.ScalarType == ScalarType.Object)
+            {
+                propInfo.ObjectType = typeSymbol.IsRealmObject() ? ObjectType.RealmObject : ObjectType.EmbeddedObject;
+            }
 
             return propInfo;
         }
