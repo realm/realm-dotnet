@@ -214,7 +214,6 @@ namespace Realms.Tests.Database
                 realm.Write(() =>
                 {
                     realm.Add(asymmetribObj);
-
                 });
 
                 var ex = Assert.Throws<RealmInvalidObjectException>(() => _ = asymmetribObj.PartitionLike);
