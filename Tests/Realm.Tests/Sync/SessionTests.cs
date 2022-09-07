@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Baas;
+using NuGet.Frameworks;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
 using Realms.Logging;
@@ -111,7 +112,7 @@ namespace Realms.Tests.Sync
             if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
             {
                 Logger.Default = Logger.Function(msg => TestHelpers.Output.WriteLine(msg));
-                Logger.LogLevel = LogLevel.Debug;
+                Logger.LogLevel = LogLevel.Detail;
             }
         }
 
@@ -929,7 +930,6 @@ namespace Realms.Tests.Sync
             {
                 var onBeforeTriggered = false;
                 var onAfterTriggered = false;
-                var obsoleteSessionErrorTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
                 var config = await GetConfigForApp(appType);
@@ -949,10 +949,9 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
 
-                var handler = GetErrorEventHandler(tcs, (session, error) =>
+                var handler = new EventHandler<ErrorEventArgs>((session, error) =>
                 {
-                    Assert.That(obsoleteSessionErrorTriggered, Is.False);
-                    obsoleteSessionErrorTriggered = true;
+                    tcs.TrySetException(new Exception("Error handler should not have been called"));
                 });
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
@@ -969,7 +968,6 @@ namespace Realms.Tests.Sync
 
                 Assert.That(onBeforeTriggered, Is.True);
                 Assert.That(onAfterTriggered, Is.True);
-                Assert.That(obsoleteSessionErrorTriggered, Is.False);
             });
         }
 
