@@ -26,7 +26,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Baas;
-using NuGet.Frameworks;
 using NUnit.Framework;
 using Realms.Exceptions.Sync;
 using Realms.Logging;
