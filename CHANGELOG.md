@@ -7,9 +7,9 @@
   1. and as a result the previous point, at the end of a write transaction dereferencing the added `AsymmetricObject` throws an exception
   1. is only usable with flexible sync
   1. can't be the receiveing end of any type of relationship
-  1. can only have a one-to-many relationship with `EmbeddedObject` and collections of the latter
+  1. can only have a one-to-one relationship with `EmbeddedObject` and a one-to-many relationship with collections of the latter
 
-  In the same write transaction, it is perfetcly legal to add `AsymmetricObject`-s and `RealmObject`-s
+  In the same write transaction, it is perfetcly legal to add `AsymmetricObject`s and `RealmObject`s
   ```cs
   class BasicAsymmetricObject : AsymmetricObject
   {
@@ -32,10 +32,7 @@
   {
       realm.Add(asymmetricObject);
 
-      realm.Add(new PrimaryKeyInt32Object
-      {
-          Id = id
-      });
+      realm.Add(new Person());
   });
 
   _ = asymmetricObject.JustAString;                               // runtime error

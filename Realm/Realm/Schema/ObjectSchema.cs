@@ -185,7 +185,7 @@ namespace Realms.Schema
                 set
                 {
                     // being an obsolete method, it's assumed that it's old code that doesn't use AsymmetricObjects
-                    _ = value ? RealmSchemaType = ObjectType.EmbeddedObject : RealmSchemaType = ObjectType.RealmObject;
+                    RealmSchemaType = value ? ObjectType.EmbeddedObject : ObjectType.RealmObject;
                 }
             }
 

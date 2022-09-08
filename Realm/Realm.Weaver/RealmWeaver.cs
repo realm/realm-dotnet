@@ -390,12 +390,9 @@ Analytics payload
             }
 
             var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
-            if (backlinkAttribute != null)
+            if (backlinkAttribute != null && !prop.IsIQueryable())
             {
-                if (!prop.IsIQueryable())
-                {
-                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
-                }
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
             }
 
             if (_realmValueTypes.Contains(prop.PropertyType.FullName))
