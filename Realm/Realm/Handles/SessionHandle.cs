@@ -274,6 +274,12 @@ namespace Realms.Sync
         {
             try
             {
+                // Filter out end of input, which the client seems to have started reporting
+                if (errorCode == (ErrorCode)1)
+                {
+                    return;
+                }
+
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
