@@ -111,7 +111,7 @@ namespace Realms.Tests.Sync
             if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
             {
                 Logger.Default = Logger.Function(msg => TestHelpers.Output.WriteLine(msg));
-                Logger.LogLevel = LogLevel.Detail;
+                Logger.LogLevel = LogLevel.Debug;
             }
         }
 
@@ -950,8 +950,13 @@ namespace Realms.Tests.Sync
 
                 var handler = new EventHandler<ErrorEventArgs>((session, error) =>
                 {
-                    tcs.TrySetException(new Exception("Error handler should not have been called"));
+                    if (error.Exception is ClientResetException crex)
+                    {
+                        tcs.TrySetException(new Exception("Error handler should not have been called", crex));
+                    }
                 });
+
+                CleanupOnTearDown(handler);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
                 Session.Error += handler;
@@ -1095,11 +1100,15 @@ namespace Realms.Tests.Sync
 
                 var session = GetSession(realm);
 
-                var handler = GetErrorEventHandler(tcs, (session, error) =>
+                var handler = new EventHandler<ErrorEventArgs>((session, error) =>
                 {
-                    Assert.That(obsoleteSessionErrorTriggered, Is.False);
-                    obsoleteSessionErrorTriggered = true;
+                    if (error.Exception is ClientResetException crex)
+                    {
+                        tcs.TrySetException(new Exception("Error handler should not have been called", crex));
+                    }
                 });
+
+                CleanupOnTearDown(handler);
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
                 Session.Error += handler;
