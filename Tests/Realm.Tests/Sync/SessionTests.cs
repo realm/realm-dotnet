@@ -108,11 +108,9 @@ namespace Realms.Tests.Sync
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            if (!string.IsNullOrEmpty(SyncTestHelpers.SyncLogsPath))
-            {
-                Logger.Default = Logger.Function(msg => TestHelpers.Output.WriteLine(msg));
-                Logger.LogLevel = LogLevel.Debug;
-            }
+            Logger.Default = Logger.Function(msg =>
+                TestHelpers.Output.WriteLine(msg));
+            Logger.LogLevel = LogLevel.Trace;
         }
 
         [OneTimeTearDown]
