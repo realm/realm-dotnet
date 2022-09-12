@@ -105,21 +105,6 @@ namespace Realms.Tests.Sync
             AppConfigType.FlexibleSync
         };
 
-        [OneTimeSetUp]
-        public void OneTimeSetUp()
-        {
-            Logger.Default = Logger.Function(msg =>
-                TestHelpers.Output.WriteLine(msg));
-            Logger.LogLevel = LogLevel.Trace;
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown()
-        {
-            Logger.LogLevel = LogLevel.Info;
-            Logger.Default = Logger.Console;
-        }
-
         [Test]
         public void Realm_SyncSession_WhenSyncedRealm()
         {
