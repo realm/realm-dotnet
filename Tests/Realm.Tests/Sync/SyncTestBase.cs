@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
@@ -114,9 +115,6 @@ namespace Realms.Tests.Sync
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
             where T : RealmObject
         {
-            await WaitForUploadAsync(obj.Realm);
-            await WaitForDownloadAsync(realm2);
-
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
             return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
@@ -203,7 +201,7 @@ namespace Realms.Tests.Sync
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
             var user = await GetUserAsync(app);
-            return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+            return GetFLXIntegrationConfig(user, optionalPath);
         }
 
         protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)
@@ -223,6 +221,17 @@ namespace Realms.Tests.Sync
             _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, CancellationToken cancellationToken = default)
+        {
+            var realm = await GetRealmAsync(config, cancellationToken);
+            if (waitForSync)
+            {
+                await WaitForUploadAsync(realm);
+            }
+
+            return realm;
+        }
+
         private static T UpdateConfig<T>(T config)
             where T : SyncConfigurationBase
         {
@@ -232,16 +241,38 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task TriggerClientReset(Realm realm, bool restartSession = true)
+        {
+            if (realm.Config is not SyncConfigurationBase syncConfig)
+            {
+                throw new Exception("This should only be invoked for sync realms.");
+            }
+
+            var session = GetSession(realm);
+
+            if (restartSession)
+            {
+                session.Stop();
+            }
+
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig);
+
+            if (restartSession)
+            {
+                session.Start();
+            }
         }
     }
 }

@@ -344,6 +344,7 @@ namespace SetupUnityPackage
                 arguments = command;
             }
 
+            Console.WriteLine($"{fileName} {arguments}");
 #pragma warning disable CA1416
             var runner = Process.Start(new ProcessStartInfo
             {

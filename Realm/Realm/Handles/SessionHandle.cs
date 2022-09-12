@@ -104,7 +104,7 @@ namespace Realms.Sync
             public static extern void wait(SessionHandle session, IntPtr task_completion_source, ProgressDirection direction, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_report_error_for_testing", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void report_error_for_testing(SessionHandle session, int error_code, SessionErrorCategory error_category, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal);
+            public static extern void report_error_for_testing(SessionHandle session, int error_code, SessionErrorCategory error_category, [MarshalAs(UnmanagedType.LPWStr)] string message, IntPtr message_len, [MarshalAs(UnmanagedType.U1)] bool is_fatal, int action);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_stop", CallingConvention = CallingConvention.Cdecl)]
             public static extern void stop(SessionHandle session, out NativeException ex);
@@ -237,9 +237,9 @@ namespace Realms.Sync
             return NativeMethods.get_raw_pointer(this);
         }
 
-        public void ReportErrorForTesting(int errorCode, SessionErrorCategory errorCategory, string errorMessage, bool isFatal)
+        public void ReportErrorForTesting(int errorCode, SessionErrorCategory errorCategory, string errorMessage, bool isFatal, ServerRequestsAction action)
         {
-            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, errorMessage, (IntPtr)errorMessage.Length, isFatal);
+            NativeMethods.report_error_for_testing(this, errorCode, errorCategory, errorMessage, (IntPtr)errorMessage.Length, isFatal, (int)action);
         }
 
         public void Stop()
@@ -274,6 +274,12 @@ namespace Realms.Sync
         {
             try
             {
+                // Filter out end of input, which the client seems to have started reporting
+                if (errorCode == (ErrorCode)1)
+                {
+                    return;
+                }
+
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
@@ -302,7 +308,9 @@ namespace Realms.Sync
                 if (errorCode == ErrorCode.PermissionDenied)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+#pragma warning disable CS0618 // Type or member is obsolete
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 else
                 {

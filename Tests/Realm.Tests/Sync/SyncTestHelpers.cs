@@ -40,6 +40,8 @@ namespace Realms.Tests.Sync
         private static Uri _baseUri;
         private static BaasClient _baasClient;
 
+        public static string SyncLogsPath => _baasClient?.SyncLogsPath;
+
         static SyncTestHelpers()
         {
 #if !UNITY
@@ -157,14 +159,14 @@ namespace Realms.Tests.Sync
                 var privateApiKey = System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
                 var groupId = System.Configuration.ConfigurationManager.AppSettings["GroupId"];
 
-                _baasClient = await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient = await BaasClient.Atlas(_baseUri, "local2", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {
             }
 #endif
 
-            _baasClient ??= await BaasClient.Docker(_baseUri, "local", TestHelpers.Output);
+            _baasClient ??= await BaasClient.Docker(_baseUri, "local2", TestHelpers.Output);
 
             _apps = await _baasClient.GetOrCreateApps();
         }

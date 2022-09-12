@@ -9,7 +9,7 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-unity:
+  prepare-unity-packages:
     runs-on: windows-latest
     name: Unity
     timeout-minutes: 30
@@ -43,10 +43,6 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tools/SetupUnityPackage/*.csproj') }}
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
     - name: Store artifacts for io.realm.unity-${{ inputs.version }}.tgz
@@ -55,12 +51,14 @@ jobs:
         name: io.realm.unity-${{ inputs.version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ inputs.version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for AssetStorePublisher-${{ inputs.version }}
       uses: actions/upload-artifact@v2
       with:
         name: AssetStorePublisher-${{ inputs.version }}
         path: ${{ github.workspace }}/Tools/AssetStorePublisher
         retention-days: ${{ (github.event_name != 'pull_request' || contains(github.head_ref, 'release')) && 30 || 1 }}
+        if-no-files-found: error
     - name: Build Tests
       run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/Realm.Unity/io.realm.unity-${{ inputs.version }}.tgz
     - name: Store artifacts for UnityTests
@@ -69,3 +67,4 @@ jobs:
         name: UnityTests
         path: ${{ github.workspace }}/Tests/Tests.Unity
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error

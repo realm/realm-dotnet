@@ -45,7 +45,7 @@ namespace Baas
     {
         public class FunctionReturn
         {
-            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification ="The enum is only used internally")]
+            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "The enum is only used internally")]
             public enum Result
             {
                 success = 0,
@@ -97,7 +97,7 @@ namespace Baas
                 return { status: 'failure' };
             };";
 
-        private readonly HttpClient _client = new ();
+        private readonly HttpClient _client = new();
 
         private readonly string _clusterName;
 
@@ -133,18 +133,21 @@ namespace Baas
 
         public string Differentiator { get; }
 
-        private BaasClient(Uri baseUri, string differentiator, TextWriter output, string clusterName = null)
+        public string SyncLogsPath { get; }
+
+        private BaasClient(Uri baseUri, string differentiator, TextWriter output, string logsPath, string clusterName = null)
         {
             _client.BaseAddress = new Uri(baseUri, "api/admin/v3.0/");
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
             _clusterName = clusterName;
             Differentiator = differentiator;
+            SyncLogsPath = logsPath;
             _output = output;
         }
 
-        public static async Task<BaasClient> Docker(Uri baseUri, string differentiator, TextWriter output)
+        public static async Task<BaasClient> Docker(Uri baseUri, string differentiator, TextWriter output, string logsPath = null)
         {
-            var result = new BaasClient(baseUri, differentiator, output);
+            var result = new BaasClient(baseUri, differentiator, output, logsPath);
 
             await result.Authenticate("local-userpass", new
             {
@@ -158,9 +161,9 @@ namespace Baas
             return result;
         }
 
-        public static async Task<BaasClient> Atlas(Uri baseUri, string differentiator, TextWriter output, string clusterName, string apiKey, string privateApiKey, string groupId)
+        public static async Task<BaasClient> Atlas(Uri baseUri, string differentiator, TextWriter output, string clusterName, string apiKey, string privateApiKey, string groupId, string logsPath = null)
         {
-            var result = new BaasClient(baseUri, differentiator, output, clusterName);
+            var result = new BaasClient(baseUri, differentiator, output, logsPath, clusterName);
             await result.Authenticate("mongodb-cloud", new
             {
                 username = apiKey,
@@ -187,6 +190,7 @@ namespace Baas
             string groupId = null;
             string baseUrl = null;
             string differentiator = null;
+            string logsPath = null;
 
             for (var i = 0; i < args.Length; i++)
             {
@@ -195,7 +199,8 @@ namespace Baas
                     !ExtractArg(i, "baasapikey", ref baasApiKey) &&
                     !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
                     !ExtractArg(i, "baasprojectid", ref groupId) &&
-                    !ExtractArg(i, "baasdifferentiator", ref differentiator))
+                    !ExtractArg(i, "baasdifferentiator", ref differentiator) &&
+                    !ExtractArg(i, "synclogspath", ref logsPath))
                 {
                     result.Add(args[i]);
                 }
@@ -209,8 +214,8 @@ namespace Baas
             var baseUri = new Uri(baseUrl);
 
             var client = string.IsNullOrEmpty(baasCluster)
-                ? await Docker(baseUri, differentiator, output)
-                : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
+                ? await Docker(baseUri, differentiator, output, logsPath)
+                : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId, logsPath);
 
             return (client, baseUri, result.ToArray());
 
