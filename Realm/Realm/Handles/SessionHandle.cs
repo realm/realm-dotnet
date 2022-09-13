@@ -274,6 +274,12 @@ namespace Realms.Sync
         {
             try
             {
+                // Filter out end of input, which the client seems to have started reporting
+                if (errorCode == (ErrorCode)1)
+                {
+                    return;
+                }
+
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
                 var messageString = message.AsString();
@@ -302,7 +308,9 @@ namespace Realms.Sync
                 if (errorCode == ErrorCode.PermissionDenied)
                 {
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+#pragma warning disable CS0618 // Type or member is obsolete
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
                 else
                 {

@@ -45,7 +45,7 @@ namespace Baas
     {
         public class FunctionReturn
         {
-            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification ="The enum is only used internally")]
+            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "The enum is only used internally")]
             public enum Result
             {
                 success = 0,
@@ -76,23 +76,28 @@ namespace Baas
                 };";
 
         private const string TriggerClientResetOnSyncServerFuncSource =
-            @"exports = async function() {
-              const mongodb = context.services.get('BackingDB');
-              console.log('user.id = ' + context.user.id.toString()); 
-              let deletionResult;
-              try {
-                deletionResult = await mongodb.db('__realm_sync').collection('clientfiles').deleteMany({ ownerId: context.user.id });
-                console.log('Deleted ' + deletionResult.deletedCount + ' documents');
-              } catch(err) {
-                throw 'Deletion failed: ' + err;
-              }
-              if (deletionResult.deletedCount > 0) {
-                return { status: 'success' };
-              }
-              return { status: 'failure' };
+            @"exports = async function(useId, appId = '') {
+                const mongodb = context.services.get('BackingDB');
+                console.log('user.id: ' + context.user.id);
+                let deletionResult;
+                try {
+                  let dbName = '__realm_sync';
+                  if (appId !== '')
+                  {
+                    dbName = [dbName, '_', appId].join('');
+                  }
+                  deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: useId });
+                  console.log('Deleted documents: ' + deletionResult.deletedCount);
+                } catch(err) {
+                  throw 'Deletion failed: ' + err;
+                }
+                if (deletionResult.deletedCount > 0) {
+                  return { status: 'success' };
+                }
+                return { status: 'failure' };
             };";
 
-        private readonly HttpClient _client = new ();
+        private readonly HttpClient _client = new();
 
         private readonly string _clusterName;
 
@@ -390,7 +395,7 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid" },
                     permissions = new
                     {
                         rules = new { },
@@ -407,6 +412,8 @@ namespace Baas
                     }
                 }
             });
+
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
             return app;
         }

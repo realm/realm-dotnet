@@ -174,34 +174,7 @@ namespace Realms.Sync
         {
             var config = base.CreateNativeSyncConfiguration();
             config.is_flexible_sync = true;
-            config.client_resync_mode = ClientResyncMode.Manual;
             return config;
-        }
-
-        /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
-        /// </summary>
-        /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
-        /// <remarks>
-        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for the newer modes will come in the future.
-        /// </remarks>
-        /// <exception cref="NotSupportedException">
-        /// Flexible sync is still in beta, so only <see cref="ManualRecoveryHandler"/> is supported.
-        /// </exception>
-        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
-        public override ClientResetHandlerBase ClientResetHandler
-        {
-            get => base.ClientResetHandler;
-            set
-            {
-                Argument.NotNull(value, nameof(value));
-                if (value is not ManualRecoveryHandler)
-                {
-                    throw new NotSupportedException($"Flexible sync does not yet support {value.GetType().Name}");
-                }
-
-                base.ClientResetHandler = value;
-            }
         }
 
         // This is a holder class to workaround the fact that we can't use ref booleans

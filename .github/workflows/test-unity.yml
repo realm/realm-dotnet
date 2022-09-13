@@ -57,6 +57,7 @@ jobs:
         name: UnityTestsRunner.${{ matrix.platform.os }}
         path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
   run-tests-linux:
     runs-on: ubuntu-latest
     name: Unity Linux
