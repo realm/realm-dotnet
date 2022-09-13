@@ -364,7 +364,7 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    var asymmetricObj = (AsymmetricObject)(object)realm.DynamicApi.CreateObject("AsymmetricObjectWithAllTypes", Guid.NewGuid());
+                    var asymmetricObj = (AsymmetricObject)(object)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
 
                     if (isDynamic)
                     {
@@ -387,7 +387,7 @@ namespace Realms.Tests.Sync
 #if !UNITY
                 realm.Write(() =>
                 {
-                    dynamic asymmetricObj = realm.DynamicApi.CreateObject("AsymmetricObjectWithAllTypes", Guid.NewGuid());
+                    dynamic asymmetricObj = realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
                     if (isDynamic)
                     {
                         Assert.That(asymmetricObj, Is.InstanceOf<DynamicAsymmetricObject>());
