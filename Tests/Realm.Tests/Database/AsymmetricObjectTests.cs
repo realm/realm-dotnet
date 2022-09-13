@@ -125,9 +125,9 @@ namespace Realms.Tests.Database
                     });
                 });
 
-                await realm.SyncSession.WaitForUploadAsync();
+                await WaitForUploadAsync(realm);
 
-                var documents = await GetObjFromRemoteThroughMongoClient<BasicAsymmetricObject>(
+                var documents = await GetRemoteObjects<BasicAsymmetricObject>(
                     flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
 
                 Assert.That(documents.Length, Is.EqualTo(4));
@@ -154,14 +154,10 @@ namespace Realms.Tests.Database
                         {
                             new BasicAsymmetricObject { PartitionLike = partitionLike },
                             doubleObj,
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
                         });
 
                         realm.Add(new BasicAsymmetricObject[]
                         {
-                            new BasicAsymmetricObject { PartitionLike = partitionLike },
                             doubleObj,
                             new BasicAsymmetricObject { PartitionLike = partitionLike }
                         });
@@ -190,8 +186,8 @@ namespace Realms.Tests.Database
                     realm.Add(hugeObj);
                 });
 
-                await realm.SyncSession.WaitForUploadAsync();
-                var documents = await GetObjFromRemoteThroughMongoClient<HugeSyncAsymmetricObject>(flxConfig.User, "_id", objId);
+                await WaitForUploadAsync(realm);
+                var documents = await GetRemoteObjects<HugeSyncAsymmetricObject>(flxConfig.User, "_id", objId);
                 Assert.That(documents.Single().Data.Count, Is.EqualTo(ObjectSize));
             });
         }
@@ -216,8 +212,11 @@ namespace Realms.Tests.Database
                     realm.Add(asymmetribObj);
                 });
 
+                Assert.That(asymmetribObj.IsManaged);
+                Assert.That(asymmetribObj.IsValid, Is.False);
+
                 var ex = Assert.Throws<RealmInvalidObjectException>(() => _ = asymmetribObj.PartitionLike);
-                Assert.That(ex.Message.Contains("Attempted to access detached row"), Is.True);
+                Assert.That(ex.Message.Contains("Attempted to access detached row"));
             });
         }
 
@@ -235,11 +234,11 @@ namespace Realms.Tests.Database
                     PartitionLike = partitionLike
                 };
 
-                Assert.Throws<ArgumentException>(() =>
+                realm.Write(() =>
                 {
-                    realm.Write(() =>
+                    realm.Add(asymmetricObj);
+                    Assert.Throws<ArgumentException>(() =>
                     {
-                        realm.Add(asymmetricObj);
                         realm.Add(asymmetricObj);
                     });
                 });
@@ -266,14 +265,12 @@ namespace Realms.Tests.Database
                     realm.Add(asymmetricObjAllTypes);
                 });
 
-                await realm.SyncSession.WaitForUploadAsync();
-                var documents = await GetObjFromRemoteThroughMongoClient<AsymmetricObjectWithAllTypes>(
+                await WaitForUploadAsync(realm);
+                var documents = await GetRemoteObjects<AsymmetricObjectWithAllTypes>(
                     flxConfig.User, "_id", BsonValue.Create(objId));
 
-                foreach (var doc in documents)
-                {
-                    Assert.That(TestHelpers.GetPropertyValue(doc, propertyName), Is.EqualTo(propertyValue));
-                }
+                Assert.That(documents.Length, Is.EqualTo(1));
+                Assert.That(TestHelpers.GetPropertyValue(documents.Single(), propertyName), Is.EqualTo(propertyValue));
             });
         }
 
@@ -330,7 +327,7 @@ namespace Realms.Tests.Database
                         Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
                         Assert.That(error.Message.Contains("asymmetric tables are not supported for partition-based sync"), Is.True);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         tcs.TrySetException(e);
                     }
@@ -351,10 +348,10 @@ namespace Realms.Tests.Database
             config.Schema = new[] { typeof(BasicAsymmetricObject) };
 
             var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
-            Assert.That(ex.Message.Contains($"Asymmetric table \'{typeof(BasicAsymmetricObject).Name}\' not allowed in a local Realm"), Is.True);
+            Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in a local Realm"));
         }
 
-        private static Task<T[]> GetObjFromRemoteThroughMongoClient<T>(User user, string remoteFieldName, BsonValue fieldValue, string mongoClientCondition = MongoClientCondition.Equality)
+        private static Task<T[]> GetRemoteObjects<T>(User user, string remoteFieldName, BsonValue fieldValue)
             where T : class
         {
             var mongoClient = user.GetMongoClient("BackingDB");
@@ -365,27 +362,11 @@ namespace Realms.Tests.Database
                 {
                     remoteFieldName, new BsonDocument
                     {
-                        { mongoClientCondition, fieldValue }
+                        { "$eq", fieldValue }
                     }
                 }
             };
             return collection.FindAsync(filter);
-        }
-
-        private static class MongoClientCondition
-        {
-            public const string Equality = "$eq";
-        }
-
-        [Explicit]
-        private class AsymmetricContainsEmbeddedObject : AsymmetricObject
-        {
-            [PrimaryKey, MapTo("_id")]
-            public Guid Id { get; set; } = Guid.NewGuid();
-
-            public string PartitionLike { get; set; }
-
-            public EmbeddedIntPropertyObject InnerObj { get; set; }
         }
 
         [Explicit]

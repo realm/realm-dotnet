@@ -3,20 +3,21 @@
 ### Enhancements
 * Introduced `AsymmetricObject` intended for write-heavy workloads, where high performance is generally important. This new object:
   1. syncs data unidirectionaly, from the clients to the server
-  1. can't be queried, deleted or modified once added to the Realm
-  1. and as a result the previous point, at the end of a write transaction dereferencing the added `AsymmetricObject` throws an exception
+  1. can't be queried, deleted, or modified once added to the Realm
   1. is only usable with flexible sync
   1. can't be the receiveing end of any type of relationship
-  1. can only have a one-to-one relationship with `EmbeddedObject` and a one-to-many relationship with collections of the latter
+  1. can contain `EmbeddedObject`s but cannot link to `RealmObject` or `AsymmetricObject`.
 
-  In the same write transaction, it is perfetcly legal to add `AsymmetricObject`s and `RealmObject`s
+  In the same write transaction, it is legal to add `AsymmetricObject`s and `RealmObject`s
   ```cs
-  class BasicAsymmetricObject : AsymmetricObject
+  class Measurement : AsymmetricObject
   {
       [PrimaryKey, MapTo("_id")]
-      public Guid Id { get; set; } = Guid.NewGuid();
+      public Guid Id { get; private set; } = Guid.NewGuid();
 
-      public string JustAString { get; set; }
+      public double Value { get; set; }
+
+      public DataTimeOffset Timestamp { get; private set; } = DateTimeOffset.UtcNow;
   }
 
   class Person : RealmObject
@@ -26,17 +27,20 @@
 
   //.....
 
-  var asymmetricObject = new BasicAsymmetricObject();
+  var measurement = new Measurement
+  {
+    Value = 9.876
+  };
 
   realm.Write(() =>
   {
-      realm.Add(asymmetricObject);
+      realm.Add(measurement);
 
       realm.Add(new Person());
   });
 
-  _ = asymmetricObject.JustAString;                               // runtime error
-  _ = realm.All<BasicAsymmetricObject>().Where(/*condition*/);    // compile time error
+  _ = asymmetricObject.Value;   // runtime error
+  _ = realm.All<Measurement>(); // compile time error
   ```
 * Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard local strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. An example is as follows
 * Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard unsynced strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. More info on the aforementioned strategies can be found in our [docs page](https://www.mongodb.com/docs/realm/sdk/dotnet/advanced-guides/client-reset/). An example usage of one of the new handler is as follows:
