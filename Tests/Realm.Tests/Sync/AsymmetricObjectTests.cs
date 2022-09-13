@@ -22,12 +22,12 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
-using Realms.Tests.Sync;
 
-namespace Realms.Tests.Database
+namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class AsymmetricObjectTests : SyncTestBase
@@ -173,22 +173,23 @@ namespace Realms.Tests.Database
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var objId = ObjectId.Empty;
+                ObjectId id = default;
 
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(HugeSyncAsymmetricObject) };
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
                 using var realm = await GetRealmAsync(flxConfig);
 
                 realm.Write(() =>
                 {
-                    var hugeObj = new HugeSyncAsymmetricObject(ObjectSize);
-                    objId = hugeObj.Id;
+                    var hugeObj = AsymmetricObjectWithAllTypes.CreateWithData(ObjectSize);
+                    id = hugeObj.Id;
                     realm.Add(hugeObj);
                 });
 
                 await WaitForUploadAsync(realm);
-                var documents = await GetRemoteObjects<HugeSyncAsymmetricObject>(flxConfig.User, "_id", objId);
-                Assert.That(documents.Single().Data.Count, Is.EqualTo(ObjectSize));
+                var documents = await GetRemoteObjects<AsymmetricObjectWithAllTypes>(flxConfig.User, "_id", BsonValue.Create(id));
+                Assert.That(documents.Length, Is.EqualTo(1));
+                Assert.That(documents[0].ByteArrayProperty.Count, Is.EqualTo(ObjectSize));
             });
         }
 
@@ -251,7 +252,7 @@ namespace Realms.Tests.Database
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var objId = Guid.Empty;
+                ObjectId id = default;
                 var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
 
@@ -260,14 +261,14 @@ namespace Realms.Tests.Database
                 realm.Write(() =>
                 {
                     var asymmetricObjAllTypes = new AsymmetricObjectWithAllTypes { RequiredStringProperty = string.Empty };
-                    objId = asymmetricObjAllTypes.Id;
+                    id = asymmetricObjAllTypes.Id;
                     TestHelpers.SetPropertyValue(asymmetricObjAllTypes, propertyName, propertyValue);
                     realm.Add(asymmetricObjAllTypes);
                 });
 
                 await WaitForUploadAsync(realm);
                 var documents = await GetRemoteObjects<AsymmetricObjectWithAllTypes>(
-                    flxConfig.User, "_id", BsonValue.Create(objId));
+                    flxConfig.User, "_id", BsonValue.Create(id));
 
                 Assert.That(documents.Length, Is.EqualTo(1));
                 Assert.That(TestHelpers.GetPropertyValue(documents.Single(), propertyName), Is.EqualTo(propertyValue));
@@ -351,11 +352,68 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in a local Realm"));
         }
 
+        [Test]
+        public void DynamicAccess([Values(true, false)] bool isDynamic)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.IsDynamic = isDynamic;
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithAllTypes) };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                realm.Write(() =>
+                {
+                    var asymmetricObj = (AsymmetricObject)(object)realm.DynamicApi.CreateObject("AsymmetricObjectWithAllTypes", Guid.NewGuid());
+
+                    if (isDynamic)
+                    {
+                        Assert.That(asymmetricObj, Is.InstanceOf<DynamicAsymmetricObject>());
+                    }
+                    else
+                    {
+                        Assert.That(asymmetricObj, Is.InstanceOf<AsymmetricObjectWithAllTypes>());
+                    }
+
+                    asymmetricObj.DynamicApi.Set(nameof(AsymmetricObjectWithAllTypes.CharProperty), 'F');
+                    asymmetricObj.DynamicApi.Set(nameof(AsymmetricObjectWithAllTypes.NullableCharProperty), 'o');
+                    asymmetricObj.DynamicApi.Set(nameof(AsymmetricObjectWithAllTypes.StringProperty), "o");
+
+                    Assert.That(asymmetricObj.DynamicApi.Get<char>(nameof(AllTypesObject.CharProperty)), Is.EqualTo('F'));
+                    Assert.That(asymmetricObj.DynamicApi.Get<char?>(nameof(AllTypesObject.NullableCharProperty)), Is.EqualTo('o'));
+                    Assert.That(asymmetricObj.DynamicApi.Get<string>(nameof(AllTypesObject.StringProperty)), Is.EqualTo("o"));
+                });
+
+#if !UNITY
+                realm.Write(() =>
+                {
+                    dynamic asymmetricObj = realm.DynamicApi.CreateObject("AsymmetricObjectWithAllTypes", Guid.NewGuid());
+                    if (isDynamic)
+                    {
+                        Assert.That(asymmetricObj, Is.InstanceOf<DynamicAsymmetricObject>());
+                    }
+                    else
+                    {
+                        Assert.That(asymmetricObj, Is.InstanceOf<AsymmetricObjectWithAllTypes>());
+                    }
+
+                    asymmetricObj.CharProperty = 'F';
+                    asymmetricObj.NullableCharProperty = 'o';
+                    asymmetricObj.StringProperty = "o";
+
+                    Assert.That((char)asymmetricObj.CharProperty, Is.EqualTo('F'));
+                    Assert.That((char)asymmetricObj.NullableCharProperty, Is.EqualTo('o'));
+                    Assert.That(asymmetricObj.StringProperty, Is.EqualTo("o"));
+                });
+#endif
+            });
+        }
+
         private static Task<T[]> GetRemoteObjects<T>(User user, string remoteFieldName, BsonValue fieldValue)
             where T : class
         {
             var mongoClient = user.GetMongoClient("BackingDB");
-            var db = mongoClient.GetDatabase("FLX_local");
+            var db = mongoClient.GetDatabase(SyncTestHelpers.RemoteMongoDBName("FLX"));
             var collection = db.GetCollection<T>(typeof(T).Name);
             var filter = new BsonDocument
             {
@@ -373,9 +431,98 @@ namespace Realms.Tests.Database
         private class BasicAsymmetricObject : AsymmetricObject
         {
             [PrimaryKey, MapTo("_id")]
-            public Guid Id { get; set; } = Guid.NewGuid();
+            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
             public string PartitionLike { get; set; }
+        }
+
+        [Explicit]
+        public class AsymmetricObjectWithAllTypes : AsymmetricObject
+        {
+            [PrimaryKey, MapTo("_id")]
+            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+            public char CharProperty { get; set; }
+
+            public byte ByteProperty { get; set; }
+
+            public short Int16Property { get; set; }
+
+            public int Int32Property { get; set; }
+
+            public long Int64Property { get; set; }
+
+            public float SingleProperty { get; set; }
+
+            public double DoubleProperty { get; set; }
+
+            public bool BooleanProperty { get; set; }
+
+            public decimal DecimalProperty { get; set; }
+
+            public Decimal128 Decimal128Property { get; set; }
+
+            public ObjectId ObjectIdProperty { get; set; }
+
+            public Guid GuidProperty { get; set; }
+
+            [Required]
+            public string RequiredStringProperty { get; set; }
+
+            public string StringProperty { get; set; }
+
+            public byte[] ByteArrayProperty { get; set; }
+
+            public char? NullableCharProperty { get; set; }
+
+            public byte? NullableByteProperty { get; set; }
+
+            public short? NullableInt16Property { get; set; }
+
+            public int? NullableInt32Property { get; set; }
+
+            public long? NullableInt64Property { get; set; }
+
+            public float? NullableSingleProperty { get; set; }
+
+            public double? NullableDoubleProperty { get; set; }
+
+            public bool? NullableBooleanProperty { get; set; }
+
+            public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+            public decimal? NullableDecimalProperty { get; set; }
+
+            public Decimal128? NullableDecimal128Property { get; set; }
+
+            public ObjectId? NullableObjectIdProperty { get; set; }
+
+            public Guid? NullableGuidProperty { get; set; }
+
+            public static AsymmetricObjectWithAllTypes CreateWithData(int dataSize)
+            {
+                var data = new byte[dataSize];
+                TestHelpers.Random.NextBytes(data);
+                return new AsymmetricObjectWithAllTypes
+                {
+                    ByteArrayProperty = data,
+                    RequiredStringProperty = string.Empty,
+                };
+            }
+
+            // We can't test against the following types as they are not Bson deserializable
+
+            // public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+            // public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+            // public RealmInteger<short> Int16CounterProperty { get; set; }
+
+            // public RealmInteger<int> Int32CounterProperty { get; set; }
+
+            // public RealmInteger<long> Int64CounterProperty { get; set; }
+
+            // public RealmValue RealmValueProperty { get; set; }
         }
     }
 }

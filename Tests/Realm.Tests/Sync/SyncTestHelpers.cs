@@ -64,7 +64,7 @@ namespace Realms.Tests.Sync
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
         };
 
-        public static string RemoteMongoDBName => $"Schema_{_baasClient?.Differentiator}";
+        public static string RemoteMongoDBName(string prefix = "Schema") => $"{prefix}_{_baasClient?.Differentiator}";
 
         public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
         {

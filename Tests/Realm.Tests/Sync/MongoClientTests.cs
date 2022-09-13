@@ -49,9 +49,9 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             var client = user.GetMongoClient("foo-bar");
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
 
-            Assert.That(db.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName));
+            Assert.That(db.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
             Assert.That(db.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
@@ -60,11 +60,11 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             var client = user.GetMongoClient("foo-bar");
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection("foos");
 
             Assert.That(collection.Name, Is.EqualTo("foos"));
-            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName));
+            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
             Assert.That(collection.Database.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
@@ -2165,7 +2165,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection<Foo>(FoosCollectionName);
 
             await collection.DeleteManyAsync();
@@ -2177,7 +2177,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection<Sale>(SalesCollectionName);
 
             await collection.DeleteManyAsync();
@@ -2189,7 +2189,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection(FoosCollectionName);
 
             await collection.DeleteManyAsync();

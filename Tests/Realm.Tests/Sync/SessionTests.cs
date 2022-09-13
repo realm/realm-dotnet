@@ -313,8 +313,6 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(AppTypes))]
         public void Session_AutomaticRecoveryFallsbackToDiscardLocal(string appType)
         {
-            TestHelpers.Output.WriteLine("--- Session_AutomaticRecoveryFallsbackToDiscardLocal");
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var automaticResetCalled = false;
@@ -337,16 +335,12 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
                 var afterAutomaticResetCb = GetOnAfterHandler(tcsAfterClientReset, (before, after) =>
                 {
-                    TestHelpers.Output.WriteLine("--- AfterRecovery triggered");
-
                     Assert.That(automaticResetCalled, Is.False);
                     Assert.That(discardLocalResetCalled, Is.False);
                     automaticResetCalled = true;
                 });
                 var afterDiscardLocalResetCb = GetOnAfterHandler(tcsAfterClientReset, (before, after) =>
                 {
-                    TestHelpers.Output.WriteLine("--- AfterDiscardLocal triggered");
-
                     Assert.That(automaticResetCalled, Is.False);
                     Assert.That(discardLocalResetCalled, Is.False);
                     discardLocalResetCalled = true;
@@ -355,15 +349,10 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler
                 {
-                    OnBeforeReset = _ =>
-                    {
-                        TestHelpers.Output.WriteLine("--- OnBeforeReset triggered");
-                    },
                     OnAfterRecovery = afterAutomaticResetCb,
                     OnAfterDiscard = afterDiscardLocalResetCb,
                     ManualResetFallback = ex =>
                     {
-                        TestHelpers.Output.WriteLine("--- ManualResetFallback triggered");
                         tcsAfterClientReset.TrySetException(ex);
                     }
                 };
@@ -382,12 +371,8 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                TestHelpers.Output.WriteLine("--- Disabling auto reset");
-
                 await DisableClientResetRecoveryOnServer(appType);
                 await TriggerClientReset(realm);
-
-                TestHelpers.Output.WriteLine("--- Waiting on task");
 
                 await tcsAfterClientReset.Task;
                 Assert.That(automaticResetCalled, Is.False);

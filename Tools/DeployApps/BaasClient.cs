@@ -413,6 +413,12 @@ namespace Baas
                 }
             });
 
+            var basicAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "BasicAsymmetricObject");
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", basicAsymmetricObject);
+
+            var allTypesAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "AsymmetricObjectWithAllTypes");
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", allTypesAsymmetricObject);
+
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
             return app;

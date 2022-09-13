@@ -1040,81 +1040,23 @@ namespace Realms.Tests
         public string String { get; set; }
     }
 
-    [Explicit]
-    public class AsymmetricObjectWithAllTypes : AsymmetricObject
+    public class HugeSyncObject : RealmObject
     {
-        [PrimaryKey, MapTo("_id")]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-        public char CharProperty { get; set; }
+        public byte[] Data { get; set; }
 
-        public byte ByteProperty { get; set; }
+        public HugeSyncObject()
+        {
+        }
 
-        public short Int16Property { get; set; }
-
-        public int Int32Property { get; set; }
-
-        public long Int64Property { get; set; }
-
-        public float SingleProperty { get; set; }
-
-        public double DoubleProperty { get; set; }
-
-        public bool BooleanProperty { get; set; }
-
-        public decimal DecimalProperty { get; set; }
-
-        public Decimal128 Decimal128Property { get; set; }
-
-        public ObjectId ObjectIdProperty { get; set; }
-
-        public Guid GuidProperty { get; set; }
-
-        [Required]
-        public string RequiredStringProperty { get; set; }
-
-        public string StringProperty { get; set; }
-
-        public byte[] ByteArrayProperty { get; set; }
-
-        public char? NullableCharProperty { get; set; }
-
-        public byte? NullableByteProperty { get; set; }
-
-        public short? NullableInt16Property { get; set; }
-
-        public int? NullableInt32Property { get; set; }
-
-        public long? NullableInt64Property { get; set; }
-
-        public float? NullableSingleProperty { get; set; }
-
-        public double? NullableDoubleProperty { get; set; }
-
-        public bool? NullableBooleanProperty { get; set; }
-
-        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
-
-        public decimal? NullableDecimalProperty { get; set; }
-
-        public Decimal128? NullableDecimal128Property { get; set; }
-
-        public ObjectId? NullableObjectIdProperty { get; set; }
-
-        public Guid? NullableGuidProperty { get; set; }
-
-        // We can't test against the following types as they are not Bson deserializable
-
-        // public DateTimeOffset DateTimeOffsetProperty { get; set; }
-
-        // public RealmInteger<byte> ByteCounterProperty { get; set; }
-
-        // public RealmInteger<short> Int16CounterProperty { get; set; }
-
-        // public RealmInteger<int> Int32CounterProperty { get; set; }
-
-        // public RealmInteger<long> Int64CounterProperty { get; set; }
-
-        // public RealmValue RealmValueProperty { get; set; }
+        public HugeSyncObject(int dataSize)
+        {
+            var data = new byte[dataSize];
+            TestHelpers.Random.NextBytes(data);
+            Data = data;
+        }
     }
 }
