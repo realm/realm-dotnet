@@ -102,6 +102,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
+        public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
+
         public ManualllyGeneratedClass()
         {
         }

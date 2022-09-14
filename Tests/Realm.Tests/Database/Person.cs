@@ -21,7 +21,7 @@ using System.Collections.Generic;
 
 namespace Realms.Tests.Database
 {
-    public class Person : RealmObject
+    public partial class Person : IRealmObject
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }

@@ -289,6 +289,8 @@ public Realm Realm => Accessor.Realm;
 
 public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
+public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
+
 {parameterlessConstructorString}
 
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)

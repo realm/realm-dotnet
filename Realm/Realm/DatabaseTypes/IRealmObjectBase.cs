@@ -69,6 +69,12 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         ObjectSchema ObjectSchema { get; }
+
+        /// <summary>
+        /// Gets an object encompassing the dynamic API for this Realm object instance.
+        /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this Realm object.</value>
+        public RealmObjectBase.Dynamic DynamicApi { get; }
     }
 
     /// <summary>

@@ -119,50 +119,51 @@ namespace Realms.Tests.Database
             }), $"{nameof(AllTypesObject)} add failed.");
         }
 
-        public class NoListProperties : RealmObject
-        {
-            public string Name { get; set; }
+    }
 
-            public int Age { get; set; }
-        }
+    public partial class NoListProperties : IRealmObject
+    {
+        public string Name { get; set; }
 
-        public class OnlyListProperties : RealmObject
-        {
-            public IList<Person> Friends { get; }
+        public int Age { get; set; }
+    }
 
-            public IList<Person> Enemies { get; }
-        }
+    public partial class OnlyListProperties : IRealmObject
+    {
+        public IList<Person> Friends { get; }
 
-        public class MixedProperties1 : RealmObject
-        {
-            public string Name { get; set; }
+        public IList<Person> Enemies { get; }
+    }
 
-            public IList<Person> Friends { get; }
+    public partial class MixedProperties1 : IRealmObject
+    {
+        public string Name { get; set; }
 
-            public int Age { get; set; }
+        public IList<Person> Friends { get; }
 
-            public IList<Person> Enemies { get; }
-        }
+        public int Age { get; set; }
 
-        public class MixedProperties2 : RealmObject
-        {
-            public IList<Person> Friends { get; }
+        public IList<Person> Enemies { get; }
+    }
 
-            public int Age { get; set; }
+    public partial class MixedProperties2 : IRealmObject
+    {
+        public IList<Person> Friends { get; }
 
-            public IList<Person> Enemies { get; }
+        public int Age { get; set; }
 
-            public string Name { get; set; }
-        }
+        public IList<Person> Enemies { get; }
 
-        public class OneNonListProperty : RealmObject
-        {
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
+    }
 
-        public class OneListProperty : RealmObject
-        {
-            public IList<Person> People { get; }
-        }
+    public partial class OneNonListProperty : IRealmObject
+    {
+        public string Name { get; set; }
+    }
+
+    public partial class OneListProperty : IRealmObject
+    {
+        public IList<Person> People { get; }
     }
 }

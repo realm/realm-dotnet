@@ -25,7 +25,7 @@ using Realms.Tests.Database;
 
 namespace Realms.Tests
 {
-    public class AllTypesObject : RealmObject
+    public partial class AllTypesObject : IRealmObject
     {
         public char CharProperty { get; set; }
 
@@ -753,7 +753,7 @@ namespace Realms.Tests
         public Guid? Id { get; set; }
     }
 
-    public class ClassWithUnqueryableMembers : RealmObject
+    public partial class ClassWithUnqueryableMembers : IRealmObject
     {
         public string RealPropertyToSatisfyWeaver { get; set; }
 
@@ -792,7 +792,7 @@ namespace Realms.Tests
         public static string StaticProperty { get; set; }
     }
 
-    public class UnqueryableBacklinks : RealmObject
+    public partial class UnqueryableBacklinks : IRealmObject
     {
         public ClassWithUnqueryableMembers Parent { get; set; }
     }
