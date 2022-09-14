@@ -311,7 +311,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Nullable);
         }
 
         /// <summary>
@@ -323,7 +323,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Array);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Array | PropertyType.Nullable);
         }
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Set);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Set | PropertyType.Nullable);
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace Realms.Schema
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
-            return new Property(name, PropertyType.RealmValue | PropertyType.Dictionary);
+            return new Property(name, PropertyType.RealmValue | PropertyType.Dictionary | PropertyType.Nullable);
         }
 
         /// <summary>

@@ -689,7 +689,7 @@ namespace Realms
                 RealmValueType.Decimal128 => AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId(),
                 RealmValueType.Guid => AsGuid(),
-                RealmValueType.Object => AsRealmObject(),
+                RealmValueType.Object => AsIRealmObject(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }

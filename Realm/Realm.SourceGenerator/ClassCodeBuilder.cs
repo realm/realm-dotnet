@@ -166,9 +166,16 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             var internalTypeString = internalType.CompleteTypeString;
                             schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
 
-                            if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
+                            if (internalType.ObjectType == ObjectType.RealmObject)
                             {
-                                addValLine = "newAccessor.Realm.Add(val, update);";
+                                if (property.TypeInfo.IsDictionary)
+                                {
+                                    addValLine = "newAccessor.Realm.Add(val.Value, update);";
+                                }
+                                else
+                                {
+                                    addValLine = "newAccessor.Realm.Add(val, update);";
+                                }
                             }
                         }
                         else if (internalTypeIsRealmValue)
