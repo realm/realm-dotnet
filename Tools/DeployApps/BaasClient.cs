@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
 //
@@ -389,13 +389,13 @@ namespace Baas
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
-            var (app, _) = await CreateAppCore(name, new
+            var (app, mongoServiceId) = await CreateAppCore(name, new
             {
                 flexible_sync = new
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
                     permissions = new
                     {
                         rules = new { },
@@ -412,6 +412,12 @@ namespace Baas
                     }
                 }
             });
+
+            var basicAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "BasicAsymmetricObject");
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", basicAsymmetricObject);
+
+            var allTypesAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "AsymmetricObjectWithAllTypes");
+            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", allTypesAsymmetricObject);
 
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
@@ -692,6 +698,18 @@ namespace Baas
                 additional_fields = new { }
             };
 
+            private static object _flxDefaultRoles => new
+            {
+                name = "default",
+                apply_when = new { },
+                read = true,
+                write = false,
+                insert = true,
+                delete = true,
+                search = true,
+                additional_fields = new { }
+            };
+
             private static object Metadata(string differentiator, string collectionName) => new
             {
                 database = $"Schema_{differentiator}",
@@ -704,6 +722,13 @@ namespace Baas
                 collection = collectionName,
                 database = $"Schema_{differentiator}",
                 roles = new[] { _defaultRoles }
+            };
+
+            public static object GenericFlxBaasRule(string differentiator, string collectionName) => new
+            {
+                collection = collectionName,
+                database = $"FLX_{differentiator}",
+                roles = new[] { _flxDefaultRoles }
             };
 
             public static (object Schema, object Rules) Sales(string partitionKeyType, string differentiator) =>

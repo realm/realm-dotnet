@@ -131,7 +131,7 @@ namespace Realms.Tests.Database
                 IsDynamic = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.FromType<string>("Name")
                     }
@@ -153,7 +153,7 @@ namespace Realms.Tests.Database
                 ShouldDeleteIfMigrationNeeded = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.FromType<int>("Name")
                     }

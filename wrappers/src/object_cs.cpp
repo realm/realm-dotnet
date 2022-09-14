@@ -112,7 +112,7 @@ extern "C" {
             std::vector<SchemaProperty> schema_properties;
 
             auto& object_schema = object.get_object_schema();
-            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties, object_schema.table_type == ObjectSchema::ObjectType::Embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties));
 
             s_get_native_schema(SchemaForMarshaling{
                 schema_objects.data(),
