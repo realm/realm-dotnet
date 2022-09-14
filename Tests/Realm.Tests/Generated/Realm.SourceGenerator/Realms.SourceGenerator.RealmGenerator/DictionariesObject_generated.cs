@@ -71,6 +71,8 @@ namespace Realms.Tests
         
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
+        
         
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)

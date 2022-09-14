@@ -13,23 +13,21 @@ using Realms.Schema;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyWithPKListObjectHelper))]
-    public partial class PrimaryKeyWithPKList : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(OneListPropertyObjectHelper))]
+    public partial class OneListProperty : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyWithPKList", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneListProperty", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.ObjectList("ListValue", "PrimaryKeyObject"),
+            Property.ObjectList("People", "Person"),
         }.Build();
         
         #region IRealmObject implementation
         
-        private IPrimaryKeyWithPKListAccessor _accessor;
+        private IOneListPropertyAccessor _accessor;
         
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-        internal IPrimaryKeyWithPKListAccessor Accessor => _accessor = _accessor ?? new PrimaryKeyWithPKListUnmanagedAccessor(typeof(PrimaryKeyWithPKList));
+        internal IOneListPropertyAccessor Accessor => _accessor = _accessor ?? new OneListPropertyUnmanagedAccessor(typeof(OneListProperty));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -47,23 +45,21 @@ namespace Realms.Tests.Database
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IPrimaryKeyWithPKListAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPrimaryKeyWithPKListAccessor;
+            var newAccessor = (IOneListPropertyAccessor)managedAccessor;
+            var oldAccessor = _accessor as IOneListPropertyAccessor;
             _accessor = newAccessor;
         
             if (helper != null)
             {
                 if (!skipDefaults)
                 {
-                    newAccessor.ListValue.Clear();
+                    newAccessor.People.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
-                foreach(var val in oldAccessor.ListValue)
+                foreach(var val in oldAccessor.People)
                 {
                     newAccessor.Realm.Add(val, update);
-                    newAccessor.ListValue.Add(val);
+                    newAccessor.People.Add(val);
                 }
             }
         
@@ -122,9 +118,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
         
-        public static explicit operator PrimaryKeyWithPKList(RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
+        public static explicit operator OneListProperty(RealmValue val) => val.AsRealmObject<OneListProperty>();
         
-        public static implicit operator RealmValue(PrimaryKeyWithPKList val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(OneListProperty val) => RealmValue.Object(val);
         
         public override bool Equals(object obj)
         {
@@ -160,24 +156,24 @@ namespace Realms.Tests.Database
         
     
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyWithPKListObjectHelper : IRealmObjectHelper
+        private class OneListPropertyObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
         
-            public ManagedAccessor CreateAccessor() => new PrimaryKeyWithPKListManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new OneListPropertyManagedAccessor();
         
             public IRealmObjectBase CreateInstance()
             {
-                return new PrimaryKeyWithPKList();
+                return new OneListProperty();
             }
         
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
-                value = ((IPrimaryKeyWithPKListAccessor)instance.Accessor).Id;
-                return true;
+                value = null;
+                return false;
             }
         }
     }
@@ -186,114 +182,57 @@ namespace Realms.Tests.Database
 namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyWithPKListAccessor : IRealmAccessor
+    internal interface IOneListPropertyAccessor : IRealmAccessor
     {
-        long Id { get; set; }
-        
-        string StringValue { get; set; }
-        
-        IList<PrimaryKeyObject> ListValue { get; }
+        IList<Person> People { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyWithPKListManagedAccessor : ManagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class OneListPropertyManagedAccessor : ManagedAccessor, IOneListPropertyAccessor
     {
-        public long Id
-        {
-            get => (long)GetValue("Id");
-            set => SetValueUnique("Id", value);
-        }
-        
-        public string StringValue
-        {
-            get => (string)GetValue("StringValue");
-            set => SetValue("StringValue", value);
-        }
-        
-        private IList<PrimaryKeyObject> _listValue;
-        public IList<PrimaryKeyObject> ListValue
+        private IList<Person> _people;
+        public IList<Person> People
         {
             get
             {
-                if (_listValue == null)
+                if (_people == null)
                 {
-                    _listValue = GetListValue<PrimaryKeyObject>("ListValue");
+                    _people = GetListValue<Person>("People");
                 }
         
-                return _listValue;
+                return _people;
             }
         }
     }
 
-    internal class PrimaryKeyWithPKListUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class OneListPropertyUnmanagedAccessor : UnmanagedAccessor, IOneListPropertyAccessor
     {
-        private long _id;
-        public long Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-        
-        private string _stringValue;
-        public string StringValue
-        {
-            get => _stringValue;
-            set
-            {
-                _stringValue = value;
-                RaisePropertyChanged("StringValue");
-            }
-        }
-        
-        public IList<PrimaryKeyObject> ListValue { get; } = new List<PrimaryKeyObject>();
+        public IList<Person> People { get; } = new List<Person>();
     
-        public PrimaryKeyWithPKListUnmanagedAccessor(Type objectType) : base(objectType)
+        public OneListPropertyUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
     
         public override RealmValue GetValue(string propertyName)
         {
-            return propertyName switch
-            {
-                "Id" => _id,
-                "StringValue" => _stringValue,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
     
         public override void SetValue(string propertyName, RealmValue val)
         {
-            switch (propertyName)
-            {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "StringValue":
-                    StringValue = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
+            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
     
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-            }
-            
-            Id = (long)val;
+            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
     
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
-            "ListValue" => (IList<T>)ListValue,
+            "People" => (IList<T>)People,
             
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };

@@ -13,23 +13,22 @@ using Realms.Schema;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyWithPKListObjectHelper))]
-    public partial class PrimaryKeyWithPKList : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(OnlyListPropertiesObjectHelper))]
+    public partial class OnlyListProperties : IRealmObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyWithPKList", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnlyListProperties", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.ObjectList("ListValue", "PrimaryKeyObject"),
+            Property.ObjectList("Friends", "Person"),
+            Property.ObjectList("Enemies", "Person"),
         }.Build();
         
         #region IRealmObject implementation
         
-        private IPrimaryKeyWithPKListAccessor _accessor;
+        private IOnlyListPropertiesAccessor _accessor;
         
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-        internal IPrimaryKeyWithPKListAccessor Accessor => _accessor = _accessor ?? new PrimaryKeyWithPKListUnmanagedAccessor(typeof(PrimaryKeyWithPKList));
+        internal IOnlyListPropertiesAccessor Accessor => _accessor = _accessor ?? new OnlyListPropertiesUnmanagedAccessor(typeof(OnlyListProperties));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -47,23 +46,27 @@ namespace Realms.Tests.Database
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IPrimaryKeyWithPKListAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPrimaryKeyWithPKListAccessor;
+            var newAccessor = (IOnlyListPropertiesAccessor)managedAccessor;
+            var oldAccessor = _accessor as IOnlyListPropertiesAccessor;
             _accessor = newAccessor;
         
             if (helper != null)
             {
                 if (!skipDefaults)
                 {
-                    newAccessor.ListValue.Clear();
+                    newAccessor.Friends.Clear();
+                    newAccessor.Enemies.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
-                foreach(var val in oldAccessor.ListValue)
+                foreach(var val in oldAccessor.Friends)
                 {
                     newAccessor.Realm.Add(val, update);
-                    newAccessor.ListValue.Add(val);
+                    newAccessor.Friends.Add(val);
+                }
+                foreach(var val in oldAccessor.Enemies)
+                {
+                    newAccessor.Realm.Add(val, update);
+                    newAccessor.Enemies.Add(val);
                 }
             }
         
@@ -122,9 +125,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
         
-        public static explicit operator PrimaryKeyWithPKList(RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
+        public static explicit operator OnlyListProperties(RealmValue val) => val.AsRealmObject<OnlyListProperties>();
         
-        public static implicit operator RealmValue(PrimaryKeyWithPKList val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(OnlyListProperties val) => RealmValue.Object(val);
         
         public override bool Equals(object obj)
         {
@@ -160,24 +163,24 @@ namespace Realms.Tests.Database
         
     
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyWithPKListObjectHelper : IRealmObjectHelper
+        private class OnlyListPropertiesObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
         
-            public ManagedAccessor CreateAccessor() => new PrimaryKeyWithPKListManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new OnlyListPropertiesManagedAccessor();
         
             public IRealmObjectBase CreateInstance()
             {
-                return new PrimaryKeyWithPKList();
+                return new OnlyListProperties();
             }
         
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
-                value = ((IPrimaryKeyWithPKListAccessor)instance.Accessor).Id;
-                return true;
+                value = null;
+                return false;
             }
         }
     }
@@ -186,114 +189,76 @@ namespace Realms.Tests.Database
 namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyWithPKListAccessor : IRealmAccessor
+    internal interface IOnlyListPropertiesAccessor : IRealmAccessor
     {
-        long Id { get; set; }
+        IList<Person> Friends { get; }
         
-        string StringValue { get; set; }
-        
-        IList<PrimaryKeyObject> ListValue { get; }
+        IList<Person> Enemies { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyWithPKListManagedAccessor : ManagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class OnlyListPropertiesManagedAccessor : ManagedAccessor, IOnlyListPropertiesAccessor
     {
-        public long Id
-        {
-            get => (long)GetValue("Id");
-            set => SetValueUnique("Id", value);
-        }
-        
-        public string StringValue
-        {
-            get => (string)GetValue("StringValue");
-            set => SetValue("StringValue", value);
-        }
-        
-        private IList<PrimaryKeyObject> _listValue;
-        public IList<PrimaryKeyObject> ListValue
+        private IList<Person> _friends;
+        public IList<Person> Friends
         {
             get
             {
-                if (_listValue == null)
+                if (_friends == null)
                 {
-                    _listValue = GetListValue<PrimaryKeyObject>("ListValue");
+                    _friends = GetListValue<Person>("Friends");
                 }
         
-                return _listValue;
+                return _friends;
+            }
+        }
+        
+        private IList<Person> _enemies;
+        public IList<Person> Enemies
+        {
+            get
+            {
+                if (_enemies == null)
+                {
+                    _enemies = GetListValue<Person>("Enemies");
+                }
+        
+                return _enemies;
             }
         }
     }
 
-    internal class PrimaryKeyWithPKListUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class OnlyListPropertiesUnmanagedAccessor : UnmanagedAccessor, IOnlyListPropertiesAccessor
     {
-        private long _id;
-        public long Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
+        public IList<Person> Friends { get; } = new List<Person>();
         
-        private string _stringValue;
-        public string StringValue
-        {
-            get => _stringValue;
-            set
-            {
-                _stringValue = value;
-                RaisePropertyChanged("StringValue");
-            }
-        }
-        
-        public IList<PrimaryKeyObject> ListValue { get; } = new List<PrimaryKeyObject>();
+        public IList<Person> Enemies { get; } = new List<Person>();
     
-        public PrimaryKeyWithPKListUnmanagedAccessor(Type objectType) : base(objectType)
+        public OnlyListPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
     
         public override RealmValue GetValue(string propertyName)
         {
-            return propertyName switch
-            {
-                "Id" => _id,
-                "StringValue" => _stringValue,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
+            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
     
         public override void SetValue(string propertyName, RealmValue val)
         {
-            switch (propertyName)
-            {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "StringValue":
-                    StringValue = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
+            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
     
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-            }
-            
-            Id = (long)val;
+            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
     
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
-            "ListValue" => (IList<T>)ListValue,
+            "Friends" => (IList<T>)Friends,
+            "Enemies" => (IList<T>)Enemies,
             
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
