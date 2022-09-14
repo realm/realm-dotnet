@@ -171,7 +171,7 @@ namespace Realms.Tests
         public IList<RealmValue> RealmValueList { get; }
     }
 
-    public class CollectionsObject : RealmObject
+    public partial class CollectionsObject : IRealmObject
     {
         public ISet<char> CharSet { get; }
 
@@ -481,7 +481,7 @@ namespace Realms.Tests
 
     // This is a stripped-down version of SetsObject because Sync doesn't support
     // collections of nullable primitives
-    public class SyncAllTypesObject : RealmObject
+    public partial class SyncAllTypesObject : IRealmObject
     {
         [MapTo("_id")]
         [PrimaryKey]
@@ -524,7 +524,7 @@ namespace Realms.Tests
         public EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
     }
 
-    public class DictionariesObject : RealmObject
+    public partial class DictionariesObject : IRealmObject
     {
         public IDictionary<string, char> CharDictionary { get; }
 
@@ -841,7 +841,7 @@ namespace Realms.Tests
         public string String { get; set; }
     }
 
-    public class ContainerObject : RealmObject
+    public partial class ContainerObject : IRealmObject
     {
         public IList<IntPropertyObject> Items { get; }
     }
@@ -862,7 +862,7 @@ namespace Realms.Tests
         public override string ToString() => $"Int: {Int}";
     }
 
-    public class ObjectWithObjectProperties : RealmObject
+    public partial class ObjectWithObjectProperties : IRealmObject
     {
         public IntPropertyObject StandaloneObject { get; set; }
 

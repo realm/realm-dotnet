@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -626,10 +627,10 @@ namespace Realms.Tests.Sync
             return true;
         }
 
-        private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
+        private static async Task WaitForPropertyChangedAsync(IRealmObject realmObject, int timeout = 10 * 1000)
         {
             var tcs = new TaskCompletionSource<object>();
-            realmObject.PropertyChanged += RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged).PropertyChanged += RealmObject_PropertyChanged;  //TODO I think it makes sense to add INotifyPropertyChanged to IRealmObject
 
             void RealmObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
             {
@@ -640,7 +641,7 @@ namespace Realms.Tests.Sync
             }
 
             await tcs.Task.Timeout(timeout);
-            realmObject.PropertyChanged -= RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged).PropertyChanged -= RealmObject_PropertyChanged;
         }
 
         private static async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)

@@ -1943,7 +1943,7 @@ namespace Realms.Tests.Sync
         }
 
         private static async Task UpdateAndWaitForSubscription<T>(IQueryable<T> query, bool shouldAdd = true)
-            where T : RealmObject
+            where T : IRealmObject
         {
             var realm = ((RealmResults<T>)query).Realm;
 
