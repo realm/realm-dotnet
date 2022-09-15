@@ -28,6 +28,19 @@ namespace Realms.SourceGenerator
          * - Full nullability support
          */
 
+        /* Notes:
+         * - If a realm class is defined inside other classes, all the enclosing classes must be partial
+         * 
+         * 
+         */
+
+        /*
+         * TODOS:
+         * - Avoid generating some methods if already present (Equals, ToString, GetHashCode, PropertyChanged)
+         * - Investigate how does it work with classes defined inside other classes (private, public, ...), especially if they
+         * contain properties of other classes (in the same enclosing class or not)
+         */
+
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
