@@ -157,6 +157,7 @@ namespace Realms.SourceGenerator
 
                 if (info.Backlink != null)
                 {
+                    //TODO Here I need to get the backlink mapped name of the property (and maybe of the type??)
                     if (!info.TypeInfo.IsBacklink)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
@@ -166,6 +167,8 @@ namespace Realms.SourceGenerator
                     var inversePropertyName = info.Backlink;
                     var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
                     var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
+
+                    info.BacklinkMapTo = (string)inverseProperty?.GetAttributeArgument("MapToAttribute");
 
                     if (inversePropertyTypeInfo?.IsListOrSet == true)
                     {
@@ -222,9 +225,9 @@ namespace Realms.SourceGenerator
             var typeSymbol = propertySymbol.Type;
             var typeString = propertySyntax.Type.ToString();
 
-            var propertyType = GetSingleLevelPropertyTypeInfo(typeSymbol);
+            var propertyTypeInfo = GetSingleLevelPropertyTypeInfo(typeSymbol);
 
-            if (propertyType.IsUnsupported)
+            if (propertyTypeInfo.IsUnsupported)
             {
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
@@ -239,17 +242,17 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
                 }
 
-                return propertyType;  // We are sure we can't produce more diagnostics
+                return propertyTypeInfo;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyType.HasCorrectNullabilityAnnotation())
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation())
             {
                 classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
-            if (propertyType.IsRealmInteger)
+            if (propertyTypeInfo.IsRealmInteger)
             {
-                var argument = propertyType.TypeSymbol.AsNamed().TypeArguments.Single();
+                var argument = propertyTypeInfo.TypeSymbol.AsNamed().TypeArguments.Single();
 
                 if (!argument.IsValidRealmIntgerType())
                 {
@@ -258,9 +261,9 @@ namespace Realms.SourceGenerator
                     return PropertyTypeInfo.Unsupported;
                 }
 
-                propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
+                propertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            else if (propertyType.IsBacklink && propertyInfo.Backlink != null)
+            else if (propertyTypeInfo.IsBacklink && propertyInfo.Backlink != null)
             {
                 var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
@@ -278,15 +281,15 @@ namespace Realms.SourceGenerator
                     return PropertyTypeInfo.Unsupported;
                 }
 
-                propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
+                propertyTypeInfo.InternalType = internalType;
             }
-            else if (propertyType.IsCollection)
+            else if (propertyTypeInfo.IsCollection)
             {
                 PropertyTypeInfo internalPropertyType;
                 ITypeSymbol argument;
                 var isUnsupported = false;
 
-                if (propertyType.IsDictionary)
+                if (propertyTypeInfo.IsDictionary)
                 {
                     var dictionaryArguments = typeSymbol.AsNamed().TypeArguments;
                     var keyArgument = dictionaryArguments[0];
@@ -301,7 +304,7 @@ namespace Realms.SourceGenerator
                     }
 
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(valueArgument);
-                    propertyType.InternalType = internalPropertyType;
+                    propertyTypeInfo.InternalType = internalPropertyType;
                     argument = valueArgument;
                 }
                 else
@@ -310,16 +313,16 @@ namespace Realms.SourceGenerator
                     argument = typeSymbol.AsNamed().TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
-                    if (propertyType.IsSet && internalPropertyType.ScalarType == ScalarType.Object && argument.IsEmbeddedObject())
+                    if (propertyTypeInfo.IsSet && internalPropertyType.ScalarType == ScalarType.Object && argument.IsEmbeddedObject())
                     {
                         classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                         isUnsupported = true;
                     }
 
-                    propertyType.InternalType = internalPropertyType;
+                    propertyTypeInfo.InternalType = internalPropertyType;
                 }
 
-                var collectionTypeString = propertyType.CollectionType.ToString();
+                var collectionTypeString = propertyTypeInfo.CollectionType.ToString();
                 if (argument.IsRealmInteger())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
@@ -343,7 +346,7 @@ namespace Realms.SourceGenerator
                 }
             }
 
-            return propertyType;
+            return propertyTypeInfo;
         }
 
         private static PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
@@ -393,6 +396,7 @@ namespace Realms.SourceGenerator
             if (propInfo.ScalarType == ScalarType.Object)
             {
                 propInfo.ObjectType = typeSymbol.IsRealmObject() ? ObjectType.RealmObject : ObjectType.EmbeddedObject;
+                propInfo.MapTo = (string)typeSymbol.GetAttributeArgument("MapToAttribute");
             }
 
             return propInfo;

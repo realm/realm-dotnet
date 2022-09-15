@@ -137,10 +137,10 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 {
                     if (property.TypeInfo.IsBacklink)
                     {
-                        var backlinkProperty = property.Backlink;
-                        var backlinkType = property.TypeInfo.InternalType.CompleteTypeString;
+                        var backlinkProperty = property.GetMappedOrOriginalBacklink();
+                        var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteTypeString;
 
-                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.MapTo ?? property.Name}"", ""{backlinkType}"", ""{backlinkProperty}""),");
+                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}""),");
 
                         // Nothing to do for the copy to realm part
                     }
@@ -163,8 +163,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                                 _ => throw new NotImplementedException(),
                             };
 
-                            var internalTypeString = internalType.CompleteTypeString;
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", ""{internalTypeString}""),");
+                            var internalTypeString = internalType.MapTo ?? internalType.CompleteTypeString;
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}""),");
 
                             if (internalType.ObjectType == ObjectType.RealmObject)
                             {
@@ -188,7 +188,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                                 _ => throw new NotImplementedException(),
                             };
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}""),");
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}""),");
                         }
                         else
                         {
@@ -204,7 +204,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                             var internalTypeNullable = internalType.IsNullable.ToCodeString();
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.MapTo ?? property.Name}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
                         }
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
@@ -217,8 +217,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
-                    var objectName = property.TypeInfo.CompleteTypeString;
-                    schemaProperties.AppendLine(@$"Property.Object(""{property.MapTo ?? property.Name}"", ""{objectName}""),");
+                    var objectName = property.TypeInfo.MapTo ?? property.TypeInfo.CompleteTypeString;
+                    schemaProperties.AppendLine(@$"Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}""),");
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
@@ -232,7 +232,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {
-                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.MapTo ?? property.Name}""),");
+                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.GetMappedOrOriginalName()}""),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
@@ -241,8 +241,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                     var realmValueType = GetRealmValueType(property.TypeInfo);
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
                     var isIndexed = property.IsIndexed.ToCodeString();
-                    var isNullable = property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.MapTo ?? property.Name}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
+                    var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
+                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
@@ -259,7 +259,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 ";
             }
 
-            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.Name}"", isEmbedded: {BoolToString(_classInfo.IsEmbedded)})
+            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", isEmbedded: {BoolToString(_classInfo.IsEmbedded)})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
@@ -490,8 +490,8 @@ private class {_helperClassName} : IRealmObjectHelper
                     }
                     else
                     {
-                        var propertyMapToName = property.MapTo ?? property.Name;
                         var parameterString = property.TypeInfo.InternalType.CompleteTypeString;
+                        var propertyMapToName = property.GetMappedOrOriginalName();
 
                         string constructorString;
 
@@ -731,7 +731,7 @@ public {type} {name}
     {{
         if ({backingFieldName} == null)
         {{
-            {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.MapTo ?? property.Name}"");
+            {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.GetMappedOrOriginalName()}"");
         }}
 
         return {backingFieldName};

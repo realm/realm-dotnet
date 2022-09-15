@@ -72,11 +72,17 @@ namespace Realms.SourceGenerator
 
         public string Backlink { get; set; }
 
+        public string BacklinkMapTo { get; set; }
+
         public PropertyTypeInfo TypeInfo { get; set; }
 
         public Accessibility Accessibility { get; set; }
 
         public string Initializer { get; set; }
+
+        public string GetMappedOrOriginalName() => MapTo ?? Name;
+
+        public string GetMappedOrOriginalBacklink() => BacklinkMapTo ?? Backlink;
     }
 
     internal abstract record PropertyTypeInfo
@@ -115,6 +121,9 @@ namespace Realms.SourceGenerator
         public NullableAnnotation NullableAnnotation { get; set; } = NullableAnnotation.None;
 
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
+
+        // Only valid if ScalarType == Object;
+        public string MapTo { get; set; }
 
         public string Namespace { get; set; }
 

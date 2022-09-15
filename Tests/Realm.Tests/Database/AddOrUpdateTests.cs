@@ -809,8 +809,8 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    _realm.Add((RealmObject)Activator.CreateInstance(type));
-                    _realm.Add((RealmObject)Activator.CreateInstance(type));
+                    _realm.Add((IRealmObject)Activator.CreateInstance(type));
+                    _realm.Add((IRealmObject)Activator.CreateInstance(type));
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
