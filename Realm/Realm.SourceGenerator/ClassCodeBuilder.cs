@@ -291,6 +291,8 @@ public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
 public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
 
+public int BacklinksCount => Accessor.BacklinksCount;
+
 {parameterlessConstructorString}
 
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)

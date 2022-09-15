@@ -34,7 +34,7 @@ namespace Realms.Tests
         protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
 
         protected T Freeze<T>(T obj)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             var result = obj.Freeze();
             CleanupOnTearDown(result.Realm);
@@ -42,7 +42,7 @@ namespace Realms.Tests
         }
 
         protected IRealmCollection<T> Freeze<T>(IRealmCollection<T> collection)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             var result = collection.Freeze();
             CleanupOnTearDown(result.Realm);
@@ -50,7 +50,7 @@ namespace Realms.Tests
         }
 
         protected IList<T> Freeze<T>(IList<T> list)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             var result = list.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);
@@ -58,7 +58,7 @@ namespace Realms.Tests
         }
 
         protected IQueryable<T> Freeze<T>(IQueryable<T> query)
-            where T : RealmObjectBase
+            where T : IRealmObjectBase
         {
             var result = query.Freeze();
             CleanupOnTearDown(result.AsRealmCollection().Realm);

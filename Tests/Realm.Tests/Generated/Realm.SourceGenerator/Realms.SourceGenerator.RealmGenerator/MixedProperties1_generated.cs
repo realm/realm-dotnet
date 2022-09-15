@@ -44,6 +44,8 @@ namespace Realms.Tests.Database
         
         public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
         
+        public int BacklinksCount => Accessor.BacklinksCount;
+        
         
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)

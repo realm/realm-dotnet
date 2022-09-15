@@ -402,7 +402,7 @@ namespace Realms.Tests.Database
         }
 
         private void RealmFind_IncorrectPKArgument_Throws<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
             var pkType = GetDatabaseType(pkInClass.PropertyType);

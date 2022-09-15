@@ -104,6 +104,8 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
 
+        public int BacklinksCount => Accessor.BacklinksCount;
+
         public ManualllyGeneratedClass()
         {
         }
