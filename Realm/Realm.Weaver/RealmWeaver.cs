@@ -250,7 +250,8 @@ Analytics payload
         {
             _logger.Debug("Weaving generated " + type.Name);
 
-            var interfaceName = $"I{type.Name}Accessor";
+            var generatedAttribute = type.CustomAttributes.First(a => a.AttributeType.Name == "GeneratedAttribute");
+            var interfaceName = (string)generatedAttribute.ConstructorArguments[0].Value;
             var interfaceType = _moduleDefinition.GetType("Realms.Generated", interfaceName);
 
             var persistedProperties = new List<WeavePropertyResult>();
@@ -281,7 +282,6 @@ Analytics payload
 
         private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
         {
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
             var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
 
             ReplaceGeneratedClassGetter(type, prop, interfaceType, accessorGetter);

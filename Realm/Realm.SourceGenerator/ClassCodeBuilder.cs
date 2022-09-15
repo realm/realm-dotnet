@@ -47,14 +47,17 @@ namespace Realms.SourceGenerator
         private string _managedAccessorClassName;
         private string _unmanagedAccessorClassName;
 
-        public ClassCodeBuilder(ClassInfo classInfo)
+        public ClassCodeBuilder(ClassInfo classInfo, bool hasDuplicateClassName)
         {
             _classInfo = classInfo;
 
-            _helperClassName = $"{_classInfo.Name}ObjectHelper";
-            _accessorInterfaceName = $"I{_classInfo.Name}Accessor";
-            _managedAccessorClassName = $"{_classInfo.Name}ManagedAccessor";
-            _unmanagedAccessorClassName = $"{_classInfo.Name}UnmanagedAccessor";
+            var namespaceString = hasDuplicateClassName ? $"{classInfo.Namespace}_" : string.Empty;
+            var className = namespaceString + _classInfo.Name;
+
+            _helperClassName = $"{className}ObjectHelper";
+            _accessorInterfaceName = $"I{className}Accessor";
+            _managedAccessorClassName = $"{className}ManagedAccessor";
+            _unmanagedAccessorClassName = $"{className}UnmanagedAccessor";
         }
 
         public string GenerateSource()
@@ -88,7 +91,6 @@ namespace Realms.Generated
 
         private string GetUsings()
         {
-            // TODO We're just sorting the usings alphabetically, we can work on this to put the Systems namespaces in front
             var namespaces = new HashSet<string>() { _classInfo.Namespace };
             namespaces.UnionWith(_defaultNamespaces);
 
@@ -399,7 +401,7 @@ public override string ToString()
 **/
 ";
 
-            var classString = $@"[Generated]
+            var classString = $@"[Generated(""{_accessorInterfaceName}"")]
 [Woven(typeof({_helperClassName}))]
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
 {{
@@ -408,7 +410,6 @@ public override string ToString()
 {GenerateClassObjectHelper().Indent()}
 }}";
 
-            //TODO Need to make this look nicer, and add diagnostics for this too
             var problematicAccessibilityies = new List<Accessibility>
             {
                 Accessibility.Private, Accessibility.Protected, Accessibility.ProtectedAndInternal,

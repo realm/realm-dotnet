@@ -28,5 +28,19 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Class)]
     public class GeneratedAttribute : Attribute
     {
+        /// <summary>
+        /// Gets the name of the interface implemented by the generated type accessors.
+        /// </summary>
+        /// <value>The interfac name.</value>
+        public string AccessorInterfaceName { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedAttribute"/> class.
+        /// </summary>
+        /// <param name="accessorInterfaceName">The name of the interface implemented by the generated type accessors.</param>
+        public GeneratedAttribute(string accessorInterfaceName)
+        {
+            AccessorInterfaceName = accessorInterfaceName;
+        }
     }
 }

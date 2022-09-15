@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -35,6 +36,12 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
+            var duplicateClassNames = parsingResults.ClassInfo
+                .GroupBy(c => c.Name)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToImmutableHashSet();
+
             foreach (var classInfo in parsingResults.ClassInfo)
             {
                 if (!ShouldEmit(classInfo))
@@ -44,14 +51,22 @@ namespace Realms.SourceGenerator
 
                 try
                 {
-                    var generator = new ClassCodeBuilder(classInfo);
+                    var className = classInfo.Name;
+
+                    var hasDuplicateClassName = duplicateClassNames.Contains(className);
+
+                    var generator = new ClassCodeBuilder(classInfo, hasDuplicateClassName);
                     var generatedSource = generator.GenerateSource();
 
-                    // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
-                    // var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
                     var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
 
-                    _context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
+
+                    if (hasDuplicateClassName)
+                    {
+                        className = $"{classInfo.Namespace}_{classInfo.Name}";
+                    }
+
+                    _context.AddSource($"{className}_generated.cs", formattedFile);
                 }
                 catch (Exception ex)
                 {
