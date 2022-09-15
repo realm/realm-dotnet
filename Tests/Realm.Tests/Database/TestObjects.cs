@@ -97,14 +97,14 @@ namespace Realms.Tests
         public RealmValue RealmValueProperty { get; set; }
     }
 
-    public class DecimalsObject : RealmObject
+    public partial class DecimalsObject : IRealmObject
     {
         public decimal DecimalValue { get; set; }
 
         public Decimal128 Decimal128Value { get; set; }
     }
 
-    public class ListsObject : RealmObject
+    public partial class ListsObject : IRealmObject
     {
         public IList<char> CharList { get; }
 
@@ -593,7 +593,7 @@ namespace Realms.Tests
         public IDictionary<string, RealmValue> RealmValueDictionary { get; }
     }
 
-    public class CounterObject : RealmObject
+    public partial class CounterObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -618,7 +618,7 @@ namespace Realms.Tests
         public override string ToString() => Id.ToString();
     }
 
-    public class ObjectIdPrimaryKeyWithValueObject : RealmObject
+    public partial class ObjectIdPrimaryKeyWithValueObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -627,7 +627,7 @@ namespace Realms.Tests
         public string StringValue { get; set; }
     }
 
-    public class IntPrimaryKeyWithValueObject : RealmObject
+    public partial class IntPrimaryKeyWithValueObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -636,42 +636,42 @@ namespace Realms.Tests
         public string StringValue { get; set; }
     }
 
-    public class PrimaryKeyCharObject : RealmObject
+    public partial class PrimaryKeyCharObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public char Id { get; set; }
     }
 
-    public class PrimaryKeyByteObject : RealmObject
+    public partial class PrimaryKeyByteObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public byte Id { get; set; }
     }
 
-    public class PrimaryKeyInt16Object : RealmObject
+    public partial class PrimaryKeyInt16Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public short Id { get; set; }
     }
 
-    public class PrimaryKeyInt32Object : RealmObject
+    public partial class PrimaryKeyInt32Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public int Id { get; set; }
     }
 
-    public class PrimaryKeyInt64Object : RealmObject
+    public partial class PrimaryKeyInt64Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public long Id { get; set; }
     }
 
-    public class PrimaryKeyStringObject : RealmObject
+    public partial class PrimaryKeyStringObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -680,7 +680,7 @@ namespace Realms.Tests
         public string Value { get; set; }
     }
 
-    public class RequiredPrimaryKeyStringObject : RealmObject
+    public partial class RequiredPrimaryKeyStringObject : IRealmObject
     {
         [PrimaryKey]
         [Required]
@@ -690,63 +690,63 @@ namespace Realms.Tests
         public string Value { get; set; }
     }
 
-    public class PrimaryKeyObjectIdObject : RealmObject
+    public partial class PrimaryKeyObjectIdObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public ObjectId Id { get; set; }
     }
 
-    public class PrimaryKeyGuidObject : RealmObject
+    public partial class PrimaryKeyGuidObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public Guid Id { get; set; }
     }
 
-    public class PrimaryKeyNullableCharObject : RealmObject
+    public partial class PrimaryKeyNullableCharObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public char? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableByteObject : RealmObject
+    public partial class PrimaryKeyNullableByteObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public byte? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableInt16Object : RealmObject
+    public partial class PrimaryKeyNullableInt16Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public short? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableInt32Object : RealmObject
+    public partial class PrimaryKeyNullableInt32Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public int? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableInt64Object : RealmObject
+    public partial class PrimaryKeyNullableInt64Object : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public long? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableObjectIdObject : RealmObject
+    public partial class PrimaryKeyNullableObjectIdObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
         public ObjectId? Id { get; set; }
     }
 
-    public class PrimaryKeyNullableGuidObject : RealmObject
+    public partial class PrimaryKeyNullableGuidObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -797,7 +797,7 @@ namespace Realms.Tests
         public ClassWithUnqueryableMembers Parent { get; set; }
     }
 
-    public class Dog : RealmObject
+    public partial class Dog : IRealmObject
     {
         public string Name { get; set; }
 
@@ -811,7 +811,7 @@ namespace Realms.Tests
         public IQueryable<Owner> Owners { get; }
     }
 
-    public class Owner : RealmObject
+    public partial class Owner : IRealmObject
     {
         public string Name { get; set; }
 
@@ -824,7 +824,7 @@ namespace Realms.Tests
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)
     // results in the correct backlink count being calculated
-    public class Walker : RealmObject
+    public partial class Walker : IRealmObject
     {
         public string Name { get; set; }
 
@@ -835,7 +835,7 @@ namespace Realms.Tests
         public ISet<Dog> SetOfDogs { get; }
     }
 
-    public class RequiredStringObject : RealmObject
+    public partial class RequiredStringObject : IRealmObject
     {
         [Required]
         public string String { get; set; }
@@ -876,7 +876,7 @@ namespace Realms.Tests
         public override string ToString() => $"Int: {Int}";
     }
 
-    public class RecursiveBacklinksObject : RealmObject
+    public partial class RecursiveBacklinksObject : IRealmObject
     {
         public int Id { get; set; }
 
@@ -886,7 +886,7 @@ namespace Realms.Tests
         public IQueryable<RecursiveBacklinksObject> Children { get; }
     }
 
-    public class RemappedPropertiesObject : RealmObject
+    public partial class RemappedPropertiesObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("id")]
@@ -897,7 +897,7 @@ namespace Realms.Tests
     }
 
     [MapTo("__RemappedTypeObject")]
-    public class RemappedTypeObject : RealmObject
+    public partial class RemappedTypeObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -923,13 +923,13 @@ namespace Realms.Tests
         public IQueryable<RemappedTypeObject> MappedBacklink { get; }
     }
 
-    public class ObjectWithRequiredStringList : RealmObject
+    public partial class ObjectWithRequiredStringList : IRealmObject
     {
         [Required]
         public IList<string> Strings { get; }
     }
 
-    public class ObjectWithEmbeddedProperties : RealmObject
+    public partial class ObjectWithEmbeddedProperties : IRealmObject
     {
         [PrimaryKey]
         public int PrimaryKey { get; set; }
@@ -943,7 +943,7 @@ namespace Realms.Tests
         public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
     }
 
-    public class EmbeddedAllTypesObject : EmbeddedObject
+    public partial class EmbeddedAllTypesObject : IEmbeddedObject
     {
         public char CharProperty { get; set; }
 
@@ -1017,7 +1017,7 @@ namespace Realms.Tests
         public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
     }
 
-    public class EmbeddedLevel1 : EmbeddedObject
+    public partial class EmbeddedLevel1 : IEmbeddedObject
     {
         public string String { get; set; }
 
@@ -1026,7 +1026,7 @@ namespace Realms.Tests
         public IList<EmbeddedLevel2> Children { get; }
     }
 
-    public class EmbeddedLevel2 : EmbeddedObject
+    public partial class EmbeddedLevel2 : IEmbeddedObject
     {
         public string String { get; set; }
 
@@ -1035,7 +1035,7 @@ namespace Realms.Tests
         public IList<EmbeddedLevel3> Children { get; }
     }
 
-    public class EmbeddedLevel3 : EmbeddedObject
+    public partial class EmbeddedLevel3 : IEmbeddedObject
     {
         public string String { get; set; }
     }

@@ -14,10 +14,10 @@ using MongoDB.Bson;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(AllTypesObjectObjectHelper))]
-    public partial class AllTypesObject : IRealmObject, INotifyPropertyChanged
+    [Woven(typeof(EmbeddedAllTypesObjectObjectHelper))]
+    public partial class EmbeddedAllTypesObject : IEmbeddedObject, INotifyPropertyChanged
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedAllTypesObject", isEmbedded: true)
         {
             Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
@@ -26,14 +26,13 @@ namespace Realms.Tests
             Property.Primitive("Int64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("SingleProperty", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("DoubleProperty", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("BooleanProperty", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("DateTimeOffsetProperty", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("DecimalProperty", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Decimal128Property", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("BooleanProperty", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("DateTimeOffsetProperty", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("ObjectIdProperty", RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("RequiredStringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("ByteArrayProperty", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableCharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
@@ -43,25 +42,27 @@ namespace Realms.Tests
             Property.Primitive("NullableSingleProperty", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableDoubleProperty", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableBooleanProperty", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableDateTimeOffsetProperty", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableDecimalProperty", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("NullableDecimal128Property", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableObjectIdProperty", RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableGuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("NullableDateTimeOffsetProperty", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Primitive("ByteCounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Int16CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Int32CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
             Property.Primitive("Int64CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.RealmValue("RealmValueProperty"),
+            Property.Primitive("NullableByteCounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("NullableInt16CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("NullableInt32CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("NullableInt64CounterProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Backlinks("ContainersObjects", "ObjectWithEmbeddedProperties", "AllTypesObject"),
         }.Build();
         
-        #region IRealmObject implementation
+        #region IEmbeddedObject implementation
         
-        private IAllTypesObjectAccessor _accessor;
+        private IEmbeddedAllTypesObjectAccessor _accessor;
         
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
         
-        internal IAllTypesObjectAccessor Accessor => _accessor = _accessor ?? new AllTypesObjectUnmanagedAccessor(typeof(AllTypesObject));
+        internal IEmbeddedAllTypesObjectAccessor Accessor => _accessor = _accessor ?? new EmbeddedAllTypesObjectUnmanagedAccessor(typeof(EmbeddedAllTypesObject));
         
         public bool IsManaged => Accessor.IsManaged;
         
@@ -81,8 +82,8 @@ namespace Realms.Tests
         
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IAllTypesObjectAccessor)managedAccessor;
-            var oldAccessor = _accessor as IAllTypesObjectAccessor;
+            var newAccessor = (IEmbeddedAllTypesObjectAccessor)managedAccessor;
+            var oldAccessor = _accessor as IEmbeddedAllTypesObjectAccessor;
             _accessor = newAccessor;
         
             if (helper != null)
@@ -95,14 +96,13 @@ namespace Realms.Tests
                 newAccessor.Int64Property = oldAccessor.Int64Property;
                 newAccessor.SingleProperty = oldAccessor.SingleProperty;
                 newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
-                newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
-                newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
                 newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
                 newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
+                newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
+                newAccessor.StringProperty = oldAccessor.StringProperty;
+                newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
-                newAccessor.StringProperty = oldAccessor.StringProperty;
                 newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
                 newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
@@ -112,16 +112,17 @@ namespace Realms.Tests
                 newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
                 newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
                 newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
-                newAccessor.NullableDateTimeOffsetProperty = oldAccessor.NullableDateTimeOffsetProperty;
                 newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
                 newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
-                newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
-                newAccessor.NullableGuidProperty = oldAccessor.NullableGuidProperty;
+                newAccessor.NullableDateTimeOffsetProperty = oldAccessor.NullableDateTimeOffsetProperty;
                 newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
                 newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
                 newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
                 newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
-                newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
+                newAccessor.NullableByteCounterProperty = oldAccessor.NullableByteCounterProperty;
+                newAccessor.NullableInt16CounterProperty = oldAccessor.NullableInt16CounterProperty;
+                newAccessor.NullableInt32CounterProperty = oldAccessor.NullableInt32CounterProperty;
+                newAccessor.NullableInt64CounterProperty = oldAccessor.NullableInt64CounterProperty;
             }
         
             if (_propertyChanged != null)
@@ -179,9 +180,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
         
-        public static explicit operator AllTypesObject(RealmValue val) => val.AsRealmObject<AllTypesObject>();
+        public static explicit operator EmbeddedAllTypesObject(RealmValue val) => val.AsRealmObject<EmbeddedAllTypesObject>();
         
-        public static implicit operator RealmValue(AllTypesObject val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(EmbeddedAllTypesObject val) => RealmValue.Object(val);
         
         public override bool Equals(object obj)
         {
@@ -217,18 +218,18 @@ namespace Realms.Tests
         
     
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class AllTypesObjectObjectHelper : IRealmObjectHelper
+        private class EmbeddedAllTypesObjectObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
         
-            public ManagedAccessor CreateAccessor() => new AllTypesObjectManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new EmbeddedAllTypesObjectManagedAccessor();
         
             public IRealmObjectBase CreateInstance()
             {
-                return new AllTypesObject();
+                return new EmbeddedAllTypesObject();
             }
         
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
@@ -243,7 +244,7 @@ namespace Realms.Tests
 namespace Realms.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAllTypesObjectAccessor : IRealmAccessor
+    internal interface IEmbeddedAllTypesObjectAccessor : IRealmAccessor
     {
         char CharProperty { get; set; }
         
@@ -259,21 +260,19 @@ namespace Realms.Generated
         
         double DoubleProperty { get; set; }
         
-        bool BooleanProperty { get; set; }
-        
-        DateTimeOffset DateTimeOffsetProperty { get; set; }
-        
         decimal DecimalProperty { get; set; }
         
         Decimal128 Decimal128Property { get; set; }
         
+        bool BooleanProperty { get; set; }
+        
+        string StringProperty { get; set; }
+        
+        DateTimeOffset DateTimeOffsetProperty { get; set; }
+        
         ObjectId ObjectIdProperty { get; set; }
         
         Guid GuidProperty { get; set; }
-        
-        string RequiredStringProperty { get; set; }
-        
-        string StringProperty { get; set; }
         
         byte[] ByteArrayProperty { get; set; }
         
@@ -293,15 +292,11 @@ namespace Realms.Generated
         
         bool? NullableBooleanProperty { get; set; }
         
-        DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
-        
         decimal? NullableDecimalProperty { get; set; }
         
         Decimal128? NullableDecimal128Property { get; set; }
         
-        ObjectId? NullableObjectIdProperty { get; set; }
-        
-        Guid? NullableGuidProperty { get; set; }
+        DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
         
         RealmInteger<byte> ByteCounterProperty { get; set; }
         
@@ -311,11 +306,19 @@ namespace Realms.Generated
         
         RealmInteger<long> Int64CounterProperty { get; set; }
         
-        RealmValue RealmValueProperty { get; set; }
+        RealmInteger<byte>? NullableByteCounterProperty { get; set; }
+        
+        RealmInteger<short>? NullableInt16CounterProperty { get; set; }
+        
+        RealmInteger<int>? NullableInt32CounterProperty { get; set; }
+        
+        RealmInteger<long>? NullableInt64CounterProperty { get; set; }
+        
+        IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AllTypesObjectManagedAccessor : ManagedAccessor, IAllTypesObjectAccessor
+    internal class EmbeddedAllTypesObjectManagedAccessor : ManagedAccessor, IEmbeddedAllTypesObjectAccessor
     {
         public char CharProperty
         {
@@ -359,18 +362,6 @@ namespace Realms.Generated
             set => SetValue("DoubleProperty", value);
         }
         
-        public bool BooleanProperty
-        {
-            get => (bool)GetValue("BooleanProperty");
-            set => SetValue("BooleanProperty", value);
-        }
-        
-        public DateTimeOffset DateTimeOffsetProperty
-        {
-            get => (DateTimeOffset)GetValue("DateTimeOffsetProperty");
-            set => SetValue("DateTimeOffsetProperty", value);
-        }
-        
         public decimal DecimalProperty
         {
             get => (decimal)GetValue("DecimalProperty");
@@ -383,6 +374,24 @@ namespace Realms.Generated
             set => SetValue("Decimal128Property", value);
         }
         
+        public bool BooleanProperty
+        {
+            get => (bool)GetValue("BooleanProperty");
+            set => SetValue("BooleanProperty", value);
+        }
+        
+        public string StringProperty
+        {
+            get => (string)GetValue("StringProperty");
+            set => SetValue("StringProperty", value);
+        }
+        
+        public DateTimeOffset DateTimeOffsetProperty
+        {
+            get => (DateTimeOffset)GetValue("DateTimeOffsetProperty");
+            set => SetValue("DateTimeOffsetProperty", value);
+        }
+        
         public ObjectId ObjectIdProperty
         {
             get => (ObjectId)GetValue("ObjectIdProperty");
@@ -393,18 +402,6 @@ namespace Realms.Generated
         {
             get => (Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
-        }
-        
-        public string RequiredStringProperty
-        {
-            get => (string)GetValue("RequiredStringProperty");
-            set => SetValue("RequiredStringProperty", value);
-        }
-        
-        public string StringProperty
-        {
-            get => (string)GetValue("StringProperty");
-            set => SetValue("StringProperty", value);
         }
         
         public byte[] ByteArrayProperty
@@ -461,12 +458,6 @@ namespace Realms.Generated
             set => SetValue("NullableBooleanProperty", value);
         }
         
-        public DateTimeOffset? NullableDateTimeOffsetProperty
-        {
-            get => (DateTimeOffset?)GetValue("NullableDateTimeOffsetProperty");
-            set => SetValue("NullableDateTimeOffsetProperty", value);
-        }
-        
         public decimal? NullableDecimalProperty
         {
             get => (decimal?)GetValue("NullableDecimalProperty");
@@ -479,16 +470,10 @@ namespace Realms.Generated
             set => SetValue("NullableDecimal128Property", value);
         }
         
-        public ObjectId? NullableObjectIdProperty
+        public DateTimeOffset? NullableDateTimeOffsetProperty
         {
-            get => (ObjectId?)GetValue("NullableObjectIdProperty");
-            set => SetValue("NullableObjectIdProperty", value);
-        }
-        
-        public Guid? NullableGuidProperty
-        {
-            get => (Guid?)GetValue("NullableGuidProperty");
-            set => SetValue("NullableGuidProperty", value);
+            get => (DateTimeOffset?)GetValue("NullableDateTimeOffsetProperty");
+            set => SetValue("NullableDateTimeOffsetProperty", value);
         }
         
         public RealmInteger<byte> ByteCounterProperty
@@ -515,14 +500,46 @@ namespace Realms.Generated
             set => SetValue("Int64CounterProperty", value);
         }
         
-        public RealmValue RealmValueProperty
+        public RealmInteger<byte>? NullableByteCounterProperty
         {
-            get => (RealmValue)GetValue("RealmValueProperty");
-            set => SetValue("RealmValueProperty", value);
+            get => (RealmInteger<byte>?)GetValue("NullableByteCounterProperty");
+            set => SetValue("NullableByteCounterProperty", value);
+        }
+        
+        public RealmInteger<short>? NullableInt16CounterProperty
+        {
+            get => (RealmInteger<short>?)GetValue("NullableInt16CounterProperty");
+            set => SetValue("NullableInt16CounterProperty", value);
+        }
+        
+        public RealmInteger<int>? NullableInt32CounterProperty
+        {
+            get => (RealmInteger<int>?)GetValue("NullableInt32CounterProperty");
+            set => SetValue("NullableInt32CounterProperty", value);
+        }
+        
+        public RealmInteger<long>? NullableInt64CounterProperty
+        {
+            get => (RealmInteger<long>?)GetValue("NullableInt64CounterProperty");
+            set => SetValue("NullableInt64CounterProperty", value);
+        }
+        
+        private IQueryable<ObjectWithEmbeddedProperties> _containersObjects;
+        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects
+        {
+            get
+            {
+                if (_containersObjects == null)
+                {
+                    _containersObjects = GetBacklinks<ObjectWithEmbeddedProperties>("ContainersObjects");
+                }
+        
+                return _containersObjects;
+            }
         }
     }
 
-    internal class AllTypesObjectUnmanagedAccessor : UnmanagedAccessor, IAllTypesObjectAccessor
+    internal class EmbeddedAllTypesObjectUnmanagedAccessor : UnmanagedAccessor, IEmbeddedAllTypesObjectAccessor
     {
         private char _charProperty;
         public char CharProperty
@@ -601,28 +618,6 @@ namespace Realms.Generated
             }
         }
         
-        private bool _booleanProperty;
-        public bool BooleanProperty
-        {
-            get => _booleanProperty;
-            set
-            {
-                _booleanProperty = value;
-                RaisePropertyChanged("BooleanProperty");
-            }
-        }
-        
-        private DateTimeOffset _dateTimeOffsetProperty;
-        public DateTimeOffset DateTimeOffsetProperty
-        {
-            get => _dateTimeOffsetProperty;
-            set
-            {
-                _dateTimeOffsetProperty = value;
-                RaisePropertyChanged("DateTimeOffsetProperty");
-            }
-        }
-        
         private decimal _decimalProperty;
         public decimal DecimalProperty
         {
@@ -645,6 +640,39 @@ namespace Realms.Generated
             }
         }
         
+        private bool _booleanProperty;
+        public bool BooleanProperty
+        {
+            get => _booleanProperty;
+            set
+            {
+                _booleanProperty = value;
+                RaisePropertyChanged("BooleanProperty");
+            }
+        }
+        
+        private string _stringProperty;
+        public string StringProperty
+        {
+            get => _stringProperty;
+            set
+            {
+                _stringProperty = value;
+                RaisePropertyChanged("StringProperty");
+            }
+        }
+        
+        private DateTimeOffset _dateTimeOffsetProperty;
+        public DateTimeOffset DateTimeOffsetProperty
+        {
+            get => _dateTimeOffsetProperty;
+            set
+            {
+                _dateTimeOffsetProperty = value;
+                RaisePropertyChanged("DateTimeOffsetProperty");
+            }
+        }
+        
         private ObjectId _objectIdProperty;
         public ObjectId ObjectIdProperty
         {
@@ -664,28 +692,6 @@ namespace Realms.Generated
             {
                 _guidProperty = value;
                 RaisePropertyChanged("GuidProperty");
-            }
-        }
-        
-        private string _requiredStringProperty;
-        public string RequiredStringProperty
-        {
-            get => _requiredStringProperty;
-            set
-            {
-                _requiredStringProperty = value;
-                RaisePropertyChanged("RequiredStringProperty");
-            }
-        }
-        
-        private string _stringProperty;
-        public string StringProperty
-        {
-            get => _stringProperty;
-            set
-            {
-                _stringProperty = value;
-                RaisePropertyChanged("StringProperty");
             }
         }
         
@@ -788,17 +794,6 @@ namespace Realms.Generated
             }
         }
         
-        private DateTimeOffset? _nullableDateTimeOffsetProperty;
-        public DateTimeOffset? NullableDateTimeOffsetProperty
-        {
-            get => _nullableDateTimeOffsetProperty;
-            set
-            {
-                _nullableDateTimeOffsetProperty = value;
-                RaisePropertyChanged("NullableDateTimeOffsetProperty");
-            }
-        }
-        
         private decimal? _nullableDecimalProperty;
         public decimal? NullableDecimalProperty
         {
@@ -821,25 +816,14 @@ namespace Realms.Generated
             }
         }
         
-        private ObjectId? _nullableObjectIdProperty;
-        public ObjectId? NullableObjectIdProperty
+        private DateTimeOffset? _nullableDateTimeOffsetProperty;
+        public DateTimeOffset? NullableDateTimeOffsetProperty
         {
-            get => _nullableObjectIdProperty;
+            get => _nullableDateTimeOffsetProperty;
             set
             {
-                _nullableObjectIdProperty = value;
-                RaisePropertyChanged("NullableObjectIdProperty");
-            }
-        }
-        
-        private Guid? _nullableGuidProperty;
-        public Guid? NullableGuidProperty
-        {
-            get => _nullableGuidProperty;
-            set
-            {
-                _nullableGuidProperty = value;
-                RaisePropertyChanged("NullableGuidProperty");
+                _nullableDateTimeOffsetProperty = value;
+                RaisePropertyChanged("NullableDateTimeOffsetProperty");
             }
         }
         
@@ -887,18 +871,53 @@ namespace Realms.Generated
             }
         }
         
-        private RealmValue _realmValueProperty;
-        public RealmValue RealmValueProperty
+        private RealmInteger<byte>? _nullableByteCounterProperty;
+        public RealmInteger<byte>? NullableByteCounterProperty
         {
-            get => _realmValueProperty;
+            get => _nullableByteCounterProperty;
             set
             {
-                _realmValueProperty = value;
-                RaisePropertyChanged("RealmValueProperty");
+                _nullableByteCounterProperty = value;
+                RaisePropertyChanged("NullableByteCounterProperty");
             }
         }
+        
+        private RealmInteger<short>? _nullableInt16CounterProperty;
+        public RealmInteger<short>? NullableInt16CounterProperty
+        {
+            get => _nullableInt16CounterProperty;
+            set
+            {
+                _nullableInt16CounterProperty = value;
+                RaisePropertyChanged("NullableInt16CounterProperty");
+            }
+        }
+        
+        private RealmInteger<int>? _nullableInt32CounterProperty;
+        public RealmInteger<int>? NullableInt32CounterProperty
+        {
+            get => _nullableInt32CounterProperty;
+            set
+            {
+                _nullableInt32CounterProperty = value;
+                RaisePropertyChanged("NullableInt32CounterProperty");
+            }
+        }
+        
+        private RealmInteger<long>? _nullableInt64CounterProperty;
+        public RealmInteger<long>? NullableInt64CounterProperty
+        {
+            get => _nullableInt64CounterProperty;
+            set
+            {
+                _nullableInt64CounterProperty = value;
+                RaisePropertyChanged("NullableInt64CounterProperty");
+            }
+        }
+        
+        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
     
-        public AllTypesObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        public EmbeddedAllTypesObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
     
@@ -913,14 +932,13 @@ namespace Realms.Generated
                 "Int64Property" => _int64Property,
                 "SingleProperty" => _singleProperty,
                 "DoubleProperty" => _doubleProperty,
-                "BooleanProperty" => _booleanProperty,
-                "DateTimeOffsetProperty" => _dateTimeOffsetProperty,
                 "DecimalProperty" => _decimalProperty,
                 "Decimal128Property" => _decimal128Property,
+                "BooleanProperty" => _booleanProperty,
+                "StringProperty" => _stringProperty,
+                "DateTimeOffsetProperty" => _dateTimeOffsetProperty,
                 "ObjectIdProperty" => _objectIdProperty,
                 "GuidProperty" => _guidProperty,
-                "RequiredStringProperty" => _requiredStringProperty,
-                "StringProperty" => _stringProperty,
                 "ByteArrayProperty" => _byteArrayProperty,
                 "NullableCharProperty" => _nullableCharProperty,
                 "NullableByteProperty" => _nullableByteProperty,
@@ -930,16 +948,18 @@ namespace Realms.Generated
                 "NullableSingleProperty" => _nullableSingleProperty,
                 "NullableDoubleProperty" => _nullableDoubleProperty,
                 "NullableBooleanProperty" => _nullableBooleanProperty,
-                "NullableDateTimeOffsetProperty" => _nullableDateTimeOffsetProperty,
                 "NullableDecimalProperty" => _nullableDecimalProperty,
                 "NullableDecimal128Property" => _nullableDecimal128Property,
-                "NullableObjectIdProperty" => _nullableObjectIdProperty,
-                "NullableGuidProperty" => _nullableGuidProperty,
+                "NullableDateTimeOffsetProperty" => _nullableDateTimeOffsetProperty,
                 "ByteCounterProperty" => _byteCounterProperty,
                 "Int16CounterProperty" => _int16CounterProperty,
                 "Int32CounterProperty" => _int32CounterProperty,
                 "Int64CounterProperty" => _int64CounterProperty,
-                "RealmValueProperty" => _realmValueProperty,
+                "NullableByteCounterProperty" => _nullableByteCounterProperty,
+                "NullableInt16CounterProperty" => _nullableInt16CounterProperty,
+                "NullableInt32CounterProperty" => _nullableInt32CounterProperty,
+                "NullableInt64CounterProperty" => _nullableInt64CounterProperty,
+                "ContainersObjects" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -969,29 +989,26 @@ namespace Realms.Generated
                 case "DoubleProperty":
                     DoubleProperty = (double)val;
                     return;
-                case "BooleanProperty":
-                    BooleanProperty = (bool)val;
-                    return;
-                case "DateTimeOffsetProperty":
-                    DateTimeOffsetProperty = (DateTimeOffset)val;
-                    return;
                 case "DecimalProperty":
                     DecimalProperty = (decimal)val;
                     return;
                 case "Decimal128Property":
                     Decimal128Property = (Decimal128)val;
                     return;
+                case "BooleanProperty":
+                    BooleanProperty = (bool)val;
+                    return;
+                case "StringProperty":
+                    StringProperty = (string)val;
+                    return;
+                case "DateTimeOffsetProperty":
+                    DateTimeOffsetProperty = (DateTimeOffset)val;
+                    return;
                 case "ObjectIdProperty":
                     ObjectIdProperty = (ObjectId)val;
                     return;
                 case "GuidProperty":
                     GuidProperty = (Guid)val;
-                    return;
-                case "RequiredStringProperty":
-                    RequiredStringProperty = (string)val;
-                    return;
-                case "StringProperty":
-                    StringProperty = (string)val;
                     return;
                 case "ByteArrayProperty":
                     ByteArrayProperty = (byte[])val;
@@ -1020,20 +1037,14 @@ namespace Realms.Generated
                 case "NullableBooleanProperty":
                     NullableBooleanProperty = (bool?)val;
                     return;
-                case "NullableDateTimeOffsetProperty":
-                    NullableDateTimeOffsetProperty = (DateTimeOffset?)val;
-                    return;
                 case "NullableDecimalProperty":
                     NullableDecimalProperty = (decimal?)val;
                     return;
                 case "NullableDecimal128Property":
                     NullableDecimal128Property = (Decimal128?)val;
                     return;
-                case "NullableObjectIdProperty":
-                    NullableObjectIdProperty = (ObjectId?)val;
-                    return;
-                case "NullableGuidProperty":
-                    NullableGuidProperty = (Guid?)val;
+                case "NullableDateTimeOffsetProperty":
+                    NullableDateTimeOffsetProperty = (DateTimeOffset?)val;
                     return;
                 case "ByteCounterProperty":
                     ByteCounterProperty = (RealmInteger<byte>)val;
@@ -1047,8 +1058,17 @@ namespace Realms.Generated
                 case "Int64CounterProperty":
                     Int64CounterProperty = (RealmInteger<long>)val;
                     return;
-                case "RealmValueProperty":
-                    RealmValueProperty = (RealmValue)val;
+                case "NullableByteCounterProperty":
+                    NullableByteCounterProperty = (RealmInteger<byte>?)val;
+                    return;
+                case "NullableInt16CounterProperty":
+                    NullableInt16CounterProperty = (RealmInteger<short>?)val;
+                    return;
+                case "NullableInt32CounterProperty":
+                    NullableInt32CounterProperty = (RealmInteger<int>?)val;
+                    return;
+                case "NullableInt64CounterProperty":
+                    NullableInt64CounterProperty = (RealmInteger<long>?)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
