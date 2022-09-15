@@ -47,7 +47,7 @@ namespace Realms.Tests.Database
         public static ObjectId[] ObjectIdValues = new[] { new ObjectId("5f63e882536de46d71877979"), ObjectId.Empty };
         public static string[] StringValues = new[] { "a", "abc", string.Empty };
         public static byte[][] DataValues = new[] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
-        public static RealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
+        public static IRealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
         [Test]
         public void CharTests(
@@ -1043,35 +1043,36 @@ namespace Realms.Tests.Database
                 _ => throw new NotImplementedException(),
             };
         }
+    }
 
-        private class RealmValueObject : RealmObject
-        {
-            public int Id { get; set; }
+    public partial class RealmValueObject : IRealmObject
+    {
+        public int Id { get; set; }
 
-            public RealmValue RealmValueProperty { get; set; }
+        public RealmValue RealmValueProperty { get; set; }
 
-            public IList<RealmValue> RealmValueList { get; }
+        public IList<RealmValue> RealmValueList { get; }
 
-            public ISet<RealmValue> RealmValueSet { get; }
+        public ISet<RealmValue> RealmValueSet { get; }
 
-            public IDictionary<string, RealmValue> RealmValueDictionary { get; }
+        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
 
-            public IDictionary<string, int> TestDict { get; }
-        }
+        public IDictionary<string, int> TestDict { get; }
+    }
 
-        private class InternalObject : RealmObject, IEquatable<InternalObject>
-        {
-            public int IntProperty { get; set; }
+    public partial class InternalObject : IRealmObject, IEquatable<InternalObject>
+    {
+        public int IntProperty { get; set; }
 
-            public string StringProperty { get; set; }
+        public string StringProperty { get; set; }
 
-            public override bool Equals(object obj) => Equals(obj as InternalObject);
+        //TODO Need to add it back later
+        //public override bool Equals(object obj) => Equals(obj as InternalObject);
 
-            public bool Equals(InternalObject other) => other != null &&
-                       IntProperty == other.IntProperty &&
-                       StringProperty == other.StringProperty;
+        public bool Equals(InternalObject other) => other != null &&
+                   IntProperty == other.IntProperty &&
+                   StringProperty == other.StringProperty;
 
-            public override string ToString() => $"{IntProperty} - {StringProperty}";
-        }
+        public override string ToString() => $"{IntProperty} - {StringProperty}";
     }
 }

@@ -716,27 +716,6 @@ namespace Realms.Tests.Database
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
         // shows a workaround for our lack of cascading delete
-        public class Product : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string Date { get; set; }
-
-            public IList<Report> Reports { get; } // child objects
-        }
-
-        public class Report : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Ref { get; set; }
-
-            public string Date { get; set; }
-
-            public Product Parent { get; set; } // Parent object reference
-        }
 
         [Test]
         public void TestDeleteChildren()
@@ -783,5 +762,27 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+    }
+
+    public partial class Product : IRealmObject
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Date { get; set; }
+
+        public IList<Report> Reports { get; } // child objects
+    }
+
+    public partial class Report : IRealmObject
+    {
+        public int Id { get; set; }
+
+        public string Ref { get; set; }
+
+        public string Date { get; set; }
+
+        public Product Parent { get; set; } // Parent object reference
     }
 }

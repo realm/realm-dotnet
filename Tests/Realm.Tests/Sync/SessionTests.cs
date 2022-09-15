@@ -1449,19 +1449,6 @@ namespace Realms.Tests.Sync
             _sessionErrorHandlers.Enqueue(handler);
         }
 
-        [Explicit]
-        public class ObjectWithPartitionValue : RealmObject
-        {
-            [PrimaryKey]
-            [MapTo("_id")]
-            public string Id { get; set; }
-
-            public string Value { get; set; }
-
-            [MapTo("realm_id")]
-            public string Partition { get; set; }
-        }
-
         private static SessionNotificationToken? GetNotificationToken(Session session)
         {
             var sessionHandle = (SessionHandle)typeof(Session).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
@@ -1469,5 +1456,18 @@ namespace Realms.Tests.Sync
                 (SessionNotificationToken?)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle) :
                 null;
         }
+    }
+
+    [Explicit]
+    public partial class ObjectWithPartitionValue : IRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public string Id { get; set; }
+
+        public string Value { get; set; }
+
+        [MapTo("realm_id")]
+        public string Partition { get; set; }
     }
 }

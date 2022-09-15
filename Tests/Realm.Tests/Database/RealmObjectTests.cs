@@ -715,37 +715,38 @@ namespace Realms.Tests.Database
 
             Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
+    }
 
-        [Serializable]
-        public class SerializedObject : RealmObject
-        {
-            public int IntValue { get; set; }
+    [Serializable]
+    public partial class SerializedObject : IRealmObject
+    {
+        public int IntValue { get; set; }
 
-            public string Name { get; set; }
+        public string Name { get; set; }
 
-            public IDictionary<string, int> Dict { get; }
+        public IDictionary<string, int> Dict { get; }
 
-            public IList<string> List { get; }
+        public IList<string> List { get; }
 
-            public ISet<string> Set { get; }
-        }
+        public ISet<string> Set { get; }
+    }
 
-        private class OnManagedTestClass : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
+    public partial class OnManagedTestClass : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
 
-            public OnManagedTestClass RelatedObject { get; set; }
+        public OnManagedTestClass RelatedObject { get; set; }
 
-            public IList<OnManagedTestClass> RelatedCollection { get; }
+        public IList<OnManagedTestClass> RelatedCollection { get; }
 
-            [Ignored]
-            public int OnManagedCalled { get; private set; }
+        [Ignored]
+        public int OnManagedCalled { get; private set; }
 
-            protected internal override void OnManaged()
-            {
-                OnManagedCalled++;
-            }
-        }
+        //TODO OnManaged should not be generated?
+        //protected internal override void OnManaged()
+        //{
+        //    OnManagedCalled++;
+        //}
     }
 }

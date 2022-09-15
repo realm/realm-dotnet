@@ -835,50 +835,51 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
+    }
 
-        private class AgedObject : RealmObject
+    public partial class BacklinkObject : IRealmObject
+    {
+        public string BeforeBacklinks { get; set; }
+
+        [Backlink(nameof(SomeClass.BacklinkObject))]
+        public IQueryable<SomeClass> Links { get; }
+
+        public string AfterBacklinks { get; set; }
+    }
+
+    public partial class SomeClass : IRealmObject
+    {
+        public BacklinkObject BacklinkObject { get; set; }
+    }
+
+    public partial class AgedObject : IRealmObject
+    {
+        public DateTimeOffset Birthday { get; set; }
+
+        public int Age
         {
-            public DateTimeOffset Birthday { get; set; }
-
-            public int Age
+            get
             {
-                get
+                var now = DateTimeOffset.UtcNow;
+                var age = now.Year - Birthday.Year;
+                if (Birthday.AddYears(age) > now)
                 {
-                    var now = DateTimeOffset.UtcNow;
-                    var age = now.Year - Birthday.Year;
-                    if (Birthday.AddYears(age) > now)
-                    {
-                        age--;
-                    }
-
-                    return age;
+                    age--;
                 }
-            }
 
-            protected override void OnPropertyChanged(string propertyName)
-            {
-                base.OnPropertyChanged(propertyName);
-
-                if (propertyName == nameof(Birthday))
-                {
-                    RaisePropertyChanged(nameof(Age));
-                }
+                return age;
             }
         }
 
-        private class BacklinkObject : RealmObject
-        {
-            public string BeforeBacklinks { get; set; }
+        //TODO This should not be generated
+        //protected override void OnPropertyChanged(string propertyName)
+        //{
+        //    base.OnPropertyChanged(propertyName);
 
-            [Backlink(nameof(SomeClass.BacklinkObject))]
-            public IQueryable<SomeClass> Links { get; }
-
-            public string AfterBacklinks { get; set; }
-        }
-
-        private class SomeClass : RealmObject
-        {
-            public BacklinkObject BacklinkObject { get; set; }
-        }
+        //    if (propertyName == nameof(Birthday))
+        //    {
+        //        RaisePropertyChanged(nameof(Age));
+        //    }
+        //}
     }
 }

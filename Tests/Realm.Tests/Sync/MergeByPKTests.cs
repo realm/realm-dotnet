@@ -40,7 +40,7 @@ namespace Realms.Tests.Sync
                 var partition = Guid.NewGuid().ToString();
                 for (var i = 0; i < 5; i++)
                 {
-                    var instance = (RealmObject)Activator.CreateInstance(objectType);
+                    var instance = (IRealmObject)Activator.CreateInstance(objectType);
 
                     pkProperty.SetValue(instance, pkValue);
 
@@ -62,7 +62,7 @@ namespace Realms.Tests.Sync
                     var expectedPK = Operator.Convert<RealmValue>(pkValue);
                     await TestHelpers.WaitForConditionAsync(() => realm.DynamicApi.FindCore(objectType.Name, expectedPK) != null);
 
-                    var objectCount = ((IQueryable<RealmObject>)realm.DynamicApi.All(objectType.Name))
+                    var objectCount = ((IQueryable<IRealmObject>)realm.DynamicApi.All(objectType.Name))
                         .ToArray()
                         .Count(o => o.DynamicApi.Get<RealmValue>("_id") == expectedPK);
 

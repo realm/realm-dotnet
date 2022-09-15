@@ -23,7 +23,7 @@ using NUnit.Framework;
 
 namespace Realms.Tests.Database
 {
-    internal class Cities : RealmObject
+    internal partial class Cities : IRealmObject
     {
         public string Name { get; set; }
     }
@@ -501,24 +501,24 @@ namespace Realms.Tests.Database
         {
             return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
+    }
 
-        private class Level1 : RealmObject
-        {
-            public string StringValue { get; set; }
+    public partial class Level1 : IRealmObject
+    {
+        public string StringValue { get; set; }
 
-            public Level2 Level2 { get; set; }
-        }
+        public Level2 Level2 { get; set; }
+    }
 
-        private class Level2 : RealmObject
-        {
-            public int IntValue { get; set; }
+    public partial class Level2 : IRealmObject
+    {
+        public int IntValue { get; set; }
 
-            public Level3 Level3 { get; set; }
-        }
+        public Level3 Level3 { get; set; }
+    }
 
-        public class Level3 : RealmObject
-        {
-            public DateTimeOffset DateValue { get; set; }
-        }
+    public partial class Level3 : IRealmObject
+    {
+        public DateTimeOffset DateValue { get; set; }
     }
 }

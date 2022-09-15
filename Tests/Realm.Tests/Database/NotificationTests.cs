@@ -31,25 +31,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class NotificationTests : RealmInstanceTest
     {
-        private class OrderedContainer : RealmObject
-        {
-            public IList<OrderedObject> Items { get; }
-
-            public IDictionary<string, OrderedObject> ItemsDictionary { get; }
-        }
-
-        private class OrderedObject : RealmObject
-        {
-            public int Order { get; set; }
-
-            public bool IsPartOfResults { get; set; }
-
-            public override string ToString()
-            {
-                return $"[OrderedObject: Order={Order}]";
-            }
-        }
-
         [Test]
         public void ShouldTriggerRealmChangedEvent()
         {
@@ -858,5 +839,24 @@ namespace Realms.Tests.Database
             new object[] { new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1 },
             new object[] { new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 2, 4 }, -1 },
         };
+    }
+
+    public partial class OrderedContainer : IRealmObject
+    {
+        public IList<OrderedObject> Items { get; }
+
+        public IDictionary<string, OrderedObject> ItemsDictionary { get; }
+    }
+
+    public partial class OrderedObject : IRealmObject
+    {
+        public int Order { get; set; }
+
+        public bool IsPartOfResults { get; set; }
+
+        public override string ToString()
+        {
+            return $"[OrderedObject: Order={Order}]";
+        }
     }
 }

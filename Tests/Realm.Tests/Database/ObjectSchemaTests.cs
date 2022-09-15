@@ -822,7 +822,7 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
-            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
+            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(IEmbeddedObject)));
             Assert.That(schema.Type, Is.EqualTo(type));
         }
 
@@ -1552,17 +1552,17 @@ namespace Realms.Tests.Database
             List,
             HashSet
         }
+    }
 
-        private class RequiredPropertyClass : RealmObject
-        {
-            [Required]
-            public string FooRequired { get; set; }
-        }
+    public partial class RequiredPropertyClass : IRealmObject
+    {
+        [Required]
+        public string FooRequired { get; set; }
+    }
 
-        [Explicit]
-        private class ExplicitClass : RealmObject
-        {
-            public int Foo { get; set; }
-        }
+    [Explicit]
+    public partial class ExplicitClass : IRealmObject
+    {
+        public int Foo { get; set; }
     }
 }
