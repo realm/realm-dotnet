@@ -13,7 +13,7 @@ using MongoDB.Bson;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IDecimalsObjectAccessor")]
     [Woven(typeof(DecimalsObjectObjectHelper))]
     public partial class DecimalsObject : IRealmObject, INotifyPropertyChanged
     {

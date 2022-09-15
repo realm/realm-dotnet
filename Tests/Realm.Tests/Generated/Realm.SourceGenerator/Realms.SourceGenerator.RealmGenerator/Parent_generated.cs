@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IParentAccessor")]
     [Woven(typeof(ParentObjectHelper))]
     public partial class Parent : IRealmObject, INotifyPropertyChanged
     {

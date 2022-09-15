@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IPrimaryKeyWithPKListAccessor")]
     [Woven(typeof(PrimaryKeyWithPKListObjectHelper))]
     public partial class PrimaryKeyWithPKList : IRealmObject, INotifyPropertyChanged
     {

@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IPersonAccessor")]
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged
     {

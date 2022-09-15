@@ -98,15 +98,6 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Person>().Count(p => p.Birthday > birthday), Is.EqualTo(1));
         }
 
-        // Issue #294: At one point, simply having an object with an indexed DateTimeOffset property
-        // would cause a migration error when instantiating the database. This class and the test
-        // below verifies that this issue hasn't snuck back in.
-        public class IndexedDateTimeOffsetObject : RealmObject
-        {
-            [Indexed]
-            public DateTimeOffset DateTimeOffset { get; set; }
-        }
-
         [Test]
         public void IndexedDateTimeOffsetTest()
         {
@@ -135,5 +126,14 @@ namespace Realms.Tests.Database
             // Assert
             Assert.That(p.Birthday.Ticks, Is.EqualTo(Ticks));
         }
+    }
+
+    // Issue #294: At one point, simply having an object with an indexed DateTimeOffset property
+    // would cause a migration error when instantiating the database. This class and the test
+    // below verifies that this issue hasn't snuck back in.
+    public partial class IndexedDateTimeOffsetObject : IRealmObject
+    {
+        [Indexed]
+        public DateTimeOffset DateTimeOffset { get; set; }
     }
 }

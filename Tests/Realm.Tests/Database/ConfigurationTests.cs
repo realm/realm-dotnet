@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
 namespace Foo
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : IRealmObject
     {
         public int IntValue { get; set; }
     }
@@ -273,7 +273,7 @@ namespace Foo
 namespace Bar
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : IRealmObject
     {
         public string StringValue { get; set; }
     }

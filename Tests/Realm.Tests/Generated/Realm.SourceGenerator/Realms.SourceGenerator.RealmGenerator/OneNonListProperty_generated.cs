@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IOneNonListPropertyAccessor")]
     [Woven(typeof(OneNonListPropertyObjectHelper))]
     public partial class OneNonListProperty : IRealmObject, INotifyPropertyChanged
     {

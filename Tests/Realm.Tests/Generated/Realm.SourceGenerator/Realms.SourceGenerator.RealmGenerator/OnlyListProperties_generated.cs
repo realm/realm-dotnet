@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IOnlyListPropertiesAccessor")]
     [Woven(typeof(OnlyListPropertiesObjectHelper))]
     public partial class OnlyListProperties : IRealmObject, INotifyPropertyChanged
     {

@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IOwnerAccessor")]
     [Woven(typeof(OwnerObjectHelper))]
     public partial class Owner : IRealmObject, INotifyPropertyChanged
     {

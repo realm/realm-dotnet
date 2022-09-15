@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IPrimaryKeyNullableInt64ObjectAccessor")]
     [Woven(typeof(PrimaryKeyNullableInt64ObjectObjectHelper))]
     public partial class PrimaryKeyNullableInt64Object : IRealmObject, INotifyPropertyChanged
     {

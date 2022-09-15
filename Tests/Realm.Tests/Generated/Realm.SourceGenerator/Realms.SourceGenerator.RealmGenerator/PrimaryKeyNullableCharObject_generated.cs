@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IPrimaryKeyNullableCharObjectAccessor")]
     [Woven(typeof(PrimaryKeyNullableCharObjectObjectHelper))]
     public partial class PrimaryKeyNullableCharObject : IRealmObject, INotifyPropertyChanged
     {

@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("ICounterObjectAccessor")]
     [Woven(typeof(CounterObjectObjectHelper))]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged
     {

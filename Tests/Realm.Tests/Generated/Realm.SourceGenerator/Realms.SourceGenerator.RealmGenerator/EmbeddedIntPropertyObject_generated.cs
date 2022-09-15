@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IEmbeddedIntPropertyObjectAccessor")]
     [Woven(typeof(EmbeddedIntPropertyObjectObjectHelper))]
     public partial class EmbeddedIntPropertyObject : IEmbeddedObject, INotifyPropertyChanged
     {

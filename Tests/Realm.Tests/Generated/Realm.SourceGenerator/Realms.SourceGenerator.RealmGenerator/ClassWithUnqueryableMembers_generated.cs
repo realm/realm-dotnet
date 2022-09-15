@@ -13,7 +13,7 @@ using Realms.Tests.Database;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IClassWithUnqueryableMembersAccessor")]
     [Woven(typeof(ClassWithUnqueryableMembersObjectHelper))]
     public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged
     {

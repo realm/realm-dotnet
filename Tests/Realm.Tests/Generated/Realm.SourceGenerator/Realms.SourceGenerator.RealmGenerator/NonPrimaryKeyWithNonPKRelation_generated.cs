@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("INonPrimaryKeyWithNonPKRelationAccessor")]
     [Woven(typeof(NonPrimaryKeyWithNonPKRelationObjectHelper))]
     public partial class NonPrimaryKeyWithNonPKRelation : IRealmObject, INotifyPropertyChanged
     {

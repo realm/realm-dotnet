@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IPrimaryKeyInt64ObjectAccessor")]
     [Woven(typeof(PrimaryKeyInt64ObjectObjectHelper))]
     public partial class PrimaryKeyInt64Object : IRealmObject, INotifyPropertyChanged
     {

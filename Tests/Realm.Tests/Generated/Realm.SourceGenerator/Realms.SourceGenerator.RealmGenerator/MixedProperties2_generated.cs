@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IMixedProperties2Accessor")]
     [Woven(typeof(MixedProperties2ObjectHelper))]
     public partial class MixedProperties2 : IRealmObject, INotifyPropertyChanged
     {

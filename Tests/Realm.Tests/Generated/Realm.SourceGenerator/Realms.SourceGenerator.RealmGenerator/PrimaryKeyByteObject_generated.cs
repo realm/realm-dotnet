@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IPrimaryKeyByteObjectAccessor")]
     [Woven(typeof(PrimaryKeyByteObjectObjectHelper))]
     public partial class PrimaryKeyByteObject : IRealmObject, INotifyPropertyChanged
     {

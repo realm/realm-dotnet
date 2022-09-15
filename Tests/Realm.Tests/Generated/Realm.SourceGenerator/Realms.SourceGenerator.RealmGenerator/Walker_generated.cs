@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IWalkerAccessor")]
     [Woven(typeof(WalkerObjectHelper))]
     public partial class Walker : IRealmObject, INotifyPropertyChanged
     {

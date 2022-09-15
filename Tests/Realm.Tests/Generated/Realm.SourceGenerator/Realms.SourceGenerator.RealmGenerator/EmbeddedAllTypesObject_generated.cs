@@ -13,7 +13,7 @@ using MongoDB.Bson;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IEmbeddedAllTypesObjectAccessor")]
     [Woven(typeof(EmbeddedAllTypesObjectObjectHelper))]
     public partial class EmbeddedAllTypesObject : IEmbeddedObject, INotifyPropertyChanged
     {

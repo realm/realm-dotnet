@@ -13,7 +13,7 @@ using MongoDB.Bson;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IPrimaryKeyNullableObjectIdObjectAccessor")]
     [Woven(typeof(PrimaryKeyNullableObjectIdObjectObjectHelper))]
     public partial class PrimaryKeyNullableObjectIdObject : IRealmObject, INotifyPropertyChanged
     {

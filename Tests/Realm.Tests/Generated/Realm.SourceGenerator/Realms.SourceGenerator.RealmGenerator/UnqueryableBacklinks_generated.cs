@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IUnqueryableBacklinksAccessor")]
     [Woven(typeof(UnqueryableBacklinksObjectHelper))]
     public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged
     {

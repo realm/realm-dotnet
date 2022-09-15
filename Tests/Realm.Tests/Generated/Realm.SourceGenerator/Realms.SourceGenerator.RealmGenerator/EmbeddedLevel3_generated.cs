@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IEmbeddedLevel3Accessor")]
     [Woven(typeof(EmbeddedLevel3ObjectHelper))]
     public partial class EmbeddedLevel3 : IEmbeddedObject, INotifyPropertyChanged
     {

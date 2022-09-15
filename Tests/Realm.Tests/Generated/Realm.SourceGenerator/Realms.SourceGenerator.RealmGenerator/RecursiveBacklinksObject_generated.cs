@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IRecursiveBacklinksObjectAccessor")]
     [Woven(typeof(RecursiveBacklinksObjectObjectHelper))]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged
     {

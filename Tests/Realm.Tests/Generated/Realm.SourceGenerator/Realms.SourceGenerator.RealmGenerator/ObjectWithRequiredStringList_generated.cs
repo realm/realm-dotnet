@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IObjectWithRequiredStringListAccessor")]
     [Woven(typeof(ObjectWithRequiredStringListObjectHelper))]
     public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged
     {

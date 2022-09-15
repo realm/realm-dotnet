@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IContainerObjectAccessor")]
     [Woven(typeof(ContainerObjectObjectHelper))]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged
     {

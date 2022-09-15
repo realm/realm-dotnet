@@ -12,7 +12,7 @@ using Realms.Schema;
 
 namespace Realms.Tests
 {
-    [Generated]
+    [Generated("IRemappedTypeObjectAccessor")]
     [Woven(typeof(RemappedTypeObjectObjectHelper))]
     public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged
     {

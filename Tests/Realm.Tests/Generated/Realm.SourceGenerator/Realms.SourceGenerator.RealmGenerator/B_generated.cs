@@ -13,7 +13,7 @@ using Realms.Tests;
 
 namespace Realms.Tests.Database
 {
-    [Generated]
+    [Generated("IBAccessor")]
     [Woven(typeof(BObjectHelper))]
     public partial class B : IRealmObject, INotifyPropertyChanged
     {
