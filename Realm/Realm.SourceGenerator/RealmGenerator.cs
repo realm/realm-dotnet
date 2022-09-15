@@ -25,7 +25,6 @@ namespace Realms.SourceGenerator
     {
         /* Not explicitly supported:
          * - Inheritance of any kind (classes cannot derive from anything)
-         * - Partial classes
          * - Full nullability support
          */
 

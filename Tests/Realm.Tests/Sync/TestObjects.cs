@@ -20,7 +20,7 @@ using MongoDB.Bson;
 
 namespace Realms.Tests.Sync
 {
-    public class HugeSyncObject : RealmObject
+    public partial class HugeSyncObject : IRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
