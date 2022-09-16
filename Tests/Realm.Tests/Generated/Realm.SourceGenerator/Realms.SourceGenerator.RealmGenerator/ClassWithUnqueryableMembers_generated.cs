@@ -24,7 +24,6 @@ namespace Realms.Tests
             Property.ObjectList("RealmListProperty", "Person"),
             Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
             Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent"),
-            Property.Primitive("StaticProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
         }.Build();
         
         #region IRealmObject implementation
@@ -76,7 +75,6 @@ namespace Realms.Tests
                     newAccessor.RealmListProperty.Add(val);
                 }
                 newAccessor.FirstName = oldAccessor.FirstName;
-                newAccessor.StaticProperty = oldAccessor.StaticProperty;
             }
         
             if (_propertyChanged != null)
@@ -206,8 +204,6 @@ namespace Realms.Generated
         string FirstName { get; set; }
         
         IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
-        
-        string StaticProperty { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -258,12 +254,6 @@ namespace Realms.Generated
                 return _backlinkProperty;
             }
         }
-        
-        public string StaticProperty
-        {
-            get => (string)GetValue("StaticProperty");
-            set => SetValue("StaticProperty", value);
-        }
     }
 
     internal class ClassWithUnqueryableMembersUnmanagedAccessor : UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
@@ -304,17 +294,6 @@ namespace Realms.Generated
         }
         
         public IQueryable<UnqueryableBacklinks> BacklinkProperty => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-        
-        private string _staticProperty;
-        public string StaticProperty
-        {
-            get => _staticProperty;
-            set
-            {
-                _staticProperty = value;
-                RaisePropertyChanged("StaticProperty");
-            }
-        }
     
         public ClassWithUnqueryableMembersUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -328,7 +307,6 @@ namespace Realms.Generated
                 "RealmObjectProperty" => _realmObjectProperty,
                 "FirstName" => _firstName,
                 "BacklinkProperty" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                "StaticProperty" => _staticProperty,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -345,9 +323,6 @@ namespace Realms.Generated
                     return;
                 case "FirstName":
                     FirstName = (string)val;
-                    return;
-                case "StaticProperty":
-                    StaticProperty = (string)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

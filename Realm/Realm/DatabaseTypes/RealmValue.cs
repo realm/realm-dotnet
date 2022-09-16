@@ -710,7 +710,7 @@ namespace Realms
                     return null;
                 }
 
-                var obj = AsRealmObject();
+                var obj = AsIRealmObject();
                 if (obj.IsManaged)
                 {
                     return obj.ObjectSchema.Name;
@@ -756,7 +756,7 @@ namespace Realms
                     RealmValueType.Double => AsDouble().GetHashCode(),
                     RealmValueType.Decimal128 => AsDecimal128().GetHashCode(),
                     RealmValueType.ObjectId => AsObjectId().GetHashCode(),
-                    RealmValueType.Object => AsRealmObject().GetHashCode(),
+                    RealmValueType.Object => AsIRealmObject().GetHashCode(),
                     _ => 0,
                 };
 
@@ -966,7 +966,7 @@ namespace Realms
                 RealmValueType.Decimal128 => AsDecimal128() == other.AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
-                RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
+                RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.Null => true,
                 _ => false,
             };

@@ -41,7 +41,7 @@ namespace Realms
             for (var i = 0; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
-                if (argument.Type == RealmValueType.Object && !argument.AsRealmObject().IsManaged)
+                if (argument.Type == RealmValueType.Object && !argument.AsIRealmObject().IsManaged)
                 {
                     throw new RealmException("Can't use unmanaged object as argument of Filter");
                 }

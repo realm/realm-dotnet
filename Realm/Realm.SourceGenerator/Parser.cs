@@ -115,7 +115,7 @@ namespace Realms.SourceGenerator
             {
                 var propSymbol = model.GetDeclaredSymbol(propSyntax);
 
-                if (propSymbol.HasAttribute("IgnoredAttribute"))
+                if (propSymbol.HasAttribute("IgnoredAttribute") || propSymbol.IsStatic)
                 {
                     continue;
                 }

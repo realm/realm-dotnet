@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -101,7 +102,9 @@ namespace Realms.Tests.Database
             var copy = CreateEmbeddedAllTypesObject();
 
             var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(p => !p.HasCustomAttribute<BacklinkAttribute>());
+                .Where(p => !p.HasCustomAttribute<BacklinkAttribute>())
+                .Intersect(typeof(Generated.IEmbeddedAllTypesObjectAccessor)
+                .GetProperties());
 
             foreach (var prop in properties)
             {
