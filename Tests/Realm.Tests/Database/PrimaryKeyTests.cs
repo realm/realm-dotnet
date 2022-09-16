@@ -237,7 +237,7 @@ namespace Realms.Tests.Database
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
         {
             switch (pkType)
             {
@@ -254,16 +254,16 @@ namespace Realms.Tests.Database
 
                     // The double cast is necessary to avoid creating a callsite.
                     // TODO: remove the casts when https://github.com/realm/realm-dotnet/issues/2373 is done
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
 
                 case PKType.String:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
 
                 case PKType.ObjectId:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
 
                 case PKType.Guid:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
 
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");
@@ -332,7 +332,7 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
         }
 
-        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
             try
             {
@@ -355,7 +355,7 @@ namespace Realms.Tests.Database
                     primaryKeyValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
+                return (IRealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
             }
             catch (TargetInvocationException ex)
             {

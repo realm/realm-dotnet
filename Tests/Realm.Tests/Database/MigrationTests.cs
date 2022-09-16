@@ -579,7 +579,7 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var value = (RealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
+                    var value = (IRealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
                     value.DynamicApi.Set("_id", 456);
                 }
             };

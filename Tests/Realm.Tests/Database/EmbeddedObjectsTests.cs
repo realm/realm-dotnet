@@ -809,7 +809,7 @@ namespace Realms.Tests.Database
             var parentViaBacklinks = topLevelBacklinks.Single();
             Assert.That(parentViaBacklinks, Is.EqualTo(parent));
 
-            var recursiveObjViaBacklinks = parentViaBacklinks.DynamicApi.Get<RealmObjectBase>(nameof(ObjectWithEmbeddedProperties.RecursiveObject));
+            var recursiveObjViaBacklinks = parentViaBacklinks.DynamicApi.Get<IRealmObjectBase>(nameof(ObjectWithEmbeddedProperties.RecursiveObject));
             Assert.That(recursiveObjViaBacklinks, Is.EqualTo(parent.RecursiveObject));
             Assert.That(recursiveObjViaBacklinks.DynamicApi.Get<string>(nameof(EmbeddedLevel1.String)), Is.EqualTo("level 1"));
 

@@ -324,7 +324,7 @@ namespace Realms.Tests.Database
 
             var text = serializationFunction(obj);
 
-            var realmTypes = new[] { typeof(RealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
+            var realmTypes = new[] { typeof(IRealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
 
             foreach (var field in realmTypes.SelectMany(t => t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)))
             {

@@ -768,7 +768,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
 
             Assert.That(notifiedPropertyNames.Count, Is.EqualTo(1));
-            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(RealmObjectBase.IsValid)));
+            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(IRealmObjectBase.IsValid)));
             Assert.That(person.IsValid, Is.False);
         }
 
