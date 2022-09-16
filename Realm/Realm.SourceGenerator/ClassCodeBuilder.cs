@@ -209,11 +209,11 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         }
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
-                        copyToRealm.AppendLine($@"foreach(var val in oldAccessor.{property.Name})
-{{
-{addValLine.Indent()}
-    newAccessor.{property.Name}.Add(val);
-}}");
+
+                        copyToRealm.AppendLine($@"
+CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);
+");
+
                     }
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
