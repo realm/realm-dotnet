@@ -70,18 +70,48 @@ namespace Realms.Tests.Database
                     newAccessor.Friends.Clear();
                 }
                 
-                newAccessor.FirstName = oldAccessor.FirstName;
-                newAccessor.LastName = oldAccessor.LastName;
-                newAccessor.Score = oldAccessor.Score;
-                newAccessor.Latitude = oldAccessor.Latitude;
-                newAccessor.Longitude = oldAccessor.Longitude;
-                newAccessor.Salary = oldAccessor.Salary;
+                if(!skipDefaults || oldAccessor.FirstName != default(string))
+                {
+                    newAccessor.FirstName = oldAccessor.FirstName;
+                }
+                if(!skipDefaults || oldAccessor.LastName != default(string))
+                {
+                    newAccessor.LastName = oldAccessor.LastName;
+                }
+                if(!skipDefaults || oldAccessor.Score != default(float))
+                {
+                    newAccessor.Score = oldAccessor.Score;
+                }
+                if(!skipDefaults || oldAccessor.Latitude != default(double))
+                {
+                    newAccessor.Latitude = oldAccessor.Latitude;
+                }
+                if(!skipDefaults || oldAccessor.Longitude != default(double))
+                {
+                    newAccessor.Longitude = oldAccessor.Longitude;
+                }
+                if(!skipDefaults || oldAccessor.Salary != default(long))
+                {
+                    newAccessor.Salary = oldAccessor.Salary;
+                }
                 newAccessor.IsAmbivalent = oldAccessor.IsAmbivalent;
                 newAccessor.Birthday = oldAccessor.Birthday;
-                newAccessor.PublicCertificateBytes = oldAccessor.PublicCertificateBytes;
-                newAccessor.OptionalAddress = oldAccessor.OptionalAddress;
-                newAccessor.Email_ = oldAccessor.Email_;
-                newAccessor.IsInteresting = oldAccessor.IsInteresting;
+                if(!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
+                {
+                    newAccessor.PublicCertificateBytes = oldAccessor.PublicCertificateBytes;
+                }
+                if(!skipDefaults || oldAccessor.OptionalAddress != default(string))
+                {
+                    newAccessor.OptionalAddress = oldAccessor.OptionalAddress;
+                }
+                if(!skipDefaults || oldAccessor.Email_ != default(string))
+                {
+                    newAccessor.Email_ = oldAccessor.Email_;
+                }
+                if(!skipDefaults || oldAccessor.IsInteresting != default(bool))
+                {
+                    newAccessor.IsInteresting = oldAccessor.IsInteresting;
+                }
                 foreach(var val in oldAccessor.Friends)
                 {
                     newAccessor.Realm.Add(val, update);
@@ -440,7 +470,7 @@ namespace Realms.Generated
             set
             {
                 _email_ = value;
-                RaisePropertyChanged("Email");
+                RaisePropertyChanged("Email_");
             }
         }
         

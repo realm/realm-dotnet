@@ -64,8 +64,14 @@ namespace Realms.Tests.Database
                     newAccessor.Set.Clear();
                 }
                 
-                newAccessor.IntValue = oldAccessor.IntValue;
-                newAccessor.Name = oldAccessor.Name;
+                if(!skipDefaults || oldAccessor.IntValue != default(int))
+                {
+                    newAccessor.IntValue = oldAccessor.IntValue;
+                }
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
                 foreach(var val in oldAccessor.Dict)
                 {
                     

@@ -56,8 +56,14 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.Name = oldAccessor.Name;
+                if(!skipDefaults || oldAccessor.Id != default(long))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
                 if(oldAccessor.Parent != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Parent, update);

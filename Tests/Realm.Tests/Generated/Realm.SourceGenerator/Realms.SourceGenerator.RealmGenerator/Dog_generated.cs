@@ -58,10 +58,22 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.Name = oldAccessor.Name;
-                newAccessor.Color = oldAccessor.Color;
-                newAccessor.Vaccinated = oldAccessor.Vaccinated;
-                newAccessor.Age = oldAccessor.Age;
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
+                if(!skipDefaults || oldAccessor.Color != default(string))
+                {
+                    newAccessor.Color = oldAccessor.Color;
+                }
+                if(!skipDefaults || oldAccessor.Vaccinated != default(bool))
+                {
+                    newAccessor.Vaccinated = oldAccessor.Vaccinated;
+                }
+                if(!skipDefaults || oldAccessor.Age != default(int))
+                {
+                    newAccessor.Age = oldAccessor.Age;
+                }
             }
         
             if (_propertyChanged != null)

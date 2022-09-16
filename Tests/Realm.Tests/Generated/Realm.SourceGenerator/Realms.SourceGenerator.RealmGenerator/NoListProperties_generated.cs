@@ -55,8 +55,14 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.Name = oldAccessor.Name;
-                newAccessor.Age = oldAccessor.Age;
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
+                if(!skipDefaults || oldAccessor.Age != default(int))
+                {
+                    newAccessor.Age = oldAccessor.Age;
+                }
             }
         
             if (_propertyChanged != null)

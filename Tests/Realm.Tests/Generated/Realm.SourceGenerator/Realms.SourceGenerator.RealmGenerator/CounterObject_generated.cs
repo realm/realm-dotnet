@@ -62,7 +62,10 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.Id = oldAccessor.Id;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 newAccessor.ByteProperty = oldAccessor.ByteProperty;
                 newAccessor.Int16Property = oldAccessor.Int16Property;
                 newAccessor.Int32Property = oldAccessor.Int32Property;
@@ -274,7 +277,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         

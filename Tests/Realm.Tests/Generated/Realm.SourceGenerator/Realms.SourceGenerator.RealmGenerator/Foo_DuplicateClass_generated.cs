@@ -54,7 +54,10 @@ namespace Foo
             if (helper != null)
             {
                 
-                newAccessor.IntValue = oldAccessor.IntValue;
+                if(!skipDefaults || oldAccessor.IntValue != default(int))
+                {
+                    newAccessor.IntValue = oldAccessor.IntValue;
+                }
             }
         
             if (_propertyChanged != null)

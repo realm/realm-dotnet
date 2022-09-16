@@ -60,7 +60,10 @@ namespace Realms.Tests.Database
                     newAccessor.RelatedCollection.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 if(oldAccessor.RelatedObject != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.RelatedObject, update);

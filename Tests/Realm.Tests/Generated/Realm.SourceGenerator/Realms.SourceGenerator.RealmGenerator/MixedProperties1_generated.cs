@@ -62,13 +62,19 @@ namespace Realms.Tests.Database
                     newAccessor.Enemies.Clear();
                 }
                 
-                newAccessor.Name = oldAccessor.Name;
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
                 foreach(var val in oldAccessor.Friends)
                 {
                     newAccessor.Realm.Add(val, update);
                     newAccessor.Friends.Add(val);
                 }
-                newAccessor.Age = oldAccessor.Age;
+                if(!skipDefaults || oldAccessor.Age != default(int))
+                {
+                    newAccessor.Age = oldAccessor.Age;
+                }
                 foreach(var val in oldAccessor.Enemies)
                 {
                     newAccessor.Realm.Add(val, update);

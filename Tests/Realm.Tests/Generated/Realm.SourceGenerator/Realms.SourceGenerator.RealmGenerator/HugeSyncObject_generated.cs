@@ -57,7 +57,10 @@ namespace Realms.Tests.Sync
             {
                 
                 newAccessor.Id = oldAccessor.Id;
-                newAccessor.Data = oldAccessor.Data;
+                if(!skipDefaults || oldAccessor.Data != default(byte[]))
+                {
+                    newAccessor.Data = oldAccessor.Data;
+                }
             }
         
             if (_propertyChanged != null)
@@ -208,7 +211,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         

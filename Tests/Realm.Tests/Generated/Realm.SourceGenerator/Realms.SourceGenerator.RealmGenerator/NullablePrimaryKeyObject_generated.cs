@@ -56,7 +56,10 @@ namespace Realms.Tests.Database
             {
                 
                 newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
+                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                {
+                    newAccessor.StringValue = oldAccessor.StringValue;
+                }
             }
         
             if (_propertyChanged != null)

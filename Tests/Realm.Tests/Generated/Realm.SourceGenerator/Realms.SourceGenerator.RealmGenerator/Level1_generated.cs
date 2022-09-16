@@ -55,7 +55,10 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.StringValue = oldAccessor.StringValue;
+                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                {
+                    newAccessor.StringValue = oldAccessor.StringValue;
+                }
                 if(oldAccessor.Level2 != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Level2, update);

@@ -54,7 +54,10 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.Int = oldAccessor.Int;
+                if(!skipDefaults || oldAccessor.Int != default(int))
+                {
+                    newAccessor.Int = oldAccessor.Int;
+                }
             }
         
             if (_propertyChanged != null)

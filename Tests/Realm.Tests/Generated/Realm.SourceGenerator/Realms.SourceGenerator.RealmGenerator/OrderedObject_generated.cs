@@ -55,8 +55,14 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.Order = oldAccessor.Order;
-                newAccessor.IsPartOfResults = oldAccessor.IsPartOfResults;
+                if(!skipDefaults || oldAccessor.Order != default(int))
+                {
+                    newAccessor.Order = oldAccessor.Order;
+                }
+                if(!skipDefaults || oldAccessor.IsPartOfResults != default(bool))
+                {
+                    newAccessor.IsPartOfResults = oldAccessor.IsPartOfResults;
+                }
             }
         
             if (_propertyChanged != null)

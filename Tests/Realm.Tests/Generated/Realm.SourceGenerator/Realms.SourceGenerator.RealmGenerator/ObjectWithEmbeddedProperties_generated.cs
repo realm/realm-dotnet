@@ -63,7 +63,10 @@ namespace Realms.Tests
                     newAccessor.DictionaryOfAllTypesObjects.Clear();
                 }
                 
-                newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
+                if(!skipDefaults || oldAccessor.PrimaryKey != default(int))
+                {
+                    newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
+                }
                 newAccessor.AllTypesObject = oldAccessor.AllTypesObject;
                 foreach(var val in oldAccessor.ListOfAllTypesObjects)
                 {

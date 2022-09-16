@@ -89,21 +89,51 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.CharProperty = oldAccessor.CharProperty;
-                newAccessor.ByteProperty = oldAccessor.ByteProperty;
-                newAccessor.Int16Property = oldAccessor.Int16Property;
-                newAccessor.Int32Property = oldAccessor.Int32Property;
-                newAccessor.Int64Property = oldAccessor.Int64Property;
-                newAccessor.SingleProperty = oldAccessor.SingleProperty;
-                newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
+                if(!skipDefaults || oldAccessor.CharProperty != default(char))
+                {
+                    newAccessor.CharProperty = oldAccessor.CharProperty;
+                }
+                if(!skipDefaults || oldAccessor.ByteProperty != default(byte))
+                {
+                    newAccessor.ByteProperty = oldAccessor.ByteProperty;
+                }
+                if(!skipDefaults || oldAccessor.Int16Property != default(short))
+                {
+                    newAccessor.Int16Property = oldAccessor.Int16Property;
+                }
+                if(!skipDefaults || oldAccessor.Int32Property != default(int))
+                {
+                    newAccessor.Int32Property = oldAccessor.Int32Property;
+                }
+                if(!skipDefaults || oldAccessor.Int64Property != default(long))
+                {
+                    newAccessor.Int64Property = oldAccessor.Int64Property;
+                }
+                if(!skipDefaults || oldAccessor.SingleProperty != default(float))
+                {
+                    newAccessor.SingleProperty = oldAccessor.SingleProperty;
+                }
+                if(!skipDefaults || oldAccessor.DoubleProperty != default(double))
+                {
+                    newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
+                }
                 newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
                 newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
-                newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
-                newAccessor.StringProperty = oldAccessor.StringProperty;
+                if(!skipDefaults || oldAccessor.BooleanProperty != default(bool))
+                {
+                    newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
+                }
+                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                {
+                    newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                if(!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                {
+                    newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                }
                 newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
                 newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
                 newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;

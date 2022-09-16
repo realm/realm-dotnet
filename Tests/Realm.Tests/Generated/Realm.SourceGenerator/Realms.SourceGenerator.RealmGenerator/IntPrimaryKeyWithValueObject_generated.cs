@@ -55,8 +55,14 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                {
+                    newAccessor.StringValue = oldAccessor.StringValue;
+                }
             }
         
             if (_propertyChanged != null)
@@ -207,7 +213,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         

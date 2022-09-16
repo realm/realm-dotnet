@@ -56,9 +56,18 @@ namespace Realms.Tests.Sync
             if (helper != null)
             {
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.Value = oldAccessor.Value;
-                newAccessor.Partition = oldAccessor.Partition;
+                if(!skipDefaults || oldAccessor.Id != default(string))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.Value != default(string))
+                {
+                    newAccessor.Value = oldAccessor.Value;
+                }
+                if(!skipDefaults || oldAccessor.Partition != default(string))
+                {
+                    newAccessor.Partition = oldAccessor.Partition;
+                }
             }
         
             if (_propertyChanged != null)
@@ -217,7 +226,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         
@@ -239,7 +248,7 @@ namespace Realms.Generated
             set
             {
                 _partition = value;
-                RaisePropertyChanged("realm_id");
+                RaisePropertyChanged("Partition");
             }
         }
     

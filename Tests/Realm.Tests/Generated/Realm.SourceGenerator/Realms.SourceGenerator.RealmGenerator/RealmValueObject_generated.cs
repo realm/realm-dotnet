@@ -66,7 +66,10 @@ namespace Realms.Tests.Database
                     newAccessor.TestDict.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
                 foreach(var val in oldAccessor.RealmValueList)
                 {

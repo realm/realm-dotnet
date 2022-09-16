@@ -61,9 +61,18 @@ namespace Realms.Tests.Database
                     newAccessor.Reports.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.Name = oldAccessor.Name;
-                newAccessor.Date = oldAccessor.Date;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
+                if(!skipDefaults || oldAccessor.Date != default(string))
+                {
+                    newAccessor.Date = oldAccessor.Date;
+                }
                 foreach(var val in oldAccessor.Reports)
                 {
                     newAccessor.Realm.Add(val, update);

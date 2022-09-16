@@ -60,8 +60,14 @@ namespace Realms.Tests.Database
                     newAccessor.ListValue.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
+                if(!skipDefaults || oldAccessor.Id != default(long))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                {
+                    newAccessor.StringValue = oldAccessor.StringValue;
+                }
                 foreach(var val in oldAccessor.ListValue)
                 {
                     newAccessor.Realm.Add(val, update);

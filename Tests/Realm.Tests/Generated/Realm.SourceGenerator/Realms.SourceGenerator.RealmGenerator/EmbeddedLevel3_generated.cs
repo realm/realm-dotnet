@@ -54,7 +54,10 @@ namespace Realms.Tests
             if (helper != null)
             {
                 
-                newAccessor.String = oldAccessor.String;
+                if(!skipDefaults || oldAccessor.String != default(string))
+                {
+                    newAccessor.String = oldAccessor.String;
+                }
             }
         
             if (_propertyChanged != null)

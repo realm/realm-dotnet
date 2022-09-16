@@ -55,8 +55,14 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.IntProperty = oldAccessor.IntProperty;
-                newAccessor.StringProperty = oldAccessor.StringProperty;
+                if(!skipDefaults || oldAccessor.IntProperty != default(int))
+                {
+                    newAccessor.IntProperty = oldAccessor.IntProperty;
+                }
+                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                {
+                    newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
             }
         
             if (_propertyChanged != null)

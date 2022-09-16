@@ -54,7 +54,10 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.Foo = oldAccessor.Foo;
+                if(!skipDefaults || oldAccessor.Foo != default(int))
+                {
+                    newAccessor.Foo = oldAccessor.Foo;
+                }
             }
         
             if (_propertyChanged != null)

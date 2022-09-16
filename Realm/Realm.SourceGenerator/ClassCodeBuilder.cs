@@ -245,7 +245,25 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
                     schemaProperties.AppendLine(@$"Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
 
-                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
+                    var shouldSetAlways = property.IsRequired ||
+                        property.TypeInfo.NullableAnnotation == NullableAnnotation.Annotated ||
+                        property.TypeInfo.IsRealmInteger ||
+                        property.TypeInfo.ScalarType == ScalarType.Date ||
+                        property.TypeInfo.ScalarType == ScalarType.Decimal ||
+                        property.TypeInfo.ScalarType == ScalarType.ObjectId ||
+                        property.TypeInfo.ScalarType == ScalarType.Guid;
+
+                    if (shouldSetAlways)
+                    {
+                        copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
+                    }
+                    else
+                    {
+                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteTypeString}))
+{{
+    newAccessor.{property.Name} = oldAccessor.{property.Name};
+}}");
+                    }
                 }
             }
 
@@ -555,7 +573,7 @@ private class {_helperClassName} : IRealmObjectHelper
     set
     {{
         {backingFieldName} = value;
-        RaisePropertyChanged(""{stringName}"");
+        RaisePropertyChanged(""{name}"");
     }}
 }}";
 

@@ -66,8 +66,14 @@ namespace Realms.Tests
                     newAccessor.MappedList.Clear();
                 }
                 
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.StringValue = oldAccessor.StringValue;
+                if(!skipDefaults || oldAccessor.Id != default(int))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                {
+                    newAccessor.StringValue = oldAccessor.StringValue;
+                }
                 if(oldAccessor.NormalLink != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NormalLink, update);
@@ -318,7 +324,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         
@@ -351,7 +357,7 @@ namespace Realms.Generated
             set
             {
                 _mappedLink = value;
-                RaisePropertyChanged("__mappedLink");
+                RaisePropertyChanged("MappedLink");
             }
         }
         

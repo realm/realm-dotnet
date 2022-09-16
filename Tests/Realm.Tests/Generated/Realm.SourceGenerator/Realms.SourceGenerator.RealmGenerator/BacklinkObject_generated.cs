@@ -56,8 +56,14 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.BeforeBacklinks = oldAccessor.BeforeBacklinks;
-                newAccessor.AfterBacklinks = oldAccessor.AfterBacklinks;
+                if(!skipDefaults || oldAccessor.BeforeBacklinks != default(string))
+                {
+                    newAccessor.BeforeBacklinks = oldAccessor.BeforeBacklinks;
+                }
+                if(!skipDefaults || oldAccessor.AfterBacklinks != default(string))
+                {
+                    newAccessor.AfterBacklinks = oldAccessor.AfterBacklinks;
+                }
             }
         
             if (_propertyChanged != null)

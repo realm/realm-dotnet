@@ -60,7 +60,10 @@ namespace Realms.Tests
                     newAccessor.Children.Clear();
                 }
                 
-                newAccessor.String = oldAccessor.String;
+                if(!skipDefaults || oldAccessor.String != default(string))
+                {
+                    newAccessor.String = oldAccessor.String;
+                }
                 newAccessor.Child = oldAccessor.Child;
                 foreach(var val in oldAccessor.Children)
                 {

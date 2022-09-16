@@ -444,6 +444,7 @@ namespace Realms
                 }
             }
 
+            //TODO Change docs (would this be an issue for people that use this with the old API)?
             /// <summary>
             /// Gets the value of a backlink property. This property must have been declared
             /// explicitly and annotated with <see cref="BacklinkAttribute"/>.
@@ -453,7 +454,7 @@ namespace Realms
             /// A queryable collection containing all objects pointing to this one via the
             /// property specified in <see cref="BacklinkAttribute.Property"/>.
             /// </returns>
-            public IQueryable<RealmObjectBase> GetBacklinks(string propertyName)
+            public IQueryable<IRealmObjectBase> GetBacklinks(string propertyName)
             {
                 var property = GetProperty(propertyName, PropertyTypeEx.IsComputed);
 
@@ -468,6 +469,7 @@ namespace Realms
                 return new RealmResults<RealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
+            //TODO Change docs (would this be an issue for people that use this with the old API)?
             /// <summary>
             /// Gets a collection of all the objects that link to this object in the specified relationship.
             /// </summary>
@@ -477,7 +479,7 @@ namespace Realms
             /// A queryable collection containing all objects of <paramref name="fromObjectType"/> that link
             /// to the current object via <paramref name="fromPropertyName"/>.
             /// </returns>
-            public IQueryable<RealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
+            public IQueryable<IRealmObjectBase> GetBacklinksFromType(string fromObjectType, string fromPropertyName)
             {
                 Argument.Ensure(_managedAccessor.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 

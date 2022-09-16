@@ -74,21 +74,51 @@ namespace Realms.Tests
             {
                 
                 newAccessor.Id = oldAccessor.Id;
-                newAccessor.CharProperty = oldAccessor.CharProperty;
-                newAccessor.ByteProperty = oldAccessor.ByteProperty;
-                newAccessor.Int16Property = oldAccessor.Int16Property;
-                newAccessor.Int32Property = oldAccessor.Int32Property;
-                newAccessor.Int64Property = oldAccessor.Int64Property;
-                newAccessor.FloatProperty = oldAccessor.FloatProperty;
-                newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
-                newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
+                if(!skipDefaults || oldAccessor.CharProperty != default(char))
+                {
+                    newAccessor.CharProperty = oldAccessor.CharProperty;
+                }
+                if(!skipDefaults || oldAccessor.ByteProperty != default(byte))
+                {
+                    newAccessor.ByteProperty = oldAccessor.ByteProperty;
+                }
+                if(!skipDefaults || oldAccessor.Int16Property != default(short))
+                {
+                    newAccessor.Int16Property = oldAccessor.Int16Property;
+                }
+                if(!skipDefaults || oldAccessor.Int32Property != default(int))
+                {
+                    newAccessor.Int32Property = oldAccessor.Int32Property;
+                }
+                if(!skipDefaults || oldAccessor.Int64Property != default(long))
+                {
+                    newAccessor.Int64Property = oldAccessor.Int64Property;
+                }
+                if(!skipDefaults || oldAccessor.FloatProperty != default(float))
+                {
+                    newAccessor.FloatProperty = oldAccessor.FloatProperty;
+                }
+                if(!skipDefaults || oldAccessor.DoubleProperty != default(double))
+                {
+                    newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
+                }
+                if(!skipDefaults || oldAccessor.BooleanProperty != default(bool))
+                {
+                    newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
+                }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
                 newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
                 newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                newAccessor.StringProperty = oldAccessor.StringProperty;
-                newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                {
+                    newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
+                if(!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                {
+                    newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
                 if(oldAccessor.ObjectProperty != null)
                 {
@@ -382,7 +412,7 @@ namespace Realms.Generated
             set
             {
                 _id = value;
-                RaisePropertyChanged("_id");
+                RaisePropertyChanged("Id");
             }
         }
         

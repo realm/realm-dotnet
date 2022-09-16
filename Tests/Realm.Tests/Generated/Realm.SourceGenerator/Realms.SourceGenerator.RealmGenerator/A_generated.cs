@@ -55,7 +55,10 @@ namespace Realms.Tests.Database
             if (helper != null)
             {
                 
-                newAccessor.Value = oldAccessor.Value;
+                if(!skipDefaults || oldAccessor.Value != default(bool))
+                {
+                    newAccessor.Value = oldAccessor.Value;
+                }
                 if(oldAccessor.B != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.B, update);

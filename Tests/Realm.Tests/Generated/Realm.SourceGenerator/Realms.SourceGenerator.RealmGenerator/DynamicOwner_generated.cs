@@ -70,7 +70,10 @@ namespace Realms.Tests.Database
                     newAccessor.TagsSet.Clear();
                 }
                 
-                newAccessor.Name = oldAccessor.Name;
+                if(!skipDefaults || oldAccessor.Name != default(string))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
                 if(oldAccessor.TopDog != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);

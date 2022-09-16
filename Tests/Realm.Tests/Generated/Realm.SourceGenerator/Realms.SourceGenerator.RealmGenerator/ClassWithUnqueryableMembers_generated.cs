@@ -63,7 +63,10 @@ namespace Realms.Tests
                     newAccessor.RealmListProperty.Clear();
                 }
                 
-                newAccessor.RealPropertyToSatisfyWeaver = oldAccessor.RealPropertyToSatisfyWeaver;
+                if(!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string))
+                {
+                    newAccessor.RealPropertyToSatisfyWeaver = oldAccessor.RealPropertyToSatisfyWeaver;
+                }
                 if(oldAccessor.RealmObjectProperty != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
@@ -74,7 +77,10 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(val, update);
                     newAccessor.RealmListProperty.Add(val);
                 }
-                newAccessor.FirstName = oldAccessor.FirstName;
+                if(!skipDefaults || oldAccessor.FirstName != default(string))
+                {
+                    newAccessor.FirstName = oldAccessor.FirstName;
+                }
             }
         
             if (_propertyChanged != null)
