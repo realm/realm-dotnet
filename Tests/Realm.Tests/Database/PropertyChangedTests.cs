@@ -871,15 +871,12 @@ namespace Realms.Tests.Database
             }
         }
 
-        //TODO This should not be generated
-        //protected override void OnPropertyChanged(string propertyName)
-        //{
-        //    base.OnPropertyChanged(propertyName);
-
-        //    if (propertyName == nameof(Birthday))
-        //    {
-        //        RaisePropertyChanged(nameof(Age));
-        //    }
-        //}
+        partial void OnPropertyChanged(string propertyName)
+        {
+            if (propertyName == nameof(Birthday))
+            {
+                RaisePropertyChanged(nameof(Age));
+            }
+        }
     }
 }

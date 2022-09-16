@@ -118,25 +118,7 @@ namespace Realms.Tests.Database
         
         public static implicit operator RealmValue(InternalObject val) => RealmValue.Object(val);
         
-        public override bool Equals(object obj)
-        {
-            if (obj is null)
-            {
-                return false;
-            }
         
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-        
-            if (obj is not IRealmObjectBase iro)
-            {
-                return false;
-            }
-        
-            return Accessor.Equals(iro.Accessor);
-        }
         
         public override int GetHashCode()
         {

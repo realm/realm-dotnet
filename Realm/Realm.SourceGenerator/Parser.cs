@@ -161,7 +161,6 @@ namespace Realms.SourceGenerator
 
                 if (info.Backlink != null)
                 {
-                    //TODO Here I need to get the backlink mapped name of the property (and maybe of the type??)
                     if (!info.TypeInfo.IsBacklink)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));

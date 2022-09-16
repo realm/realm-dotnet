@@ -1066,8 +1066,7 @@ namespace Realms.Tests.Database
 
         public string StringProperty { get; set; }
 
-        //TODO Need to add it back later
-        //public override bool Equals(object obj) => Equals(obj as InternalObject);
+        public override bool Equals(object obj) => Equals(obj as InternalObject);
 
         public bool Equals(InternalObject other) => other != null &&
                    IntProperty == other.IntProperty &&

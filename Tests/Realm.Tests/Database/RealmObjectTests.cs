@@ -743,10 +743,9 @@ namespace Realms.Tests.Database
         [Ignored]
         public int OnManagedCalled { get; private set; }
 
-        //TODO OnManaged should not be generated?
-        //protected internal override void OnManaged()
-        //{
-        //    OnManagedCalled++;
-        //}
+        partial void OnManaged()
+        {
+            OnManagedCalled++;
+        }
     }
 }
