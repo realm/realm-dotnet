@@ -203,8 +203,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             };
 
                             var internalTypeString = GetRealmValueType(internalType);
-
-                            var internalTypeNullable = internalType.IsNullable.ToCodeString();
+                            var internalTypeNullable = property.IsRequired ? "false" : internalType.IsNullable.ToCodeString();
 
                             schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
                         }

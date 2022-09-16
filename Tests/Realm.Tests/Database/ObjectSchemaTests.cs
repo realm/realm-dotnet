@@ -822,7 +822,7 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
-            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(IEmbeddedObject)));
+            Assert.That(schema.IsEmbedded, Is.EqualTo(typeof(IEmbeddedObject).IsAssignableFrom(type)));
             Assert.That(schema.Type, Is.EqualTo(type));
         }
 
