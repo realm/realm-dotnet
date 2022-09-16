@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Realms.Schema;
 
 namespace Realms
@@ -150,5 +151,8 @@ namespace Realms
         /// A method called internally to unsubscribe to the notifications for the associated object.
         /// </summary>
         void UnsubscribeFromNotifications();
+
+        //TODO Docs (can we do it differently?)
+        TypeInfo GetTypeInfo(IRealmObjectBase obj);
     }
 }

@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Realms.DataBinding;
+using System.Reflection;
 using Realms.Schema;
 
 namespace Realms
@@ -107,6 +109,12 @@ namespace Realms
         protected void RaisePropertyChanged(string propertyName)
         {
             _onNotifyPropertyChanged?.Invoke(propertyName);
+        }
+
+        //TODO Docs
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
+        {
+            return TypeInfoHelper.GetInfo(obj);
         }
 
         /// <inheritdoc/>

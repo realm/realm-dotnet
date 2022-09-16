@@ -33,6 +33,7 @@ namespace Realms.SourceGenerator
             "System.Collections.Generic",
             "System.Linq",
             "System.Runtime.CompilerServices",
+            "System.Reflection",
             "System.ComponentModel",
             "Realms",
             "Realms.Weaving",
@@ -409,6 +410,12 @@ public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealm
 
 public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
 
+[EditorBrowsable(EditorBrowsableState.Never)]
+public TypeInfo GetTypeInfo()
+{{
+    return Accessor.GetTypeInfo(this);
+}}
+
 {(_classInfo.OverridesEquals ? string.Empty :
 $@"public override bool Equals(object obj)
 {{
@@ -444,7 +451,7 @@ $@"public override string ToString()
 
             var classString = $@"[Generated(""{_accessorInterfaceName}"")]
 [Woven(typeof({_helperClassName}))]
-{SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged
+{SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{
 {contents.Indent()}
 

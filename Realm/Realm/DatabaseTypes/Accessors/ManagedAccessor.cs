@@ -22,7 +22,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Schema;
 
@@ -233,6 +235,12 @@ namespace Realms
         /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
+
+        //TODO Docs
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
+        {
+            return TypeInfoHelper.GetInfo(obj);
+        }
 
         /// <inheritdoc/>
         public override int GetHashCode()
