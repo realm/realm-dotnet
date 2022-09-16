@@ -141,13 +141,10 @@ namespace Foo
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
         
-        /***
         public override string ToString()
         {
             return Accessor.ToString();
         }
-        **/
-        
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class Foo_DuplicateClassObjectHelper : IRealmObjectHelper

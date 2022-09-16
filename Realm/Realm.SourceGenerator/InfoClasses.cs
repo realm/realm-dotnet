@@ -48,6 +48,14 @@ namespace Realms.SourceGenerator
 
         public bool HasParameterlessConstructor { get; set; }
 
+        public bool OverridesToString { get; set; }
+
+        public bool OverridesEquals { get; set; }
+
+        public bool OverridesGetHashCode { get; set; }
+
+        public bool HasPropertyChangedEvent { get; set; }
+
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 

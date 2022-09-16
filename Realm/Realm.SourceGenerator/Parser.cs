@@ -78,6 +78,10 @@ namespace Realms.SourceGenerator
                     classInfo.ObjectType = isEmbedded ? ObjectType.EmbeddedObject : ObjectType.RealmObject;
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
                     classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
+                    classInfo.HasPropertyChangedEvent = classSymbol.HasPropertyChangedEvent();
+                    classInfo.OverridesEquals = classSymbol.OverridesEquals();
+                    classInfo.OverridesGetHashCode = classSymbol.OverridesGetHashCode();
+                    classInfo.OverridesToString = classSymbol.OverridesToString();
 
                     // Properties
                     foreach (var classDeclarationSyntax in classDeclarations)

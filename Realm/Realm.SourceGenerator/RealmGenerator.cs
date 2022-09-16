@@ -30,7 +30,8 @@ namespace Realms.SourceGenerator
 
         /* Notes:
          * - If a realm class is defined inside other classes, all the enclosing classes must be partial
-         * 
+         * - "OnManaged" is a partial method now
+         * - "OnPropertyChanged" is a partial method now
          * 
          */
 

@@ -269,7 +269,30 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
             var baseInterface = _classInfo.IsEmbedded ? "IEmbeddedObject" : "IRealmObject";
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
-            //TODO ToString, GetHashCode and Equals should be defined only if not defined already... At the moment toString is commented out for testing
+            var getHashCode = _classInfo.OverridesGetHashCode ? string.Empty : $@"public override int GetHashCode()
+{{
+    return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
+}}";
+
+            var equals = _classInfo.OverridesEquals ? string.Empty : $@"public override bool Equals(object obj)
+{{
+    if (obj is null)
+    {{
+        return false;
+    }}
+
+    if (ReferenceEquals(this, obj))
+    {{
+        return true;
+    }}
+
+    if (obj is not IRealmObjectBase iro)
+    {{
+        return false;
+    }}
+
+    return Accessor.Equals(iro.Accessor);
+}}";
 
             var contents = $@"{schema}
 
@@ -321,7 +344,8 @@ public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelpe
 
 private event PropertyChangedEventHandler _propertyChanged;
 
-public event PropertyChangedEventHandler PropertyChanged
+{(_classInfo.HasPropertyChangedEvent ? string.Empty :
+$@"public event PropertyChangedEventHandler PropertyChanged
 {{
     add
     {{
@@ -342,7 +366,7 @@ public event PropertyChangedEventHandler PropertyChanged
             UnsubscribeFromNotifications();
         }}
     }}
-}}
+}}")}
 
 partial void OnPropertyChanged(string propertyName);
 
@@ -368,7 +392,8 @@ public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealm
 
 public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
 
-public override bool Equals(object obj)
+{(_classInfo.OverridesEquals ? string.Empty :
+$@"public override bool Equals(object obj)
 {{
     if (obj is null)
     {{
@@ -386,20 +411,19 @@ public override bool Equals(object obj)
     }}
 
     return Accessor.Equals(iro.Accessor);
-}}
+}}")}
 
-public override int GetHashCode()
+{(_classInfo.OverridesGetHashCode ? string.Empty :
+$@"public override int GetHashCode()
 {{
     return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-}}
+}}")}
 
-/***
-public override string ToString()
+{(_classInfo.OverridesToString ? string.Empty :
+$@"public override string ToString()
 {{
     return Accessor.ToString();
-}}
-**/
-";
+}}")}";
 
             var classString = $@"[Generated(""{_accessorInterfaceName}"")]
 [Woven(typeof({_helperClassName}))]

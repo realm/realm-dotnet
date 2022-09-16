@@ -160,13 +160,10 @@ namespace Realms.Tests.Database
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
         
-        /***
         public override string ToString()
         {
             return Accessor.ToString();
         }
-        **/
-        
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class MixedProperties2ObjectHelper : IRealmObjectHelper

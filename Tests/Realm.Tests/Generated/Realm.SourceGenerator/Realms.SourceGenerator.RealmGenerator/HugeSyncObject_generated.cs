@@ -144,13 +144,10 @@ namespace Realms.Tests.Sync
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
         
-        /***
         public override string ToString()
         {
             return Accessor.ToString();
         }
-        **/
-        
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class HugeSyncObjectObjectHelper : IRealmObjectHelper

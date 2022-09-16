@@ -163,13 +163,10 @@ namespace Realms.Tests
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
         
-        /***
         public override string ToString()
         {
             return Accessor.ToString();
         }
-        **/
-        
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class ClassWithUnqueryableMembersObjectHelper : IRealmObjectHelper

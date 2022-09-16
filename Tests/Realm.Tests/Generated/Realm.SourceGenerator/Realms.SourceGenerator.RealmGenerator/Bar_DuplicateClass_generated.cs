@@ -141,13 +141,10 @@ namespace Bar
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
         
-        /***
         public override string ToString()
         {
             return Accessor.ToString();
         }
-        **/
-        
     
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class Bar_DuplicateClassObjectHelper : IRealmObjectHelper
