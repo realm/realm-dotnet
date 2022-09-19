@@ -33,6 +33,8 @@ namespace Realms.SourceGenerator
             "System.Collections.Generic",
             "System.Linq",
             "System.Runtime.CompilerServices",
+            "System.Runtime.Serialization",
+            "System.Xml.Serialization",
             "System.Reflection",
             "System.ComponentModel",
             "Realms",
@@ -322,18 +324,25 @@ IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
 internal {_accessorInterfaceName} Accessor => _accessor = _accessor ?? new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
+[IgnoreDataMember, XmlIgnore]
 public bool IsManaged => Accessor.IsManaged;
 
+[IgnoreDataMember, XmlIgnore]
 public bool IsValid => Accessor.IsValid;
 
+[IgnoreDataMember, XmlIgnore]
 public bool IsFrozen => Accessor.IsFrozen;
 
+[IgnoreDataMember, XmlIgnore]
 public Realm Realm => Accessor.Realm;
 
+[IgnoreDataMember, XmlIgnore]
 public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
+[IgnoreDataMember, XmlIgnore]
 public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
 
+[IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {parameterlessConstructorString}

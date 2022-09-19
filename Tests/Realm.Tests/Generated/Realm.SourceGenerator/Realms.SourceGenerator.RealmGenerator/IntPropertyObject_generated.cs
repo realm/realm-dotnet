@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
 using System.Reflection;
 using System.ComponentModel;
 using Realms;
@@ -34,18 +36,25 @@ namespace Realms.Tests
         
         internal IIntPropertyObjectAccessor Accessor => _accessor = _accessor ?? new IntPropertyObjectUnmanagedAccessor(typeof(IntPropertyObject));
         
+        [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
         
+        [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
         
+        [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
         
+        [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
         
+        [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
+        [IgnoreDataMember, XmlIgnore]
         public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
         
+        [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
         
         
