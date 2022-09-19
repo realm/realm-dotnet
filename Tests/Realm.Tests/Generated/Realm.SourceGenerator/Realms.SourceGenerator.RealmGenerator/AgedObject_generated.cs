@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IAgedObjectAccessor")]
     [Woven(typeof(AgedObjectObjectHelper))]
-    public partial class AgedObject : IRealmObject, INotifyPropertyChanged
+    public partial class AgedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AgedObject", isEmbedded: false)
         {
@@ -115,6 +116,12 @@ namespace Realms.Tests.Database
         public static explicit operator AgedObject(RealmValue val) => val.AsRealmObject<AgedObject>();
         
         public static implicit operator RealmValue(AgedObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

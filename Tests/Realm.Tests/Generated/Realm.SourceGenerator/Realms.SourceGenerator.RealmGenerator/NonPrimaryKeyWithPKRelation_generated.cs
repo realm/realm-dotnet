@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("INonPrimaryKeyWithPKRelationAccessor")]
     [Woven(typeof(NonPrimaryKeyWithPKRelationObjectHelper))]
-    public partial class NonPrimaryKeyWithPKRelation : IRealmObject, INotifyPropertyChanged
+    public partial class NonPrimaryKeyWithPKRelation : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", isEmbedded: false)
         {
@@ -124,6 +125,12 @@ namespace Realms.Tests.Database
         public static explicit operator NonPrimaryKeyWithPKRelation(RealmValue val) => val.AsRealmObject<NonPrimaryKeyWithPKRelation>();
         
         public static implicit operator RealmValue(NonPrimaryKeyWithPKRelation val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

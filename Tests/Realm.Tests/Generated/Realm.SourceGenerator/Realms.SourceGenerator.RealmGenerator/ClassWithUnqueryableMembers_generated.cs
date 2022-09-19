@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -15,7 +16,7 @@ namespace Realms.Tests
 {
     [Generated("IClassWithUnqueryableMembersAccessor")]
     [Woven(typeof(ClassWithUnqueryableMembersObjectHelper))]
-    public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged
+    public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithUnqueryableMembers", isEmbedded: false)
         {
@@ -72,11 +73,9 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
-                foreach(var val in oldAccessor.RealmListProperty)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.RealmListProperty.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
+                
                 if(!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
@@ -141,6 +140,12 @@ namespace Realms.Tests
         public static explicit operator ClassWithUnqueryableMembers(RealmValue val) => val.AsRealmObject<ClassWithUnqueryableMembers>();
         
         public static implicit operator RealmValue(ClassWithUnqueryableMembers val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

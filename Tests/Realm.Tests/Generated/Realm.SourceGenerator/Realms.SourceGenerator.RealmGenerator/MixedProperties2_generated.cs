@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IMixedProperties2Accessor")]
     [Woven(typeof(MixedProperties2ObjectHelper))]
-    public partial class MixedProperties2 : IRealmObject, INotifyPropertyChanged
+    public partial class MixedProperties2 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("MixedProperties2", isEmbedded: false)
         {
@@ -62,20 +63,16 @@ namespace Realms.Tests.Database
                     newAccessor.Enemies.Clear();
                 }
                 
-                foreach(var val in oldAccessor.Friends)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Friends.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
+                
                 if(!skipDefaults || oldAccessor.Age != default(int))
                 {
                     newAccessor.Age = oldAccessor.Age;
                 }
-                foreach(var val in oldAccessor.Enemies)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Enemies.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Enemies, newAccessor.Enemies, update, skipDefaults);
+                
                 if(!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
@@ -140,6 +137,12 @@ namespace Realms.Tests.Database
         public static explicit operator MixedProperties2(RealmValue val) => val.AsRealmObject<MixedProperties2>();
         
         public static implicit operator RealmValue(MixedProperties2 val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

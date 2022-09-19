@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("ISerializedObjectAccessor")]
     [Woven(typeof(SerializedObjectObjectHelper))]
-    public partial class SerializedObject : IRealmObject, INotifyPropertyChanged
+    public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SerializedObject", isEmbedded: false)
         {
@@ -72,21 +73,14 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                foreach(var val in oldAccessor.Dict)
-                {
-                    
-                    newAccessor.Dict.Add(val);
-                }
-                foreach(var val in oldAccessor.List)
-                {
-                    
-                    newAccessor.List.Add(val);
-                }
-                foreach(var val in oldAccessor.Set)
-                {
-                    
-                    newAccessor.Set.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Dict, newAccessor.Dict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.List, newAccessor.List, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Set, newAccessor.Set, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -147,6 +141,12 @@ namespace Realms.Tests.Database
         public static explicit operator SerializedObject(RealmValue val) => val.AsRealmObject<SerializedObject>();
         
         public static implicit operator RealmValue(SerializedObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

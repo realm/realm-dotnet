@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IPersonAccessor")]
     [Woven(typeof(PersonObjectHelper))]
-    public partial class Person : IRealmObject, INotifyPropertyChanged
+    public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
         {
@@ -112,11 +113,8 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.IsInteresting = oldAccessor.IsInteresting;
                 }
-                foreach(var val in oldAccessor.Friends)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Friends.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -177,6 +175,12 @@ namespace Realms.Tests.Database
         public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
         
         public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

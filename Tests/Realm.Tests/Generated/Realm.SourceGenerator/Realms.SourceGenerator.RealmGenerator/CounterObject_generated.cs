@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("ICounterObjectAccessor")]
     [Woven(typeof(CounterObjectObjectHelper))]
-    public partial class CounterObject : IRealmObject, INotifyPropertyChanged
+    public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CounterObject", isEmbedded: false)
         {
@@ -134,6 +135,12 @@ namespace Realms.Tests
         public static explicit operator CounterObject(RealmValue val) => val.AsRealmObject<CounterObject>();
         
         public static implicit operator RealmValue(CounterObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

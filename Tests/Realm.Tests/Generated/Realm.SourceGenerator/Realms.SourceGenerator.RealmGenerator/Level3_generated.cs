@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("ILevel3Accessor")]
     [Woven(typeof(Level3ObjectHelper))]
-    public partial class Level3 : IRealmObject, INotifyPropertyChanged
+    public partial class Level3 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Level3", isEmbedded: false)
         {
@@ -115,6 +116,12 @@ namespace Realms.Tests.Database
         public static explicit operator Level3(RealmValue val) => val.AsRealmObject<Level3>();
         
         public static implicit operator RealmValue(Level3 val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

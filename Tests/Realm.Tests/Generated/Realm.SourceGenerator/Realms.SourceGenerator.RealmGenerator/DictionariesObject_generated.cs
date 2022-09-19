@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -15,7 +16,7 @@ namespace Realms.Tests
 {
     [Generated("IDictionariesObjectAccessor")]
     [Woven(typeof(DictionariesObjectObjectHelper))]
-    public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged
+    public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DictionariesObject", isEmbedded: false)
         {
@@ -121,166 +122,101 @@ namespace Realms.Tests
                     newAccessor.RealmValueDictionary.Clear();
                 }
                 
-                foreach(var val in oldAccessor.CharDictionary)
-                {
-                    
-                    newAccessor.CharDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteDictionary)
-                {
-                    
-                    newAccessor.ByteDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.Int16Dictionary)
-                {
-                    
-                    newAccessor.Int16Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.Int32Dictionary)
-                {
-                    
-                    newAccessor.Int32Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.Int64Dictionary)
-                {
-                    
-                    newAccessor.Int64Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.SingleDictionary)
-                {
-                    
-                    newAccessor.SingleDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.DoubleDictionary)
-                {
-                    
-                    newAccessor.DoubleDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.BooleanDictionary)
-                {
-                    
-                    newAccessor.BooleanDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.DecimalDictionary)
-                {
-                    
-                    newAccessor.DecimalDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.Decimal128Dictionary)
-                {
-                    
-                    newAccessor.Decimal128Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectIdDictionary)
-                {
-                    
-                    newAccessor.ObjectIdDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.StringDictionary)
-                {
-                    
-                    newAccessor.StringDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableStringDictionary)
-                {
-                    
-                    newAccessor.NullableStringDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteArrayDictionary)
-                {
-                    
-                    newAccessor.ByteArrayDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.DateTimeOffsetDictionary)
-                {
-                    
-                    newAccessor.DateTimeOffsetDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableCharDictionary)
-                {
-                    
-                    newAccessor.NullableCharDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableByteDictionary)
-                {
-                    
-                    newAccessor.NullableByteDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableInt16Dictionary)
-                {
-                    
-                    newAccessor.NullableInt16Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableInt32Dictionary)
-                {
-                    
-                    newAccessor.NullableInt32Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableInt64Dictionary)
-                {
-                    
-                    newAccessor.NullableInt64Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableSingleDictionary)
-                {
-                    
-                    newAccessor.NullableSingleDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableDoubleDictionary)
-                {
-                    
-                    newAccessor.NullableDoubleDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableBooleanDictionary)
-                {
-                    
-                    newAccessor.NullableBooleanDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableDateTimeOffsetDictionary)
-                {
-                    
-                    newAccessor.NullableDateTimeOffsetDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableDecimalDictionary)
-                {
-                    
-                    newAccessor.NullableDecimalDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableDecimal128Dictionary)
-                {
-                    
-                    newAccessor.NullableDecimal128Dictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableObjectIdDictionary)
-                {
-                    
-                    newAccessor.NullableObjectIdDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.NullableBinaryDictionary)
-                {
-                    
-                    newAccessor.NullableBinaryDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.BinaryDictionary)
-                {
-                    
-                    newAccessor.BinaryDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectDictionary)
-                {
-                    newAccessor.Realm.Add(val.Value, update);
-                    newAccessor.ObjectDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.EmbeddedObjectDictionary)
-                {
-                    
-                    newAccessor.EmbeddedObjectDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.RealmValueDictionary)
-                {
-                    
-                    newAccessor.RealmValueDictionary.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.CharDictionary, newAccessor.CharDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteDictionary, newAccessor.ByteDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int16Dictionary, newAccessor.Int16Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int32Dictionary, newAccessor.Int32Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int64Dictionary, newAccessor.Int64Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.SingleDictionary, newAccessor.SingleDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DoubleDictionary, newAccessor.DoubleDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.BooleanDictionary, newAccessor.BooleanDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DecimalDictionary, newAccessor.DecimalDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Dictionary, newAccessor.Decimal128Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdDictionary, newAccessor.ObjectIdDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.StringDictionary, newAccessor.StringDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableStringDictionary, newAccessor.NullableStringDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayDictionary, newAccessor.ByteArrayDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetDictionary, newAccessor.DateTimeOffsetDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableCharDictionary, newAccessor.NullableCharDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableByteDictionary, newAccessor.NullableByteDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16Dictionary, newAccessor.NullableInt16Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32Dictionary, newAccessor.NullableInt32Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64Dictionary, newAccessor.NullableInt64Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleDictionary, newAccessor.NullableSingleDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleDictionary, newAccessor.NullableDoubleDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanDictionary, newAccessor.NullableBooleanDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetDictionary, newAccessor.NullableDateTimeOffsetDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalDictionary, newAccessor.NullableDecimalDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128Dictionary, newAccessor.NullableDecimal128Dictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdDictionary, newAccessor.NullableObjectIdDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NullableBinaryDictionary, newAccessor.NullableBinaryDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.BinaryDictionary, newAccessor.BinaryDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectDictionary, newAccessor.ObjectDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectDictionary, newAccessor.EmbeddedObjectDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -341,6 +277,12 @@ namespace Realms.Tests
         public static explicit operator DictionariesObject(RealmValue val) => val.AsRealmObject<DictionariesObject>();
         
         public static implicit operator RealmValue(DictionariesObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

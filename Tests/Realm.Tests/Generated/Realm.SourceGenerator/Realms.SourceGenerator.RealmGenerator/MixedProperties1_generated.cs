@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IMixedProperties1Accessor")]
     [Woven(typeof(MixedProperties1ObjectHelper))]
-    public partial class MixedProperties1 : IRealmObject, INotifyPropertyChanged
+    public partial class MixedProperties1 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("MixedProperties1", isEmbedded: false)
         {
@@ -66,20 +67,15 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                foreach(var val in oldAccessor.Friends)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Friends.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
+                
                 if(!skipDefaults || oldAccessor.Age != default(int))
                 {
                     newAccessor.Age = oldAccessor.Age;
                 }
-                foreach(var val in oldAccessor.Enemies)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Enemies.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Enemies, newAccessor.Enemies, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -140,6 +136,12 @@ namespace Realms.Tests.Database
         public static explicit operator MixedProperties1(RealmValue val) => val.AsRealmObject<MixedProperties1>();
         
         public static implicit operator RealmValue(MixedProperties1 val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

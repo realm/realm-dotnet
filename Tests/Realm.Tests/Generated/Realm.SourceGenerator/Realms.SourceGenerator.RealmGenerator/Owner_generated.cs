@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IOwnerAccessor")]
     [Woven(typeof(OwnerObjectHelper))]
-    public partial class Owner : IRealmObject, INotifyPropertyChanged
+    public partial class Owner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Owner", isEmbedded: false)
         {
@@ -71,16 +72,11 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
                 newAccessor.TopDog = oldAccessor.TopDog;
-                foreach(var val in oldAccessor.ListOfDogs)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.ListOfDogs.Add(val);
-                }
-                foreach(var val in oldAccessor.SetOfDogs)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.SetOfDogs.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ListOfDogs, newAccessor.ListOfDogs, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.SetOfDogs, newAccessor.SetOfDogs, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -141,6 +137,12 @@ namespace Realms.Tests
         public static explicit operator Owner(RealmValue val) => val.AsRealmObject<Owner>();
         
         public static implicit operator RealmValue(Owner val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

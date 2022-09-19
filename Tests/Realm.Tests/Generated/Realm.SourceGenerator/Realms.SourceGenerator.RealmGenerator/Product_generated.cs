@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IProductAccessor")]
     [Woven(typeof(ProductObjectHelper))]
-    public partial class Product : IRealmObject, INotifyPropertyChanged
+    public partial class Product : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Product", isEmbedded: false)
         {
@@ -73,11 +74,8 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Date = oldAccessor.Date;
                 }
-                foreach(var val in oldAccessor.Reports)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Reports.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Reports, newAccessor.Reports, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -138,6 +136,12 @@ namespace Realms.Tests.Database
         public static explicit operator Product(RealmValue val) => val.AsRealmObject<Product>();
         
         public static implicit operator RealmValue(Product val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

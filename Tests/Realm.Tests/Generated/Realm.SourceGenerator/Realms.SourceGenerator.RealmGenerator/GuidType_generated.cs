@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IGuidTypeAccessor")]
     [Woven(typeof(GuidTypeObjectHelper))]
-    public partial class GuidType : IRealmObject, INotifyPropertyChanged
+    public partial class GuidType : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("GuidType", isEmbedded: false)
         {
@@ -82,58 +83,40 @@ namespace Realms.Tests.Database
                 
                 newAccessor.Id = oldAccessor.Id;
                 newAccessor.RegularProperty = oldAccessor.RegularProperty;
-                foreach(var val in oldAccessor.GuidList)
-                {
-                    
-                    newAccessor.GuidList.Add(val);
-                }
-                foreach(var val in oldAccessor.GuidSet)
-                {
-                    
-                    newAccessor.GuidSet.Add(val);
-                }
-                foreach(var val in oldAccessor.GuidDict)
-                {
-                    
-                    newAccessor.GuidDict.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.GuidSet, newAccessor.GuidSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.GuidDict, newAccessor.GuidDict, update, skipDefaults);
+                
                 newAccessor.OptionalProperty = oldAccessor.OptionalProperty;
-                foreach(var val in oldAccessor.OptionalList)
-                {
-                    
-                    newAccessor.OptionalList.Add(val);
-                }
-                foreach(var val in oldAccessor.OptionalSet)
-                {
-                    
-                    newAccessor.OptionalSet.Add(val);
-                }
-                foreach(var val in oldAccessor.OptionalDict)
-                {
-                    
-                    newAccessor.OptionalDict.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.OptionalList, newAccessor.OptionalList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.OptionalSet, newAccessor.OptionalSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.OptionalDict, newAccessor.OptionalDict, update, skipDefaults);
+                
                 if(oldAccessor.LinkProperty != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkProperty, update);
                 }
                 newAccessor.LinkProperty = oldAccessor.LinkProperty;
                 newAccessor.MixedProperty = oldAccessor.MixedProperty;
-                foreach(var val in oldAccessor.MixedList)
-                {
-                    
-                    newAccessor.MixedList.Add(val);
-                }
-                foreach(var val in oldAccessor.MixedSet)
-                {
-                    
-                    newAccessor.MixedSet.Add(val);
-                }
-                foreach(var val in oldAccessor.MixedDict)
-                {
-                    
-                    newAccessor.MixedDict.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.MixedList, newAccessor.MixedList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.MixedSet, newAccessor.MixedSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.MixedDict, newAccessor.MixedDict, update, skipDefaults);
+                
                 newAccessor.EmbeddedProperty = oldAccessor.EmbeddedProperty;
             }
         
@@ -195,6 +178,12 @@ namespace Realms.Tests.Database
         public static explicit operator GuidType(RealmValue val) => val.AsRealmObject<GuidType>();
         
         public static implicit operator RealmValue(GuidType val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

@@ -31,6 +31,9 @@ namespace Realms.DataBinding
         {
         }
 
+        //TODO The problem here is that this works only for properties that have the WovenAttribute (I suppose to avoid creating an implementation
+        //for properties we don't care about). Probably we should add something similar for the generated properties.
+        //Maybe we can check if it's the same name of a property that's on the interface (that we pass in the Generated Attribute)
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);

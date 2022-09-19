@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Sync
 {
     [Generated("IObjectWithPartitionValueAccessor")]
     [Woven(typeof(ObjectWithPartitionValueObjectHelper))]
-    public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged
+    public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithPartitionValue", isEmbedded: false)
         {
@@ -128,6 +129,12 @@ namespace Realms.Tests.Sync
         public static explicit operator ObjectWithPartitionValue(RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
         
         public static implicit operator RealmValue(ObjectWithPartitionValue val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

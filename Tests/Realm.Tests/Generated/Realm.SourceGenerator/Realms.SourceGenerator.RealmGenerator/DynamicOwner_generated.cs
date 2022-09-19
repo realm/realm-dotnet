@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IDynamicOwnerAccessor")]
     [Woven(typeof(DynamicOwnerObjectHelper))]
-    public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged
+    public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicOwner", isEmbedded: false)
         {
@@ -79,36 +80,23 @@ namespace Realms.Tests.Database
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
                 newAccessor.TopDog = oldAccessor.TopDog;
-                foreach(var val in oldAccessor.Dogs)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.Dogs.Add(val);
-                }
-                foreach(var val in oldAccessor.Tags)
-                {
-                    
-                    newAccessor.Tags.Add(val);
-                }
-                foreach(var val in oldAccessor.DogsDictionary)
-                {
-                    newAccessor.Realm.Add(val.Value, update);
-                    newAccessor.DogsDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.TagsDictionary)
-                {
-                    
-                    newAccessor.TagsDictionary.Add(val);
-                }
-                foreach(var val in oldAccessor.DogsSet)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.DogsSet.Add(val);
-                }
-                foreach(var val in oldAccessor.TagsSet)
-                {
-                    
-                    newAccessor.TagsSet.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Dogs, newAccessor.Dogs, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Tags, newAccessor.Tags, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DogsDictionary, newAccessor.DogsDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.TagsDictionary, newAccessor.TagsDictionary, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DogsSet, newAccessor.DogsSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.TagsSet, newAccessor.TagsSet, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -169,6 +157,12 @@ namespace Realms.Tests.Database
         public static explicit operator DynamicOwner(RealmValue val) => val.AsRealmObject<DynamicOwner>();
         
         public static implicit operator RealmValue(DynamicOwner val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

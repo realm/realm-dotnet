@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IObjectWithRequiredStringListAccessor")]
     [Woven(typeof(ObjectWithRequiredStringListObjectHelper))]
-    public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged
+    public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithRequiredStringList", isEmbedded: false)
         {
@@ -58,11 +59,8 @@ namespace Realms.Tests
                     newAccessor.Strings.Clear();
                 }
                 
-                foreach(var val in oldAccessor.Strings)
-                {
-                    
-                    newAccessor.Strings.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Strings, newAccessor.Strings, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -123,6 +121,12 @@ namespace Realms.Tests
         public static explicit operator ObjectWithRequiredStringList(RealmValue val) => val.AsRealmObject<ObjectWithRequiredStringList>();
         
         public static implicit operator RealmValue(ObjectWithRequiredStringList val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IPrimaryKeyByteObjectAccessor")]
     [Woven(typeof(PrimaryKeyByteObjectObjectHelper))]
-    public partial class PrimaryKeyByteObject : IRealmObject, INotifyPropertyChanged
+    public partial class PrimaryKeyByteObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyByteObject", isEmbedded: false)
         {
@@ -118,6 +119,12 @@ namespace Realms.Tests
         public static explicit operator PrimaryKeyByteObject(RealmValue val) => val.AsRealmObject<PrimaryKeyByteObject>();
         
         public static implicit operator RealmValue(PrimaryKeyByteObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

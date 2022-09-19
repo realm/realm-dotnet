@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -15,7 +16,7 @@ namespace Realms.Tests
 {
     [Generated("ISyncCollectionsObjectAccessor")]
     [Woven(typeof(SyncCollectionsObjectObjectHelper))]
-    public partial class SyncCollectionsObject : IRealmObject, INotifyPropertyChanged
+    public partial class SyncCollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncCollectionsObject", isEmbedded: false)
         {
@@ -161,256 +162,155 @@ namespace Realms.Tests
                 
                 newAccessor.Id = oldAccessor.Id;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                foreach(var val in oldAccessor.CharList)
-                {
-                    
-                    newAccessor.CharList.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteList)
-                {
-                    
-                    newAccessor.ByteList.Add(val);
-                }
-                foreach(var val in oldAccessor.Int16List)
-                {
-                    
-                    newAccessor.Int16List.Add(val);
-                }
-                foreach(var val in oldAccessor.Int32List)
-                {
-                    
-                    newAccessor.Int32List.Add(val);
-                }
-                foreach(var val in oldAccessor.Int64List)
-                {
-                    
-                    newAccessor.Int64List.Add(val);
-                }
-                foreach(var val in oldAccessor.FloatList)
-                {
-                    
-                    newAccessor.FloatList.Add(val);
-                }
-                foreach(var val in oldAccessor.DoubleList)
-                {
-                    
-                    newAccessor.DoubleList.Add(val);
-                }
-                foreach(var val in oldAccessor.BooleanList)
-                {
-                    
-                    newAccessor.BooleanList.Add(val);
-                }
-                foreach(var val in oldAccessor.DecimalList)
-                {
-                    
-                    newAccessor.DecimalList.Add(val);
-                }
-                foreach(var val in oldAccessor.Decimal128List)
-                {
-                    
-                    newAccessor.Decimal128List.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectIdList)
-                {
-                    
-                    newAccessor.ObjectIdList.Add(val);
-                }
-                foreach(var val in oldAccessor.StringList)
-                {
-                    
-                    newAccessor.StringList.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteArrayList)
-                {
-                    
-                    newAccessor.ByteArrayList.Add(val);
-                }
-                foreach(var val in oldAccessor.DateTimeOffsetList)
-                {
-                    
-                    newAccessor.DateTimeOffsetList.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectList)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.ObjectList.Add(val);
-                }
-                foreach(var val in oldAccessor.EmbeddedObjectList)
-                {
-                    
-                    newAccessor.EmbeddedObjectList.Add(val);
-                }
-                foreach(var val in oldAccessor.RealmValueList)
-                {
-                    
-                    newAccessor.RealmValueList.Add(val);
-                }
-                foreach(var val in oldAccessor.CharSet)
-                {
-                    
-                    newAccessor.CharSet.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteSet)
-                {
-                    
-                    newAccessor.ByteSet.Add(val);
-                }
-                foreach(var val in oldAccessor.Int16Set)
-                {
-                    
-                    newAccessor.Int16Set.Add(val);
-                }
-                foreach(var val in oldAccessor.Int32Set)
-                {
-                    
-                    newAccessor.Int32Set.Add(val);
-                }
-                foreach(var val in oldAccessor.Int64Set)
-                {
-                    
-                    newAccessor.Int64Set.Add(val);
-                }
-                foreach(var val in oldAccessor.FloatSet)
-                {
-                    
-                    newAccessor.FloatSet.Add(val);
-                }
-                foreach(var val in oldAccessor.DoubleSet)
-                {
-                    
-                    newAccessor.DoubleSet.Add(val);
-                }
-                foreach(var val in oldAccessor.BooleanSet)
-                {
-                    
-                    newAccessor.BooleanSet.Add(val);
-                }
-                foreach(var val in oldAccessor.DecimalSet)
-                {
-                    
-                    newAccessor.DecimalSet.Add(val);
-                }
-                foreach(var val in oldAccessor.Decimal128Set)
-                {
-                    
-                    newAccessor.Decimal128Set.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectIdSet)
-                {
-                    
-                    newAccessor.ObjectIdSet.Add(val);
-                }
-                foreach(var val in oldAccessor.StringSet)
-                {
-                    
-                    newAccessor.StringSet.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteArraySet)
-                {
-                    
-                    newAccessor.ByteArraySet.Add(val);
-                }
-                foreach(var val in oldAccessor.DateTimeOffsetSet)
-                {
-                    
-                    newAccessor.DateTimeOffsetSet.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectSet)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.ObjectSet.Add(val);
-                }
-                foreach(var val in oldAccessor.RealmValueSet)
-                {
-                    
-                    newAccessor.RealmValueSet.Add(val);
-                }
-                foreach(var val in oldAccessor.CharDict)
-                {
-                    
-                    newAccessor.CharDict.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteDict)
-                {
-                    
-                    newAccessor.ByteDict.Add(val);
-                }
-                foreach(var val in oldAccessor.Int16Dict)
-                {
-                    
-                    newAccessor.Int16Dict.Add(val);
-                }
-                foreach(var val in oldAccessor.Int32Dict)
-                {
-                    
-                    newAccessor.Int32Dict.Add(val);
-                }
-                foreach(var val in oldAccessor.Int64Dict)
-                {
-                    
-                    newAccessor.Int64Dict.Add(val);
-                }
-                foreach(var val in oldAccessor.FloatDict)
-                {
-                    
-                    newAccessor.FloatDict.Add(val);
-                }
-                foreach(var val in oldAccessor.DoubleDict)
-                {
-                    
-                    newAccessor.DoubleDict.Add(val);
-                }
-                foreach(var val in oldAccessor.BooleanDict)
-                {
-                    
-                    newAccessor.BooleanDict.Add(val);
-                }
-                foreach(var val in oldAccessor.DecimalDict)
-                {
-                    
-                    newAccessor.DecimalDict.Add(val);
-                }
-                foreach(var val in oldAccessor.Decimal128Dict)
-                {
-                    
-                    newAccessor.Decimal128Dict.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectIdDict)
-                {
-                    
-                    newAccessor.ObjectIdDict.Add(val);
-                }
-                foreach(var val in oldAccessor.StringDict)
-                {
-                    
-                    newAccessor.StringDict.Add(val);
-                }
-                foreach(var val in oldAccessor.ByteArrayDict)
-                {
-                    
-                    newAccessor.ByteArrayDict.Add(val);
-                }
-                foreach(var val in oldAccessor.DateTimeOffsetDict)
-                {
-                    
-                    newAccessor.DateTimeOffsetDict.Add(val);
-                }
-                foreach(var val in oldAccessor.ObjectDict)
-                {
-                    newAccessor.Realm.Add(val.Value, update);
-                    newAccessor.ObjectDict.Add(val);
-                }
-                foreach(var val in oldAccessor.EmbeddedObjectDict)
-                {
-                    
-                    newAccessor.EmbeddedObjectDict.Add(val);
-                }
-                foreach(var val in oldAccessor.RealmValueDict)
-                {
-                    
-                    newAccessor.RealmValueDict.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.CharList, newAccessor.CharList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteList, newAccessor.ByteList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int16List, newAccessor.Int16List, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int32List, newAccessor.Int32List, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int64List, newAccessor.Int64List, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.FloatList, newAccessor.FloatList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DoubleList, newAccessor.DoubleList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.BooleanList, newAccessor.BooleanList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DecimalList, newAccessor.DecimalList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Decimal128List, newAccessor.Decimal128List, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdList, newAccessor.ObjectIdList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.StringList, newAccessor.StringList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayList, newAccessor.ByteArrayList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetList, newAccessor.DateTimeOffsetList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectList, newAccessor.ObjectList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectList, newAccessor.EmbeddedObjectList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.CharSet, newAccessor.CharSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteSet, newAccessor.ByteSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int16Set, newAccessor.Int16Set, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int32Set, newAccessor.Int32Set, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int64Set, newAccessor.Int64Set, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.FloatSet, newAccessor.FloatSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DoubleSet, newAccessor.DoubleSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.BooleanSet, newAccessor.BooleanSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DecimalSet, newAccessor.DecimalSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Set, newAccessor.Decimal128Set, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdSet, newAccessor.ObjectIdSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.StringSet, newAccessor.StringSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteArraySet, newAccessor.ByteArraySet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetSet, newAccessor.DateTimeOffsetSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectSet, newAccessor.ObjectSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.CharDict, newAccessor.CharDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteDict, newAccessor.ByteDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int16Dict, newAccessor.Int16Dict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int32Dict, newAccessor.Int32Dict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Int64Dict, newAccessor.Int64Dict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.FloatDict, newAccessor.FloatDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DoubleDict, newAccessor.DoubleDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.BooleanDict, newAccessor.BooleanDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DecimalDict, newAccessor.DecimalDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Dict, newAccessor.Decimal128Dict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdDict, newAccessor.ObjectIdDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.StringDict, newAccessor.StringDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayDict, newAccessor.ByteArrayDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetDict, newAccessor.DateTimeOffsetDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ObjectDict, newAccessor.ObjectDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectDict, newAccessor.EmbeddedObjectDict, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDict, newAccessor.RealmValueDict, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -471,6 +371,12 @@ namespace Realms.Tests
         public static explicit operator SyncCollectionsObject(RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
         
         public static implicit operator RealmValue(SyncCollectionsObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

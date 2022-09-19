@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("IOneListPropertyAccessor")]
     [Woven(typeof(OneListPropertyObjectHelper))]
-    public partial class OneListProperty : IRealmObject, INotifyPropertyChanged
+    public partial class OneListProperty : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneListProperty", isEmbedded: false)
         {
@@ -58,11 +59,8 @@ namespace Realms.Tests.Database
                     newAccessor.People.Clear();
                 }
                 
-                foreach(var val in oldAccessor.People)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.People.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.People, newAccessor.People, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -123,6 +121,12 @@ namespace Realms.Tests.Database
         public static explicit operator OneListProperty(RealmValue val) => val.AsRealmObject<OneListProperty>();
         
         public static implicit operator RealmValue(OneListProperty val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

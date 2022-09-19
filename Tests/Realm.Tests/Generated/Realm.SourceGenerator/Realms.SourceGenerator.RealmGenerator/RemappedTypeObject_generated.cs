@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IRemappedTypeObjectAccessor")]
     [Woven(typeof(RemappedTypeObjectObjectHelper))]
-    public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged
+    public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("__RemappedTypeObject", isEmbedded: false)
         {
@@ -84,16 +85,11 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.MappedLink, update);
                 }
                 newAccessor.MappedLink = oldAccessor.MappedLink;
-                foreach(var val in oldAccessor.NormalList)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.NormalList.Add(val);
-                }
-                foreach(var val in oldAccessor.MappedList)
-                {
-                    newAccessor.Realm.Add(val, update);
-                    newAccessor.MappedList.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.NormalList, newAccessor.NormalList, update, skipDefaults);
+                
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.MappedList, newAccessor.MappedList, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -154,6 +150,12 @@ namespace Realms.Tests
         public static explicit operator RemappedTypeObject(RealmValue val) => val.AsRealmObject<RemappedTypeObject>();
         
         public static implicit operator RealmValue(RemappedTypeObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

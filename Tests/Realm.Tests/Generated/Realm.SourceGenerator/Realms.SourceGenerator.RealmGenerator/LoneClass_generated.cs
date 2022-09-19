@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests.Database
 {
     [Generated("ILoneClassAccessor")]
     [Woven(typeof(LoneClassObjectHelper))]
-    public partial class LoneClass : IRealmObject, INotifyPropertyChanged
+    public partial class LoneClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("LoneClass", isEmbedded: false)
         {
@@ -118,6 +119,12 @@ namespace Realms.Tests.Database
         public static explicit operator LoneClass(RealmValue val) => val.AsRealmObject<LoneClass>();
         
         public static implicit operator RealmValue(LoneClass val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -15,7 +16,7 @@ namespace Realms.Tests
 {
     [Generated("ISyncAllTypesObjectAccessor")]
     [Woven(typeof(SyncAllTypesObjectObjectHelper))]
-    public partial class SyncAllTypesObject : IRealmObject, INotifyPropertyChanged
+    public partial class SyncAllTypesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncAllTypesObject", isEmbedded: false)
         {
@@ -186,6 +187,12 @@ namespace Realms.Tests
         public static explicit operator SyncAllTypesObject(RealmValue val) => val.AsRealmObject<SyncAllTypesObject>();
         
         public static implicit operator RealmValue(SyncAllTypesObject val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

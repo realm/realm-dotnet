@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IObjectWithEmbeddedPropertiesAccessor")]
     [Woven(typeof(ObjectWithEmbeddedPropertiesObjectHelper))]
-    public partial class ObjectWithEmbeddedProperties : IRealmObject, INotifyPropertyChanged
+    public partial class ObjectWithEmbeddedProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithEmbeddedProperties", isEmbedded: false)
         {
@@ -68,17 +69,12 @@ namespace Realms.Tests
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
                 newAccessor.AllTypesObject = oldAccessor.AllTypesObject;
-                foreach(var val in oldAccessor.ListOfAllTypesObjects)
-                {
-                    
-                    newAccessor.ListOfAllTypesObjects.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
+                
                 newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
-                foreach(var val in oldAccessor.DictionaryOfAllTypesObjects)
-                {
-                    
-                    newAccessor.DictionaryOfAllTypesObjects.Add(val);
-                }
+                
+                CollectionExtensions.PopulateCollection(oldAccessor.DictionaryOfAllTypesObjects, newAccessor.DictionaryOfAllTypesObjects, update, skipDefaults);
             }
         
             if (_propertyChanged != null)
@@ -139,6 +135,12 @@ namespace Realms.Tests
         public static explicit operator ObjectWithEmbeddedProperties(RealmValue val) => val.AsRealmObject<ObjectWithEmbeddedProperties>();
         
         public static implicit operator RealmValue(ObjectWithEmbeddedProperties val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

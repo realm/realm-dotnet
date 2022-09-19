@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Bar
 {
     [Generated("IBar_DuplicateClassAccessor")]
     [Woven(typeof(Bar_DuplicateClassObjectHelper))]
-    public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged
+    public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", isEmbedded: false)
         {
@@ -118,6 +119,12 @@ namespace Bar
         public static explicit operator DuplicateClass(RealmValue val) => val.AsRealmObject<DuplicateClass>();
         
         public static implicit operator RealmValue(DuplicateClass val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {

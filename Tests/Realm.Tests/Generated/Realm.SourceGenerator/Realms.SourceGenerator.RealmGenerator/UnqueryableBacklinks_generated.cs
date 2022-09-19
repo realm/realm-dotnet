@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 using System.ComponentModel;
 using Realms;
 using Realms.Weaving;
@@ -14,7 +15,7 @@ namespace Realms.Tests
 {
     [Generated("IUnqueryableBacklinksAccessor")]
     [Woven(typeof(UnqueryableBacklinksObjectHelper))]
-    public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged
+    public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("UnqueryableBacklinks", isEmbedded: false)
         {
@@ -119,6 +120,12 @@ namespace Realms.Tests
         public static explicit operator UnqueryableBacklinks(RealmValue val) => val.AsRealmObject<UnqueryableBacklinks>();
         
         public static implicit operator RealmValue(UnqueryableBacklinks val) => RealmValue.Object(val);
+        
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public TypeInfo GetTypeInfo()
+        {
+            return Accessor.GetTypeInfo(this);
+        }
         
         public override bool Equals(object obj)
         {
