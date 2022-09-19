@@ -1880,7 +1880,7 @@ namespace Realms
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
                 Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
 
-                return new RealmResults<RealmObject>(_realm, metadata);
+                return new RealmResults<IRealmObject>(_realm, metadata);
             }
 
             /// <summary>

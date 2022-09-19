@@ -463,10 +463,10 @@ namespace Realms
                 var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
                 if (relatedMeta.Schema.IsEmbedded)
                 {
-                    return new RealmResults<EmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
+                    return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
                 }
 
-                return new RealmResults<RealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
+                return new RealmResults<IRealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
             //TODO Change docs (would this be an issue for people that use this with the old API)?
@@ -486,10 +486,10 @@ namespace Realms
                 var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
                 if (relatedMeta.Schema.IsEmbedded)
                 {
-                    return new RealmResults<EmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
+                    return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
                 }
 
-                return new RealmResults<RealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
+                return new RealmResults<IRealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
             /// <summary>

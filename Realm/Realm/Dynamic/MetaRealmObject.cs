@@ -174,6 +174,7 @@ namespace Realms.Dynamic
                 }
                 else
                 {
+                    //TODO We don't need to change ToType if PropertyType is there also for manually defined schemas
                     targetType = property.PropertyInfo?.PropertyType ?? property.Type.ToType();
                 }
 

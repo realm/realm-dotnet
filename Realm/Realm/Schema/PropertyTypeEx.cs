@@ -147,6 +147,8 @@ namespace Realms.Schema
                 PropertyType.NullableObjectId => typeof(ObjectId?),
                 PropertyType.NullableDecimal => typeof(Decimal128?),
                 PropertyType.NullableGuid => typeof(Guid?),
+                //TODO We probably don't need to do this if we can add the PropertyTypeInfo on the generated schema (there is a similar comment)
+                PropertyType.RealmValue | PropertyType.Nullable => typeof(RealmValue),
                 _ => throw new NotSupportedException($"Unexpected property type: {type}"),
             };
         }
