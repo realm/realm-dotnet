@@ -73,10 +73,10 @@
   (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
 
 ### Fixed
-* None
+* Added a more meaningful error message whenever a project doesn't have `[TargetFramework]` defined. (Issue [#2843](https://github.com/realm/realm-dotnet/issues/2843))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.
