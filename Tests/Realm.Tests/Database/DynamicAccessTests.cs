@@ -135,7 +135,7 @@ namespace Realms.Tests.Database
                     transaction.Commit();
                 }
 
-                Assert.That((T)InvokeGetter(allTypesObject, propertyName, isDynamic), Is.EqualTo(propertyValue));
+                Assert.That(Operator.Convert<T>(InvokeGetter(allTypesObject, propertyName, isDynamic)), Is.EqualTo(propertyValue));
             });
         }
 

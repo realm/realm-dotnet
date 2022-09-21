@@ -201,7 +201,7 @@ namespace Realms
 
                         if (i == propertyIndex)
                         {
-                            RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                            RaisePropertyChanged(property.ManagedName);
                             break;
                         }
 
@@ -236,7 +236,7 @@ namespace Realms
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
-        //TODO Docs
+        /// <inheritdoc/>
         public TypeInfo GetTypeInfo(IRealmObjectBase obj)
         {
             return TypeInfoHelper.GetInfo(obj);

@@ -21,10 +21,10 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Owner", isEmbedded: false)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Object("TopDog", "Dog"),
-            Property.ObjectList("ListOfDogs", "Dog"),
-            Property.ObjectSet("SetOfDogs", "Dog"),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Property.Object("TopDog", "Dog", managedName: "TopDog"),
+            Property.ObjectList("ListOfDogs", "Dog", managedName: "ListOfDogs"),
+            Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
         }.Build();
         
         #region IRealmObject implementation

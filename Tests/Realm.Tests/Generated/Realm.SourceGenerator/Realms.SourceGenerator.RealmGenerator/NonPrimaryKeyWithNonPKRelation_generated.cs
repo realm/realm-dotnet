@@ -21,8 +21,8 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NonPrimaryKeyWithNonPKRelation", isEmbedded: false)
         {
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Object("OtherObject", "NonPrimaryKeyObject"),
+            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Property.Object("OtherObject", "NonPrimaryKeyObject", managedName: "OtherObject"),
         }.Build();
         
         #region IRealmObject implementation

@@ -21,7 +21,7 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithRequiredStringList", isEmbedded: false)
         {
-            Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false),
+            Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
         
         #region IRealmObject implementation

@@ -58,7 +58,8 @@ namespace Realms.Dynamic
                 return false;
             }
 
-            value = instance.ObjectSchema.PrimaryKeyProperty.Value.PropertyInfo.GetValue(instance);
+
+            value = instance.GetType().GetProperty(instance.ObjectSchema.PrimaryKeyProperty.Value.ManagedName).GetValue(instance, null);
             return true;
         }
 

@@ -21,9 +21,9 @@ namespace Realms.Tests.Sync
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithPartitionValue", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true),
-            Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("realm_id", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
+            Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
+            Property.Primitive("realm_id", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
         }.Build();
         
         #region IRealmObject implementation

@@ -21,9 +21,9 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnManagedTestClass", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Object("RelatedObject", "OnManagedTestClass"),
-            Property.ObjectList("RelatedCollection", "OnManagedTestClass"),
+            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Object("RelatedObject", "OnManagedTestClass", managedName: "RelatedObject"),
+            Property.ObjectList("RelatedCollection", "OnManagedTestClass", managedName: "RelatedCollection"),
         }.Build();
         
         #region IRealmObject implementation

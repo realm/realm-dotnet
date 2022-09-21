@@ -21,9 +21,9 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyWithPKList", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.ObjectList("ListValue", "PrimaryKeyObject"),
+            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Property.ObjectList("ListValue", "PrimaryKeyObject", managedName: "ListValue"),
         }.Build();
         
         #region IRealmObject implementation

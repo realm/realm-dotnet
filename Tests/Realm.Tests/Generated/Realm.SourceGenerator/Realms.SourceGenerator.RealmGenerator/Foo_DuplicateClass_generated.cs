@@ -21,7 +21,7 @@ namespace Foo
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", isEmbedded: false)
         {
-            Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
         }.Build();
         
         #region IRealmObject implementation

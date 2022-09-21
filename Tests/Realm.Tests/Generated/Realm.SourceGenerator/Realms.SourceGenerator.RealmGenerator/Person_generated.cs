@@ -21,19 +21,19 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
         {
-            Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("LastName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("Score", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Latitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Longitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Salary", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("IsAmbivalent", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("PublicCertificateBytes", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("OptionalAddress", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("Email", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("IsInteresting", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.ObjectList("Friends", "Person"),
+            Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
+            Property.Primitive("LastName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "LastName"),
+            Property.Primitive("Score", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Score"),
+            Property.Primitive("Latitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Latitude"),
+            Property.Primitive("Longitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Longitude"),
+            Property.Primitive("Salary", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Salary"),
+            Property.Primitive("IsAmbivalent", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "IsAmbivalent"),
+            Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
+            Property.Primitive("PublicCertificateBytes", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PublicCertificateBytes"),
+            Property.Primitive("OptionalAddress", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalAddress"),
+            Property.Primitive("Email", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Email_"),
+            Property.Primitive("IsInteresting", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
+            Property.ObjectList("Friends", "Person", managedName: "Friends"),
         }.Build();
         
         #region IRealmObject implementation

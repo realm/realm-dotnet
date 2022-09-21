@@ -680,30 +680,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void DynamicBacklinks_Dynamic()
-        {
-            RunDynamicTestInAllModes(realm =>
-            {
-                dynamic tim = FindOwner(realm);
-                var topOwners = tim.TopDog.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog));
-
-                Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
-
-                dynamic dani = FindOwner(realm, "Dani");
-                dynamic maggie = FindDog(realm);
-
-                Assert.That(maggie.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog)), Is.Empty);
-
-                realm.Write(() =>
-                {
-                    dani.TopDog = maggie;
-                });
-
-                Assert.That(maggie.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog)), Is.EquivalentTo(new[] { dani }));
-            });
-        }
-
-        [Test]
         public void PrimitiveList()
         {
             RunTestInAllModes(realm =>

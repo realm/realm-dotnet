@@ -21,7 +21,7 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyNullableCharObject", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: true),
+            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
         }.Build();
         
         #region IRealmObject implementation

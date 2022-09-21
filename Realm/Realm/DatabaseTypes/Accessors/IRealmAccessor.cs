@@ -152,7 +152,13 @@ namespace Realms
         /// </summary>
         void UnsubscribeFromNotifications();
 
-        //TODO Docs (can we do it differently?)
+        /// <summary>
+        /// Gets the <see cref="TypeInfo"/> of the input object.
+        /// </summary>
+        /// <param name="obj">The object to derive the <see cref="TypeInfo"/> from.</param>
+        /// <returns>
+        /// The <see cref="TypeInfo"/> of the input object.
+        /// </returns>
         TypeInfo GetTypeInfo(IRealmObjectBase obj);
     }
 }

@@ -22,8 +22,8 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DecimalsObject", isEmbedded: false)
         {
-            Property.Primitive("DecimalValue", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false),
+            Property.Primitive("DecimalValue", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
+            Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
         
         #region IRealmObject implementation

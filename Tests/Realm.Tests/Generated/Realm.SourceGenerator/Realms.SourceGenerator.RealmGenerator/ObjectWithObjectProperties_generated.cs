@@ -21,8 +21,8 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithObjectProperties", isEmbedded: false)
         {
-            Property.Object("StandaloneObject", "IntPropertyObject"),
-            Property.Object("EmbeddedObject", "EmbeddedIntPropertyObject"),
+            Property.Object("StandaloneObject", "IntPropertyObject", managedName: "StandaloneObject"),
+            Property.Object("EmbeddedObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedObject"),
         }.Build();
         
         #region IRealmObject implementation

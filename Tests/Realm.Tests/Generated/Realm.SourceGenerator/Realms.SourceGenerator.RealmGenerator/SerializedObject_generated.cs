@@ -21,11 +21,11 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SerializedObject", isEmbedded: false)
         {
-            Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.PrimitiveDictionary("Dict", RealmValueType.Int, areElementsNullable: false),
-            Property.PrimitiveList("List", RealmValueType.String, areElementsNullable: true),
-            Property.PrimitiveSet("Set", RealmValueType.String, areElementsNullable: true),
+            Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Property.PrimitiveDictionary("Dict", RealmValueType.Int, areElementsNullable: false, managedName: "Dict"),
+            Property.PrimitiveList("List", RealmValueType.String, areElementsNullable: true, managedName: "List"),
+            Property.PrimitiveSet("Set", RealmValueType.String, areElementsNullable: true, managedName: "Set"),
         }.Build();
         
         #region IRealmObject implementation

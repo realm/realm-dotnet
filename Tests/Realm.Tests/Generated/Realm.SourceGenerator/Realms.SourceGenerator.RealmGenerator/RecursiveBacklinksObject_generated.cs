@@ -21,9 +21,9 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RecursiveBacklinksObject", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Object("Parent", "RecursiveBacklinksObject"),
-            Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent"),
+            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Object("Parent", "RecursiveBacklinksObject", managedName: "Parent"),
+            Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent", managedName: "Children"),
         }.Build();
         
         #region IRealmObject implementation

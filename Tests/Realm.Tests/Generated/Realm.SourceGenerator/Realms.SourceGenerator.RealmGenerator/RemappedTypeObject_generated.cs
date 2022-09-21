@@ -21,14 +21,14 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("__RemappedTypeObject", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Object("NormalLink", "__RemappedTypeObject"),
-            Property.Object("__mappedLink", "__RemappedTypeObject"),
-            Property.ObjectList("NormalList", "__RemappedTypeObject"),
-            Property.ObjectList("__mappedList", "__RemappedTypeObject"),
-            Property.Backlinks("NormalBacklink", "__RemappedTypeObject", "NormalLink"),
-            Property.Backlinks("__mappedBacklink", "__RemappedTypeObject", "__mappedLink"),
+            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Property.Object("NormalLink", "__RemappedTypeObject", managedName: "NormalLink"),
+            Property.Object("__mappedLink", "__RemappedTypeObject", managedName: "MappedLink"),
+            Property.ObjectList("NormalList", "__RemappedTypeObject", managedName: "NormalList"),
+            Property.ObjectList("__mappedList", "__RemappedTypeObject", managedName: "MappedList"),
+            Property.Backlinks("NormalBacklink", "__RemappedTypeObject", "NormalLink", managedName: "NormalBacklink"),
+            Property.Backlinks("__mappedBacklink", "__RemappedTypeObject", "__mappedLink", managedName: "MappedBacklink"),
         }.Build();
         
         #region IRealmObject implementation

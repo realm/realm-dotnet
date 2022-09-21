@@ -18,7 +18,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Reflection;
+using Realms.Schema;
 
 namespace Realms.DataBinding
 {
@@ -27,18 +29,23 @@ namespace Realms.DataBinding
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
         private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
 
-        internal RealmObjectTypeDelegator(Type type) : base(type)
+        private ObjectSchema _schema;
+
+        internal RealmObjectTypeDelegator(Type type, ObjectSchema schema) : base(type)
         {
+            _schema = schema;
         }
 
-        //TODO The problem here is that this works only for properties that have the WovenAttribute (I suppose to avoid creating an implementation
-        //for properties we don't care about). Probably we should add something similar for the generated properties.
-        //Maybe we can check if it's the same name of a property that's on the interface (that we pass in the Generated Attribute)
         protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);
-            var wovenAttribute = result?.GetCustomAttribute<WovenPropertyAttribute>();
-            if (wovenAttribute != null)
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            if (_schema.Any(p => p.ManagedName == name))
             {
                 return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
             }

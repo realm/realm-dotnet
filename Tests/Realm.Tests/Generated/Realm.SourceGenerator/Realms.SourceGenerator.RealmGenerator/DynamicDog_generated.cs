@@ -21,10 +21,10 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicDog", isEmbedded: false)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("Color", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("Vaccinated", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Backlinks("Owners", "DynamicOwner", "Dogs"),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Property.Primitive("Color", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Color"),
+            Property.Primitive("Vaccinated", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Vaccinated"),
+            Property.Backlinks("Owners", "DynamicOwner", "Dogs", managedName: "Owners"),
         }.Build();
         
         #region IRealmObject implementation

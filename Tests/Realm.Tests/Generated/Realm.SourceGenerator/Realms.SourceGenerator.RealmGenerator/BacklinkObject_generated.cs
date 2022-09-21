@@ -21,9 +21,9 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkObject", isEmbedded: false)
         {
-            Property.Primitive("BeforeBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Backlinks("Links", "SomeClass", "BacklinkObject"),
-            Property.Primitive("AfterBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("BeforeBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "BeforeBacklinks"),
+            Property.Backlinks("Links", "SomeClass", "BacklinkObject", managedName: "Links"),
+            Property.Primitive("AfterBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "AfterBacklinks"),
         }.Build();
         
         #region IRealmObject implementation

@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("B", isEmbedded: false)
         {
-            Property.Object("C", "IntPropertyObject"),
+            Property.Object("C", "IntPropertyObject", managedName: "C"),
         }.Build();
         
         #region IRealmObject implementation

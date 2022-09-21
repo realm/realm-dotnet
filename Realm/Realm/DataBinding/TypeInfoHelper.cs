@@ -31,7 +31,7 @@ namespace Realms.DataBinding
         public static TypeInfo GetInfo(IRealmObjectBase obj)
         {
             Argument.NotNull(obj, nameof(obj));
-            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t));
+            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t, obj.ObjectSchema));
         }
     }
 }

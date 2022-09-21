@@ -22,11 +22,11 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithUnqueryableMembers", isEmbedded: false)
         {
-            Property.Primitive("RealPropertyToSatisfyWeaver", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Object("RealmObjectProperty", "Person"),
-            Property.ObjectList("RealmListProperty", "Person"),
-            Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent"),
+            Property.Primitive("RealPropertyToSatisfyWeaver", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),
+            Property.Object("RealmObjectProperty", "Person", managedName: "RealmObjectProperty"),
+            Property.ObjectList("RealmListProperty", "Person", managedName: "RealmListProperty"),
+            Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
+            Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
         }.Build();
         
         #region IRealmObject implementation

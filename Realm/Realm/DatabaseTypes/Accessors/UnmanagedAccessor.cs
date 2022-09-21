@@ -111,7 +111,7 @@ namespace Realms
             _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
-        //TODO Docs
+        /// <inheritdoc/>
         public TypeInfo GetTypeInfo(IRealmObjectBase obj)
         {
             return TypeInfoHelper.GetInfo(obj);

@@ -1897,7 +1897,7 @@ namespace Realms
             {
                 _realm.ThrowIfDisposed();
 
-                var query = (RealmResults<RealmObject>)All(className);
+                var query = (RealmResults<IRealmObject>)All(className);
                 query.ResultsHandle.Clear(_realm.SharedRealmHandle);
             }
 

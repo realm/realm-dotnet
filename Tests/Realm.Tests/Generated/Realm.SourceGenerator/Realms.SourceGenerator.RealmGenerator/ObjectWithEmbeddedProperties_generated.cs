@@ -21,11 +21,11 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithEmbeddedProperties", isEmbedded: false)
         {
-            Property.Primitive("PrimaryKey", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Object("AllTypesObject", "EmbeddedAllTypesObject"),
-            Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject"),
-            Property.Object("RecursiveObject", "EmbeddedLevel1"),
-            Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject"),
+            Property.Primitive("PrimaryKey", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "PrimaryKey"),
+            Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
+            Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
+            Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
+            Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
         
         #region IRealmObject implementation

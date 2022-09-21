@@ -21,15 +21,15 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CounterObject", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Int16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Int32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("Int64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("NullableByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableInt16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableInt32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
+            Property.Primitive("Int16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
+            Property.Primitive("Int32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
+            Property.Primitive("Int64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
+            Property.Primitive("NullableByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
+            Property.Primitive("NullableInt16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
+            Property.Primitive("NullableInt32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
+            Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
         }.Build();
         
         #region IRealmObject implementation

@@ -21,21 +21,21 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("GuidType", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("RegularProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.PrimitiveList("GuidList", RealmValueType.Guid, areElementsNullable: false),
-            Property.PrimitiveSet("GuidSet", RealmValueType.Guid, areElementsNullable: false),
-            Property.PrimitiveDictionary("GuidDict", RealmValueType.Guid, areElementsNullable: false),
-            Property.Primitive("OptionalProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.PrimitiveList("OptionalList", RealmValueType.Guid, areElementsNullable: true),
-            Property.PrimitiveSet("OptionalSet", RealmValueType.Guid, areElementsNullable: true),
-            Property.PrimitiveDictionary("OptionalDict", RealmValueType.Guid, areElementsNullable: true),
-            Property.Object("LinkProperty", "GuidType"),
-            Property.RealmValue("MixedProperty"),
-            Property.RealmValueList("MixedList"),
-            Property.RealmValueSet("MixedSet"),
-            Property.RealmValueDictionary("MixedDict"),
-            Property.Object("EmbeddedProperty", "EmbeddedGuidType"),
+            Property.Primitive("_id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Primitive("RegularProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RegularProperty"),
+            Property.PrimitiveList("GuidList", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidList"),
+            Property.PrimitiveSet("GuidSet", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidSet"),
+            Property.PrimitiveDictionary("GuidDict", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidDict"),
+            Property.Primitive("OptionalProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalProperty"),
+            Property.PrimitiveList("OptionalList", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalList"),
+            Property.PrimitiveSet("OptionalSet", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalSet"),
+            Property.PrimitiveDictionary("OptionalDict", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalDict"),
+            Property.Object("LinkProperty", "GuidType", managedName: "LinkProperty"),
+            Property.RealmValue("MixedProperty", managedName: "MixedProperty"),
+            Property.RealmValueList("MixedList", managedName: "MixedList"),
+            Property.RealmValueSet("MixedSet", managedName: "MixedSet"),
+            Property.RealmValueDictionary("MixedDict", managedName: "MixedDict"),
+            Property.Object("EmbeddedProperty", "EmbeddedGuidType", managedName: "EmbeddedProperty"),
         }.Build();
         
         #region IRealmObject implementation

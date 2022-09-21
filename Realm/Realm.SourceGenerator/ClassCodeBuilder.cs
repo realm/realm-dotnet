@@ -136,8 +136,6 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
             foreach (var property in _classInfo.Properties)
             {
-                // TODO If the property it's a primary key we don't need to do anything 
-                // (need to look at what the weaver does, in general)
                 if (property.TypeInfo.IsCollection)
                 {
                     if (property.TypeInfo.IsBacklink)
@@ -145,7 +143,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         var backlinkProperty = property.GetMappedOrOriginalBacklink();
                         var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteTypeString;
 
-                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}""),");
+                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}"", managedName: ""{property.Name}""),");
 
                         // Nothing to do for the copy to realm part
                     }
@@ -169,7 +167,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             };
 
                             var internalTypeString = internalType.MapTo ?? internalType.CompleteTypeString;
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}""),");
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
 
                             if (internalType.ObjectType == ObjectType.RealmObject)
                             {
@@ -193,7 +191,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                                 _ => throw new NotImplementedException(),
                             };
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}""),");
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
                         }
                         else
                         {
@@ -208,7 +206,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             var internalTypeString = GetRealmValueType(internalType);
                             var internalTypeNullable = property.IsRequired ? "false" : internalType.IsNullable.ToCodeString();
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}),");
+                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}, managedName: ""{property.Name}""),");
                         }
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
@@ -222,7 +220,7 @@ CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
                     var objectName = property.TypeInfo.MapTo ?? property.TypeInfo.CompleteTypeString;
-                    schemaProperties.AppendLine(@$"Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}""),");
+                    schemaProperties.AppendLine(@$"Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}"", managedName: ""{property.Name}""),");
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
@@ -236,7 +234,7 @@ CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {
-                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.GetMappedOrOriginalName()}""),");
+                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
@@ -246,7 +244,7 @@ CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
                     var isIndexed = property.IsIndexed.ToCodeString();
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}),");
+                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
                     var shouldSetAlways = property.IsRequired ||
                         property.TypeInfo.NullableAnnotation == NullableAnnotation.Annotated ||

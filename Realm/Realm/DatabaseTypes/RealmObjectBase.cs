@@ -444,7 +444,6 @@ namespace Realms
                 }
             }
 
-            //TODO Change docs (would this be an issue for people that use this with the old API)?
             /// <summary>
             /// Gets the value of a backlink property. This property must have been declared
             /// explicitly and annotated with <see cref="BacklinkAttribute"/>.
@@ -469,7 +468,6 @@ namespace Realms
                 return new RealmResults<IRealmObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
 
-            //TODO Change docs (would this be an issue for people that use this with the old API)?
             /// <summary>
             /// Gets a collection of all the objects that link to this object in the specified relationship.
             /// </summary>

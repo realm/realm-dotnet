@@ -21,8 +21,8 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedContainer", isEmbedded: false)
         {
-            Property.ObjectList("Items", "OrderedObject"),
-            Property.ObjectDictionary("ItemsDictionary", "OrderedObject"),
+            Property.ObjectList("Items", "OrderedObject", managedName: "Items"),
+            Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),
         }.Build();
         
         #region IRealmObject implementation

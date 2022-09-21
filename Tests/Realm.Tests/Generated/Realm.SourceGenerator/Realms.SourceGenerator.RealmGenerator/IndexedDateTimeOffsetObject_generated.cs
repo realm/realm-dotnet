@@ -21,7 +21,7 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IndexedDateTimeOffsetObject", isEmbedded: false)
         {
-            Property.Primitive("DateTimeOffset", RealmValueType.Date, isPrimaryKey: false, isIndexed: true, isNullable: false),
+            Property.Primitive("DateTimeOffset", RealmValueType.Date, isPrimaryKey: false, isIndexed: true, isNullable: false, managedName: "DateTimeOffset"),
         }.Build();
         
         #region IRealmObject implementation

@@ -21,12 +21,12 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RealmValueObject", isEmbedded: false)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.RealmValue("RealmValueProperty"),
-            Property.RealmValueList("RealmValueList"),
-            Property.RealmValueSet("RealmValueSet"),
-            Property.RealmValueDictionary("RealmValueDictionary"),
-            Property.PrimitiveDictionary("TestDict", RealmValueType.Int, areElementsNullable: false),
+            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
+            Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
+            Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
+            Property.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
+            Property.PrimitiveDictionary("TestDict", RealmValueType.Int, areElementsNullable: false, managedName: "TestDict"),
         }.Build();
         
         #region IRealmObject implementation

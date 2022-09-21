@@ -21,8 +21,8 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("InternalObject", isEmbedded: false)
         {
-            Property.Primitive("IntProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("IntProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntProperty"),
+            Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
         }.Build();
         
         #region IRealmObject implementation

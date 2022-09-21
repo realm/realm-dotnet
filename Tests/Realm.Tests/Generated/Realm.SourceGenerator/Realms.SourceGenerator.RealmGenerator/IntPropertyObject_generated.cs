@@ -22,10 +22,10 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IntPropertyObject", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false),
-            Property.Primitive("Int", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false),
-            Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList"),
+            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Property.Primitive("Int", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
+            Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
+            Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
         }.Build();
         
         #region IRealmObject implementation

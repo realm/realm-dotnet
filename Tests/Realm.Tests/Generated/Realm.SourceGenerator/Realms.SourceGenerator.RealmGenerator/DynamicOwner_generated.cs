@@ -21,14 +21,14 @@ namespace Realms.Tests.Database
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicOwner", isEmbedded: false)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
-            Property.Object("TopDog", "DynamicDog"),
-            Property.ObjectList("Dogs", "DynamicDog"),
-            Property.PrimitiveList("Tags", RealmValueType.String, areElementsNullable: true),
-            Property.ObjectDictionary("DogsDictionary", "DynamicDog"),
-            Property.PrimitiveDictionary("TagsDictionary", RealmValueType.String, areElementsNullable: true),
-            Property.ObjectSet("DogsSet", "DynamicDog"),
-            Property.PrimitiveSet("TagsSet", RealmValueType.String, areElementsNullable: true),
+            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
+            Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
+            Property.PrimitiveList("Tags", RealmValueType.String, areElementsNullable: true, managedName: "Tags"),
+            Property.ObjectDictionary("DogsDictionary", "DynamicDog", managedName: "DogsDictionary"),
+            Property.PrimitiveDictionary("TagsDictionary", RealmValueType.String, areElementsNullable: true, managedName: "TagsDictionary"),
+            Property.ObjectSet("DogsSet", "DynamicDog", managedName: "DogsSet"),
+            Property.PrimitiveSet("TagsSet", RealmValueType.String, areElementsNullable: true, managedName: "TagsSet"),
         }.Build();
         
         #region IRealmObject implementation

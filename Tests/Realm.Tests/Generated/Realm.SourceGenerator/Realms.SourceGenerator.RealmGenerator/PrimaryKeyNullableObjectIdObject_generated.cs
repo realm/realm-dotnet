@@ -22,7 +22,7 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", isEmbedded: false)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: true),
+            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
         }.Build();
         
         #region IRealmObject implementation

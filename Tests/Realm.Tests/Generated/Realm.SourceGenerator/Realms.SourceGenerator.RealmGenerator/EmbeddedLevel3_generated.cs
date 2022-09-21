@@ -21,7 +21,7 @@ namespace Realms.Tests
     {
         public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedLevel3", isEmbedded: true)
         {
-            Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true),
+            Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
         }.Build();
         
         #region IEmbeddedObject implementation
