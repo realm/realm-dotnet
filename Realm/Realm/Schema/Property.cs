@@ -293,6 +293,7 @@ namespace Realms.Schema
         /// </summary>
         /// <param name="name">The name of the property.</param>
         /// <param name="objectType">The object type. Both standalone and embedded objects are valid.</param>
+        /// <param name="managedName">The managed name of the property.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property ObjectList(string name, string objectType, string managedName = null)
             => ObjectCore(name, objectType, PropertyType.Array, managedName: managedName);
@@ -321,6 +322,7 @@ namespace Realms.Schema
         /// Initializes a new property of RealmValue type.
         /// </summary>
         /// <param name="name">The name of the property.</param>
+        /// <param name="managedName">The managed name of the property.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
         public static Property RealmValue(string name, string managedName = null)
         {

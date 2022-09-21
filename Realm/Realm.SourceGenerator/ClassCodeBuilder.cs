@@ -39,7 +39,6 @@ namespace Realms.SourceGenerator
             "System.ComponentModel",
             "Realms",
             "Realms.Weaving",
-            "Realms.Generated",
             "Realms.Schema",
         };
 
@@ -49,18 +48,19 @@ namespace Realms.SourceGenerator
         private string _accessorInterfaceName;
         private string _managedAccessorClassName;
         private string _unmanagedAccessorClassName;
+        private string _generatedNamespaceName;
 
-        public ClassCodeBuilder(ClassInfo classInfo, bool hasDuplicateClassName)
+        public ClassCodeBuilder(ClassInfo classInfo)
         {
             _classInfo = classInfo;
 
-            var namespaceString = hasDuplicateClassName ? $"{classInfo.Namespace}_" : string.Empty;
-            var className = namespaceString + _classInfo.Name;
+            var className = _classInfo.Name;
 
             _helperClassName = $"{className}ObjectHelper";
             _accessorInterfaceName = $"I{className}Accessor";
             _managedAccessorClassName = $"{className}ManagedAccessor";
             _unmanagedAccessorClassName = $"{className}UnmanagedAccessor";
+            _generatedNamespaceName = $"{_classInfo.Namespace}.Generated";
         }
 
         public string GenerateSource()
@@ -80,7 +80,7 @@ namespace {_classInfo.Namespace}
 {partialClassString}
 }}
 
-namespace Realms.Generated
+namespace {_generatedNamespaceName}
 {{
 {interfaceString}
 
@@ -94,7 +94,7 @@ namespace Realms.Generated
 
         private string GetUsings()
         {
-            var namespaces = new HashSet<string>() { _classInfo.Namespace };
+            var namespaces = new HashSet<string>() { _classInfo.Namespace, _generatedNamespaceName };
             namespaces.UnionWith(_defaultNamespaces);
 
             foreach (var property in _classInfo.Properties)
@@ -436,7 +436,7 @@ $@"public override string ToString()
     return Accessor.ToString();
 }}")}";
 
-            var classString = $@"[Generated(""{_accessorInterfaceName}"")]
+            var classString = $@"[Generated]
 [Woven(typeof({_helperClassName}))]
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{

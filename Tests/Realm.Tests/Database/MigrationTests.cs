@@ -719,25 +719,25 @@ namespace Realms.Tests.Database
             Assert.That(obj1.StringValue, Is.EqualTo("1"));
             Assert.That(obj2.StringValue, Is.EqualTo("2"));
         }
+    }
 
-        [Explicit]
-        [MapTo("Object")]
-        private partial class ObjectV1 : IRealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
+    [Explicit]
+    [MapTo("Object")]
+    public partial class ObjectV1 : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
 
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
-        [Explicit]
-        [MapTo("Object")]
-        private partial class ObjectV2 : IRealmObject
-        {
-            [PrimaryKey]
-            public string Id { get; set; }
+    [Explicit]
+    [MapTo("Object")]
+    public partial class ObjectV2 : IRealmObject
+    {
+        [PrimaryKey]
+        public string Id { get; set; }
 
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
     }
 }

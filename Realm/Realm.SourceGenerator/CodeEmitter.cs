@@ -36,6 +36,7 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
+            // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
             var duplicateClassNames = parsingResults.ClassInfo
                 .GroupBy(c => c.Name)
                 .Where(g => g.Count() > 1)
@@ -53,15 +54,13 @@ namespace Realms.SourceGenerator
                 {
                     var className = classInfo.Name;
 
-                    var hasDuplicateClassName = duplicateClassNames.Contains(className);
-
-                    var generator = new ClassCodeBuilder(classInfo, hasDuplicateClassName);
+                    var generator = new ClassCodeBuilder(classInfo);
                     var generatedSource = generator.GenerateSource();
 
                     var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
 
 
-                    if (hasDuplicateClassName)
+                    if (duplicateClassNames.Contains(className))
                     {
                         className = $"{classInfo.Namespace}_{classInfo.Name}";
                     }

@@ -250,9 +250,8 @@ Analytics payload
         {
             _logger.Debug("Weaving generated " + type.Name);
 
-            var generatedAttribute = type.CustomAttributes.First(a => a.AttributeType.Name == "GeneratedAttribute");
-            var interfaceName = (string)generatedAttribute.ConstructorArguments[0].Value;
-            var interfaceType = _moduleDefinition.GetType("Realms.Generated", interfaceName);
+            var interfaceName = $"I{type.Name}Accessor";
+            var interfaceType = _moduleDefinition.GetType($"{type.Namespace}.Generated", interfaceName);
 
             var persistedProperties = new List<WeavePropertyResult>();
 
