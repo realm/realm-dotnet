@@ -48,7 +48,7 @@ namespace Realms.Tests
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
         
         [IgnoreDataMember, XmlIgnore]
-        public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
+        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
         
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;

@@ -719,7 +719,7 @@ namespace Realms.Tests.Database
                 });
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetBacklinks(nameof(IntPropertyObject.Int)));
-                Assert.That(ex.Message, Does.Contain("Int64").And.Contains(nameof(RealmObjectBase.Dynamic.GetBacklinks)));
+                Assert.That(ex.Message, Does.Contain("Int64").And.Contains(nameof(DynamicObjectApi.GetBacklinks)));
             });
         }
 
@@ -849,7 +849,7 @@ namespace Realms.Tests.Database
                 });
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetList<RealmValue>(nameof(SyncCollectionsObject.BooleanSet)));
-                Assert.That(ex.Message, Does.Contain("ISet<Boolean>").And.Contain($"can't be accessed using {nameof(RealmObjectBase.Dynamic.GetList)}"));
+                Assert.That(ex.Message, Does.Contain("ISet<Boolean>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetList)}"));
             });
         }
 
@@ -947,7 +947,7 @@ namespace Realms.Tests.Database
                 });
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetSet<RealmValue>(nameof(SyncCollectionsObject.StringList)));
-                Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(RealmObjectBase.Dynamic.GetSet)}"));
+                Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetSet)}"));
             });
         }
 
@@ -1045,7 +1045,7 @@ namespace Realms.Tests.Database
                 });
 
                 var ex = Assert.Throws<ArgumentException>(() => obj.DynamicApi.GetDictionary<RealmValue>(nameof(SyncCollectionsObject.StringList)));
-                Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(RealmObjectBase.Dynamic.GetDictionary)}"));
+                Assert.That(ex.Message, Does.Contain("IList<String>").And.Contain($"can't be accessed using {nameof(DynamicObjectApi.GetDictionary)}"));
             });
         }
 

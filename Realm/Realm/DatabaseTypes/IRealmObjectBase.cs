@@ -74,7 +74,7 @@ namespace Realms
         /// Gets an object encompassing the dynamic API for this Realm object instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this Realm object.</value>
-        public RealmObjectBase.Dynamic DynamicApi { get; }
+        public DynamicObjectApi DynamicApi { get; }
 
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.

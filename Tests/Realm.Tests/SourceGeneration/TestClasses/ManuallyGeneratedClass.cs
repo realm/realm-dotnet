@@ -102,7 +102,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
 
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
-        public RealmObjectBase.Dynamic DynamicApi => Accessor.DynamicApi;
+        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         public int BacklinksCount => Accessor.BacklinksCount;
 

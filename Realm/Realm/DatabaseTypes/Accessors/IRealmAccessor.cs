@@ -79,7 +79,7 @@ namespace Realms
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
-        RealmObjectBase.Dynamic DynamicApi { get; }
+        DynamicObjectApi DynamicApi { get; }
 
         /// <summary>
         /// Gets the value of a property of the object.

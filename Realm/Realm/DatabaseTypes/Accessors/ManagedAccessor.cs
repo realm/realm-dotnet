@@ -69,7 +69,7 @@ namespace Realms
         internal Metadata Metadata { get; private set; }
 
         /// <inheritdoc/>
-        public RealmObjectBase.Dynamic DynamicApi => new(this);
+        public DynamicObjectApi DynamicApi => new(this);
 
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
