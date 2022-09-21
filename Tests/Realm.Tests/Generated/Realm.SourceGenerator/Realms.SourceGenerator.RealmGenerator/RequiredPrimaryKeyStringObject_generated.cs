@@ -149,6 +149,11 @@ namespace Realms.Tests
                 return true;
             }
         
+            if (obj is InvalidObject)
+            {
+                return !IsValid;
+            }
+        
             if (obj is not IRealmObjectBase iro)
             {
                 return false;

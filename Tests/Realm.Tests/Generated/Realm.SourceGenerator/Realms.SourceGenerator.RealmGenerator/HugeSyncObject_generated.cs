@@ -150,6 +150,11 @@ namespace Realms.Tests.Sync
                 return true;
             }
         
+            if (obj is InvalidObject)
+            {
+                return !IsValid;
+            }
+        
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
