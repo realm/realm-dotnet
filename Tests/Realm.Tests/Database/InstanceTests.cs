@@ -1148,7 +1148,6 @@ namespace Realms.Tests.Database
                 embedded.Int = 111;
             });
 
-            //TODO Need to check what we want to do with the dynamic API
             Assert.That(embedded.Int, Is.EqualTo(111));
             Assert.That(embedded.Accessor.DynamicApi.Get<DateTimeOffset>("LastModified"), Is.GreaterThan(oldLastModified));
         }
