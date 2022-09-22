@@ -101,10 +101,15 @@ namespace Realms.Tests.Database
 
             var copy = CreateEmbeddedAllTypesObject();
 
+#if TEST_WEAVER
+            var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(p => !p.HasCustomAttribute<BacklinkAttribute>());
+#else
             var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Where(p => !p.HasCustomAttribute<BacklinkAttribute>())
                 .Intersect(typeof(Tests.Generated.IEmbeddedAllTypesObjectAccessor)
                 .GetProperties());
+#endif
 
             foreach (var prop in properties)
             {

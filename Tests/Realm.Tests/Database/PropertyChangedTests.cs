@@ -878,7 +878,11 @@ namespace Realms.Tests.Database
             }
         }
 
+#if TEST_WEAVER
+        protected override void OnPropertyChanged(string propertyName)
+#else
         partial void OnPropertyChanged(string propertyName)
+#endif
         {
             if (propertyName == nameof(Birthday))
             {

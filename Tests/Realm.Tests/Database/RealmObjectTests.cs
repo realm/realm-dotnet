@@ -750,7 +750,11 @@ namespace Realms.Tests.Database
         [Ignored]
         public int OnManagedCalled { get; private set; }
 
+#if TEST_WEAVER
+        protected internal override void OnManaged()
+#else
         partial void OnManaged()
+#endif
         {
             OnManagedCalled++;
         }

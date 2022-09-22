@@ -1134,7 +1134,7 @@ namespace Realms.Tests.Database
                 };
 
                 person.DynamicApi.Set("EmbeddedInt", embeddedInt);
-                embeddedInt.Accessor.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+                embeddedInt.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
             });
 
             var person = realm.All<Person>().Single();
@@ -1145,17 +1145,17 @@ namespace Realms.Tests.Database
             var embedded = person.DynamicApi.Get<EmbeddedIntPropertyObject>("EmbeddedInt");
             Assert.That(embedded, Is.Not.Null);
             Assert.That(embedded.Int, Is.EqualTo(999));
-            var oldLastModified = embedded.Accessor.DynamicApi.Get<DateTimeOffset>("LastModified");
+            var oldLastModified = embedded.DynamicApi.Get<DateTimeOffset>("LastModified");
             Assert.That(oldLastModified, Is.LessThanOrEqualTo(DateTimeOffset.UtcNow));
 
             realm.Write(() =>
             {
-                embedded.Accessor.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
+                embedded.DynamicApi.Set("LastModified", DateTimeOffset.UtcNow);
                 embedded.Int = 111;
             });
 
             Assert.That(embedded.Int, Is.EqualTo(111));
-            Assert.That(embedded.Accessor.DynamicApi.Get<DateTimeOffset>("LastModified"), Is.GreaterThan(oldLastModified));
+            Assert.That(embedded.DynamicApi.Get<DateTimeOffset>("LastModified"), Is.GreaterThan(oldLastModified));
         }
 
         [Test]
