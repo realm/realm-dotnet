@@ -171,7 +171,7 @@ namespace Realms.Tests.Database
                     {
                         var parent = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
-                        subTasks.Add(new DynamicEmbeddedObject());
+                        subTasks.Add(new DynamicSubTask());
                     });
                 });
 
@@ -187,7 +187,7 @@ namespace Realms.Tests.Database
                     realm.Write(() =>
                     {
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
-                        parent.SubTasks.Add(new DynamicEmbeddedObject());
+                        parent.SubTasks.Add(new DynamicSubTask());
                     });
                 });
 
@@ -243,7 +243,7 @@ namespace Realms.Tests.Database
                     {
                         var parent = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
-                        subTasks.Insert(0, new DynamicEmbeddedObject());
+                        subTasks.Insert(0, new DynamicSubTask());
                     });
                 });
 
@@ -259,7 +259,7 @@ namespace Realms.Tests.Database
                     realm.Write(() =>
                     {
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
-                        parent.SubTasks.Insert(0, new DynamicEmbeddedObject());
+                        parent.SubTasks.Insert(0, new DynamicSubTask());
                     });
                 });
 
@@ -278,7 +278,7 @@ namespace Realms.Tests.Database
                     {
                         var parent = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
-                        subTasks[0] = new DynamicEmbeddedObject();
+                        subTasks[0] = new DynamicSubTask();
                     });
                 });
 
@@ -294,7 +294,7 @@ namespace Realms.Tests.Database
                     realm.Write(() =>
                     {
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
-                        parent.SubTasks[0] = new DynamicEmbeddedObject();
+                        parent.SubTasks[0] = new DynamicSubTask();
                     });
                 });
 

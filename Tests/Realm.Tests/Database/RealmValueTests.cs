@@ -387,27 +387,26 @@ namespace Realms.Tests.Database
             Assert.That(rv != RealmValue.Null);
         }
 
-        //TODO Will fix later
-        //[Test]
-        //public void ObjectTests(
-        //    [ValueSource(nameof(ObjectValues))] IRealmObjectBase value,
-        //    [Values(true, false)] bool isManaged)
-        //{
-        //    RealmValue rv = value;
+        [Test]
+        public void ObjectTests(
+            [ValueSource(nameof(ObjectValues))] IRealmObjectBase value,
+            [Values(true, false)] bool isManaged)
+        {
+            RealmValue rv = RealmValue.Object(value);
 
-        //    if (isManaged)
-        //    {
-        //        var retrievedObject = PersistAndFind(rv);
-        //        rv = retrievedObject.RealmValueProperty;
-        //    }
+            if (isManaged)
+            {
+                var retrievedObject = PersistAndFind(rv);
+                rv = retrievedObject.RealmValueProperty;
+            }
 
-        //    Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
+            Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
 
-        //    Assert.That((IRealmObjectBase)rv, Is.EqualTo(value));
-        //    Assert.That(rv.As<IRealmObjectBase>(), Is.EqualTo(value));
-        //    Assert.That(rv.AsRealmObject(), Is.EqualTo(value));
-        //    Assert.That(rv != RealmValue.Null);
-        //}
+            Assert.That(rv.AsIRealmObject(), Is.EqualTo(value));
+            Assert.That(rv.As<IRealmObjectBase>(), Is.EqualTo(value));
+            Assert.That(rv.AsIRealmObject(), Is.EqualTo(value));
+            Assert.That(rv != RealmValue.Null);
+        }
 
         [Test]
         public void NullTests([Values(true, false)] bool isManaged)
@@ -724,7 +723,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueProperty;
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -750,7 +749,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueList.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -776,7 +775,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueSet.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -802,7 +801,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary["foo"];
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -831,7 +830,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary.Values.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));

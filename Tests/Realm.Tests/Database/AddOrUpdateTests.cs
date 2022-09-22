@@ -27,9 +27,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public partial class AddOrUpdateTests : RealmInstanceTest
     {
-        //TODO There are different issues with realm classes inside other classes:
-        // -If private then it can't be accessed, and it's a problem if it's used as a link in another class
-        // -If public then if it's used as a link in another class then we need the full name (that we don't have at the moment)
         [Test]
         public void AddOrUpdate_WhenDoesntExist_ShouldAdd()
         {

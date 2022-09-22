@@ -288,7 +288,7 @@ namespace Realms.Tests.Database
                 {
                     dynamic intObject = realm.DynamicApi.CreateObject(nameof(IntPropertyObject), ObjectId.GenerateNewId());
                     intObject.Int = 10;
-                    RealmValue intObjectRV = intObject;
+                    RealmValue intObjectRV = RealmValue.Object(intObject);
 
                     dynamic ato = realm.DynamicApi.CreateObject(nameof(AllTypesObject), null);
                     ato.RealmValueProperty = intObjectRV;
