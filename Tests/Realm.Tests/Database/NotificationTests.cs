@@ -25,6 +25,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -841,14 +848,14 @@ namespace Realms.Tests.Database
         };
     }
 
-    public partial class OrderedContainer : IRealmObject
+    public partial class OrderedContainer : TestRealmObject
     {
         public IList<OrderedObject> Items { get; }
 
         public IDictionary<string, OrderedObject> ItemsDictionary { get; }
     }
 
-    public partial class OrderedObject : IRealmObject
+    public partial class OrderedObject : TestRealmObject
     {
         public int Order { get; set; }
 

@@ -21,6 +21,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1056,7 +1063,7 @@ namespace Realms.Tests.Database
         }
     }
 
-    public partial class Parent : IRealmObject
+    public partial class Parent : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1066,7 +1073,7 @@ namespace Realms.Tests.Database
         public Child Child { get; set; }
     }
 
-    public partial class Child : IRealmObject
+    public partial class Child : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1076,7 +1083,7 @@ namespace Realms.Tests.Database
         public Parent Parent { get; set; }
     }
 
-    public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : IRealmObject
+    public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1086,12 +1093,12 @@ namespace Realms.Tests.Database
         public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
     }
 
-    public partial class NonPrimaryKeyObject : IRealmObject
+    public partial class NonPrimaryKeyObject : TestRealmObject
     {
         public string StringValue { get; set; }
     }
 
-    public partial class PrimaryKeyObject : IRealmObject
+    public partial class PrimaryKeyObject : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1099,7 +1106,7 @@ namespace Realms.Tests.Database
         public string StringValue { get; set; }
     }
 
-    public partial class NullablePrimaryKeyObject : IRealmObject
+    public partial class NullablePrimaryKeyObject : TestRealmObject
     {
         [PrimaryKey]
         public long? Id { get; set; }
@@ -1107,7 +1114,7 @@ namespace Realms.Tests.Database
         public string StringValue { get; set; }
     }
 
-    public partial class PrimaryKeyWithPKRelation : IRealmObject
+    public partial class PrimaryKeyWithPKRelation : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1117,7 +1124,7 @@ namespace Realms.Tests.Database
         public PrimaryKeyObject OtherObject { get; set; }
     }
 
-    public partial class PrimaryKeyWithNonPKRelation : IRealmObject
+    public partial class PrimaryKeyWithNonPKRelation : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1127,7 +1134,7 @@ namespace Realms.Tests.Database
         public NonPrimaryKeyObject OtherObject { get; set; }
     }
 
-    public partial class PrimaryKeyWithPKList : IRealmObject
+    public partial class PrimaryKeyWithPKList : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1137,7 +1144,7 @@ namespace Realms.Tests.Database
         public IList<PrimaryKeyObject> ListValue { get; }
     }
 
-    public partial class PrimaryKeyWithNoPKList : IRealmObject
+    public partial class PrimaryKeyWithNoPKList : TestRealmObject
     {
         [PrimaryKey]
         public long Id { get; set; }
@@ -1147,14 +1154,14 @@ namespace Realms.Tests.Database
         public IList<NonPrimaryKeyObject> ListValue { get; }
     }
 
-    public partial class NonPrimaryKeyWithPKRelation : IRealmObject
+    public partial class NonPrimaryKeyWithPKRelation : TestRealmObject
     {
         public string StringValue { get; set; }
 
         public PrimaryKeyObject OtherObject { get; set; }
     }
 
-    public partial class NonPrimaryKeyWithNonPKRelation : IRealmObject
+    public partial class NonPrimaryKeyWithNonPKRelation : TestRealmObject
     {
         public string StringValue { get; set; }
 

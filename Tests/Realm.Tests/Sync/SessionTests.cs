@@ -31,6 +31,13 @@ using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Sync
 {
@@ -1459,7 +1466,7 @@ namespace Realms.Tests.Sync
     }
 
     [Explicit]
-    public partial class ObjectWithPartitionValue : IRealmObject
+    public partial class ObjectWithPartitionValue : TestRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]

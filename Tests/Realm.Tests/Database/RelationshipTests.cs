@@ -20,6 +20,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
@@ -764,7 +771,7 @@ namespace Realms.Tests.Database
         #endregion
     }
 
-    public partial class Product : IRealmObject
+    public partial class Product : TestRealmObject
     {
         public int Id { get; set; }
 
@@ -775,7 +782,7 @@ namespace Realms.Tests.Database
         public IList<Report> Reports { get; } // child objects
     }
 
-    public partial class Report : IRealmObject
+    public partial class Report : TestRealmObject
     {
         public int Id { get; set; }
 

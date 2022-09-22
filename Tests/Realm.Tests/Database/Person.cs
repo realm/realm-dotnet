@@ -18,10 +18,17 @@
 
 using System;
 using System.Collections.Generic;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
-    public partial class Person : IRealmObject
+    public partial class Person : TestRealmObject
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }

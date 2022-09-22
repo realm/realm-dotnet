@@ -23,6 +23,13 @@ using System.Reflection;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1784,14 +1791,14 @@ namespace Realms.Tests.Database
         }
     }
 
-    public partial class A : IRealmObject
+    public partial class A : TestRealmObject
     {
         public bool Value { get; set; }
 
         public B B { get; set; }
     }
 
-    public partial class B : IRealmObject
+    public partial class B : TestRealmObject
     {
         public IntPropertyObject C { get; set; }
     }

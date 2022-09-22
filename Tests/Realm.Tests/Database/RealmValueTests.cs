@@ -22,6 +22,13 @@ using System.ComponentModel;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1045,7 +1052,7 @@ namespace Realms.Tests.Database
         }
     }
 
-    public partial class RealmValueObject : IRealmObject
+    public partial class RealmValueObject : TestRealmObject
     {
         public int Id { get; set; }
 
@@ -1060,7 +1067,7 @@ namespace Realms.Tests.Database
         public IDictionary<string, int> TestDict { get; }
     }
 
-    public partial class InternalObject : IRealmObject, IEquatable<InternalObject>
+    public partial class InternalObject : TestRealmObject, IEquatable<InternalObject>
     {
         public int IntProperty { get; set; }
 

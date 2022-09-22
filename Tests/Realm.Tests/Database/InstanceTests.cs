@@ -26,6 +26,13 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1294,7 +1301,7 @@ namespace Realms.Tests.Database
             }
         }
     }
-    public partial class LoneClass : IRealmObject
+    public partial class LoneClass : TestRealmObject
     {
         public string Name { get; set; }
     }

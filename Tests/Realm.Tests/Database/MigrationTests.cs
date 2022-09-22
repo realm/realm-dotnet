@@ -23,6 +23,13 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -723,7 +730,7 @@ namespace Realms.Tests.Database
 
     [Explicit]
     [MapTo("Object")]
-    public partial class ObjectV1 : IRealmObject
+    public partial class ObjectV1 : TestRealmObject
     {
         [PrimaryKey]
         public int Id { get; set; }
@@ -733,7 +740,7 @@ namespace Realms.Tests.Database
 
     [Explicit]
     [MapTo("Object")]
-    public partial class ObjectV2 : IRealmObject
+    public partial class ObjectV2 : TestRealmObject
     {
         [PrimaryKey]
         public string Id { get; set; }

@@ -17,10 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using MongoDB.Bson;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Sync
 {
-    public partial class HugeSyncObject : IRealmObject
+    public partial class HugeSyncObject : TestRealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]

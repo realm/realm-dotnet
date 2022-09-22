@@ -27,6 +27,13 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -718,7 +725,7 @@ namespace Realms.Tests.Database
     }
 
     [Serializable]
-    public partial class SerializedObject : IRealmObject
+    public partial class SerializedObject : TestRealmObject
     {
         public int IntValue { get; set; }
 
@@ -731,7 +738,7 @@ namespace Realms.Tests.Database
         public ISet<string> Set { get; }
     }
 
-    public partial class OnManagedTestClass : IRealmObject
+    public partial class OnManagedTestClass : TestRealmObject
     {
         [PrimaryKey]
         public int Id { get; set; }

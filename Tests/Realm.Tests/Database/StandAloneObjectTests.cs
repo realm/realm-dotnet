@@ -19,6 +19,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -121,21 +128,21 @@ namespace Realms.Tests.Database
 
     }
 
-    public partial class NoListProperties : IRealmObject
+    public partial class NoListProperties : TestRealmObject
     {
         public string Name { get; set; }
 
         public int Age { get; set; }
     }
 
-    public partial class OnlyListProperties : IRealmObject
+    public partial class OnlyListProperties : TestRealmObject
     {
         public IList<Person> Friends { get; }
 
         public IList<Person> Enemies { get; }
     }
 
-    public partial class MixedProperties1 : IRealmObject
+    public partial class MixedProperties1 : TestRealmObject
     {
         public string Name { get; set; }
 
@@ -146,7 +153,7 @@ namespace Realms.Tests.Database
         public IList<Person> Enemies { get; }
     }
 
-    public partial class MixedProperties2 : IRealmObject
+    public partial class MixedProperties2 : TestRealmObject
     {
         public IList<Person> Friends { get; }
 
@@ -157,12 +164,12 @@ namespace Realms.Tests.Database
         public string Name { get; set; }
     }
 
-    public partial class OneNonListProperty : IRealmObject
+    public partial class OneNonListProperty : TestRealmObject
     {
         public string Name { get; set; }
     }
 
-    public partial class OneListProperty : IRealmObject
+    public partial class OneListProperty : TestRealmObject
     {
         public IList<Person> People { get; }
     }

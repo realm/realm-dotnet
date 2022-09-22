@@ -22,6 +22,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -837,7 +844,7 @@ namespace Realms.Tests.Database
         }
     }
 
-    public partial class BacklinkObject : IRealmObject
+    public partial class BacklinkObject : TestRealmObject
     {
         public string BeforeBacklinks { get; set; }
 
@@ -847,12 +854,12 @@ namespace Realms.Tests.Database
         public string AfterBacklinks { get; set; }
     }
 
-    public partial class SomeClass : IRealmObject
+    public partial class SomeClass : TestRealmObject
     {
         public BacklinkObject BacklinkObject { get; set; }
     }
 
-    public partial class AgedObject : IRealmObject
+    public partial class AgedObject : TestRealmObject
     {
         public DateTimeOffset Birthday { get; set; }
 

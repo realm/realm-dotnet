@@ -20,6 +20,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1441,7 +1448,7 @@ namespace Realms.Tests.Database
         private static bool Any(dynamic collection, Func<dynamic, bool> predicate) => ((IEnumerable<dynamic>)collection).Any(predicate);
     }
 
-    public partial class DynamicDog : IRealmObject
+    public partial class DynamicDog : TestRealmObject
     {
         public string Name { get; set; }
 
@@ -1453,7 +1460,7 @@ namespace Realms.Tests.Database
         public IQueryable<DynamicOwner> Owners { get; }
     }
 
-    public partial class DynamicOwner : IRealmObject
+    public partial class DynamicOwner : TestRealmObject
     {
         public string Name { get; set; }
 

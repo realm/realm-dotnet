@@ -1155,7 +1155,7 @@ namespace Realms.Tests.Database
         }
     }
 
-    public partial class DynamicTask : IRealmObject
+    public partial class DynamicTask : TestRealmObject
     {
         [PrimaryKey]
         public string Id { get; set; }
@@ -1171,7 +1171,7 @@ namespace Realms.Tests.Database
         public IDictionary<string, DynamicSubTask> SubTasksDictionary { get; }
     }
 
-    public partial class DynamicSubTask : IEmbeddedObject
+    public partial class DynamicSubTask : TestEmbeddedObject
     {
         public string Summary { get; set; }
 
@@ -1180,7 +1180,7 @@ namespace Realms.Tests.Database
         public IList<DynamicSubSubTask> SubSubTasks { get; }
     }
 
-    public partial class DynamicSubSubTask : IEmbeddedObject
+    public partial class DynamicSubSubTask : TestEmbeddedObject
     {
         public string Summary { get; set; }
 
@@ -1192,7 +1192,7 @@ namespace Realms.Tests.Database
         public IQueryable<DynamicTask> ParentTask { get; }
     }
 
-    public partial class CompletionReport : IEmbeddedObject
+    public partial class CompletionReport : TestEmbeddedObject
     {
         public DateTimeOffset CompletionDate { get; set; }
 

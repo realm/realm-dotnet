@@ -23,6 +23,13 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Tests.Sync;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -596,7 +603,7 @@ namespace Realms.Tests.Database
     }
 
     [Explicit]
-    public partial class GuidType : IRealmObject
+    public partial class GuidType : TestRealmObject
     {
         [PrimaryKey, MapTo("_id")]
         public Guid Id { get; set; }
@@ -631,7 +638,7 @@ namespace Realms.Tests.Database
     }
 
     [Explicit]
-    public partial class EmbeddedGuidType : IEmbeddedObject
+    public partial class EmbeddedGuidType : TestEmbeddedObject
     {
         public Guid RegularProperty { get; set; }
 
