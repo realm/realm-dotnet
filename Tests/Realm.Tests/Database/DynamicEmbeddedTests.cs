@@ -20,57 +20,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using Realms.Dynamic;
+#if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicEmbeddedTests : RealmInstanceTest
     {
-        private class DynamicTask : RealmObject
-        {
-            [PrimaryKey]
-            public string Id { get; set; }
-
-            public string Summary { get; set; }
-
-            public CompletionReport CompletionReport { get; set; }
-
-            public IList<DynamicSubTask> SubTasks { get; }
-
-            public IList<DynamicSubSubTask> SubSubTasks { get; }
-
-            public IDictionary<string, DynamicSubTask> SubTasksDictionary { get; }
-        }
-
-        private class DynamicSubTask : EmbeddedObject
-        {
-            public string Summary { get; set; }
-
-            public CompletionReport CompletionReport { get; set; }
-
-            public IList<DynamicSubSubTask> SubSubTasks { get; }
-        }
-
-        private class DynamicSubSubTask : EmbeddedObject
-        {
-            public string Summary { get; set; }
-
-            // Singular because we only expect 1
-            [Backlink(nameof(DynamicSubTask.SubSubTasks))]
-            public IQueryable<DynamicSubTask> ParentSubTask { get; }
-
-            [Backlink(nameof(DynamicTask.SubSubTasks))]
-            public IQueryable<DynamicTask> ParentTask { get; }
-        }
-
-        private class CompletionReport : EmbeddedObject
-        {
-            public DateTimeOffset CompletionDate { get; set; }
-
-            public string Remarks { get; set; }
-        }
-
         private void RunTestInAllModes(Action<Realm> test)
         {
             foreach (var isDynamic in new[] { true, false })
@@ -1186,10 +1148,54 @@ namespace Realms.Tests.Database
                 dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
                 dynamic dynamicReport = dynamicTask.CompletionReport;
 
-                IQueryable<dynamic> dynamicParents = dynamicReport.GetBacklinks(nameof(DynamicTask), nameof(CompletionReport));
+                IQueryable<dynamic> dynamicParents = dynamicReport.DynamicApi.GetBacklinksFromType(nameof(DynamicTask), nameof(CompletionReport));
                 Assert.That(dynamicParents.Count(), Is.EqualTo(1));
                 Assert.That(dynamicParents.Single(), Is.EqualTo(dynamicTask));
             });
         }
+    }
+
+    public partial class DynamicTask : IRealmObject
+    {
+        [PrimaryKey]
+        public string Id { get; set; }
+
+        public string Summary { get; set; }
+
+        public CompletionReport CompletionReport { get; set; }
+
+        public IList<DynamicSubTask> SubTasks { get; }
+
+        public IList<DynamicSubSubTask> SubSubTasks { get; }
+
+        public IDictionary<string, DynamicSubTask> SubTasksDictionary { get; }
+    }
+
+    public partial class DynamicSubTask : IEmbeddedObject
+    {
+        public string Summary { get; set; }
+
+        public CompletionReport CompletionReport { get; set; }
+
+        public IList<DynamicSubSubTask> SubSubTasks { get; }
+    }
+
+    public partial class DynamicSubSubTask : IEmbeddedObject
+    {
+        public string Summary { get; set; }
+
+        // Singular because we only expect 1
+        [Backlink(nameof(DynamicSubTask.SubSubTasks))]
+        public IQueryable<DynamicSubTask> ParentSubTask { get; }
+
+        [Backlink(nameof(DynamicTask.SubSubTasks))]
+        public IQueryable<DynamicTask> ParentTask { get; }
+    }
+
+    public partial class CompletionReport : IEmbeddedObject
+    {
+        public DateTimeOffset CompletionDate { get; set; }
+
+        public string Remarks { get; set; }
     }
 }
