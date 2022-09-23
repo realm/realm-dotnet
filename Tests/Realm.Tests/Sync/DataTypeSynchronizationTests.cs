@@ -270,7 +270,7 @@ namespace Realms.Tests.Sync
             new object[] { (RealmValue)"abc", (RealmValue)10 },
             new object[] { (RealmValue)new ObjectId("5f63e882536de46d71877979"), (RealmValue)new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}") },
             new object[] { (RealmValue)new byte[] { 0, 1, 2 }, (RealmValue)DateTimeOffset.FromUnixTimeSeconds(1616137641) },
-            new object[] { (RealmValue)true, (RealmValue)new IntPropertyObject { Int = 10 } },
+            new object[] { (RealmValue)true, RealmValue.Object(new IntPropertyObject { Int = 10 }) },
             new object[] { RealmValue.Null, (RealmValue)5m },
             new object[] { (RealmValue)12.5f, (RealmValue)15d },
         };
@@ -556,7 +556,7 @@ namespace Realms.Tests.Sync
             }
 
             var robj = original.AsIRealmObject();
-            var clone = (RealmObjectBase)Activator.CreateInstance(robj.GetType());
+            var clone = (IRealmObjectBase)Activator.CreateInstance(robj.GetType());
             var properties = robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite && p.CanRead && !p.HasCustomAttribute<PrimaryKeyAttribute>());
 
@@ -565,7 +565,7 @@ namespace Realms.Tests.Sync
                 prop.SetValue(clone, prop.GetValue(robj));
             }
 
-            return clone;
+            return RealmValue.Object(clone);
         }
 
         private static T CloneOrLookup<T>(T value, Realm targetRealm)
