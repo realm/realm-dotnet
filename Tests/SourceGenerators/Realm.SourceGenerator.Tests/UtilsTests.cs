@@ -27,11 +27,11 @@ namespace Realm.SourceGenerator.Tests
 
         public static (string Input, string Expected)[] IndentTestCases = new[]
         {
-            ("", DefaultIndent),
+            ("", ""),
             ("abc", $"{DefaultIndent}abc"),
             ($"a{Environment.NewLine}b", $"{DefaultIndent}a{Environment.NewLine}{DefaultIndent}b"),
-            ($"  abc{Environment.NewLine}{Environment.NewLine}", $"{DefaultIndent}  abc{Environment.NewLine}{DefaultIndent}{Environment.NewLine}{DefaultIndent}"),
-            ($"a{Environment.NewLine}{Environment.NewLine}b", $"{DefaultIndent}a{Environment.NewLine}{DefaultIndent}{Environment.NewLine}{DefaultIndent}b"),
+            ($"  abc{Environment.NewLine}{Environment.NewLine}", $"{DefaultIndent}  abc{Environment.NewLine}{Environment.NewLine}"),
+            ($"a{Environment.NewLine}{Environment.NewLine}b", $"{DefaultIndent}a{Environment.NewLine}{Environment.NewLine}{DefaultIndent}b"),
         };
 
         [TestCaseSource(nameof(IndentTestCases))]
