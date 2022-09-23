@@ -28,51 +28,49 @@ namespace Realms.Tests
             Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
             Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private IClassWithUnqueryableMembersAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IClassWithUnqueryableMembersAccessor Accessor => _accessor = _accessor ?? new ClassWithUnqueryableMembersUnmanagedAccessor(typeof(ClassWithUnqueryableMembers));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IClassWithUnqueryableMembersAccessor)managedAccessor;
             var oldAccessor = _accessor as IClassWithUnqueryableMembersAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
                 {
                     newAccessor.RealmListProperty.Clear();
                 }
-                
+
                 if(!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string))
                 {
                     newAccessor.RealPropertyToSatisfyWeaver = oldAccessor.RealPropertyToSatisfyWeaver;
@@ -82,27 +80,29 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
-                
+
                 if(!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -111,86 +111,84 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator ClassWithUnqueryableMembers(RealmValue val) => val.AsRealmObject<ClassWithUnqueryableMembers>();
-        
+
         public static implicit operator RealmValue(ClassWithUnqueryableMembers val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class ClassWithUnqueryableMembersObjectHelper : IRealmObjectHelper
         {
@@ -198,14 +196,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new ClassWithUnqueryableMembersManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new ClassWithUnqueryableMembers();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -221,13 +219,13 @@ namespace Realms.Tests.Generated
     internal interface IClassWithUnqueryableMembersAccessor : IRealmAccessor
     {
         string RealPropertyToSatisfyWeaver { get; set; }
-        
+
         Person RealmObjectProperty { get; set; }
-        
+
         IList<Person> RealmListProperty { get; }
-        
+
         string FirstName { get; set; }
-        
+
         IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
     }
 
@@ -239,13 +237,13 @@ namespace Realms.Tests.Generated
             get => (string)GetValue("RealPropertyToSatisfyWeaver");
             set => SetValue("RealPropertyToSatisfyWeaver", value);
         }
-        
+
         public Person RealmObjectProperty
         {
             get => (Person)GetValue("RealmObjectProperty");
             set => SetValue("RealmObjectProperty", value);
         }
-        
+
         private IList<Person> _realmListProperty;
         public IList<Person> RealmListProperty
         {
@@ -255,17 +253,17 @@ namespace Realms.Tests.Generated
                 {
                     _realmListProperty = GetListValue<Person>("RealmListProperty");
                 }
-        
+
                 return _realmListProperty;
             }
         }
-        
+
         public string FirstName
         {
             get => (string)GetValue("FirstName");
             set => SetValue("FirstName", value);
         }
-        
+
         private IQueryable<UnqueryableBacklinks> _backlinkProperty;
         public IQueryable<UnqueryableBacklinks> BacklinkProperty
         {
@@ -275,7 +273,7 @@ namespace Realms.Tests.Generated
                 {
                     _backlinkProperty = GetBacklinks<UnqueryableBacklinks>("BacklinkProperty");
                 }
-        
+
                 return _backlinkProperty;
             }
         }
@@ -293,7 +291,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("RealPropertyToSatisfyWeaver");
             }
         }
-        
+
         private Person _realmObjectProperty;
         public Person RealmObjectProperty
         {
@@ -304,9 +302,9 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("RealmObjectProperty");
             }
         }
-        
+
         public IList<Person> RealmListProperty { get; } = new List<Person>();
-        
+
         private string _firstName;
         public string FirstName
         {
@@ -317,13 +315,13 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("FirstName");
             }
         }
-        
+
         public IQueryable<UnqueryableBacklinks> BacklinkProperty => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-    
+
         public ClassWithUnqueryableMembersUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -335,7 +333,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -353,31 +351,30 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
             "RealmListProperty" => (IList<T>)RealmListProperty,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

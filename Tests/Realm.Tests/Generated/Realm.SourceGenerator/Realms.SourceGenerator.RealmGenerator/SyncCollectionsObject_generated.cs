@@ -75,44 +75,42 @@ namespace Realms.Tests
             Property.ObjectDictionary("EmbeddedObjectDict", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDict"),
             Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private ISyncCollectionsObjectAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal ISyncCollectionsObjectAccessor Accessor => _accessor = _accessor ?? new SyncCollectionsObjectUnmanagedAccessor(typeof(SyncCollectionsObject));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ISyncCollectionsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor as ISyncCollectionsObjectAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
@@ -168,172 +166,125 @@ namespace Realms.Tests
                     newAccessor.EmbeddedObjectDict.Clear();
                     newAccessor.RealmValueDict.Clear();
                 }
-                
+
                 newAccessor.Id = oldAccessor.Id;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharList, newAccessor.CharList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteList, newAccessor.ByteList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16List, newAccessor.Int16List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32List, newAccessor.Int32List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64List, newAccessor.Int64List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.FloatList, newAccessor.FloatList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleList, newAccessor.DoubleList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanList, newAccessor.BooleanList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalList, newAccessor.DecimalList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128List, newAccessor.Decimal128List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdList, newAccessor.ObjectIdList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringList, newAccessor.StringList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayList, newAccessor.ByteArrayList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetList, newAccessor.DateTimeOffsetList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectList, newAccessor.ObjectList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectList, newAccessor.EmbeddedObjectList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharSet, newAccessor.CharSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteSet, newAccessor.ByteSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16Set, newAccessor.Int16Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32Set, newAccessor.Int32Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64Set, newAccessor.Int64Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.FloatSet, newAccessor.FloatSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleSet, newAccessor.DoubleSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanSet, newAccessor.BooleanSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalSet, newAccessor.DecimalSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Set, newAccessor.Decimal128Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdSet, newAccessor.ObjectIdSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringSet, newAccessor.StringSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArraySet, newAccessor.ByteArraySet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetSet, newAccessor.DateTimeOffsetSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectSet, newAccessor.ObjectSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharDict, newAccessor.CharDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteDict, newAccessor.ByteDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16Dict, newAccessor.Int16Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32Dict, newAccessor.Int32Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64Dict, newAccessor.Int64Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.FloatDict, newAccessor.FloatDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleDict, newAccessor.DoubleDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanDict, newAccessor.BooleanDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalDict, newAccessor.DecimalDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Dict, newAccessor.Decimal128Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdDict, newAccessor.ObjectIdDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringDict, newAccessor.StringDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayDict, newAccessor.ByteArrayDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetDict, newAccessor.DateTimeOffsetDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectDict, newAccessor.ObjectDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectDict, newAccessor.EmbeddedObjectDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDict, newAccessor.RealmValueDict, update, skipDefaults);
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -342,86 +293,84 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator SyncCollectionsObject(RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
-        
+
         public static implicit operator RealmValue(SyncCollectionsObject val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class SyncCollectionsObjectObjectHelper : IRealmObjectHelper
         {
@@ -429,14 +378,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new SyncCollectionsObjectManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new SyncCollectionsObject();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = ((ISyncCollectionsObjectAccessor)instance.Accessor).Id;
@@ -452,107 +401,107 @@ namespace Realms.Tests.Generated
     internal interface ISyncCollectionsObjectAccessor : IRealmAccessor
     {
         ObjectId Id { get; set; }
-        
+
         Guid GuidProperty { get; set; }
-        
+
         IList<char> CharList { get; }
-        
+
         IList<byte> ByteList { get; }
-        
+
         IList<short> Int16List { get; }
-        
+
         IList<int> Int32List { get; }
-        
+
         IList<long> Int64List { get; }
-        
+
         IList<float> FloatList { get; }
-        
+
         IList<double> DoubleList { get; }
-        
+
         IList<bool> BooleanList { get; }
-        
+
         IList<decimal> DecimalList { get; }
-        
+
         IList<Decimal128> Decimal128List { get; }
-        
+
         IList<ObjectId> ObjectIdList { get; }
-        
+
         IList<string> StringList { get; }
-        
+
         IList<byte[]> ByteArrayList { get; }
-        
+
         IList<DateTimeOffset> DateTimeOffsetList { get; }
-        
+
         IList<IntPropertyObject> ObjectList { get; }
-        
+
         IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
-        
+
         IList<RealmValue> RealmValueList { get; }
-        
+
         ISet<char> CharSet { get; }
-        
+
         ISet<byte> ByteSet { get; }
-        
+
         ISet<short> Int16Set { get; }
-        
+
         ISet<int> Int32Set { get; }
-        
+
         ISet<long> Int64Set { get; }
-        
+
         ISet<float> FloatSet { get; }
-        
+
         ISet<double> DoubleSet { get; }
-        
+
         ISet<bool> BooleanSet { get; }
-        
+
         ISet<decimal> DecimalSet { get; }
-        
+
         ISet<Decimal128> Decimal128Set { get; }
-        
+
         ISet<ObjectId> ObjectIdSet { get; }
-        
+
         ISet<string> StringSet { get; }
-        
+
         ISet<byte[]> ByteArraySet { get; }
-        
+
         ISet<DateTimeOffset> DateTimeOffsetSet { get; }
-        
+
         ISet<IntPropertyObject> ObjectSet { get; }
-        
+
         ISet<RealmValue> RealmValueSet { get; }
-        
+
         IDictionary<string, char> CharDict { get; }
-        
+
         IDictionary<string, byte> ByteDict { get; }
-        
+
         IDictionary<string, short> Int16Dict { get; }
-        
+
         IDictionary<string, int> Int32Dict { get; }
-        
+
         IDictionary<string, long> Int64Dict { get; }
-        
+
         IDictionary<string, float> FloatDict { get; }
-        
+
         IDictionary<string, double> DoubleDict { get; }
-        
+
         IDictionary<string, bool> BooleanDict { get; }
-        
+
         IDictionary<string, decimal> DecimalDict { get; }
-        
+
         IDictionary<string, Decimal128> Decimal128Dict { get; }
-        
+
         IDictionary<string, ObjectId> ObjectIdDict { get; }
-        
+
         IDictionary<string, string> StringDict { get; }
-        
+
         IDictionary<string, byte[]> ByteArrayDict { get; }
-        
+
         IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
-        
+
         IDictionary<string, IntPropertyObject> ObjectDict { get; }
-        
+
         IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
-        
+
         IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
@@ -564,13 +513,13 @@ namespace Realms.Tests.Generated
             get => (ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
-        
+
         public Guid GuidProperty
         {
             get => (Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
         }
-        
+
         private IList<char> _charList;
         public IList<char> CharList
         {
@@ -580,11 +529,11 @@ namespace Realms.Tests.Generated
                 {
                     _charList = GetListValue<char>("CharList");
                 }
-        
+
                 return _charList;
             }
         }
-        
+
         private IList<byte> _byteList;
         public IList<byte> ByteList
         {
@@ -594,11 +543,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteList = GetListValue<byte>("ByteList");
                 }
-        
+
                 return _byteList;
             }
         }
-        
+
         private IList<short> _int16List;
         public IList<short> Int16List
         {
@@ -608,11 +557,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16List = GetListValue<short>("Int16List");
                 }
-        
+
                 return _int16List;
             }
         }
-        
+
         private IList<int> _int32List;
         public IList<int> Int32List
         {
@@ -622,11 +571,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32List = GetListValue<int>("Int32List");
                 }
-        
+
                 return _int32List;
             }
         }
-        
+
         private IList<long> _int64List;
         public IList<long> Int64List
         {
@@ -636,11 +585,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64List = GetListValue<long>("Int64List");
                 }
-        
+
                 return _int64List;
             }
         }
-        
+
         private IList<float> _floatList;
         public IList<float> FloatList
         {
@@ -650,11 +599,11 @@ namespace Realms.Tests.Generated
                 {
                     _floatList = GetListValue<float>("FloatList");
                 }
-        
+
                 return _floatList;
             }
         }
-        
+
         private IList<double> _doubleList;
         public IList<double> DoubleList
         {
@@ -664,11 +613,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleList = GetListValue<double>("DoubleList");
                 }
-        
+
                 return _doubleList;
             }
         }
-        
+
         private IList<bool> _booleanList;
         public IList<bool> BooleanList
         {
@@ -678,11 +627,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanList = GetListValue<bool>("BooleanList");
                 }
-        
+
                 return _booleanList;
             }
         }
-        
+
         private IList<decimal> _decimalList;
         public IList<decimal> DecimalList
         {
@@ -692,11 +641,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalList = GetListValue<decimal>("DecimalList");
                 }
-        
+
                 return _decimalList;
             }
         }
-        
+
         private IList<Decimal128> _decimal128List;
         public IList<Decimal128> Decimal128List
         {
@@ -706,11 +655,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128List = GetListValue<Decimal128>("Decimal128List");
                 }
-        
+
                 return _decimal128List;
             }
         }
-        
+
         private IList<ObjectId> _objectIdList;
         public IList<ObjectId> ObjectIdList
         {
@@ -720,11 +669,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdList = GetListValue<ObjectId>("ObjectIdList");
                 }
-        
+
                 return _objectIdList;
             }
         }
-        
+
         private IList<string> _stringList;
         public IList<string> StringList
         {
@@ -734,11 +683,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringList = GetListValue<string>("StringList");
                 }
-        
+
                 return _stringList;
             }
         }
-        
+
         private IList<byte[]> _byteArrayList;
         public IList<byte[]> ByteArrayList
         {
@@ -748,11 +697,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArrayList = GetListValue<byte[]>("ByteArrayList");
                 }
-        
+
                 return _byteArrayList;
             }
         }
-        
+
         private IList<DateTimeOffset> _dateTimeOffsetList;
         public IList<DateTimeOffset> DateTimeOffsetList
         {
@@ -762,11 +711,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetList = GetListValue<DateTimeOffset>("DateTimeOffsetList");
                 }
-        
+
                 return _dateTimeOffsetList;
             }
         }
-        
+
         private IList<IntPropertyObject> _objectList;
         public IList<IntPropertyObject> ObjectList
         {
@@ -776,11 +725,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectList = GetListValue<IntPropertyObject>("ObjectList");
                 }
-        
+
                 return _objectList;
             }
         }
-        
+
         private IList<EmbeddedIntPropertyObject> _embeddedObjectList;
         public IList<EmbeddedIntPropertyObject> EmbeddedObjectList
         {
@@ -790,11 +739,11 @@ namespace Realms.Tests.Generated
                 {
                     _embeddedObjectList = GetListValue<EmbeddedIntPropertyObject>("EmbeddedObjectList");
                 }
-        
+
                 return _embeddedObjectList;
             }
         }
-        
+
         private IList<RealmValue> _realmValueList;
         public IList<RealmValue> RealmValueList
         {
@@ -804,11 +753,11 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueList = GetListValue<RealmValue>("RealmValueList");
                 }
-        
+
                 return _realmValueList;
             }
         }
-        
+
         private ISet<char> _charSet;
         public ISet<char> CharSet
         {
@@ -818,11 +767,11 @@ namespace Realms.Tests.Generated
                 {
                     _charSet = GetSetValue<char>("CharSet");
                 }
-        
+
                 return _charSet;
             }
         }
-        
+
         private ISet<byte> _byteSet;
         public ISet<byte> ByteSet
         {
@@ -832,11 +781,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteSet = GetSetValue<byte>("ByteSet");
                 }
-        
+
                 return _byteSet;
             }
         }
-        
+
         private ISet<short> _int16Set;
         public ISet<short> Int16Set
         {
@@ -846,11 +795,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16Set = GetSetValue<short>("Int16Set");
                 }
-        
+
                 return _int16Set;
             }
         }
-        
+
         private ISet<int> _int32Set;
         public ISet<int> Int32Set
         {
@@ -860,11 +809,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32Set = GetSetValue<int>("Int32Set");
                 }
-        
+
                 return _int32Set;
             }
         }
-        
+
         private ISet<long> _int64Set;
         public ISet<long> Int64Set
         {
@@ -874,11 +823,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64Set = GetSetValue<long>("Int64Set");
                 }
-        
+
                 return _int64Set;
             }
         }
-        
+
         private ISet<float> _floatSet;
         public ISet<float> FloatSet
         {
@@ -888,11 +837,11 @@ namespace Realms.Tests.Generated
                 {
                     _floatSet = GetSetValue<float>("FloatSet");
                 }
-        
+
                 return _floatSet;
             }
         }
-        
+
         private ISet<double> _doubleSet;
         public ISet<double> DoubleSet
         {
@@ -902,11 +851,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleSet = GetSetValue<double>("DoubleSet");
                 }
-        
+
                 return _doubleSet;
             }
         }
-        
+
         private ISet<bool> _booleanSet;
         public ISet<bool> BooleanSet
         {
@@ -916,11 +865,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanSet = GetSetValue<bool>("BooleanSet");
                 }
-        
+
                 return _booleanSet;
             }
         }
-        
+
         private ISet<decimal> _decimalSet;
         public ISet<decimal> DecimalSet
         {
@@ -930,11 +879,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalSet = GetSetValue<decimal>("DecimalSet");
                 }
-        
+
                 return _decimalSet;
             }
         }
-        
+
         private ISet<Decimal128> _decimal128Set;
         public ISet<Decimal128> Decimal128Set
         {
@@ -944,11 +893,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128Set = GetSetValue<Decimal128>("Decimal128Set");
                 }
-        
+
                 return _decimal128Set;
             }
         }
-        
+
         private ISet<ObjectId> _objectIdSet;
         public ISet<ObjectId> ObjectIdSet
         {
@@ -958,11 +907,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdSet = GetSetValue<ObjectId>("ObjectIdSet");
                 }
-        
+
                 return _objectIdSet;
             }
         }
-        
+
         private ISet<string> _stringSet;
         public ISet<string> StringSet
         {
@@ -972,11 +921,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringSet = GetSetValue<string>("StringSet");
                 }
-        
+
                 return _stringSet;
             }
         }
-        
+
         private ISet<byte[]> _byteArraySet;
         public ISet<byte[]> ByteArraySet
         {
@@ -986,11 +935,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArraySet = GetSetValue<byte[]>("ByteArraySet");
                 }
-        
+
                 return _byteArraySet;
             }
         }
-        
+
         private ISet<DateTimeOffset> _dateTimeOffsetSet;
         public ISet<DateTimeOffset> DateTimeOffsetSet
         {
@@ -1000,11 +949,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetSet = GetSetValue<DateTimeOffset>("DateTimeOffsetSet");
                 }
-        
+
                 return _dateTimeOffsetSet;
             }
         }
-        
+
         private ISet<IntPropertyObject> _objectSet;
         public ISet<IntPropertyObject> ObjectSet
         {
@@ -1014,11 +963,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectSet = GetSetValue<IntPropertyObject>("ObjectSet");
                 }
-        
+
                 return _objectSet;
             }
         }
-        
+
         private ISet<RealmValue> _realmValueSet;
         public ISet<RealmValue> RealmValueSet
         {
@@ -1028,11 +977,11 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueSet = GetSetValue<RealmValue>("RealmValueSet");
                 }
-        
+
                 return _realmValueSet;
             }
         }
-        
+
         private IDictionary<string, char> _charDict;
         public IDictionary<string, char> CharDict
         {
@@ -1042,11 +991,11 @@ namespace Realms.Tests.Generated
                 {
                     _charDict = GetDictionaryValue<char>("CharDict");
                 }
-        
+
                 return _charDict;
             }
         }
-        
+
         private IDictionary<string, byte> _byteDict;
         public IDictionary<string, byte> ByteDict
         {
@@ -1056,11 +1005,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteDict = GetDictionaryValue<byte>("ByteDict");
                 }
-        
+
                 return _byteDict;
             }
         }
-        
+
         private IDictionary<string, short> _int16Dict;
         public IDictionary<string, short> Int16Dict
         {
@@ -1070,11 +1019,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16Dict = GetDictionaryValue<short>("Int16Dict");
                 }
-        
+
                 return _int16Dict;
             }
         }
-        
+
         private IDictionary<string, int> _int32Dict;
         public IDictionary<string, int> Int32Dict
         {
@@ -1084,11 +1033,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32Dict = GetDictionaryValue<int>("Int32Dict");
                 }
-        
+
                 return _int32Dict;
             }
         }
-        
+
         private IDictionary<string, long> _int64Dict;
         public IDictionary<string, long> Int64Dict
         {
@@ -1098,11 +1047,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64Dict = GetDictionaryValue<long>("Int64Dict");
                 }
-        
+
                 return _int64Dict;
             }
         }
-        
+
         private IDictionary<string, float> _floatDict;
         public IDictionary<string, float> FloatDict
         {
@@ -1112,11 +1061,11 @@ namespace Realms.Tests.Generated
                 {
                     _floatDict = GetDictionaryValue<float>("FloatDict");
                 }
-        
+
                 return _floatDict;
             }
         }
-        
+
         private IDictionary<string, double> _doubleDict;
         public IDictionary<string, double> DoubleDict
         {
@@ -1126,11 +1075,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleDict = GetDictionaryValue<double>("DoubleDict");
                 }
-        
+
                 return _doubleDict;
             }
         }
-        
+
         private IDictionary<string, bool> _booleanDict;
         public IDictionary<string, bool> BooleanDict
         {
@@ -1140,11 +1089,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanDict = GetDictionaryValue<bool>("BooleanDict");
                 }
-        
+
                 return _booleanDict;
             }
         }
-        
+
         private IDictionary<string, decimal> _decimalDict;
         public IDictionary<string, decimal> DecimalDict
         {
@@ -1154,11 +1103,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalDict = GetDictionaryValue<decimal>("DecimalDict");
                 }
-        
+
                 return _decimalDict;
             }
         }
-        
+
         private IDictionary<string, Decimal128> _decimal128Dict;
         public IDictionary<string, Decimal128> Decimal128Dict
         {
@@ -1168,11 +1117,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128Dict = GetDictionaryValue<Decimal128>("Decimal128Dict");
                 }
-        
+
                 return _decimal128Dict;
             }
         }
-        
+
         private IDictionary<string, ObjectId> _objectIdDict;
         public IDictionary<string, ObjectId> ObjectIdDict
         {
@@ -1182,11 +1131,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdDict = GetDictionaryValue<ObjectId>("ObjectIdDict");
                 }
-        
+
                 return _objectIdDict;
             }
         }
-        
+
         private IDictionary<string, string> _stringDict;
         public IDictionary<string, string> StringDict
         {
@@ -1196,11 +1145,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringDict = GetDictionaryValue<string>("StringDict");
                 }
-        
+
                 return _stringDict;
             }
         }
-        
+
         private IDictionary<string, byte[]> _byteArrayDict;
         public IDictionary<string, byte[]> ByteArrayDict
         {
@@ -1210,11 +1159,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArrayDict = GetDictionaryValue<byte[]>("ByteArrayDict");
                 }
-        
+
                 return _byteArrayDict;
             }
         }
-        
+
         private IDictionary<string, DateTimeOffset> _dateTimeOffsetDict;
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDict
         {
@@ -1224,11 +1173,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetDict = GetDictionaryValue<DateTimeOffset>("DateTimeOffsetDict");
                 }
-        
+
                 return _dateTimeOffsetDict;
             }
         }
-        
+
         private IDictionary<string, IntPropertyObject> _objectDict;
         public IDictionary<string, IntPropertyObject> ObjectDict
         {
@@ -1238,11 +1187,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectDict = GetDictionaryValue<IntPropertyObject>("ObjectDict");
                 }
-        
+
                 return _objectDict;
             }
         }
-        
+
         private IDictionary<string, EmbeddedIntPropertyObject> _embeddedObjectDict;
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict
         {
@@ -1252,11 +1201,11 @@ namespace Realms.Tests.Generated
                 {
                     _embeddedObjectDict = GetDictionaryValue<EmbeddedIntPropertyObject>("EmbeddedObjectDict");
                 }
-        
+
                 return _embeddedObjectDict;
             }
         }
-        
+
         private IDictionary<string, RealmValue> _realmValueDict;
         public IDictionary<string, RealmValue> RealmValueDict
         {
@@ -1266,7 +1215,7 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueDict = GetDictionaryValue<RealmValue>("RealmValueDict");
                 }
-        
+
                 return _realmValueDict;
             }
         }
@@ -1284,7 +1233,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Id");
             }
         }
-        
+
         private Guid _guidProperty;
         public Guid GuidProperty
         {
@@ -1295,111 +1244,111 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("GuidProperty");
             }
         }
-        
+
         public IList<char> CharList { get; } = new List<char>();
-        
+
         public IList<byte> ByteList { get; } = new List<byte>();
-        
+
         public IList<short> Int16List { get; } = new List<short>();
-        
+
         public IList<int> Int32List { get; } = new List<int>();
-        
+
         public IList<long> Int64List { get; } = new List<long>();
-        
+
         public IList<float> FloatList { get; } = new List<float>();
-        
+
         public IList<double> DoubleList { get; } = new List<double>();
-        
+
         public IList<bool> BooleanList { get; } = new List<bool>();
-        
+
         public IList<decimal> DecimalList { get; } = new List<decimal>();
-        
+
         public IList<Decimal128> Decimal128List { get; } = new List<Decimal128>();
-        
+
         public IList<ObjectId> ObjectIdList { get; } = new List<ObjectId>();
-        
+
         public IList<string> StringList { get; } = new List<string>();
-        
+
         public IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
-        
+
         public IList<DateTimeOffset> DateTimeOffsetList { get; } = new List<DateTimeOffset>();
-        
+
         public IList<IntPropertyObject> ObjectList { get; } = new List<IntPropertyObject>();
-        
+
         public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<EmbeddedIntPropertyObject>();
-        
+
         public IList<RealmValue> RealmValueList { get; } = new List<RealmValue>();
-        
+
         public ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
-        
+
         public ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
-        
+
         public ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
-        
+
         public ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
-        
+
         public ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
-        
+
         public ISet<float> FloatSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
-        
+
         public ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
-        
+
         public ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
-        
+
         public ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
-        
+
         public ISet<Decimal128> Decimal128Set { get; } = new HashSet<Decimal128>(RealmSet<Decimal128>.Comparer);
-        
+
         public ISet<ObjectId> ObjectIdSet { get; } = new HashSet<ObjectId>(RealmSet<ObjectId>.Comparer);
-        
+
         public ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
-        
+
         public ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
-        
+
         public ISet<DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<DateTimeOffset>(RealmSet<DateTimeOffset>.Comparer);
-        
+
         public ISet<IntPropertyObject> ObjectSet { get; } = new HashSet<IntPropertyObject>(RealmSet<IntPropertyObject>.Comparer);
-        
+
         public ISet<RealmValue> RealmValueSet { get; } = new HashSet<RealmValue>(RealmSet<RealmValue>.Comparer);
-        
+
         public IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
-        
+
         public IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
-        
+
         public IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
-        
+
         public IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
-        
+
         public IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
-        
+
         public IDictionary<string, float> FloatDict { get; } = new Dictionary<string, float>();
-        
+
         public IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
-        
+
         public IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
-        
+
         public IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
-        
+
         public IDictionary<string, Decimal128> Decimal128Dict { get; } = new Dictionary<string, Decimal128>();
-        
+
         public IDictionary<string, ObjectId> ObjectIdDict { get; } = new Dictionary<string, ObjectId>();
-        
+
         public IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
-        
+
         public IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
-        
+
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, DateTimeOffset>();
-        
+
         public IDictionary<string, IntPropertyObject> ObjectDict { get; } = new Dictionary<string, IntPropertyObject>();
-        
+
         public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; } = new Dictionary<string, EmbeddedIntPropertyObject>();
-        
+
         public IDictionary<string, RealmValue> RealmValueDict { get; } = new Dictionary<string, RealmValue>();
-    
+
         public SyncCollectionsObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -1409,7 +1358,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -1423,17 +1372,17 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
-            
+
             Id = (ObjectId)val;
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
@@ -1455,11 +1404,11 @@ namespace Realms.Tests.Generated
             "ObjectList" => (IList<T>)ObjectList,
             "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
             "RealmValueList" => (IList<T>)RealmValueList,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             return propertyName switch
@@ -1480,11 +1429,11 @@ namespace Realms.Tests.Generated
             "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
             "ObjectSet" => (ISet<T>)ObjectSet,
             "RealmValueSet" => (ISet<T>)RealmValueSet,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                         };
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return propertyName switch
@@ -1511,4 +1460,3 @@ namespace Realms.Tests.Generated
         }
     }
 }
-

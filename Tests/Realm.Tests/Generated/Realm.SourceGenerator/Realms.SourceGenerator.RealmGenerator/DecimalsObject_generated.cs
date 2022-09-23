@@ -25,63 +25,63 @@ namespace Realms.Tests
             Property.Primitive("DecimalValue", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
             Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private IDecimalsObjectAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IDecimalsObjectAccessor Accessor => _accessor = _accessor ?? new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDecimalsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor as IDecimalsObjectAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
-                
+
                 newAccessor.DecimalValue = oldAccessor.DecimalValue;
                 newAccessor.Decimal128Value = oldAccessor.Decimal128Value;
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -90,86 +90,84 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator DecimalsObject(RealmValue val) => val.AsRealmObject<DecimalsObject>();
-        
+
         public static implicit operator RealmValue(DecimalsObject val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DecimalsObjectObjectHelper : IRealmObjectHelper
         {
@@ -177,14 +175,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new DecimalsObjectManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new DecimalsObject();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -200,7 +198,7 @@ namespace Realms.Tests.Generated
     internal interface IDecimalsObjectAccessor : IRealmAccessor
     {
         decimal DecimalValue { get; set; }
-        
+
         Decimal128 Decimal128Value { get; set; }
     }
 
@@ -212,7 +210,7 @@ namespace Realms.Tests.Generated
             get => (decimal)GetValue("DecimalValue");
             set => SetValue("DecimalValue", value);
         }
-        
+
         public Decimal128 Decimal128Value
         {
             get => (Decimal128)GetValue("Decimal128Value");
@@ -232,7 +230,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("DecimalValue");
             }
         }
-        
+
         private Decimal128 _decimal128Value;
         public Decimal128 Decimal128Value
         {
@@ -243,11 +241,11 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Decimal128Value");
             }
         }
-    
+
         public DecimalsObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -257,7 +255,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -272,26 +270,25 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

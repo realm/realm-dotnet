@@ -114,44 +114,42 @@ namespace Realms.Tests
             Property.ObjectDictionary("ObjectDict", "IntPropertyObject", managedName: "ObjectDict"),
             Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private ICollectionsObjectAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal ICollectionsObjectAccessor Accessor => _accessor = _accessor ?? new CollectionsObjectUnmanagedAccessor(typeof(CollectionsObject));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ICollectionsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor as ICollectionsObjectAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
@@ -248,293 +246,204 @@ namespace Realms.Tests
                     newAccessor.ObjectDict.Clear();
                     newAccessor.RealmValueDict.Clear();
                 }
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharSet, newAccessor.CharSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteSet, newAccessor.ByteSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16Set, newAccessor.Int16Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32Set, newAccessor.Int32Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64Set, newAccessor.Int64Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.SingleSet, newAccessor.SingleSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleSet, newAccessor.DoubleSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanSet, newAccessor.BooleanSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalSet, newAccessor.DecimalSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Set, newAccessor.Decimal128Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdSet, newAccessor.ObjectIdSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringSet, newAccessor.StringSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableStringSet, newAccessor.NullableStringSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArraySet, newAccessor.ByteArraySet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteArraySet, newAccessor.NullableByteArraySet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetSet, newAccessor.DateTimeOffsetSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableCharSet, newAccessor.NullableCharSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteSet, newAccessor.NullableByteSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16Set, newAccessor.NullableInt16Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32Set, newAccessor.NullableInt32Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64Set, newAccessor.NullableInt64Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleSet, newAccessor.NullableSingleSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleSet, newAccessor.NullableDoubleSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanSet, newAccessor.NullableBooleanSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetSet, newAccessor.NullableDateTimeOffsetSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalSet, newAccessor.NullableDecimalSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128Set, newAccessor.NullableDecimal128Set, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdSet, newAccessor.NullableObjectIdSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectSet, newAccessor.ObjectSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharList, newAccessor.CharList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteList, newAccessor.ByteList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16List, newAccessor.Int16List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32List, newAccessor.Int32List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64List, newAccessor.Int64List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.SingleList, newAccessor.SingleList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleList, newAccessor.DoubleList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanList, newAccessor.BooleanList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalList, newAccessor.DecimalList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128List, newAccessor.Decimal128List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdList, newAccessor.ObjectIdList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringList, newAccessor.StringList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableStringList, newAccessor.NullableStringList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayList, newAccessor.ByteArrayList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteArrayList, newAccessor.NullableByteArrayList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetList, newAccessor.DateTimeOffsetList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableCharList, newAccessor.NullableCharList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteList, newAccessor.NullableByteList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16List, newAccessor.NullableInt16List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32List, newAccessor.NullableInt32List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64List, newAccessor.NullableInt64List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleList, newAccessor.NullableSingleList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleList, newAccessor.NullableDoubleList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanList, newAccessor.NullableBooleanList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetList, newAccessor.NullableDateTimeOffsetList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalList, newAccessor.NullableDecimalList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128List, newAccessor.NullableDecimal128List, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdList, newAccessor.NullableObjectIdList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectList, newAccessor.ObjectList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectList, newAccessor.EmbeddedObjectList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.CharDict, newAccessor.CharDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteDict, newAccessor.ByteDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16Dict, newAccessor.Int16Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32Dict, newAccessor.Int32Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64Dict, newAccessor.Int64Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.SingleDict, newAccessor.SingleDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleDict, newAccessor.DoubleDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanDict, newAccessor.BooleanDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalDict, newAccessor.DecimalDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Dict, newAccessor.Decimal128Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdDict, newAccessor.ObjectIdDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.StringDict, newAccessor.StringDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableStringDict, newAccessor.NullableStringDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayDict, newAccessor.ByteArrayDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteArrayDict, newAccessor.NullableByteArrayDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetDict, newAccessor.DateTimeOffsetDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableCharDict, newAccessor.NullableCharDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteDict, newAccessor.NullableByteDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16Dict, newAccessor.NullableInt16Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32Dict, newAccessor.NullableInt32Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64Dict, newAccessor.NullableInt64Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleDict, newAccessor.NullableSingleDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleDict, newAccessor.NullableDoubleDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanDict, newAccessor.NullableBooleanDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetDict, newAccessor.NullableDateTimeOffsetDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalDict, newAccessor.NullableDecimalDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128Dict, newAccessor.NullableDecimal128Dict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdDict, newAccessor.NullableObjectIdDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectDict, newAccessor.ObjectDict, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDict, newAccessor.RealmValueDict, update, skipDefaults);
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -543,86 +452,84 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator CollectionsObject(RealmValue val) => val.AsRealmObject<CollectionsObject>();
-        
+
         public static implicit operator RealmValue(CollectionsObject val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class CollectionsObjectObjectHelper : IRealmObjectHelper
         {
@@ -630,14 +537,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new CollectionsObjectManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new CollectionsObject();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -653,185 +560,185 @@ namespace Realms.Tests.Generated
     internal interface ICollectionsObjectAccessor : IRealmAccessor
     {
         ISet<char> CharSet { get; }
-        
+
         ISet<byte> ByteSet { get; }
-        
+
         ISet<short> Int16Set { get; }
-        
+
         ISet<int> Int32Set { get; }
-        
+
         ISet<long> Int64Set { get; }
-        
+
         ISet<float> SingleSet { get; }
-        
+
         ISet<double> DoubleSet { get; }
-        
+
         ISet<bool> BooleanSet { get; }
-        
+
         ISet<decimal> DecimalSet { get; }
-        
+
         ISet<Decimal128> Decimal128Set { get; }
-        
+
         ISet<ObjectId> ObjectIdSet { get; }
-        
+
         ISet<string> StringSet { get; }
-        
+
         ISet<string> NullableStringSet { get; }
-        
+
         ISet<byte[]> ByteArraySet { get; }
-        
+
         ISet<byte[]> NullableByteArraySet { get; }
-        
+
         ISet<DateTimeOffset> DateTimeOffsetSet { get; }
-        
+
         ISet<char?> NullableCharSet { get; }
-        
+
         ISet<byte?> NullableByteSet { get; }
-        
+
         ISet<short?> NullableInt16Set { get; }
-        
+
         ISet<int?> NullableInt32Set { get; }
-        
+
         ISet<long?> NullableInt64Set { get; }
-        
+
         ISet<float?> NullableSingleSet { get; }
-        
+
         ISet<double?> NullableDoubleSet { get; }
-        
+
         ISet<bool?> NullableBooleanSet { get; }
-        
+
         ISet<DateTimeOffset?> NullableDateTimeOffsetSet { get; }
-        
+
         ISet<decimal?> NullableDecimalSet { get; }
-        
+
         ISet<Decimal128?> NullableDecimal128Set { get; }
-        
+
         ISet<ObjectId?> NullableObjectIdSet { get; }
-        
+
         ISet<IntPropertyObject> ObjectSet { get; }
-        
+
         ISet<RealmValue> RealmValueSet { get; }
-        
+
         IList<char> CharList { get; }
-        
+
         IList<byte> ByteList { get; }
-        
+
         IList<short> Int16List { get; }
-        
+
         IList<int> Int32List { get; }
-        
+
         IList<long> Int64List { get; }
-        
+
         IList<float> SingleList { get; }
-        
+
         IList<double> DoubleList { get; }
-        
+
         IList<bool> BooleanList { get; }
-        
+
         IList<decimal> DecimalList { get; }
-        
+
         IList<Decimal128> Decimal128List { get; }
-        
+
         IList<ObjectId> ObjectIdList { get; }
-        
+
         IList<string> StringList { get; }
-        
+
         IList<string> NullableStringList { get; }
-        
+
         IList<byte[]> ByteArrayList { get; }
-        
+
         IList<byte[]> NullableByteArrayList { get; }
-        
+
         IList<DateTimeOffset> DateTimeOffsetList { get; }
-        
+
         IList<char?> NullableCharList { get; }
-        
+
         IList<byte?> NullableByteList { get; }
-        
+
         IList<short?> NullableInt16List { get; }
-        
+
         IList<int?> NullableInt32List { get; }
-        
+
         IList<long?> NullableInt64List { get; }
-        
+
         IList<float?> NullableSingleList { get; }
-        
+
         IList<double?> NullableDoubleList { get; }
-        
+
         IList<bool?> NullableBooleanList { get; }
-        
+
         IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
-        
+
         IList<decimal?> NullableDecimalList { get; }
-        
+
         IList<Decimal128?> NullableDecimal128List { get; }
-        
+
         IList<ObjectId?> NullableObjectIdList { get; }
-        
+
         IList<IntPropertyObject> ObjectList { get; }
-        
+
         IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
-        
+
         IList<RealmValue> RealmValueList { get; }
-        
+
         IDictionary<string, char> CharDict { get; }
-        
+
         IDictionary<string, byte> ByteDict { get; }
-        
+
         IDictionary<string, short> Int16Dict { get; }
-        
+
         IDictionary<string, int> Int32Dict { get; }
-        
+
         IDictionary<string, long> Int64Dict { get; }
-        
+
         IDictionary<string, float> SingleDict { get; }
-        
+
         IDictionary<string, double> DoubleDict { get; }
-        
+
         IDictionary<string, bool> BooleanDict { get; }
-        
+
         IDictionary<string, decimal> DecimalDict { get; }
-        
+
         IDictionary<string, Decimal128> Decimal128Dict { get; }
-        
+
         IDictionary<string, ObjectId> ObjectIdDict { get; }
-        
+
         IDictionary<string, string> StringDict { get; }
-        
+
         IDictionary<string, string> NullableStringDict { get; }
-        
+
         IDictionary<string, byte[]> ByteArrayDict { get; }
-        
+
         IDictionary<string, byte[]> NullableByteArrayDict { get; }
-        
+
         IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
-        
+
         IDictionary<string, char?> NullableCharDict { get; }
-        
+
         IDictionary<string, byte?> NullableByteDict { get; }
-        
+
         IDictionary<string, short?> NullableInt16Dict { get; }
-        
+
         IDictionary<string, int?> NullableInt32Dict { get; }
-        
+
         IDictionary<string, long?> NullableInt64Dict { get; }
-        
+
         IDictionary<string, float?> NullableSingleDict { get; }
-        
+
         IDictionary<string, double?> NullableDoubleDict { get; }
-        
+
         IDictionary<string, bool?> NullableBooleanDict { get; }
-        
+
         IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict { get; }
-        
+
         IDictionary<string, decimal?> NullableDecimalDict { get; }
-        
+
         IDictionary<string, Decimal128?> NullableDecimal128Dict { get; }
-        
+
         IDictionary<string, ObjectId?> NullableObjectIdDict { get; }
-        
+
         IDictionary<string, IntPropertyObject> ObjectDict { get; }
-        
+
         IDictionary<string, RealmValue> RealmValueDict { get; }
     }
 
@@ -847,11 +754,11 @@ namespace Realms.Tests.Generated
                 {
                     _charSet = GetSetValue<char>("CharSet");
                 }
-        
+
                 return _charSet;
             }
         }
-        
+
         private ISet<byte> _byteSet;
         public ISet<byte> ByteSet
         {
@@ -861,11 +768,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteSet = GetSetValue<byte>("ByteSet");
                 }
-        
+
                 return _byteSet;
             }
         }
-        
+
         private ISet<short> _int16Set;
         public ISet<short> Int16Set
         {
@@ -875,11 +782,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16Set = GetSetValue<short>("Int16Set");
                 }
-        
+
                 return _int16Set;
             }
         }
-        
+
         private ISet<int> _int32Set;
         public ISet<int> Int32Set
         {
@@ -889,11 +796,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32Set = GetSetValue<int>("Int32Set");
                 }
-        
+
                 return _int32Set;
             }
         }
-        
+
         private ISet<long> _int64Set;
         public ISet<long> Int64Set
         {
@@ -903,11 +810,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64Set = GetSetValue<long>("Int64Set");
                 }
-        
+
                 return _int64Set;
             }
         }
-        
+
         private ISet<float> _singleSet;
         public ISet<float> SingleSet
         {
@@ -917,11 +824,11 @@ namespace Realms.Tests.Generated
                 {
                     _singleSet = GetSetValue<float>("SingleSet");
                 }
-        
+
                 return _singleSet;
             }
         }
-        
+
         private ISet<double> _doubleSet;
         public ISet<double> DoubleSet
         {
@@ -931,11 +838,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleSet = GetSetValue<double>("DoubleSet");
                 }
-        
+
                 return _doubleSet;
             }
         }
-        
+
         private ISet<bool> _booleanSet;
         public ISet<bool> BooleanSet
         {
@@ -945,11 +852,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanSet = GetSetValue<bool>("BooleanSet");
                 }
-        
+
                 return _booleanSet;
             }
         }
-        
+
         private ISet<decimal> _decimalSet;
         public ISet<decimal> DecimalSet
         {
@@ -959,11 +866,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalSet = GetSetValue<decimal>("DecimalSet");
                 }
-        
+
                 return _decimalSet;
             }
         }
-        
+
         private ISet<Decimal128> _decimal128Set;
         public ISet<Decimal128> Decimal128Set
         {
@@ -973,11 +880,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128Set = GetSetValue<Decimal128>("Decimal128Set");
                 }
-        
+
                 return _decimal128Set;
             }
         }
-        
+
         private ISet<ObjectId> _objectIdSet;
         public ISet<ObjectId> ObjectIdSet
         {
@@ -987,11 +894,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdSet = GetSetValue<ObjectId>("ObjectIdSet");
                 }
-        
+
                 return _objectIdSet;
             }
         }
-        
+
         private ISet<string> _stringSet;
         public ISet<string> StringSet
         {
@@ -1001,11 +908,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringSet = GetSetValue<string>("StringSet");
                 }
-        
+
                 return _stringSet;
             }
         }
-        
+
         private ISet<string> _nullableStringSet;
         public ISet<string> NullableStringSet
         {
@@ -1015,11 +922,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableStringSet = GetSetValue<string>("NullableStringSet");
                 }
-        
+
                 return _nullableStringSet;
             }
         }
-        
+
         private ISet<byte[]> _byteArraySet;
         public ISet<byte[]> ByteArraySet
         {
@@ -1029,11 +936,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArraySet = GetSetValue<byte[]>("ByteArraySet");
                 }
-        
+
                 return _byteArraySet;
             }
         }
-        
+
         private ISet<byte[]> _nullableByteArraySet;
         public ISet<byte[]> NullableByteArraySet
         {
@@ -1043,11 +950,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteArraySet = GetSetValue<byte[]>("NullableByteArraySet");
                 }
-        
+
                 return _nullableByteArraySet;
             }
         }
-        
+
         private ISet<DateTimeOffset> _dateTimeOffsetSet;
         public ISet<DateTimeOffset> DateTimeOffsetSet
         {
@@ -1057,11 +964,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetSet = GetSetValue<DateTimeOffset>("DateTimeOffsetSet");
                 }
-        
+
                 return _dateTimeOffsetSet;
             }
         }
-        
+
         private ISet<char?> _nullableCharSet;
         public ISet<char?> NullableCharSet
         {
@@ -1071,11 +978,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableCharSet = GetSetValue<char?>("NullableCharSet");
                 }
-        
+
                 return _nullableCharSet;
             }
         }
-        
+
         private ISet<byte?> _nullableByteSet;
         public ISet<byte?> NullableByteSet
         {
@@ -1085,11 +992,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteSet = GetSetValue<byte?>("NullableByteSet");
                 }
-        
+
                 return _nullableByteSet;
             }
         }
-        
+
         private ISet<short?> _nullableInt16Set;
         public ISet<short?> NullableInt16Set
         {
@@ -1099,11 +1006,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt16Set = GetSetValue<short?>("NullableInt16Set");
                 }
-        
+
                 return _nullableInt16Set;
             }
         }
-        
+
         private ISet<int?> _nullableInt32Set;
         public ISet<int?> NullableInt32Set
         {
@@ -1113,11 +1020,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt32Set = GetSetValue<int?>("NullableInt32Set");
                 }
-        
+
                 return _nullableInt32Set;
             }
         }
-        
+
         private ISet<long?> _nullableInt64Set;
         public ISet<long?> NullableInt64Set
         {
@@ -1127,11 +1034,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt64Set = GetSetValue<long?>("NullableInt64Set");
                 }
-        
+
                 return _nullableInt64Set;
             }
         }
-        
+
         private ISet<float?> _nullableSingleSet;
         public ISet<float?> NullableSingleSet
         {
@@ -1141,11 +1048,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableSingleSet = GetSetValue<float?>("NullableSingleSet");
                 }
-        
+
                 return _nullableSingleSet;
             }
         }
-        
+
         private ISet<double?> _nullableDoubleSet;
         public ISet<double?> NullableDoubleSet
         {
@@ -1155,11 +1062,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDoubleSet = GetSetValue<double?>("NullableDoubleSet");
                 }
-        
+
                 return _nullableDoubleSet;
             }
         }
-        
+
         private ISet<bool?> _nullableBooleanSet;
         public ISet<bool?> NullableBooleanSet
         {
@@ -1169,11 +1076,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableBooleanSet = GetSetValue<bool?>("NullableBooleanSet");
                 }
-        
+
                 return _nullableBooleanSet;
             }
         }
-        
+
         private ISet<DateTimeOffset?> _nullableDateTimeOffsetSet;
         public ISet<DateTimeOffset?> NullableDateTimeOffsetSet
         {
@@ -1183,11 +1090,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDateTimeOffsetSet = GetSetValue<DateTimeOffset?>("NullableDateTimeOffsetSet");
                 }
-        
+
                 return _nullableDateTimeOffsetSet;
             }
         }
-        
+
         private ISet<decimal?> _nullableDecimalSet;
         public ISet<decimal?> NullableDecimalSet
         {
@@ -1197,11 +1104,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimalSet = GetSetValue<decimal?>("NullableDecimalSet");
                 }
-        
+
                 return _nullableDecimalSet;
             }
         }
-        
+
         private ISet<Decimal128?> _nullableDecimal128Set;
         public ISet<Decimal128?> NullableDecimal128Set
         {
@@ -1211,11 +1118,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimal128Set = GetSetValue<Decimal128?>("NullableDecimal128Set");
                 }
-        
+
                 return _nullableDecimal128Set;
             }
         }
-        
+
         private ISet<ObjectId?> _nullableObjectIdSet;
         public ISet<ObjectId?> NullableObjectIdSet
         {
@@ -1225,11 +1132,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableObjectIdSet = GetSetValue<ObjectId?>("NullableObjectIdSet");
                 }
-        
+
                 return _nullableObjectIdSet;
             }
         }
-        
+
         private ISet<IntPropertyObject> _objectSet;
         public ISet<IntPropertyObject> ObjectSet
         {
@@ -1239,11 +1146,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectSet = GetSetValue<IntPropertyObject>("ObjectSet");
                 }
-        
+
                 return _objectSet;
             }
         }
-        
+
         private ISet<RealmValue> _realmValueSet;
         public ISet<RealmValue> RealmValueSet
         {
@@ -1253,11 +1160,11 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueSet = GetSetValue<RealmValue>("RealmValueSet");
                 }
-        
+
                 return _realmValueSet;
             }
         }
-        
+
         private IList<char> _charList;
         public IList<char> CharList
         {
@@ -1267,11 +1174,11 @@ namespace Realms.Tests.Generated
                 {
                     _charList = GetListValue<char>("CharList");
                 }
-        
+
                 return _charList;
             }
         }
-        
+
         private IList<byte> _byteList;
         public IList<byte> ByteList
         {
@@ -1281,11 +1188,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteList = GetListValue<byte>("ByteList");
                 }
-        
+
                 return _byteList;
             }
         }
-        
+
         private IList<short> _int16List;
         public IList<short> Int16List
         {
@@ -1295,11 +1202,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16List = GetListValue<short>("Int16List");
                 }
-        
+
                 return _int16List;
             }
         }
-        
+
         private IList<int> _int32List;
         public IList<int> Int32List
         {
@@ -1309,11 +1216,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32List = GetListValue<int>("Int32List");
                 }
-        
+
                 return _int32List;
             }
         }
-        
+
         private IList<long> _int64List;
         public IList<long> Int64List
         {
@@ -1323,11 +1230,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64List = GetListValue<long>("Int64List");
                 }
-        
+
                 return _int64List;
             }
         }
-        
+
         private IList<float> _singleList;
         public IList<float> SingleList
         {
@@ -1337,11 +1244,11 @@ namespace Realms.Tests.Generated
                 {
                     _singleList = GetListValue<float>("SingleList");
                 }
-        
+
                 return _singleList;
             }
         }
-        
+
         private IList<double> _doubleList;
         public IList<double> DoubleList
         {
@@ -1351,11 +1258,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleList = GetListValue<double>("DoubleList");
                 }
-        
+
                 return _doubleList;
             }
         }
-        
+
         private IList<bool> _booleanList;
         public IList<bool> BooleanList
         {
@@ -1365,11 +1272,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanList = GetListValue<bool>("BooleanList");
                 }
-        
+
                 return _booleanList;
             }
         }
-        
+
         private IList<decimal> _decimalList;
         public IList<decimal> DecimalList
         {
@@ -1379,11 +1286,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalList = GetListValue<decimal>("DecimalList");
                 }
-        
+
                 return _decimalList;
             }
         }
-        
+
         private IList<Decimal128> _decimal128List;
         public IList<Decimal128> Decimal128List
         {
@@ -1393,11 +1300,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128List = GetListValue<Decimal128>("Decimal128List");
                 }
-        
+
                 return _decimal128List;
             }
         }
-        
+
         private IList<ObjectId> _objectIdList;
         public IList<ObjectId> ObjectIdList
         {
@@ -1407,11 +1314,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdList = GetListValue<ObjectId>("ObjectIdList");
                 }
-        
+
                 return _objectIdList;
             }
         }
-        
+
         private IList<string> _stringList;
         public IList<string> StringList
         {
@@ -1421,11 +1328,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringList = GetListValue<string>("StringList");
                 }
-        
+
                 return _stringList;
             }
         }
-        
+
         private IList<string> _nullableStringList;
         public IList<string> NullableStringList
         {
@@ -1435,11 +1342,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableStringList = GetListValue<string>("NullableStringList");
                 }
-        
+
                 return _nullableStringList;
             }
         }
-        
+
         private IList<byte[]> _byteArrayList;
         public IList<byte[]> ByteArrayList
         {
@@ -1449,11 +1356,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArrayList = GetListValue<byte[]>("ByteArrayList");
                 }
-        
+
                 return _byteArrayList;
             }
         }
-        
+
         private IList<byte[]> _nullableByteArrayList;
         public IList<byte[]> NullableByteArrayList
         {
@@ -1463,11 +1370,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteArrayList = GetListValue<byte[]>("NullableByteArrayList");
                 }
-        
+
                 return _nullableByteArrayList;
             }
         }
-        
+
         private IList<DateTimeOffset> _dateTimeOffsetList;
         public IList<DateTimeOffset> DateTimeOffsetList
         {
@@ -1477,11 +1384,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetList = GetListValue<DateTimeOffset>("DateTimeOffsetList");
                 }
-        
+
                 return _dateTimeOffsetList;
             }
         }
-        
+
         private IList<char?> _nullableCharList;
         public IList<char?> NullableCharList
         {
@@ -1491,11 +1398,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableCharList = GetListValue<char?>("NullableCharList");
                 }
-        
+
                 return _nullableCharList;
             }
         }
-        
+
         private IList<byte?> _nullableByteList;
         public IList<byte?> NullableByteList
         {
@@ -1505,11 +1412,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteList = GetListValue<byte?>("NullableByteList");
                 }
-        
+
                 return _nullableByteList;
             }
         }
-        
+
         private IList<short?> _nullableInt16List;
         public IList<short?> NullableInt16List
         {
@@ -1519,11 +1426,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt16List = GetListValue<short?>("NullableInt16List");
                 }
-        
+
                 return _nullableInt16List;
             }
         }
-        
+
         private IList<int?> _nullableInt32List;
         public IList<int?> NullableInt32List
         {
@@ -1533,11 +1440,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt32List = GetListValue<int?>("NullableInt32List");
                 }
-        
+
                 return _nullableInt32List;
             }
         }
-        
+
         private IList<long?> _nullableInt64List;
         public IList<long?> NullableInt64List
         {
@@ -1547,11 +1454,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt64List = GetListValue<long?>("NullableInt64List");
                 }
-        
+
                 return _nullableInt64List;
             }
         }
-        
+
         private IList<float?> _nullableSingleList;
         public IList<float?> NullableSingleList
         {
@@ -1561,11 +1468,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableSingleList = GetListValue<float?>("NullableSingleList");
                 }
-        
+
                 return _nullableSingleList;
             }
         }
-        
+
         private IList<double?> _nullableDoubleList;
         public IList<double?> NullableDoubleList
         {
@@ -1575,11 +1482,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDoubleList = GetListValue<double?>("NullableDoubleList");
                 }
-        
+
                 return _nullableDoubleList;
             }
         }
-        
+
         private IList<bool?> _nullableBooleanList;
         public IList<bool?> NullableBooleanList
         {
@@ -1589,11 +1496,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableBooleanList = GetListValue<bool?>("NullableBooleanList");
                 }
-        
+
                 return _nullableBooleanList;
             }
         }
-        
+
         private IList<DateTimeOffset?> _nullableDateTimeOffsetList;
         public IList<DateTimeOffset?> NullableDateTimeOffsetList
         {
@@ -1603,11 +1510,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDateTimeOffsetList = GetListValue<DateTimeOffset?>("NullableDateTimeOffsetList");
                 }
-        
+
                 return _nullableDateTimeOffsetList;
             }
         }
-        
+
         private IList<decimal?> _nullableDecimalList;
         public IList<decimal?> NullableDecimalList
         {
@@ -1617,11 +1524,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimalList = GetListValue<decimal?>("NullableDecimalList");
                 }
-        
+
                 return _nullableDecimalList;
             }
         }
-        
+
         private IList<Decimal128?> _nullableDecimal128List;
         public IList<Decimal128?> NullableDecimal128List
         {
@@ -1631,11 +1538,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimal128List = GetListValue<Decimal128?>("NullableDecimal128List");
                 }
-        
+
                 return _nullableDecimal128List;
             }
         }
-        
+
         private IList<ObjectId?> _nullableObjectIdList;
         public IList<ObjectId?> NullableObjectIdList
         {
@@ -1645,11 +1552,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableObjectIdList = GetListValue<ObjectId?>("NullableObjectIdList");
                 }
-        
+
                 return _nullableObjectIdList;
             }
         }
-        
+
         private IList<IntPropertyObject> _objectList;
         public IList<IntPropertyObject> ObjectList
         {
@@ -1659,11 +1566,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectList = GetListValue<IntPropertyObject>("ObjectList");
                 }
-        
+
                 return _objectList;
             }
         }
-        
+
         private IList<EmbeddedIntPropertyObject> _embeddedObjectList;
         public IList<EmbeddedIntPropertyObject> EmbeddedObjectList
         {
@@ -1673,11 +1580,11 @@ namespace Realms.Tests.Generated
                 {
                     _embeddedObjectList = GetListValue<EmbeddedIntPropertyObject>("EmbeddedObjectList");
                 }
-        
+
                 return _embeddedObjectList;
             }
         }
-        
+
         private IList<RealmValue> _realmValueList;
         public IList<RealmValue> RealmValueList
         {
@@ -1687,11 +1594,11 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueList = GetListValue<RealmValue>("RealmValueList");
                 }
-        
+
                 return _realmValueList;
             }
         }
-        
+
         private IDictionary<string, char> _charDict;
         public IDictionary<string, char> CharDict
         {
@@ -1701,11 +1608,11 @@ namespace Realms.Tests.Generated
                 {
                     _charDict = GetDictionaryValue<char>("CharDict");
                 }
-        
+
                 return _charDict;
             }
         }
-        
+
         private IDictionary<string, byte> _byteDict;
         public IDictionary<string, byte> ByteDict
         {
@@ -1715,11 +1622,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteDict = GetDictionaryValue<byte>("ByteDict");
                 }
-        
+
                 return _byteDict;
             }
         }
-        
+
         private IDictionary<string, short> _int16Dict;
         public IDictionary<string, short> Int16Dict
         {
@@ -1729,11 +1636,11 @@ namespace Realms.Tests.Generated
                 {
                     _int16Dict = GetDictionaryValue<short>("Int16Dict");
                 }
-        
+
                 return _int16Dict;
             }
         }
-        
+
         private IDictionary<string, int> _int32Dict;
         public IDictionary<string, int> Int32Dict
         {
@@ -1743,11 +1650,11 @@ namespace Realms.Tests.Generated
                 {
                     _int32Dict = GetDictionaryValue<int>("Int32Dict");
                 }
-        
+
                 return _int32Dict;
             }
         }
-        
+
         private IDictionary<string, long> _int64Dict;
         public IDictionary<string, long> Int64Dict
         {
@@ -1757,11 +1664,11 @@ namespace Realms.Tests.Generated
                 {
                     _int64Dict = GetDictionaryValue<long>("Int64Dict");
                 }
-        
+
                 return _int64Dict;
             }
         }
-        
+
         private IDictionary<string, float> _singleDict;
         public IDictionary<string, float> SingleDict
         {
@@ -1771,11 +1678,11 @@ namespace Realms.Tests.Generated
                 {
                     _singleDict = GetDictionaryValue<float>("SingleDict");
                 }
-        
+
                 return _singleDict;
             }
         }
-        
+
         private IDictionary<string, double> _doubleDict;
         public IDictionary<string, double> DoubleDict
         {
@@ -1785,11 +1692,11 @@ namespace Realms.Tests.Generated
                 {
                     _doubleDict = GetDictionaryValue<double>("DoubleDict");
                 }
-        
+
                 return _doubleDict;
             }
         }
-        
+
         private IDictionary<string, bool> _booleanDict;
         public IDictionary<string, bool> BooleanDict
         {
@@ -1799,11 +1706,11 @@ namespace Realms.Tests.Generated
                 {
                     _booleanDict = GetDictionaryValue<bool>("BooleanDict");
                 }
-        
+
                 return _booleanDict;
             }
         }
-        
+
         private IDictionary<string, decimal> _decimalDict;
         public IDictionary<string, decimal> DecimalDict
         {
@@ -1813,11 +1720,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimalDict = GetDictionaryValue<decimal>("DecimalDict");
                 }
-        
+
                 return _decimalDict;
             }
         }
-        
+
         private IDictionary<string, Decimal128> _decimal128Dict;
         public IDictionary<string, Decimal128> Decimal128Dict
         {
@@ -1827,11 +1734,11 @@ namespace Realms.Tests.Generated
                 {
                     _decimal128Dict = GetDictionaryValue<Decimal128>("Decimal128Dict");
                 }
-        
+
                 return _decimal128Dict;
             }
         }
-        
+
         private IDictionary<string, ObjectId> _objectIdDict;
         public IDictionary<string, ObjectId> ObjectIdDict
         {
@@ -1841,11 +1748,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectIdDict = GetDictionaryValue<ObjectId>("ObjectIdDict");
                 }
-        
+
                 return _objectIdDict;
             }
         }
-        
+
         private IDictionary<string, string> _stringDict;
         public IDictionary<string, string> StringDict
         {
@@ -1855,11 +1762,11 @@ namespace Realms.Tests.Generated
                 {
                     _stringDict = GetDictionaryValue<string>("StringDict");
                 }
-        
+
                 return _stringDict;
             }
         }
-        
+
         private IDictionary<string, string> _nullableStringDict;
         public IDictionary<string, string> NullableStringDict
         {
@@ -1869,11 +1776,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableStringDict = GetDictionaryValue<string>("NullableStringDict");
                 }
-        
+
                 return _nullableStringDict;
             }
         }
-        
+
         private IDictionary<string, byte[]> _byteArrayDict;
         public IDictionary<string, byte[]> ByteArrayDict
         {
@@ -1883,11 +1790,11 @@ namespace Realms.Tests.Generated
                 {
                     _byteArrayDict = GetDictionaryValue<byte[]>("ByteArrayDict");
                 }
-        
+
                 return _byteArrayDict;
             }
         }
-        
+
         private IDictionary<string, byte[]> _nullableByteArrayDict;
         public IDictionary<string, byte[]> NullableByteArrayDict
         {
@@ -1897,11 +1804,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteArrayDict = GetDictionaryValue<byte[]>("NullableByteArrayDict");
                 }
-        
+
                 return _nullableByteArrayDict;
             }
         }
-        
+
         private IDictionary<string, DateTimeOffset> _dateTimeOffsetDict;
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDict
         {
@@ -1911,11 +1818,11 @@ namespace Realms.Tests.Generated
                 {
                     _dateTimeOffsetDict = GetDictionaryValue<DateTimeOffset>("DateTimeOffsetDict");
                 }
-        
+
                 return _dateTimeOffsetDict;
             }
         }
-        
+
         private IDictionary<string, char?> _nullableCharDict;
         public IDictionary<string, char?> NullableCharDict
         {
@@ -1925,11 +1832,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableCharDict = GetDictionaryValue<char?>("NullableCharDict");
                 }
-        
+
                 return _nullableCharDict;
             }
         }
-        
+
         private IDictionary<string, byte?> _nullableByteDict;
         public IDictionary<string, byte?> NullableByteDict
         {
@@ -1939,11 +1846,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableByteDict = GetDictionaryValue<byte?>("NullableByteDict");
                 }
-        
+
                 return _nullableByteDict;
             }
         }
-        
+
         private IDictionary<string, short?> _nullableInt16Dict;
         public IDictionary<string, short?> NullableInt16Dict
         {
@@ -1953,11 +1860,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt16Dict = GetDictionaryValue<short?>("NullableInt16Dict");
                 }
-        
+
                 return _nullableInt16Dict;
             }
         }
-        
+
         private IDictionary<string, int?> _nullableInt32Dict;
         public IDictionary<string, int?> NullableInt32Dict
         {
@@ -1967,11 +1874,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt32Dict = GetDictionaryValue<int?>("NullableInt32Dict");
                 }
-        
+
                 return _nullableInt32Dict;
             }
         }
-        
+
         private IDictionary<string, long?> _nullableInt64Dict;
         public IDictionary<string, long?> NullableInt64Dict
         {
@@ -1981,11 +1888,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableInt64Dict = GetDictionaryValue<long?>("NullableInt64Dict");
                 }
-        
+
                 return _nullableInt64Dict;
             }
         }
-        
+
         private IDictionary<string, float?> _nullableSingleDict;
         public IDictionary<string, float?> NullableSingleDict
         {
@@ -1995,11 +1902,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableSingleDict = GetDictionaryValue<float?>("NullableSingleDict");
                 }
-        
+
                 return _nullableSingleDict;
             }
         }
-        
+
         private IDictionary<string, double?> _nullableDoubleDict;
         public IDictionary<string, double?> NullableDoubleDict
         {
@@ -2009,11 +1916,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDoubleDict = GetDictionaryValue<double?>("NullableDoubleDict");
                 }
-        
+
                 return _nullableDoubleDict;
             }
         }
-        
+
         private IDictionary<string, bool?> _nullableBooleanDict;
         public IDictionary<string, bool?> NullableBooleanDict
         {
@@ -2023,11 +1930,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableBooleanDict = GetDictionaryValue<bool?>("NullableBooleanDict");
                 }
-        
+
                 return _nullableBooleanDict;
             }
         }
-        
+
         private IDictionary<string, DateTimeOffset?> _nullableDateTimeOffsetDict;
         public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict
         {
@@ -2037,11 +1944,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDateTimeOffsetDict = GetDictionaryValue<DateTimeOffset?>("NullableDateTimeOffsetDict");
                 }
-        
+
                 return _nullableDateTimeOffsetDict;
             }
         }
-        
+
         private IDictionary<string, decimal?> _nullableDecimalDict;
         public IDictionary<string, decimal?> NullableDecimalDict
         {
@@ -2051,11 +1958,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimalDict = GetDictionaryValue<decimal?>("NullableDecimalDict");
                 }
-        
+
                 return _nullableDecimalDict;
             }
         }
-        
+
         private IDictionary<string, Decimal128?> _nullableDecimal128Dict;
         public IDictionary<string, Decimal128?> NullableDecimal128Dict
         {
@@ -2065,11 +1972,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableDecimal128Dict = GetDictionaryValue<Decimal128?>("NullableDecimal128Dict");
                 }
-        
+
                 return _nullableDecimal128Dict;
             }
         }
-        
+
         private IDictionary<string, ObjectId?> _nullableObjectIdDict;
         public IDictionary<string, ObjectId?> NullableObjectIdDict
         {
@@ -2079,11 +1986,11 @@ namespace Realms.Tests.Generated
                 {
                     _nullableObjectIdDict = GetDictionaryValue<ObjectId?>("NullableObjectIdDict");
                 }
-        
+
                 return _nullableObjectIdDict;
             }
         }
-        
+
         private IDictionary<string, IntPropertyObject> _objectDict;
         public IDictionary<string, IntPropertyObject> ObjectDict
         {
@@ -2093,11 +2000,11 @@ namespace Realms.Tests.Generated
                 {
                     _objectDict = GetDictionaryValue<IntPropertyObject>("ObjectDict");
                 }
-        
+
                 return _objectDict;
             }
         }
-        
+
         private IDictionary<string, RealmValue> _realmValueDict;
         public IDictionary<string, RealmValue> RealmValueDict
         {
@@ -2107,7 +2014,7 @@ namespace Realms.Tests.Generated
                 {
                     _realmValueDict = GetDictionaryValue<RealmValue>("RealmValueDict");
                 }
-        
+
                 return _realmValueDict;
             }
         }
@@ -2116,206 +2023,206 @@ namespace Realms.Tests.Generated
     internal class CollectionsObjectUnmanagedAccessor : UnmanagedAccessor, ICollectionsObjectAccessor
     {
         public ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
-        
+
         public ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
-        
+
         public ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
-        
+
         public ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
-        
+
         public ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
-        
+
         public ISet<float> SingleSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
-        
+
         public ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
-        
+
         public ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
-        
+
         public ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
-        
+
         public ISet<Decimal128> Decimal128Set { get; } = new HashSet<Decimal128>(RealmSet<Decimal128>.Comparer);
-        
+
         public ISet<ObjectId> ObjectIdSet { get; } = new HashSet<ObjectId>(RealmSet<ObjectId>.Comparer);
-        
+
         public ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
-        
+
         public ISet<string> NullableStringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
-        
+
         public ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
-        
+
         public ISet<byte[]> NullableByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
-        
+
         public ISet<DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<DateTimeOffset>(RealmSet<DateTimeOffset>.Comparer);
-        
+
         public ISet<char?> NullableCharSet { get; } = new HashSet<char?>(RealmSet<char?>.Comparer);
-        
+
         public ISet<byte?> NullableByteSet { get; } = new HashSet<byte?>(RealmSet<byte?>.Comparer);
-        
+
         public ISet<short?> NullableInt16Set { get; } = new HashSet<short?>(RealmSet<short?>.Comparer);
-        
+
         public ISet<int?> NullableInt32Set { get; } = new HashSet<int?>(RealmSet<int?>.Comparer);
-        
+
         public ISet<long?> NullableInt64Set { get; } = new HashSet<long?>(RealmSet<long?>.Comparer);
-        
+
         public ISet<float?> NullableSingleSet { get; } = new HashSet<float?>(RealmSet<float?>.Comparer);
-        
+
         public ISet<double?> NullableDoubleSet { get; } = new HashSet<double?>(RealmSet<double?>.Comparer);
-        
+
         public ISet<bool?> NullableBooleanSet { get; } = new HashSet<bool?>(RealmSet<bool?>.Comparer);
-        
+
         public ISet<DateTimeOffset?> NullableDateTimeOffsetSet { get; } = new HashSet<DateTimeOffset?>(RealmSet<DateTimeOffset?>.Comparer);
-        
+
         public ISet<decimal?> NullableDecimalSet { get; } = new HashSet<decimal?>(RealmSet<decimal?>.Comparer);
-        
+
         public ISet<Decimal128?> NullableDecimal128Set { get; } = new HashSet<Decimal128?>(RealmSet<Decimal128?>.Comparer);
-        
+
         public ISet<ObjectId?> NullableObjectIdSet { get; } = new HashSet<ObjectId?>(RealmSet<ObjectId?>.Comparer);
-        
+
         public ISet<IntPropertyObject> ObjectSet { get; } = new HashSet<IntPropertyObject>(RealmSet<IntPropertyObject>.Comparer);
-        
+
         public ISet<RealmValue> RealmValueSet { get; } = new HashSet<RealmValue>(RealmSet<RealmValue>.Comparer);
-        
+
         public IList<char> CharList { get; } = new List<char>();
-        
+
         public IList<byte> ByteList { get; } = new List<byte>();
-        
+
         public IList<short> Int16List { get; } = new List<short>();
-        
+
         public IList<int> Int32List { get; } = new List<int>();
-        
+
         public IList<long> Int64List { get; } = new List<long>();
-        
+
         public IList<float> SingleList { get; } = new List<float>();
-        
+
         public IList<double> DoubleList { get; } = new List<double>();
-        
+
         public IList<bool> BooleanList { get; } = new List<bool>();
-        
+
         public IList<decimal> DecimalList { get; } = new List<decimal>();
-        
+
         public IList<Decimal128> Decimal128List { get; } = new List<Decimal128>();
-        
+
         public IList<ObjectId> ObjectIdList { get; } = new List<ObjectId>();
-        
+
         public IList<string> StringList { get; } = new List<string>();
-        
+
         public IList<string> NullableStringList { get; } = new List<string>();
-        
+
         public IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
-        
+
         public IList<byte[]> NullableByteArrayList { get; } = new List<byte[]>();
-        
+
         public IList<DateTimeOffset> DateTimeOffsetList { get; } = new List<DateTimeOffset>();
-        
+
         public IList<char?> NullableCharList { get; } = new List<char?>();
-        
+
         public IList<byte?> NullableByteList { get; } = new List<byte?>();
-        
+
         public IList<short?> NullableInt16List { get; } = new List<short?>();
-        
+
         public IList<int?> NullableInt32List { get; } = new List<int?>();
-        
+
         public IList<long?> NullableInt64List { get; } = new List<long?>();
-        
+
         public IList<float?> NullableSingleList { get; } = new List<float?>();
-        
+
         public IList<double?> NullableDoubleList { get; } = new List<double?>();
-        
+
         public IList<bool?> NullableBooleanList { get; } = new List<bool?>();
-        
+
         public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; } = new List<DateTimeOffset?>();
-        
+
         public IList<decimal?> NullableDecimalList { get; } = new List<decimal?>();
-        
+
         public IList<Decimal128?> NullableDecimal128List { get; } = new List<Decimal128?>();
-        
+
         public IList<ObjectId?> NullableObjectIdList { get; } = new List<ObjectId?>();
-        
+
         public IList<IntPropertyObject> ObjectList { get; } = new List<IntPropertyObject>();
-        
+
         public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<EmbeddedIntPropertyObject>();
-        
+
         public IList<RealmValue> RealmValueList { get; } = new List<RealmValue>();
-        
+
         public IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
-        
+
         public IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
-        
+
         public IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
-        
+
         public IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
-        
+
         public IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
-        
+
         public IDictionary<string, float> SingleDict { get; } = new Dictionary<string, float>();
-        
+
         public IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
-        
+
         public IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
-        
+
         public IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
-        
+
         public IDictionary<string, Decimal128> Decimal128Dict { get; } = new Dictionary<string, Decimal128>();
-        
+
         public IDictionary<string, ObjectId> ObjectIdDict { get; } = new Dictionary<string, ObjectId>();
-        
+
         public IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
-        
+
         public IDictionary<string, string> NullableStringDict { get; } = new Dictionary<string, string>();
-        
+
         public IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
-        
+
         public IDictionary<string, byte[]> NullableByteArrayDict { get; } = new Dictionary<string, byte[]>();
-        
+
         public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, DateTimeOffset>();
-        
+
         public IDictionary<string, char?> NullableCharDict { get; } = new Dictionary<string, char?>();
-        
+
         public IDictionary<string, byte?> NullableByteDict { get; } = new Dictionary<string, byte?>();
-        
+
         public IDictionary<string, short?> NullableInt16Dict { get; } = new Dictionary<string, short?>();
-        
+
         public IDictionary<string, int?> NullableInt32Dict { get; } = new Dictionary<string, int?>();
-        
+
         public IDictionary<string, long?> NullableInt64Dict { get; } = new Dictionary<string, long?>();
-        
+
         public IDictionary<string, float?> NullableSingleDict { get; } = new Dictionary<string, float?>();
-        
+
         public IDictionary<string, double?> NullableDoubleDict { get; } = new Dictionary<string, double?>();
-        
+
         public IDictionary<string, bool?> NullableBooleanDict { get; } = new Dictionary<string, bool?>();
-        
+
         public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict { get; } = new Dictionary<string, DateTimeOffset?>();
-        
+
         public IDictionary<string, decimal?> NullableDecimalDict { get; } = new Dictionary<string, decimal?>();
-        
+
         public IDictionary<string, Decimal128?> NullableDecimal128Dict { get; } = new Dictionary<string, Decimal128?>();
-        
+
         public IDictionary<string, ObjectId?> NullableObjectIdDict { get; } = new Dictionary<string, ObjectId?>();
-        
+
         public IDictionary<string, IntPropertyObject> ObjectDict { get; } = new Dictionary<string, IntPropertyObject>();
-        
+
         public IDictionary<string, RealmValue> RealmValueDict { get; } = new Dictionary<string, RealmValue>();
-    
+
         public CollectionsObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
@@ -2351,11 +2258,11 @@ namespace Realms.Tests.Generated
             "ObjectList" => (IList<T>)ObjectList,
             "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
             "RealmValueList" => (IList<T>)RealmValueList,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             return propertyName switch
@@ -2390,11 +2297,11 @@ namespace Realms.Tests.Generated
             "NullableObjectIdSet" => (ISet<T>)NullableObjectIdSet,
             "ObjectSet" => (ISet<T>)ObjectSet,
             "RealmValueSet" => (ISet<T>)RealmValueSet,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                         };
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return propertyName switch
@@ -2434,4 +2341,3 @@ namespace Realms.Tests.Generated
         }
     }
 }
-

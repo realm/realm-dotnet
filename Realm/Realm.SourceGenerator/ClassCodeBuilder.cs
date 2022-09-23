@@ -87,9 +87,7 @@ namespace {_generatedNamespaceName}
 {managedAccessorString}
 
 {unmanagedAccessorString}
-}}
-
-";
+}}";
         }
 
         private string GetUsings()
@@ -342,10 +340,12 @@ public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelpe
 
 #endregion
 
-private event PropertyChangedEventHandler _propertyChanged;
+partial void OnManaged();
 
 {(_classInfo.HasPropertyChangedEvent ? string.Empty :
-$@"public event PropertyChangedEventHandler PropertyChanged
+$@"private event PropertyChangedEventHandler _propertyChanged;
+
+public event PropertyChangedEventHandler PropertyChanged
 {{
     add
     {{
@@ -366,7 +366,7 @@ $@"public event PropertyChangedEventHandler PropertyChanged
             UnsubscribeFromNotifications();
         }}
     }}
-}}")}
+}}
 
 partial void OnPropertyChanged(string propertyName);
 
@@ -376,8 +376,6 @@ private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
     OnPropertyChanged(propertyName);
 }}
 
-partial void OnManaged();
-
 private void SubscribeForNotifications()
 {{
     Accessor.SubscribeForNotifications(RaisePropertyChanged);
@@ -386,7 +384,7 @@ private void SubscribeForNotifications()
 private void UnsubscribeFromNotifications()
 {{
     Accessor.UnsubscribeFromNotifications();
-}}
+}}")}
 
 public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 

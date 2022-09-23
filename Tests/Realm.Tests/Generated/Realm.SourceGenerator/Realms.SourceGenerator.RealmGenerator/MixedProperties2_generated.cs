@@ -26,44 +26,42 @@ namespace Realms.Tests.Database
             Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private IMixedProperties2Accessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IMixedProperties2Accessor Accessor => _accessor = _accessor ?? new MixedProperties2UnmanagedAccessor(typeof(MixedProperties2));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IMixedProperties2Accessor)managedAccessor;
             var oldAccessor = _accessor as IMixedProperties2Accessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
@@ -71,35 +69,36 @@ namespace Realms.Tests.Database
                     newAccessor.Friends.Clear();
                     newAccessor.Enemies.Clear();
                 }
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
-                
+
                 if(!skipDefaults || oldAccessor.Age != default(int))
                 {
                     newAccessor.Age = oldAccessor.Age;
                 }
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Enemies, newAccessor.Enemies, update, skipDefaults);
-                
+
                 if(!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -108,86 +107,84 @@ namespace Realms.Tests.Database
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator MixedProperties2(RealmValue val) => val.AsRealmObject<MixedProperties2>();
-        
+
         public static implicit operator RealmValue(MixedProperties2 val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class MixedProperties2ObjectHelper : IRealmObjectHelper
         {
@@ -195,14 +192,14 @@ namespace Realms.Tests.Database
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new MixedProperties2ManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new MixedProperties2();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -218,11 +215,11 @@ namespace Realms.Tests.Database.Generated
     internal interface IMixedProperties2Accessor : IRealmAccessor
     {
         IList<Person> Friends { get; }
-        
+
         int Age { get; set; }
-        
+
         IList<Person> Enemies { get; }
-        
+
         string Name { get; set; }
     }
 
@@ -238,17 +235,17 @@ namespace Realms.Tests.Database.Generated
                 {
                     _friends = GetListValue<Person>("Friends");
                 }
-        
+
                 return _friends;
             }
         }
-        
+
         public int Age
         {
             get => (int)GetValue("Age");
             set => SetValue("Age", value);
         }
-        
+
         private IList<Person> _enemies;
         public IList<Person> Enemies
         {
@@ -258,11 +255,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _enemies = GetListValue<Person>("Enemies");
                 }
-        
+
                 return _enemies;
             }
         }
-        
+
         public string Name
         {
             get => (string)GetValue("Name");
@@ -273,7 +270,7 @@ namespace Realms.Tests.Database.Generated
     internal class MixedProperties2UnmanagedAccessor : UnmanagedAccessor, IMixedProperties2Accessor
     {
         public IList<Person> Friends { get; } = new List<Person>();
-        
+
         private int _age;
         public int Age
         {
@@ -284,9 +281,9 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Age");
             }
         }
-        
+
         public IList<Person> Enemies { get; } = new List<Person>();
-        
+
         private string _name;
         public string Name
         {
@@ -297,11 +294,11 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Name");
             }
         }
-    
+
         public MixedProperties2UnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -311,7 +308,7 @@ namespace Realms.Tests.Database.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -326,32 +323,31 @@ namespace Realms.Tests.Database.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
             "Friends" => (IList<T>)Friends,
             "Enemies" => (IList<T>)Enemies,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

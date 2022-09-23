@@ -35,51 +35,49 @@ namespace Realms.Tests.Database
             Property.Primitive("IsInteresting", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
             Property.ObjectList("Friends", "Person", managedName: "Friends"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private IPersonAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IPersonAccessor Accessor => _accessor = _accessor ?? new PersonUnmanagedAccessor(typeof(Person));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPersonAccessor)managedAccessor;
             var oldAccessor = _accessor as IPersonAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
                 {
                     newAccessor.Friends.Clear();
                 }
-                
+
                 if(!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
@@ -122,22 +120,24 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.IsInteresting = oldAccessor.IsInteresting;
                 }
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -146,83 +146,79 @@ namespace Realms.Tests.Database
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
-        
+
         public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
-        
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class PersonObjectHelper : IRealmObjectHelper
         {
@@ -230,14 +226,14 @@ namespace Realms.Tests.Database
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new Person();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -253,29 +249,29 @@ namespace Realms.Tests.Database.Generated
     internal interface IPersonAccessor : IRealmAccessor
     {
         string FirstName { get; set; }
-        
+
         string LastName { get; set; }
-        
+
         float Score { get; set; }
-        
+
         double Latitude { get; set; }
-        
+
         double Longitude { get; set; }
-        
+
         long Salary { get; set; }
-        
+
         bool? IsAmbivalent { get; set; }
-        
+
         DateTimeOffset Birthday { get; set; }
-        
+
         byte[] PublicCertificateBytes { get; set; }
-        
+
         string OptionalAddress { get; set; }
-        
+
         string Email_ { get; set; }
-        
+
         bool IsInteresting { get; set; }
-        
+
         IList<Person> Friends { get; }
     }
 
@@ -287,73 +283,73 @@ namespace Realms.Tests.Database.Generated
             get => (string)GetValue("FirstName");
             set => SetValue("FirstName", value);
         }
-        
+
         public string LastName
         {
             get => (string)GetValue("LastName");
             set => SetValue("LastName", value);
         }
-        
+
         public float Score
         {
             get => (float)GetValue("Score");
             set => SetValue("Score", value);
         }
-        
+
         public double Latitude
         {
             get => (double)GetValue("Latitude");
             set => SetValue("Latitude", value);
         }
-        
+
         public double Longitude
         {
             get => (double)GetValue("Longitude");
             set => SetValue("Longitude", value);
         }
-        
+
         public long Salary
         {
             get => (long)GetValue("Salary");
             set => SetValue("Salary", value);
         }
-        
+
         public bool? IsAmbivalent
         {
             get => (bool?)GetValue("IsAmbivalent");
             set => SetValue("IsAmbivalent", value);
         }
-        
+
         public DateTimeOffset Birthday
         {
             get => (DateTimeOffset)GetValue("Birthday");
             set => SetValue("Birthday", value);
         }
-        
+
         public byte[] PublicCertificateBytes
         {
             get => (byte[])GetValue("PublicCertificateBytes");
             set => SetValue("PublicCertificateBytes", value);
         }
-        
+
         public string OptionalAddress
         {
             get => (string)GetValue("OptionalAddress");
             set => SetValue("OptionalAddress", value);
         }
-        
+
         public string Email_
         {
             get => (string)GetValue("Email");
             set => SetValue("Email", value);
         }
-        
+
         public bool IsInteresting
         {
             get => (bool)GetValue("IsInteresting");
             set => SetValue("IsInteresting", value);
         }
-        
+
         private IList<Person> _friends;
         public IList<Person> Friends
         {
@@ -363,7 +359,7 @@ namespace Realms.Tests.Database.Generated
                 {
                     _friends = GetListValue<Person>("Friends");
                 }
-        
+
                 return _friends;
             }
         }
@@ -381,7 +377,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("FirstName");
             }
         }
-        
+
         private string _lastName;
         public string LastName
         {
@@ -392,7 +388,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("LastName");
             }
         }
-        
+
         private float _score;
         public float Score
         {
@@ -403,7 +399,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Score");
             }
         }
-        
+
         private double _latitude;
         public double Latitude
         {
@@ -414,7 +410,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Latitude");
             }
         }
-        
+
         private double _longitude;
         public double Longitude
         {
@@ -425,7 +421,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Longitude");
             }
         }
-        
+
         private long _salary;
         public long Salary
         {
@@ -436,7 +432,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Salary");
             }
         }
-        
+
         private bool? _isAmbivalent;
         public bool? IsAmbivalent
         {
@@ -447,7 +443,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("IsAmbivalent");
             }
         }
-        
+
         private DateTimeOffset _birthday;
         public DateTimeOffset Birthday
         {
@@ -458,7 +454,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Birthday");
             }
         }
-        
+
         private byte[] _publicCertificateBytes;
         public byte[] PublicCertificateBytes
         {
@@ -469,7 +465,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("PublicCertificateBytes");
             }
         }
-        
+
         private string _optionalAddress;
         public string OptionalAddress
         {
@@ -480,7 +476,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("OptionalAddress");
             }
         }
-        
+
         private string _email_;
         public string Email_
         {
@@ -491,7 +487,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("Email_");
             }
         }
-        
+
         private bool _isInteresting;
         public bool IsInteresting
         {
@@ -502,13 +498,13 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("IsInteresting");
             }
         }
-        
+
         public IList<Person> Friends { get; } = new List<Person>();
-    
+
         public PersonUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -528,7 +524,7 @@ namespace Realms.Tests.Database.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -573,31 +569,30 @@ namespace Realms.Tests.Database.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
             "Friends" => (IList<T>)Friends,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

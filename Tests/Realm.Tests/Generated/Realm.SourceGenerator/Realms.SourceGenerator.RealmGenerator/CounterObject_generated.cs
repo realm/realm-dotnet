@@ -31,47 +31,45 @@ namespace Realms.Tests
             Property.Primitive("NullableInt32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
             Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private ICounterObjectAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal ICounterObjectAccessor Accessor => _accessor = _accessor ?? new CounterObjectUnmanagedAccessor(typeof(CounterObject));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ICounterObjectAccessor)managedAccessor;
             var oldAccessor = _accessor as ICounterObjectAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
-                
+
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
@@ -85,19 +83,21 @@ namespace Realms.Tests
                 newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
                 newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -106,83 +106,79 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator CounterObject(RealmValue val) => val.AsRealmObject<CounterObject>();
-        
+
         public static implicit operator RealmValue(CounterObject val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
-        
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class CounterObjectObjectHelper : IRealmObjectHelper
         {
@@ -190,14 +186,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new CounterObjectManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new CounterObject();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = ((ICounterObjectAccessor)instance.Accessor).Id;
@@ -213,21 +209,21 @@ namespace Realms.Tests.Generated
     internal interface ICounterObjectAccessor : IRealmAccessor
     {
         int Id { get; set; }
-        
+
         RealmInteger<byte> ByteProperty { get; set; }
-        
+
         RealmInteger<short> Int16Property { get; set; }
-        
+
         RealmInteger<int> Int32Property { get; set; }
-        
+
         RealmInteger<long> Int64Property { get; set; }
-        
+
         RealmInteger<byte>? NullableByteProperty { get; set; }
-        
+
         RealmInteger<short>? NullableInt16Property { get; set; }
-        
+
         RealmInteger<int>? NullableInt32Property { get; set; }
-        
+
         RealmInteger<long>? NullableInt64Property { get; set; }
     }
 
@@ -239,49 +235,49 @@ namespace Realms.Tests.Generated
             get => (int)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
-        
+
         public RealmInteger<byte> ByteProperty
         {
             get => (RealmInteger<byte>)GetValue("ByteProperty");
             set => SetValue("ByteProperty", value);
         }
-        
+
         public RealmInteger<short> Int16Property
         {
             get => (RealmInteger<short>)GetValue("Int16Property");
             set => SetValue("Int16Property", value);
         }
-        
+
         public RealmInteger<int> Int32Property
         {
             get => (RealmInteger<int>)GetValue("Int32Property");
             set => SetValue("Int32Property", value);
         }
-        
+
         public RealmInteger<long> Int64Property
         {
             get => (RealmInteger<long>)GetValue("Int64Property");
             set => SetValue("Int64Property", value);
         }
-        
+
         public RealmInteger<byte>? NullableByteProperty
         {
             get => (RealmInteger<byte>?)GetValue("NullableByteProperty");
             set => SetValue("NullableByteProperty", value);
         }
-        
+
         public RealmInteger<short>? NullableInt16Property
         {
             get => (RealmInteger<short>?)GetValue("NullableInt16Property");
             set => SetValue("NullableInt16Property", value);
         }
-        
+
         public RealmInteger<int>? NullableInt32Property
         {
             get => (RealmInteger<int>?)GetValue("NullableInt32Property");
             set => SetValue("NullableInt32Property", value);
         }
-        
+
         public RealmInteger<long>? NullableInt64Property
         {
             get => (RealmInteger<long>?)GetValue("NullableInt64Property");
@@ -301,7 +297,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Id");
             }
         }
-        
+
         private RealmInteger<byte> _byteProperty;
         public RealmInteger<byte> ByteProperty
         {
@@ -312,7 +308,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("ByteProperty");
             }
         }
-        
+
         private RealmInteger<short> _int16Property;
         public RealmInteger<short> Int16Property
         {
@@ -323,7 +319,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Int16Property");
             }
         }
-        
+
         private RealmInteger<int> _int32Property;
         public RealmInteger<int> Int32Property
         {
@@ -334,7 +330,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Int32Property");
             }
         }
-        
+
         private RealmInteger<long> _int64Property;
         public RealmInteger<long> Int64Property
         {
@@ -345,7 +341,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Int64Property");
             }
         }
-        
+
         private RealmInteger<byte>? _nullableByteProperty;
         public RealmInteger<byte>? NullableByteProperty
         {
@@ -356,7 +352,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("NullableByteProperty");
             }
         }
-        
+
         private RealmInteger<short>? _nullableInt16Property;
         public RealmInteger<short>? NullableInt16Property
         {
@@ -367,7 +363,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("NullableInt16Property");
             }
         }
-        
+
         private RealmInteger<int>? _nullableInt32Property;
         public RealmInteger<int>? NullableInt32Property
         {
@@ -378,7 +374,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("NullableInt32Property");
             }
         }
-        
+
         private RealmInteger<long>? _nullableInt64Property;
         public RealmInteger<long>? NullableInt64Property
         {
@@ -389,11 +385,11 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("NullableInt64Property");
             }
         }
-    
+
         public CounterObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -410,7 +406,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -445,31 +441,30 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
-            
+
             Id = (int)val;
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

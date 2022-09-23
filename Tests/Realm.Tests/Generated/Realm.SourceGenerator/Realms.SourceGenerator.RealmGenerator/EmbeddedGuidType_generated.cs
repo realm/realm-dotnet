@@ -35,44 +35,42 @@ namespace Realms.Tests.Database
             Property.RealmValueSet("MixedSet", managedName: "MixedSet"),
             Property.RealmValueDictionary("MixedDict", managedName: "MixedDict"),
         }.Build();
-        
+
         #region IEmbeddedObject implementation
-        
+
         private IEmbeddedGuidTypeAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IEmbeddedGuidTypeAccessor Accessor => _accessor = _accessor ?? new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedGuidTypeAccessor)managedAccessor;
             var oldAccessor = _accessor as IEmbeddedGuidTypeAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
@@ -87,55 +85,51 @@ namespace Realms.Tests.Database
                     newAccessor.MixedSet.Clear();
                     newAccessor.MixedDict.Clear();
                 }
-                
+
                 newAccessor.RegularProperty = oldAccessor.RegularProperty;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidSet, newAccessor.GuidSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidDict, newAccessor.GuidDict, update, skipDefaults);
-                
+
                 newAccessor.OptionalProperty = oldAccessor.OptionalProperty;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalList, newAccessor.OptionalList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalSet, newAccessor.OptionalSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalDict, newAccessor.OptionalDict, update, skipDefaults);
-                
+
                 if(oldAccessor.LinkProperty != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkProperty, update);
                 }
                 newAccessor.LinkProperty = oldAccessor.LinkProperty;
                 newAccessor.MixedProperty = oldAccessor.MixedProperty;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedList, newAccessor.MixedList, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedSet, newAccessor.MixedSet, update, skipDefaults);
-                
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedDict, newAccessor.MixedDict, update, skipDefaults);
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -144,86 +138,84 @@ namespace Realms.Tests.Database
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator EmbeddedGuidType(RealmValue val) => val.AsRealmObject<EmbeddedGuidType>();
-        
+
         public static implicit operator RealmValue(EmbeddedGuidType val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedGuidTypeObjectHelper : IRealmObjectHelper
         {
@@ -231,14 +223,14 @@ namespace Realms.Tests.Database
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new EmbeddedGuidTypeManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new EmbeddedGuidType();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -254,29 +246,29 @@ namespace Realms.Tests.Database.Generated
     internal interface IEmbeddedGuidTypeAccessor : IRealmAccessor
     {
         Guid RegularProperty { get; set; }
-        
+
         IList<Guid> GuidList { get; }
-        
+
         ISet<Guid> GuidSet { get; }
-        
+
         IDictionary<string, Guid> GuidDict { get; }
-        
+
         Guid? OptionalProperty { get; set; }
-        
+
         IList<Guid?> OptionalList { get; }
-        
+
         ISet<Guid?> OptionalSet { get; }
-        
+
         IDictionary<string, Guid?> OptionalDict { get; }
-        
+
         GuidType LinkProperty { get; set; }
-        
+
         RealmValue MixedProperty { get; set; }
-        
+
         IList<RealmValue> MixedList { get; }
-        
+
         ISet<RealmValue> MixedSet { get; }
-        
+
         IDictionary<string, RealmValue> MixedDict { get; }
     }
 
@@ -288,7 +280,7 @@ namespace Realms.Tests.Database.Generated
             get => (Guid)GetValue("RegularProperty");
             set => SetValue("RegularProperty", value);
         }
-        
+
         private IList<Guid> _guidList;
         public IList<Guid> GuidList
         {
@@ -298,11 +290,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _guidList = GetListValue<Guid>("GuidList");
                 }
-        
+
                 return _guidList;
             }
         }
-        
+
         private ISet<Guid> _guidSet;
         public ISet<Guid> GuidSet
         {
@@ -312,11 +304,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _guidSet = GetSetValue<Guid>("GuidSet");
                 }
-        
+
                 return _guidSet;
             }
         }
-        
+
         private IDictionary<string, Guid> _guidDict;
         public IDictionary<string, Guid> GuidDict
         {
@@ -326,17 +318,17 @@ namespace Realms.Tests.Database.Generated
                 {
                     _guidDict = GetDictionaryValue<Guid>("GuidDict");
                 }
-        
+
                 return _guidDict;
             }
         }
-        
+
         public Guid? OptionalProperty
         {
             get => (Guid?)GetValue("OptionalProperty");
             set => SetValue("OptionalProperty", value);
         }
-        
+
         private IList<Guid?> _optionalList;
         public IList<Guid?> OptionalList
         {
@@ -346,11 +338,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _optionalList = GetListValue<Guid?>("OptionalList");
                 }
-        
+
                 return _optionalList;
             }
         }
-        
+
         private ISet<Guid?> _optionalSet;
         public ISet<Guid?> OptionalSet
         {
@@ -360,11 +352,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _optionalSet = GetSetValue<Guid?>("OptionalSet");
                 }
-        
+
                 return _optionalSet;
             }
         }
-        
+
         private IDictionary<string, Guid?> _optionalDict;
         public IDictionary<string, Guid?> OptionalDict
         {
@@ -374,23 +366,23 @@ namespace Realms.Tests.Database.Generated
                 {
                     _optionalDict = GetDictionaryValue<Guid?>("OptionalDict");
                 }
-        
+
                 return _optionalDict;
             }
         }
-        
+
         public GuidType LinkProperty
         {
             get => (GuidType)GetValue("LinkProperty");
             set => SetValue("LinkProperty", value);
         }
-        
+
         public RealmValue MixedProperty
         {
             get => (RealmValue)GetValue("MixedProperty");
             set => SetValue("MixedProperty", value);
         }
-        
+
         private IList<RealmValue> _mixedList;
         public IList<RealmValue> MixedList
         {
@@ -400,11 +392,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _mixedList = GetListValue<RealmValue>("MixedList");
                 }
-        
+
                 return _mixedList;
             }
         }
-        
+
         private ISet<RealmValue> _mixedSet;
         public ISet<RealmValue> MixedSet
         {
@@ -414,11 +406,11 @@ namespace Realms.Tests.Database.Generated
                 {
                     _mixedSet = GetSetValue<RealmValue>("MixedSet");
                 }
-        
+
                 return _mixedSet;
             }
         }
-        
+
         private IDictionary<string, RealmValue> _mixedDict;
         public IDictionary<string, RealmValue> MixedDict
         {
@@ -428,7 +420,7 @@ namespace Realms.Tests.Database.Generated
                 {
                     _mixedDict = GetDictionaryValue<RealmValue>("MixedDict");
                 }
-        
+
                 return _mixedDict;
             }
         }
@@ -446,13 +438,13 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("RegularProperty");
             }
         }
-        
+
         public IList<Guid> GuidList { get; } = new List<Guid>();
-        
+
         public ISet<Guid> GuidSet { get; } = new HashSet<Guid>(RealmSet<Guid>.Comparer);
-        
+
         public IDictionary<string, Guid> GuidDict { get; } = new Dictionary<string, Guid>();
-        
+
         private Guid? _optionalProperty;
         public Guid? OptionalProperty
         {
@@ -463,13 +455,13 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("OptionalProperty");
             }
         }
-        
+
         public IList<Guid?> OptionalList { get; } = new List<Guid?>();
-        
+
         public ISet<Guid?> OptionalSet { get; } = new HashSet<Guid?>(RealmSet<Guid?>.Comparer);
-        
+
         public IDictionary<string, Guid?> OptionalDict { get; } = new Dictionary<string, Guid?>();
-        
+
         private GuidType _linkProperty;
         public GuidType LinkProperty
         {
@@ -480,7 +472,7 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("LinkProperty");
             }
         }
-        
+
         private RealmValue _mixedProperty;
         public RealmValue MixedProperty
         {
@@ -491,17 +483,17 @@ namespace Realms.Tests.Database.Generated
                 RaisePropertyChanged("MixedProperty");
             }
         }
-        
+
         public IList<RealmValue> MixedList { get; } = new List<RealmValue>();
-        
+
         public ISet<RealmValue> MixedSet { get; } = new HashSet<RealmValue>(RealmSet<RealmValue>.Comparer);
-        
+
         public IDictionary<string, RealmValue> MixedDict { get; } = new Dictionary<string, RealmValue>();
-    
+
         public EmbeddedGuidTypeUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -513,7 +505,7 @@ namespace Realms.Tests.Database.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -534,12 +526,12 @@ namespace Realms.Tests.Database.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
@@ -547,11 +539,11 @@ namespace Realms.Tests.Database.Generated
             "GuidList" => (IList<T>)GuidList,
             "OptionalList" => (IList<T>)OptionalList,
             "MixedList" => (IList<T>)MixedList,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             return propertyName switch
@@ -559,11 +551,11 @@ namespace Realms.Tests.Database.Generated
             "GuidSet" => (ISet<T>)GuidSet,
             "OptionalSet" => (ISet<T>)OptionalSet,
             "MixedSet" => (ISet<T>)MixedSet,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
                         };
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             return propertyName switch
@@ -576,4 +568,3 @@ namespace Realms.Tests.Database.Generated
         }
     }
 }
-

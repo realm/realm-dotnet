@@ -20,6 +20,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -54,18 +55,19 @@ namespace Realms.SourceGenerator
                 {
                     var className = classInfo.Name;
 
-                    var generator = new ClassCodeBuilder(classInfo);
-                    var generatedSource = generator.GenerateSource();
+                    var generatedSource = new ClassCodeBuilder(classInfo).GenerateSource();
 
-                    var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
+                    // Replace all occurrences of at least 3 newlines with only 2
+                    var formattedSource = Regex.Replace(generatedSource, @$"[{Environment.NewLine}]{{3,}}", $"{Environment.NewLine}{Environment.NewLine}");
 
+                    var sourceText = SourceText.From(formattedSource, Encoding.UTF8);
 
                     if (duplicateClassNames.Contains(className))
                     {
                         className = $"{classInfo.Namespace}_{classInfo.Name}";
                     }
 
-                    _context.AddSource($"{className}_generated.cs", formattedFile);
+                    _context.AddSource($"{className}_generated.cs", sourceText);
                 }
                 catch (Exception ex)
                 {

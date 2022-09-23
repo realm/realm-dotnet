@@ -27,47 +27,45 @@ namespace Realms.Tests
             Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
             Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
         }.Build();
-        
+
         #region IRealmObject implementation
-        
+
         private IIntPropertyObjectAccessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IIntPropertyObjectAccessor Accessor => _accessor = _accessor ?? new IntPropertyObjectUnmanagedAccessor(typeof(IntPropertyObject));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IIntPropertyObjectAccessor)managedAccessor;
             var oldAccessor = _accessor as IIntPropertyObjectAccessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
-                
+
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.Int != default(int))
                 {
@@ -75,19 +73,21 @@ namespace Realms.Tests
                 }
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -96,83 +96,79 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator IntPropertyObject(RealmValue val) => val.AsRealmObject<IntPropertyObject>();
-        
+
         public static implicit operator RealmValue(IntPropertyObject val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
-        
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class IntPropertyObjectObjectHelper : IRealmObjectHelper
         {
@@ -180,14 +176,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new IntPropertyObjectManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new IntPropertyObject();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = ((IIntPropertyObjectAccessor)instance.Accessor).Id;
@@ -203,11 +199,11 @@ namespace Realms.Tests.Generated
     internal interface IIntPropertyObjectAccessor : IRealmAccessor
     {
         ObjectId Id { get; set; }
-        
+
         int Int { get; set; }
-        
+
         Guid GuidProperty { get; set; }
-        
+
         IQueryable<SyncCollectionsObject> ContainingCollections { get; }
     }
 
@@ -219,19 +215,19 @@ namespace Realms.Tests.Generated
             get => (ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
-        
+
         public int Int
         {
             get => (int)GetValue("Int");
             set => SetValue("Int", value);
         }
-        
+
         public Guid GuidProperty
         {
             get => (Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
         }
-        
+
         private IQueryable<SyncCollectionsObject> _containingCollections;
         public IQueryable<SyncCollectionsObject> ContainingCollections
         {
@@ -241,7 +237,7 @@ namespace Realms.Tests.Generated
                 {
                     _containingCollections = GetBacklinks<SyncCollectionsObject>("ContainingCollections");
                 }
-        
+
                 return _containingCollections;
             }
         }
@@ -259,7 +255,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Id");
             }
         }
-        
+
         private int _int;
         public int Int
         {
@@ -270,7 +266,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Int");
             }
         }
-        
+
         private Guid _guidProperty;
         public Guid GuidProperty
         {
@@ -281,13 +277,13 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("GuidProperty");
             }
         }
-        
+
         public IQueryable<SyncCollectionsObject> ContainingCollections => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-    
+
         public IntPropertyObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -299,7 +295,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -316,31 +312,30 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
-            
+
             Id = (ObjectId)val;
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-

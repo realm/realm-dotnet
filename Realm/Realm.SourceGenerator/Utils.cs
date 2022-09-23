@@ -228,8 +228,21 @@ namespace Realms.SourceGenerator
         {
             var indentString = new string(' ', indents * 4);
 
-            var result = indentString + str.Replace(Environment.NewLine, $"{Environment.NewLine}{indentString}");
+            var sb = new StringBuilder();
+            var lines = str.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrEmpty(line))
+                {
+                    sb.Append(indentString);
+                }
 
+                sb.AppendLine(line);
+            }
+
+            sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
+
+            var result = sb.ToString();
             if (trimNewLines)
             {
                 result = result.TrimEnd();

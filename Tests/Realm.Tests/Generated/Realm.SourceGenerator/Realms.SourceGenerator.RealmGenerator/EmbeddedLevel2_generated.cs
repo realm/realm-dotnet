@@ -25,72 +25,72 @@ namespace Realms.Tests
             Property.Object("Child", "EmbeddedLevel3", managedName: "Child"),
             Property.ObjectList("Children", "EmbeddedLevel3", managedName: "Children"),
         }.Build();
-        
+
         #region IEmbeddedObject implementation
-        
+
         private IEmbeddedLevel2Accessor _accessor;
-        
+
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
-        
+
         internal IEmbeddedLevel2Accessor Accessor => _accessor = _accessor ?? new EmbeddedLevel2UnmanagedAccessor(typeof(EmbeddedLevel2));
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public Realm Realm => Accessor.Realm;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
-        
+
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-        
-        
-        
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedLevel2Accessor)managedAccessor;
             var oldAccessor = _accessor as IEmbeddedLevel2Accessor;
             _accessor = newAccessor;
-        
+
             if (helper != null)
             {
                 if (!skipDefaults)
                 {
                     newAccessor.Children.Clear();
                 }
-                
+
                 if(!skipDefaults || oldAccessor.String != default(string))
                 {
                     newAccessor.String = oldAccessor.String;
                 }
                 newAccessor.Child = oldAccessor.Child;
-                
+
                 CollectionExtensions.PopulateCollection(oldAccessor.Children, newAccessor.Children, update, skipDefaults);
             }
-        
+
             if (_propertyChanged != null)
             {
                 SubscribeForNotifications();
             }
-        
+
             OnManaged();
         }
-        
+
         #endregion
-        
+
+        partial void OnManaged();
+
         private event PropertyChangedEventHandler _propertyChanged;
-        
+
         public event PropertyChangedEventHandler PropertyChanged
         {
             add
@@ -99,86 +99,84 @@ namespace Realms.Tests
                 {
                     SubscribeForNotifications();
                 }
-        
+
                 _propertyChanged += value;
             }
-        
+
             remove
             {
                 _propertyChanged -= value;
-        
+
                 if (_propertyChanged == null)
                 {
                     UnsubscribeFromNotifications();
                 }
             }
         }
-        
+
         partial void OnPropertyChanged(string propertyName);
-        
+
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
         }
-        
-        partial void OnManaged();
-        
+
         private void SubscribeForNotifications()
         {
             Accessor.SubscribeForNotifications(RaisePropertyChanged);
         }
-        
+
         private void UnsubscribeFromNotifications()
         {
             Accessor.UnsubscribeFromNotifications();
         }
-        
+
         public static explicit operator EmbeddedLevel2(RealmValue val) => val.AsRealmObject<EmbeddedLevel2>();
-        
+
         public static implicit operator RealmValue(EmbeddedLevel2 val) => RealmValue.Object(val);
-        
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo()
         {
             return Accessor.GetTypeInfo(this);
         }
-        
+
         public override bool Equals(object obj)
         {
             if (obj is null)
             {
                 return false;
             }
-        
+
             if (ReferenceEquals(this, obj))
             {
                 return true;
             }
-        
+
             if (obj is InvalidObject)
             {
                 return !IsValid;
             }
-        
+
             if (obj is not IRealmObjectBase iro)
             {
                 return false;
             }
-        
+
             return Accessor.Equals(iro.Accessor);
         }
-        
+
         public override int GetHashCode()
         {
             return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
         }
-        
+
         public override string ToString()
         {
             return Accessor.ToString();
         }
-    
+
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedLevel2ObjectHelper : IRealmObjectHelper
         {
@@ -186,14 +184,14 @@ namespace Realms.Tests
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
-        
+
             public ManagedAccessor CreateAccessor() => new EmbeddedLevel2ManagedAccessor();
-        
+
             public IRealmObjectBase CreateInstance()
             {
                 return new EmbeddedLevel2();
             }
-        
+
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
                 value = null;
@@ -209,9 +207,9 @@ namespace Realms.Tests.Generated
     internal interface IEmbeddedLevel2Accessor : IRealmAccessor
     {
         string String { get; set; }
-        
+
         EmbeddedLevel3 Child { get; set; }
-        
+
         IList<EmbeddedLevel3> Children { get; }
     }
 
@@ -223,13 +221,13 @@ namespace Realms.Tests.Generated
             get => (string)GetValue("String");
             set => SetValue("String", value);
         }
-        
+
         public EmbeddedLevel3 Child
         {
             get => (EmbeddedLevel3)GetValue("Child");
             set => SetValue("Child", value);
         }
-        
+
         private IList<EmbeddedLevel3> _children;
         public IList<EmbeddedLevel3> Children
         {
@@ -239,7 +237,7 @@ namespace Realms.Tests.Generated
                 {
                     _children = GetListValue<EmbeddedLevel3>("Children");
                 }
-        
+
                 return _children;
             }
         }
@@ -257,7 +255,7 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("String");
             }
         }
-        
+
         private EmbeddedLevel3 _child;
         public EmbeddedLevel3 Child
         {
@@ -268,13 +266,13 @@ namespace Realms.Tests.Generated
                 RaisePropertyChanged("Child");
             }
         }
-        
+
         public IList<EmbeddedLevel3> Children { get; } = new List<EmbeddedLevel3>();
-    
+
         public EmbeddedLevel2UnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
-    
+
         public override RealmValue GetValue(string propertyName)
         {
             return propertyName switch
@@ -284,7 +282,7 @@ namespace Realms.Tests.Generated
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
-    
+
         public override void SetValue(string propertyName, RealmValue val)
         {
             switch (propertyName)
@@ -299,31 +297,30 @@ namespace Realms.Tests.Generated
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
-    
+
         public override void SetValueUnique(string propertyName, RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
-    
+
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
                         {
             "Children" => (IList<T>)Children,
-            
+
                             _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                         };
         }
-    
+
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
         }
-    
+
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
-
