@@ -67,7 +67,7 @@ namespace Realms.SourceGenerator
             // Discussion about emitting non-source files: https://github.com/dotnet/roslyn/issues/57608
             context.AddSource($"{classInfo.Name}.diagnostics", serializedJson);
 #else
-            return null;
+            return;
 #endif
         }
 
