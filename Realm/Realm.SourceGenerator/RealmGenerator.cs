@@ -26,20 +26,13 @@ namespace Realms.SourceGenerator
         /* Not explicitly supported:
          * - Inheritance of any kind (classes cannot derive from anything)
          * - Full nullability support
+         * - Nested classes
          */
 
-        /* Notes:
-         * - If a realm class is defined inside other classes, all the enclosing classes must be partial
+        /* Notes for developers:
          * - "OnManaged" is a partial method now
          * - "OnPropertyChanged" is a partial method now
-         * 
-         */
-
-        /*
-         * TODOS:
-         * - Avoid generating some methods if already present (Equals, ToString, GetHashCode, PropertyChanged)
-         * - Investigate how does it work with classes defined inside other classes (private, public, ...), especially if they
-         * contain properties of other classes (in the same enclosing class or not)
+         *
          */
 
         public void Initialize(GeneratorInitializationContext context)
