@@ -38,8 +38,11 @@ namespace Realms.SourceGenerator
         {
             var result = new ParsingResults();
 
-            foreach (var (classSymbol, classDeclarations) in realmClasses)
+            foreach (var rc in realmClasses)
             {
+                var classSymbol = rc.ClassSymbol;
+                var classDeclarations = rc.ClassDeclarations;
+
                 var classInfo = new ClassInfo();
 
                 // We tie the diagnostics to the first class declaration only.

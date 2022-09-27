@@ -53,5 +53,16 @@ namespace Realms.SourceGenerator
         }
     }
 
-    internal record struct RealmClassDefinition(ITypeSymbol ClassSymbol, List<ClassDeclarationSyntax> ClassDeclarations);
+    internal struct RealmClassDefinition
+    {
+        public ITypeSymbol ClassSymbol { get; }
+
+        public List<ClassDeclarationSyntax> ClassDeclarations { get; }
+
+        public RealmClassDefinition(ITypeSymbol classSymbol, List<ClassDeclarationSyntax> classDeclarations)
+        {
+            ClassSymbol = classSymbol;
+            ClassDeclarations = classDeclarations;
+        }
+    }
 }

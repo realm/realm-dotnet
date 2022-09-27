@@ -212,7 +212,6 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         copyToRealm.AppendLine($@"
 CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);
 ");
-
                     }
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)

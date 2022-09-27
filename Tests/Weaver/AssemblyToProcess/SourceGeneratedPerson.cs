@@ -18,7 +18,7 @@
 
 using System.Collections.Generic;
 using Realms;
-using Realms.Generated;
+using AssemblyToProcess.Generated;
 
 namespace AssemblyToProcess
 {
@@ -43,7 +43,7 @@ namespace AssemblyToProcess
     }
 }
 
-namespace Realms.Generated
+namespace AssemblyToProcess.Generated
 {
     internal interface ISourceGeneratedPersonAccessor
     {
