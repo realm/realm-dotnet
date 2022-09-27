@@ -26,6 +26,10 @@
         <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>-->
 
+    <PropertyGroup Condition="'$(TestWeavedClasses)' == 'true'">
+        <DefineConstants>$(DefineConstants);TEST_WEAVER</DefineConstants>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' == ''">
         <TargetFrameworks>net461</TargetFrameworks>
         <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
