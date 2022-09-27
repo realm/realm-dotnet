@@ -82,7 +82,7 @@ env:
 #@   "AdditionalFrameworks": framework,
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
-#@   "TestWeavedClasses": true,
+#@   "TestWeavedClasses": "true",
 #@ }
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
