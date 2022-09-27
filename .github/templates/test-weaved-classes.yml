@@ -4,6 +4,7 @@
 
 ---
 name: test-weaved-classes
+_: #@ template.replace(testDefinition())
 jobs:
   run-tests:
     runs-on: windows-latest
