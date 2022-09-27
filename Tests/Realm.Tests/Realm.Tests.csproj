@@ -18,11 +18,13 @@
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
-    <ItemGroup>
-        <!-- Removing the generated files from compilation, adding them back as non-content files -->
+    <!-- Removing the generated files from compilation, adding them back as non-content files.
+    Can be useful for debugging -->
+
+    <!--<ItemGroup>
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-    </ItemGroup>
+    </ItemGroup>-->
 
     <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' == ''">
         <TargetFrameworks>net461</TargetFrameworks>
@@ -166,10 +168,13 @@
         </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"  />
+        <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
             <Link>Sync\BaasClient.cs</Link>
             <SubType></SubType>
         </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />
     </ItemGroup>
 </Project>
