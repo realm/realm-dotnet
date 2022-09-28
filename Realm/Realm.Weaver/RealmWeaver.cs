@@ -136,7 +136,7 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
 
-        private IEnumerable<(TypeDefinition Type, bool IsGenerated)> GetMatchingTypes()
+        private IEnumerable<MatchingType> GetMatchingTypes()
         {
             foreach (var type in _moduleDefinition.GetTypes())
             {
@@ -150,7 +150,7 @@ namespace RealmWeaver
                     // Classic types
                     if (type.IsValidRealmObjectBaseInheritor(_references))
                     {
-                        yield return (type, false);
+                        yield return new MatchingType(type, false);
                     }
                     else
                     {
@@ -160,7 +160,7 @@ namespace RealmWeaver
                 else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
                 {
                     // Generated types
-                    yield return (type, true);
+                    yield return new MatchingType(type, false);
                 }
             }
         }
@@ -215,9 +215,10 @@ Analytics payload
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            var weaveResults = matchingTypes.Select(tuple =>
+            var weaveResults = matchingTypes.Select(matchingType =>
             {
-                var (type, isGenerated) = tuple;
+                var type = matchingType.Type;
+                var isGenerated = matchingType.IsGenerated;
 
                 try
                 {
@@ -1270,6 +1271,19 @@ Analytics payload
             _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
 
             return userAssembly_DoNotNotify_Ctor;
+        }
+
+        private struct MatchingType
+        {
+            public bool IsGenerated { get; }
+
+            public TypeDefinition Type { get; }
+
+            public MatchingType(TypeDefinition type, bool isGenerated)
+            {
+                IsGenerated = isGenerated;
+                Type = type;
+            }
         }
     }
 }
