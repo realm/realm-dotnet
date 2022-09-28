@@ -21,10 +21,10 @@
     <!-- Removing the generated files from compilation, adding them back as non-content files.
     Can be useful for debugging -->
 
-    <!--<ItemGroup>
+    <ItemGroup>
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-    </ItemGroup>-->
+    </ItemGroup>
 
     <PropertyGroup Condition="'$(TestWeavedClasses)' == 'true'">
         <DefineConstants>$(DefineConstants);TEST_WEAVER</DefineConstants>
@@ -177,8 +177,5 @@
             <Link>Sync\BaasClient.cs</Link>
             <SubType></SubType>
         </Compile>
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />
     </ItemGroup>
 </Project>

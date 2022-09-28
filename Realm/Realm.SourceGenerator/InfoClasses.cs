@@ -56,6 +56,8 @@ namespace Realms.SourceGenerator
 
         public bool HasPropertyChangedEvent { get; set; }
 
+        public bool HasDuplicatedName { get; set; }
+
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 

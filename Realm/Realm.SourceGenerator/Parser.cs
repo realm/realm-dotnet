@@ -37,6 +37,8 @@ namespace Realms.SourceGenerator
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
         {
             var result = new ParsingResults();
+            var classNames = new HashSet<string>();
+            var duplicateClassNames = new HashSet<string>();
 
             foreach (var rc in realmClasses)
             {
@@ -86,6 +88,13 @@ namespace Realms.SourceGenerator
                     classInfo.OverridesGetHashCode = classSymbol.OverridesGetHashCode();
                     classInfo.OverridesToString = classSymbol.OverridesToString();
 
+                    if (classNames.Contains(classInfo.Name))
+                    {
+                        duplicateClassNames.Add(classInfo.Name);
+                    }
+
+                    classNames.Add(classInfo.Name);
+
                     // Properties
                     foreach (var classDeclarationSyntax in classDeclarations)
                     {
@@ -106,6 +115,14 @@ namespace Realms.SourceGenerator
                 {
                     classInfo.Diagnostics.Add(Diagnostics.UnexpectedError(classSymbol.Name, ex.Message, ex.StackTrace));
                     throw;
+                }
+            }
+
+            foreach (var classInfo in result.ClassInfo)
+            {
+                if (duplicateClassNames.Contains(classInfo.Name))
+                {
+                    classInfo.HasDuplicatedName = true;
                 }
             }
 

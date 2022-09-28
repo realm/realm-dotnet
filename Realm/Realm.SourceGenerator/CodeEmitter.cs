@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,12 +36,6 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
-            // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
-            var duplicateClassNames = parsingResults.ClassInfo
-                .GroupBy(c => c.Name)
-                .Where(g => g.Count() > 1)
-                .Select(g => g.Key)
-                .ToImmutableHashSet();
 
             foreach (var classInfo in parsingResults.ClassInfo)
             {
@@ -53,8 +46,6 @@ namespace Realms.SourceGenerator
 
                 try
                 {
-                    var className = classInfo.Name;
-
                     var generatedSource = new ClassCodeBuilder(classInfo).GenerateSource();
 
                     // Replace all occurrences of at least 3 newlines with only 2
@@ -62,10 +53,8 @@ namespace Realms.SourceGenerator
 
                     var sourceText = SourceText.From(formattedSource, Encoding.UTF8);
 
-                    if (duplicateClassNames.Contains(className))
-                    {
-                        className = $"{classInfo.Namespace}_{classInfo.Name}";
-                    }
+                    // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
+                    var className = classInfo.HasDuplicatedName ? $"{classInfo.Namespace}_{classInfo.Name}" : classInfo.Name;
 
                     _context.AddSource($"{className}_generated.cs", sourceText);
                 }
