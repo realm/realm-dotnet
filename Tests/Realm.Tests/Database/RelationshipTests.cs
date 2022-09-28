@@ -723,7 +723,6 @@ namespace Realms.Tests.Database
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
         // shows a workaround for our lack of cascading delete
-
         [Test]
         public void TestDeleteChildren()
         {

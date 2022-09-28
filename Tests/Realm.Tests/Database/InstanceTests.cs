@@ -1301,6 +1301,7 @@ namespace Realms.Tests.Database
             }
         }
     }
+
     public partial class LoneClass : TestRealmObject
     {
         public string Name { get; set; }

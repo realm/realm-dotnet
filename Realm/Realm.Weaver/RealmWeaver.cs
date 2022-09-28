@@ -283,17 +283,17 @@ Analytics payload
         {
             var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
 
-            ReplaceGeneratedClassGetter(type, prop, interfaceType, accessorGetter);
+            ReplaceGeneratedClassGetter(prop, interfaceType, accessorGetter);
 
             if (prop.SetMethod != null)
             {
-                ReplaceGeneratedClassSetter(type, prop, interfaceType, accessorGetter);
+                ReplaceGeneratedClassSetter(prop, interfaceType, accessorGetter);
             }
 
             return WeavePropertyResult.Success(prop);
         }
 
-        private void ReplaceGeneratedClassGetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        private void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -319,7 +319,7 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ret));
         }
 
-        private void ReplaceGeneratedClassSetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0

@@ -95,7 +95,6 @@ namespace RealmWeaver
 
         public bool IsGenerated { get; }
 
-
         public WeavePropertyResult[] Properties { get; }
 
         private WeaveTypeResult(string type, WeavePropertyResult[] properties = null, bool success = true, bool isGenerated = false)

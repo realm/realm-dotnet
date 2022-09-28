@@ -125,7 +125,6 @@ namespace Realms.Tests.Database
                 realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
             }), $"{nameof(AllTypesObject)} add failed.");
         }
-
     }
 
     public partial class NoListProperties : TestRealmObject
