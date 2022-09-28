@@ -160,7 +160,7 @@ namespace RealmWeaver
                 else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
                 {
                     // Generated types
-                    yield return new MatchingType(type, false);
+                    yield return new MatchingType(type, true);
                 }
             }
         }
