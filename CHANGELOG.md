@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.16.0 (2022-09-29)
 
 ### Enhancements
 * Introduced `AsymmetricObject` intended for write-heavy workloads, where high performance is generally important. This new object:
