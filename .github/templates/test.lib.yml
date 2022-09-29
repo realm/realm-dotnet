@@ -1,6 +1,6 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish")
 
-#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody" ]):
+#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]):
 #@ for pkg in packages:
   - name: #@ "Fetch " + pkg
     uses: #@ actionDownloadArtifact

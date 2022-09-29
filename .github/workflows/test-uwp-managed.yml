@@ -49,6 +49,11 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Import test certificate
       run: |
         $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
