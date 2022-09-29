@@ -87,7 +87,7 @@
         <Compile Remove="Program.cs" />
     </ItemGroup>
     <ItemGroup>
-        <Reference Include="System.Runtime.Serialization" />
+        <!--<Reference Include="System.Runtime.Serialization" />-->
     </ItemGroup>
 
     <ItemGroup>
