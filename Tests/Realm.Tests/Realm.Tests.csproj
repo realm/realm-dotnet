@@ -86,6 +86,9 @@
 
         <Compile Remove="Program.cs" />
     </ItemGroup>
+    <ItemGroup>
+        <Reference Include="System.Runtime.Serialization" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
