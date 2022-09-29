@@ -442,24 +442,6 @@ $@"public override string ToString()
 {GenerateClassObjectHelper().Indent()}
 }}";
 
-            var problematicAccessibilityies = new List<Accessibility>
-            {
-                Accessibility.Private, Accessibility.Protected, Accessibility.ProtectedAndInternal,
-                Accessibility.ProtectedOrInternal
-            };
-
-            if (problematicAccessibilityies.Contains(_classInfo.Accessibility))
-            {
-                foreach (var enclosingClassInfo in _classInfo.EnclosingClasses)
-                {
-                    classString = $@"{SyntaxFacts.GetText(enclosingClassInfo.Accessibility)} partial class {enclosingClassInfo.Name}
-{{
-{classString.Indent()}
-}}
-";
-                }
-            }
-
             return classString;
         }
 
