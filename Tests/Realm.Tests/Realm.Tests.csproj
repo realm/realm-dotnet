@@ -106,10 +106,12 @@
 
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(UnityBuild)' != 'true'">
         <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
+        <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
     <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
         <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+        <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(UseRealmNupkgsWithVersion)' == ''">
@@ -175,7 +177,6 @@
         </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <Compile Include="..\..\Tools\DeployApps\BaasClient.cs">
             <Link>Sync\BaasClient.cs</Link>
             <SubType></SubType>
