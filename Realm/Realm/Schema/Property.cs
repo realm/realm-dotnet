@@ -59,7 +59,7 @@ namespace Realms.Schema
 
         /// <summary>
         /// Gets the managed name of the property.
-        /// If not set it is considered to be the same as <see cref="Name"/>.
+        /// If not set, it is considered to be the same as <see cref="Name"/>.
         /// </summary>
         /// <value>The name of the property.</value>
         public string ManagedName { get; }
