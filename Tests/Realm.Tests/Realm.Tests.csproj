@@ -94,7 +94,6 @@
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
         <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
         <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
-        <Reference Include="System.Runtime.Serialization" /> <!--TODO Remove this after testing-->
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(UseRealmNupkgsWithVersion)' == ''">

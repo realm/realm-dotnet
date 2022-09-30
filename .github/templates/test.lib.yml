@@ -76,7 +76,6 @@ env:
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
 
-
 #@ def weavedClassesBuildTests(projectPath, framework, runtime, version = "inputs.version"):
 #@ properties = {
 #@   "AdditionalFrameworks": framework,
