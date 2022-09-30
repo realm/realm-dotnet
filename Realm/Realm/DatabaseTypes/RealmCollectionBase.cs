@@ -41,7 +41,7 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new();
 
         private NotificationTokenHandle _notificationToken;
 
@@ -146,7 +146,7 @@ namespace Realms
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
-            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
+            _isEmbedded = metadata?.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject;
         }
 
         ~RealmCollectionBase()
@@ -395,9 +395,8 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
         {
-            var managedException = exception?.Convert();
             ChangeSet changeset = null;
             if (changes != null)
             {
@@ -417,7 +416,7 @@ namespace Realms
 
             foreach (var callback in _callbacks.ToArray())
             {
-                callback(this, changeset, managedException);
+                callback(this, changeset, null);
             }
         }
 

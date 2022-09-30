@@ -94,6 +94,8 @@ namespace RealmWeaver
 
         public TypeReference EmbeddedObject { get; private set; }
 
+        public TypeReference AsymmetricObject { get; private set; }
+
         public MethodReference RealmObject_get_IsManaged { get; private set; }
 
         public MethodReference RealmObject_get_Realm { get; private set; }
@@ -255,6 +257,7 @@ namespace RealmWeaver
             ManagedAccessor = new TypeReference("Realms", "ManagedAccessor", Module, realmAssembly);
             RealmObject = new TypeReference("Realms", "RealmObject", Module, realmAssembly);
             EmbeddedObject = new TypeReference("Realms", "EmbeddedObject", Module, realmAssembly);
+            AsymmetricObject = new TypeReference("Realms", "AsymmetricObject", Module, realmAssembly);
             RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
             RealmValue = new TypeReference("Realms", "RealmValue", Module, realmAssembly, valueType: true);
 

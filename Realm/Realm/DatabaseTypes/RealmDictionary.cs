@@ -236,9 +236,8 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes)
         {
-            var managedException = exception?.Convert();
             DictionaryChangeSet changeset = null;
             if (changes != null)
             {
@@ -255,7 +254,7 @@ namespace Realms
 
             foreach (var callback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset, managedException);
+                callback(this, changeset, null);
             }
         }
     }

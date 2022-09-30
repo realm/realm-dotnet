@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -87,6 +86,20 @@ namespace Realms
     /// Base interface for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     public interface IRealmObject : IRealmObjectBase
+    {
+    }
+
+    /// <summary>
+    /// Base interface for any asymmetric object that can be persisted in a <see cref="Realm"/>.
+    /// </summary>
+    /// <remarks>
+    /// The benefit of using <see cref="AsymmetricObject"/> is that the performance of each sync operation is much higher.
+    /// The drawback is that an <see cref="AsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
+    /// You should use this base when you have a write-heavy use case.
+    /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
+    /// </remarks>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
+    public interface IAsymmetricObject : IRealmObjectBase
     {
     }
 

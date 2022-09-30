@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2022 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,34 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using MongoDB.Bson;
-#if TEST_WEAVER
-using TestEmbeddedObject = Realms.EmbeddedObject;
-using TestRealmObject = Realms.RealmObject;
-#else
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
-#endif
+using System.ComponentModel;
+using System.Dynamic;
+using System.Linq.Expressions;
 
-namespace Realms.Tests.Sync
+namespace Realms.Dynamic
 {
-    public partial class HugeSyncObject : TestRealmObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Ignored]
+    public class DynamicAsymmetricObject : AsymmetricObject, IDynamicMetaObjectProvider
     {
-        [PrimaryKey]
-        [MapTo("_id")]
-        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
-
-        public byte[] Data { get; set; }
-
-        public HugeSyncObject()
+        public DynamicMetaObject GetMetaObject(Expression parameter)
         {
-        }
-
-        public HugeSyncObject(int dataSize)
-        {
-            var data = new byte[dataSize];
-            TestHelpers.Random.NextBytes(data);
-            Data = data;
+            return new MetaRealmObject(parameter, this);
         }
     }
 }

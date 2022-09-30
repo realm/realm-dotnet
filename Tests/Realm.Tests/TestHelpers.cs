@@ -19,20 +19,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-#if NETCOREAPP || NETFRAMEWORK
-using System.Runtime.InteropServices;
-#endif
 using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
 using Realms.Helpers;
-#if __ANDROID__
-using Application = Android.App.Application;
-#endif
 
 namespace Realms.Tests
 {
@@ -115,6 +111,8 @@ namespace Realms.Tests
 
         private static async Task WaitUntilReferencesAreCollected(int milliseconds, params WeakReference[] references)
         {
+            IgnoreOnUnity("Waiting on GC seems to lock up on Unity on Linux.", OSPlatform.Linux);
+
             using var cts = new CancellationTokenSource(milliseconds);
 
             try
@@ -166,67 +164,7 @@ namespace Realms.Tests
             Assert.That(reference.IsAlive, Is.False, "Expected object to be GC-ed but it wasn't.");
         }
 
-        public static bool IsWindows
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsMacOS
-        {
-            get
-            {
-#if __MACOS__
-                return true;
-#elif NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsLinux
-        {
-            get
-            {
-#if NETCOREAPP || NETFRAMEWORK
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsAOTTarget
-        {
-            get
-            {
-#if __IOS__
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
-
-        public static bool IsUnity
-        {
-            get
-            {
-#if UNITY
-                return true;
-#else
-                return false;
-#endif
-            }
-        }
+        public static bool IsAOTTarget;
 
         public static void IgnoreOnAOT(string message)
         {
@@ -236,13 +174,16 @@ namespace Realms.Tests
             }
         }
 
-        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity")
+        [System.Diagnostics.Conditional("UNITY")]
+        public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity", OSPlatform? platform = null)
         {
-            if (IsUnity)
+            if (platform == null || RuntimeInformation.IsOSPlatform(platform.Value))
             {
                 Assert.Ignore(message);
             }
         }
+
+        public static Func<HttpMessageHandler> TestHttpHandlerFactory = () => new HttpClientHandler();
 
         private static readonly decimal _decimalValue = 1.23456789M;
 
@@ -309,12 +250,12 @@ namespace Realms.Tests
             }
         }
 
-        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
-            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts);
+            return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts, errorMessage);
         }
 
-        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100)
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string errorMessage = null)
         {
             var value = producer();
             var success = tester(value);
@@ -329,7 +270,8 @@ namespace Realms.Tests
 
             if (!success)
             {
-                throw new TimeoutException($"Failed to meet condition after {timeout} ms.");
+                var message = $"Failed to meet condition after {timeout} ms" + (errorMessage == null ? "." : $": {errorMessage}");
+                throw new TimeoutException(message);
             }
 
             return value;

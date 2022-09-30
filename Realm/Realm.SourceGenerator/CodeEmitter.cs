@@ -36,7 +36,6 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
-
             foreach (var classInfo in parsingResults.ClassInfo)
             {
                 if (!ShouldEmit(classInfo))

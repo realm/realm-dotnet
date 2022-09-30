@@ -22,7 +22,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Sync.ErrorHandling;
 
 namespace Realms.Tests.Sync
 {
@@ -94,7 +93,7 @@ namespace Realms.Tests.Sync
             });
             TearDown();
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 50; i++)
             {
                 GC.Collect();
                 if (!weakConfigRef.IsAlive)
@@ -106,13 +105,6 @@ namespace Realms.Tests.Sync
             }
 
             Assert.That(weakConfigRef.Target, Is.Null);
-        }
-
-        [Test]
-        public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
-        {
-            var conf = GetFakeFLXConfig();
-            Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

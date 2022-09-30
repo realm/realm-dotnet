@@ -1,16 +1,120 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Introduced `AsymmetricObject` intended for write-heavy workloads, where high performance is generally important. This new object:
+  1. syncs data unidirectionaly, from the clients to the server
+  1. can't be queried, deleted, or modified once added to the Realm
+  1. is only usable with flexible sync
+  1. can't be the receiveing end of any type of relationship
+  1. can contain `EmbeddedObject`s but cannot link to `RealmObject` or `AsymmetricObject`.
+
+  In the same write transaction, it is legal to add `AsymmetricObject`s and `RealmObject`s
+  ```cs
+  class Measurement : AsymmetricObject
+  {
+      [PrimaryKey, MapTo("_id")]
+      public Guid Id { get; private set; } = Guid.NewGuid();
+
+      public double Value { get; set; }
+
+      public DataTimeOffset Timestamp { get; private set; } = DateTimeOffset.UtcNow;
+  }
+
+  class Person : RealmObject
+  {
+      //............
+  }
+
+  //.....
+
+  var measurement = new Measurement
+  {
+    Value = 9.876
+  };
+
+  realm.Write(() =>
+  {
+      realm.Add(measurement);
+
+      realm.Add(new Person());
+  });
+
+  _ = asymmetricObject.Value;   // runtime error
+  _ = realm.All<Measurement>(); // compile time error
+  ```
+* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard local strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. An example is as follows
+* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard unsynced strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. More info on the aforementioned strategies can be found in our [docs page](https://www.mongodb.com/docs/realm/sdk/dotnet/advanced-guides/client-reset/). An example usage of one of the new handler is as follows:
+  ```cs
+  var conf = new PartitionSyncConfiguration(partition, user)
+  {
+    ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler
+    {
+      // As always, the following callbacks are optional
+
+      OnBeforeReset = (beforeFrozen) =>
+      {
+        // executed right before a client reset is about to happen
+      },
+      OnAfterRecovery = (beforeFrozen, after) =>
+      {
+        // executed right after an automatic recovery from a client reset has completed
+      },
+      OnAfterDiscard = (beforeFrozen, after) =>
+      {
+        // executed after an automatic recovery from a client reset has failed but the DiscardUnsyncedChanges fallback has completed
+      },
+      ManualResetFallback = (session, err) =>
+      {
+        // handle the reset manually
+      }
+    }
+  };
+  ```
+  (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
 
 ### Fixed
-* None
+* Added a more meaningful error message whenever a project doesn't have `[TargetFramework]` defined. (Issue [#2843](https://github.com/realm/realm-dotnet/issues/2843))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core x.y.z.
+
+## 10.15.1 (2022-08-08)
+
+### Fixed
+* Fixed an issue introduced in 10.15.0 that would prevent non-anonoymous user authentication against Atlas App Services. (Issue [#2987](https://github.com/realm/realm-dotnet/issues/2987))
+* Added override to `User.ToString()` that outputs the user id and provider. (PR [#2988](https://github.com/realm/realm-dotnet/pull/2988))
+* Added == and != operator overloads to `User` that matches the behavior of `User.Equals`. (PR [#2988](https://github.com/realm/realm-dotnet/pull/2988))
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.15.0 (2022-08-05)
+
+### Enhancements
+* Preview support for .NET 6 with Mac Catalyst and MAUI. (PR [#2959](https://github.com/realm/realm-dotnet/pull/2959))
+* Reduce use of memory mappings and virtual address space (Core upgrade)
+
+### Fixed
+* Fix a data race when opening a flexible sync Realm (Core upgrade).
+* Fixed a missing backlink removal when setting a `RealmValue` from a `RealmObject` to null or any other non-RealmObject value. Users may have seen exception of "key not found" or assertion failures such as `mixed.hpp:165: [realm-core-12.1.0] Assertion failed: m_type` when removing the destination object. (Core upgrade)
+* Fixed an issue on Windows that would cause high CPU usage by the sync client when there are no active sync sessions. (Core upgrade)
+* Improved performance of sync clients during integration of changesets with many small strings (totalling > 1024 bytes per changeset) on iOS 14, and devices which have restrictive or fragmented memory. (Core upgrade)
+* Fix exception when decoding interned strings in realm-apply-to-state tool. (Core upgrade)
+* Fix a data race when committing a transaction while multiple threads are waiting for the write lock on platforms using emulated interprocess condition variables (most platforms other than non-Android Linux). (Core upgrade)
+* Fix some cases of running out of virtual address space (seen/reported as mmap failures) (Core upgrade)
+* Decimal128 values with more than 110 significant bits were not synchronized correctly with the server (Core upgrade)
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core 12.4.0.
 
 ## 10.14.0 (2022-06-02)
 
@@ -45,7 +149,7 @@
 * Partially fix a performance regression in write performance on Apple platforms. Committing an empty write transaction is ~10x faster than 10.13.0, but still slower than pre-10.7.1 due to using more crash-safe file synchronization (since v10.7.1). (Swift issue [#7740](https://github.com/realm/realm-swift/issues/7740)).
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.1.0.
@@ -55,7 +159,7 @@
 ### Enhancements
 * Added the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
 * Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
-This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+This addition makes `Session.Error` **deprecated**. In order to temporarily continue using the current `Session.Error` the following must be done:
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {

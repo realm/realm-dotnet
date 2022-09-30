@@ -24,6 +24,7 @@ namespace Realms.Tests.Sync
             Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
             Property.Primitive("realm_id", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
+            Property.Primitive("Guid", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
 
         #region IRealmObject implementation
@@ -76,6 +77,7 @@ namespace Realms.Tests.Sync
                 {
                     newAccessor.Partition = oldAccessor.Partition;
                 }
+                newAccessor.Guid = oldAccessor.Guid;
             }
 
             if (_propertyChanged != null)
@@ -212,6 +214,8 @@ namespace Realms.Tests.Sync.Generated
         string Value { get; set; }
 
         string Partition { get; set; }
+
+        Guid Guid { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -233,6 +237,12 @@ namespace Realms.Tests.Sync.Generated
         {
             get => (string)GetValue("realm_id");
             set => SetValue("realm_id", value);
+        }
+
+        public Guid Guid
+        {
+            get => (Guid)GetValue("Guid");
+            set => SetValue("Guid", value);
         }
     }
 
@@ -271,6 +281,17 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
+        private Guid _guid;
+        public Guid Guid
+        {
+            get => _guid;
+            set
+            {
+                _guid = value;
+                RaisePropertyChanged("Guid");
+            }
+        }
+
         public ObjectWithPartitionValueUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -282,6 +303,7 @@ namespace Realms.Tests.Sync.Generated
                 "_id" => _id,
                 "Value" => _value,
                 "realm_id" => _partition,
+                "Guid" => _guid,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -297,6 +319,9 @@ namespace Realms.Tests.Sync.Generated
                     return;
                 case "realm_id":
                     Partition = (string)val;
+                    return;
+                case "Guid":
+                    Guid = (Guid)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

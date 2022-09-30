@@ -18,9 +18,6 @@
 
 using System;
 using System.Linq;
-#if NETCOREAPP1_1 || WINDOWS_UWP
-using System.Reflection;
-#endif
 using System.Threading.Tasks;
 using NUnit.Framework;
 

@@ -64,10 +64,6 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: ${{ runner.os == 'Windows' }}
-    - uses: actions/cache@v2
-      with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.UWP/*.csproj') }}
     - name: Build Tests/Tests.UWP
       run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword="${{ secrets.Pfx_Password }}" -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests

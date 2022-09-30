@@ -351,7 +351,6 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
@@ -483,7 +482,6 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
