@@ -88,7 +88,6 @@
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(UnityBuild)' != 'true'">
         <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
         <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <Reference Include="System.Runtime.Serialization" />
     </ItemGroup>
     <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
