@@ -49,9 +49,9 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             var client = user.GetMongoClient("foo-bar");
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
 
-            Assert.That(db.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName));
+            Assert.That(db.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
             Assert.That(db.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
@@ -60,11 +60,11 @@ namespace Realms.Tests.Sync
         {
             var user = GetFakeUser();
             var client = user.GetMongoClient("foo-bar");
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection("foos");
 
             Assert.That(collection.Name, Is.EqualTo("foos"));
-            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName));
+            Assert.That(collection.Database.Name, Is.EqualTo(SyncTestHelpers.RemoteMongoDBName()));
             Assert.That(collection.Database.Client.ServiceName, Is.EqualTo("foo-bar"));
         }
 
@@ -1125,22 +1125,19 @@ namespace Realms.Tests.Sync
                 };
 
                 object projection;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                projection = new BsonDocument
                 {
-                    projection = new BsonDocument
-                    {
-                        { "_id",  0 },
-                        { "LongValue", 1 }
-                    };
-                }
-                else
+                    { "_id",  0 },
+                    { "LongValue", 1 }
+                };
+#else
+                projection = new
                 {
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1
-                    };
-                }
+                    _id = 0,
+                    LongValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {
@@ -1164,24 +1161,21 @@ namespace Realms.Tests.Sync
 
                 object projection;
                 object sort;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 1 },
-                        { "LongValue", 1 }
-                    };
-                }
-                else
+                    { "_id", 1 },
+                    { "LongValue", 1 }
+                };
+#else
+                sort = new { LongValue = -1 };
+                projection = new
                 {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 1,
-                        LongValue = 1
-                    };
-                }
+                    _id = 1,
+                    LongValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {
@@ -1214,26 +1208,23 @@ namespace Realms.Tests.Sync
 
                 object projection;
                 object sort;
-                if (TestHelpers.IsUnity)
+#if UNITY
+                sort = new BsonDocument { { "LongValue", -1 } };
+                projection = new BsonDocument
                 {
-                    sort = new BsonDocument { { "LongValue", -1 } };
-                    projection = new BsonDocument
-                    {
-                        { "_id", 0 },
-                        { "LongValue", 1 },
-                        { "StringValue", 1 },
-                    };
-                }
-                else
+                    { "_id", 0 },
+                    { "LongValue", 1 },
+                    { "StringValue", 1 },
+                };
+#else
+                sort = new { LongValue = -1 };
+                projection = new
                 {
-                    sort = new { LongValue = -1 };
-                    projection = new
-                    {
-                        _id = 0,
-                        LongValue = 1,
-                        StringValue = 1
-                    };
-                }
+                    _id = 0,
+                    LongValue = 1,
+                    StringValue = 1
+                };
+#endif
 
                 foreach (var foo in inserted)
                 {
@@ -2174,7 +2165,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection<Foo>(FoosCollectionName);
 
             await collection.DeleteManyAsync();
@@ -2186,7 +2177,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection<Sale>(SalesCollectionName);
 
             await collection.DeleteManyAsync();
@@ -2198,7 +2189,7 @@ namespace Realms.Tests.Sync
         {
             var user = await GetUserAsync();
             var client = user.GetMongoClient(ServiceName);
-            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName);
+            var db = client.GetDatabase(SyncTestHelpers.RemoteMongoDBName());
             var collection = db.GetCollection(FoosCollectionName);
 
             await collection.DeleteManyAsync();

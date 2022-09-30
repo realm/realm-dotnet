@@ -893,7 +893,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
 
                 var customDataDoc = BsonDocument.Parse(@"{
                     _id: ObjectId(""" + ObjectId.GenerateNewId() + @"""),
@@ -926,7 +926,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection<CustomDataDocument>("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection<CustomDataDocument>("users");
 
                 var customDataDoc = new CustomDataDocument
                 {
@@ -949,6 +949,80 @@ namespace Realms.Tests.Sync
                 Assert.That(customData.Age, Is.EqualTo(45));
                 Assert.That(customData.Interests, Is.EquivalentTo(new[] { "swimming", "biking" }));
             });
+        }
+
+        [Test]
+        public void UserAnonymous([Values(true, false)] bool firstReuse, [Values(true, false)] bool secondReuse)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: firstReuse));
+                Assert.That(user, Is.Not.Null);
+                Assert.That(user.Id, Is.Not.Null);
+
+                var anotherUser = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: secondReuse));
+                Assert.That(anotherUser, Is.Not.Null);
+                Assert.That(anotherUser.Id, Is.Not.Null);
+
+                // We only expect both users to be the same if they both reused their credentials
+                Assert.That(user.Id == anotherUser.Id, Is.EqualTo(secondReuse), $"Expected Ids to {(secondReuse ? string.Empty : "not ")}match");
+                Assert.That(user == anotherUser, Is.EqualTo(secondReuse), $"Expected Users to {(secondReuse ? string.Empty : "not ")}match");
+            });
+        }
+
+        [Test]
+        public void UserAnonymous_CombiningReuseAndNotReuse()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var anonA = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: false));
+                var reusedA1 = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                var reusedA2 = await DefaultApp.LogInAsync(Credentials.Anonymous());
+                var anonB = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: false));
+                var reusedB = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                Assert.That(anonA, Is.EqualTo(reusedA1));
+                Assert.That(anonA, Is.EqualTo(reusedA2));
+
+                Assert.That(anonB, Is.Not.EqualTo(anonA));
+                Assert.That(anonB, Is.EqualTo(reusedB));
+
+                await anonB.LogOutAsync();
+
+                Assert.That(anonB.State, Is.EqualTo(UserState.Removed));
+                Assert.That(reusedB.State, Is.EqualTo(UserState.Removed));
+
+                var reusedA3 = await DefaultApp.LogInAsync(Credentials.Anonymous());
+
+                Assert.That(reusedA3, Is.EqualTo(anonA));
+            });
+        }
+
+        [Test]
+        public void UserEqualsOverrides()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var user = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: false));
+                var currentUser = DefaultApp.CurrentUser;
+
+                Assert.That(user.Id, Is.EqualTo(currentUser.Id));
+                Assert.That(user.Equals(currentUser));
+                Assert.That(user == currentUser);
+
+                var anotherUser = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: false));
+                Assert.That(user.Id, Is.Not.EqualTo(anotherUser.Id));
+                Assert.That(user.Equals(anotherUser), Is.False);
+                Assert.That(user != anotherUser);
+            });
+        }
+
+        [Test]
+        public void UserToStringOverride()
+        {
+            var user = GetFakeUser();
+            Assert.That(user.ToString(), Does.Contain(user.Id));
+            Assert.That(user.ToString(), Does.Contain(user.Provider.ToString()));
         }
 
         private class CustomDataDocument

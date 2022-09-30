@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "nugetPackages", "setupNugetCache")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "nugetPackages", "actionDownloadArtifact")
 #@ load("test.lib.yml", "fetchPackageArtifacts")
 
 #@ unityPkgName = "io.realm.unity-${{ inputs.version }}.tgz"
@@ -16,14 +16,13 @@ env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  build-unity:
+  prepare-unity-packages:
     runs-on: windows-latest
     name: Unity
     timeout-minutes: 30
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts(packages = nugetPackages))
-      - #@ setupNugetCache([ "Tools/SetupUnityPackage" ])
       - name: Build Unity
         run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
       - #@ uploadArtifacts(unityPkgName, "Realm/Realm.Unity/" + unityPkgName)

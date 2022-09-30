@@ -287,4 +287,33 @@ namespace AssemblyToProcess
 
         public string SetterLessString { get; }
     }
+
+    public class Sensor : AsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        [Backlink(nameof(Measurement.Sensor))]
+        public IQueryable<Measurement> Measurements { get; }
+
+        public Measurement FirstMeasurement => Measurements.First();
+    }
+
+    public class Coordinates : EmbeddedObject
+    {
+        public double X { get; set; }
+
+        public double Y { get; set; }
+
+        public Sensor Sensor { get; set; }
+    }
+
+    public class Department : EmbeddedObject
+    {
+        public IList<Sensor> SensorsList { get; }
+
+        public ISet<Sensor> SensorsSet { get; }
+
+        public string Name { get; set; }
+    }
 }

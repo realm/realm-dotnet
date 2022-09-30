@@ -1039,4 +1039,24 @@ namespace Realms.Tests
     {
         public string String { get; set; }
     }
+
+    public class HugeSyncObject : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+
+        public byte[] Data { get; set; }
+
+        public HugeSyncObject()
+        {
+        }
+
+        public HugeSyncObject(int dataSize)
+        {
+            var data = new byte[dataSize];
+            TestHelpers.Random.NextBytes(data);
+            Data = data;
+        }
+    }
 }

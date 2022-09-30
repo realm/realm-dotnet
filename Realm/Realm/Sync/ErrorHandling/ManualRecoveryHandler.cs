@@ -34,6 +34,8 @@ namespace Realms.Sync.ErrorHandling
         /// <value>Callback invoked on Client Reset.</value>
         public ClientResetCallback OnClientReset => ManualClientReset;
 
+        internal override ClientResyncMode ClientResetMode => ClientResyncMode.Manual;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class with the supplied client reset handler.
         /// </summary>

@@ -4,9 +4,9 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
 
-    [ValidateSet('Device', 'Simulator')]
+    [ValidateSet('Device', 'Simulator', 'Catalyst')]
     [Parameter(Position=0)]
-    [string[]]$Platforms = ('Device', 'Simulator'),
+    [string[]]$Platforms = ('Simulator'),
 
     [Switch]$Incremental,
 
@@ -39,6 +39,9 @@ if ($Platforms.Contains('Simulator')) {
 }
 if ($Platforms.Contains('Device')) {
     $destinations += $('-destination', 'generic/platform=iOS')
+}
+if ($Platforms.Contains('Catalyst')) {
+    $destinations += $('-destination', 'generic/platform=macOS,variant=Mac Catalyst')
 }
 
 xcodebuild -scheme realm-wrappers -configuration $Configuration @destinations

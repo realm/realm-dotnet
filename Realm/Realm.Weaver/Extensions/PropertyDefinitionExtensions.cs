@@ -203,15 +203,28 @@ internal static class PropertyDefinitionExtensions
         return _indexableTypes.Contains(propertyType.FullName);
     }
 
-    public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) => type.BaseType.IsSameAs(references.EmbeddedObject);
+    public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
+        type.BaseType.IsSameAs(references.EmbeddedObject);
 
-    public static bool IsRealmObjectInheritor(this TypeDefinition type, ImportedReferences references) => type.BaseType.IsSameAs(references.RealmObject);
+    public static bool IsRealmObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
+        type.BaseType.IsSameAs(references.RealmObject);
 
-    public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) => type.IsEmbeddedObjectInheritor(references) || type.IsRealmObjectInheritor(references);
+    public static bool IsAsymmetricObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
+        type.BaseType.IsSameAs(references.AsymmetricObject);
 
-    public static bool ContainsRealmObject(this PropertyDefinition property, ImportedReferences references) => property.PropertyType.Resolve().IsRealmObjectInheritor(references);
+    public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) =>
+        type.IsEmbeddedObjectInheritor(references) ||
+        type.IsRealmObjectInheritor(references) ||
+        type.IsAsymmetricObjectInheritor(references);
 
-    public static bool ContainsEmbeddedObject(this PropertyDefinition property, ImportedReferences references) => property.PropertyType.Resolve().IsEmbeddedObjectInheritor(references);
+    public static bool ContainsRealmObject(this PropertyDefinition property, ImportedReferences references) =>
+        property.PropertyType.Resolve().IsRealmObjectInheritor(references);
+
+    public static bool ContainsAsymmetricObject(this PropertyDefinition property, ImportedReferences references) =>
+        property.PropertyType.Resolve().IsAsymmetricObjectInheritor(references);
+
+    public static bool ContainsEmbeddedObject(this PropertyDefinition property, ImportedReferences references) =>
+        property.PropertyType.Resolve().IsEmbeddedObjectInheritor(references);
 
     public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
     {

@@ -18,10 +18,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
+using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -32,6 +33,7 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<Session> _sessions = new();
         private readonly ConcurrentQueue<App> _apps = new();
+        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
 
         private App _defaultApp;
 
@@ -67,6 +69,14 @@ namespace Realms.Tests.Sync
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
+
+            AsyncContext.Run(async () =>
+            {
+                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
+                {
+                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
+                }
+            });
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -95,12 +105,16 @@ namespace Realms.Tests.Sync
             session.CloseHandle();
         }
 
+        // TODO: this method should go away once https://github.com/realm/realm-core/issues/5705 is resolved.
+        protected static async Task WaitForSubscriptionsAsync(Realm realm)
+        {
+            await realm.Subscriptions.WaitForSynchronizationAsync();
+            await WaitForDownloadAsync(realm);
+        }
+
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
             where T : RealmObject
         {
-            await WaitForUploadAsync(obj.Realm);
-            await WaitForDownloadAsync(realm2);
-
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
             return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
@@ -144,12 +158,12 @@ namespace Realms.Tests.Sync
             return await GetRealmAsync(config);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -158,6 +172,12 @@ namespace Realms.Tests.Sync
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
             var user = await GetUserAsync(app);
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
+        }
+
+        protected static PartitionSyncConfiguration GetIntegrationConfig(User user, string partition = null, string optionalPath = null)
+        {
+            partition ??= Guid.NewGuid().ToString();
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -181,6 +201,11 @@ namespace Realms.Tests.Sync
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
             var user = await GetUserAsync(app);
+            return GetFLXIntegrationConfig(user, optionalPath);
+        }
+
+        protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)
+        {
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
@@ -188,6 +213,23 @@ namespace Realms.Tests.Sync
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
+        }
+
+        protected async Task DisableClientResetRecoveryOnServer(string appConfigType)
+        {
+            await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, false);
+            _clientResetAppsToRestore.Enqueue(appConfigType);
+        }
+
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, CancellationToken cancellationToken = default)
+        {
+            var realm = await GetRealmAsync(config, cancellationToken);
+            if (waitForSync)
+            {
+                await WaitForUploadAsync(realm);
+            }
+
+            return realm;
         }
 
         private static T UpdateConfig<T>(T config)
@@ -199,16 +241,38 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task TriggerClientReset(Realm realm, bool restartSession = true)
+        {
+            if (realm.Config is not SyncConfigurationBase syncConfig)
+            {
+                throw new Exception("This should only be invoked for sync realms.");
+            }
+
+            var session = GetSession(realm);
+
+            if (restartSession)
+            {
+                session.Stop();
+            }
+
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig);
+
+            if (restartSession)
+            {
+                session.Start();
+            }
         }
     }
 }

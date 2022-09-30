@@ -133,11 +133,7 @@ namespace Realms.Tests.Database
                 Assert.That(addedReport.DynamicApi.Get<DateTimeOffset>(nameof(CompletionReport.CompletionDate)), Is.EqualTo(now));
                 Assert.That(addedReport.DynamicApi.Get<string>(nameof(CompletionReport.Remarks)), Is.EqualTo("success!"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
                 var dynamicNow = DateTimeOffset.UtcNow;
                 realm.Write(() =>
@@ -157,6 +153,7 @@ namespace Realms.Tests.Database
                 Assert.That(addedDynamicParent.CompletionReport, Is.Not.Null);
                 Assert.That(addedDynamicParent.CompletionReport.CompletionDate, Is.EqualTo(dynamicNow));
                 Assert.That(addedDynamicParent.CompletionReport.Remarks, Is.EqualTo("success!"));
+#endif
             });
         }
 
@@ -177,11 +174,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToList)}"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicEx = Assert.Throws<NotSupportedException>(() =>
                 {
                     realm.Write(() =>
@@ -192,6 +185,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToList)}"));
+#endif
             });
         }
 
@@ -214,11 +208,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToDictionary)}"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicEx = Assert.Throws<NotSupportedException>(() =>
                 {
                     realm.Write(() =>
@@ -229,6 +219,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToDictionary)}"));
+#endif
             });
         }
 
@@ -249,11 +240,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.InsertEmbeddedObjectInList)}"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicEx = Assert.Throws<NotSupportedException>(() =>
                 {
                     realm.Write(() =>
@@ -264,6 +251,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.InsertEmbeddedObjectInList)}"));
+#endif
             });
         }
 
@@ -284,11 +272,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInList)}"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicEx = Assert.Throws<NotSupportedException>(() =>
                 {
                     realm.Write(() =>
@@ -299,6 +283,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInList)}"));
+#endif
             });
         }
 
@@ -319,11 +304,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInDictionary)}"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicEx = Assert.Throws<NotSupportedException>(() =>
                 {
                     realm.Write(() =>
@@ -334,6 +315,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInDictionary)}"));
+#endif
             });
         }
 
@@ -377,11 +359,7 @@ namespace Realms.Tests.Database
                 Assert.That(addedSubSubTasks.Count, Is.EqualTo(1));
                 Assert.That(addedSubSubTasks[0].DynamicApi.Get<string>(nameof(DynamicSubSubTask.Summary)), Is.EqualTo("This is subtask level 2"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -412,6 +390,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(dynamicParent.SubTasks[0].SubSubTasks.Count, Is.EqualTo(1));
                 Assert.That(dynamicParent.SubTasks[0].SubSubTasks[0].Summary, Is.EqualTo("This is subtask level 2"));
+#endif
             });
         }
 
@@ -448,11 +427,12 @@ namespace Realms.Tests.Database
                 Assert.That(addedDict.Count, Is.EqualTo(2));
                 Assert.That(addedDict["bar"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("This is a second subtask level 1"));
 
-                if (TestHelpers.IsUnity || TestHelpers.IsAOTTarget)
+                if (TestHelpers.IsAOTTarget)
                 {
                     return;
                 }
 
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -476,6 +456,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(dynamicAddedParent.SubTasksDictionary.Count, Is.EqualTo(2));
                 Assert.That(dynamicAddedParent.SubTasksDictionary["bar"].Summary, Is.EqualTo("This is a second subtask level 1"));
+#endif
             });
         }
 
@@ -519,11 +500,7 @@ namespace Realms.Tests.Database
                 Assert.That(subTasks[1].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("This is now at 1"));
                 Assert.That(subTasks[2].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("This is now at 2"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -554,6 +531,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicAddedParent.SubTasks[0].Summary, Is.EqualTo("This is now at 0"));
                 Assert.That(dynamicAddedParent.SubTasks[1].Summary, Is.EqualTo("This is now at 1"));
                 Assert.That(dynamicAddedParent.SubTasks[2].Summary, Is.EqualTo("This is now at 2"));
+#endif
             });
         }
 
@@ -598,11 +576,7 @@ namespace Realms.Tests.Database
                 Assert.That(addedSubTasks[1].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("new at 1"));
                 Assert.That(addedSubTasks[2].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("initial at 2"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -634,6 +608,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicParent.SubTasks[0].Summary, Is.EqualTo("initial at 0"));
                 Assert.That(dynamicParent.SubTasks[1].Summary, Is.EqualTo("new at 1"));
                 Assert.That(dynamicParent.SubTasks[2].Summary, Is.EqualTo("initial at 2"));
+#endif
             });
         }
 
@@ -677,11 +652,12 @@ namespace Realms.Tests.Database
                 Assert.That(subTasks["b"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("new at b"));
                 Assert.That(subTasks["c"].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("initial at c"));
 
-                if (TestHelpers.IsUnity || TestHelpers.IsAOTTarget)
+                if (TestHelpers.IsAOTTarget)
                 {
                     return;
                 }
 
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -714,6 +690,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicParent.SubTasksDictionary["a"].Summary, Is.EqualTo("initial at a"));
                 Assert.That(dynamicParent.SubTasksDictionary["b"].Summary, Is.EqualTo("new at b"));
                 Assert.That(dynamicParent.SubTasksDictionary["c"].Summary, Is.EqualTo("initial at c"));
+#endif
             });
         }
 
@@ -742,11 +719,7 @@ namespace Realms.Tests.Database
                     });
                 });
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 Assert.Throws<ArgumentOutOfRangeException>(() =>
                 {
                     realm.Write(() =>
@@ -764,6 +737,7 @@ namespace Realms.Tests.Database
                         realm.DynamicApi.SetEmbeddedObjectInList(parent.SubTasks, -1);
                     });
                 });
+#endif
             });
         }
 
@@ -783,11 +757,7 @@ namespace Realms.Tests.Database
                     });
                 }, $"An item with the key 'foo' has already been added.");
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 Assert.Throws<ArgumentException>(() =>
                 {
                     realm.Write(() =>
@@ -797,6 +767,7 @@ namespace Realms.Tests.Database
                         realm.DynamicApi.AddEmbeddedObjectToDictionary(parent.SubTasksDictionary, "foo");
                     });
                 }, $"An item with the key 'foo' has already been added.");
+#endif
             });
         }
 
@@ -828,11 +799,7 @@ namespace Realms.Tests.Database
                     });
                 });
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 Assert.Throws<ArgumentOutOfRangeException>(() =>
                 {
                     realm.Write(() =>
@@ -852,6 +819,7 @@ namespace Realms.Tests.Database
                         realm.DynamicApi.SetEmbeddedObjectInList(parent.SubTasks, -1);
                     });
                 });
+#endif
             });
         }
 
@@ -886,11 +854,7 @@ namespace Realms.Tests.Database
                 Assert.That(list.Count, Is.EqualTo(1));
                 Assert.That(list[0].DynamicApi.Get<string>(nameof(DynamicSubTask.Summary)), Is.EqualTo("second"));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 realm.Write(() =>
@@ -913,6 +877,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(1));
                 Assert.That(dynamicParent.SubTasks[0].Summary, Is.EqualTo("second"));
+#endif
             });
         }
 
@@ -955,11 +920,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(subTasks.Count, Is.EqualTo(0));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 dynamic dynamicSecond = realm.Write(() =>
@@ -991,6 +952,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(0));
+#endif
             });
         }
 
@@ -1035,11 +997,7 @@ namespace Realms.Tests.Database
 
                 Assert.That(dict.Count, Is.EqualTo(0));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
 
                 dynamic dynamicSecond = realm.Write(() =>
@@ -1071,6 +1029,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(dynamicParent.SubTasksDictionary.Count, Is.EqualTo(0));
+#endif
             });
         }
 
@@ -1113,11 +1072,7 @@ namespace Realms.Tests.Database
                 Assert.That(parentSubTask2.Count(), Is.EqualTo(1));
                 Assert.That(parentSubTask2.Single(), Is.EqualTo(addedSubTask));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
                 realm.Write(() =>
                 {
@@ -1143,6 +1098,7 @@ namespace Realms.Tests.Database
                 Assert.That(dynamicSubSubTask2.ParentTask.Count, Is.EqualTo(0));
                 Assert.That(dynamicSubSubTask2.ParentSubTask.Count, Is.EqualTo(1));
                 Assert.That(((IQueryable<EmbeddedObject>)dynamicSubSubTask2.ParentSubTask).Single(), Is.EqualTo(dynamicSubTask));
+#endif
             });
         }
 
@@ -1168,11 +1124,7 @@ namespace Realms.Tests.Database
                 Assert.That(reportParents.Count(), Is.EqualTo(1));
                 Assert.That(reportParents.Single(), Is.EqualTo(addedTask));
 
-                if (TestHelpers.IsUnity)
-                {
-                    return;
-                }
-
+#if !UNITY
                 var dynamicId = Guid.NewGuid().ToString();
                 realm.Write(() =>
                 {
@@ -1189,6 +1141,7 @@ namespace Realms.Tests.Database
                 IQueryable<dynamic> dynamicParents = dynamicReport.GetBacklinks(nameof(DynamicTask), nameof(CompletionReport));
                 Assert.That(dynamicParents.Count(), Is.EqualTo(1));
                 Assert.That(dynamicParents.Single(), Is.EqualTo(dynamicTask));
+#endif
             });
         }
     }

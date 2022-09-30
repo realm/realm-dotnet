@@ -1,51 +1,41 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
-  <Import Project="..\LocalDev.props" Condition="Exists('..\LocalDev.props')" />
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <LocalDev Condition="'$(LocalDev)' == ''">false</LocalDev>
     <UnityBuild>false</UnityBuild>
+    <!--
+    The Visual Studio Run Tests context menu command (Ctrl+R, T) always picks the first target framework
+    in the project file, but the NUnit test adapter doesn't support .NET Standard 2.0, so it should never be
+    first in the list.
+    -->
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Realms.Tests</RootNamespace>
+    <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <NoWarn>MSB4011</NoWarn>
+    <OutputType Condition="'$(RealmTestsStandaloneExe)' == 'true'">Exe</OutputType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
-    <PackageId>Realm.Tests</PackageId>
+   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <PackageId>Realm.Tests</PackageId>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
     <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' == ''">
-    <TargetFrameworks>net461</TargetFrameworks>
-    <!-- AdditionalFrameworks here is net5.0 or net6.0. There's a bug on older .NET versions that prevents restore from working when TargetFrameworks includes net5.0 -->
-    <TargetFrameworks Condition="'$(LocalDev)' != 'true'">$(TargetFrameworks);netcoreapp3.1;monoandroid90;xamarin.ios10;xamarin.mac20;</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT' AND '$(LocalDev)' != 'true'">$(TargetFrameworks);uap10.0.19041</TargetFrameworks>
-
-    <OutputType Condition="$(TargetFramework.StartsWith('net'))">Exe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(UnityBuild)' != 'true' AND '$(AdditionalFrameworks)' != ''">
-    <TargetFrameworks>$(AdditionalFrameworks)</TargetFrameworks>
-    <OutputType>Exe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <RootNamespace>Realms.Tests</RootNamespace>
-    <IsTestProject>true</IsTestProject>
-    <LangVersion>9.0</LangVersion>
-    <LangVersion Condition="$(TargetFramework.Contains('net6.0'))">10.0</LangVersion>
-    <GenerateProgramFile>false</GenerateProgramFile>
-    <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
-    <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-    <NoWarn>MSB4011</NoWarn>
-  </PropertyGroup>
-
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnitLite" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" Condition="!$(TargetFramework.StartsWith('uap'))" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1"
+      Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' == 'true'">
@@ -94,14 +84,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(UseRealmNupkgsWithVersion)' == ''">
-    <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x86\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
-      <Link>lib\win32\x86\ucrtbased.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
-      <Link>lib\win32\x64\ucrtbased.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll')">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -110,29 +92,31 @@
       <Link>lib\win32\x64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="Exists('..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so')">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll')">
+      <Link>lib\win32\arm64\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
-    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
+      Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so"
+      Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="Exists('..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so')">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll"
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll')">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll"
+      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\ForMigrationsToCopyAndMigrate.realm" />
     <EmbeddedResource Include="EmbeddedResources\guids.realm" />

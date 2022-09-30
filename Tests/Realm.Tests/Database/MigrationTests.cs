@@ -82,12 +82,11 @@ namespace Realms.Tests.Database
                         Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
                         newPerson.LastName = triggersSchemaFieldValue = oldPerson.DynamicApi.Get<string>("TriggersSchema");
 
-                        if (!TestHelpers.IsUnity)
-                        {
-                            // Ensure we can still use the dynamic API during migrations
-                            dynamic dynamicOldPerson = oldPeople.ElementAt(i);
-                            Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
-                        }
+#if !UNITY
+                        // Ensure we can still use the dynamic API during migrations
+                        dynamic dynamicOldPerson = oldPeople.ElementAt(i);
+                        Assert.That(dynamicOldPerson.TriggersSchema, Is.EqualTo(oldPerson.DynamicApi.Get<string>("TriggersSchema")));
+#endif
                     }
                 }
             };
@@ -132,7 +131,7 @@ namespace Realms.Tests.Database
                 IsDynamic = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.FromType<string>("Name")
                     }
@@ -154,7 +153,7 @@ namespace Realms.Tests.Database
                 ShouldDeleteIfMigrationNeeded = true,
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("Person", isEmbedded: false)
+                    new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.FromType<int>("Name")
                     }
