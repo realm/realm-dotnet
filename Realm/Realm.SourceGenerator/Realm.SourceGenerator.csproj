@@ -11,9 +11,9 @@
         <NoWarn>1701;1702;NU1701</NoWarn>
         <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
+        <IncludeBuildOutput>false</IncludeBuildOutput> <!-- Do not include the generator as a lib dependency -->
     </PropertyGroup>
     <ItemGroup>
-
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
