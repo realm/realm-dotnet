@@ -19,6 +19,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -35,6 +36,7 @@ namespace Realms.SourceGenerator
 
         public void Emit(ParsingResults parsingResults)
         {
+
             foreach (var classInfo in parsingResults.ClassInfo)
             {
                 if (!ShouldEmit(classInfo))
@@ -44,14 +46,17 @@ namespace Realms.SourceGenerator
 
                 try
                 {
-                    var generator = new ClassCodeBuilder(classInfo);
-                    var generatedSource = generator.GenerateSource();
+                    var generatedSource = new ClassCodeBuilder(classInfo).GenerateSource();
 
-                    // This helps with normalizing whitespace, but it could be expensive. Also, it's kinda aggressive (the schema definition gets squished for example)
-                    // var formattedFile = CSharpSyntaxTree.ParseText(SourceText.From(generatedSource, Encoding.UTF8)).GetRoot().NormalizeWhitespace().SyntaxTree.GetText();
-                    var formattedFile = SourceText.From(generatedSource, Encoding.UTF8);
+                    // Replace all occurrences of at least 3 newlines with only 2
+                    var formattedSource = Regex.Replace(generatedSource, @$"[{Environment.NewLine}]{{3,}}", $"{Environment.NewLine}{Environment.NewLine}");
 
-                    _context.AddSource($"{classInfo.Name}_generated.cs", formattedFile);
+                    var sourceText = SourceText.From(formattedSource, Encoding.UTF8);
+
+                    // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
+                    var className = classInfo.HasDuplicatedName ? $"{classInfo.Namespace}_{classInfo.Name}" : classInfo.Name;
+
+                    _context.AddSource($"{className}_generated.cs", sourceText);
                 }
                 catch (Exception ex)
                 {

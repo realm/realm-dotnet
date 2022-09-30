@@ -128,6 +128,71 @@ namespace Realms.SourceGenerator
             return symbol.ToDisplayString(symbolDisplayFormat);
         }
 
+        // Heavily inspired from https://github.com/dotnet/roslyn-analyzers/blob/main/src/Utilities/Compiler/Extensions/INamedTypeSymbolExtensions.cs
+        public static bool OverridesEquals(this ITypeSymbol symbol)
+        {
+            return symbol.GetMembers(WellKnownMemberNames.ObjectEquals).OfType<IMethodSymbol>().Any(m => m.IsObjectEqualsOverride());
+        }
+
+        public static bool OverridesGetHashCode(this ITypeSymbol symbol)
+        {
+            return symbol.GetMembers(WellKnownMemberNames.ObjectGetHashCode).OfType<IMethodSymbol>().Any(m => m.IsGetHashCodeOverride());
+        }
+
+        public static bool OverridesToString(this ITypeSymbol symbol)
+        {
+            return symbol.GetMembers(WellKnownMemberNames.ObjectToString).OfType<IMethodSymbol>().Any(m => m.IsToStringOverride());
+        }
+
+        public static bool HasPropertyChangedEvent(this ITypeSymbol symbol)
+        {
+            return symbol.GetMembers("PropertyChanged").OfType<IEventSymbol>().Any();
+        }
+
+        public static bool IsObjectEqualsOverride(this IMethodSymbol method)
+        {
+            return method != null &&
+                method.IsOverride &&
+                method.ReturnType.SpecialType == SpecialType.System_Boolean &&
+                method.Parameters.Length == 1 &&
+                method.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
+                IsObjectMethodOverride(method);
+        }
+
+        public static bool IsGetHashCodeOverride(this IMethodSymbol method)
+        {
+            return method != null &&
+                   method.IsOverride &&
+                   method.ReturnType.SpecialType == SpecialType.System_Int32 &&
+                   method.Parameters.IsEmpty &&
+                   IsObjectMethodOverride(method);
+        }
+
+        public static bool IsToStringOverride(this IMethodSymbol method)
+        {
+            return method != null &&
+                   method.IsOverride &&
+                   method.ReturnType.SpecialType == SpecialType.System_String &&
+                   method.Parameters.IsEmpty &&
+                   IsObjectMethodOverride(method);
+        }
+
+        private static bool IsObjectMethodOverride(IMethodSymbol method)
+        {
+            IMethodSymbol overriddenMethod = method.OverriddenMethod;
+            while (overriddenMethod != null)
+            {
+                if (overriddenMethod.ContainingType.SpecialType == SpecialType.System_Object)
+                {
+                    return true;
+                }
+
+                overriddenMethod = overriddenMethod.OverriddenMethod;
+            }
+
+            return false;
+        }
+
         public static bool IsAutomaticProperty(this PropertyDeclarationSyntax propertySyntax)
         {
             // This means the property has explicit getter and/or setter
@@ -163,8 +228,21 @@ namespace Realms.SourceGenerator
         {
             var indentString = new string(' ', indents * 4);
 
-            var result = indentString + str.Replace(Environment.NewLine, $"{Environment.NewLine}{indentString}");
+            var sb = new StringBuilder();
+            var lines = str.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (var line in lines)
+            {
+                if (!string.IsNullOrEmpty(line))
+                {
+                    sb.Append(indentString);
+                }
 
+                sb.AppendLine(line);
+            }
+
+            sb.Remove(sb.Length - Environment.NewLine.Length, Environment.NewLine.Length);
+
+            var result = sb.ToString();
             if (trimNewLines)
             {
                 result = result.TrimEnd();

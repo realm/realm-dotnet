@@ -28,5 +28,11 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Class)]
     public class GeneratedAttribute : Attribute
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedAttribute"/> class.
+        /// </summary>
+        public GeneratedAttribute()
+        {
+        }
     }
 }

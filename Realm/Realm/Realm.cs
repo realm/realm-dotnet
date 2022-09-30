@@ -1880,7 +1880,7 @@ namespace Realms
                 Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
                 Argument.Ensure(!metadata.Schema.IsEmbedded, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
 
-                return new RealmResults<RealmObject>(_realm, metadata);
+                return new RealmResults<IRealmObject>(_realm, metadata);
             }
 
             /// <summary>
@@ -1897,7 +1897,7 @@ namespace Realms
             {
                 _realm.ThrowIfDisposed();
 
-                var query = (RealmResults<RealmObject>)All(className);
+                var query = (RealmResults<IRealmObject>)All(className);
                 query.ResultsHandle.Clear(_realm.SharedRealmHandle);
             }
 
@@ -1953,14 +1953,14 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            internal RealmObject FindCore(string className, RealmValue primaryKey)
+            internal IRealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
                 if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
-                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
+                    return (IRealmObject)_realm.MakeObject(metadata, objectHandle);
                 }
 
                 return null;

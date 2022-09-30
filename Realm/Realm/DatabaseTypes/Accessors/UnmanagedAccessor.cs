@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using Realms.DataBinding;
 using Realms.Schema;
 
 namespace Realms
@@ -54,7 +56,7 @@ namespace Realms
         public int BacklinksCount => 0;
 
         /// <inheritdoc/>
-        public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+        public DynamicObjectApi DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
@@ -107,6 +109,12 @@ namespace Realms
         protected void RaisePropertyChanged(string propertyName)
         {
             _onNotifyPropertyChanged?.Invoke(propertyName);
+        }
+
+        /// <inheritdoc/>
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
+        {
+            return TypeInfoHelper.GetInfo(obj);
         }
 
         /// <inheritdoc/>

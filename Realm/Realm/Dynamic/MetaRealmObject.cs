@@ -174,7 +174,7 @@ namespace Realms.Dynamic
                 }
                 else
                 {
-                    targetType = property.PropertyInfo?.PropertyType ?? property.Type.ToType();
+                    targetType = property.Type.ToType();
                 }
 
                 expression = Expression.Call(expression, RealmValueGetMethod.MakeGenericMethod(targetType));

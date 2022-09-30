@@ -37,9 +37,14 @@ namespace Realms.SourceGenerator
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
         {
             var result = new ParsingResults();
+            var classNames = new HashSet<string>();
+            var duplicateClassNames = new HashSet<string>();
 
-            foreach (var (classSymbol, classDeclarations) in realmClasses)
+            foreach (var rc in realmClasses)
             {
+                var classSymbol = rc.ClassSymbol;
+                var classDeclarations = rc.ClassDeclarations;
+
                 var classInfo = new ClassInfo();
 
                 // We tie the diagnostics to the first class declaration only.
@@ -75,9 +80,20 @@ namespace Realms.SourceGenerator
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.TypeSymbol = classSymbol;
-                    classInfo.IsEmbedded = isEmbedded;
+                    classInfo.ObjectType = isEmbedded ? ObjectType.EmbeddedObject : ObjectType.RealmObject;
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
                     classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
+                    classInfo.HasPropertyChangedEvent = classSymbol.HasPropertyChangedEvent();
+                    classInfo.OverridesEquals = classSymbol.OverridesEquals();
+                    classInfo.OverridesGetHashCode = classSymbol.OverridesGetHashCode();
+                    classInfo.OverridesToString = classSymbol.OverridesToString();
+
+                    if (classNames.Contains(classInfo.Name))
+                    {
+                        duplicateClassNames.Add(classInfo.Name);
+                    }
+
+                    classNames.Add(classInfo.Name);
 
                     // Properties
                     foreach (var classDeclarationSyntax in classDeclarations)
@@ -102,6 +118,14 @@ namespace Realms.SourceGenerator
                 }
             }
 
+            foreach (var classInfo in result.ClassInfo)
+            {
+                if (duplicateClassNames.Contains(classInfo.Name))
+                {
+                    classInfo.HasDuplicatedName = true;
+                }
+            }
+
             return result;
         }
 
@@ -111,7 +135,7 @@ namespace Realms.SourceGenerator
             {
                 var propSymbol = model.GetDeclaredSymbol(propSyntax);
 
-                if (propSymbol.HasAttribute("IgnoredAttribute"))
+                if (propSymbol.HasAttribute("IgnoredAttribute") || propSymbol.IsStatic)
                 {
                     continue;
                 }
@@ -167,6 +191,13 @@ namespace Realms.SourceGenerator
                     var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
                     var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
 
+                    info.BacklinkMapTo = (string)inverseProperty?.GetAttributeArgument("MapToAttribute");
+
+                    if (inversePropertyTypeInfo?.IsListOrSet == true)
+                    {
+                        inversePropertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(inverseProperty.Type.AsNamed().TypeArguments.Single());
+                    }
+
                     var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.TypeSymbol, classInfo.TypeSymbol);
                     var isCollectionOfSameType = inversePropertyTypeInfo?.IsListOrSet == true
                         && SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.InternalType.TypeSymbol, classInfo.TypeSymbol);
@@ -217,9 +248,9 @@ namespace Realms.SourceGenerator
             var typeSymbol = propertySymbol.Type;
             var typeString = propertySyntax.Type.ToString();
 
-            var propertyType = GetSingleLevelPropertyTypeInfo(typeSymbol);
+            var propertyTypeInfo = GetSingleLevelPropertyTypeInfo(typeSymbol);
 
-            if (propertyType.IsUnsupported)
+            if (propertyTypeInfo.IsUnsupported)
             {
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
@@ -234,17 +265,17 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.TypeNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
                 }
 
-                return propertyType;  // We are sure we can't produce more diagnostics
+                return propertyTypeInfo;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyType.HasCorrectNullabilityAnnotation())
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation())
             {
                 classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
-            if (propertyType.IsRealmInteger)
+            if (propertyTypeInfo.IsRealmInteger)
             {
-                var argument = propertyType.TypeSymbol.AsNamed().TypeArguments.Single();
+                var argument = propertyTypeInfo.TypeSymbol.AsNamed().TypeArguments.Single();
 
                 if (!argument.IsValidRealmIntgerType())
                 {
@@ -253,9 +284,9 @@ namespace Realms.SourceGenerator
                     return PropertyTypeInfo.Unsupported;
                 }
 
-                propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
+                propertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(argument);
             }
-            else if (propertyType.IsBacklink && propertyInfo.Backlink != null)
+            else if (propertyTypeInfo.IsBacklink && propertyInfo.Backlink != null)
             {
                 var argument = typeSymbol.AsNamed().TypeArguments.Single();
 
@@ -273,15 +304,15 @@ namespace Realms.SourceGenerator
                     return PropertyTypeInfo.Unsupported;
                 }
 
-                propertyType.InternalType = GetSingleLevelPropertyTypeInfo(argument);
+                propertyTypeInfo.InternalType = internalType;
             }
-            else if (propertyType.IsCollection)
+            else if (propertyTypeInfo.IsCollection)
             {
                 PropertyTypeInfo internalPropertyType;
                 ITypeSymbol argument;
                 var isUnsupported = false;
 
-                if (propertyType.IsDictionary)
+                if (propertyTypeInfo.IsDictionary)
                 {
                     var dictionaryArguments = typeSymbol.AsNamed().TypeArguments;
                     var keyArgument = dictionaryArguments[0];
@@ -296,7 +327,7 @@ namespace Realms.SourceGenerator
                     }
 
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(valueArgument);
-                    propertyType.InternalType = internalPropertyType;
+                    propertyTypeInfo.InternalType = internalPropertyType;
                     argument = valueArgument;
                 }
                 else
@@ -305,16 +336,16 @@ namespace Realms.SourceGenerator
                     argument = typeSymbol.AsNamed().TypeArguments.Single();
                     internalPropertyType = GetSingleLevelPropertyTypeInfo(argument);
 
-                    if (propertyType.IsSet && internalPropertyType.ScalarType == ScalarType.Object && argument.IsEmbeddedObject())
+                    if (propertyTypeInfo.IsSet && internalPropertyType.ScalarType == ScalarType.Object && argument.IsEmbeddedObject())
                     {
                         classInfo.Diagnostics.Add(Diagnostics.SetWithEmbedded(classInfo.Name, propertySymbol.Name, propertyLocation));
                         isUnsupported = true;
                     }
 
-                    propertyType.InternalType = internalPropertyType;
+                    propertyTypeInfo.InternalType = internalPropertyType;
                 }
 
-                var collectionTypeString = propertyType.CollectionType.ToString();
+                var collectionTypeString = propertyTypeInfo.CollectionType.ToString();
                 if (argument.IsRealmInteger())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.CollectionRealmInteger(classInfo.Name, propertySymbol.Name, collectionTypeString, propertyLocation));
@@ -338,7 +369,7 @@ namespace Realms.SourceGenerator
                 }
             }
 
-            return propertyType;
+            return propertyTypeInfo;
         }
 
         private static PropertyTypeInfo GetSingleLevelPropertyTypeInfo(ITypeSymbol typeSymbol)
@@ -384,6 +415,12 @@ namespace Realms.SourceGenerator
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
             propInfo.Namespace = typeSymbol.ContainingNamespace?.ToString();
+
+            if (propInfo.ScalarType == ScalarType.Object)
+            {
+                propInfo.ObjectType = typeSymbol.IsRealmObject() ? ObjectType.RealmObject : ObjectType.EmbeddedObject;
+                propInfo.MapTo = (string)typeSymbol.GetAttributeArgument("MapToAttribute");
+            }
 
             return propInfo;
         }

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Realms.Schema;
 
 namespace Realms
@@ -78,7 +79,7 @@ namespace Realms
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
-        RealmObjectBase.Dynamic DynamicApi { get; }
+        DynamicObjectApi DynamicApi { get; }
 
         /// <summary>
         /// Gets the value of a property of the object.
@@ -150,5 +151,14 @@ namespace Realms
         /// A method called internally to unsubscribe to the notifications for the associated object.
         /// </summary>
         void UnsubscribeFromNotifications();
+
+        /// <summary>
+        /// Gets the <see cref="TypeInfo"/> of the input object.
+        /// </summary>
+        /// <param name="obj">The object to derive the <see cref="TypeInfo"/> from.</param>
+        /// <returns>
+        /// The <see cref="TypeInfo"/> of the input object.
+        /// </returns>
+        TypeInfo GetTypeInfo(IRealmObjectBase obj);
     }
 }

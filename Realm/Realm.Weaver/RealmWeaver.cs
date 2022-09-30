@@ -136,7 +136,7 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
 
-        private IEnumerable<(TypeDefinition Type, bool IsGenerated)> GetMatchingTypes()
+        private IEnumerable<MatchingType> GetMatchingTypes()
         {
             foreach (var type in _moduleDefinition.GetTypes())
             {
@@ -150,7 +150,7 @@ namespace RealmWeaver
                     // Classic types
                     if (type.IsValidRealmObjectBaseInheritor(_references))
                     {
-                        yield return (type, false);
+                        yield return new MatchingType(type, false);
                     }
                     else
                     {
@@ -160,7 +160,7 @@ namespace RealmWeaver
                 else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
                 {
                     // Generated types
-                    yield return (type, true);
+                    yield return new MatchingType(type, true);
                 }
             }
         }
@@ -215,9 +215,10 @@ Analytics payload
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            var weaveResults = matchingTypes.Select(tuple =>
+            var weaveResults = matchingTypes.Select(matchingType =>
             {
-                var (type, isGenerated) = tuple;
+                var type = matchingType.Type;
+                var isGenerated = matchingType.IsGenerated;
 
                 try
                 {
@@ -251,7 +252,7 @@ Analytics payload
             _logger.Debug("Weaving generated " + type.Name);
 
             var interfaceName = $"I{type.Name}Accessor";
-            var interfaceType = _moduleDefinition.GetType("Realms.Generated", interfaceName);
+            var interfaceType = _moduleDefinition.GetType($"{type.Namespace}.Generated", interfaceName);
 
             var persistedProperties = new List<WeavePropertyResult>();
 
@@ -281,20 +282,19 @@ Analytics payload
 
         private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
         {
-            var accessorReference = new FieldReference("_accessor", interfaceType, prop.DeclaringType);
             var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
 
-            ReplaceGeneratedClassGetter(type, prop, interfaceType, accessorGetter);
+            ReplaceGeneratedClassGetter(prop, interfaceType, accessorGetter);
 
             if (prop.SetMethod != null)
             {
-                ReplaceGeneratedClassSetter(type, prop, interfaceType, accessorGetter);
+                ReplaceGeneratedClassSetter(prop, interfaceType, accessorGetter);
             }
 
             return WeavePropertyResult.Success(prop);
         }
 
-        private void ReplaceGeneratedClassGetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        private void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0
@@ -320,7 +320,7 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ret));
         }
 
-        private void ReplaceGeneratedClassSetter(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property setter looks like this:
             ////   0: ldarg.0
@@ -1271,6 +1271,19 @@ Analytics payload
             _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
 
             return userAssembly_DoNotNotify_Ctor;
+        }
+
+        private struct MatchingType
+        {
+            public bool IsGenerated { get; }
+
+            public TypeDefinition Type { get; }
+
+            public MatchingType(TypeDefinition type, bool isGenerated)
+            {
+                IsGenerated = isGenerated;
+                Type = type;
+            }
         }
     }
 }

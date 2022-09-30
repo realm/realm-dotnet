@@ -9,7 +9,7 @@
         <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
         <DisableFody>true</DisableFody>
         <NoWarn>1701;1702;NU1701</NoWarn>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
     </PropertyGroup>
     <ItemGroup>
@@ -49,5 +49,10 @@
 
     <ItemGroup>
         <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Package the generator in the analyzer directory of the nuget package. Taken from the cookbook. -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 </Project>

@@ -26,7 +26,9 @@ namespace Realms.SourceGenerator
     {
         public string Name { get; set; }
 
-        public bool IsEmbedded { get; set; }
+        public ObjectType ObjectType { get; set; }
+
+        public bool IsEmbedded => ObjectType == ObjectType.EmbeddedObject;
 
         public string MapTo { get; set; }
 
@@ -45,6 +47,16 @@ namespace Realms.SourceGenerator
         public List<EnclosingClassInfo> EnclosingClasses { get; } = new();
 
         public bool HasParameterlessConstructor { get; set; }
+
+        public bool OverridesToString { get; set; }
+
+        public bool OverridesEquals { get; set; }
+
+        public bool OverridesGetHashCode { get; set; }
+
+        public bool HasPropertyChangedEvent { get; set; }
+
+        public bool HasDuplicatedName { get; set; }
 
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
@@ -70,11 +82,17 @@ namespace Realms.SourceGenerator
 
         public string Backlink { get; set; }
 
+        public string BacklinkMapTo { get; set; }
+
         public PropertyTypeInfo TypeInfo { get; set; }
 
         public Accessibility Accessibility { get; set; }
 
         public string Initializer { get; set; }
+
+        public string GetMappedOrOriginalName() => MapTo ?? Name;
+
+        public string GetMappedOrOriginalBacklink() => BacklinkMapTo ?? Backlink;
     }
 
     internal abstract record PropertyTypeInfo
@@ -114,7 +132,12 @@ namespace Realms.SourceGenerator
 
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
 
+        // Only valid if ScalarType == Object;
+        public string MapTo { get; set; }
+
         public string Namespace { get; set; }
+
+        public ObjectType ObjectType { get; set; }
 
         public ITypeSymbol TypeSymbol { get; set; }
 
@@ -266,6 +289,13 @@ namespace Realms.SourceGenerator
         {
             ScalarType = type;
         }
+    }
+
+    internal enum ObjectType
+    {
+        None,
+        RealmObject,
+        EmbeddedObject
     }
 
     internal enum CollectionType
