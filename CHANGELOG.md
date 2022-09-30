@@ -77,6 +77,7 @@
 * Improve the performance of the sync changeset parser, which speeds up applying changesets from the server. (Core upgrade)
 
 ### Fixed
+* Added a more meaningful error message whenever a project doesn't have `[TargetFramework]` defined. (Issue [#2843](https://github.com/realm/realm-dotnet/issues/2843))
 * Opening a read-only Realm for the first time with a `SyncConfiguration` did not set the schema version, which could lead to `m_schema_version != ObjectStore::NotVersioned` assertion failures. (Core upgrade)
 * Upload completion callbacks (i.e. `Session.WaitForUploadAsync`) may have called before the download message that completed them was fully integrated. (Core upgrade)
 * Fixed an exception "fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device" when running with MacOS on an exFAT drive. (Core upgrade)
@@ -90,7 +91,7 @@
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.7.0.
