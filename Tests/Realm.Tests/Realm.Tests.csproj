@@ -38,14 +38,11 @@
           Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
-    </ItemGroup>
-
-    <!-- Removing the generated files from compilation, adding them back as non-content files.
-    Can be useful for debugging -->
-
-    <ItemGroup>
-        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <!-- Removing the generated files from compilation, adding them back as non-content files. -->
+        <ItemGroup>
+            <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+            <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        </ItemGroup>
     </ItemGroup>
 
     <ItemGroup Condition="'$(UnityBuild)' == 'true'">
