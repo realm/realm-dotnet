@@ -1055,6 +1055,57 @@ namespace Realms.Tests.Database
             Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
         }
 
+        [Test]
+        public void Add_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(first));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddToList_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new PrimaryKeyWithPKList
+                {
+                    ListValue = { first }
+                }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddMany_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new[] { first }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]

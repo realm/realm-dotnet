@@ -89,6 +89,7 @@
   * Fix one cause of QoS inversion warnings when performing writes on the main thread on Apple platforms. Waiting for async notifications to be ready is now done in a QoS-aware ways.
 * If you set a subscription on a link in flexible sync, the server would not know how to handle it ([#5409](https://github.com/realm/realm-core/issues/5409), since v11.6.1)
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
+* Added validation to prevent adding a removed object using Realm.Add. (Issue [#3020](https://github.com/realm/realm-dotnet/issues/3020))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
