@@ -81,6 +81,7 @@ env:
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
 #@   "TestWeavedClasses": "true",
+#@   "RealmTestsStandaloneExe": "true"
 #@ }
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
