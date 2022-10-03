@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithRequiredStringListObjectHelper))]
     public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithRequiredStringList", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
             Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();

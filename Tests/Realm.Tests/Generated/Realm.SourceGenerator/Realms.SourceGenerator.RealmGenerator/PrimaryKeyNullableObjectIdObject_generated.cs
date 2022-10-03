@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyNullableObjectIdObjectObjectHelper))]
     public partial class PrimaryKeyNullableObjectIdObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
         }.Build();

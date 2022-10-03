@@ -224,6 +224,30 @@ namespace Realms.SourceGenerator
             return boolean.ToString().ToLower();
         }
 
+        public static string ToInterface(this ObjectType ot)
+        {
+            return ot switch
+            {
+                ObjectType.RealmObject => "IRealmObject",
+                ObjectType.EmbeddedObject => "IEmbeddedObject",
+                ObjectType.AsymmetricObject => "IAsymmetricObject",
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        public static string ToObjectSchemaObjectType(this ObjectType ot)
+        {
+            return ot switch
+            {
+                ObjectType.RealmObject => "ObjectSchema.ObjectType.RealmObject",
+                ObjectType.EmbeddedObject => "ObjectSchema.ObjectType.EmbeddedObject",
+                ObjectType.AsymmetricObject => "ObjectSchema.ObjectType.AsymmetricObject",
+                _ => throw new NotImplementedException(),
+            };
+        }
+
+        #region Formatting
+
         public static string Indent(this string str, int indents = 1, bool trimNewLines = false)
         {
             var indentString = new string(' ', indents * 4);
@@ -252,5 +276,7 @@ namespace Realms.SourceGenerator
         }
 
         public static string Indent(this StringBuilder sb, int indents = 1, bool trimNewLines = false) => sb.ToString().Indent(indents, trimNewLines);
+
+        #endregion
     }
 }

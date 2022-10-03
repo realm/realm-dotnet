@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(CompletionReportObjectHelper))]
     public partial class CompletionReport : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CompletionReport", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("CompletionDate", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CompletionDate"),
             Property.Primitive("Remarks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Remarks"),

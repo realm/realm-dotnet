@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(HugeSyncObjectObjectHelper))]
     public partial class HugeSyncObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("HugeSyncObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("HugeSyncObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("Data", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Data"),

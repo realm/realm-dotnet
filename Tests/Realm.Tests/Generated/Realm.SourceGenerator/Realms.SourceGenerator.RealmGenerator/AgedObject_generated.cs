@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(AgedObjectObjectHelper))]
     public partial class AgedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AgedObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AgedObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
         }.Build();

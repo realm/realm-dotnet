@@ -276,12 +276,12 @@ CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor
 ";
             }
 
-            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", isEmbedded: {BoolToString(_classInfo.IsEmbedded)})
+            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {_classInfo.ObjectType.ToObjectSchemaObjectType()})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
 
-            var baseInterface = _classInfo.IsEmbedded ? "IEmbeddedObject" : "IRealmObject";
+            var baseInterface = _classInfo.ObjectType.ToInterface();
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
             var contents = $@"{schema}

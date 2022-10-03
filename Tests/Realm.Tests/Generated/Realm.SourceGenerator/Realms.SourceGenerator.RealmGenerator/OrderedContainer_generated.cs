@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(OrderedContainerObjectHelper))]
     public partial class OrderedContainer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedContainer", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedContainer", ObjectSchema.ObjectType.RealmObject)
         {
             Property.ObjectList("Items", "OrderedObject", managedName: "Items"),
             Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),

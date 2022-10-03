@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(IndexedDateTimeOffsetObjectObjectHelper))]
     public partial class IndexedDateTimeOffsetObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IndexedDateTimeOffsetObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IndexedDateTimeOffsetObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("DateTimeOffset", RealmValueType.Date, isPrimaryKey: false, isIndexed: true, isNullable: false, managedName: "DateTimeOffset"),
         }.Build();

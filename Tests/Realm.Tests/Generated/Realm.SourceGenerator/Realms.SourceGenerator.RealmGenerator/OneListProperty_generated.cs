@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(OneListPropertyObjectHelper))]
     public partial class OneListProperty : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneListProperty", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneListProperty", ObjectSchema.ObjectType.RealmObject)
         {
             Property.ObjectList("People", "Person", managedName: "People"),
         }.Build();

@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(RequiredStringObjectObjectHelper))]
     public partial class RequiredStringObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RequiredStringObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RequiredStringObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "String"),
         }.Build();

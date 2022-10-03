@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(RequiredPrimaryKeyStringObjectObjectHelper))]
     public partial class RequiredPrimaryKeyStringObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RequiredPrimaryKeyStringObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RequiredPrimaryKeyStringObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),

@@ -19,7 +19,7 @@ namespace Bar
     [Woven(typeof(DuplicateClassObjectHelper))]
     public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
         }.Build();

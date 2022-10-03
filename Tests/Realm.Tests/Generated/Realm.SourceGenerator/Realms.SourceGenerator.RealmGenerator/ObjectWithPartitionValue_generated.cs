@@ -19,7 +19,7 @@ namespace Realms.Tests.Sync
     [Woven(typeof(ObjectWithPartitionValueObjectHelper))]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithPartitionValue", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),

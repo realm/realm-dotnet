@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(Level3ObjectHelper))]
     public partial class Level3 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Level3", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Level3", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("DateValue", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DateValue"),
         }.Build();

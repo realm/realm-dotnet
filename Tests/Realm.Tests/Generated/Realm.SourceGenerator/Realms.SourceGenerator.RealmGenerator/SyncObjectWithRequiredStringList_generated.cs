@@ -19,7 +19,7 @@ namespace Realms.Tests.Sync
     [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper))]
     public partial class SyncObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncObjectWithRequiredStringList", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),

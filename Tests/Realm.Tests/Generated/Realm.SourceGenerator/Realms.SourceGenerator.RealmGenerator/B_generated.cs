@@ -20,7 +20,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(BObjectHelper))]
     public partial class B : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("B", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("B", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Object("C", "IntPropertyObject", managedName: "C"),
         }.Build();

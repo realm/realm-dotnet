@@ -19,7 +19,7 @@ namespace Foo
     [Woven(typeof(DuplicateClassObjectHelper))]
     public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
         }.Build();

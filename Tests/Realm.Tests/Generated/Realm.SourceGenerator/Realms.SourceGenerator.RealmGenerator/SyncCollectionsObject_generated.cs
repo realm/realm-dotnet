@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(SyncCollectionsObjectObjectHelper))]
     public partial class SyncCollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncCollectionsObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncCollectionsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),

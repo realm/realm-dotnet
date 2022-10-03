@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(CounterObjectObjectHelper))]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CounterObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CounterObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),

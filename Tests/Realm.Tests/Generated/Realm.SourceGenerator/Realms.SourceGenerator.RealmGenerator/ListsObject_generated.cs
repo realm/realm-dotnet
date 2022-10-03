@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(ListsObjectObjectHelper))]
     public partial class ListsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ListsObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ListsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.PrimitiveList("CharList", RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),
             Property.PrimitiveList("ByteList", RealmValueType.Int, areElementsNullable: false, managedName: "ByteList"),

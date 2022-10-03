@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(ContainerObjectObjectHelper))]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ContainerObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ContainerObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.ObjectList("Items", "IntPropertyObject", managedName: "Items"),
         }.Build();

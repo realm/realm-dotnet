@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(ExplicitClassObjectHelper))]
     public partial class ExplicitClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ExplicitClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ExplicitClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Foo", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Foo"),
         }.Build();

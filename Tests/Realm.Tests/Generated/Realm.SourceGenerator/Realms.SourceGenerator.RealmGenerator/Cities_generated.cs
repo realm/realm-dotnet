@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(CitiesObjectHelper))]
     internal partial class Cities : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Cities", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Cities", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();

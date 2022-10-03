@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(ClassWithUnqueryableMembersObjectHelper))]
     public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithUnqueryableMembers", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithUnqueryableMembers", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("RealPropertyToSatisfyWeaver", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),
             Property.Object("RealmObjectProperty", "Person", managedName: "RealmObjectProperty"),

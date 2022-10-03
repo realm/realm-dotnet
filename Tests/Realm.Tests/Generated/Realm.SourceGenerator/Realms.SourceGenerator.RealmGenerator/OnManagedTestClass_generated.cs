@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(OnManagedTestClassObjectHelper))]
     public partial class OnManagedTestClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnManagedTestClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnManagedTestClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Object("RelatedObject", "OnManagedTestClass", managedName: "RelatedObject"),

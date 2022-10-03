@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(DecimalsObjectObjectHelper))]
     public partial class DecimalsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DecimalsObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("DecimalValue", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
             Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),

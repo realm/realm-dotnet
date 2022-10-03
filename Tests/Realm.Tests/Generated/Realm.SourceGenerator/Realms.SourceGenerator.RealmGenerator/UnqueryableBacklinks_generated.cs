@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(UnqueryableBacklinksObjectHelper))]
     public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("UnqueryableBacklinks", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Object("Parent", "ClassWithUnqueryableMembers", managedName: "Parent"),
         }.Build();

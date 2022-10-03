@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(MixedProperties2ObjectHelper))]
     public partial class MixedProperties2 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("MixedProperties2", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("MixedProperties2", ObjectSchema.ObjectType.RealmObject)
         {
             Property.ObjectList("Friends", "Person", managedName: "Friends"),
             Property.Primitive("Age", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),

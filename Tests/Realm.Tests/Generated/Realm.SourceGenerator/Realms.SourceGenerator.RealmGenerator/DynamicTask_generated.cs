@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicTaskObjectHelper))]
     public partial class DynamicTask : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicTask", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicTask", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Property.Primitive("Summary", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),

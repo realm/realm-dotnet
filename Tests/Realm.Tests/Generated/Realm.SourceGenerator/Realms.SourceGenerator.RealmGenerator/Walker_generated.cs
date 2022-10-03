@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(WalkerObjectHelper))]
     public partial class Walker : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Walker", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Walker", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Property.Object("TopDog", "Dog", managedName: "TopDog"),

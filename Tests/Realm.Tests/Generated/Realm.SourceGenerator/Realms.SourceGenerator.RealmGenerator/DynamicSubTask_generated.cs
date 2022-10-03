@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicSubTaskObjectHelper))]
     public partial class DynamicSubTask : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicSubTask", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicSubTask", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("Summary", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
             Property.Object("CompletionReport", "CompletionReport", managedName: "CompletionReport"),

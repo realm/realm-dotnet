@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(DictionariesObjectObjectHelper))]
     public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DictionariesObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DictionariesObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.PrimitiveDictionary("CharDictionary", RealmValueType.Int, areElementsNullable: false, managedName: "CharDictionary"),
             Property.PrimitiveDictionary("ByteDictionary", RealmValueType.Int, areElementsNullable: false, managedName: "ByteDictionary"),

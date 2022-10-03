@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedLevel2ObjectHelper))]
     public partial class EmbeddedLevel2 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedLevel2", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedLevel2", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
             Property.Object("Child", "EmbeddedLevel3", managedName: "Child"),

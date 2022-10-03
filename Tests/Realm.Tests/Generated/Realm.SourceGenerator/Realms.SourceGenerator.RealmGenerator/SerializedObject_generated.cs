@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(SerializedObjectObjectHelper))]
     public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SerializedObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),

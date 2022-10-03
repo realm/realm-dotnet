@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(LoneClassObjectHelper))]
     public partial class LoneClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("LoneClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("LoneClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();

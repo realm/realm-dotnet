@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedIntPropertyObjectObjectHelper))]
     public partial class EmbeddedIntPropertyObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedIntPropertyObject", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedIntPropertyObject", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("Int", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
         }.Build();

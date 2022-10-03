@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(OneNonListPropertyObjectHelper))]
     public partial class OneNonListProperty : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneNonListProperty", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OneNonListProperty", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();

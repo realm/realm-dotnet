@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(BacklinkObjectObjectHelper))]
     public partial class BacklinkObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("BeforeBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "BeforeBacklinks"),
             Property.Backlinks("Links", "SomeClass", "BacklinkObject", managedName: "Links"),

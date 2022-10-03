@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(EmbeddedGuidTypeObjectHelper))]
     public partial class EmbeddedGuidType : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedGuidType", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("RegularProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RegularProperty"),
             Property.PrimitiveList("GuidList", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidList"),

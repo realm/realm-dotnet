@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicOwnerObjectHelper))]
     public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicOwner", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicOwner", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),

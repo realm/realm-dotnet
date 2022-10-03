@@ -19,7 +19,7 @@ namespace Realms.Tests
     [Woven(typeof(RecursiveBacklinksObjectObjectHelper))]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RecursiveBacklinksObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Object("Parent", "RecursiveBacklinksObject", managedName: "Parent"),

@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(InternalObjectObjectHelper))]
     public partial class InternalObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("InternalObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("InternalObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("IntProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntProperty"),
             Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),

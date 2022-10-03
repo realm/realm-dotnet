@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(OrderedObjectObjectHelper))]
     public partial class OrderedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Order", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Order"),
             Property.Primitive("IsPartOfResults", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsPartOfResults"),

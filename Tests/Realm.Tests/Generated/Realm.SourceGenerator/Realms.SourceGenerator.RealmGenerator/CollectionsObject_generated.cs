@@ -20,7 +20,7 @@ namespace Realms.Tests
     [Woven(typeof(CollectionsObjectObjectHelper))]
     public partial class CollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CollectionsObject", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CollectionsObject", ObjectSchema.ObjectType.RealmObject)
         {
             Property.PrimitiveSet("CharSet", RealmValueType.Int, areElementsNullable: false, managedName: "CharSet"),
             Property.PrimitiveSet("ByteSet", RealmValueType.Int, areElementsNullable: false, managedName: "ByteSet"),

@@ -19,7 +19,7 @@ namespace Realms.Tests.Database
     [Woven(typeof(NonPrimaryKeyWithPKRelationObjectHelper))]
     public partial class NonPrimaryKeyWithPKRelation : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
             Property.Object("OtherObject", "PrimaryKeyObject", managedName: "OtherObject"),
