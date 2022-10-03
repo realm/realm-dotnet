@@ -83,7 +83,7 @@ namespace SetupUnityPackage
             }, _realmDependencies),
             new PackageInfo("Realm.SourceGenerator", new Dictionary<string, string>
             {
-                { "lib/netstandard2.0/Realm.SourceGenerator.dll", "Runtime/Realm.SourceGenerator.dll" },
+                { "analyzers/dotnet/cs/Realm.SourceGenerator.dll", "Runtime/Realm.SourceGenerator.dll" },
             }),
             new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {
