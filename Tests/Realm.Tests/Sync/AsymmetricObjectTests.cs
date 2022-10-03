@@ -318,27 +318,9 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(BasicAsymmetricObject) };
-                var tcs = new TaskCompletionSource<object>();
 
-                config.OnSessionError = (session, error) =>
-                {
-                    try
-                    {
-                        Assert.That(error, Is.InstanceOf<SessionException>());
-                        Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
-                        Assert.That(error.Message.Contains("asymmetric tables are not supported for partition-based sync"), Is.True);
-                    }
-                    catch (Exception e)
-                    {
-                        tcs.TrySetException(e);
-                    }
-
-                    tcs.TrySetResult(null);
-                };
-
-                using var realm = await GetRealmAsync(config);
-
-                await tcs.Task;
+                var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+                Assert.That(ex.Message.Contains($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"), Is.True);
             });
         }
 

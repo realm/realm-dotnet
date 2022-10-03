@@ -142,31 +142,30 @@ namespace Realms.Tests.Database
             AssertQueryDescription(description, guidString, useLegacyRepresentation);
         }
 
-        //TODO Need to fix later, not sure of what's the issue here
-//        [Test]
-//        public void FlexibleSync_Subscriptions_MatchesGuid([Values(true, false)] bool useLegacyRepresentation)
-//        {
-//#pragma warning disable CS0618 // Type or member is obsolete
-//            Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
-//#pragma warning restore CS0618 // Type or member is obsolete
+        [Test]
+        public void FlexibleSync_Subscriptions_MatchesGuid([Values(true, false)] bool useLegacyRepresentation)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            Realm.UseLegacyGuidRepresentation = useLegacyRepresentation;
+#pragma warning restore CS0618 // Type or member is obsolete
 
-//            var config = GetFakeFLXConfig();
-//            config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
-//            using var realm = GetRealm(config);
+            var config = GetFakeFLXConfig();
+            config.Schema = new[] { typeof(GuidType), typeof(EmbeddedGuidType) };
+            using var realm = GetRealm(config);
 
-//            var guidString = "981b8fa2-c496-43b0-b401-48ce08b38e00";
-//            var guid = Guid.Parse(guidString);
+            var guidString = "981b8fa2-c496-43b0-b401-48ce08b38e00";
+            var guid = Guid.Parse(guidString);
 
-//            realm.Subscriptions.Update(() =>
-//            {
-//                var query = (RealmResults<GuidType>)realm.All<GuidType>().Where(t => t.RegularProperty == guid);
-//                realm.Subscriptions.Add(query);
-//            });
+            realm.Subscriptions.Update(() =>
+            {
+                var query = (RealmResults<GuidType>)realm.All<GuidType>().Where(t => t.RegularProperty == guid);
+                realm.Subscriptions.Add(query);
+            });
 
-//            var description = realm.Subscriptions.Single().Query;
+            var description = realm.Subscriptions.Single().Query;
 
-//            AssertQueryDescription(description, guidString, useLegacyRepresentation);
-//        }
+            AssertQueryDescription(description, guidString, useLegacyRepresentation);
+        }
 
         [Test]
         public void UnmigratedRealm_WhenOpenedAsReadonly_LogsAMessageAndDoesntChangeFile()
