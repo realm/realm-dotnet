@@ -44,8 +44,7 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            // This looks for the interfaces of the base class too (recursively)
-            if (classSymbol.IsRealmObject() || classSymbol.IsEmbeddedObject())
+            if (classSymbol.IsAnyRealmObjectType())
             {
                 var realmClassDefinition = new RealmClassDefinition(classSymbol, new List<ClassDeclarationSyntax> { classSyntax });
                 _realmClassesDict.Add(classSymbol, realmClassDefinition);

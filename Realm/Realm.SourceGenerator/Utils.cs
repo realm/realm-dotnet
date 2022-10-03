@@ -74,9 +74,31 @@ namespace Realms.SourceGenerator
                 && namedSymbol.ConstructUnboundGenericType().ToDisplayString() == "Realms.RealmInteger<>";
         }
 
-        public static bool IsRealmObjectOrEmbeddedObject(this ITypeSymbol symbol)
+        public static IEnumerable<ObjectType> ImplementingObjectTypes(this ITypeSymbol symbol)
         {
-            return symbol.IsRealmObject() || symbol.IsEmbeddedObject();
+            var objectTypes = new List<ObjectType>();
+            foreach (var i in symbol.Interfaces)
+            {
+                if (i.Name == "IRealmObject")
+                {
+                    objectTypes.Add(ObjectType.RealmObject);
+                }
+                else if (i.Name == "IEmbeddedObject")
+                {
+                    objectTypes.Add(ObjectType.EmbeddedObject);
+                }
+                else if (i.Name == "IAsymmetricObject")
+                {
+                    objectTypes.Add(ObjectType.AsymmetricObject);
+                }
+            }
+
+            return objectTypes;
+        }
+
+        public static bool IsAnyRealmObjectType(this ITypeSymbol symbol)
+        {
+            return symbol.ImplementingObjectTypes().Any();
         }
 
         public static bool IsRealmObject(this ITypeSymbol symbol)
@@ -87,6 +109,11 @@ namespace Realms.SourceGenerator
         public static bool IsEmbeddedObject(this ITypeSymbol symbol)
         {
             return symbol.Interfaces.Any(i => i.Name == "IEmbeddedObject");
+        }
+
+        public static bool IsAsymmetricObject(this ITypeSymbol symbol)
+        {
+            return symbol.Interfaces.Any(i => i.Name == "IAsymmetricObject");
         }
 
         public static INamedTypeSymbol AsNamed(this ITypeSymbol symbol)
