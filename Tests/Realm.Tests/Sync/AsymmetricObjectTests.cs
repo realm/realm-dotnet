@@ -26,6 +26,15 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Sync
 {
@@ -411,7 +420,7 @@ namespace Realms.Tests.Sync
     }
 
     [Explicit]
-    public partial class BasicAsymmetricObject : IAsymmetricObject
+    public partial class BasicAsymmetricObject : TestAsymmetricObject
     {
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
@@ -420,7 +429,7 @@ namespace Realms.Tests.Sync
     }
 
     [Explicit]
-    public partial class AsymmetricObjectWithAllTypes : IAsymmetricObject
+    public partial class AsymmetricObjectWithAllTypes : TestAsymmetricObject
     {
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();

@@ -31,6 +31,10 @@
         <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(TestWeavedClasses)' == 'true'">
+        <DefineConstants>$(DefineConstants);TEST_WEAVER</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup Condition="'$(UnityBuild)' != 'true'">
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnitLite" Version="3.13.2" />
