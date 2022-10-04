@@ -179,6 +179,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
 
+                        // The namespace is necessary, otherwise there is a conflict if the class is in the global namespace
                         copyToRealm.AppendLine($@"Realms.CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);");
                     }
                 }
