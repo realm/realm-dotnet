@@ -136,7 +136,7 @@ namespace Realms
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
             var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
-            if (relatedMeta.Schema.IsEmbedded)
+            if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
             {
                 return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }
@@ -158,7 +158,7 @@ namespace Realms
             Argument.Ensure(_managedAccessor.Realm.Metadata.TryGetValue(fromObjectType, out var relatedMeta), $"Could not find schema for type {fromObjectType}", nameof(fromObjectType));
 
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinksForType(relatedMeta.TableKey, fromPropertyName, relatedMeta);
-            if (relatedMeta.Schema.IsEmbedded)
+            if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
             {
                 return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
             }

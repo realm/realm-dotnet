@@ -76,7 +76,7 @@ namespace Realms.Tests.SourceGeneration.TestClasses
     {
         // The schema property could be part of an interface, but for that the user needs to have at least .NET 5.0 and C# 8.0
         // So we need to use reflection to check if this exists.
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ManualllyGeneratedClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ManualllyGeneratedClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("IntValue", RealmValueType.Int),
             Property.PrimitiveList("ListValue", RealmValueType.Int),
