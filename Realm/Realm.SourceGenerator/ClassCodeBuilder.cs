@@ -113,9 +113,9 @@ namespace {_generatedNamespaceName}
                 var type = property.TypeInfo.CompleteTypeString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection;
-                var setterString = hasSetter ? " set; " : " ";
+                var setterString = hasSetter ? " set;" : string.Empty;
 
-                propertiesBuilder.AppendLine($@"{type} {name} {{ get;{setterString}}}");
+                propertiesBuilder.AppendLine($@"{type} {name} {{ get;{setterString} }}");
                 propertiesBuilder.AppendLine();
             }
 
