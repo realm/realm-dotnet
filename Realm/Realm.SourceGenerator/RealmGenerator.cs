@@ -32,7 +32,6 @@ namespace Realms.SourceGenerator
         /* Notes for developers:
          * - "OnManaged" is a partial method now
          * - "OnPropertyChanged" is a partial method now
-         *
          */
 
         public void Initialize(GeneratorInitializationContext context)

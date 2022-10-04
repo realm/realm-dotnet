@@ -29,7 +29,7 @@ namespace Realms.DataBinding
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
         private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
 
-        private ObjectSchema _schema;
+        private readonly ObjectSchema _schema;
 
         internal RealmObjectTypeDelegator(Type type, ObjectSchema schema) : base(type)
         {

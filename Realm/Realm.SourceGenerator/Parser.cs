@@ -210,7 +210,7 @@ namespace Realms.SourceGenerator
 
                 if (info.IsPrimaryKey)
                 {
-                    if (classInfo.IsEmbedded)
+                    if (classInfo.ObjectType == ObjectType.EmbeddedObject)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.EmbeddedObjectWithPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
