@@ -28,8 +28,6 @@ namespace Realms.SourceGenerator
 
         public ObjectType ObjectType { get; set; }
 
-        public bool IsEmbedded => ObjectType == ObjectType.EmbeddedObject;
-
         public string MapTo { get; set; }
 
         public string Namespace { get; set; }

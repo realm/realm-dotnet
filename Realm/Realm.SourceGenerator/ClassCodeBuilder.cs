@@ -152,54 +152,22 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         var internalTypeIsObject = internalType.ScalarType == ScalarType.Object;
                         var internalTypeIsRealmValue = internalType.ScalarType == ScalarType.RealmValue;
 
-                        string addValLine = string.Empty;
-
                         if (internalTypeIsObject)
                         {
-                            var builderMethodName = property.TypeInfo.CollectionType switch
-                            {
-                                CollectionType.List => "ObjectList",
-                                CollectionType.Set => "ObjectSet",
-                                CollectionType.Dictionary => "ObjectDictionary",
-                                _ => throw new NotImplementedException(),
-                            };
+                            var builderMethodName = $"Object{property.TypeInfo.CollectionType}";
 
                             var internalTypeString = internalType.MapTo ?? internalType.CompleteTypeString;
                             schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
-
-                            if (internalType.ObjectType == ObjectType.RealmObject)
-                            {
-                                if (property.TypeInfo.IsDictionary)
-                                {
-                                    addValLine = "newAccessor.Realm.Add(val.Value, update);";
-                                }
-                                else
-                                {
-                                    addValLine = "newAccessor.Realm.Add(val, update);";
-                                }
-                            }
                         }
                         else if (internalTypeIsRealmValue)
                         {
-                            var builderMethodName = property.TypeInfo.CollectionType switch
-                            {
-                                CollectionType.List => "RealmValueList",
-                                CollectionType.Set => "RealmValueSet",
-                                CollectionType.Dictionary => "RealmValueDictionary",
-                                _ => throw new NotImplementedException(),
-                            };
+                            var builderMethodName = $"RealmValue{property.TypeInfo.CollectionType}";
 
                             schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
                         }
                         else
                         {
-                            var builderMethodName = property.TypeInfo.CollectionType switch
-                            {
-                                CollectionType.List => "PrimitiveList",
-                                CollectionType.Set => "PrimitiveSet",
-                                CollectionType.Dictionary => "PrimitiveDictionary",
-                                _ => throw new NotImplementedException(),
-                            };
+                            var builderMethodName = $"Primitive{property.TypeInfo.CollectionType}";
 
                             var internalTypeString = GetRealmValueType(internalType);
                             var internalTypeNullable = property.IsRequired ? "false" : internalType.IsNullable.ToCodeString();
@@ -209,9 +177,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
 
-                        copyToRealm.AppendLine($@"
-CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);
-");
+                        copyToRealm.AppendLine($@"CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);");
                     }
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
@@ -390,10 +356,7 @@ public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealm
 public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-public TypeInfo GetTypeInfo()
-{{
-    return Accessor.GetTypeInfo(this);
-}}
+public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
 {(_classInfo.OverridesEquals ? string.Empty :
 $@"public override bool Equals(object obj)
@@ -422,16 +385,10 @@ $@"public override bool Equals(object obj)
 }}")}
 
 {(_classInfo.OverridesGetHashCode ? string.Empty :
-$@"public override int GetHashCode()
-{{
-    return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-}}")}
+$@"public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
 
 {(_classInfo.OverridesToString ? string.Empty :
-$@"public override string ToString()
-{{
-    return Accessor.ToString();
-}}")}";
+$@"public override string ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
 [Woven(typeof({_helperClassName}))]
@@ -460,10 +417,7 @@ private class {_helperClassName} : IRealmObjectHelper
 
     public ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
 
-    public IRealmObjectBase CreateInstance()
-    {{
-        return new {_classInfo.Name}();
-    }}
+    public IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
 
     public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
     {{
