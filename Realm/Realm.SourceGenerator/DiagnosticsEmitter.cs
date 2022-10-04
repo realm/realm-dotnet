@@ -64,7 +64,9 @@ namespace Realms.SourceGenerator
             var diagnosticInfos = classInfo.Diagnostics.Select(Convert);
             var serializedJson = Newtonsoft.Json.JsonConvert.SerializeObject(diagnosticInfos, Newtonsoft.Json.Formatting.Indented);
 
-            var className = classInfo.HasDuplicatedName ? $"{classInfo.Namespace}_{classInfo.Name}" : classInfo.Name;
+            var @namespace = classInfo.NamespaceInfo.IsGlobal ? "Global" : classInfo.NamespaceInfo.Name;
+
+            var className = classInfo.HasDuplicatedName ? $"{@namespace}_{classInfo.Name}" : classInfo.Name;
 
             // Discussion about emitting non-source files: https://github.com/dotnet/roslyn/issues/57608
             context.AddSource($"{className}.diagnostics", serializedJson);

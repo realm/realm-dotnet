@@ -252,7 +252,8 @@ Analytics payload
             _logger.Debug("Weaving generated " + type.Name);
 
             var interfaceName = $"I{type.Name}Accessor";
-            var interfaceType = _moduleDefinition.GetType($"{type.Namespace}.Generated", interfaceName);
+            var @namespace = string.IsNullOrEmpty(type.Namespace) ? "Global" : type.Namespace;
+            var interfaceType = _moduleDefinition.GetType($"{@namespace}.Generated", interfaceName);
 
             var persistedProperties = new List<WeavePropertyResult>();
 

@@ -23,7 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Realms;
 
-namespace SourceGeneratorAssemblyToProcess.TestClasses
+namespace SourceGeneratorAssemblyToProcess
 {
     public partial class ClassWithoutParameterlessConstructor : IRealmObject
     {

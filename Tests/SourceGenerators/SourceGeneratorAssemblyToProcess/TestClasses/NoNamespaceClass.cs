@@ -16,22 +16,9 @@
 // //
 // ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Realms;
 
-namespace SourceGeneratorAssemblyToProcess.TestClasses
+public partial class NoNamespaceClass : IRealmObject
 {
-    public partial class OuterClass
-    {
-        public partial class MediumClass
-        {
-            private partial class InnerClass : IRealmObject
-            {
-            }
-        }
-    }
+    public string Name { get; set; }
 }

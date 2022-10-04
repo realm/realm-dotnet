@@ -30,7 +30,7 @@ namespace Realms.SourceGenerator
 
         public string MapTo { get; set; }
 
-        public string Namespace { get; set; }
+        public NamespaceInfo NamespaceInfo { get; set; }
 
         public Accessibility Accessibility { get; set; }
 
@@ -57,6 +57,13 @@ namespace Realms.SourceGenerator
         public bool HasDuplicatedName { get; set; }
 
         public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
+    }
+
+    internal record NamespaceInfo
+    {
+        public string Name { get; set; }
+
+        public bool IsGlobal { get; set; }
     }
 
     internal record EnclosingClassInfo

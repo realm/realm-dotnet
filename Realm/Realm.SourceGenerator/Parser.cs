@@ -75,7 +75,7 @@ namespace Realms.SourceGenerator
                     }
 
                     // General info
-                    classInfo.Namespace = classSymbol.ContainingNamespace.ToDisplayString();
+                    classInfo.NamespaceInfo = GetNamespaceInfo(classSymbol);
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
@@ -449,6 +449,16 @@ namespace Realms.SourceGenerator
             }
 
             return enclosingClassList;
+        }
+
+        private static NamespaceInfo GetNamespaceInfo(ITypeSymbol classSymbol)
+        {
+            if (classSymbol.ContainingNamespace.IsGlobalNamespace)
+            {
+                return new NamespaceInfo { IsGlobal = true };
+            }
+
+            return new NamespaceInfo { Name = classSymbol.ContainingNamespace.ToDisplayString() };
         }
     }
 
