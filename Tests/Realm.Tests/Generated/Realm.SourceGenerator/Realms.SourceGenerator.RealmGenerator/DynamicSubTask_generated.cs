@@ -73,7 +73,7 @@ namespace Realms.Tests.Database
                     newAccessor.Summary = oldAccessor.Summary;
                 }
                 newAccessor.CompletionReport = oldAccessor.CompletionReport;
-                CollectionExtensions.PopulateCollection(oldAccessor.SubSubTasks, newAccessor.SubSubTasks, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SubSubTasks, newAccessor.SubSubTasks, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

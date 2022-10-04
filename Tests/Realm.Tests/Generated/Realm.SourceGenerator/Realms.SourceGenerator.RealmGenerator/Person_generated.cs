@@ -120,7 +120,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.IsInteresting = oldAccessor.IsInteresting;
                 }
-                CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

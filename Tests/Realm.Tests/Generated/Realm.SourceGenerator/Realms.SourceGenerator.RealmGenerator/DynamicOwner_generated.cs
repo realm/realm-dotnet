@@ -87,12 +87,12 @@ namespace Realms.Tests.Database
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
                 newAccessor.TopDog = oldAccessor.TopDog;
-                CollectionExtensions.PopulateCollection(oldAccessor.Dogs, newAccessor.Dogs, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Tags, newAccessor.Tags, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.DogsDictionary, newAccessor.DogsDictionary, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.TagsDictionary, newAccessor.TagsDictionary, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.DogsSet, newAccessor.DogsSet, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.TagsSet, newAccessor.TagsSet, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Dogs, newAccessor.Dogs, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Tags, newAccessor.Tags, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DogsDictionary, newAccessor.DogsDictionary, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.TagsDictionary, newAccessor.TagsDictionary, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DogsSet, newAccessor.DogsSet, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.TagsSet, newAccessor.TagsSet, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

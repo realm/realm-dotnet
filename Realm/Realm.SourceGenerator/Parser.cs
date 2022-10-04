@@ -414,7 +414,7 @@ namespace Realms.SourceGenerator
             propInfo.TypeSymbol = typeSymbol;
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
-            propInfo.Namespace = typeSymbol.ContainingNamespace?.ToString();
+            propInfo.Namespace = typeSymbol.ContainingNamespace?.IsGlobalNamespace == true ? null : typeSymbol.ContainingNamespace?.ToString();
 
             if (propInfo.ScalarType == ScalarType.Object)
             {

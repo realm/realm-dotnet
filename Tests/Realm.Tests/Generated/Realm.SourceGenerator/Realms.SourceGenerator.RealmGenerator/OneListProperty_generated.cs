@@ -66,7 +66,7 @@ namespace Realms.Tests.Database
                     newAccessor.People.Clear();
                 }
 
-                CollectionExtensions.PopulateCollection(oldAccessor.People, newAccessor.People, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.People, newAccessor.People, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

@@ -80,7 +80,7 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
-                CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
                 if(!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;

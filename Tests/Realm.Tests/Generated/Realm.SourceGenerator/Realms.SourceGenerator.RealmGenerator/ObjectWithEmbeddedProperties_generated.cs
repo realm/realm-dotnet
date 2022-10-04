@@ -76,9 +76,9 @@ namespace Realms.Tests
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
                 newAccessor.AllTypesObject = oldAccessor.AllTypesObject;
-                CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
                 newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
-                CollectionExtensions.PopulateCollection(oldAccessor.DictionaryOfAllTypesObjects, newAccessor.DictionaryOfAllTypesObjects, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryOfAllTypesObjects, newAccessor.DictionaryOfAllTypesObjects, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

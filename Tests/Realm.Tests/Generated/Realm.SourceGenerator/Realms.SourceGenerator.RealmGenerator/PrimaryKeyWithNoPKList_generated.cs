@@ -76,7 +76,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.StringValue = oldAccessor.StringValue;
                 }
-                CollectionExtensions.PopulateCollection(oldAccessor.ListValue, newAccessor.ListValue, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListValue, newAccessor.ListValue, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

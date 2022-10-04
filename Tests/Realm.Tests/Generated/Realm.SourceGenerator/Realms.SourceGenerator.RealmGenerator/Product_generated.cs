@@ -81,7 +81,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Date = oldAccessor.Date;
                 }
-                CollectionExtensions.PopulateCollection(oldAccessor.Reports, newAccessor.Reports, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Reports, newAccessor.Reports, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

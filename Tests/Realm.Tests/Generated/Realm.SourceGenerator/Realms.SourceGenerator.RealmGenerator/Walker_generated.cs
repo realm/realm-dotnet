@@ -79,8 +79,8 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
                 newAccessor.TopDog = oldAccessor.TopDog;
-                CollectionExtensions.PopulateCollection(oldAccessor.ListOfDogs, newAccessor.ListOfDogs, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.SetOfDogs, newAccessor.SetOfDogs, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfDogs, newAccessor.ListOfDogs, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetOfDogs, newAccessor.SetOfDogs, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

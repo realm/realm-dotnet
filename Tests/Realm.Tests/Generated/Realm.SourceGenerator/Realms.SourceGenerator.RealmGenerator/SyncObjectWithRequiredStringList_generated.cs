@@ -71,7 +71,7 @@ namespace Realms.Tests.Sync
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                CollectionExtensions.PopulateCollection(oldAccessor.Strings, newAccessor.Strings, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Strings, newAccessor.Strings, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

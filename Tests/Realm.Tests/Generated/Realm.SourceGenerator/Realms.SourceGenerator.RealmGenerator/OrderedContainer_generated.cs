@@ -68,8 +68,8 @@ namespace Realms.Tests.Database
                     newAccessor.ItemsDictionary.Clear();
                 }
 
-                CollectionExtensions.PopulateCollection(oldAccessor.Items, newAccessor.Items, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.ItemsDictionary, newAccessor.ItemsDictionary, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Items, newAccessor.Items, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ItemsDictionary, newAccessor.ItemsDictionary, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

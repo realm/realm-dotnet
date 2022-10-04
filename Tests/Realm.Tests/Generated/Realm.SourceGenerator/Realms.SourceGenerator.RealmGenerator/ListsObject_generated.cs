@@ -127,37 +127,37 @@ namespace Realms.Tests
                     newAccessor.RealmValueList.Clear();
                 }
 
-                CollectionExtensions.PopulateCollection(oldAccessor.CharList, newAccessor.CharList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.ByteList, newAccessor.ByteList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Int16List, newAccessor.Int16List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Int32List, newAccessor.Int32List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Int64List, newAccessor.Int64List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.SingleList, newAccessor.SingleList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.DoubleList, newAccessor.DoubleList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.BooleanList, newAccessor.BooleanList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.DecimalList, newAccessor.DecimalList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Decimal128List, newAccessor.Decimal128List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdList, newAccessor.ObjectIdList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.StringList, newAccessor.StringList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayList, newAccessor.ByteArrayList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetList, newAccessor.DateTimeOffsetList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableCharList, newAccessor.NullableCharList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableByteList, newAccessor.NullableByteList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16List, newAccessor.NullableInt16List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32List, newAccessor.NullableInt32List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64List, newAccessor.NullableInt64List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleList, newAccessor.NullableSingleList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleList, newAccessor.NullableDoubleList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanList, newAccessor.NullableBooleanList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetList, newAccessor.NullableDateTimeOffsetList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalList, newAccessor.NullableDecimalList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128List, newAccessor.NullableDecimal128List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdList, newAccessor.NullableObjectIdList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableGuidList, newAccessor.NullableGuidList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableStringList, newAccessor.NullableStringList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.NullableByteArrayList, newAccessor.NullableByteArrayList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.CharList, newAccessor.CharList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ByteList, newAccessor.ByteList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Int16List, newAccessor.Int16List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Int32List, newAccessor.Int32List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Int64List, newAccessor.Int64List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SingleList, newAccessor.SingleList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DoubleList, newAccessor.DoubleList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.BooleanList, newAccessor.BooleanList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DecimalList, newAccessor.DecimalList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Decimal128List, newAccessor.Decimal128List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdList, newAccessor.ObjectIdList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.StringList, newAccessor.StringList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayList, newAccessor.ByteArrayList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetList, newAccessor.DateTimeOffsetList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableCharList, newAccessor.NullableCharList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableByteList, newAccessor.NullableByteList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16List, newAccessor.NullableInt16List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32List, newAccessor.NullableInt32List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64List, newAccessor.NullableInt64List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleList, newAccessor.NullableSingleList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleList, newAccessor.NullableDoubleList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanList, newAccessor.NullableBooleanList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetList, newAccessor.NullableDateTimeOffsetList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalList, newAccessor.NullableDecimalList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128List, newAccessor.NullableDecimal128List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdList, newAccessor.NullableObjectIdList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableGuidList, newAccessor.NullableGuidList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableStringList, newAccessor.NullableStringList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableByteArrayList, newAccessor.NullableByteArrayList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

@@ -79,10 +79,10 @@ namespace Realms.Tests.Database
                     newAccessor.Id = oldAccessor.Id;
                 }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
-                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.TestDict, newAccessor.TestDict, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.TestDict, newAccessor.TestDict, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

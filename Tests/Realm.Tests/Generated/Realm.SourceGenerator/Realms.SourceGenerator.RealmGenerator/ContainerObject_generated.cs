@@ -66,7 +66,7 @@ namespace Realms.Tests
                     newAccessor.Items.Clear();
                 }
 
-                CollectionExtensions.PopulateCollection(oldAccessor.Items, newAccessor.Items, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Items, newAccessor.Items, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

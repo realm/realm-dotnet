@@ -73,7 +73,7 @@ namespace Realms.Tests
                     newAccessor.String = oldAccessor.String;
                 }
                 newAccessor.Child = oldAccessor.Child;
-                CollectionExtensions.PopulateCollection(oldAccessor.Children, newAccessor.Children, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Children, newAccessor.Children, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

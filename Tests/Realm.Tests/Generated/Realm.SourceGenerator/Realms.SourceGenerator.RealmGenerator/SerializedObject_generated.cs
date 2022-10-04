@@ -80,9 +80,9 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                CollectionExtensions.PopulateCollection(oldAccessor.Dict, newAccessor.Dict, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.List, newAccessor.List, update, skipDefaults);
-                CollectionExtensions.PopulateCollection(oldAccessor.Set, newAccessor.Set, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Dict, newAccessor.Dict, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.List, newAccessor.List, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.Set, newAccessor.Set, update, skipDefaults);
             }
 
             if (_propertyChanged != null)

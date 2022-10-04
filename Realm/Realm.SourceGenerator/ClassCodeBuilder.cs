@@ -179,7 +179,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
 
-                        copyToRealm.AppendLine($@"CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);");
+                        copyToRealm.AppendLine($@"Realms.CollectionExtensions.PopulateCollection(oldAccessor.{property.Name}, newAccessor.{property.Name}, update, skipDefaults);");
                     }
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
