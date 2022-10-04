@@ -24,6 +24,8 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
+        private ClassWithoutParameterlessConstructor() {}
+
         #region IRealmObject implementation
 
         private IClassWithoutParameterlessConstructorAccessor _accessor;
@@ -52,8 +54,6 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
-
-        private ClassWithoutParameterlessConstructor() {}
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {

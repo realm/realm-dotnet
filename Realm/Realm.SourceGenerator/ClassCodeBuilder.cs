@@ -252,6 +252,8 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
             var contents = $@"{schema}
 
+{parameterlessConstructorString}
+
 #region {baseInterface} implementation
 
 private {_accessorInterfaceName} _accessor;
@@ -280,8 +282,6 @@ public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
 [IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
-
-{parameterlessConstructorString}
 
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
