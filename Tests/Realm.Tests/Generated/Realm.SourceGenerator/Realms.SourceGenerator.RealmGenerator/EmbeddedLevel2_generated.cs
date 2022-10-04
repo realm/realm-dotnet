@@ -73,7 +73,6 @@ namespace Realms.Tests
                     newAccessor.String = oldAccessor.String;
                 }
                 newAccessor.Child = oldAccessor.Child;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Children, newAccessor.Children, update, skipDefaults);
             }
 
@@ -137,10 +136,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(EmbeddedLevel2 val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -167,15 +163,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedLevel2ObjectHelper : IRealmObjectHelper
@@ -187,10 +177,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new EmbeddedLevel2ManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new EmbeddedLevel2();
-            }
+            public IRealmObjectBase CreateInstance() => new EmbeddedLevel2();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

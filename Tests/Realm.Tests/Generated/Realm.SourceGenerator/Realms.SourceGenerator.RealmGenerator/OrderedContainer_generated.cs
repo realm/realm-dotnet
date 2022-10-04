@@ -69,7 +69,6 @@ namespace Realms.Tests.Database
                 }
 
                 CollectionExtensions.PopulateCollection(oldAccessor.Items, newAccessor.Items, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ItemsDictionary, newAccessor.ItemsDictionary, update, skipDefaults);
             }
 
@@ -133,10 +132,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(OrderedContainer val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -163,15 +159,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class OrderedContainerObjectHelper : IRealmObjectHelper
@@ -183,10 +173,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new OrderedContainerManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new OrderedContainer();
-            }
+            public IRealmObjectBase CreateInstance() => new OrderedContainer();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

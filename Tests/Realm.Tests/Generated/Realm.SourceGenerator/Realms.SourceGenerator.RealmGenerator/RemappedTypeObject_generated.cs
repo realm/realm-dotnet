@@ -92,9 +92,7 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.MappedLink, update);
                 }
                 newAccessor.MappedLink = oldAccessor.MappedLink;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NormalList, newAccessor.NormalList, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.MappedList, newAccessor.MappedList, update, skipDefaults);
             }
 
@@ -158,10 +156,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(RemappedTypeObject val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -188,15 +183,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class RemappedTypeObjectObjectHelper : IRealmObjectHelper
@@ -208,10 +197,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new RemappedTypeObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new RemappedTypeObject();
-            }
+            public IRealmObjectBase CreateInstance() => new RemappedTypeObject();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

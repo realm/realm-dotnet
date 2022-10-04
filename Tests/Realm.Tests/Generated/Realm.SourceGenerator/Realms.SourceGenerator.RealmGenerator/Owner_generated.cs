@@ -79,9 +79,7 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
                 newAccessor.TopDog = oldAccessor.TopDog;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ListOfDogs, newAccessor.ListOfDogs, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.SetOfDogs, newAccessor.SetOfDogs, update, skipDefaults);
             }
 
@@ -145,10 +143,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(Owner val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -175,15 +170,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class OwnerObjectHelper : IRealmObjectHelper
@@ -195,10 +184,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new OwnerManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new Owner();
-            }
+            public IRealmObjectBase CreateInstance() => new Owner();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

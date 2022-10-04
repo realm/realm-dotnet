@@ -130,67 +130,36 @@ namespace Realms.Tests
                 }
 
                 CollectionExtensions.PopulateCollection(oldAccessor.CharDictionary, newAccessor.CharDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteDictionary, newAccessor.ByteDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Int16Dictionary, newAccessor.Int16Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Int32Dictionary, newAccessor.Int32Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Int64Dictionary, newAccessor.Int64Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.SingleDictionary, newAccessor.SingleDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.DoubleDictionary, newAccessor.DoubleDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.BooleanDictionary, newAccessor.BooleanDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.DecimalDictionary, newAccessor.DecimalDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Decimal128Dictionary, newAccessor.Decimal128Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectIdDictionary, newAccessor.ObjectIdDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.StringDictionary, newAccessor.StringDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableStringDictionary, newAccessor.NullableStringDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ByteArrayDictionary, newAccessor.ByteArrayDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.DateTimeOffsetDictionary, newAccessor.DateTimeOffsetDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableCharDictionary, newAccessor.NullableCharDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableByteDictionary, newAccessor.NullableByteDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt16Dictionary, newAccessor.NullableInt16Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt32Dictionary, newAccessor.NullableInt32Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableInt64Dictionary, newAccessor.NullableInt64Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableSingleDictionary, newAccessor.NullableSingleDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDoubleDictionary, newAccessor.NullableDoubleDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableBooleanDictionary, newAccessor.NullableBooleanDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDateTimeOffsetDictionary, newAccessor.NullableDateTimeOffsetDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimalDictionary, newAccessor.NullableDecimalDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableDecimal128Dictionary, newAccessor.NullableDecimal128Dictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableObjectIdDictionary, newAccessor.NullableObjectIdDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.NullableBinaryDictionary, newAccessor.NullableBinaryDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.BinaryDictionary, newAccessor.BinaryDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.ObjectDictionary, newAccessor.ObjectDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedObjectDictionary, newAccessor.EmbeddedObjectDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
             }
 
@@ -254,10 +223,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(DictionariesObject val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -284,15 +250,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DictionariesObjectObjectHelper : IRealmObjectHelper
@@ -304,10 +264,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new DictionariesObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new DictionariesObject();
-            }
+            public IRealmObjectBase CreateInstance() => new DictionariesObject();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

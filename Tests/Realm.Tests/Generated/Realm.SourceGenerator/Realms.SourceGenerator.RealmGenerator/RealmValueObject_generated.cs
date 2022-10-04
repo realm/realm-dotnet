@@ -79,13 +79,9 @@ namespace Realms.Tests.Database
                     newAccessor.Id = oldAccessor.Id;
                 }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueList, newAccessor.RealmValueList, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueSet, newAccessor.RealmValueSet, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmValueDictionary, newAccessor.RealmValueDictionary, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.TestDict, newAccessor.TestDict, update, skipDefaults);
             }
 
@@ -149,10 +145,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(RealmValueObject val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -179,15 +172,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class RealmValueObjectObjectHelper : IRealmObjectHelper
@@ -199,10 +186,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new RealmValueObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new RealmValueObject();
-            }
+            public IRealmObjectBase CreateInstance() => new RealmValueObject();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

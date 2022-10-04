@@ -82,11 +82,8 @@ namespace Realms.Tests.Database
                     newAccessor.Summary = oldAccessor.Summary;
                 }
                 newAccessor.CompletionReport = oldAccessor.CompletionReport;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.SubTasks, newAccessor.SubTasks, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.SubSubTasks, newAccessor.SubSubTasks, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.SubTasksDictionary, newAccessor.SubTasksDictionary, update, skipDefaults);
             }
 
@@ -150,10 +147,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(DynamicTask val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -180,15 +174,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DynamicTaskObjectHelper : IRealmObjectHelper
@@ -200,10 +188,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new DynamicTaskManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new DynamicTask();
-            }
+            public IRealmObjectBase CreateInstance() => new DynamicTask();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

@@ -212,10 +212,7 @@ namespace Realms.Tests.Sync
         public static implicit operator RealmValue(AsymmetricObjectWithAllTypes val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -242,15 +239,9 @@ namespace Realms.Tests.Sync
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class AsymmetricObjectWithAllTypesObjectHelper : IRealmObjectHelper
@@ -262,10 +253,7 @@ namespace Realms.Tests.Sync
 
             public ManagedAccessor CreateAccessor() => new AsymmetricObjectWithAllTypesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new AsymmetricObjectWithAllTypes();
-            }
+            public IRealmObjectBase CreateInstance() => new AsymmetricObjectWithAllTypes();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

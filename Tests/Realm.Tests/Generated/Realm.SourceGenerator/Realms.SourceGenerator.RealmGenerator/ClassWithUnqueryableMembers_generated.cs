@@ -80,9 +80,7 @@ namespace Realms.Tests
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
-
                 if(!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
@@ -149,10 +147,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(ClassWithUnqueryableMembers val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -179,15 +174,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class ClassWithUnqueryableMembersObjectHelper : IRealmObjectHelper
@@ -199,10 +188,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new ClassWithUnqueryableMembersManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new ClassWithUnqueryableMembers();
-            }
+            public IRealmObjectBase CreateInstance() => new ClassWithUnqueryableMembers();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

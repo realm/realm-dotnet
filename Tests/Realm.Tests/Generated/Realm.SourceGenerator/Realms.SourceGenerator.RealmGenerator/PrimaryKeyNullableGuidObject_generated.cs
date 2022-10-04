@@ -125,10 +125,7 @@ namespace Realms.Tests
         public static implicit operator RealmValue(PrimaryKeyNullableGuidObject val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -155,15 +152,9 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class PrimaryKeyNullableGuidObjectObjectHelper : IRealmObjectHelper
@@ -175,10 +166,7 @@ namespace Realms.Tests
 
             public ManagedAccessor CreateAccessor() => new PrimaryKeyNullableGuidObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new PrimaryKeyNullableGuidObject();
-            }
+            public IRealmObjectBase CreateInstance() => new PrimaryKeyNullableGuidObject();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

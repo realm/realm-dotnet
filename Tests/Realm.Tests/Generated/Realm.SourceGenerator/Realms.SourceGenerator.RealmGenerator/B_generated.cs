@@ -130,10 +130,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(B val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -160,15 +157,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class BObjectHelper : IRealmObjectHelper
@@ -180,10 +171,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new BManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new B();
-            }
+            public IRealmObjectBase CreateInstance() => new B();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

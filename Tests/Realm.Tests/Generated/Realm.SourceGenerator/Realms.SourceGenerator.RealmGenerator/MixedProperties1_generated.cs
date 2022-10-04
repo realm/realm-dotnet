@@ -74,14 +74,11 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Friends, newAccessor.Friends, update, skipDefaults);
-
                 if(!skipDefaults || oldAccessor.Age != default(int))
                 {
                     newAccessor.Age = oldAccessor.Age;
                 }
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Enemies, newAccessor.Enemies, update, skipDefaults);
             }
 
@@ -145,10 +142,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(MixedProperties1 val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -175,15 +169,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class MixedProperties1ObjectHelper : IRealmObjectHelper
@@ -195,10 +183,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new MixedProperties1ManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new MixedProperties1();
-            }
+            public IRealmObjectBase CreateInstance() => new MixedProperties1();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

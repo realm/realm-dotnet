@@ -128,10 +128,7 @@ namespace Bar
         public static implicit operator RealmValue(DuplicateClass val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -158,15 +155,9 @@ namespace Bar
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DuplicateClassObjectHelper : IRealmObjectHelper
@@ -178,10 +169,7 @@ namespace Bar
 
             public ManagedAccessor CreateAccessor() => new DuplicateClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new DuplicateClass();
-            }
+            public IRealmObjectBase CreateInstance() => new DuplicateClass();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

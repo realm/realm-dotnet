@@ -133,15 +133,9 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(InternalObject val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class InternalObjectObjectHelper : IRealmObjectHelper
@@ -153,10 +147,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new InternalObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new InternalObject();
-            }
+            public IRealmObjectBase CreateInstance() => new InternalObject();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

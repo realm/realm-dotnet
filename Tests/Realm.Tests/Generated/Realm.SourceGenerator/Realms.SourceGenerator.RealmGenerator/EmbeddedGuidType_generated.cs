@@ -87,32 +87,21 @@ namespace Realms.Tests.Database
                 }
 
                 newAccessor.RegularProperty = oldAccessor.RegularProperty;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidSet, newAccessor.GuidSet, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.GuidDict, newAccessor.GuidDict, update, skipDefaults);
-
                 newAccessor.OptionalProperty = oldAccessor.OptionalProperty;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalList, newAccessor.OptionalList, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalSet, newAccessor.OptionalSet, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.OptionalDict, newAccessor.OptionalDict, update, skipDefaults);
-
                 if(oldAccessor.LinkProperty != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkProperty, update);
                 }
                 newAccessor.LinkProperty = oldAccessor.LinkProperty;
                 newAccessor.MixedProperty = oldAccessor.MixedProperty;
-
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedList, newAccessor.MixedList, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedSet, newAccessor.MixedSet, update, skipDefaults);
-
                 CollectionExtensions.PopulateCollection(oldAccessor.MixedDict, newAccessor.MixedDict, update, skipDefaults);
             }
 
@@ -176,10 +165,7 @@ namespace Realms.Tests.Database
         public static implicit operator RealmValue(EmbeddedGuidType val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -206,15 +192,9 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedGuidTypeObjectHelper : IRealmObjectHelper
@@ -226,10 +206,7 @@ namespace Realms.Tests.Database
 
             public ManagedAccessor CreateAccessor() => new EmbeddedGuidTypeManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new EmbeddedGuidType();
-            }
+            public IRealmObjectBase CreateInstance() => new EmbeddedGuidType();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

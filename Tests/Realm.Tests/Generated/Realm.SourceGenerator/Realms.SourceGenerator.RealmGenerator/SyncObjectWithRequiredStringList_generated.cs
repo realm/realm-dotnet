@@ -71,7 +71,6 @@ namespace Realms.Tests.Sync
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-
                 CollectionExtensions.PopulateCollection(oldAccessor.Strings, newAccessor.Strings, update, skipDefaults);
             }
 
@@ -135,10 +134,7 @@ namespace Realms.Tests.Sync
         public static implicit operator RealmValue(SyncObjectWithRequiredStringList val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -165,15 +161,9 @@ namespace Realms.Tests.Sync
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class SyncObjectWithRequiredStringListObjectHelper : IRealmObjectHelper
@@ -185,10 +175,7 @@ namespace Realms.Tests.Sync
 
             public ManagedAccessor CreateAccessor() => new SyncObjectWithRequiredStringListManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new SyncObjectWithRequiredStringList();
-            }
+            public IRealmObjectBase CreateInstance() => new SyncObjectWithRequiredStringList();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
