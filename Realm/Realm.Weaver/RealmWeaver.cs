@@ -294,7 +294,7 @@ Analytics payload
             return WeavePropertyResult.Success(prop);
         }
 
-        private void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        private static void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
         {
             //// A synthesized property getter looks like this:
             ////   0: ldarg.0

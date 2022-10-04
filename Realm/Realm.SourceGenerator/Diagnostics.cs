@@ -69,7 +69,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.ClassUnclearDefinition,
                 "Realm classes cannot implement multiple class interfaces",
-                $"Class {className} is declared as implementing both IRealmObject and IEmbeddedObject",
+                $"Class {className} is declared as implementing multiple class interfaces.A class can implement only one interface between IRealmObject, IEmbeddedObject, IAsymmetricObject.",
                 location);
         }
 

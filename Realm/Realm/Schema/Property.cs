@@ -225,7 +225,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string)"/>.
+        /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string, string)"/>.
         /// </param>
         /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
         /// <param name="isIndexed">A flag indicating whether the property will be indexed. Primary key properties are always indexed.</param>
@@ -241,7 +241,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create a list of objects property, use <see cref="ObjectList(string, string)"/>.
+        /// in an exception being thrown. If you want to create a list of objects property, use <see cref="ObjectList(string, string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <param name="managedName">The managed name of the property.</param>
@@ -255,7 +255,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create a set of objects property, use <see cref="ObjectSet(string, string)"/>.
+        /// in an exception being thrown. If you want to create a set of objects property, use <see cref="ObjectSet(string, string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <param name="managedName">The managed name of the property.</param>
@@ -269,7 +269,7 @@ namespace Realms.Schema
         /// <param name="name">The name of the property.</param>
         /// <param name="type">
         /// The type of the property. Note that using <see cref="RealmValueType.Null"/> or <see cref="RealmValueType.Object"/> will result
-        /// in an exception being thrown. If you want to create a dictionary of objects property, use <see cref="ObjectDictionary(string, string)"/>.
+        /// in an exception being thrown. If you want to create a dictionary of objects property, use <see cref="ObjectDictionary(string, string, string)"/>.
         /// </param>
         /// <param name="areElementsNullable">A flag indicating whether the elements of the list are nullable.</param>
         /// <param name="managedName">The managed name of the property.</param>

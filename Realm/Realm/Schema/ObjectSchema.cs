@@ -277,7 +277,6 @@ namespace Realms.Schema
                 Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject() || type.IsAsymmetricObject(),
                     $"The class {type.FullName} must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject", nameof(type));
 
-                //TODO need to fix this to use interfaces probably
                 RealmSchemaType = type.GetRealmSchemaType();
 
                 var schemaField = type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static);

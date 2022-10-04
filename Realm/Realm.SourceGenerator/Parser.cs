@@ -67,9 +67,9 @@ namespace Realms.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
-                    var isEmbedded = classSymbol.IsEmbeddedObject();
+                    var implementingObjectTypes = classSymbol.ImplementingObjectTypes();
 
-                    if (isEmbedded && classSymbol.IsRealmObject())
+                    if (implementingObjectTypes.Count() > 1)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.ClassUnclearDefinition(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
@@ -80,7 +80,7 @@ namespace Realms.SourceGenerator
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.TypeSymbol = classSymbol;
-                    classInfo.ObjectType = isEmbedded ? ObjectType.EmbeddedObject : ObjectType.RealmObject;
+                    classInfo.ObjectType = implementingObjectTypes.First();
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
                     classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
                     classInfo.HasPropertyChangedEvent = classSymbol.HasPropertyChangedEvent();
@@ -403,7 +403,7 @@ namespace Realms.SourceGenerator
                 INamedTypeSymbol when typeSymbol.Name == "Guid" => PropertyTypeInfo.Guid,
                 INamedTypeSymbol when typeSymbol.Name == "DateTimeOffset" => PropertyTypeInfo.Date,
                 INamedTypeSymbol when typeSymbol.Name == "RealmValue" => PropertyTypeInfo.RealmValue,
-                INamedTypeSymbol when typeSymbol.IsRealmObjectOrEmbeddedObject() => PropertyTypeInfo.Object,
+                INamedTypeSymbol when typeSymbol.IsAnyRealmObjectType() => PropertyTypeInfo.Object,
                 INamedTypeSymbol when typeSymbol.Name == "IList" => PropertyTypeInfo.List,
                 INamedTypeSymbol when typeSymbol.Name == "ISet" => PropertyTypeInfo.Set,
                 INamedTypeSymbol when typeSymbol.Name == "IDictionary" => PropertyTypeInfo.Dictionary,
@@ -418,7 +418,7 @@ namespace Realms.SourceGenerator
 
             if (propInfo.ScalarType == ScalarType.Object)
             {
-                propInfo.ObjectType = typeSymbol.IsRealmObject() ? ObjectType.RealmObject : ObjectType.EmbeddedObject;
+                propInfo.ObjectType = typeSymbol.ImplementingObjectTypes().First();
                 propInfo.MapTo = (string)typeSymbol.GetAttributeArgument("MapToAttribute");
             }
 
