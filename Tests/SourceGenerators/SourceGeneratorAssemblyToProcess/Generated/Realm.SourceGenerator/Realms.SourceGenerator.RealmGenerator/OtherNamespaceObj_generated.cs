@@ -19,7 +19,7 @@ namespace OtherNamespace
     [Woven(typeof(OtherNamespaceObjObjectHelper))]
     public partial class OtherNamespaceObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OtherNamespaceObj", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OtherNamespaceObj", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
@@ -128,10 +128,7 @@ namespace OtherNamespace
         public static implicit operator RealmValue(OtherNamespaceObj val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -158,15 +155,9 @@ namespace OtherNamespace
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class OtherNamespaceObjObjectHelper : IRealmObjectHelper
@@ -178,10 +169,7 @@ namespace OtherNamespace
 
             public ManagedAccessor CreateAccessor() => new OtherNamespaceObjManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new OtherNamespaceObj();
-            }
+            public IRealmObjectBase CreateInstance() => new OtherNamespaceObj();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

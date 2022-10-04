@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
@@ -131,10 +131,7 @@ namespace SourceGeneratorPlayground
         public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -161,15 +158,9 @@ namespace SourceGeneratorPlayground
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class PersonObjectHelper : IRealmObjectHelper
@@ -181,10 +172,7 @@ namespace SourceGeneratorPlayground
 
             public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new Person();
-            }
+            public IRealmObjectBase CreateInstance() => new Person();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

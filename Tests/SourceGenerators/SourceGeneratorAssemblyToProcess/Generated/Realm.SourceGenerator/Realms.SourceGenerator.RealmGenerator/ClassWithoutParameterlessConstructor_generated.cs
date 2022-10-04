@@ -19,7 +19,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
     [Woven(typeof(ClassWithoutParameterlessConstructorObjectHelper))]
     public partial class ClassWithoutParameterlessConstructor : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithoutParameterlessConstructor", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ClassWithoutParameterlessConstructor", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
@@ -130,10 +130,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         public static implicit operator RealmValue(ClassWithoutParameterlessConstructor val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -160,15 +157,9 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class ClassWithoutParameterlessConstructorObjectHelper : IRealmObjectHelper
@@ -180,10 +171,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
             public ManagedAccessor CreateAccessor() => new ClassWithoutParameterlessConstructorManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new ClassWithoutParameterlessConstructor();
-            }
+            public IRealmObjectBase CreateInstance() => new ClassWithoutParameterlessConstructor();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

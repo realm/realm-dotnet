@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(AllTypesClassObjectHelper))]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
         }.Build();
@@ -128,10 +128,7 @@ namespace SourceGeneratorPlayground
         public static implicit operator RealmValue(AllTypesClass val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -158,15 +155,9 @@ namespace SourceGeneratorPlayground
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class AllTypesClassObjectHelper : IRealmObjectHelper
@@ -178,10 +169,7 @@ namespace SourceGeneratorPlayground
 
             public ManagedAccessor CreateAccessor() => new AllTypesClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new AllTypesClass();
-            }
+            public IRealmObjectBase CreateInstance() => new AllTypesClass();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(DogObjectHelper))]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Dog", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Property.Object("Owner", "Person", managedName: "Owner"),
@@ -134,10 +134,7 @@ namespace SourceGeneratorPlayground
         public static implicit operator RealmValue(Dog val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -164,15 +161,9 @@ namespace SourceGeneratorPlayground
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class DogObjectHelper : IRealmObjectHelper
@@ -184,10 +175,7 @@ namespace SourceGeneratorPlayground
 
             public ManagedAccessor CreateAccessor() => new DogManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new Dog();
-            }
+            public IRealmObjectBase CreateInstance() => new Dog();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

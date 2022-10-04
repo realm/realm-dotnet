@@ -19,7 +19,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
     [Woven(typeof(PartialClassObjectHelper))]
     public partial class PartialClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PartialClass", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PartialClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
@@ -133,10 +133,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         public static implicit operator RealmValue(PartialClass val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -163,15 +160,9 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class PartialClassObjectHelper : IRealmObjectHelper
@@ -183,10 +174,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
             public ManagedAccessor CreateAccessor() => new PartialClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new PartialClass();
-            }
+            public IRealmObjectBase CreateInstance() => new PartialClass();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

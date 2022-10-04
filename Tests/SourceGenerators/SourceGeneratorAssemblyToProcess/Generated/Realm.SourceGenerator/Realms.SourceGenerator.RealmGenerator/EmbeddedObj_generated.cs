@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(EmbeddedObjObjectHelper))]
     public partial class EmbeddedObj : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedObj", isEmbedded: true)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedObj", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
@@ -128,10 +128,7 @@ namespace SourceGeneratorPlayground
         public static implicit operator RealmValue(EmbeddedObj val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -158,15 +155,9 @@ namespace SourceGeneratorPlayground
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class EmbeddedObjObjectHelper : IRealmObjectHelper
@@ -178,10 +169,7 @@ namespace SourceGeneratorPlayground
 
             public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new EmbeddedObj();
-            }
+            public IRealmObjectBase CreateInstance() => new EmbeddedObj();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {

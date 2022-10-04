@@ -20,7 +20,7 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(NamespaceObjObjectHelper))]
     public partial class NamespaceObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NamespaceObj", isEmbedded: false)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NamespaceObj", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
             Property.Object("OtherNamespaceObj", "OtherNamespaceObj", managedName: "OtherNamespaceObj"),
@@ -135,10 +135,7 @@ namespace SourceGeneratorAssemblyToProcess
         public static implicit operator RealmValue(NamespaceObj val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public TypeInfo GetTypeInfo()
-        {
-            return Accessor.GetTypeInfo(this);
-        }
+        public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
         public override bool Equals(object obj)
         {
@@ -165,15 +162,9 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
-        public override int GetHashCode()
-        {
-            return IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
-        }
+        public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        public override string ToString()
-        {
-            return Accessor.ToString();
-        }
+        public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         private class NamespaceObjObjectHelper : IRealmObjectHelper
@@ -185,10 +176,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public ManagedAccessor CreateAccessor() => new NamespaceObjManagedAccessor();
 
-            public IRealmObjectBase CreateInstance()
-            {
-                return new NamespaceObj();
-            }
+            public IRealmObjectBase CreateInstance() => new NamespaceObj();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
