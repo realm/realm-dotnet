@@ -26,6 +26,11 @@ namespace SourceGeneratorAssemblyToProcess
             Property.Object("OtherNamespaceObj", "OtherNamespaceObj", managedName: "OtherNamespaceObj"),
         }.Build();
 
+        ~NamespaceObj()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private INamespaceObjAccessor _accessor;

@@ -24,6 +24,11 @@ namespace Realms.Tests.Database
             Property.Primitive("FooRequired", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "FooRequired"),
         }.Build();
 
+        ~RequiredPropertyClass()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IRequiredPropertyClassAccessor _accessor;

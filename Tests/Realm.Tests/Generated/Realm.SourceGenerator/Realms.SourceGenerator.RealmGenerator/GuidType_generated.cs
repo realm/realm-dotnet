@@ -38,6 +38,11 @@ namespace Realms.Tests.Database
             Property.Object("EmbeddedProperty", "EmbeddedGuidType", managedName: "EmbeddedProperty"),
         }.Build();
 
+        ~GuidType()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IGuidTypeAccessor _accessor;

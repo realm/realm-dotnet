@@ -26,6 +26,11 @@ namespace SourceGeneratorAssemblyToProcess
 
         private ClassWithoutParameterlessConstructor() {}
 
+        ~ClassWithoutParameterlessConstructor()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IClassWithoutParameterlessConstructorAccessor _accessor;

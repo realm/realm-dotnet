@@ -28,6 +28,11 @@ namespace Realms.Tests
             Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
 
+        ~ObjectWithEmbeddedProperties()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IObjectWithEmbeddedPropertiesAccessor _accessor;

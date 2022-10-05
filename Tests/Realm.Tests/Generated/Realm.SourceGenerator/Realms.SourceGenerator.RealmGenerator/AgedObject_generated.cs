@@ -24,6 +24,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
         }.Build();
 
+        ~AgedObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IAgedObjectAccessor _accessor;

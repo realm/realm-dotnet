@@ -25,6 +25,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
         }.Build();
 
+        ~ObjectV1()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IObjectV1Accessor _accessor;

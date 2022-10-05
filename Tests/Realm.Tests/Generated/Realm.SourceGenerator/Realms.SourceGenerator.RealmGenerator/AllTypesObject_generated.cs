@@ -58,6 +58,11 @@ namespace Realms.Tests
             Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
         }.Build();
 
+        ~AllTypesObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IAllTypesObjectAccessor _accessor;

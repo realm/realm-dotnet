@@ -25,6 +25,11 @@ namespace Realms.Tests.Database
             Property.Object("OtherObject", "NonPrimaryKeyObject", managedName: "OtherObject"),
         }.Build();
 
+        ~NonPrimaryKeyWithNonPKRelation()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private INonPrimaryKeyWithNonPKRelationAccessor _accessor;

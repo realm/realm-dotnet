@@ -25,6 +25,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Age", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
         }.Build();
 
+        ~NoListProperties()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private INoListPropertiesAccessor _accessor;

@@ -24,6 +24,11 @@ namespace SourceGeneratorPlayground
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
+        ~RealmObj()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IRealmObjAccessor _accessor;

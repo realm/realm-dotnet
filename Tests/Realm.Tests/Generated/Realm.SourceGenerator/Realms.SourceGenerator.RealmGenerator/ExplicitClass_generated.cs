@@ -24,6 +24,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Foo", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Foo"),
         }.Build();
 
+        ~ExplicitClass()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IExplicitClassAccessor _accessor;

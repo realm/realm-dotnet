@@ -25,6 +25,11 @@ namespace Realms.Tests.Database
             Property.Object("Level2", "Level2", managedName: "Level2"),
         }.Build();
 
+        ~Level1()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private ILevel1Accessor _accessor;

@@ -53,6 +53,11 @@ namespace Realms.Tests.Sync
             Property.Primitive("NullableGuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableGuidProperty"),
         }.Build();
 
+        ~AsymmetricObjectWithAllTypes()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IAsymmetricObject implementation
 
         private IAsymmetricObjectWithAllTypesAccessor _accessor;

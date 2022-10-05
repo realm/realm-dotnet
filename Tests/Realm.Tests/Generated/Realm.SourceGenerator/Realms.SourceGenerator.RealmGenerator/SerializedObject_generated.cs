@@ -28,6 +28,11 @@ namespace Realms.Tests.Database
             Property.PrimitiveSet("Set", RealmValueType.String, areElementsNullable: true, managedName: "Set"),
         }.Build();
 
+        ~SerializedObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private ISerializedObjectAccessor _accessor;

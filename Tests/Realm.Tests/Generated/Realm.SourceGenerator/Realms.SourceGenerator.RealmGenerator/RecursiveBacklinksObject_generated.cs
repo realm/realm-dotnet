@@ -26,6 +26,11 @@ namespace Realms.Tests
             Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent", managedName: "Children"),
         }.Build();
 
+        ~RecursiveBacklinksObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IRecursiveBacklinksObjectAccessor _accessor;

@@ -26,6 +26,11 @@ namespace Realms.Tests.Sync
             Property.Primitive("PartitionLike", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PartitionLike"),
         }.Build();
 
+        ~BasicAsymmetricObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IAsymmetricObject implementation
 
         private IBasicAsymmetricObjectAccessor _accessor;

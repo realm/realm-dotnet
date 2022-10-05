@@ -24,6 +24,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
+        ~Cities()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private ICitiesAccessor _accessor;

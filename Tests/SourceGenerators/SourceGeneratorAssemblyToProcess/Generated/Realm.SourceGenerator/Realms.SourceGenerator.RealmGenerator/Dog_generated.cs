@@ -25,6 +25,11 @@ namespace SourceGeneratorPlayground
             Property.Object("Owner", "Person", managedName: "Owner"),
         }.Build();
 
+        ~Dog()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IDogAccessor _accessor;

@@ -26,6 +26,11 @@ namespace Realms.Tests.Database
             Property.ObjectList("ListValue", "PrimaryKeyObject", managedName: "ListValue"),
         }.Build();
 
+        ~PrimaryKeyWithPKList()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IPrimaryKeyWithPKListAccessor _accessor;

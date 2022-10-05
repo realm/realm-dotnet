@@ -28,6 +28,11 @@ namespace Realms.Tests
             Property.Backlinks("Owners", "Owner", "ListOfDogs", managedName: "Owners"),
         }.Build();
 
+        ~Dog()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IDogAccessor _accessor;

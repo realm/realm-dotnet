@@ -25,6 +25,11 @@ namespace Realms.Tests.Database
             Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),
         }.Build();
 
+        ~OrderedContainer()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IOrderedContainerAccessor _accessor;

@@ -24,6 +24,11 @@ namespace Foo
             Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
         }.Build();
 
+        ~DuplicateClass()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IDuplicateClassAccessor _accessor;

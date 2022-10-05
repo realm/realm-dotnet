@@ -59,6 +59,11 @@ namespace Realms.Tests
             Property.Backlinks("ContainersObjects", "ObjectWithEmbeddedProperties", "AllTypesObject", managedName: "ContainersObjects"),
         }.Build();
 
+        ~EmbeddedAllTypesObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IEmbeddedObject implementation
 
         private IEmbeddedAllTypesObjectAccessor _accessor;

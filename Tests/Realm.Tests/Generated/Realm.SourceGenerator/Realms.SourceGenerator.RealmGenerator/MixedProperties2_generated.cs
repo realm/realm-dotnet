@@ -27,6 +27,11 @@ namespace Realms.Tests.Database
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
+        ~MixedProperties2()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IMixedProperties2Accessor _accessor;

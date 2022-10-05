@@ -29,6 +29,11 @@ namespace Realms.Tests.Database
             Property.ObjectDictionary("SubTasksDictionary", "DynamicSubTask", managedName: "SubTasksDictionary"),
         }.Build();
 
+        ~DynamicTask()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IDynamicTaskAccessor _accessor;

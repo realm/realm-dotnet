@@ -24,6 +24,11 @@ namespace Realms.Tests
             Property.ObjectList("Items", "IntPropertyObject", managedName: "Items"),
         }.Build();
 
+        ~ContainerObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IContainerObjectAccessor _accessor;

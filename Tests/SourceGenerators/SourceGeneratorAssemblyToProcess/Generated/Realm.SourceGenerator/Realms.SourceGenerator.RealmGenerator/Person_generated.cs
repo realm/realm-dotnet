@@ -26,6 +26,11 @@ namespace SourceGeneratorPlayground
             Property.Backlinks("Dogs", "Dog", "Owner", managedName: "Dogs"),
         }.Build();
 
+        ~Person()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IPersonAccessor _accessor;

@@ -24,6 +24,11 @@ namespace Realms.Tests
             Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "String"),
         }.Build();
 
+        ~RequiredStringObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IRequiredStringObjectAccessor _accessor;

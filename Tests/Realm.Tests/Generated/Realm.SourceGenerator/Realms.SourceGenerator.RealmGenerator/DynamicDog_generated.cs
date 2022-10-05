@@ -27,6 +27,11 @@ namespace Realms.Tests.Database
             Property.Backlinks("Owners", "DynamicOwner", "Dogs", managedName: "Owners"),
         }.Build();
 
+        ~DynamicDog()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IDynamicDogAccessor _accessor;

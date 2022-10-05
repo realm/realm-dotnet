@@ -55,6 +55,11 @@ namespace Realms.Tests
             Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
         }.Build();
 
+        ~ListsObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IListsObjectAccessor _accessor;

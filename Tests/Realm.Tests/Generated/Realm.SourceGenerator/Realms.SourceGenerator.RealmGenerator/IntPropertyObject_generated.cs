@@ -28,6 +28,11 @@ namespace Realms.Tests
             Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
         }.Build();
 
+        ~IntPropertyObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IIntPropertyObjectAccessor _accessor;

@@ -31,6 +31,11 @@ namespace Realms.Tests
             Property.Backlinks("__mappedBacklink", "__RemappedTypeObject", "__mappedLink", managedName: "MappedBacklink"),
         }.Build();
 
+        ~RemappedTypeObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IRemappedTypeObjectAccessor _accessor;

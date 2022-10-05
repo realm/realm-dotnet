@@ -36,6 +36,11 @@ namespace Realms.Tests.Database
             Property.RealmValueDictionary("MixedDict", managedName: "MixedDict"),
         }.Build();
 
+        ~EmbeddedGuidType()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IEmbeddedObject implementation
 
         private IEmbeddedGuidTypeAccessor _accessor;

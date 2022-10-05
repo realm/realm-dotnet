@@ -25,6 +25,11 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
+        ~PartialClass()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IPartialClassAccessor _accessor;

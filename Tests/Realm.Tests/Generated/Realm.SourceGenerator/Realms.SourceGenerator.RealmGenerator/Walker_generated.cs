@@ -27,6 +27,11 @@ namespace Realms.Tests
             Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
         }.Build();
 
+        ~Walker()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IWalkerAccessor _accessor;

@@ -26,6 +26,11 @@ namespace Realms.Tests.Database
             Property.Primitive("AfterBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "AfterBacklinks"),
         }.Build();
 
+        ~BacklinkObject()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         #region IRealmObject implementation
 
         private IBacklinkObjectAccessor _accessor;
