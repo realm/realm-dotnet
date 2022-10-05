@@ -29,11 +29,6 @@ namespace Realms.Tests.Database
             Property.PrimitiveDictionary("TestDict", RealmValueType.Int, areElementsNullable: false, managedName: "TestDict"),
         }.Build();
 
-        ~RealmValueObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IRealmValueObjectAccessor _accessor;

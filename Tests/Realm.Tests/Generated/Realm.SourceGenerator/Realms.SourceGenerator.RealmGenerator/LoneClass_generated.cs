@@ -24,11 +24,6 @@ namespace Realms.Tests.Database
             Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
-        ~LoneClass()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ILoneClassAccessor _accessor;

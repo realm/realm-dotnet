@@ -24,11 +24,6 @@ namespace Realms.Tests
             Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
 
-        ~ObjectWithRequiredStringList()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IObjectWithRequiredStringListAccessor _accessor;

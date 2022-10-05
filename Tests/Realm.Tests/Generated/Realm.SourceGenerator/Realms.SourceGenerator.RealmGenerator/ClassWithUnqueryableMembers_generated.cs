@@ -29,11 +29,6 @@ namespace Realms.Tests
             Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
         }.Build();
 
-        ~ClassWithUnqueryableMembers()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IClassWithUnqueryableMembersAccessor _accessor;

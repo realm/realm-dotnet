@@ -26,11 +26,6 @@ namespace Realms.Tests
             Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
 
-        ~DecimalsObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IDecimalsObjectAccessor _accessor;

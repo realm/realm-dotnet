@@ -25,11 +25,6 @@ namespace Realms.Tests.Database
             Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
         }.Build();
 
-        ~InternalObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IInternalObjectAccessor _accessor;

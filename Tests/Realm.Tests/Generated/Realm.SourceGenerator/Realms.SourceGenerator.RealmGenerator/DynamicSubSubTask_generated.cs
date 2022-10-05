@@ -26,11 +26,6 @@ namespace Realms.Tests.Database
             Property.Backlinks("ParentTask", "DynamicTask", "SubSubTasks", managedName: "ParentTask"),
         }.Build();
 
-        ~DynamicSubSubTask()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IDynamicSubSubTaskAccessor _accessor;

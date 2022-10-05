@@ -25,11 +25,6 @@ namespace Realms.Tests
             Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
         }.Build();
 
-        ~IntPrimaryKeyWithValueObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IIntPrimaryKeyWithValueObjectAccessor _accessor;

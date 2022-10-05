@@ -25,11 +25,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
         }.Build();
 
-        ~OnlyListProperties()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IOnlyListPropertiesAccessor _accessor;

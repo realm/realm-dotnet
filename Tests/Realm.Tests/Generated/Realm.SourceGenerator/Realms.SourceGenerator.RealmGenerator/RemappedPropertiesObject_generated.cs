@@ -25,11 +25,6 @@ namespace Realms.Tests
             Property.Primitive("name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
-        ~RemappedPropertiesObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IRemappedPropertiesObjectAccessor _accessor;

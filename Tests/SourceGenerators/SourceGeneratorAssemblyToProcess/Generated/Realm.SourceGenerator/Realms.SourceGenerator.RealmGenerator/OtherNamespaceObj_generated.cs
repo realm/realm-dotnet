@@ -24,11 +24,6 @@ namespace OtherNamespace
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
-        ~OtherNamespaceObj()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IOtherNamespaceObjAccessor _accessor;

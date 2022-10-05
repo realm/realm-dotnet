@@ -24,11 +24,6 @@ namespace Realms.Tests
             Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
         }.Build();
 
-        ~EmbeddedLevel3()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IEmbeddedLevel3Accessor _accessor;

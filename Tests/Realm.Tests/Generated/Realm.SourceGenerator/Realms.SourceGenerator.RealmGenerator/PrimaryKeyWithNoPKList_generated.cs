@@ -26,11 +26,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("ListValue", "NonPrimaryKeyObject", managedName: "ListValue"),
         }.Build();
 
-        ~PrimaryKeyWithNoPKList()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IPrimaryKeyWithNoPKListAccessor _accessor;

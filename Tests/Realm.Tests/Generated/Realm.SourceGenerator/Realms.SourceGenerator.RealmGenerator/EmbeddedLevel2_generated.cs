@@ -26,11 +26,6 @@ namespace Realms.Tests
             Property.ObjectList("Children", "EmbeddedLevel3", managedName: "Children"),
         }.Build();
 
-        ~EmbeddedLevel2()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IEmbeddedLevel2Accessor _accessor;

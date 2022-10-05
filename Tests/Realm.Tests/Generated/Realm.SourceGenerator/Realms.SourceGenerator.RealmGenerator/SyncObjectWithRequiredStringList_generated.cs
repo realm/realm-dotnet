@@ -25,11 +25,6 @@ namespace Realms.Tests.Sync
             Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
 
-        ~SyncObjectWithRequiredStringList()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ISyncObjectWithRequiredStringListAccessor _accessor;

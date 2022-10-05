@@ -36,11 +36,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("Friends", "Person", managedName: "Friends"),
         }.Build();
 
-        ~Person()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IPersonAccessor _accessor;

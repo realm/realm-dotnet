@@ -27,11 +27,6 @@ namespace Realms.Tests.Sync
             Property.Primitive("Guid", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
 
-        ~ObjectWithPartitionValue()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IObjectWithPartitionValueAccessor _accessor;

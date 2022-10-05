@@ -26,11 +26,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("SubSubTasks", "DynamicSubSubTask", managedName: "SubSubTasks"),
         }.Build();
 
-        ~DynamicSubTask()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IDynamicSubTaskAccessor _accessor;

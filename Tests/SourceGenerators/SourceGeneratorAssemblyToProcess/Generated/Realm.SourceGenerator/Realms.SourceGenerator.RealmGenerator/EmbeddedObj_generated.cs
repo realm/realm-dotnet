@@ -24,11 +24,6 @@ namespace SourceGeneratorPlayground
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
-        ~EmbeddedObj()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IEmbeddedObjAccessor _accessor;

@@ -24,11 +24,6 @@ namespace Realms.Tests.Database
             Property.Object("BacklinkObject", "BacklinkObject", managedName: "BacklinkObject"),
         }.Build();
 
-        ~SomeClass()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ISomeClassAccessor _accessor;

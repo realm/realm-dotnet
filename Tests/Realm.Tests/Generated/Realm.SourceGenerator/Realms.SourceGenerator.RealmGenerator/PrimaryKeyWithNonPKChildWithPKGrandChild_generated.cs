@@ -26,11 +26,6 @@ namespace Realms.Tests.Database
             Property.Object("NonPKChild", "NonPrimaryKeyWithPKRelation", managedName: "NonPKChild"),
         }.Build();
 
-        ~PrimaryKeyWithNonPKChildWithPKGrandChild()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IPrimaryKeyWithNonPKChildWithPKGrandChildAccessor _accessor;

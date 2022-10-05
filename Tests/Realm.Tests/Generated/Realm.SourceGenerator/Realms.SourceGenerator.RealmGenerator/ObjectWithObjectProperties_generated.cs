@@ -25,11 +25,6 @@ namespace Realms.Tests
             Property.Object("EmbeddedObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedObject"),
         }.Build();
 
-        ~ObjectWithObjectProperties()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IObjectWithObjectPropertiesAccessor _accessor;

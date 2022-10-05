@@ -21,11 +21,6 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
     }.Build();
 
-    ~NoNamespaceClass()
-    {
-        UnsubscribeFromNotifications();
-    }
-
     #region IRealmObject implementation
 
     private INoNamespaceClassAccessor _accessor;

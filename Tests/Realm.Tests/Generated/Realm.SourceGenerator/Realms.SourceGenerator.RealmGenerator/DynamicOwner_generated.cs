@@ -31,11 +31,6 @@ namespace Realms.Tests.Database
             Property.PrimitiveSet("TagsSet", RealmValueType.String, areElementsNullable: true, managedName: "TagsSet"),
         }.Build();
 
-        ~DynamicOwner()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IDynamicOwnerAccessor _accessor;

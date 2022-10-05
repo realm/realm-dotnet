@@ -24,11 +24,6 @@ namespace Realms.Tests
             Property.Primitive("Int", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
         }.Build();
 
-        ~EmbeddedIntPropertyObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private IEmbeddedIntPropertyObjectAccessor _accessor;

@@ -26,11 +26,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("RelatedCollection", "OnManagedTestClass", managedName: "RelatedCollection"),
         }.Build();
 
-        ~OnManagedTestClass()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IOnManagedTestClassAccessor _accessor;

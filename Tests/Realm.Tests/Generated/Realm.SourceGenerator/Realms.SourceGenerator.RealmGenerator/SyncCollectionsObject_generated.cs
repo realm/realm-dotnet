@@ -76,11 +76,6 @@ namespace Realms.Tests
             Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
 
-        ~SyncCollectionsObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ISyncCollectionsObjectAccessor _accessor;

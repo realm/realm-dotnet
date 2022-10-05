@@ -27,11 +27,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
         }.Build();
 
-        ~MixedProperties1()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IMixedProperties1Accessor _accessor;

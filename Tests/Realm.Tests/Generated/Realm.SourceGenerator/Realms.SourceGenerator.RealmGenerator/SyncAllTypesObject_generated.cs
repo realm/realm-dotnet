@@ -43,11 +43,6 @@ namespace Realms.Tests
             Property.Object("EmbeddedObjectProperty", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectProperty"),
         }.Build();
 
-        ~SyncAllTypesObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ISyncAllTypesObjectAccessor _accessor;

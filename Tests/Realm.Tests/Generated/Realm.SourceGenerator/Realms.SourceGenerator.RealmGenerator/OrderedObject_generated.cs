@@ -25,11 +25,6 @@ namespace Realms.Tests.Database
             Property.Primitive("IsPartOfResults", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsPartOfResults"),
         }.Build();
 
-        ~OrderedObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IOrderedObjectAccessor _accessor;

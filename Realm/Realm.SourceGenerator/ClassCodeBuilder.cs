@@ -259,12 +259,6 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
 {parameterlessConstructorString}
 
-{(_classInfo.HasPropertyChangedEvent ? string.Empty :
-$@"~{_classInfo.Name}()
-{{
-    UnsubscribeFromNotifications();
-}}")}
-
 #region {baseInterface} implementation
 
 private {_accessorInterfaceName} _accessor;

@@ -25,11 +25,6 @@ namespace Realms.Tests.Database
             Property.Object("C", "IntPropertyObject", managedName: "C"),
         }.Build();
 
-        ~B()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IBAccessor _accessor;

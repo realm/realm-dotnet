@@ -24,11 +24,6 @@ namespace Realms.Tests
             Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
-        ~PrimaryKeyInt16Object()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IPrimaryKeyInt16ObjectAccessor _accessor;

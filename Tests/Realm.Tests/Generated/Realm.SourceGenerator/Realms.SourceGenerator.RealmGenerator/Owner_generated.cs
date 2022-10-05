@@ -27,11 +27,6 @@ namespace Realms.Tests
             Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
         }.Build();
 
-        ~Owner()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IOwnerAccessor _accessor;

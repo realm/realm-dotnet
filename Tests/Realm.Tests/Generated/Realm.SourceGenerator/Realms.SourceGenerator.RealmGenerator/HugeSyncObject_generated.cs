@@ -26,11 +26,6 @@ namespace Realms.Tests
             Property.Primitive("Data", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Data"),
         }.Build();
 
-        ~HugeSyncObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IHugeSyncObjectAccessor _accessor;

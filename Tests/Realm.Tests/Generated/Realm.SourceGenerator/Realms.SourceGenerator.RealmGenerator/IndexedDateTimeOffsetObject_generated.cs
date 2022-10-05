@@ -24,11 +24,6 @@ namespace Realms.Tests.Database
             Property.Primitive("DateTimeOffset", RealmValueType.Date, isPrimaryKey: false, isIndexed: true, isNullable: false, managedName: "DateTimeOffset"),
         }.Build();
 
-        ~IndexedDateTimeOffsetObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IIndexedDateTimeOffsetObjectAccessor _accessor;

@@ -24,11 +24,6 @@ namespace SourceGeneratorAssemblyToProcess
             Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
         }.Build();
 
-        ~AllTypesClass()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IAllTypesClassAccessor _accessor;

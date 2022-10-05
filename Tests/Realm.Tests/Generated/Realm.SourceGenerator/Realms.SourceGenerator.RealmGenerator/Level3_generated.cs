@@ -24,11 +24,6 @@ namespace Realms.Tests.Database
             Property.Primitive("DateValue", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DateValue"),
         }.Build();
 
-        ~Level3()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ILevel3Accessor _accessor;

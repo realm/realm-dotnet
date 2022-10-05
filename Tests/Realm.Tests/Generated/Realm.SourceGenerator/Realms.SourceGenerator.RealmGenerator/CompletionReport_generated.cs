@@ -25,11 +25,6 @@ namespace Realms.Tests.Database
             Property.Primitive("Remarks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Remarks"),
         }.Build();
 
-        ~CompletionReport()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IEmbeddedObject implementation
 
         private ICompletionReportAccessor _accessor;

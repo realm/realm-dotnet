@@ -32,11 +32,6 @@ namespace Realms.Tests
             Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
         }.Build();
 
-        ~CounterObject()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private ICounterObjectAccessor _accessor;

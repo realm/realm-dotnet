@@ -27,11 +27,6 @@ namespace Realms.Tests.Database
             Property.ObjectList("Reports", "Report", managedName: "Reports"),
         }.Build();
 
-        ~Product()
-        {
-            UnsubscribeFromNotifications();
-        }
-
         #region IRealmObject implementation
 
         private IProductAccessor _accessor;
