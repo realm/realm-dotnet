@@ -61,7 +61,7 @@ struct HttpClientResponse {
 
 HttpClientTransport::HttpClientTransport(GCHandleHolder managed_http_client) : m_managed_http_client(std::move(managed_http_client)) {}
 
-void HttpClientTransport::send_request_to_server(Request&& request, ResponseFunction&& completionBlock) {
+void HttpClientTransport::send_request_to_server(const Request& request, ResponseFunction&& completionBlock) {
     std::vector<std::pair<char*, char*>> headers;
     for (auto& kvp : request.headers) {
         headers.push_back(std::make_pair(const_cast<char*>(kvp.first.c_str()), const_cast<char*>(kvp.second.c_str())));
@@ -87,7 +87,7 @@ extern "C" {
     REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
         s_execute_request = wrap_managed_callback(execute);
-        
+
         realm::binding::s_can_call_managed = true;
     }
 

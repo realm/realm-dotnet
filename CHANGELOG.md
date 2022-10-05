@@ -1,16 +1,18 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Prioritize integration of local changes over remote changes - shorten the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. (Core upgrade)
+* Greatly improve the performance of sorting or distincting a Dictionary's keys or values. The most expensive operation is now performed O(log N) rather than O(N log N) times, and large Dictionaries can see upwards of 99% reduction in time to sort. (Core upgrade)
+* Seamlessly handle migrating an App Services application deployment model. (Core upgrade)
 
 ### Fixed
-* None
+* Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.9.0
 
 ## 10.16.0 (2022-10-03)
 
