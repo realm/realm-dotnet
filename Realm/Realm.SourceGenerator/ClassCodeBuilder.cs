@@ -245,12 +245,14 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 ";
             }
 
-            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {_classInfo.ObjectType.ToObjectSchemaObjectType()})
+            var objectTypeString = $"ObjectSchema.ObjectType.{_classInfo.ObjectType}";
+
+            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
 
-            var baseInterface = _classInfo.ObjectType.ToInterface();
+            var baseInterface = $"I{_classInfo.ObjectType}";
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
             var contents = $@"{schema}

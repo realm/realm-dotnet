@@ -76,45 +76,36 @@ namespace Realms.SourceGenerator
 
         public static IEnumerable<ObjectType> ImplementingObjectTypes(this ITypeSymbol symbol)
         {
-            var objectTypes = new List<ObjectType>();
             foreach (var i in symbol.Interfaces)
             {
-                if (i.Name == "IRealmObject")
+                if (IsIRealmObjectInterface(i))
                 {
-                    objectTypes.Add(ObjectType.RealmObject);
+                    yield return ObjectType.RealmObject;
                 }
-                else if (i.Name == "IEmbeddedObject")
+                else if (IsIEmbeddedObjectInterface(i))
                 {
-                    objectTypes.Add(ObjectType.EmbeddedObject);
+                    yield return ObjectType.EmbeddedObject;
                 }
-                else if (i.Name == "IAsymmetricObject")
+                else if (IsIAsymmetricObjectInterface(i))
                 {
-                    objectTypes.Add(ObjectType.AsymmetricObject);
+                    yield return ObjectType.AsymmetricObject;
                 }
             }
-
-            return objectTypes;
         }
 
-        public static bool IsAnyRealmObjectType(this ITypeSymbol symbol)
-        {
-            return symbol.ImplementingObjectTypes().Any();
-        }
+        public static bool IsAnyRealmObjectType(this ITypeSymbol symbol) => symbol.ImplementingObjectTypes().Any();
 
-        public static bool IsRealmObject(this ITypeSymbol symbol)
-        {
-            return symbol.Interfaces.Any(i => i.Name == "IRealmObject");
-        }
+        public static bool IsRealmObject(this ITypeSymbol symbol) => symbol.Interfaces.Any(IsIRealmObjectInterface);
 
-        public static bool IsEmbeddedObject(this ITypeSymbol symbol)
-        {
-            return symbol.Interfaces.Any(i => i.Name == "IEmbeddedObject");
-        }
+        public static bool IsEmbeddedObject(this ITypeSymbol symbol) => symbol.Interfaces.Any(IsIEmbeddedObjectInterface);
 
-        public static bool IsAsymmetricObject(this ITypeSymbol symbol)
-        {
-            return symbol.Interfaces.Any(i => i.Name == "IAsymmetricObject");
-        }
+        public static bool IsAsymmetricObject(this ITypeSymbol symbol) => symbol.Interfaces.Any(IsIAsymmetricObjectInterface);
+
+        private static bool IsIRealmObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IRealmObject";
+
+        private static bool IsIEmbeddedObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IEmbeddedObject";
+
+        private static bool IsIAsymmetricObjectInterface(this INamedTypeSymbol interfaceSymbol) => interfaceSymbol.Name == "IAsymmetricObject";
 
         public static INamedTypeSymbol AsNamed(this ITypeSymbol symbol)
         {
@@ -124,20 +115,6 @@ namespace Realms.SourceGenerator
             }
 
             throw new Exception($"symbol is not INamedTypeSymbol. Actual type: {symbol.GetType().Name}");
-        }
-
-        public static string ToDisplayString(this Accessibility acc)
-        {
-            return acc switch
-            {
-                Accessibility.Private => "private",
-                Accessibility.ProtectedAndInternal => "private protected",
-                Accessibility.Protected => "protected",
-                Accessibility.Internal => "internal",
-                Accessibility.ProtectedOrInternal => "protected internal",
-                Accessibility.Public => "public",
-                _ => throw new ArgumentException("Unrecognised accessibilty")
-            };
         }
 
         public static string ToReadableName(this ITypeSymbol symbol)
@@ -249,28 +226,6 @@ namespace Realms.SourceGenerator
         public static string ToCodeString(this bool boolean)
         {
             return boolean.ToString().ToLower();
-        }
-
-        public static string ToInterface(this ObjectType ot)
-        {
-            return ot switch
-            {
-                ObjectType.RealmObject => "IRealmObject",
-                ObjectType.EmbeddedObject => "IEmbeddedObject",
-                ObjectType.AsymmetricObject => "IAsymmetricObject",
-                _ => throw new NotImplementedException(),
-            };
-        }
-
-        public static string ToObjectSchemaObjectType(this ObjectType ot)
-        {
-            return ot switch
-            {
-                ObjectType.RealmObject => "ObjectSchema.ObjectType.RealmObject",
-                ObjectType.EmbeddedObject => "ObjectSchema.ObjectType.EmbeddedObject",
-                ObjectType.AsymmetricObject => "ObjectSchema.ObjectType.AsymmetricObject",
-                _ => throw new NotImplementedException(),
-            };
         }
 
         #region Formatting
