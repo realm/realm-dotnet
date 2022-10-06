@@ -145,14 +145,6 @@ namespace Realms
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="RealmObjectBase"/> class.
-        /// </summary>
-        ~RealmObjectBase()
-        {
-            UnsubscribeFromNotifications();
-        }
-
-        /// <summary>
         /// Sets the accessor for the newly managed object and possibly adds the object to the realm.
         /// </summary>
         /// <param name="accessor">The accessor to set.</param>

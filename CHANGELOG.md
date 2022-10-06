@@ -106,6 +106,7 @@
 * If you set a subscription on a link in flexible sync, the server would not know how to handle it ([#5409](https://github.com/realm/realm-core/issues/5409), since v11.6.1)
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
 * Added validation to prevent adding a removed object using Realm.Add. (Issue [#3020](https://github.com/realm/realm-dotnet/issues/3020))
+* Fixed a NullReferenceException occurring in RealmObject's finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
