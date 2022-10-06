@@ -716,6 +716,27 @@ namespace Realms.Tests.Database
             Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
 
+        [Test]
+        public void RealmObject_WhenThrowsBeforeInitializer_DoesNotCrash()
+        {
+            // This tests that a RealmObject without an accessor (due to an exception thrown
+            // before being initialized) does not cause a crash (NullReferenceException) once
+            // the object gets GCed. (Simulate a crash by adding a destructor in RealmObject
+            // that tries to access a member on "_accessor".)
+            for (var i = 0; i < 1000; i++)
+            {
+                try
+                {
+                    _ = new ThrowsBeforeInitializer();
+                }
+                catch
+                {
+                }
+
+                GC.Collect();
+            }
+        }
+
         [Serializable]
         public class SerializedObject : RealmObject
         {
@@ -745,6 +766,22 @@ namespace Realms.Tests.Database
             protected internal override void OnManaged()
             {
                 OnManagedCalled++;
+            }
+        }
+
+        private class ThrowsBeforeInitializer : RealmObject
+        {
+            [PrimaryKey]
+            public int Id { get; set; }
+
+            public object WillThrow = new Thrower();
+
+            internal class Thrower
+            {
+                public Thrower()
+                {
+                    throw new Exception("Exception thrown before initializer.");
+                }
             }
         }
     }
