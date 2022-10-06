@@ -161,5 +161,25 @@ namespace Realms.Tests.Database
                 EncryptionKey = TestHelpers.GetEncryptionKey(23)
             });
         }
+
+        [Test]
+        public void InMemoryRealmWithFrozenObjects_WhenDeleted_DoesNotThrow()
+        {
+            var realm = GetRealm(_config);
+            var frozenObj = realm.Write(() =>
+            {
+                return realm.Add(new IntPropertyObject
+                {
+                    Int = 1
+                }).Freeze();
+            });
+
+            frozenObj.Realm.Dispose();
+            realm.Dispose();
+
+            Assert.That(frozenObj.Realm.IsClosed, Is.True);
+            Assert.That(realm.IsClosed, Is.True);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(_config));
+        }
     }
 }
