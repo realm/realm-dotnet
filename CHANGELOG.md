@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.17.0 (2022-10-06)
 
 ### Enhancements
 * Prioritize integration of local changes over remote changes - shorten the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. (Core upgrade)
