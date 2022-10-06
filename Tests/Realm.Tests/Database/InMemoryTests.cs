@@ -177,8 +177,8 @@ namespace Realms.Tests.Database
             frozenObj.Realm.Dispose();
             realm.Dispose();
 
-            Assert.That(frozenObj.Realm.IsClosed);
-            Assert.That(realm.IsClosed);
+            Assert.That(frozenObj.Realm.IsClosed, Is.True);
+            Assert.That(realm.IsClosed, Is.True);
             Assert.DoesNotThrow(() => Realm.DeleteRealm(_config));
         }
     }

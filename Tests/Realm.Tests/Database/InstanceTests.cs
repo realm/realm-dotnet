@@ -1275,6 +1275,27 @@ namespace Realms.Tests.Database
             Assert.That(allFoos.Count(), Is.EqualTo(0));
         }
 
+        [Test]
+        public void RealmWithFrozenObjects_WhenDeleted_DoesNotThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            var frozenObj = realm.Write(() =>
+            {
+                return realm.Add(new IntPropertyObject
+                {
+                    Int = 1
+                }).Freeze();
+            });
+
+            frozenObj.Realm.Dispose();
+            realm.Dispose();
+
+            Assert.That(frozenObj.Realm.IsClosed, Is.True);
+            Assert.That(realm.IsClosed, Is.True);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
         private const int DummyDataSize = 200;
 
         private static void AddDummyData(Realm realm)
