@@ -26,11 +26,10 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
+    - uses: realm/ci-actions/mdb-realm/cleanup@30bd9ead57756016f2e2ac7630433cf0883d1bae
       with:
         projectId: ${{ secrets.AtlasProjectId}}
         realmUrl: ${{ secrets.BaseUrl }}
         atlasUrl: ${{ secrets.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: realm-dotnet

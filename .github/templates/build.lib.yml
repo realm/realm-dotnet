@@ -74,11 +74,14 @@ cleanup-cluster:
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs.deploy-cluster.outputs.clusterName }}"
+    #@ if runSyncTests:
+    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    realmUrl: ${{ needs.deploy-cluster.outputs.realmUrl }}
+    atlasUrl: ${{ needs.deploy-cluster.outputs.atlasUrl }}
+    #@ end
   secrets:
     #@ if runSyncTests:
     AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
     #@ end

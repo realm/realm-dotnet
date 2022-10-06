@@ -27,7 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Cluster
     outputs:
-      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
+      clusterName: ${{ steps.deploy-cluster.outputs.clusterName }}
+      realmUrl: ${{ steps.deploy-cluster.outputs.realmUrl }}
+      atlasUrl: ${{ steps.deploy-cluster.outputs.atlasUrl }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
@@ -35,15 +37,14 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      id: deploy-mdb-apps
+    - uses: realm/ci-actions/mdb-realm/deploy@30bd9ead57756016f2e2ac7630433cf0883d1bae
+      id: deploy-cluster
       with:
         projectId: ${{ secrets.AtlasProjectId}}
         realmUrl: ${{ secrets.BaseUrl }}
         atlasUrl: ${{ secrets.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: realm-dotnet
   deploy-apps:
     name: Deploy Apps
     needs: deploy-baas
@@ -62,5 +63,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . --baasurl=${{ steps.deploy-mdb-apps.outputs.realmUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps

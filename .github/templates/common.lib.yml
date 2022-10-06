@@ -14,8 +14,6 @@
 #@ actionSetupNode = "actions/setup-node@v2"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
 #@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@v3"
-#@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7"
-#@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]

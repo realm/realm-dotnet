@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls", "setupDotnet")
-#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "prepareTest")
 
 ---
 name: test-code-coverage
@@ -12,8 +12,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ setupDotnet()
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchWrapperBinaries())
+      - #@ template.replace(prepareTest(fetchWrappers=True))
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
