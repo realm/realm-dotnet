@@ -265,7 +265,7 @@ private {_accessorInterfaceName} _accessor;
 
 IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-internal {_accessorInterfaceName} Accessor => _accessor = _accessor ?? new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
+internal {_accessorInterfaceName} Accessor => _accessor ?? (_accessor = new {_unmanagedAccessorClassName}(typeof({_classInfo.Name})));
 
 [IgnoreDataMember, XmlIgnore]
 public bool IsManaged => Accessor.IsManaged;
@@ -291,7 +291,7 @@ public int BacklinksCount => Accessor.BacklinksCount;
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;
-    var oldAccessor = _accessor as {_accessorInterfaceName};
+    var oldAccessor = ({_accessorInterfaceName})_accessor;
     _accessor = newAccessor;
 
     if (helper != null)

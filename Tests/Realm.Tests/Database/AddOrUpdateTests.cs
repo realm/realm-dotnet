@@ -1065,6 +1065,57 @@ namespace Realms.Tests.Database
         }
     }
 
+        [Test]
+        public void Add_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(first));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddToList_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new PrimaryKeyWithPKList
+                {
+                    ListValue = { first }
+                }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddMany_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new[] { first }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
     public partial class Parent : TestRealmObject
     {
         [PrimaryKey]

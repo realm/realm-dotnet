@@ -561,6 +561,7 @@ namespace Realms
         {
             ThrowIfDisposed();
             Argument.NotNull(obj, nameof(obj));
+            Argument.Ensure(obj.IsValid, "Cannot add the object to the realm because it has been removed.", nameof(obj));
 
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
             AddInternal(obj, obj.GetType(), update);
@@ -591,7 +592,12 @@ namespace Realms
         {
             ThrowIfDisposed();
             Argument.NotNull(objs, nameof(objs));
-            Argument.Ensure(objs.All(o => o != null), $"{nameof(objs)} must not contain null values.", nameof(objs));
+
+            foreach (var obj in objs)
+            {
+                Argument.Ensure(obj != null, $"{nameof(objs)} must not contain null objects.", nameof(objs));
+                Argument.Ensure(obj.IsValid, $"{nameof(objs)} must not contain removed objects.", nameof(objs));
+            }
 
             foreach (var obj in objs)
             {

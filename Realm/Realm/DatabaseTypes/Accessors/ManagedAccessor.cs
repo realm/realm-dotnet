@@ -84,6 +84,14 @@ namespace Realms
             _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="ManagedAccessor"/> class.
+        /// </summary>
+        ~ManagedAccessor()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         /// <inheritdoc/>
         public RealmValue GetValue(string propertyName)
         {
@@ -233,7 +241,9 @@ namespace Realms
         /// <inheritdoc/>
         public TypeInfo GetTypeInfo(IRealmObjectBase obj)
         {
+#pragma warning disable CA1062 // Validate arguments of public methods
             return TypeInfoHelper.GetInfo(obj);
+#pragma warning restore CA1062 // Validate arguments of public methods
         }
 
         /// <inheritdoc/>

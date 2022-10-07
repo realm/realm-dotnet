@@ -32,7 +32,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IClassWithoutParameterlessConstructorAccessor Accessor => _accessor = _accessor ?? new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor));
+        internal IClassWithoutParameterlessConstructorAccessor Accessor => _accessor ?? (_accessor = new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -58,7 +58,7 @@ namespace SourceGeneratorAssemblyToProcess
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IClassWithoutParameterlessConstructorAccessor)managedAccessor;
-            var oldAccessor = _accessor as IClassWithoutParameterlessConstructorAccessor;
+            var oldAccessor = (IClassWithoutParameterlessConstructorAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

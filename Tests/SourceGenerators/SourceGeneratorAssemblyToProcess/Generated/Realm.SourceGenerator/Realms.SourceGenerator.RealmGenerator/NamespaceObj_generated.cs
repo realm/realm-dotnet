@@ -32,7 +32,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal INamespaceObjAccessor Accessor => _accessor = _accessor ?? new NamespaceObjUnmanagedAccessor(typeof(NamespaceObj));
+        internal INamespaceObjAccessor Accessor => _accessor ?? (_accessor = new NamespaceObjUnmanagedAccessor(typeof(NamespaceObj)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -58,7 +58,7 @@ namespace SourceGeneratorAssemblyToProcess
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (INamespaceObjAccessor)managedAccessor;
-            var oldAccessor = _accessor as INamespaceObjAccessor;
+            var oldAccessor = (INamespaceObjAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

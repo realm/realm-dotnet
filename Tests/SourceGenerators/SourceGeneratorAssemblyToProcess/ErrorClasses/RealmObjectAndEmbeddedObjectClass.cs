@@ -23,6 +23,5 @@ namespace SourceGeneratorPlayground
     public partial class RealmObjectAndEmbeddedObjectClass : IRealmObject, IEmbeddedObject
     {
     }
-
 }
 
