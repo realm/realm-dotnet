@@ -35,7 +35,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IDynamicTaskAccessor Accessor => _accessor = _accessor ?? new DynamicTaskUnmanagedAccessor(typeof(DynamicTask));
+        internal IDynamicTaskAccessor Accessor => _accessor ?? (_accessor = new DynamicTaskUnmanagedAccessor(typeof(DynamicTask)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDynamicTaskAccessor)managedAccessor;
-            var oldAccessor = _accessor as IDynamicTaskAccessor;
+            var oldAccessor = (IDynamicTaskAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

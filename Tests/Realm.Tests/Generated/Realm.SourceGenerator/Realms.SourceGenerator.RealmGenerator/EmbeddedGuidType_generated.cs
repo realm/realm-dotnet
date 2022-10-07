@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedGuidTypeAccessor Accessor => _accessor = _accessor ?? new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType));
+        internal IEmbeddedGuidTypeAccessor Accessor => _accessor ?? (_accessor = new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -68,7 +68,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedGuidTypeAccessor)managedAccessor;
-            var oldAccessor = _accessor as IEmbeddedGuidTypeAccessor;
+            var oldAccessor = (IEmbeddedGuidTypeAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

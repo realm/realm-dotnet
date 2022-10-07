@@ -32,7 +32,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IPrimaryKeyWithPKRelationAccessor Accessor => _accessor = _accessor ?? new PrimaryKeyWithPKRelationUnmanagedAccessor(typeof(PrimaryKeyWithPKRelation));
+        internal IPrimaryKeyWithPKRelationAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyWithPKRelationUnmanagedAccessor(typeof(PrimaryKeyWithPKRelation)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -58,7 +58,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPrimaryKeyWithPKRelationAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPrimaryKeyWithPKRelationAccessor;
+            var oldAccessor = (IPrimaryKeyWithPKRelationAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

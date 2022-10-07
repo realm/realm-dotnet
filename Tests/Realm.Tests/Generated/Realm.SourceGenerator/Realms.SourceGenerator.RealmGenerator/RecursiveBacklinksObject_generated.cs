@@ -32,7 +32,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IRecursiveBacklinksObjectAccessor Accessor => _accessor = _accessor ?? new RecursiveBacklinksObjectUnmanagedAccessor(typeof(RecursiveBacklinksObject));
+        internal IRecursiveBacklinksObjectAccessor Accessor => _accessor ?? (_accessor = new RecursiveBacklinksObjectUnmanagedAccessor(typeof(RecursiveBacklinksObject)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -58,7 +58,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IRecursiveBacklinksObjectAccessor)managedAccessor;
-            var oldAccessor = _accessor as IRecursiveBacklinksObjectAccessor;
+            var oldAccessor = (IRecursiveBacklinksObjectAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

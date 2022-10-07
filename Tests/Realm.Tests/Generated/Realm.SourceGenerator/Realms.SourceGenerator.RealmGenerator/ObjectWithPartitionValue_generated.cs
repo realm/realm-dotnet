@@ -33,7 +33,7 @@ namespace Realms.Tests.Sync
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectWithPartitionValueAccessor Accessor => _accessor = _accessor ?? new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue));
+        internal IObjectWithPartitionValueAccessor Accessor => _accessor ?? (_accessor = new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -59,7 +59,7 @@ namespace Realms.Tests.Sync
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithPartitionValueAccessor)managedAccessor;
-            var oldAccessor = _accessor as IObjectWithPartitionValueAccessor;
+            var oldAccessor = (IObjectWithPartitionValueAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

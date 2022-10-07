@@ -30,7 +30,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IPrimaryKeyNullableByteObjectAccessor Accessor => _accessor = _accessor ?? new PrimaryKeyNullableByteObjectUnmanagedAccessor(typeof(PrimaryKeyNullableByteObject));
+        internal IPrimaryKeyNullableByteObjectAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyNullableByteObjectUnmanagedAccessor(typeof(PrimaryKeyNullableByteObject)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPrimaryKeyNullableByteObjectAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPrimaryKeyNullableByteObjectAccessor;
+            var oldAccessor = (IPrimaryKeyNullableByteObjectAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

@@ -30,7 +30,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IOneNonListPropertyAccessor Accessor => _accessor = _accessor ?? new OneNonListPropertyUnmanagedAccessor(typeof(OneNonListProperty));
+        internal IOneNonListPropertyAccessor Accessor => _accessor ?? (_accessor = new OneNonListPropertyUnmanagedAccessor(typeof(OneNonListProperty)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOneNonListPropertyAccessor)managedAccessor;
-            var oldAccessor = _accessor as IOneNonListPropertyAccessor;
+            var oldAccessor = (IOneNonListPropertyAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

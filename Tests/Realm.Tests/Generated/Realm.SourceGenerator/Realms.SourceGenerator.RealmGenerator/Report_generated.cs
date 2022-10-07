@@ -33,7 +33,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IReportAccessor Accessor => _accessor = _accessor ?? new ReportUnmanagedAccessor(typeof(Report));
+        internal IReportAccessor Accessor => _accessor ?? (_accessor = new ReportUnmanagedAccessor(typeof(Report)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -59,7 +59,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IReportAccessor)managedAccessor;
-            var oldAccessor = _accessor as IReportAccessor;
+            var oldAccessor = (IReportAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

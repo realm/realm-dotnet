@@ -30,7 +30,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IIndexedDateTimeOffsetObjectAccessor Accessor => _accessor = _accessor ?? new IndexedDateTimeOffsetObjectUnmanagedAccessor(typeof(IndexedDateTimeOffsetObject));
+        internal IIndexedDateTimeOffsetObjectAccessor Accessor => _accessor ?? (_accessor = new IndexedDateTimeOffsetObjectUnmanagedAccessor(typeof(IndexedDateTimeOffsetObject)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IIndexedDateTimeOffsetObjectAccessor)managedAccessor;
-            var oldAccessor = _accessor as IIndexedDateTimeOffsetObjectAccessor;
+            var oldAccessor = (IIndexedDateTimeOffsetObjectAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IPersonAccessor Accessor => _accessor = _accessor ?? new PersonUnmanagedAccessor(typeof(Person));
+        internal IPersonAccessor Accessor => _accessor ?? (_accessor = new PersonUnmanagedAccessor(typeof(Person)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -68,7 +68,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPersonAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPersonAccessor;
+            var oldAccessor = (IPersonAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

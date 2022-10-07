@@ -31,7 +31,7 @@ namespace Realms.Tests.Sync
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal ISyncObjectWithRequiredStringListAccessor Accessor => _accessor = _accessor ?? new SyncObjectWithRequiredStringListUnmanagedAccessor(typeof(SyncObjectWithRequiredStringList));
+        internal ISyncObjectWithRequiredStringListAccessor Accessor => _accessor ?? (_accessor = new SyncObjectWithRequiredStringListUnmanagedAccessor(typeof(SyncObjectWithRequiredStringList)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -57,7 +57,7 @@ namespace Realms.Tests.Sync
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ISyncObjectWithRequiredStringListAccessor)managedAccessor;
-            var oldAccessor = _accessor as ISyncObjectWithRequiredStringListAccessor;
+            var oldAccessor = (ISyncObjectWithRequiredStringListAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

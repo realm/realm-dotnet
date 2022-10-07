@@ -1063,7 +1063,6 @@ namespace Realms.Tests.Database
 
             Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
         }
-    }
 
         [Test]
         public void Add_WhenSameRefWasDeleted_ShouldThrow()
@@ -1115,6 +1114,7 @@ namespace Realms.Tests.Database
                 _realm.Write(() => _realm.Add(new[] { first }));
             }, Throws.TypeOf<ArgumentException>());
         }
+    }
 
     public partial class Parent : TestRealmObject
     {

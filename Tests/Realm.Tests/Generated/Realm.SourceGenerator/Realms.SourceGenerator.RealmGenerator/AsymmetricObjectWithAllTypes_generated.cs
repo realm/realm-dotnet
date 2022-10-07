@@ -59,7 +59,7 @@ namespace Realms.Tests.Sync
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IAsymmetricObjectWithAllTypesAccessor Accessor => _accessor = _accessor ?? new AsymmetricObjectWithAllTypesUnmanagedAccessor(typeof(AsymmetricObjectWithAllTypes));
+        internal IAsymmetricObjectWithAllTypesAccessor Accessor => _accessor ?? (_accessor = new AsymmetricObjectWithAllTypesUnmanagedAccessor(typeof(AsymmetricObjectWithAllTypes)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAsymmetricObjectWithAllTypesAccessor)managedAccessor;
-            var oldAccessor = _accessor as IAsymmetricObjectWithAllTypesAccessor;
+            var oldAccessor = (IAsymmetricObjectWithAllTypesAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

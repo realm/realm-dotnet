@@ -16,23 +16,21 @@ using Realms.Schema;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ChildObjectHelper))]
-    public partial class Child : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(ThrowsBeforeInitializerObjectHelper))]
+    public partial class ThrowsBeforeInitializer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Child", ObjectSchema.ObjectType.RealmObject)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ThrowsBeforeInitializer", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Object("Parent", "Parent", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation
 
-        private IChildAccessor _accessor;
+        private IThrowsBeforeInitializerAccessor _accessor;
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IChildAccessor Accessor => _accessor ?? (_accessor = new ChildUnmanagedAccessor(typeof(Child)));
+        internal IThrowsBeforeInitializerAccessor Accessor => _accessor ?? (_accessor = new ThrowsBeforeInitializerUnmanagedAccessor(typeof(ThrowsBeforeInitializer)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -57,26 +55,17 @@ namespace Realms.Tests.Database
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IChildAccessor)managedAccessor;
-            var oldAccessor = (IChildAccessor)_accessor;
+            var newAccessor = (IThrowsBeforeInitializerAccessor)managedAccessor;
+            var oldAccessor = (IThrowsBeforeInitializerAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)
             {
 
-                if(!skipDefaults || oldAccessor.Id != default(long))
+                if(!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.Name != default(string))
-                {
-                    newAccessor.Name = oldAccessor.Name;
-                }
-                if(oldAccessor.Parent != null)
-                {
-                    newAccessor.Realm.Add(oldAccessor.Parent, update);
-                }
-                newAccessor.Parent = oldAccessor.Parent;
             }
 
             if (_propertyChanged != null)
@@ -134,9 +123,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Child(RealmValue val) => val.AsRealmObject<Child>();
+        public static explicit operator ThrowsBeforeInitializer(RealmValue val) => val.AsRealmObject<ThrowsBeforeInitializer>();
 
-        public static implicit operator RealmValue(Child val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(ThrowsBeforeInitializer val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -171,20 +160,20 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ChildObjectHelper : IRealmObjectHelper
+        private class ThrowsBeforeInitializerObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ChildManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new ThrowsBeforeInitializerManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Child();
+            public IRealmObjectBase CreateInstance() => new ThrowsBeforeInitializer();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
-                value = ((IChildAccessor)instance.Accessor).Id;
+                value = ((IThrowsBeforeInitializerAccessor)instance.Accessor).Id;
                 return true;
             }
         }
@@ -194,41 +183,25 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IChildAccessor : IRealmAccessor
+    internal interface IThrowsBeforeInitializerAccessor : IRealmAccessor
     {
-        long Id { get; set; }
-
-        string Name { get; set; }
-
-        Parent Parent { get; set; }
+        int Id { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ChildManagedAccessor : ManagedAccessor, IChildAccessor
+    internal class ThrowsBeforeInitializerManagedAccessor : ManagedAccessor, IThrowsBeforeInitializerAccessor
     {
-        public long Id
+        public int Id
         {
-            get => (long)GetValue("Id");
+            get => (int)GetValue("Id");
             set => SetValueUnique("Id", value);
-        }
-
-        public string Name
-        {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
-        }
-
-        public Parent Parent
-        {
-            get => (Parent)GetValue("Parent");
-            set => SetValue("Parent", value);
         }
     }
 
-    internal class ChildUnmanagedAccessor : UnmanagedAccessor, IChildAccessor
+    internal class ThrowsBeforeInitializerUnmanagedAccessor : UnmanagedAccessor, IThrowsBeforeInitializerAccessor
     {
-        private long _id;
-        public long Id
+        private int _id;
+        public int Id
         {
             get => _id;
             set
@@ -238,29 +211,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
-            }
-        }
-
-        private Parent _parent;
-        public Parent Parent
-        {
-            get => _parent;
-            set
-            {
-                _parent = value;
-                RaisePropertyChanged("Parent");
-            }
-        }
-
-        public ChildUnmanagedAccessor(Type objectType) : base(objectType)
+        public ThrowsBeforeInitializerUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
@@ -269,8 +220,6 @@ namespace Realms.Tests.Database.Generated
             return propertyName switch
             {
                 "Id" => _id,
-                "Name" => _name,
-                "Parent" => _parent,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -281,12 +230,6 @@ namespace Realms.Tests.Database.Generated
             {
                 case "Id":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Name":
-                    Name = (string)val;
-                    return;
-                case "Parent":
-                    Parent = (Parent)val;
-                    return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
@@ -299,7 +242,7 @@ namespace Realms.Tests.Database.Generated
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (long)val;
+            Id = (int)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

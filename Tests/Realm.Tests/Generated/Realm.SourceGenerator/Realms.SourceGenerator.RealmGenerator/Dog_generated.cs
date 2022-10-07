@@ -34,7 +34,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IDogAccessor Accessor => _accessor = _accessor ?? new DogUnmanagedAccessor(typeof(Dog));
+        internal IDogAccessor Accessor => _accessor ?? (_accessor = new DogUnmanagedAccessor(typeof(Dog)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -60,7 +60,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDogAccessor)managedAccessor;
-            var oldAccessor = _accessor as IDogAccessor;
+            var oldAccessor = (IDogAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

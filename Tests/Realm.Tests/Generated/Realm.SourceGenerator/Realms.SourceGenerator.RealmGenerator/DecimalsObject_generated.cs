@@ -32,7 +32,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IDecimalsObjectAccessor Accessor => _accessor = _accessor ?? new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject));
+        internal IDecimalsObjectAccessor Accessor => _accessor ?? (_accessor = new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -58,7 +58,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDecimalsObjectAccessor)managedAccessor;
-            var oldAccessor = _accessor as IDecimalsObjectAccessor;
+            var oldAccessor = (IDecimalsObjectAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

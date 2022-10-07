@@ -35,7 +35,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IClassWithUnqueryableMembersAccessor Accessor => _accessor = _accessor ?? new ClassWithUnqueryableMembersUnmanagedAccessor(typeof(ClassWithUnqueryableMembers));
+        internal IClassWithUnqueryableMembersAccessor Accessor => _accessor ?? (_accessor = new ClassWithUnqueryableMembersUnmanagedAccessor(typeof(ClassWithUnqueryableMembers)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IClassWithUnqueryableMembersAccessor)managedAccessor;
-            var oldAccessor = _accessor as IClassWithUnqueryableMembersAccessor;
+            var oldAccessor = (IClassWithUnqueryableMembersAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

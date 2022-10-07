@@ -37,7 +37,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IDynamicOwnerAccessor Accessor => _accessor = _accessor ?? new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner));
+        internal IDynamicOwnerAccessor Accessor => _accessor ?? (_accessor = new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -63,7 +63,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDynamicOwnerAccessor)managedAccessor;
-            var oldAccessor = _accessor as IDynamicOwnerAccessor;
+            var oldAccessor = (IDynamicOwnerAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

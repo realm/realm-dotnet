@@ -33,7 +33,7 @@ namespace Realms.Tests.Database
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IMixedProperties2Accessor Accessor => _accessor = _accessor ?? new MixedProperties2UnmanagedAccessor(typeof(MixedProperties2));
+        internal IMixedProperties2Accessor Accessor => _accessor ?? (_accessor = new MixedProperties2UnmanagedAccessor(typeof(MixedProperties2)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -59,7 +59,7 @@ namespace Realms.Tests.Database
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IMixedProperties2Accessor)managedAccessor;
-            var oldAccessor = _accessor as IMixedProperties2Accessor;
+            var oldAccessor = (IMixedProperties2Accessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

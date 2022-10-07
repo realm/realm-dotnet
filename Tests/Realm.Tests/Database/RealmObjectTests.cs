@@ -724,7 +724,6 @@ namespace Realms.Tests.Database
 
             Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
-    }
 
         [Test]
         public void RealmObject_WhenThrowsBeforeInitializer_DoesNotCrash()
@@ -746,6 +745,7 @@ namespace Realms.Tests.Database
                 GC.Collect();
             }
         }
+    }
 
     [Serializable]
     public partial class SerializedObject : TestRealmObject
@@ -781,20 +781,20 @@ namespace Realms.Tests.Database
         {
             OnManagedCalled++;
         }
+    }
 
-        private class ThrowsBeforeInitializer : RealmObject
+    public partial class ThrowsBeforeInitializer : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public object WillThrow = new Thrower();
+
+        internal class Thrower
         {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public object WillThrow = new Thrower();
-
-            internal class Thrower
+            public Thrower()
             {
-                public Thrower()
-                {
-                    throw new Exception("Exception thrown before initializer.");
-                }
+                throw new Exception("Exception thrown before initializer.");
             }
         }
     }

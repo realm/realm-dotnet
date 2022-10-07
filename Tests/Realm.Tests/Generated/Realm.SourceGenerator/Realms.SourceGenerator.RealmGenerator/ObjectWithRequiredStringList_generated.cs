@@ -30,7 +30,7 @@ namespace Realms.Tests
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectWithRequiredStringListAccessor Accessor => _accessor = _accessor ?? new ObjectWithRequiredStringListUnmanagedAccessor(typeof(ObjectWithRequiredStringList));
+        internal IObjectWithRequiredStringListAccessor Accessor => _accessor ?? (_accessor = new ObjectWithRequiredStringListUnmanagedAccessor(typeof(ObjectWithRequiredStringList)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace Realms.Tests
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithRequiredStringListAccessor)managedAccessor;
-            var oldAccessor = _accessor as IObjectWithRequiredStringListAccessor;
+            var oldAccessor = (IObjectWithRequiredStringListAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

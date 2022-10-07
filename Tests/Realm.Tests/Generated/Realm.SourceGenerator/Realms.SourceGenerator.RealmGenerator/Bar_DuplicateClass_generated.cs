@@ -30,7 +30,7 @@ namespace Bar
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IDuplicateClassAccessor Accessor => _accessor = _accessor ?? new DuplicateClassUnmanagedAccessor(typeof(DuplicateClass));
+        internal IDuplicateClassAccessor Accessor => _accessor ?? (_accessor = new DuplicateClassUnmanagedAccessor(typeof(DuplicateClass)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace Bar
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDuplicateClassAccessor)managedAccessor;
-            var oldAccessor = _accessor as IDuplicateClassAccessor;
+            var oldAccessor = (IDuplicateClassAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)
