@@ -14,7 +14,7 @@
   {
     "Id": "RLM021",
     "Severity": 3,
-    "Message": "CollectionErrors.SetofEmbeddedObj is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
+    "Message": "CollectionErrors.SetOfEmbeddedObj is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
     "Location": {
       "Path": null,
       "StartLine": 32,
@@ -62,7 +62,7 @@
   {
     "Id": "RLM022",
     "Severity": 3,
-    "Message": "CollectionErrors.ListInsteadOfIlist is declared as List which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList, otherwise annotate the property with the [Ignored] attribute.",
+    "Message": "CollectionErrors.ListInsteadOfIList is declared as List which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList, otherwise annotate the property with the [Ignored] attribute.",
     "Location": {
       "Path": null,
       "StartLine": 40,

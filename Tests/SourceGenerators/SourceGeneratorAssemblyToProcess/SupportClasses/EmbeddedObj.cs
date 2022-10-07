@@ -23,6 +23,5 @@ namespace SourceGeneratorPlayground
     public partial class EmbeddedObj : IEmbeddedObject
     {
         public int Id { get; set; }
-
     }
 }

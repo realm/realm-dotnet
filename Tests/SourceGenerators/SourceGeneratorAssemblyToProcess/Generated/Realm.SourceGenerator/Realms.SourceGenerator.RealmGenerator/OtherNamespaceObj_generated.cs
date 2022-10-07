@@ -30,7 +30,7 @@ namespace OtherNamespace
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IOtherNamespaceObjAccessor Accessor => _accessor = _accessor ?? new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObj));
+        internal IOtherNamespaceObjAccessor Accessor => _accessor ?? (_accessor = new OtherNamespaceObjUnmanagedAccessor(typeof(OtherNamespaceObj)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace OtherNamespace
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOtherNamespaceObjAccessor)managedAccessor;
-            var oldAccessor = _accessor as IOtherNamespaceObjAccessor;
+            var oldAccessor = (IOtherNamespaceObjAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

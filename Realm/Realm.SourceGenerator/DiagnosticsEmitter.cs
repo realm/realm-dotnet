@@ -67,6 +67,7 @@ namespace Realms.SourceGenerator
             var className = classInfo.HasDuplicatedName ? $"{classInfo.Namespace}_{classInfo.Name}" : classInfo.Name;
 
             // Discussion about emitting non-source files: https://github.com/dotnet/roslyn/issues/57608
+            // Because of this the emitted files will have ".cs" extension. 
             context.AddSource($"{className}.diagnostics", serializedJson);
 #else
             return;

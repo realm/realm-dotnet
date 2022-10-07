@@ -31,7 +31,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IPartialClassAccessor Accessor => _accessor = _accessor ?? new PartialClassUnmanagedAccessor(typeof(PartialClass));
+        internal IPartialClassAccessor Accessor => _accessor ?? (_accessor = new PartialClassUnmanagedAccessor(typeof(PartialClass)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -57,7 +57,7 @@ namespace SourceGeneratorAssemblyToProcess.TestClasses
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPartialClassAccessor)managedAccessor;
-            var oldAccessor = _accessor as IPartialClassAccessor;
+            var oldAccessor = (IPartialClassAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)

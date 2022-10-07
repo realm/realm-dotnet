@@ -29,7 +29,7 @@ namespace SourceGeneratorPlayground
     {
         public IDictionary<int, string> UnsupportetDictionaryKeyProp { get; }
         
-        public ISet<EmbeddedObj> SetofEmbeddedObj { get; }
+        public ISet<EmbeddedObj> SetOfEmbeddedObj { get; }
         
         public IList<int> CollectionWithSetter { get; set; }
 
@@ -37,6 +37,6 @@ namespace SourceGeneratorPlayground
 
         public IList<DateTime> CollectionOfUnsupportedType { get; }
         
-        public List<int> ListInsteadOfIlist { get; }
+        public List<int> ListInsteadOfIList { get; }
     }
 }

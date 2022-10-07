@@ -30,7 +30,7 @@ namespace SourceGeneratorPlayground
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IEmbeddedObjAccessor Accessor => _accessor = _accessor ?? new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj));
+        internal IEmbeddedObjAccessor Accessor => _accessor ?? (_accessor = new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,7 +56,7 @@ namespace SourceGeneratorPlayground
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedObjAccessor)managedAccessor;
-            var oldAccessor = _accessor as IEmbeddedObjAccessor;
+            var oldAccessor = (IEmbeddedObjAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)
