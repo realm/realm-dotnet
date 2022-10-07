@@ -84,6 +84,14 @@ namespace Realms
             _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="ManagedAccessor"/> class.
+        /// </summary>
+        ~ManagedAccessor()
+        {
+            UnsubscribeFromNotifications();
+        }
+
         /// <inheritdoc/>
         public RealmValue GetValue(string propertyName)
         {

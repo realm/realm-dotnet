@@ -1,6 +1,36 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.17.0 (2022-10-06)
+
+### Enhancements
+* Prioritize integration of local changes over remote changes - shorten the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. (Core upgrade)
+* Greatly improve the performance of sorting or distincting a Dictionary's keys or values. The most expensive operation is now performed O(log N) rather than O(N log N) times, and large Dictionaries can see upwards of 99% reduction in time to sort. (Core upgrade)
+* Seamlessly handle migrating an App Services application deployment model. (Core upgrade)
+
+### Fixed
+* Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core 12.9.0
+
+## 10.16.0 (2022-10-03)
+
+### Enhancements
 * Introduced `AsymmetricObject` intended for write-heavy workloads, where high performance is generally important. This new object:
   1. syncs data unidirectionaly, from the clients to the server
   1. can't be queried, deleted, or modified once added to the Realm
@@ -71,15 +101,32 @@
   };
   ```
   (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
+* Introducing string query support for constant list expressions such as `realm.All<Car>().Filter("Color IN {'blue', 'orange'}")`. This also includes general query support for list vs list matching such as `realm.All<Car>().Filter("NONE Features IN {'ABS', 'Seat Heating'}")`. (Core upgrade)
+* Improve performance when a new Realm file connects to the server for the first time, especially when significant amounts of data has been written while offline. (Core upgrade)
+* Shift more of the work done on the sync worker thread out of the write transaction used to apply server changes, reducing how long it blocks other threads from writing. (Core upgrade)
+* Improve the performance of the sync changeset parser, which speeds up applying changesets from the server. (Core upgrade)
 
 ### Fixed
 * Added a more meaningful error message whenever a project doesn't have `[TargetFramework]` defined. (Issue [#2843](https://github.com/realm/realm-dotnet/issues/2843))
+* Opening a read-only Realm for the first time with a `SyncConfiguration` did not set the schema version, which could lead to `m_schema_version != ObjectStore::NotVersioned` assertion failures. (Core upgrade)
+* Upload completion callbacks (i.e. `Session.WaitForUploadAsync`) may have called before the download message that completed them was fully integrated. (Core upgrade)
+* Fixed an exception "fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device" when running with MacOS on an exFAT drive. (Core upgrade)
+* Syncing of a Decimal128 with big significand could result in a crash. (Core upgrade)
+* `Realm.Refresh()` did not actually advance to the latest version in some cases. If there was a version newer than the current version which did not require blocking it would advance to that instead, contrary to the documented behavior. (Core upgrade)
+* Several issues around notifications were fixed. (Core upgrade)
+  * Fix a data race on RealmCoordinator::m_sync_session which could occur if multiple threads performed the initial open of a Realm at once.
+  * If a SyncSession outlived the parent Realm and then was adopted by a new Realm for the same file, other processes would not get notified for sync writes on that file.
+  * Fix one cause of QoS inversion warnings when performing writes on the main thread on Apple platforms. Waiting for async notifications to be ready is now done in a QoS-aware ways.
+* If you set a subscription on a link in flexible sync, the server would not know how to handle it ([#5409](https://github.com/realm/realm-core/issues/5409), since v11.6.1)
+* If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
+* Added validation to prevent adding a removed object using Realm.Add. (Issue [#3020](https://github.com/realm/realm-dotnet/issues/3020))
+* Fixed a NullReferenceException occurring in RealmObject's finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.7.0.
 
 ## 10.15.1 (2022-08-08)
 
@@ -92,7 +139,7 @@
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.4.0.
 
 ## 10.15.0 (2022-08-05)
 

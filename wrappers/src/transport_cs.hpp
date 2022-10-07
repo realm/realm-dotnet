@@ -26,10 +26,10 @@ using namespace realm::app;
 
 namespace realm {
 namespace binding {
-struct HttpClientTransport: public GenericNetworkTransport {
+struct HttpClientTransport : public GenericNetworkTransport {
 public:
     HttpClientTransport(GCHandleHolder managed_http_client);
-    void send_request_to_server(Request&& request, util::UniqueFunction<void(const Response&)>&& completionBlock) override;
+    void send_request_to_server(const Request& request, util::UniqueFunction<void(const Response&)>&& completionBlock) override;
 private:
     GCHandleHolder m_managed_http_client;
 };
