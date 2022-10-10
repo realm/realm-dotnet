@@ -5,12 +5,6 @@ name: test-source-generation
       version:
         type: string
         required: true
-      platform:
-        type: string
-        required: true
-      settings:
-        type: string
-        required: true
 jobs:
   run-tests:
     runs-on: windows-latest
