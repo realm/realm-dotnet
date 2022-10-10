@@ -85,11 +85,3 @@ env:
 #@ }
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
-
-#@ def sourceGenerationBuildTest(projectPath, framework, runtime, version = "inputs.version"):
-#@ properties = {
-#@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
-#@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
-#@ }
-#@ return dotnetPublish(projectPath, framework, runtime, properties)
-#@ end

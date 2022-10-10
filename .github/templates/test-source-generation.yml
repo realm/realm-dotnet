@@ -1,15 +1,11 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "sourceGenerationBuildTest")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet", "dotnetPublish")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
 
 ---
 name: test-source-generation
 "on":
   workflow_call:
-    inputs:
-      version:
-        type: string
-        required: true
 jobs:
   run-tests:
     runs-on: windows-latest
@@ -22,8 +18,7 @@ jobs:
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '6.0.x'
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(sourceGenerationBuildTest("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
+      - #@ template.replace(dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
       - #@ publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation")
