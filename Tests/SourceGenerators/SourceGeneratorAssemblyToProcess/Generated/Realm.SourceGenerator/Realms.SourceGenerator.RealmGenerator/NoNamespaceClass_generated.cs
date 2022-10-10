@@ -27,7 +27,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-    internal INoNamespaceClassAccessor Accessor => _accessor = _accessor ?? new NoNamespaceClassUnmanagedAccessor(typeof(NoNamespaceClass));
+    internal INoNamespaceClassAccessor Accessor => _accessor ?? (_accessor = new NoNamespaceClassUnmanagedAccessor(typeof(NoNamespaceClass)));
 
     [IgnoreDataMember, XmlIgnore]
     public bool IsManaged => Accessor.IsManaged;
@@ -53,7 +53,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
     {
         var newAccessor = (INoNamespaceClassAccessor)managedAccessor;
-        var oldAccessor = _accessor as INoNamespaceClassAccessor;
+        var oldAccessor = (INoNamespaceClassAccessor)_accessor;
         _accessor = newAccessor;
 
         if (helper != null)
