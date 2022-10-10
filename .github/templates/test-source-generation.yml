@@ -23,7 +23,7 @@ jobs:
         with:
           dotnet-version: '6.0.x'
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(sourceGenerationBuildTest("Tests/SourceGenerators/Realm.SourceGeneration.Tests", "net6.0", "win-x64"))
+      - #@ template.replace(sourceGenerationBuildTest("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
       - name: Run the tests
-        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGeneration.Tests --result=TestResults.SourceGeneration.xml"
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
       - #@ publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation")
