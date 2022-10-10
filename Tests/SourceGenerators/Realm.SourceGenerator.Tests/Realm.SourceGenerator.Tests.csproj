@@ -5,7 +5,9 @@
 		<ImplicitUsings>true</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<IsPackable>false</IsPackable>
-	</PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <GenerateProgramFile>false</GenerateProgramFile>
+    </PropertyGroup>
 	<Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
 
 	<ItemGroup>
@@ -18,11 +20,20 @@
 		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="NUnit.Analyzers" Version="3.3.0" />
 		<PackageReference Include="coverlet.collector" Version="3.1.2" />
+		<PackageReference Include="NUnitLite" Version="3.13.2" />
 	</ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj"/>
-        <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj"/>
+        <EmbeddedResource Include="..\..\Realm.Tests\EmbeddedResources\nunit3-junit.xslt">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </EmbeddedResource>
+
+        <Compile Include="..\..\Realm.Tests\TransformHelpers.cs" Link="TransformHelpers.cs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
+        <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" />
     </ItemGroup>
 
 </Project>
