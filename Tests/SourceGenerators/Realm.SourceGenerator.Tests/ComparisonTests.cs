@@ -24,7 +24,7 @@ namespace SourceGeneratorTests
         [TestCase("AllTypesClass")]
         [TestCase("ClassWithoutParameterlessConstructor")]
         [TestCase("DifferentNamespaces", "NamespaceObj", "OtherNamespaceObj")]
-        [TestCase("InnerClass")]
+        [TestCase("NoNamespaceClass")]
         [TestCase("PartialClass")]
         [TestCase("PersonWithDog", "Person", "Dog")]
         public async Task ComparisonTest(string filename, params string[] classNames)

@@ -1,0 +1,23 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "sourceGenerationBuildTest")
+
+---
+name: test-source-generation
+jobs:
+  run-tests:
+    runs-on: windows-latest
+    name: Source Generation
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(checkoutCode())
+      - name: Cleanup Workspace
+        run: git clean -fdx
+      - uses: #@ actionSetupDotnet
+        with:
+          dotnet-version: '6.0.x'
+      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(sourceGenerationBuildTest("Tests/SourceGenerators/Realm.SourceGeneration.Tests", "net6.0", "win-x64"))
+      - name: Run the tests
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGeneration.Tests --result=TestResults.SourceGeneration.xml"
+      - #@ publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation")

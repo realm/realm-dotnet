@@ -20,9 +20,13 @@
 		<PackageReference Include="coverlet.collector" Version="3.1.2" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" />
-		<ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
-	</ItemGroup>
+    <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+        <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
+        <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+        <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+        <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+    </ItemGroup>
 
 </Project>
