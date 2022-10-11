@@ -32,4 +32,3 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
-  _: #@ template.replace(cleanupBaas(["Code Coverage"]))
