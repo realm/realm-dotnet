@@ -31,4 +31,4 @@ jobs:
     needs:
     - build-wrappers
     with:
-      build-docs: true 
+      build-docs: ${{ contains(github.head_ref, 'release') }}
