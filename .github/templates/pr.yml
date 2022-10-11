@@ -31,4 +31,4 @@ jobs:
     needs:
     - build-wrappers
     with:
-      build-docs: true
+      build-docs: true 
