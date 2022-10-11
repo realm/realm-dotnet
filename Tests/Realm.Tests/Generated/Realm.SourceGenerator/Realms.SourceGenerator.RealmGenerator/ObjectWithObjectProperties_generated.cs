@@ -62,7 +62,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 if(oldAccessor.StandaloneObject != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.StandaloneObject, update);

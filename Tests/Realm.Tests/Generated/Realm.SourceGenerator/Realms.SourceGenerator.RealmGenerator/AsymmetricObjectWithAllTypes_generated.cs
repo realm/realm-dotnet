@@ -90,7 +90,6 @@ namespace Realms.Tests.Sync
 
             if (helper != null)
             {
-
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.CharProperty != default(char))
                 {

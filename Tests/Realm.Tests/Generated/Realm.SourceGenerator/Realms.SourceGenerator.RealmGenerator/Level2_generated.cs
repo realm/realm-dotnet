@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.IntValue != default(int))
                 {
                     newAccessor.IntValue = oldAccessor.IntValue;

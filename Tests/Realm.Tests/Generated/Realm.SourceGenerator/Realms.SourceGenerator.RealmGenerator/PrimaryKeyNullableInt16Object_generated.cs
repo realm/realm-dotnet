@@ -61,7 +61,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 newAccessor.Id = oldAccessor.Id;
             }
 

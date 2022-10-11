@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 newAccessor.CompletionDate = oldAccessor.CompletionDate;
                 if(!skipDefaults || oldAccessor.Remarks != default(string))
                 {

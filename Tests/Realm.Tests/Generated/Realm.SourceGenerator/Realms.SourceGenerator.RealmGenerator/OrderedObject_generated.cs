@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Order != default(int))
                 {
                     newAccessor.Order = oldAccessor.Order;

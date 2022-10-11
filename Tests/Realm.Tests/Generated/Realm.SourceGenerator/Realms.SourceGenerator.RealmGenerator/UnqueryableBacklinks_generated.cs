@@ -61,7 +61,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 if(oldAccessor.Parent != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Parent, update);

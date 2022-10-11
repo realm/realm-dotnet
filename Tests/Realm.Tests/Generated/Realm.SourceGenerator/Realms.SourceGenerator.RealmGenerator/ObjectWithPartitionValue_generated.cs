@@ -64,7 +64,6 @@ namespace Realms.Tests.Sync
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Id != default(string))
                 {
                     newAccessor.Id = oldAccessor.Id;

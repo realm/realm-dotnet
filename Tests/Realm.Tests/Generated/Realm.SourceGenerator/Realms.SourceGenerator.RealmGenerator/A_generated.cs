@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Value != default(bool))
                 {
                     newAccessor.Value = oldAccessor.Value;

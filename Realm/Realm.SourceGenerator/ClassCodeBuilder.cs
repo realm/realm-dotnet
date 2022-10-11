@@ -255,6 +255,27 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
             var baseInterface = $"I{_classInfo.ObjectType}";
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
+            string helperString = string.Empty;
+
+            if (!string.IsNullOrEmpty(skipDefaults) || copyToRealm.Length > 0)
+            {
+                var helperContent = new StringBuilder();
+
+                if (!string.IsNullOrEmpty(skipDefaults))
+                {
+                    helperContent.AppendLine(skipDefaults);
+                }
+
+                if (copyToRealm.Length > 0)
+                {
+                    helperContent.Append(copyToRealm.ToString());
+                }
+
+                helperString = @$"if (helper != null)
+{{
+{helperContent.Indent()}}}";
+            }
+
             var contents = $@"{schema}
 
 {parameterlessConstructorString}
@@ -294,11 +315,7 @@ public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelpe
     var oldAccessor = ({_accessorInterfaceName})_accessor;
     _accessor = newAccessor;
 
-    if (helper != null)
-    {{
-{skipDefaults.Indent(2)}
-{copyToRealm.Indent(2, trimNewLines: true)}
-    }}
+{helperString.Indent()}
 
     if (_propertyChanged != null)
     {{

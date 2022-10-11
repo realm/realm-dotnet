@@ -61,7 +61,6 @@ namespace Foo
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.IntValue != default(int))
                 {
                     newAccessor.IntValue = oldAccessor.IntValue;

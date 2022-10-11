@@ -96,7 +96,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.CharProperty != default(char))
                 {
                     newAccessor.CharProperty = oldAccessor.CharProperty;

@@ -61,7 +61,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(oldAccessor.BacklinkObject != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.BacklinkObject, update);

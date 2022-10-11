@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Id != default(string))
                 {
                     newAccessor.Id = oldAccessor.Id;

@@ -80,7 +80,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.CharProperty != default(char))
                 {

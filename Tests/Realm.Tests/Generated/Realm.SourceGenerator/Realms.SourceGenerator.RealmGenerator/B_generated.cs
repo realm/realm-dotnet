@@ -62,7 +62,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(oldAccessor.C != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.C, update);

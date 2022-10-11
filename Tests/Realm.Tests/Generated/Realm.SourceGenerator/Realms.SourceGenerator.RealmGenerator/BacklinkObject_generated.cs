@@ -63,7 +63,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.BeforeBacklinks != default(string))
                 {
                     newAccessor.BeforeBacklinks = oldAccessor.BeforeBacklinks;

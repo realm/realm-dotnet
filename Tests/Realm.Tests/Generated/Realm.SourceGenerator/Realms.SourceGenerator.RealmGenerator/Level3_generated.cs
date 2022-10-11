@@ -61,7 +61,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 newAccessor.DateValue = oldAccessor.DateValue;
             }
 

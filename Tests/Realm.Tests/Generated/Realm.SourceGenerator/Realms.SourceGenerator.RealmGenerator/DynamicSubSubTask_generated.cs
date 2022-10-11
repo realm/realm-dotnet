@@ -63,7 +63,6 @@ namespace Realms.Tests.Database
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Summary != default(string))
                 {
                     newAccessor.Summary = oldAccessor.Summary;

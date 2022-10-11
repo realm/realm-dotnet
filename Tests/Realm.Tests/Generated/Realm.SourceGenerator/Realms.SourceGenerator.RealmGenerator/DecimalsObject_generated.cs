@@ -63,7 +63,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 newAccessor.DecimalValue = oldAccessor.DecimalValue;
                 newAccessor.Decimal128Value = oldAccessor.Decimal128Value;
             }

@@ -61,7 +61,6 @@ namespace Bar
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.StringValue != default(string))
                 {
                     newAccessor.StringValue = oldAccessor.StringValue;

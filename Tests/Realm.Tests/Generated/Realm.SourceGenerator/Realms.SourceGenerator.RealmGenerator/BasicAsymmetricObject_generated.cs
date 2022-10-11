@@ -63,7 +63,6 @@ namespace Realms.Tests.Sync
 
             if (helper != null)
             {
-
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.PartitionLike != default(string))
                 {

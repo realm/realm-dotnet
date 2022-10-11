@@ -61,7 +61,6 @@ namespace Realms.Tests
 
             if (helper != null)
             {
-
                 if(!skipDefaults || oldAccessor.Id != default(byte))
                 {
                     newAccessor.Id = oldAccessor.Id;
