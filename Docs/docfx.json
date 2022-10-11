@@ -90,9 +90,6 @@
         },
         "template": [ "default", "template" ],
         "postProcessors": [],
-        "noLangKeyword": false,
-        "properties": {
-            "TargetFramework": "net6.0"
-        }
+        "noLangKeyword": false
     }
 }
