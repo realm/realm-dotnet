@@ -15,7 +15,7 @@
       Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.59.4/docfx.zip -OutFile C:\docfx.zip
       Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
     shell: powershell
-  - _: #@ template.replace(setupDotnet(ifCondition = "inputs.build-docs"))
+  - _: #@ template.replace(setupDotnet(ifCondition = False))
   - name: Build docs
     if: inputs.build-docs
     run: |

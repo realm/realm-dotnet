@@ -193,7 +193,7 @@ jobs:
       shell: powershell
     - name: Configure .NET
       uses: actions/setup-dotnet@v1
-      if: inputs.build-docs
+      if: false
       with:
         dotnet-version: 6.0.x
     - name: Build docs
