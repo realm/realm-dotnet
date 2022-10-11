@@ -188,7 +188,7 @@ jobs:
     - name: Download docfx
       if: inputs.build-docs && steps.check-docfx-cache.outputs.cache-hit != 'true'
       run: |
-        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.59.4/docfx.zip -OutFile C:\docfx.zip
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Build docs
