@@ -411,7 +411,7 @@ namespace Realms.Tests.Database
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
 
-            Assert.That(rv.AsIRealmObject(), Is.EqualTo(value));
+            Assert.That(rv.As<IRealmObject>(), Is.EqualTo(value));
             Assert.That(rv.As<IRealmObjectBase>(), Is.EqualTo(value));
             Assert.That(rv.AsIRealmObject(), Is.EqualTo(value));
             Assert.That(rv != RealmValue.Null);
