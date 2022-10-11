@@ -32,4 +32,16 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
+  _: #@ template.replace(buildUnity())
+  _: #@ template.replace(testUnity('["Mono-Net4"]', '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'))
+  _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
+  _: #@ template.replace(runTests("UWP Managed", runSyncTests = False, additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
+  _: #@ template.replace(runNetCoreTests('["net6.0"]'))
+  _: #@ template.replace(runTests("macOS", runSyncTests = False))
+  _: #@ template.replace(runTests("iOS", runSyncTests = False))
+  _: #@ template.replace(runTests("Android", runSyncTests = False, additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  test-weaver:
+    uses: ./.github/workflows/test-weaver.yml
+    name: Test
+  _: #@ template.replace(runTests("Code Coverage"))
   _: #@ template.replace(cleanupBaas(["Code Coverage"]))

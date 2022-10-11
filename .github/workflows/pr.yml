@@ -38,6 +38,108 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
+  build-unity:
+    uses: ./.github/workflows/build-unity.yml
+    name: Package
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+    needs:
+    - build-packages
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+  test-unity:
+    uses: ./.github/workflows/test-unity.yml
+    name: Test
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      settings: '["Mono-Net4"]'
+      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
+    needs:
+    - build-packages
+    - build-unity
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+  test-net-framework:
+    uses: ./.github/workflows/test-net-framework.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets: {}
+  test-uwp-managed:
+    uses: ./.github/workflows/test-uwp-managed.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets:
+      Pfx_Password: ${{ secrets.Pfx_Password }}
+      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
+  test-net-core:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    needs:
+    - build-packages
+    uses: ./.github/workflows/test-net-core.yml
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      framework: '["net6.0"]'
+  test-macos:
+    uses: ./.github/workflows/test-macos.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets: {}
+  test-ios:
+    uses: ./.github/workflows/test-ios.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets: {}
+  test-android:
+    uses: ./.github/workflows/test-android.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets:
+      AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
+      AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
+      DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
+      DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+  test-weaver:
+    uses: ./.github/workflows/test-weaver.yml
+    name: Test
+  test-code-coverage:
+    uses: ./.github/workflows/test-code-coverage.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    - deploy-cluster
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   cleanup-cluster:
     uses: ./.github/workflows/cleanup-baas.yml
     if: always()
