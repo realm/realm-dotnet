@@ -38,3 +38,15 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
+  cleanup-cluster:
+    uses: ./.github/workflows/cleanup-baas.yml
+    if: always()
+    name: Cleanup
+    needs:
+    - test-code-coverage
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
+      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
