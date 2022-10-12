@@ -12,6 +12,7 @@
         <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
         <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- Do not include the generator as a lib dependency. -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeSymbols>false</IncludeSymbols>

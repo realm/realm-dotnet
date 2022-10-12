@@ -58,7 +58,6 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
         if (helper != null)
         {
-
             if(!skipDefaults || oldAccessor.Name != default(string))
             {
                 newAccessor.Name = oldAccessor.Name;
