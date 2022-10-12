@@ -43,8 +43,8 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
         <!-- Removing the generated files from compilation, adding them back as non-content files. -->
-        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <!--<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />-->
     </ItemGroup>
 
     <ItemGroup Condition="'$(UnityBuild)' == 'true'">
