@@ -8,6 +8,10 @@ name: deploy-baas
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
+      realmUrl:
+        value: ${{ jobs.deploy-baas.outputs.realmUrl }}
+      atlasUrl:
+        value: ${{ jobs.deploy-baas.outputs.atlasUrl }}
     secrets:
       AtlasProjectId:
         required: true
@@ -63,5 +67,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ steps.deploy-mdb-apps.outputs.realmUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . --baasurl=${{ steps.deploy-baas.outputs.realmUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps
