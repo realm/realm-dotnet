@@ -103,7 +103,7 @@ namespace {_generatedNamespaceName}
                 namespaces.Add(property.TypeInfo.InternalType?.Namespace);
             }
 
-            return string.Join(Environment.NewLine, namespaces.Where(n => !string.IsNullOrWhiteSpace(n)).Select(s => $"using {s};"));
+            return string.Join(Environment.NewLine, namespaces.Where(n => !string.IsNullOrWhiteSpace(n)).OrderBy(s => s).Select(s => $"using {s};"));
         }
 
         private string GenerateInterface()
