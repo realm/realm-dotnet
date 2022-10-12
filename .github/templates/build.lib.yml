@@ -115,11 +115,7 @@ test-weaved-classes:
 test-source-generation:
   if: #@ ignoreSkippedJobsCondition
   name: Test
-  needs:
-    - build-packages
   uses: "./.github/workflows/test-source-generation.yml"
-  with:
-    version: ${{ needs.build-packages.outputs.package_version }}
 #@ end
 
 #@ def buildUnity():
