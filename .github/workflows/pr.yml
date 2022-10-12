@@ -127,12 +127,17 @@ jobs:
     name: Test
     needs:
     - build-packages
-    uses: ./.github/workflows/test-weaved-classes.yml
+    uses: ./.github/workflows/test-woven-classes.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
   test-source-generation:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
+    needs:
+    - build-packages
     uses: ./.github/workflows/test-source-generation.yml
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
