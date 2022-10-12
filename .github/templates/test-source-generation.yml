@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet", "dotnetPublish")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "publishTestsResults")
 
 ---
 name: test-source-generation
@@ -13,8 +13,6 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())
-      - name: Cleanup Workspace
-        run: git clean -fdx
       - uses: #@ actionSetupDotnet
         with:
           dotnet-version: '6.0.x'

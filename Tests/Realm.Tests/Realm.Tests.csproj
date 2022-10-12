@@ -38,13 +38,9 @@
     <ItemGroup Condition="'$(UnityBuild)' != 'true'">
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnitLite" Version="3.13.2" />
-        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
-        <!-- Removing the generated files from compilation, adding them back as non-content files. -->
-        <!--<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />-->
     </ItemGroup>
 
     <ItemGroup Condition="'$(UnityBuild)' == 'true'">
@@ -82,6 +78,9 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+        <!-- Removing the generated files from compilation, adding them back as non-content files. -->
+        <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+        <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(UnityBuild)' != 'true'">
@@ -110,20 +109,16 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
-        <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
-          Condition="$([MSBuild]::IsOsPlatform('OSX'))">
+        <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX'))">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so"
-          Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+        <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll"
-          Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+        <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll"
-          Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+        <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
@@ -155,5 +150,8 @@
             <Link>Sync\BaasClient.cs</Link>
             <SubType></SubType>
         </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />
     </ItemGroup>
 </Project>
