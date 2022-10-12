@@ -60,7 +60,7 @@ namespace Realms.SourceGenerator
             _accessorInterfaceName = $"I{className}Accessor";
             _managedAccessorClassName = $"{className}ManagedAccessor";
             _unmanagedAccessorClassName = $"{className}UnmanagedAccessor";
-            _generatedNamespaceName = _classInfo.NamespaceInfo.IsGlobal ? "Global.Generated" : $"{_classInfo.NamespaceInfo.Name}.Generated";
+            _generatedNamespaceName = $"{_classInfo.NamespaceInfo.ComputedName}.Generated";
         }
 
         public string GenerateSource()
@@ -92,7 +92,7 @@ namespace {_generatedNamespaceName}
             var namespaces = new HashSet<string>() { _generatedNamespaceName };
             if (!_classInfo.NamespaceInfo.IsGlobal)
             {
-                namespaces.Add(_classInfo.NamespaceInfo.Name);
+                namespaces.Add(_classInfo.NamespaceInfo.OriginalName);
             }
 
             namespaces.UnionWith(_defaultNamespaces);
@@ -423,7 +423,7 @@ $@"public override string ToString() => Accessor.ToString();")}";
 
             if (!_classInfo.NamespaceInfo.IsGlobal)
             {
-                classString = $@"namespace {_classInfo.NamespaceInfo.Name}
+                classString = $@"namespace {_classInfo.NamespaceInfo.OriginalName}
 {{
 {classString.Indent()}
 }}";

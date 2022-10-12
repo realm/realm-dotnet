@@ -61,9 +61,11 @@ namespace Realms.SourceGenerator
 
     internal record NamespaceInfo
     {
-        public string Name { get; set; }
+        public string OriginalName { get; set; }
 
         public bool IsGlobal { get; set; }
+
+        public string ComputedName => IsGlobal ? "Global" : OriginalName;
     }
 
     internal record EnclosingClassInfo

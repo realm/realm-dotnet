@@ -52,10 +52,8 @@ namespace Realms.SourceGenerator
 
                     var sourceText = SourceText.From(formattedSource, Encoding.UTF8);
 
-                    var @namespace = classInfo.NamespaceInfo.IsGlobal ? "Global" : classInfo.NamespaceInfo.Name;
-
                     // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
-                    var className = classInfo.HasDuplicatedName ? $"{@namespace}_{classInfo.Name}" : classInfo.Name;
+                    var className = classInfo.HasDuplicatedName ? $"{classInfo.NamespaceInfo.ComputedName}_{classInfo.Name}" : classInfo.Name;
 
                     _context.AddSource($"{className}_generated.cs", sourceText);
                 }

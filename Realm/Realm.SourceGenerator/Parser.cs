@@ -458,7 +458,7 @@ namespace Realms.SourceGenerator
                 return new NamespaceInfo { IsGlobal = true };
             }
 
-            return new NamespaceInfo { Name = classSymbol.ContainingNamespace.ToDisplayString() };
+            return new NamespaceInfo { OriginalName = classSymbol.ContainingNamespace.ToDisplayString() };
         }
     }
 
