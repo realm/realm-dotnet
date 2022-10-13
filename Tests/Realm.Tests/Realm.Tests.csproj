@@ -62,6 +62,7 @@
     -->
         <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
         <ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+        <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
         <Compile Remove="Program.cs" />
     </ItemGroup>
