@@ -20,13 +20,10 @@ using Realms;
 
 namespace SourceGeneratorAssemblyToProcess
 {
-    public partial class PartialClass : IRealmObject
+    public partial class AutomaticPropertiesClass : IRealmObject
     {
         public int Id { get; set; }
-    }
 
-    public partial class PartialClass : IRealmObject
-    {
-        public string Name { get; set; }
+        public Realm NonAutomaticProp => null;
     }
 }

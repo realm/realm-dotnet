@@ -252,6 +252,11 @@ namespace Realms.SourceGenerator
 
             if (propertyTypeInfo.IsUnsupported)
             {
+                if (!propertySyntax.IsAutomaticProperty())
+                {
+                    return propertyTypeInfo;
+                }
+
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));

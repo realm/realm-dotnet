@@ -16,22 +16,21 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(PartialClassObjectHelper))]
-    public partial class PartialClass : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(AutomaticPropertiesClassObjectHelper))]
+    public partial class AutomaticPropertiesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PartialClass", ObjectSchema.ObjectType.RealmObject)
+        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AutomaticPropertiesClass", ObjectSchema.ObjectType.RealmObject)
         {
             Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
         #region IRealmObject implementation
 
-        private IPartialClassAccessor _accessor;
+        private IAutomaticPropertiesClassAccessor _accessor;
 
         IRealmAccessor IRealmObjectBase.Accessor => Accessor;
 
-        internal IPartialClassAccessor Accessor => _accessor ?? (_accessor = new PartialClassUnmanagedAccessor(typeof(PartialClass)));
+        internal IAutomaticPropertiesClassAccessor Accessor => _accessor ?? (_accessor = new AutomaticPropertiesClassUnmanagedAccessor(typeof(AutomaticPropertiesClass)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -56,8 +55,8 @@ namespace SourceGeneratorAssemblyToProcess
 
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IPartialClassAccessor)managedAccessor;
-            var oldAccessor = (IPartialClassAccessor)_accessor;
+            var newAccessor = (IAutomaticPropertiesClassAccessor)managedAccessor;
+            var oldAccessor = (IAutomaticPropertiesClassAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)
@@ -65,10 +64,6 @@ namespace SourceGeneratorAssemblyToProcess
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
-                }
-                if(!skipDefaults || oldAccessor.Name != default(string))
-                {
-                    newAccessor.Name = oldAccessor.Name;
                 }
             }
 
@@ -127,9 +122,9 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PartialClass(RealmValue val) => val.AsRealmObject<PartialClass>();
+        public static explicit operator AutomaticPropertiesClass(RealmValue val) => val.AsRealmObject<AutomaticPropertiesClass>();
 
-        public static implicit operator RealmValue(PartialClass val) => RealmValue.Object(val);
+        public static implicit operator RealmValue(AutomaticPropertiesClass val) => RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -164,16 +159,16 @@ namespace SourceGeneratorAssemblyToProcess
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PartialClassObjectHelper : IRealmObjectHelper
+        private class AutomaticPropertiesClassObjectHelper : IRealmObjectHelper
         {
             public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PartialClassManagedAccessor();
+            public ManagedAccessor CreateAccessor() => new AutomaticPropertiesClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new PartialClass();
+            public IRealmObjectBase CreateInstance() => new AutomaticPropertiesClass();
 
             public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
             {
@@ -187,30 +182,22 @@ namespace SourceGeneratorAssemblyToProcess
 namespace SourceGeneratorAssemblyToProcess.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPartialClassAccessor : IRealmAccessor
+    internal interface IAutomaticPropertiesClassAccessor : IRealmAccessor
     {
         int Id { get; set; }
-
-        string Name { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PartialClassManagedAccessor : ManagedAccessor, IPartialClassAccessor
+    internal class AutomaticPropertiesClassManagedAccessor : ManagedAccessor, IAutomaticPropertiesClassAccessor
     {
         public int Id
         {
             get => (int)GetValue("Id");
             set => SetValue("Id", value);
         }
-
-        public string Name
-        {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
-        }
     }
 
-    internal class PartialClassUnmanagedAccessor : UnmanagedAccessor, IPartialClassAccessor
+    internal class AutomaticPropertiesClassUnmanagedAccessor : UnmanagedAccessor, IAutomaticPropertiesClassAccessor
     {
         private int _id;
         public int Id
@@ -223,18 +210,7 @@ namespace SourceGeneratorAssemblyToProcess.Generated
             }
         }
 
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
-            }
-        }
-
-        public PartialClassUnmanagedAccessor(Type objectType) : base(objectType)
+        public AutomaticPropertiesClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
@@ -243,7 +219,6 @@ namespace SourceGeneratorAssemblyToProcess.Generated
             return propertyName switch
             {
                 "Id" => _id,
-                "Name" => _name,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
@@ -254,9 +229,6 @@ namespace SourceGeneratorAssemblyToProcess.Generated
             {
                 case "Id":
                     Id = (int)val;
-                    return;
-                case "Name":
-                    Name = (string)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
