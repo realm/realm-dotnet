@@ -432,6 +432,29 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void EmbeddedObjectUnmanaged_WhenParentAccessed_ReturnsNull()
+        {
+            var parent = new AsymmetricObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    Child = new EmbeddedLevel2
+                    {
+                        Child = new EmbeddedLevel3()
+                    }
+                }
+            };
+
+            Assert.That(parent.RecursiveObject.Parent, Is.Null);
+
+            var firstChild = parent.RecursiveObject;
+            Assert.That(firstChild.Child.Parent, Is.Null);
+
+            var secondChild = firstChild.Child;
+            Assert.That(secondChild.Child.Parent, Is.Null);
+        }
+
+        [Test]
         public void NonEmbeddedObject_WhenParentAccessed_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
