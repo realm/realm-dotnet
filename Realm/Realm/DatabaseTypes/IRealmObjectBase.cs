@@ -96,6 +96,11 @@ namespace Realms
     /// </summary>
     public interface IEmbeddedObject : IRealmObjectBase
     {
+        /// <summary>
+        /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
+        /// <see cref="IEmbeddedObject">embedded object</see> or a standalone <see cref="IRealmObject">realm object</see>.
+        /// </summary>
+        public IRealmObjectBase Parent { get; }
     }
 
     /// <summary>

@@ -93,6 +93,11 @@ namespace Realms
             throw new NotImplementedException("This should not be used for now");
         }
 
+        public IRealmObjectBase GetParent()
+        {
+            return null;
+        }
+
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
         }

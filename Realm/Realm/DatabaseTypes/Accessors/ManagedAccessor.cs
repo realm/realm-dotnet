@@ -132,6 +132,19 @@ namespace Realms
             return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
         }
 
+        public IRealmObjectBase GetParent()
+        {
+            if (_metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject)
+            {
+                throw new InvalidOperationException("It is not possible to access a parent of an object that is not embedded.");
+            }
+
+            var parentHandle = _objectHandle.GetParent(out var tableKey);
+            var parentMetadata = _realm.Metadata[tableKey];
+
+            return _realm.MakeObject(parentMetadata, parentHandle);
+        }
+
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
