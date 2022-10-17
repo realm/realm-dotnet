@@ -29,6 +29,9 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+    <!--<ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj"  OutputItemType="Analyzer" PrivateAssets ="None" IncludeAssets="Analyzers"/>-->
+    <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj"  PrivateAssets ="None"/>
+
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
