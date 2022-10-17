@@ -143,7 +143,8 @@ namespace Realms
 
         /// <summary>
         /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
-        /// <see cref="IEmbeddedObject">embedded object</see> or a standalone <see cref="IRealmObject">realm object</see>.
+        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
+        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
         /// </summary>
         /// <returns>The parent of the embedded object.</returns>
         IRealmObjectBase GetParent();
