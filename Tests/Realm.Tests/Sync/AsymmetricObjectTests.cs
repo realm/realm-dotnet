@@ -406,7 +406,6 @@ namespace Realms.Tests.Sync
 
                     Assert.That(parent, Is.EqualTo(parent.ListOfAllTypesObjects.Single().Parent));
                 });
-
             });
         }
 
