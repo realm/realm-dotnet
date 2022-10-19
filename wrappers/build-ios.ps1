@@ -5,7 +5,7 @@ param(
     [string]$Configuration = 'Debug',
 
     [ValidateSet('Device', 'Simulator', 'Catalyst')]
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string[]]$Platforms = ('Simulator'),
 
     [Switch]$Incremental,
