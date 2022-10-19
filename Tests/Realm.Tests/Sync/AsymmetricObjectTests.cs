@@ -319,27 +319,9 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(BasicAsymmetricObject) };
-                var tcs = new TaskCompletionSource<object>();
 
-                config.OnSessionError = (session, error) =>
-                {
-                    try
-                    {
-                        Assert.That(error, Is.InstanceOf<SessionException>());
-                        Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
-                        Assert.That(error.Message.Contains("asymmetric tables are not supported for partition-based sync"), Is.True);
-                    }
-                    catch (Exception e)
-                    {
-                        tcs.TrySetException(e);
-                    }
-
-                    tcs.TrySetResult(null);
-                };
-
-                using var realm = await GetRealmAsync(config);
-
-                await tcs.Task;
+                var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+                Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"));
             });
         }
 
@@ -359,10 +341,15 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedProperties) };
+                flxConfig.Schema = new[] {
+                    typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
+                    typeof(EmbeddedLevel1),
+                    typeof(EmbeddedLevel2),
+                    typeof(EmbeddedLevel2)
+                };
                 using var realm = await GetRealmAsync(flxConfig);
 
-                var parent = new AsymmetricObjectWithEmbeddedProperties
+                var parent = new AsymmetricObjectWithEmbeddedRecursiveObject
                 {
                     RecursiveObject = new EmbeddedLevel1
                     {
@@ -394,17 +381,17 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedProperties) };
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedListObject), typeof(EmbeddedIntPropertyObject) };
                 using var realm = await GetRealmAsync(flxConfig);
 
-                var parent = new AsymmetricObjectWithEmbeddedProperties();
-                parent.ListOfAllTypesObjects.Add(new EmbeddedAllTypesObject());
+                var parent = new AsymmetricObjectWithEmbeddedListObject();
+                parent.EmbeddedListObject.Add(new EmbeddedIntPropertyObject());
 
                 realm.Write(() =>
                 {
                     realm.Add(parent);
 
-                    Assert.That(parent, Is.EqualTo(parent.ListOfAllTypesObjects.Single().Parent));
+                    Assert.That(parent, Is.EqualTo(parent.EmbeddedListObject.Single().Parent));
                 });
             });
         }
@@ -415,17 +402,17 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedProperties) };
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedDictionaryObject), typeof(EmbeddedIntPropertyObject) };
                 using var realm = await GetRealmAsync(flxConfig);
 
-                var parent = new AsymmetricObjectWithEmbeddedProperties();
-                parent.DictionaryOfAllTypesObjects.Add("child", new EmbeddedAllTypesObject());
+                var parent = new AsymmetricObjectWithEmbeddedDictionaryObject();
+                parent.EmbeddedDictionaryObject.Add("child", new EmbeddedIntPropertyObject());
 
                 realm.Write(() =>
                 {
                     realm.Add(parent);
 
-                    Assert.That(parent, Is.EqualTo(parent.DictionaryOfAllTypesObjects["child"].Parent));
+                    Assert.That(parent, Is.EqualTo(parent.EmbeddedDictionaryObject["child"].Parent));
                 });
             });
         }
@@ -433,7 +420,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void EmbeddedObjectUnmanaged_WhenParentAccessed_ReturnsNull()
         {
-            var parent = new AsymmetricObjectWithEmbeddedProperties
+            var parent = new AsymmetricObjectWithEmbeddedRecursiveObject
             {
                 RecursiveObject = new EmbeddedLevel1
                 {
@@ -653,18 +640,30 @@ namespace Realms.Tests.Sync
         }
 
         [Explicit]
-        private class AsymmetricObjectWithEmbeddedProperties : AsymmetricObject
+        private class AsymmetricObjectWithEmbeddedListObject : AsymmetricObject
         {
             [PrimaryKey, MapTo("_id")]
             public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-            public EmbeddedAllTypesObject AllTypesObject { get; set; }
+            public IList<EmbeddedIntPropertyObject> EmbeddedListObject { get; }
+        }
 
-            public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+        [Explicit]
+        private class AsymmetricObjectWithEmbeddedRecursiveObject : AsymmetricObject
+        {
+            [PrimaryKey, MapTo("_id")]
+            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
             public EmbeddedLevel1 RecursiveObject { get; set; }
+        }
 
-            public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
+        [Explicit]
+        private class AsymmetricObjectWithEmbeddedDictionaryObject : AsymmetricObject
+        {
+            [PrimaryKey, MapTo("_id")]
+            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+            public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedDictionaryObject { get; }
         }
     }
 }
