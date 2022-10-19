@@ -311,7 +311,7 @@ jobs:
     - run: git clean -fdx
       if: matrix.os == 'windows'
   macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: macOS
     timeout-minutes: 90
     needs:
@@ -340,7 +340,7 @@ jobs:
         retention-days: 1
         if-no-files-found: error
   ios:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: iOS
     strategy:
       matrix:

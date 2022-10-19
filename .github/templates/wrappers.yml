@@ -83,11 +83,11 @@ jobs:
           if: #@ condition
       #@ end
   macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
   ios:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: iOS
     strategy:
       matrix:
