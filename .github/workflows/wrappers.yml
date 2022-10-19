@@ -363,6 +363,10 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@df46f77a07b48da38239cd2fb8c0b5603c71e909
+      with:
+        xcode-version: 14.0.1
     - name: Build wrappers
       run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'

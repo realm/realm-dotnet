@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "setupVcpkg", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "iOSArchs", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "setupVcpkg", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "iOSArchs", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode")
 
 #@ wrappersTimeout = 90
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -92,7 +92,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False, intermediateSteps = [setupXcode()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-ios-" + x + " != 'true'" for x in iOSArchs ])
   linux:
