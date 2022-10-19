@@ -345,7 +345,7 @@ namespace Realms.Tests.Sync
                     typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
                     typeof(EmbeddedLevel1),
                     typeof(EmbeddedLevel2),
-                    typeof(EmbeddedLevel2)
+                    typeof(EmbeddedLevel3)
                 };
                 using var realm = await GetRealmAsync(flxConfig);
 
