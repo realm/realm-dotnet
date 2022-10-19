@@ -5,7 +5,7 @@ param(
     [string]$Configuration = 'Debug',
 
     [ValidateSet('Device', 'Simulator', 'Catalyst')]
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string[]]$Platforms = ('Simulator'),
 
     [Switch]$Incremental,
@@ -25,6 +25,7 @@ if (-Not $Incremental) {
     Remove-Item * -Recurse -Force -ErrorAction Ignore > $null
     cmake "$PSScriptRoot" -DCMAKE_BUILD_TYPE=$Configuration -GXcode `
         -DCMAKE_XCODE_ATTRIBUTE_DYLIB_INSTALL_NAME_BASE='@rpath' `
+        -DCMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE=NO `
         -DCMAKE_TOOLCHAIN_FILE="$PSScriptRoot"'/realm-core/tools/cmake/xcode.toolchain.cmake' `
         -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="$PSScriptRoot"'/build/$(PLATFORM_NAME)/$<CONFIG>' `
         -DCMAKE_INTERPROCEDURAL_OPTIMIZATION="$EnableLTO"
