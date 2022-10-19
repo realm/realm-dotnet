@@ -4,13 +4,13 @@
 * None
 
 ### Fixed
-* None
+* Fixed a NullReferenceException being thrown when subscribing to `PropertyChanged` notifications on a `Session` instance that is then garbage collected prior to unsubscribing. (PR [#3061](https://github.com/realm/realm-dotnet/pull/3061))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.9.0.
 
 ## 10.17.0 (2022-10-06)
 
