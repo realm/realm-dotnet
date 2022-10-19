@@ -455,6 +455,11 @@ namespace Realms.Sync
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
                 var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target;
+                if (session == null)
+                {
+                    // We're taking a weak handle to the session, so it's possible that it's been collected
+                    return;
+                }
 
                 System.Threading.ThreadPool.QueueUserWorkItem(_ =>
                 {
