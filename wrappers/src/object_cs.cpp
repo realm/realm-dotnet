@@ -205,6 +205,16 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT Object* object_get_parent(Object& child, TableKey& table_key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            Obj parent = child.obj().get_parent_object();
+            table_key = parent.get_table()->get_key();
+
+            return new Object(child.realm(), std::move(parent));
+        });
+    }
+
     REALM_EXPORT void object_set_null(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

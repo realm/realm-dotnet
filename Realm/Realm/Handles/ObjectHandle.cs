@@ -47,6 +47,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_parent", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_parent(ObjectHandle handle, out TableKey tableKey, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -282,6 +285,16 @@ namespace Realms
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(Root, objPtr);
+        }
+
+        public ObjectHandle GetParent(out TableKey tableKey)
+        {
+            EnsureIsOpen();
+
+            var parentObjPtr = NativeMethods.get_parent(this, out tableKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root, parentObjPtr);
         }
 
         public ResultsHandle GetBacklinks(string propertyName, Metadata metadata)

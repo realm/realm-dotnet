@@ -22,6 +22,7 @@
 
 ### Fixed
 * Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
+* Fixed returning the parent when accessing it on an `IEmbeddedObject`. (Issue [#2742](https://github.com/realm/realm-dotnet/issues/2742))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
