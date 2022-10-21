@@ -77,6 +77,14 @@ namespace SourceGeneratorAssemblyToProcess
 
         #endregion
 
+        /// <summary>
+        /// Called when the object has been managed by a Realm.
+        /// </summary>
+        /// <remarks>
+        /// This method will be called either when a managed object is materialized or when an unmanaged object has been
+        /// added to the Realm. It can be useful for providing some initialization logic as when the constructor is invoked,
+        /// it is not yet clear whether the object is managed or not.
+        /// </remarks>
         partial void OnManaged();
 
         private event PropertyChangedEventHandler _propertyChanged;
@@ -104,6 +112,33 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
+        /// <summary>
+        /// Called when a property has changed on this class.
+        /// </summary>
+        /// <param name="propertyName">The name of the property.</param>
+        /// <remarks>
+        /// For this method to be called, you need to have first subscribed to <see cref="PropertyChanged"/>.
+        /// This can be used to react to changes to the current object, e.g. raising <see cref="PropertyChanged"/> for computed properties.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// class MyClass : IRealmObject
+        /// {
+        ///     public int StatusCodeRaw { get; set; }
+        ///     public StatusCodeEnum StatusCode => (StatusCodeEnum)StatusCodeRaw;
+        ///     partial void OnPropertyChanged(string propertyName)
+        ///     {
+        ///         if (propertyName == nameof(StatusCodeRaw))
+        ///         {
+        ///             RaisePropertyChanged(nameof(StatusCode));
+        ///         }
+        ///     }
+        /// }
+        /// </code>
+        /// Here, we have a computed property that depends on a persisted one. In order to notify any <see cref="PropertyChanged"/>
+        /// subscribers that <c>StatusCode</c> has changed, we implement <see cref="OnPropertyChanged"/> and
+        /// raise <see cref="PropertyChanged"/> manually by calling <see cref="RaisePropertyChanged"/>.
+        /// </example>
         partial void OnPropertyChanged(string propertyName);
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
