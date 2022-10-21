@@ -1059,4 +1059,20 @@ namespace Realms.Tests
             Data = data;
         }
     }
+
+    public class RealmValueObject : RealmObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public int Id { get; set; } = TestHelpers.Random.Next();
+
+        public RealmValue RealmValueProperty { get; set; }
+
+        public IList<RealmValue> RealmValueList { get; }
+
+        public ISet<RealmValue> RealmValueSet { get; }
+
+        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
+
+        public IDictionary<string, int> TestDict { get; }
+    }
 }

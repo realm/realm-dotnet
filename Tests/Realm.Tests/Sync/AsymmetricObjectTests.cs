@@ -341,7 +341,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] {
+                flxConfig.Schema = new[]
+                {
                     typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
                     typeof(EmbeddedLevel1),
                     typeof(EmbeddedLevel2),
@@ -462,6 +463,85 @@ namespace Realms.Tests.Sync
                     // but the "GetParent" method is still accessible on its accessor. It should
                     // throw as it should not be used for such objects.
                     Assert.Throws<InvalidOperationException>(() => ((IRealmObjectBase)topLevel).Accessor.GetParent());
+                });
+            });
+        }
+
+        [Test]
+        public void AsymmetricObjectAsRealmValue_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
+                flxConfig.PopulateInitialSubscriptions = (realm) =>
+                {
+                    var query = realm.All<RealmValueObject>();
+                    realm.Subscriptions.Add(query);
+                };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueProperty = new BasicAsymmetricObject()
+                    };
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+
+                    var rvoWithList = new RealmValueObject
+                    {
+                        RealmValueList = { new BasicAsymmetricObject() }
+                    };
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithList));
+
+                    var rvoWithSet = new RealmValueObject
+                    {
+                        RealmValueSet = { new BasicAsymmetricObject() }
+                    };
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithSet));
+
+                    var rvoWithDictionary = new RealmValueObject
+                    {
+                        RealmValueDictionary = { { "embedded", new BasicAsymmetricObject() } }
+                    };
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithDictionary));
+                });
+            });
+        }
+
+        [Test]
+        public void AsymmetricObjectAsRealmValue_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
+                flxConfig.PopulateInitialSubscriptions = (realm) =>
+                {
+                    var query = realm.All<RealmValueObject>();
+                    realm.Subscriptions.Add(query);
+                };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueProperty = new BasicAsymmetricObject());
+
+                    // List
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Add(new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Insert(0, new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList[0] = new BasicAsymmetricObject());
+
+                    // Set
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueSet.Add(new BasicAsymmetricObject()));
+
+                    // Dictionary
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary.Add("embedded", new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary["embedded"] = new BasicAsymmetricObject());
                 });
             });
         }
