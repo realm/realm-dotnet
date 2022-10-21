@@ -204,16 +204,30 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObject>();
+            var robj = value.AsRealmObject<IRealmObjectBase>();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
                 throw new RealmException("Can't add to the collection an object that is already in another realm.");
             }
 
-            if (!robj.IsManaged)
+            switch (robj)
             {
-                Realm.Add(robj);
+                case IRealmObject topLevel:
+                    if (!robj.IsManaged)
+                    {
+                        Realm.Add(topLevel);
+                    }
+
+                    break;
+
+                // Embedded and asymmetric objects will not reach this path unless they are used as a RealmValue.
+                case IEmbeddedObject:
+                    throw new NotSupportedException("Embedded objects cannot be used as a RealmValue.");
+                case IAsymmetricObject:
+                    throw new NotSupportedException("Asymmetric objects cannot be used as a RealmValue.");
+                default:
+                    throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }
         }
 

@@ -191,9 +191,18 @@ namespace Realms
                             throw new RealmException("Can't link to an embedded object that is already managed.");
                         }
 
+                        if (GetProperty(propertyName, metadata).Type.IsRealmValue())
+                        {
+                            throw new NotSupportedException("Embedded objects cannot be used as a RealmValue.");
+                        }
+
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
+
+                    // Asymmetric objects will not reach this path unless they are used as a RealmValue.
+                    case IAsymmetricObject:
+                        throw new NotSupportedException($"Asymmetric objects cannot be linked to. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
 
@@ -359,6 +368,16 @@ namespace Realms
         private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
         {
             if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            {
+                return result;
+            }
+
+            throw new MissingMemberException(metadata.Schema.Name, propertyName);
+        }
+
+        private static Property GetProperty(string propertyName, Metadata metadata)
+        {
+            if (metadata.Schema.TryFindProperty(propertyName, out var result))
             {
                 return result;
             }
