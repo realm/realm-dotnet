@@ -6,7 +6,8 @@
 ### Fixed
 * Fixed a NullReferenceException being thrown when subscribing to `PropertyChanged` notifications on a `Session` instance that is then garbage collected prior to unsubscribing. (PR [#3061](https://github.com/realm/realm-dotnet/pull/3061))
 * Removed bitcode support from the iOS binary as it's no longer accepted for App Store submissions. (Issue [#3059](https://github.com/realm/realm-dotnet/issues/3059))
-* Prevents `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
+* Fixed returning the parent when accessing it on an `IEmbeddedObject`. (Issue [#2742](https://github.com/realm/realm-dotnet/issues/2742))
+* Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
@@ -23,7 +24,7 @@
 
 ### Fixed
 * Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
-* Fixed returning the parent when accessing it on an `IEmbeddedObject`. (Issue [#2742](https://github.com/realm/realm-dotnet/issues/2742))
+* Fixed a `NullReferenceException` occurring in `RealmObjectBase`'s finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
@@ -123,7 +124,6 @@
 * If you set a subscription on a link in flexible sync, the server would not know how to handle it ([#5409](https://github.com/realm/realm-core/issues/5409), since v11.6.1)
 * If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
 * Added validation to prevent adding a removed object using Realm.Add. (Issue [#3020](https://github.com/realm/realm-dotnet/issues/3020))
-* Fixed a NullReferenceException occurring in RealmObject's finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
