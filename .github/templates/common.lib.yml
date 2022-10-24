@@ -14,6 +14,7 @@
 #@ actionSetupNode = "actions/setup-node@v2"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
 #@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@v3"
+#@ actionSetupXcode = "maxim-lobanov/setup-xcode@df46f77a07b48da38239cd2fb8c0b5603c71e909"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
@@ -207,4 +208,11 @@ if: #@ ifCondition
 #@ end
 with:
   dotnet-version: #@ version
+#@ end
+---
+#@ def setupXcode(version = "14.0.1"):
+- name: Setup Xcode
+  uses: #@ actionSetupXcode
+  with:
+    xcode-version: #@ version
 #@ end

@@ -184,13 +184,18 @@ jobs:
       uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
       with:
         path: C:\docfx
-        key: docfx
+        key: docfx-2.59.4
     - name: Download docfx
       if: inputs.build-docs && steps.check-docfx-cache.outputs.cache-hit != 'true'
       run: |
-        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.58/docfx.zip -OutFile C:\docfx.zip
+        Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.59.4/docfx.zip -OutFile C:\docfx.zip
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
+    - name: Configure .NET
+      uses: actions/setup-dotnet@v1
+      if: inputs.build-docs
+      with:
+        dotnet-version: 6.0.x
     - name: Build docs
       if: inputs.build-docs
       run: |
