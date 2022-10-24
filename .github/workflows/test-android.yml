@@ -57,15 +57,6 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: false
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - uses: realm/ci-actions/mdb-realm/deploy@30bd9ead57756016f2e2ac7630433cf0883d1bae
       if: ${{ inputs.realmUrl }}
       with:
