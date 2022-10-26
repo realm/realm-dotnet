@@ -248,6 +248,37 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ObjectList_WhenEnumeratingFrozenList_ShouldBeStable()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() =>
+            {
+                _realm.Add(container);
+            });
+
+            var j = 10;
+            var frozenList = container.Items.Freeze();
+
+            TestStableIteration(
+                i => container.Items.Add(new IntPropertyObject { Int = i }),
+                () => frozenList = container.Items.Freeze(),
+                item =>
+                {
+                    // Just remove last from container since item from
+                    // frozen version is not equivalent.
+                    j -= 1;
+                    container.Items.RemoveAt(j);
+            });
+
+            Assert.That(container.Items, Is.Empty);
+
+            var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
+            var frozenItems = frozenList.ToArray().Select(i => i.Int);
+            Assert.That(frozenItems, Is.EquivalentTo(Enumerable.Range(0, 10)));
+            Assert.That(items, Is.EquivalentTo(Enumerable.Range(0, 10)));
+        }
+
+        [Test]
         public void ObjectList_WhenEnumeratingAndRemovingFromRealm_ShouldBeStable()
         {
             var container = new ContainerObject();
