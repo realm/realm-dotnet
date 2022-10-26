@@ -6,7 +6,7 @@
 ### Fixed
 * Fixed a NullReferenceException being thrown when subscribing to `PropertyChanged` notifications on a `Session` instance that is then garbage collected prior to unsubscribing. (PR [#3061](https://github.com/realm/realm-dotnet/pull/3061))
 * Removed bitcode support from the iOS binary as it's no longer accepted for App Store submissions. (Issue [#3059](https://github.com/realm/realm-dotnet/issues/3059))
-* Slightly increased performance and reduced allocations when creating an enumerator for frozen collections (PR [#3067](https://github.com/realm/realm-dotnet/pull/3067)).
+* Slightly increased performance and reduced allocations when creating an enumerator for frozen collections (Issue [#2815](https://github.com/realm/realm-dotnet/issues/2815)).
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
