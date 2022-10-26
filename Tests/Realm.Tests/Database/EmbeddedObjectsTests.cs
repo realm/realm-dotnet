@@ -499,7 +499,7 @@ namespace Realms.Tests.Database
                     parent2.RecursiveObject = parent.RecursiveObject;
                 });
             });
-            Assert.That(ex.Message, Is.EqualTo("Can't link to an embedded object that is already managed."));
+            Assert.That(ex.Message, Does.Contain("Can't link to an embedded object that is already managed."));
         }
 
         [Test]
