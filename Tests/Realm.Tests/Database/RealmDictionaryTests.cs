@@ -1073,6 +1073,56 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
+        [Test]
+        public void AsRealmQueryable_RaisesNotifications()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DictionariesObject());
+            });
+
+            var dogToAge = obj.ObjectDictionary;
+
+            var oldDogs = dogToAge.AsRealmQueryable().Where(d => d.Int >= 5);
+
+            var changeSets = new List<ChangeSet>();
+            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changeSets.Add(changes);
+                }
+            });
+
+            for (var i = 0; i < 10; i++)
+            {
+                _realm.Write(() => dogToAge["f" + i] = new IntPropertyObject { Int = i });
+                _realm.Refresh();
+
+                if (i >= 5)
+                {
+                    Assert.That(changeSets.Count, Is.EqualTo(i - 4));
+
+                    var changeSet = changeSets.Last();
+                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(changeSet.DeletedIndices, Is.Empty);
+                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Int, Is.EqualTo(i));
+                }
+            }
+        }
+
+        [Test]
+        public void AsRealmQueryable_WhenNotRealmDictionary_Throws()
+        {
+            var dict = new DictionariesObject().ObjectDictionary;
+
+            Assert.That(
+                () => dict.AsRealmQueryable(),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("dictionary must be an instance of RealmDictionary<IntPropertyObject>"));
+        }
+
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
         {
             TestHelpers.RunAsyncTest(async () =>

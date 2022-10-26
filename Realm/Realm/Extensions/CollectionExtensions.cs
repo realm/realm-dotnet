@@ -268,6 +268,42 @@ namespace Realms
         }
 
         /// <summary>
+        /// Converts a Realm-backed <see cref="IDictionary{String, T}"/> to a Realm-backed <see cref="IQueryable{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the values contained in the dictionary.</typeparam>
+        /// <param name="dictionary">The dictionary of objects as obtained from a to-many relationship property.</param>
+        /// <returns>A queryable collection that represents the values contained in the dictionary.</returns>
+        /// <remarks>
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it actually creates
+        /// an underlying Realm query to represent the list. This means that all LINQ methods will be executed
+        /// by the database and also that you can subscribe for notifications even after applying LINQ filters
+        /// or ordering.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var nameToDogMap = owner.nameToDog;
+        /// var query = nameToDogMap.AsRealmQueryable()
+        ///                 .Where(d => d.Age > 3)
+        ///                 .OrderBy(d => d.Name);
+        ///
+        /// var token = query.SubscribeForNotifications((sender, changes, error) =>
+        /// {
+        ///     // You'll be notified only when dogs older than 3 have been added/removed/updated
+        ///     // and the sender collection will be ordered by Name
+        /// });
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentException">Thrown if the dictionary is not managed by Realm.</exception>
+        public static IQueryable<T> AsRealmQueryable<T>(this IDictionary<string, T> dictionary)
+            where T : IRealmObjectBase
+        {
+            Argument.NotNull(dictionary, nameof(dictionary));
+
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of RealmDictionary<{typeof(T).Name}>.", nameof(dictionary));
+            return realmDictionary.ToResults();
+        }
+
+        /// <summary>
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>

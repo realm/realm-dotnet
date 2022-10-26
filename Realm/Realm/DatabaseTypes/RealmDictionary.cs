@@ -98,6 +98,12 @@ namespace Realms
             }
         }
 
+        internal RealmResults<TValue> ToResults()
+        {
+            var resultsHandle = _dictionaryHandle.GetValues();
+            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+        }
+
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
