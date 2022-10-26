@@ -14,43 +14,6 @@ name: CodeQL
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  analyze-cpp:
-    name: Analyze C++
-    runs-on: windows-2019
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: cpp
-        queries: security-and-quality
-    - name: Get vcpkg submodule commit sha
-      id: vcpkg_cache_key
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-      shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
-    - name: Setup Vcpkg
-      id: setup-vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}
-    - name: Refetch vcpkg
-      run: git fetch --unshallow
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-    - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
   analyze-csharp:
     name: Analyze C#
     runs-on: windows-2019

@@ -739,6 +739,104 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void EmbeddedObject_WhenParentAccessed_ReturnsParent()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    Child = new EmbeddedLevel2
+                    {
+                        Child = new EmbeddedLevel3()
+                    }
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent, Is.EqualTo(parent.RecursiveObject.Parent));
+
+            var firstChild = parent.RecursiveObject;
+            Assert.That(firstChild, Is.EqualTo(firstChild.Child.Parent));
+
+            var secondChild = firstChild.Child;
+            Assert.That(secondChild, Is.EqualTo(secondChild.Child.Parent));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenParentAccessedInList_ReturnsParent()
+        {
+            var parent = new ObjectWithEmbeddedProperties();
+            parent.ListOfAllTypesObjects.Add(new EmbeddedAllTypesObject());
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent, Is.EqualTo(parent.ListOfAllTypesObjects.Single().Parent));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenParentAccessedInDictionary_ReturnsParent()
+        {
+            var parent = new ObjectWithEmbeddedProperties();
+            parent.DictionaryOfAllTypesObjects.Add("child", new EmbeddedAllTypesObject());
+
+            _realm.Write(() =>
+            {
+                _realm.Add(parent);
+            });
+
+            Assert.That(parent, Is.EqualTo(parent.DictionaryOfAllTypesObjects["child"].Parent));
+        }
+
+        [Test]
+        public void EmbeddedObjectUnmanaged_WhenParentAccessed_ReturnsNull()
+        {
+            var parent = new ObjectWithEmbeddedProperties
+            {
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    Child = new EmbeddedLevel2
+                    {
+                        Child = new EmbeddedLevel3()
+                    }
+                }
+            };
+
+            Assert.That(parent.RecursiveObject.Parent, Is.Null);
+
+            var firstChild = parent.RecursiveObject;
+            Assert.That(firstChild.Child.Parent, Is.Null);
+
+            var secondChild = firstChild.Child;
+            Assert.That(secondChild.Child.Parent, Is.Null);
+        }
+
+        [Test]
+        public void NonEmbeddedObject_WhenParentAccessed_Throws()
+        {
+            var topLevel = new IntPropertyObject
+            {
+                Int = 1
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Add(topLevel);
+            });
+
+            // Objects not implementing IEmbeddedObject will not have the "Parent" field,
+            // but the "GetParent" method is still accessible on its accessor. It should
+            // throw as it should not be used for such objects.
+            Assert.Throws<InvalidOperationException>(() => ((IRealmObjectBase)topLevel).Accessor.GetParent());
+        }
+
+        [Test]
         public void StaticBacklinks()
         {
             var parent = new ObjectWithEmbeddedProperties

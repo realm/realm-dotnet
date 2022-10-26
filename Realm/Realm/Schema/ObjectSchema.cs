@@ -80,7 +80,7 @@ namespace Realms.Schema
         /// Gets a value indicating whether this <see cref="ObjectSchema"/> describes an embedded object.
         /// </summary>
         /// <value><c>true</c> if the schema pertains to an <see cref="EmbeddedObject"/> instance; <c>false</c> otherwise.</value>
-        [Obsolete("Check against RealmSchemaType instead.")]
+        [Obsolete("Check against BaseType instead.")]
         public bool IsEmbedded => BaseType == ObjectType.EmbeddedObject;
 
         /// <summary>

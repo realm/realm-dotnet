@@ -58,6 +58,9 @@ namespace Realms
         /// <inheritdoc/>
         public DynamicObjectApi DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
+        /// <inheritdoc/>
+        public IRealmObjectBase GetParent() => null;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
         /// </summary>

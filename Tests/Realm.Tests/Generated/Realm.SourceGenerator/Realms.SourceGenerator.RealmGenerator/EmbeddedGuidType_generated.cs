@@ -65,6 +65,9 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
+        [IgnoreDataMember, XmlIgnore]
+        public IRealmObjectBase Parent => Accessor.GetParent();
+
         public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedGuidTypeAccessor)managedAccessor;

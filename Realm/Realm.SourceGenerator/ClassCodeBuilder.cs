@@ -309,6 +309,10 @@ public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 [IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
 
+{(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
+$@"[IgnoreDataMember, XmlIgnore]
+public IRealmObjectBase Parent => Accessor.GetParent();")}
+
 public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;

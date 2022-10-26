@@ -76,25 +76,22 @@ namespace Baas
                 };";
 
         private const string TriggerClientResetOnSyncServerFuncSource =
-            @"exports = async function(useId, appId = '') {
+            @"exports = async function(userId, appId = '') {
                 const mongodb = context.services.get('BackingDB');
                 console.log('user.id: ' + context.user.id);
-                let deletionResult;
                 try {
                   let dbName = '__realm_sync';
                   if (appId !== '')
                   {
                     dbName = [dbName, '_', appId].join('');
                   }
-                  deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: useId });
+                  const deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: userId });
                   console.log('Deleted documents: ' + deletionResult.deletedCount);
+
+                  return { status: deletionResult.deletedCount > 0 ? 'success' : 'failure' };
                 } catch(err) {
                   throw 'Deletion failed: ' + err;
                 }
-                if (deletionResult.deletedCount > 0) {
-                  return { status: 'success' };
-                }
-                return { status: 'failure' };
             };";
 
         private readonly HttpClient _client = new();

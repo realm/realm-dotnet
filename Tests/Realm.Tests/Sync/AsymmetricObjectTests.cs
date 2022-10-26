@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -329,7 +330,7 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(BasicAsymmetricObject) };
 
                 var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
-                Assert.That(ex.Message.Contains($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"), Is.True);
+                Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"));
             });
         }
 
@@ -341,6 +342,137 @@ namespace Realms.Tests.Sync
 
             var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
             Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in a local Realm"));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenParentAccessed_ReturnsParent()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] {
+                    typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
+                    typeof(EmbeddedLevel1),
+                    typeof(EmbeddedLevel2),
+                    typeof(EmbeddedLevel3)
+                };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                var parent = new AsymmetricObjectWithEmbeddedRecursiveObject
+                {
+                    RecursiveObject = new EmbeddedLevel1
+                    {
+                        Child = new EmbeddedLevel2
+                        {
+                            Child = new EmbeddedLevel3()
+                        }
+                    }
+                };
+
+                realm.Write(() =>
+                {
+                    realm.Add(parent);
+
+                    Assert.That(parent, Is.EqualTo(parent.RecursiveObject.Parent));
+
+                    var firstChild = parent.RecursiveObject;
+                    Assert.That(firstChild, Is.EqualTo(firstChild.Child.Parent));
+
+                    var secondChild = firstChild.Child;
+                    Assert.That(secondChild, Is.EqualTo(secondChild.Child.Parent));
+                });
+            });
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenParentAccessedInList_ReturnsParent()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedListObject), typeof(EmbeddedIntPropertyObject) };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                var parent = new AsymmetricObjectWithEmbeddedListObject();
+                parent.EmbeddedListObject.Add(new EmbeddedIntPropertyObject());
+
+                realm.Write(() =>
+                {
+                    realm.Add(parent);
+
+                    Assert.That(parent, Is.EqualTo(parent.EmbeddedListObject.Single().Parent));
+                });
+            });
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenParentAccessedInDictionary_ReturnsParent()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(AsymmetricObjectWithEmbeddedDictionaryObject), typeof(EmbeddedIntPropertyObject) };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                var parent = new AsymmetricObjectWithEmbeddedDictionaryObject();
+                parent.EmbeddedDictionaryObject.Add("child", new EmbeddedIntPropertyObject());
+
+                realm.Write(() =>
+                {
+                    realm.Add(parent);
+
+                    Assert.That(parent, Is.EqualTo(parent.EmbeddedDictionaryObject["child"].Parent));
+                });
+            });
+        }
+
+        [Test]
+        public void EmbeddedObjectUnmanaged_WhenParentAccessed_ReturnsNull()
+        {
+            var parent = new AsymmetricObjectWithEmbeddedRecursiveObject
+            {
+                RecursiveObject = new EmbeddedLevel1
+                {
+                    Child = new EmbeddedLevel2
+                    {
+                        Child = new EmbeddedLevel3()
+                    }
+                }
+            };
+
+            Assert.That(parent.RecursiveObject.Parent, Is.Null);
+
+            var firstChild = parent.RecursiveObject;
+            Assert.That(firstChild.Child.Parent, Is.Null);
+
+            var secondChild = firstChild.Child;
+            Assert.That(secondChild.Child.Parent, Is.Null);
+        }
+
+        [Test]
+        public void NonEmbeddedObject_WhenParentAccessed_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var flxConfig = await GetFLXIntegrationConfigAsync();
+                flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
+                using var realm = await GetRealmAsync(flxConfig);
+
+                var topLevel = new BasicAsymmetricObject
+                {
+                    PartitionLike = Guid.NewGuid().ToString()
+                };
+
+                realm.Write(() =>
+                {
+                    realm.Add(topLevel);
+
+                    // Objects not implementing IEmbeddedObject will not have the "Parent" field,
+                    // but the "GetParent" method is still accessible on its accessor. It should
+                    // throw as it should not be used for such objects.
+                    Assert.Throws<InvalidOperationException>(() => ((IRealmObjectBase)topLevel).Accessor.GetParent());
+                });
+            });
         }
 
         [Test]
@@ -515,5 +647,32 @@ namespace Realms.Tests.Sync
         // public RealmInteger<long> Int64CounterProperty { get; set; }
 
         // public RealmValue RealmValueProperty { get; set; }
+    }
+
+    [Explicit]
+    public partial class AsymmetricObjectWithEmbeddedListObject : TestAsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public IList<EmbeddedIntPropertyObject> EmbeddedListObject { get; }
+    }
+
+    [Explicit]
+    public partial class AsymmetricObjectWithEmbeddedRecursiveObject : TestAsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public EmbeddedLevel1 RecursiveObject { get; set; }
+    }
+
+    [Explicit]
+    public partial class AsymmetricObjectWithEmbeddedDictionaryObject : TestAsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedDictionaryObject { get; }
     }
 }

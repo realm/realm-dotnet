@@ -142,6 +142,14 @@ namespace Realms
             where T : IRealmObjectBase;
 
         /// <summary>
+        /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
+        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
+        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
+        /// </summary>
+        /// <returns>The parent of the embedded object.</returns>
+        IRealmObjectBase GetParent();
+
+        /// <summary>
         /// A method called internally to subscribe to the notifications for the associated object.
         /// </summary>
         /// <param name="notifyPropertyChangedDelegate">The delegate invoked when a notification is raised.</param>
