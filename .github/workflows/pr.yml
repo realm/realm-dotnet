@@ -122,6 +122,18 @@ jobs:
       AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
       DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+  test-weaved-classes:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    needs:
+    - build-packages
+    uses: ./.github/workflows/test-woven-classes.yml
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+  test-source-generation:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    uses: ./.github/workflows/test-source-generation.yml
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test

@@ -15,6 +15,9 @@ apiRules:
     uidRegex: ^Realms\.Weaving$
     type: Namespace
 - exclude:
+    uidRegex: ^Realms\.InvalidObject$
+    type: Type
+- exclude:
     uidRegex: ^Realms\.PreserveAttribute$
     type: Type
 - exclude:

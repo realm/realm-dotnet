@@ -100,6 +100,24 @@ test-net-core:
     framework: #@ frameworks
 #@ end
 
+#@ def runWovenClassesTests():
+test-weaved-classes:
+  if: #@ ignoreSkippedJobsCondition
+  name: Test
+  needs:
+    - build-packages
+  uses: "./.github/workflows/test-woven-classes.yml"
+  with:
+    version: ${{ needs.build-packages.outputs.package_version }}
+#@ end
+
+#@ def runSourceGenerationTests():
+test-source-generation:
+  if: #@ ignoreSkippedJobsCondition
+  name: Test
+  uses: "./.github/workflows/test-source-generation.yml"
+#@ end
+
 #@ def buildUnity():
 build-unity:
   uses: ./.github/workflows/build-unity.yml

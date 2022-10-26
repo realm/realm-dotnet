@@ -18,7 +18,7 @@
 
 using Realms;
 
-namespace SourceGeneratorAssemblyToProcess.TestClasses
+namespace SourceGeneratorAssemblyToProcess
 {
     public partial class ClassWithoutParameterlessConstructor : IRealmObject
     {

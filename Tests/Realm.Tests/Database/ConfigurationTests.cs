@@ -23,6 +23,15 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -264,7 +273,7 @@ namespace Realms.Tests.Database
 namespace Foo
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : TestRealmObject
     {
         public int IntValue { get; set; }
     }
@@ -273,7 +282,7 @@ namespace Foo
 namespace Bar
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : TestRealmObject
     {
         public string StringValue { get; set; }
     }

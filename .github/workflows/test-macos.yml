@@ -45,6 +45,11 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
       if: ${{ runner.os == 'Windows' }}
@@ -86,6 +91,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v2
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@v1

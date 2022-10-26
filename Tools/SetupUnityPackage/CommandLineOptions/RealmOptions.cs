@@ -38,6 +38,7 @@ namespace SetupUnityPackage
 
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
+            "Realm.SourceGenerator",
             "Microsoft.CSharp",
             "Realm.Fody",
             "Fody",
@@ -83,7 +84,7 @@ namespace SetupUnityPackage
             }, _realmDependencies),
             new PackageInfo("Realm.SourceGenerator", new Dictionary<string, string>
             {
-                { "lib/netstandard2.0/Realm.SourceGenerator.dll", "Runtime/Realm.SourceGenerator.dll" },
+                { "analyzers/dotnet/cs/Realm.SourceGenerator.dll", "Editor/Realm.SourceGenerator.dll" },
             }),
             new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {

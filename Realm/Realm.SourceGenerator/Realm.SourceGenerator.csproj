@@ -7,11 +7,13 @@
         <Title>Realm.SourceGenerator</Title>
         <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
         <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
+        <Documentation>Realm.SourceGenerator is a Source Generator used to generate the implementation of Realm model classes. </Documentation>
         <DisableFody>true</DisableFody>
         <NoWarn>1701;1702;NU1701</NoWarn>
         <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
         <IsPackable>true</IsPackable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- Do not include the generator as a lib dependency. -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeSymbols>false</IncludeSymbols>

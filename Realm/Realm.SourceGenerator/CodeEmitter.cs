@@ -53,7 +53,7 @@ namespace Realms.SourceGenerator
                     var sourceText = SourceText.From(formattedSource, Encoding.UTF8);
 
                     // Discussion on allowing duplicate hint names: https://github.com/dotnet/roslyn/discussions/60272
-                    var className = classInfo.HasDuplicatedName ? $"{classInfo.Namespace}_{classInfo.Name}" : classInfo.Name;
+                    var className = classInfo.HasDuplicatedName ? $"{classInfo.NamespaceInfo.ComputedName}_{classInfo.Name}" : classInfo.Name;
 
                     _context.AddSource($"{className}_generated.cs", sourceText);
                 }

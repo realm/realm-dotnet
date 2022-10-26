@@ -20,7 +20,7 @@ using System;
 using MongoDB.Bson;
 using Realms;
 
-namespace SourceGeneratorPlayground
+namespace SourceGeneratorAssemblyToProcess
 {
     public partial class AllTypesClass : IRealmObject
     {

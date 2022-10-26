@@ -1,6 +1,6 @@
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish")
 
-#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody" ]):
+#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]):
 #@ for pkg in packages:
   - name: #@ "Fetch " + pkg
     uses: #@ actionDownloadArtifact
@@ -71,6 +71,16 @@ env:
 #@ properties = {
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
+#@   "RealmTestsStandaloneExe": "true"
+#@ }
+#@ return dotnetPublish(projectPath, framework, runtime, properties)
+#@ end
+
+#@ def wovenClassesBuildTests(projectPath, framework, runtime, version = "inputs.version"):
+#@ properties = {
+#@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
+#@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
+#@   "TestWeavedClasses": "true",
 #@   "RealmTestsStandaloneExe": "true"
 #@ }
 #@ return dotnetPublish(projectPath, framework, runtime, properties)

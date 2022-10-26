@@ -23,17 +23,6 @@ namespace Realms.SourceGenerator
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
-        /* Not explicitly supported:
-         * - Inheritance of any kind (classes cannot derive from anything)
-         * - Full nullability support
-         * - Nested classes
-         */
-
-        /* Notes for developers:
-         * - "OnManaged" is a partial method now
-         * - "OnPropertyChanged" is a partial method now
-         */
-
         public void Initialize(GeneratorInitializationContext context)
         {
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());

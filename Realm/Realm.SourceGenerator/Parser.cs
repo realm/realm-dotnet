@@ -75,7 +75,7 @@ namespace Realms.SourceGenerator
                     }
 
                     // General info
-                    classInfo.Namespace = classSymbol.ContainingNamespace.ToDisplayString();
+                    classInfo.NamespaceInfo = GetNamespaceInfo(classSymbol);
                     classInfo.Name = classSymbol.Name;
                     classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
@@ -252,6 +252,11 @@ namespace Realms.SourceGenerator
 
             if (propertyTypeInfo.IsUnsupported)
             {
+                if (!propertySyntax.IsAutomaticProperty())
+                {
+                    return propertyTypeInfo;
+                }
+
                 if (propertySymbol is INamedTypeSymbol namedSymbol && namedSymbol.SpecialType == SpecialType.System_DateTime)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.DateTimeNotSupported(classInfo.Name, propertySymbol.Name, propertyLocation));
@@ -414,7 +419,7 @@ namespace Realms.SourceGenerator
             propInfo.TypeSymbol = typeSymbol;
             propInfo.CompleteTypeSymbol = completeTypeSymbol;
             propInfo.NullableAnnotation = nullableAnnotation;
-            propInfo.Namespace = typeSymbol.ContainingNamespace?.ToString();
+            propInfo.Namespace = typeSymbol.ContainingNamespace?.IsGlobalNamespace == true ? null : typeSymbol.ContainingNamespace?.ToString();
 
             if (propInfo.ScalarType == ScalarType.Object)
             {
@@ -449,6 +454,16 @@ namespace Realms.SourceGenerator
             }
 
             return enclosingClassList;
+        }
+
+        private static NamespaceInfo GetNamespaceInfo(ITypeSymbol classSymbol)
+        {
+            if (classSymbol.ContainingNamespace.IsGlobalNamespace)
+            {
+                return new NamespaceInfo { IsGlobal = true };
+            }
+
+            return new NamespaceInfo { OriginalName = classSymbol.ContainingNamespace.ToDisplayString() };
         }
     }
 

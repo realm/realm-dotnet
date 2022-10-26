@@ -139,7 +139,7 @@ namespace Realms.Tests.Sync
             }
 
             void AssertFind<T>(Realm realm, RealmValue id)
-                where T : RealmObject
+                where T : IRealmObject
             {
                 Assert.That(realm.FindCore<T>(id)?.IsValid, Is.True, $"Failed to find {typeof(T).Name} with id {id}. Objects in Realm: {realm.All<T>().ToArray().Select(o => o.DynamicApi.Get<RealmValue>("_id").ToString()).Join()}");
             }

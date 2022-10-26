@@ -26,6 +26,15 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Sync
 {
@@ -318,27 +327,9 @@ namespace Realms.Tests.Sync
             {
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(BasicAsymmetricObject) };
-                var tcs = new TaskCompletionSource<object>();
 
-                config.OnSessionError = (session, error) =>
-                {
-                    try
-                    {
-                        Assert.That(error, Is.InstanceOf<SessionException>());
-                        Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.InvalidSchemaChange));
-                        Assert.That(error.Message.Contains("asymmetric tables are not supported for partition-based sync"), Is.True);
-                    }
-                    catch (Exception e)
-                    {
-                        tcs.TrySetException(e);
-                    }
-
-                    tcs.TrySetResult(null);
-                };
-
-                using var realm = await GetRealmAsync(config);
-
-                await tcs.Task;
+                var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+                Assert.That(ex.Message.Contains($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"), Is.True);
             });
         }
 
@@ -364,7 +355,7 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    var asymmetricObj = (AsymmetricObject)(object)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
+                    var asymmetricObj = (IAsymmetricObject)(object)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
 
                     if (isDynamic)
                     {
@@ -426,103 +417,103 @@ namespace Realms.Tests.Sync
             };
             return collection.FindAsync(filter);
         }
+    }
 
-        [Explicit]
-        private class BasicAsymmetricObject : AsymmetricObject
+    [Explicit]
+    public partial class BasicAsymmetricObject : TestAsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public string PartitionLike { get; set; }
+    }
+
+    [Explicit]
+    public partial class AsymmetricObjectWithAllTypes : TestAsymmetricObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
+
+        public char CharProperty { get; set; }
+
+        public byte ByteProperty { get; set; }
+
+        public short Int16Property { get; set; }
+
+        public int Int32Property { get; set; }
+
+        public long Int64Property { get; set; }
+
+        public float SingleProperty { get; set; }
+
+        public double DoubleProperty { get; set; }
+
+        public bool BooleanProperty { get; set; }
+
+        public decimal DecimalProperty { get; set; }
+
+        public Decimal128 Decimal128Property { get; set; }
+
+        public ObjectId ObjectIdProperty { get; set; }
+
+        public Guid GuidProperty { get; set; }
+
+        [Required]
+        public string RequiredStringProperty { get; set; }
+
+        public string StringProperty { get; set; }
+
+        public byte[] ByteArrayProperty { get; set; }
+
+        public char? NullableCharProperty { get; set; }
+
+        public byte? NullableByteProperty { get; set; }
+
+        public short? NullableInt16Property { get; set; }
+
+        public int? NullableInt32Property { get; set; }
+
+        public long? NullableInt64Property { get; set; }
+
+        public float? NullableSingleProperty { get; set; }
+
+        public double? NullableDoubleProperty { get; set; }
+
+        public bool? NullableBooleanProperty { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+
+        public decimal? NullableDecimalProperty { get; set; }
+
+        public Decimal128? NullableDecimal128Property { get; set; }
+
+        public ObjectId? NullableObjectIdProperty { get; set; }
+
+        public Guid? NullableGuidProperty { get; set; }
+
+        public static AsymmetricObjectWithAllTypes CreateWithData(int dataSize)
         {
-            [PrimaryKey, MapTo("_id")]
-            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
-
-            public string PartitionLike { get; set; }
-        }
-
-        [Explicit]
-        public class AsymmetricObjectWithAllTypes : AsymmetricObject
-        {
-            [PrimaryKey, MapTo("_id")]
-            public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
-
-            public char CharProperty { get; set; }
-
-            public byte ByteProperty { get; set; }
-
-            public short Int16Property { get; set; }
-
-            public int Int32Property { get; set; }
-
-            public long Int64Property { get; set; }
-
-            public float SingleProperty { get; set; }
-
-            public double DoubleProperty { get; set; }
-
-            public bool BooleanProperty { get; set; }
-
-            public decimal DecimalProperty { get; set; }
-
-            public Decimal128 Decimal128Property { get; set; }
-
-            public ObjectId ObjectIdProperty { get; set; }
-
-            public Guid GuidProperty { get; set; }
-
-            [Required]
-            public string RequiredStringProperty { get; set; }
-
-            public string StringProperty { get; set; }
-
-            public byte[] ByteArrayProperty { get; set; }
-
-            public char? NullableCharProperty { get; set; }
-
-            public byte? NullableByteProperty { get; set; }
-
-            public short? NullableInt16Property { get; set; }
-
-            public int? NullableInt32Property { get; set; }
-
-            public long? NullableInt64Property { get; set; }
-
-            public float? NullableSingleProperty { get; set; }
-
-            public double? NullableDoubleProperty { get; set; }
-
-            public bool? NullableBooleanProperty { get; set; }
-
-            public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
-
-            public decimal? NullableDecimalProperty { get; set; }
-
-            public Decimal128? NullableDecimal128Property { get; set; }
-
-            public ObjectId? NullableObjectIdProperty { get; set; }
-
-            public Guid? NullableGuidProperty { get; set; }
-
-            public static AsymmetricObjectWithAllTypes CreateWithData(int dataSize)
+            var data = new byte[dataSize];
+            TestHelpers.Random.NextBytes(data);
+            return new AsymmetricObjectWithAllTypes
             {
-                var data = new byte[dataSize];
-                TestHelpers.Random.NextBytes(data);
-                return new AsymmetricObjectWithAllTypes
-                {
-                    ByteArrayProperty = data,
-                    RequiredStringProperty = string.Empty,
-                };
-            }
-
-            // We can't test against the following types as they are not Bson deserializable
-
-            // public DateTimeOffset DateTimeOffsetProperty { get; set; }
-
-            // public RealmInteger<byte> ByteCounterProperty { get; set; }
-
-            // public RealmInteger<short> Int16CounterProperty { get; set; }
-
-            // public RealmInteger<int> Int32CounterProperty { get; set; }
-
-            // public RealmInteger<long> Int64CounterProperty { get; set; }
-
-            // public RealmValue RealmValueProperty { get; set; }
+                ByteArrayProperty = data,
+                RequiredStringProperty = string.Empty,
+            };
         }
+
+        // We can't test against the following types as they are not Bson deserializable
+
+        // public DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+        // public RealmInteger<byte> ByteCounterProperty { get; set; }
+
+        // public RealmInteger<short> Int16CounterProperty { get; set; }
+
+        // public RealmInteger<int> Int32CounterProperty { get; set; }
+
+        // public RealmInteger<long> Int64CounterProperty { get; set; }
+
+        // public RealmValue RealmValueProperty { get; set; }
     }
 }

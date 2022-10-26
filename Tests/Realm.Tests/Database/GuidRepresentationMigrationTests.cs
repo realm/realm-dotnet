@@ -23,6 +23,15 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Tests.Sync;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -593,70 +602,70 @@ namespace Realms.Tests.Database
         }
 
         private static Guid FlipGuid(Guid guid) => GuidConverter.FromBytes(guid.ToByteArray(), GuidRepresentation.Standard);
+    }
 
-        [Explicit]
-        public class GuidType : RealmObject
-        {
-            [PrimaryKey, MapTo("_id")]
-            public Guid Id { get; set; }
+    [Explicit]
+    public partial class GuidType : TestRealmObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public Guid Id { get; set; }
 
-            public Guid RegularProperty { get; set; }
+        public Guid RegularProperty { get; set; }
 
-            public IList<Guid> GuidList { get; }
+        public IList<Guid> GuidList { get; }
 
-            public ISet<Guid> GuidSet { get; }
+        public ISet<Guid> GuidSet { get; }
 
-            public IDictionary<string, Guid> GuidDict { get; }
+        public IDictionary<string, Guid> GuidDict { get; }
 
-            public Guid? OptionalProperty { get; set; }
+        public Guid? OptionalProperty { get; set; }
 
-            public IList<Guid?> OptionalList { get; }
+        public IList<Guid?> OptionalList { get; }
 
-            public ISet<Guid?> OptionalSet { get; }
+        public ISet<Guid?> OptionalSet { get; }
 
-            public IDictionary<string, Guid?> OptionalDict { get; }
+        public IDictionary<string, Guid?> OptionalDict { get; }
 
-            public GuidType LinkProperty { get; set; }
+        public GuidType LinkProperty { get; set; }
 
-            public RealmValue MixedProperty { get; set; }
+        public RealmValue MixedProperty { get; set; }
 
-            public IList<RealmValue> MixedList { get; }
+        public IList<RealmValue> MixedList { get; }
 
-            public ISet<RealmValue> MixedSet { get; }
+        public ISet<RealmValue> MixedSet { get; }
 
-            public IDictionary<string, RealmValue> MixedDict { get; }
+        public IDictionary<string, RealmValue> MixedDict { get; }
 
-            public EmbeddedGuidType EmbeddedProperty { get; set; }
-        }
+        public EmbeddedGuidType EmbeddedProperty { get; set; }
+    }
 
-        [Explicit]
-        public class EmbeddedGuidType : EmbeddedObject
-        {
-            public Guid RegularProperty { get; set; }
+    [Explicit]
+    public partial class EmbeddedGuidType : TestEmbeddedObject
+    {
+        public Guid RegularProperty { get; set; }
 
-            public IList<Guid> GuidList { get; }
+        public IList<Guid> GuidList { get; }
 
-            public ISet<Guid> GuidSet { get; }
+        public ISet<Guid> GuidSet { get; }
 
-            public IDictionary<string, Guid> GuidDict { get; }
+        public IDictionary<string, Guid> GuidDict { get; }
 
-            public Guid? OptionalProperty { get; set; }
+        public Guid? OptionalProperty { get; set; }
 
-            public IList<Guid?> OptionalList { get; }
+        public IList<Guid?> OptionalList { get; }
 
-            public ISet<Guid?> OptionalSet { get; }
+        public ISet<Guid?> OptionalSet { get; }
 
-            public IDictionary<string, Guid?> OptionalDict { get; }
+        public IDictionary<string, Guid?> OptionalDict { get; }
 
-            public GuidType LinkProperty { get; set; }
+        public GuidType LinkProperty { get; set; }
 
-            public RealmValue MixedProperty { get; set; }
+        public RealmValue MixedProperty { get; set; }
 
-            public IList<RealmValue> MixedList { get; }
+        public IList<RealmValue> MixedList { get; }
 
-            public ISet<RealmValue> MixedSet { get; }
+        public ISet<RealmValue> MixedSet { get; }
 
-            public IDictionary<string, RealmValue> MixedDict { get; }
-        }
+        public IDictionary<string, RealmValue> MixedDict { get; }
     }
 }
