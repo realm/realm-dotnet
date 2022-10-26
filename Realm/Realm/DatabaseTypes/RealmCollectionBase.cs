@@ -204,7 +204,7 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObjectBase>();
+            var robj = value.AsIRealmObject();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
@@ -221,11 +221,14 @@ namespace Realms
 
                     break;
 
-                // Embedded and asymmetric objects will not reach this path unless they are used as a RealmValue.
+                // Embedded and asymmetric objects will not reach this path unless the user explicitly adds
+                // them to the collection as RealmValues (e.g. IList<RealmValue>).
                 case IEmbeddedObject:
-                    throw new NotSupportedException("Embedded objects cannot be used as a RealmValue.");
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
                 case IAsymmetricObject:
-                    throw new NotSupportedException("Asymmetric objects cannot be used as a RealmValue.");
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
                 default:
                     throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }

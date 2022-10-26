@@ -188,21 +188,22 @@ namespace Realms
                     case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
-                            throw new RealmException("Can't link to an embedded object that is already managed.");
+                            throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 
                         if (GetProperty(propertyName, metadata).Type.IsRealmValue())
                         {
-                            throw new NotSupportedException("Embedded objects cannot be used as a RealmValue.");
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
 
-                    // Asymmetric objects will not reach this path unless they are used as a RealmValue.
+                    // Asymmetric objects will not reach this path unless the user explicitly sets them as
+                    // a RealmValue property on the object.
                     case IAsymmetricObject:
-                        throw new NotSupportedException($"Asymmetric objects cannot be linked to. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
 
