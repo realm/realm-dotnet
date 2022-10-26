@@ -341,8 +341,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[]
-                {
+                flxConfig.Schema = new[] {
                     typeof(AsymmetricObjectWithEmbeddedRecursiveObject),
                     typeof(EmbeddedLevel1),
                     typeof(EmbeddedLevel2),
