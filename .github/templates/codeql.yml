@@ -46,16 +46,6 @@ name: "CodeQL"
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  analyze-cpp:
-    name: Analyze C++
-    runs-on: windows-2019
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-    - #@ template.replace(checkoutCode("recursive", False))
-    - #@ template.replace(runCodeQL("cpp", [setupVcpkg("windows-x64"), buildWrappers()]))
   analyze-csharp:
     name: Analyze C#
     runs-on: windows-2019
