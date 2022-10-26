@@ -468,18 +468,11 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void AsymmetricObjectAsRealmValue_WhenAddedToRealm_Throws()
+        public void RealmValuePropertyWithAsymmetricObject_WhenAddedToRealm_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
-                flxConfig.PopulateInitialSubscriptions = (realm) =>
-                {
-                    var query = realm.All<RealmValueObject>();
-                    realm.Subscriptions.Add(query);
-                };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
 
                 realm.Write(() =>
                 {
@@ -487,42 +480,75 @@ namespace Realms.Tests.Sync
                     {
                         RealmValueProperty = new BasicAsymmetricObject()
                     };
+
                     Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
-
-                    var rvoWithList = new RealmValueObject
-                    {
-                        RealmValueList = { new BasicAsymmetricObject() }
-                    };
-                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithList));
-
-                    var rvoWithSet = new RealmValueObject
-                    {
-                        RealmValueSet = { new BasicAsymmetricObject() }
-                    };
-                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithSet));
-
-                    var rvoWithDictionary = new RealmValueObject
-                    {
-                        RealmValueDictionary = { { "embedded", new BasicAsymmetricObject() } }
-                    };
-                    Assert.Throws<NotSupportedException>(() => realm.Add(rvoWithDictionary));
                 });
             });
         }
 
         [Test]
-        public void AsymmetricObjectAsRealmValue_WhenModifiedInRealm_Throws()
+        public void RealmValueListWithAsymmetricObject_WhenAddedToRealm_Throws()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
-                flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
-                flxConfig.PopulateInitialSubscriptions = (realm) =>
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
                 {
-                    var query = realm.All<RealmValueObject>();
-                    realm.Subscriptions.Add(query);
-                };
-                using var realm = await GetRealmAsync(flxConfig);
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueList = { new BasicAsymmetricObject() }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueSet = { new BasicAsymmetricObject() }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueDictionary = { { "embedded", new BasicAsymmetricObject() } }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValuePropertyWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
 
                 realm.Write(() =>
                 {
@@ -530,16 +556,58 @@ namespace Realms.Tests.Sync
                     realm.Add(rvo);
 
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueProperty = new BasicAsymmetricObject());
+                });
+            });
+        }
 
-                    // List
+        [Test]
+        public void RealmValueListWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Add(new BasicAsymmetricObject()));
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Insert(0, new BasicAsymmetricObject()));
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueList[0] = new BasicAsymmetricObject());
+                });
+            });
+        }
 
-                    // Set
+        [Test]
+        public void RealmValueSetWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueSet.Add(new BasicAsymmetricObject()));
+                });
+            });
+        }
 
-                    // Dictionary
+        [Test]
+        public void RealmValueDictionaryWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary.Add("embedded", new BasicAsymmetricObject()));
                     Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary["embedded"] = new BasicAsymmetricObject());
                 });
@@ -619,6 +687,19 @@ namespace Realms.Tests.Sync
                 }
             };
             return collection.FindAsync(filter);
+        }
+
+        private async Task<Realm> GetRealmWithRealmValueSchemaAsync()
+        {
+            var flxConfig = await GetFLXIntegrationConfigAsync();
+            flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
+            flxConfig.PopulateInitialSubscriptions = (realm) =>
+            {
+                var query = realm.All<RealmValueObject>();
+                realm.Subscriptions.Add(query);
+            };
+
+            return await GetRealmAsync(flxConfig);
         }
 
         [Explicit]
