@@ -164,6 +164,12 @@ namespace Realms
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
         }
 
+        internal RealmResults<TValue> GetFilteredResults<TValue>(string query, RealmValue[] arguments)
+        {
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+        }
+
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The returned collection must own its Realm.")]
         public IRealmCollection<T> Freeze()
         {

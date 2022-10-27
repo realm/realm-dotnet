@@ -274,10 +274,10 @@ namespace Realms
         /// <param name="dictionary">The dictionary of objects as obtained from a to-many relationship property.</param>
         /// <returns>A queryable collection that represents the values contained in the dictionary.</returns>
         /// <remarks>
-        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it actually creates
-        /// an underlying Realm query to represent the list. This means that all LINQ methods will be executed
-        /// by the database and also that you can subscribe for notifications even after applying LINQ filters
-        /// or ordering.
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it only returns a collection of values,
+        /// not a collection of `KeyPair` and it actually creates an underlying Realm query that represents the dictionary's values.
+        /// This means that all LINQ methods will be executed by the database and also that you can subscribe for
+        /// notifications even after applying LINQ filters or ordering.
         /// </remarks>
         /// <example>
         /// <code>
@@ -450,6 +450,43 @@ namespace Realms
 
             var realmSet = Argument.EnsureType<RealmSet<T>>(set, $"{nameof(set)} must be a Realm Set property.", nameof(set));
             return realmSet.GetFilteredResults(predicate, arguments);
+        }
+
+        /// <summary>
+        /// Apply an NSPredicate-based filter over a collection. It can be used to create
+        /// more complex queries, that are currently unsupported by the LINQ provider and
+        /// supports SORT and DISTINCT clauses in addition to filtering.
+        /// </summary>
+        /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
+        /// <param name="dictionary">A Realm Dictionary.</param>
+        /// <param name="predicate">The predicate that will be applied.</param>
+        /// <param name="arguments">
+        /// Values used for substitution in the predicate.
+        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
+        /// </param>
+        /// <returns>A queryable observable collection of objects that match the predicate.</returns>
+        /// <remarks>
+        /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
+        /// after applying the predicate.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var joe = realm.All&lt;Person&gt;().Single(p =&gt; p.Name == "Joe");
+        /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
+        /// </code>
+        /// </example>
+        /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
+        /// Examples of the NSPredicate syntax
+        /// </seealso>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static IQueryable<T> Filter<T>(this IDictionary<string, T> dictionary, string predicate, params RealmValue[] arguments)
+            where T : IRealmObjectBase
+        {
+            Argument.NotNull(predicate, nameof(predicate));
+            Argument.NotNull(arguments, nameof(arguments));
+
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of RealmDictionary<{typeof(T).Name}>.", nameof(dictionary));
+            return realmDictionary.GetFilteredResults<T>(predicate, arguments);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]

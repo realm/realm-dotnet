@@ -1073,17 +1073,20 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
+        public class DogDictionaryObject: RealmObject {
+            public IDictionary<string, Dog> Dict { get; }
+        };
         [Test]
-        public void AsRealmQueryable_RaisesNotifications()
+        public void DictionaryAsRealmQueryable_RaisesNotifications()
         {
             var obj = _realm.Write(() =>
             {
-                return _realm.Add(new DictionariesObject());
+                return _realm.Add(new DogDictionaryObject());
             });
 
-            var dogToAge = obj.ObjectDictionary;
+            var dogDict = obj.Dict;
 
-            var oldDogs = dogToAge.AsRealmQueryable().Where(d => d.Int >= 5);
+            var oldDogs = dogDict.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
             var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
@@ -1096,7 +1099,7 @@ namespace Realms.Tests.Database
 
             for (var i = 0; i < 10; i++)
             {
-                _realm.Write(() => dogToAge["f" + i] = new IntPropertyObject { Int = i });
+                _realm.Write(() => dogDict.Add("dog" + i, new Dog { Age = i }));
                 _realm.Refresh();
 
                 if (i >= 5)
@@ -1108,19 +1111,191 @@ namespace Realms.Tests.Database
                     Assert.That(changeSet.DeletedIndices, Is.Empty);
                     Assert.That(changeSet.ModifiedIndices, Is.Empty);
 
-                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Int, Is.EqualTo(i));
+                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
                 }
             }
         }
 
         [Test]
-        public void AsRealmQueryable_WhenNotRealmDictionary_Throws()
+        public void DictionaryAsRealmQueryable_WhenNotRealmDictionary_Throws()
         {
             var dict = new DictionariesObject().ObjectDictionary;
 
             Assert.That(
                 () => dict.AsRealmQueryable(),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("dictionary must be an instance of RealmDictionary<IntPropertyObject>"));
+        }
+        [Test]
+        public void DictionaryFilter_ReturnsCorrectElementAtResult()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            var oldDogs = dogDict.Filter("Age >= 5").OrderBy(d => d.Age);
+
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    dogDict.Add("dog" + i, new Dog { Age = i });
+                }
+            });
+
+            for (var i = 0; i < 5; i++)
+            {
+                var dog = oldDogs.ElementAt(i);
+                Assert.That(dog.Age, Is.EqualTo(i + 5));
+            }
+        }
+        [Test]
+        public void DictionaryFilter_PassesArgumentsCorrectly()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            var fiDogs = dogDict.Filter("Name BEGINSWITH[c] $0", "Fi");
+
+            _realm.Write(() =>
+            {
+                dogDict.Add("Ris", new Dog { Name = "Rick" });
+                dogDict.Add("Fdo", new Dog { Name = "Fido" });
+                dogDict.Add("Fis", new Dog { Name = "Fester" });
+                dogDict.Add("Fif", new Dog { Name = "Fifi" });
+                dogDict.Add("Ban", new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+        }
+
+        [Test]
+        public void DictionaryFilter_CanSortResults()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            var fiDogs = dogDict.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
+
+            _realm.Write(() =>
+            {
+                dogDict.Add("ck", new Dog { Name = "Rick" });
+                dogDict.Add("do", new Dog { Name = "Fido" });
+                dogDict.Add("fi", new Dog { Name = "Fifi" });
+                dogDict.Add("go", new Dog { Name = "Bango" });
+            });
+
+            Assert.That(fiDogs.Count(), Is.EqualTo(2));
+            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+        }
+
+        // [Test]
+        public void DictionaryFilter_CanBeFilteredWithLinq()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            var rDogs = dogDict.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                dogDict.Add("fi", new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                dogDict.Add("ck", new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                dogDict.Add("rt", new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                dogDict.Add("xy", new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                dogDict.Add("ry", new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                dogDict.Add("go", new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void DictionaryFilter_CanBeFilteredWithStringPredicate()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            var rDogs = dogDict.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
+
+            _realm.Write(() =>
+            {
+                dogDict.Add("fi", new Dog { Name = "Fifi", Vaccinated = false, Age = 7 });
+                dogDict.Add("ck", new Dog { Name = "Rick", Vaccinated = true, Age = 9 });
+                dogDict.Add("rt", new Dog { Name = "Robert", Vaccinated = true, Age = 3 });
+                dogDict.Add("xy", new Dog { Name = "Roxy", Vaccinated = false, Age = 12 });
+                dogDict.Add("ry", new Dog { Name = "Rory", Vaccinated = true, Age = 5 });
+                dogDict.Add("go", new Dog { Name = "Bango", Vaccinated = true, Age = 1 });
+            });
+
+            Assert.That(rDogs.Count(), Is.EqualTo(4));
+
+            rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
+
+            Assert.That(rDogs.Count(), Is.EqualTo(3));
+            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+        }
+
+        [Test]
+        public void DictionaryFilter_WhenNotRealmList_Throws()
+        {
+            var dict = new Dictionary<string, Dog>();
+
+            Assert.That(
+                () => dict.Filter(string.Empty),
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("dictionary must be an instance of RealmDictionary<Dog>"));
+        }
+
+        [Test]
+        public void DictionaryFilter_InvalidPredicate_Throws()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            Assert.That(
+                () => dogDict.Filter(string.Empty),
+                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+        }
+
+        [Test]
+        public void DictionaryFilter_NoArguments_Throws()
+        {
+            var obj = _realm.Write(() =>
+            {
+                return _realm.Add(new DogDictionaryObject());
+            });
+
+            var dogDict = obj.Dict;
+            Assert.That(
+                () => dogDict.Filter("Name = $0"),
+                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
         }
 
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
