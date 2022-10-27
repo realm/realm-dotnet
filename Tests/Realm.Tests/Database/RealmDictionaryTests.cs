@@ -1108,14 +1108,39 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(changeSets.Count, Is.EqualTo(i - 4));
 
-                    var changeSet = changeSets.Last();
-                    Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(1));
-                    Assert.That(changeSet.DeletedIndices, Is.Empty);
-                    Assert.That(changeSet.ModifiedIndices, Is.Empty);
+                    var insertionSet = changeSets.Last();
+                    Assert.That(insertionSet.InsertedIndices.Length, Is.EqualTo(1));
+                    Assert.That(insertionSet.DeletedIndices, Is.Empty);
+                    Assert.That(insertionSet.ModifiedIndices, Is.Empty);
 
-                    Assert.That(oldDogs.ElementAt(changeSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                    Assert.That(oldDogs.ElementAt(insertionSet.InsertedIndices[0]).Age, Is.EqualTo(i));
                 }
             }
+
+            _realm.Write(() =>
+            {
+                // Direct insertion
+                dogDict["dog10"] = new Dog { Age = 99 };
+
+                // Indirect insertion: making age fit the iflter
+                dogDict["dog3"].Age = 8;
+
+                // Direct deletion
+                dogDict.Remove("dog9");
+
+                // Indirect deletion: making age no longer fit the filter
+                dogDict["dog8"].Age = 3;
+
+                // Modification
+                dogDict["dog7"].Name = "foo";
+            });
+            _realm.Refresh();
+
+            var changeSet = changeSets.Last();
+            Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(2));
+            Assert.That(changeSet.DeletedIndices.Length, Is.EqualTo(2));
+            Assert.That(changeSet.ModifiedIndices.Length, Is.EqualTo(1));
+            Assert.That(oldDogs.ElementAt(changeSet.ModifiedIndices[0]).Name, Is.EqualTo("foo"));
         }
 
         [Test]

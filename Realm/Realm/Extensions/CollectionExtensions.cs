@@ -281,8 +281,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// var nameToDogDict = owner.nameToDog;
-        /// var query = nameToDogDict.AsRealmQueryable()
+        /// var query = owner.DogDict.AsRealmQueryable()
         ///                 .Where(d => d.Age > 3)
         ///                 .OrderBy(d => d.Name);
         ///
@@ -464,7 +463,7 @@ namespace Realms
         /// Values used for substitution in the predicate.
         /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
         /// </param>
-        /// <returns>A queryable observable collection of objects that match the predicate.</returns>
+        /// <returns>A queryable observable collection of dictionary values that match the predicate.</returns>
         /// <remarks>
         /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
         /// after applying the predicate.
