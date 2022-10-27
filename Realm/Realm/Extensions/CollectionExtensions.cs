@@ -275,7 +275,7 @@ namespace Realms
         /// <returns>A queryable collection that represents the values contained in the dictionary.</returns>
         /// <remarks>
         /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it only returns a collection of values,
-        /// not a collection of `KeyPair` and it actually creates an underlying Realm query that represents the dictionary's values.
+        /// not a collection of <see cref="KeyValuePair{String, T}"/> and it actually creates an underlying Realm query that represents the dictionary's values.
         /// This means that all LINQ methods will be executed by the database and also that you can subscribe for
         /// notifications even after applying LINQ filters or ordering.
         /// </remarks>

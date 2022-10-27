@@ -679,11 +679,11 @@ If for some reason, you want to opt out of the fixed behavior, you can temporari
 * Improve performance of creating collection notifiers for Realms with a complex schema. In the SDKs this means that the first run of a synchronous query, first call to subscribe for notifications will do significantly less work on the calling thread.
 * Improve performance of calculating changesets for notifications, particularly for deeply nested object graphs and objects which have List or Set properties with small numbers of objects in the collection.
 * Query parser now accepts `BETWEEN` operator. Can be used like `realm.All<Person>().Filter("Age BETWEEN {20, 60}")` which means "'Age' must be in the open interval ]20;60[". (Core upgrade)
-* Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary:
+* Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
   * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
-  * `dictionary.Filter(query, arguments)` will filter the list and return the filtered collection. It is roughly equivalent to `dictionary.AsRealmQueryable().Filter(query, arguments)`.
+  * `dictionary.Filter(query, arguments)` will filter the list and return a filtered collection of dictionary's values. It is roughly equivalent to `dictionary.AsRealmQueryable().Filter(query, arguments)`.
 
-  Note that the resulting queryable collection is tied to the dictionary's **values** not key-value pairs. For those values, it will behave similarly to a live Realm Results object i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
+The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself.  (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
