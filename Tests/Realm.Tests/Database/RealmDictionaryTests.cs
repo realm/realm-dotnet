@@ -1192,11 +1192,11 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                dogDict.Add("Ris", new Dog { Name = "Rick" });
-                dogDict.Add("Fdo", new Dog { Name = "Fido" });
-                dogDict.Add("Fis", new Dog { Name = "Fester" });
-                dogDict.Add("Fif", new Dog { Name = "Fifi" });
-                dogDict.Add("Ban", new Dog { Name = "Bango" });
+                dogDict.Add("ck", new Dog { Name = "Rick" });
+                dogDict.Add("do", new Dog { Name = "Fido" });
+                dogDict.Add("er", new Dog { Name = "Fester" });
+                dogDict.Add("fi", new Dog { Name = "Fifi" });
+                dogDict.Add("go", new Dog { Name = "Bango" });
             });
 
             Assert.That(fiDogs.Count(), Is.EqualTo(2));
