@@ -99,7 +99,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
-            
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_filtered_results(DictionaryHandle handle,
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,

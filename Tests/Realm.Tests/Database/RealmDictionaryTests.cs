@@ -1073,9 +1073,11 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectDictionary["foo"] = embeddedItem), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
-        public class DogDictionaryObject: RealmObject {
+        public class DogDictionaryObject : RealmObject
+        {
             public IDictionary<string, Dog> Dict { get; }
-        };
+        }
+
         [Test]
         public void DictionaryAsRealmQueryable_RaisesNotifications()
         {
@@ -1125,6 +1127,7 @@ namespace Realms.Tests.Database
                 () => dict.AsRealmQueryable(),
                 Throws.TypeOf<ArgumentException>().And.Message.Contains("dictionary must be an instance of RealmDictionary<IntPropertyObject>"));
         }
+
         [Test]
         public void DictionaryFilter_ReturnsCorrectElementAtResult()
         {
@@ -1150,6 +1153,7 @@ namespace Realms.Tests.Database
                 Assert.That(dog.Age, Is.EqualTo(i + 5));
             }
         }
+
         [Test]
         public void DictionaryFilter_PassesArgumentsCorrectly()
         {
@@ -1198,7 +1202,7 @@ namespace Realms.Tests.Database
             Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
         }
 
-        // [Test]
+        [Test]
         public void DictionaryFilter_CanBeFilteredWithLinq()
         {
             var obj = _realm.Write(() =>

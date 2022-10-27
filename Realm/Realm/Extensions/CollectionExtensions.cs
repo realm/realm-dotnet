@@ -281,8 +281,8 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// var nameToDogMap = owner.nameToDog;
-        /// var query = nameToDogMap.AsRealmQueryable()
+        /// var nameToDogDict = owner.nameToDog;
+        /// var query = nameToDogDict.AsRealmQueryable()
         ///                 .Where(d => d.Age > 3)
         ///                 .OrderBy(d => d.Name);
         ///
@@ -453,11 +453,11 @@ namespace Realms
         }
 
         /// <summary>
-        /// Apply an NSPredicate-based filter over a collection. It can be used to create
+        /// Apply an NSPredicate-based filter over dictionary's values. It can be used to create
         /// more complex queries, that are currently unsupported by the LINQ provider and
         /// supports SORT and DISTINCT clauses in addition to filtering.
         /// </summary>
-        /// <typeparam name="T">The type of the objects that will be filtered.</typeparam>
+        /// <typeparam name="T">The type of the dictionary's values that will be filtered.</typeparam>
         /// <param name="dictionary">A Realm Dictionary.</param>
         /// <param name="predicate">The predicate that will be applied.</param>
         /// <param name="arguments">
@@ -471,8 +471,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// var joe = realm.All&lt;Person&gt;().Single(p =&gt; p.Name == "Joe");
-        /// joe.dogs.Filter("Name BEGINSWITH $0", "R");
+        /// joe.DogDict.Filter("Name BEGINSWITH $0", "R");
         /// </code>
         /// </example>
         /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
