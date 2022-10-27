@@ -42,13 +42,13 @@ namespace Realms.SourceGenerator
             "Realms.Schema",
         };
 
-        private ClassInfo _classInfo;
+        private readonly ClassInfo _classInfo;
 
-        private string _helperClassName;
-        private string _accessorInterfaceName;
-        private string _managedAccessorClassName;
-        private string _unmanagedAccessorClassName;
-        private string _generatedNamespaceName;
+        private readonly string _helperClassName;
+        private readonly string _accessorInterfaceName;
+        private readonly string _managedAccessorClassName;
+        private readonly string _unmanagedAccessorClassName;
+        private readonly string _generatedNamespaceName;
 
         public ClassCodeBuilder(ClassInfo classInfo)
         {
@@ -268,7 +268,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
                 if (copyToRealm.Length > 0)
                 {
-                    helperContent.Append(copyToRealm.ToString());
+                    helperContent.Append(copyToRealm);
                 }
 
                 helperString = @$"if (helper != null)

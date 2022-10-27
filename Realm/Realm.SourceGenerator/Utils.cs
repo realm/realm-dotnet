@@ -70,7 +70,7 @@ namespace Realms.SourceGenerator
         {
             var namedSymbol = symbol as INamedTypeSymbol;
 
-            return namedSymbol != null && namedSymbol.IsGenericType == true
+            return namedSymbol != null && namedSymbol.IsGenericType
                 && namedSymbol.ConstructUnboundGenericType().ToDisplayString() == "Realms.RealmInteger<>";
         }
 
@@ -204,7 +204,7 @@ namespace Realms.SourceGenerator
             {
                 // Body is "classic" curly brace body
                 // ExpressionBody is =>
-                return !propertySyntax.AccessorList.Accessors.Any(a => a.Body != null | a.ExpressionBody != null);
+                return !propertySyntax.AccessorList.Accessors.Any(a => a.Body != null || a.ExpressionBody != null);
             }
 
             // This means the body is => (propertySyntax.ExpressionBody != null)

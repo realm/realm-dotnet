@@ -118,12 +118,9 @@ namespace Realms.SourceGenerator
                 }
             }
 
-            foreach (var classInfo in result.ClassInfo)
+            foreach (var classInfo in result.ClassInfo.Where(c => duplicateClassNames.Contains(c.Name)))
             {
-                if (duplicateClassNames.Contains(classInfo.Name))
-                {
-                    classInfo.HasDuplicatedName = true;
-                }
+                classInfo.HasDuplicatedName = true;
             }
 
             return result;

@@ -25,7 +25,7 @@ namespace Realms.SourceGenerator
 {
     internal class SyntaxContextReceiver : ISyntaxContextReceiver
     {
-        private Dictionary<ITypeSymbol, RealmClassDefinition> _realmClassesDict = new(SymbolEqualityComparer.Default);
+        private readonly Dictionary<ITypeSymbol, RealmClassDefinition> _realmClassesDict = new(SymbolEqualityComparer.Default);
 
         public IReadOnlyCollection<RealmClassDefinition> RealmClasses => _realmClassesDict.Values;
 

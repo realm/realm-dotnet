@@ -27,7 +27,7 @@ namespace Realms.SourceGenerator
 {
     internal class CodeEmitter
     {
-        private GeneratorExecutionContext _context;
+        private readonly GeneratorExecutionContext _context;
 
         public CodeEmitter(GeneratorExecutionContext context)
         {

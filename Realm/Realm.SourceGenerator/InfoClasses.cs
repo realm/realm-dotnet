@@ -104,7 +104,7 @@ namespace Realms.SourceGenerator
 
     internal abstract record PropertyTypeInfo
     {
-        private static HashSet<ScalarType> _indexableTypes = new()
+        private static readonly HashSet<ScalarType> _indexableTypes = new()
         {
             ScalarType.Int,
             ScalarType.Bool,
@@ -114,7 +114,7 @@ namespace Realms.SourceGenerator
             ScalarType.Date,
         };
 
-        private static HashSet<ScalarType> _primaryKeyTypes = new()
+        private static readonly HashSet<ScalarType> _primaryKeyTypes = new()
         {
             ScalarType.Int,
             ScalarType.String,
@@ -122,7 +122,7 @@ namespace Realms.SourceGenerator
             ScalarType.Guid,
         };
 
-        private static HashSet<ScalarType> _requiredTypes = new()
+        private static readonly HashSet<ScalarType> _requiredTypes = new()
         {
             ScalarType.String,
             ScalarType.Data,
@@ -167,7 +167,7 @@ namespace Realms.SourceGenerator
 
         public bool IsBacklink => CollectionType == CollectionType.Backlink;
 
-        public bool IsUnsupported => this is UnsupportedTypeInfo;
+        public virtual bool IsUnsupported => false;
 
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
@@ -259,6 +259,7 @@ namespace Realms.SourceGenerator
 
     internal sealed record UnsupportedTypeInfo : PropertyTypeInfo
     {
+        public override bool IsUnsupported => true;
     }
 
     internal abstract record CollectionTypeInfo : PropertyTypeInfo
@@ -290,7 +291,7 @@ namespace Realms.SourceGenerator
         public override bool IsRealmInteger => true;
     }
 
-    internal record ScalarTypeInfo : PropertyTypeInfo
+    internal sealed record ScalarTypeInfo : PropertyTypeInfo
     {
         public ScalarTypeInfo(ScalarType type)
         {
