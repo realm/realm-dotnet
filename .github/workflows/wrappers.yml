@@ -34,7 +34,7 @@ jobs:
       wrappers-windows-uwp-ARM64: ${{ steps.check-cache-windows-uwp-ARM64.outputs.cache-hit }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -319,7 +319,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-macos != 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -353,7 +353,7 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -387,7 +387,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-linux != 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -441,7 +441,7 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -476,7 +476,7 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -527,7 +527,7 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
