@@ -37,7 +37,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deploy@71e2ab925fe61afbda27f9064144c057d3b7c7e1
+    - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
       id: deploy-cluster
       with:
         projectId: ${{ secrets.AtlasProjectId}}
