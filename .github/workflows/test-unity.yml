@@ -39,12 +39,12 @@ jobs:
     - name: Cleanup Workspace
       run: git clean -fdx
     - name: Fetch Unity Package
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: io.realm.unity-${{ inputs.version }}.tgz
         path: Realm/Realm.Unity
     - name: Fetch Unity Tests
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: UnityTests
         path: Tests/Tests.Unity
@@ -52,7 +52,7 @@ jobs:
       run: |
         unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
     - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: UnityTestsRunner.${{ matrix.platform.os }}
         path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/
@@ -76,7 +76,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Download Test Runner
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: UnityTestsRunner.linux
         path: TestRunner
@@ -115,7 +115,7 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Download Test Runner
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: UnityTestsRunner.windows
         path: TestRunner

@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Update Changelog
         id: update-changelog
         uses: realm/ci-actions/update-changelog@91ef434f7407cbdbd878f340b96f1dfb498e3010

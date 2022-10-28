@@ -28,14 +28,14 @@ jobs:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31
       with:
         languages: csharp
         queries: security-and-quality
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.202
     - name: Build Realm.Fody
@@ -47,4 +47,4 @@ jobs:
     - name: Build Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31

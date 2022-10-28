@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 45
     steps:
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Checkout code
@@ -44,82 +44,82 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch artifacts for macos
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-macos
         path: wrappers/build
     - name: Fetch artifacts for linux
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-linux
         path: wrappers/build
     - name: Fetch artifacts for ios-Simulator
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Simulator
         path: wrappers/build
     - name: Fetch artifacts for ios-Device
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Device
         path: wrappers/build
     - name: Fetch artifacts for ios-Catalyst
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Catalyst
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
     - name: Fetch artifacts for android-arm64-v8a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-arm64-v8a
         path: wrappers/build
     - name: Fetch artifacts for android-x86
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86
         path: wrappers/build
     - name: Fetch artifacts for android-x86_64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86_64
         path: wrappers/build
     - name: Fetch artifacts for windows-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-ARM64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build

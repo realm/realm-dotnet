@@ -24,36 +24,36 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.UnityUtils.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
     - name: Store artifacts for io.realm.unity-${{ inputs.version }}.tgz
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: io.realm.unity-${{ inputs.version }}.tgz
         path: ${{ github.workspace }}/Realm/Realm.Unity/io.realm.unity-${{ inputs.version }}.tgz
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for AssetStorePublisher-${{ inputs.version }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: AssetStorePublisher-${{ inputs.version }}
         path: ${{ github.workspace }}/Tools/AssetStorePublisher
@@ -62,7 +62,7 @@ jobs:
     - name: Build Tests
       run: dotnet run --project Tools/SetupUnityPackage/ -- tests --realm-package Realm/Realm.Unity/io.realm.unity-${{ inputs.version }}.tgz
     - name: Store artifacts for UnityTests
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: UnityTests
         path: ${{ github.workspace }}/Tests/Tests.Unity

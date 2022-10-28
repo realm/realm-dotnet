@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: "ubuntu-latest"
     steps:
-      - uses: "actions/checkout@v2"
+      - uses: "actions/checkout@v3"
       - name: "Run benchmarks"
         id: "run-benchmarks"
         uses: "some-benchmark-action"

@@ -11,7 +11,7 @@ jobs:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      uses: dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c
       with:
         workflow: pr.yml
         commit: ${{ github.sha }}
@@ -25,13 +25,13 @@ jobs:
         echo "::set-output name=version::$pkgVersion"
       shell: bash
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.NUGET_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.NUGET_S3_SECRET_KEY }}

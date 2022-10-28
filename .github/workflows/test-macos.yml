@@ -40,12 +40,12 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
@@ -58,7 +58,7 @@ jobs:
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
@@ -90,17 +90,17 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Setup workloads
