@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Update Changelog
         id: update-changelog
-        uses: realm/ci-actions/update-changelog@v2
+        uses: realm/ci-actions/update-changelog@71e2ab925fe61afbda27f9064144c057d3b7c7e1
         with:
           changelog: ${{ github.workspace }}/CHANGELOG.md
       - name: Update package.json
