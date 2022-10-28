@@ -487,8 +487,9 @@ namespace Realms
                 _index = -1;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it. Only collections of objects support snapshotting.
-                _shouldDisposeHandle = parent.IsValid && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
+                // snapshot if the collection is frozen.
+                _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
                 _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
