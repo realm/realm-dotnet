@@ -5,15 +5,15 @@ name: deploy-baas
       differentiators:
         required: true
         type: string
+      BaseUrl:
+        required: true
+      AtlasBaseUrl:
+        required: true
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
     secrets:
       AtlasProjectId:
-        required: true
-      BaseUrl:
-        required: true
-      AtlasBaseUrl:
         required: true
       AtlasPublicKey:
         required: true
@@ -39,8 +39,8 @@ jobs:
       id: deploy-cluster
       with:
         projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ secrets.BaseUrl }}
-        atlasUrl: ${{ secrets.AtlasBaseUrl}}
+        realmUrl: ${{ inputs.BaseUrl }}
+        atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
   deploy-apps:

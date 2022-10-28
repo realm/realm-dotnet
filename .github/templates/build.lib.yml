@@ -35,10 +35,10 @@ deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
   with:
     differentiators: #@ '[' + ", ".join(differentiators) + ']'
-  secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
     BaseUrl: #@ realm_BaseUrl
     AtlasBaseUrl: #@ atlas_BaseUrl
+  secrets:
+    AtlasProjectId: #@ secret_AtlasProjectId
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
@@ -53,10 +53,11 @@ cleanup-cluster:
   if: always()
   name: Cleanup
   needs: #@ needs
-  secrets:
-    AtlasProjectId: #@ secret_AtlasProjectId
+  with:
     BaseUrl: #@ realm_BaseUrl
     AtlasBaseUrl: #@ atlas_BaseUrl
+  secrets:
+    AtlasProjectId: #@ secret_AtlasProjectId
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end

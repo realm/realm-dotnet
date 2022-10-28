@@ -25,10 +25,10 @@ jobs:
     uses: ./.github/workflows/deploy-baas.yml
     with:
       differentiators: '["code-coverage"]'
-    secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://atlas-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
@@ -142,9 +142,10 @@ jobs:
     name: Cleanup
     needs:
     - test-code-coverage
-    secrets:
-      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+    with:
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://atlas-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
