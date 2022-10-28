@@ -27,8 +27,8 @@ jobs:
       differentiators: '["code-coverage"]'
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      BaseUrl: https://realm-qa.mongodb.com/
+      AtlasBaseUrl: https://atlas-qa.mongodb.com/
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
@@ -130,8 +130,8 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-      realmUrl: ${{ needs.deploy-cluster.outputs.realmUrl }}
-      atlasUrl: ${{ needs.deploy-cluster.outputs.atlasUrl }}
+      realmUrl: https://realm-qa.mongodb.com/
+      atlasUrl: https://atlas-qa.mongodb.com/
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -144,7 +144,7 @@ jobs:
     - test-code-coverage
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
+      BaseUrl: https://realm-qa.mongodb.com/
+      AtlasBaseUrl: https://atlas-qa.mongodb.com/
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}

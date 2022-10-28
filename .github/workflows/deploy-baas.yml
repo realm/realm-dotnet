@@ -8,10 +8,6 @@ name: deploy-baas
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
-      realmUrl:
-        value: ${{ jobs.deploy-baas.outputs.realmUrl }}
-      atlasUrl:
-        value: ${{ jobs.deploy-baas.outputs.atlasUrl }}
     secrets:
       AtlasProjectId:
         required: true
@@ -32,8 +28,6 @@ jobs:
     name: Deploy Cluster
     outputs:
       clusterName: ${{ steps.deploy-cluster.outputs.clusterName }}
-      realmUrl: ${{ steps.deploy-cluster.outputs.realmUrl }}
-      atlasUrl: ${{ steps.deploy-cluster.outputs.atlasUrl }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
