@@ -7,8 +7,10 @@ name: deploy-baas
         type: string
       BaseUrl:
         required: true
+        type: string
       AtlasBaseUrl:
         required: true
+        type: string
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
@@ -61,5 +63,5 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . --baasurl=${{ inputs.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps

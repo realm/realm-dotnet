@@ -4,8 +4,10 @@ name: cleanup-baas
     inputs:
       BaseUrl:
         required: true
+        type: string
       AtlasBaseUrl:
         required: true
+        type: string
     secrets:
       AtlasProjectId:
         required: true
