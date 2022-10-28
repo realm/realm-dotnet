@@ -25,7 +25,7 @@ jobs:
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
       BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://atlas-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -92,7 +92,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -108,7 +108,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -135,7 +135,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -151,7 +151,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -167,7 +167,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -228,7 +228,7 @@ jobs:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
       realmUrl: https://realm-qa.mongodb.com
-      atlasUrl: https://atlas-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
@@ -305,7 +305,7 @@ jobs:
     - test-android
     with:
       BaseUrl: https://realm-qa.mongodb.com
-      AtlasBaseUrl: https://atlas-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}

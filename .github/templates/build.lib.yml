@@ -14,7 +14,7 @@
 #! secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
 
 #@ realm_BaseUrl = "https://realm-qa.mongodb.com"
-#@ atlas_BaseUrl = "https://atlas-qa.mongodb.com"
+#@ atlas_BaseUrl = "https://cloud-qa.mongodb.com"
 #@ secret_AtlasPublicKey = "${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 #@ secret_AtlasPrivateKey = "${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}"
 #@ secret_AtlasProjectId = "${{ secrets.ATLAS_QA_PROJECT_ID }}"
