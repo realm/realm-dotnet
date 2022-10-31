@@ -8,10 +8,14 @@ name: test-ios
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -27,7 +31,7 @@ jobs:
     timeout-minutes: 45
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -36,32 +40,40 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@v1
+      uses: realm/ci-actions/run-ios-simulator@91ef434f7407cbdbd878f340b96f1dfb498e3010
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
         iphoneToSimulate: iPhone-8
-        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=ios
+        arguments: --headless --result=${{ github.workspace }}/TestResults.iOS.xml --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=ios
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()
@@ -79,7 +91,7 @@ jobs:
     timeout-minutes: 45
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -88,22 +100,22 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Setup workloads
@@ -112,7 +124,7 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@v1
+      uses: realm/ci-actions/run-ios-simulator@91ef434f7407cbdbd878f340b96f1dfb498e3010
       with:
         appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests

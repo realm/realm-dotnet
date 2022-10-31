@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Verify TODOs
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: nirinchev/verify-todo@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

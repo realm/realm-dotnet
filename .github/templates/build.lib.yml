@@ -7,14 +7,14 @@
 
 #! These secrets will run against cloud-dev on PRs or cloud-qa on merges to main. They're commented out
 #! because it appears cloud-dev is quite unstable at this point (Aug 2022).
-#! secret_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
-#! secret_AtlasBaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
+#! realm_BaseUrl = "${{ (" + isRelease + " && secrets.REALM_QA_BASE_URL) || secrets.REALM_BASE_URL }}"
+#! atlas_BaseUrl = "${{ (" + isRelease + " && secrets.ATLAS_QA_BASE_URL) || secrets.ATLAS_BASE_URL }}"
 #! secret_AtlasPublicKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PUBLIC_API_KEY) || secrets.ATLAS_PUBLIC_API_KEY }}"
 #! secret_AtlasPrivateKey = "${{ (" + isRelease + " && secrets.ATLAS_QA_PRIVATE_API_KEY) || secrets.ATLAS_PRIVATE_API_KEY }}"
 #! secret_AtlasProjectId = "${{ (" + isRelease + " && secrets.ATLAS_QA_PROJECT_ID) || secrets.ATLAS_PROJECT_ID }}"
 
-#@ secret_BaseUrl = "${{ secrets.REALM_QA_BASE_URL }}"
-#@ secret_AtlasBaseUrl = "${{ secrets.ATLAS_QA_BASE_URL }}"
+#@ realm_BaseUrl = "https://realm-qa.mongodb.com"
+#@ atlas_BaseUrl = "https://cloud-qa.mongodb.com"
 #@ secret_AtlasPublicKey = "${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}"
 #@ secret_AtlasPrivateKey = "${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}"
 #@ secret_AtlasProjectId = "${{ secrets.ATLAS_QA_PROJECT_ID }}"
@@ -35,10 +35,10 @@ deploy-cluster:
   uses: ./.github/workflows/deploy-baas.yml
   with:
     differentiators: #@ '[' + ", ".join(differentiators) + ']'
+    BaseUrl: #@ realm_BaseUrl
+    AtlasBaseUrl: #@ atlas_BaseUrl
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
-    AtlasBaseUrl: #@ secret_AtlasBaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
@@ -53,10 +53,11 @@ cleanup-cluster:
   if: always()
   name: Cleanup
   needs: #@ needs
+  with:
+    BaseUrl: #@ realm_BaseUrl
+    AtlasBaseUrl: #@ atlas_BaseUrl
   secrets:
     AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
-    AtlasBaseUrl: #@ secret_AtlasBaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
 #@ end
@@ -74,11 +75,14 @@ cleanup-cluster:
     #@ end
   with:
     version: ${{ needs.build-packages.outputs.package_version }}
-    clusterName: #@ "${{ needs.deploy-cluster.outputs.clusterName }}"
+    #@ if runSyncTests:
+    clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    realmUrl: #@ realm_BaseUrl
+    atlasUrl: #@ atlas_BaseUrl
+    #@ end
   secrets:
     #@ if runSyncTests:
     AtlasProjectId: #@ secret_AtlasProjectId
-    BaseUrl: #@ secret_BaseUrl
     AtlasPublicKey: #@ secret_AtlasPublicKey
     AtlasPrivateKey: #@ secret_AtlasPrivateKey
     #@ end

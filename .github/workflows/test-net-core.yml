@@ -8,13 +8,17 @@ name: test-net-core
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
       framework:
         required: true
         type: string
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -48,7 +52,7 @@ jobs:
             runtime: osx-arm64
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -58,33 +62,41 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Cleanup Workspace
       run: git clean -fdx
-    - name: Configure .NET
-      uses: actions/setup-dotnet@v1
-      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
-      with:
-        dotnet-version: 6.0.x
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+    - name: Configure .NET
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
+      with:
+        dotnet-version: 6.0.x
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}'
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
       if: always()

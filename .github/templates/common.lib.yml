@@ -2,21 +2,19 @@
 
 #@ configuration = "Release"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver', 'Realm.SourceGenerator' ]
-#@ actionCheckout = "actions/checkout@v2"
-#@ actionCache = "nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8"
-#@ actionUploadArtifact = "actions/upload-artifact@v2"
-#@ actionDownloadArtifact = "actions/download-artifact@v2"
-#@ actionSetupMSBuild = "microsoft/setup-msbuild@v1.0.2"
-#@ actionSetupDotnet = "actions/setup-dotnet@v1"
-#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@v1"
-#@ actionCodeQLInit = "github/codeql-action/init@v2"
-#@ actionCodeQLAnalyze = "github/codeql-action/analyze@v2"
-#@ actionSetupNode = "actions/setup-node@v2"
-#@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1"
-#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@v3"
-#@ actionDeployBaaS = "realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7"
-#@ actionCleanupBaaS = "realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7"
-#@ actionSetupXcode = "maxim-lobanov/setup-xcode@df46f77a07b48da38239cd2fb8c0b5603c71e909"
+#@ actionCheckout = "actions/checkout@v3"
+#@ actionCache = "nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8"
+#@ actionUploadArtifact = "actions/upload-artifact@v3"
+#@ actionDownloadArtifact = "actions/download-artifact@v3"
+#@ actionSetupMSBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
+#@ actionSetupDotnet = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
+#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@91ef434f7407cbdbd878f340b96f1dfb498e3010"
+#@ actionCodeQLInit = "github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31"
+#@ actionCodeQLAnalyze = "github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31"
+#@ actionSetupNode = "actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e"
+#@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1-node16"
+#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@91ef434f7407cbdbd878f340b96f1dfb498e3010"
+#@ actionSetupXcode = "maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
@@ -24,15 +22,15 @@
 #@ iOSArchs = [ 'Simulator', 'Device', 'Catalyst' ]
 
 #@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
-#@ actionDockerBuild = "docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b" #! 2.7.0
+#@ actionDockerBuild = "docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7" #! 2.7.0
 #@ actionDockerRun = "addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609" #! v3
 #@ actionCoveralls = "coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057" #! v1.1.3
-#@ actionDeleteArtifact = "geekyeggo/delete-artifact@56e063d7d8bf9972ac54aca4454d3a6675917f44" #! v1
-#@ actionGithubRelease = "ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e" #! v1.8.8
-#@ actionDownloadAllArtifacts = "dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed" #! v2.14.1
-#@ actionCreatePR = "peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad" #! 3.10.1
-#@ actionFindPR = "juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e" #! 1.5.0
-#@ actionMergePR = "juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d" #! 1.0.6
+#@ actionDeleteArtifact = "geekyeggo/delete-artifact@dc8092f14c4245ef6a3501b1669b171c12899167" #! v1
+#@ actionGithubRelease = "ncipollo/release-action@3ac4132803a6419fa2a7f4e9dbd1d93fceb690b9" #! v1.8.8
+#@ actionDownloadAllArtifacts = "dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c" #! v2.14.1
+#@ actionCreatePR = "peter-evans/create-pull-request@6c704eb7a8ba1daa13da0dcea9bb93a4fe530275" #! 3.10.1
+#@ actionFindPR = "juliangruber/find-pull-request-action@afdd62ccd2d4c55f5bdb154b489b85fc4cbcb9c1" #! 1.5.0
+#@ actionMergePR = "juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14" #! 1.0.6
 
 #@ mainBranch = "main"
 ---
