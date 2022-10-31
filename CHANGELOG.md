@@ -80,7 +80,6 @@ In order to use the source generation the model classes need to be declared impl
 * Seamlessly handle migrating an App Services application deployment model. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 
-
 ### Fixed
 * Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
 * Fixed a `NullReferenceException` occurring in `RealmObjectBase`'s finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
