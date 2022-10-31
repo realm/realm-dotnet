@@ -1076,8 +1076,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryAsRealmQueryable_RaisesNotifications()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var oldDogs = joe.DictOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
@@ -1148,8 +1149,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_ReturnsCorrectElementAtResult()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var oldDogs = joe.DictOfDogs.Filter("Age >= 5").OrderBy(d => d.Age);
@@ -1172,8 +1174,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_PassesArgumentsCorrectly()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var fiDogs = joe.DictOfDogs.Filter("Name BEGINSWITH[c] $0", "Fi");
@@ -1194,8 +1197,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_CanSortResults()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var fiDogs = joe.DictOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "Fi");
@@ -1216,8 +1220,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_CanBeFilteredWithLinq()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var rDogs = joe.DictOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
@@ -1245,8 +1250,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_CanBeFilteredWithStringPredicate()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             var rDogs = joe.DictOfDogs.Filter("Name BEGINSWITH[c] $0 SORT(Name desc)", "R");
@@ -1284,8 +1290,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_InvalidPredicate_Throws()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             Assert.That(
@@ -1296,8 +1303,9 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_NoArguments_Throws()
         {
-            var joe = _realm.Write(() => {
-                return _realm.Add(new Owner{ Name = "Joe" });
+            var joe = _realm.Write(() =>
+            {
+                return _realm.Add(new Owner { Name = "Joe" });
             });
 
             Assert.That(
