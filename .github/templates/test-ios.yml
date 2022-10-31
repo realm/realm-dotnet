@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-ios
@@ -11,8 +11,7 @@ jobs:
     name: Xamarin.iOS
     timeout-minutes: 45
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ template.replace(buildTests("Tests/Tests.iOS", Platform="iPhoneSimulator"))
       - name: Run the tests
         uses: #@ actionRuniOSSimulator

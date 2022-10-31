@@ -1,4 +1,5 @@
-#@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish")
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode")
 
 #@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody" ]):
 #@ for pkg in packages:
@@ -11,7 +12,7 @@
 #@ end
 
 #@ def baasTestArgs(differentiator):
-#@   return " --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
+#@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator
 #@ end
 ---
 #@ def publishTestsResults(files, test_title):
@@ -38,6 +39,12 @@ with:
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
       #@ for input in additionalInputs:
       #@yaml/text-templated-strings
       (@= input @):
@@ -46,8 +53,6 @@ with:
       #@ end
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -74,4 +79,25 @@ env:
 #@   "RealmTestsStandaloneExe": "true"
 #@ }
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
+#@ end
+---
+#@ def prepareTest(fetchWrappers = False, cleanupWorkspace = False):
+- #@ template.replace(checkoutCode())
+#@ if cleanupWorkspace:
+- name: Cleanup Workspace
+  run: git clean -fdx
+#@ end
+#@ if fetchWrappers:
+- #@ template.replace(fetchWrapperBinaries())
+#@ else:
+- #@ template.replace(fetchPackageArtifacts())
+#@ end
+- uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
+  if: ${{ inputs.realmUrl }}
+  with:
+    projectId: ${{ secrets.AtlasProjectId}}
+    realmUrl: ${{ inputs.realmUrl }}
+    atlasUrl: ${{ inputs.atlasUrl}}
+    apiKey: ${{ secrets.AtlasPublicKey}}
+    privateApiKey: ${{ secrets.AtlasPrivateKey }}
 #@ end

@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-android
@@ -11,8 +11,7 @@ jobs:
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="armeabi-v7a", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
       - name: Run the tests
