@@ -13,6 +13,8 @@
 
 ### Internal
 * Using Core 12.9.0.
+* Added workflow to automatically assign users to issues and PRs. (PR [#3069](https://github.com/realm/realm-dotnet/pull/3069))
+* Added workflow to validate changelog has been updated. (PR [#3069](https://github.com/realm/realm-dotnet/pull/3069))
 
 ## 10.17.0 (2022-10-06)
 
