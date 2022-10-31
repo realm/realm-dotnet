@@ -90,7 +90,7 @@ jobs:
       if: always()
       with:
         name: Results Xamarin.Android
-        path: artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml
+        path: ${{ steps.run_tests.outputs.test-results-path }}
         reporter: java-junit
         list-suites: failed
         list-tests: failed
