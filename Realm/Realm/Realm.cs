@@ -1575,11 +1575,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            foreach (var metadata in Metadata.Values)
-            {
-                using var resultsHandle = SharedRealmHandle.CreateResults(metadata.TableKey);
-                resultsHandle.Clear(SharedRealmHandle);
-            }
+            this.SharedRealmHandle.RemoveAll();
         }
 
         /// <summary>

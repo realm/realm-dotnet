@@ -754,6 +754,19 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
     });
 }
 
+REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        realm->verify_in_write();
+
+        for(auto object_schema : realm->schema()) {
+            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+            table->clear();
+        }
+        return true;
+    });
+}
+
 REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {

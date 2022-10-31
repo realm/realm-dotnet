@@ -78,6 +78,8 @@ In order to use the source generation the model classes need to be declared impl
 * Prioritize integration of local changes over remote changes - shorten the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. (Core upgrade)
 * Greatly improve the performance of sorting or distincting a Dictionary's keys or values. The most expensive operation is now performed O(log N) rather than O(N log N) times, and large Dictionaries can see upwards of 99% reduction in time to sort. (Core upgrade)
 * Seamlessly handle migrating an App Services application deployment model. (Core upgrade)
+* Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
+
 
 ### Fixed
 * Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
