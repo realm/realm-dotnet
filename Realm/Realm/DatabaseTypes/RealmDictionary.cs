@@ -104,6 +104,13 @@ namespace Realms
             return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
         }
 
+        // Get filtered results from dictionary's values
+        internal RealmResults<TValue> GetFilteredValueResults(string query, RealmValue[] arguments)
+        {
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+        }
+
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)

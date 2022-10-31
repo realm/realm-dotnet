@@ -268,7 +268,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Converts a Realm-backed <see cref="IDictionary{String, T}"/> to a Realm-backed <see cref="IQueryable{T}"/>.
+        /// Converts a Realm-backed <see cref="IDictionary{String, T}"/> to a Realm-backed <see cref="IQueryable{T}"/> of dictionary's values.
         /// </summary>
         /// <typeparam name="T">The type of the values contained in the dictionary.</typeparam>
         /// <param name="dictionary">The dictionary of objects as obtained from a to-many relationship property.</param>
@@ -281,7 +281,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// var query = owner.DogDict.AsRealmQueryable()
+        /// var query = owner.DictOfDogs.AsRealmQueryable()
         ///                 .Where(d => d.Age > 3)
         ///                 .OrderBy(d => d.Name);
         ///
@@ -470,7 +470,7 @@ namespace Realms
         /// </remarks>
         /// <example>
         /// <code>
-        /// joe.DogDict.Filter("Name BEGINSWITH $0", "R");
+        /// joe.DictOfDogs.Filter("Name BEGINSWITH $0", "R");
         /// </code>
         /// </example>
         /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
@@ -484,7 +484,7 @@ namespace Realms
             Argument.NotNull(arguments, nameof(arguments));
 
             var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of RealmDictionary<{typeof(T).Name}>.", nameof(dictionary));
-            return realmDictionary.GetFilteredResults<T>(predicate, arguments);
+            return realmDictionary.GetFilteredValueResults(predicate, arguments);
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
