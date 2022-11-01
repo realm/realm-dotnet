@@ -42,14 +42,16 @@ jobs:
           runtime: linux-x64
         - runner: macos-latest
           runtime: osx-x64
-        - runner: win81
-          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
         - framework: net6.0
           os:
             runner: macos-arm
             runtime: osx-arm64
+        - framework: netcoreapp3.1
+          os:
+            runner: win81
+            runtime: win-x64
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -87,7 +89,7 @@ jobs:
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm' && matrix.os.runner != 'win81'
+      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/Realm.Tests
