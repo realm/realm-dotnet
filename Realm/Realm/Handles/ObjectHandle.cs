@@ -200,8 +200,10 @@ namespace Realms
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
 
-                    // Asymmetric objects will not reach this path unless the user explicitly sets them as
+                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
                     // a RealmValue property on the object.
+                    // This is because:
+                    // * The weaver raises a compilation error since asymmetric objects can't be linked to.
                     case IAsymmetricObject:
                         throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }

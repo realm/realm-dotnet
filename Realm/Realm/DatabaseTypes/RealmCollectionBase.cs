@@ -221,8 +221,15 @@ namespace Realms
 
                     break;
 
-                // Embedded and asymmetric objects will not reach this path unless the user explicitly adds
+                // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
                 // them to the collection as RealmValues (e.g. IList<RealmValue>).
+                // This is because:
+                // * Plain embedded objects, beside RealmSet, are added by each collection handle
+                //   (e.g. _listHandle.AddEmbedded()) in the respective method (e.g. in RealmList.Add(),
+                //   RealmList.Insert(), RealmDictionary.Add(), etc.) rather than reaching
+                //   RealmCollectionBase.AddToRealmIfNecessary().
+                // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
+                //   objects can't be linked to.
                 case IEmbeddedObject:
                     Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
                     throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
