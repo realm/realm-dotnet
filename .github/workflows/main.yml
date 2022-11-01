@@ -57,6 +57,11 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
@@ -205,6 +210,11 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
@@ -262,6 +272,11 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
