@@ -80,6 +80,7 @@ with:
   - name: Output executable path
     id: dotnet-publish
     run: #@ "echo 'executable-path=./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "' >> $GITHUB_OUTPUT"
+    shell: bash
 #@ end
 ---
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):

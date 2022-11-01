@@ -24,6 +24,7 @@ jobs:
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/win-x64' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results

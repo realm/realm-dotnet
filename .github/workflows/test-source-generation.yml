@@ -24,6 +24,7 @@ jobs:
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml
     - name: Publish Unit Test Results
