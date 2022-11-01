@@ -174,6 +174,18 @@ namespace Realms.Tests
             }
         }
 
+        public static bool IsUnity
+        {
+            get
+            {
+#if UNITY
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
         [System.Diagnostics.Conditional("UNITY")]
         public static void IgnoreOnUnity(string message = "dynamic is not supported on Unity", OSPlatform? platform = null)
         {

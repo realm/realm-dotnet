@@ -19,6 +19,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
@@ -77,6 +78,14 @@ namespace Realms.Tests.Sync
 
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && TestHelpers.IsUnity)
+            {
+                // Unity on Windows has a peculiar behavior where Path.Combine will generate paths with
+                // forward slashes rather than backslashes.
+                path = path.Replace('/', '\\');
+            }
+
             Assert.That(config.DatabasePath, Is.EqualTo(path));
         }
 
