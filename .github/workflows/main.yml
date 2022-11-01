@@ -73,6 +73,8 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   build-unity:
     uses: ./.github/workflows/build-unity.yml
     name: Package

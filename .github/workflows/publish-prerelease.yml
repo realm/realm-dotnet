@@ -40,3 +40,5 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
