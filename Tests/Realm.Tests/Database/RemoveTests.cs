@@ -154,6 +154,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RemoveAllObjectsShouldClearEntireDatabaseWithPartialSchema()
+        {
+            var c1 = new RealmConfiguration
+            {
+                Schema = new[] { typeof(Person), typeof(IntPrimaryKeyWithValueObject) }
+            };
+            var r1 = Realm.GetInstance(c1);
+            r1.Write(() =>
+            {
+                r1.Add(new Person());
+            });
+            r1.Dispose();
+
+            // Open with a subset of the schema
+            var c2 = new RealmConfiguration
+            {
+                Schema = new[] { typeof(IntPrimaryKeyWithValueObject) }
+            };
+            var r2 = Realm.GetInstance(c2);
+            r2.Write(() =>
+            {
+                r2.RemoveAll();
+            });
+            r2.Dispose();
+
+            // Reopen with the complete schema
+            r1 = Realm.GetInstance(c1);
+            Assert.That(r1.All<Person>(), Is.Empty);
+            r1.Dispose();
+        }
+
+        [Test]
         public void RemoveObject_FromAnotherRealm_ShouldThrow()
         {
             PerformWithOtherRealm(null, other =>
