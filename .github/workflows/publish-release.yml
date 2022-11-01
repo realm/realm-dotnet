@@ -22,7 +22,7 @@ jobs:
       run: |
         cd Realm/packages
         pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-        echo "::set-output name=version::$pkgVersion"
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1-node16
