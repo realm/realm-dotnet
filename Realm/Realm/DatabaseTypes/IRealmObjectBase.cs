@@ -68,6 +68,18 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         ObjectSchema ObjectSchema { get; }
+
+        /// <summary>
+        /// Gets an object encompassing the dynamic API for this Realm object instance.
+        /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this Realm object.</value>
+        public DynamicObjectApi DynamicApi { get; }
+
+        /// <summary>
+        /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
+        /// </summary>
+        /// <value>The number of objects referring to this one.</value>
+        public int BacklinksCount { get; }
     }
 
     /// <summary>

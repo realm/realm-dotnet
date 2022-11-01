@@ -23,6 +23,10 @@ using System.Runtime.CompilerServices;
 
 namespace Realms
 {
+    public abstract class ManagedAccessor
+    {
+    }
+
     public class RealmObject : RealmObjectBase
     {
     }
@@ -36,6 +40,14 @@ namespace Realms
     }
 
     public interface IRealmObjectBase
+    {
+    }
+
+    public interface IRealmObject: IRealmObjectBase
+    { 
+    }
+
+    public interface IEmbeddedObject: IRealmObjectBase
     {
     }
 

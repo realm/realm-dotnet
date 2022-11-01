@@ -49,6 +49,11 @@ jobs:
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
       if: ${{ inputs.realmUrl }}
       with:
@@ -98,6 +103,11 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a

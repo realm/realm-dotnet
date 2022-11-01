@@ -23,11 +23,20 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class MigrationTests : RealmInstanceTest
+    public partial class MigrationTests : RealmInstanceTest
     {
         private const string FileToMigrate = "ForMigrationsToCopyAndMigrate.realm";
 
@@ -69,7 +78,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -142,7 +151,7 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    var person = (RealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
                     person.DynamicApi.Set("Name", "Foo");
                 });
             }
@@ -166,7 +175,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var person = (RealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
                     person.DynamicApi.Set("Name", 123);
                 });
             }
@@ -182,7 +191,7 @@ namespace Realms.Tests.Database
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
 
-                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     for (var i = 0; i < newPeople.Count(); i++)
@@ -353,7 +362,7 @@ namespace Realms.Tests.Database
                     Assert.That(migrationResult, Is.True);
 
                     // Removed type in oldRealm is still available for the duration of the migration
-                    var oldPeople = (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
                     var oldPerson = oldPeople.First();
 
                     Assert.That(oldPeople.Count(), Is.EqualTo(1));
@@ -578,7 +587,7 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var value = (RealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
+                    var value = (IRealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
                     value.DynamicApi.Set("_id", 456);
                 }
             };
@@ -661,7 +670,7 @@ namespace Realms.Tests.Database
                 Schema = new[] { typeof(ObjectV2) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    foreach (var oldObj in (IQueryable<RealmObject>)migration.OldRealm.DynamicApi.All("Object"))
+                    foreach (var oldObj in (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Object"))
                     {
                         var newObj = (ObjectV2)migration.NewRealm.ResolveReference(ThreadSafeReference.Create(oldObj));
                         newObj.Id = oldObj.DynamicApi.Get<int>("Id").ToString();
@@ -718,25 +727,25 @@ namespace Realms.Tests.Database
             Assert.That(obj1.StringValue, Is.EqualTo("1"));
             Assert.That(obj2.StringValue, Is.EqualTo("2"));
         }
+    }
 
-        [Explicit]
-        [MapTo("Object")]
-        private class ObjectV1 : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
+    [Explicit]
+    [MapTo("Object")]
+    public partial class ObjectV1 : TestRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
 
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
+    }
 
-        [Explicit]
-        [MapTo("Object")]
-        private class ObjectV2 : RealmObject
-        {
-            [PrimaryKey]
-            public string Id { get; set; }
+    [Explicit]
+    [MapTo("Object")]
+    public partial class ObjectV2 : TestRealmObject
+    {
+        [PrimaryKey]
+        public string Id { get; set; }
 
-            public string Value { get; set; }
-        }
+        public string Value { get; set; }
     }
 }

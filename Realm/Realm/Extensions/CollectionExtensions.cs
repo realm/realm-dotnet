@@ -450,7 +450,7 @@ namespace Realms
                     }
                     else if (value is RealmValue val && val.Type == RealmValueType.Object)
                     {
-                        var wrappedObj = val.AsRealmObject();
+                        var wrappedObj = val.AsIRealmObject();
                         if (wrappedObj is IRealmObject robj)
                         {
                             realm.Add(robj, update);

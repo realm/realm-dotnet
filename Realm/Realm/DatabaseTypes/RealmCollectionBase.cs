@@ -542,17 +542,19 @@ namespace Realms
     /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
-    internal sealed class InvalidObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InvalidObject
     {
         private InvalidObject()
         {
         }
 
-        public static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new InvalidObject();
 
-        // The method is overriden to avoid the bug in WPF
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
+            // This is to resolve the WPF bug
             return true;
         }
     }

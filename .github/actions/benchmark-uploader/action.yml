@@ -15,7 +15,7 @@ inputs:
         required: false
         description: Optional path to store the MongoDB Charts dashboard generated from the benchmark file. If not provided, no dashboard will be generated.
 runs:
-    using: "node12"
+    using: "node16"
     main: "dist/index.js"
 branding:
     icon: "bar-chart-2"

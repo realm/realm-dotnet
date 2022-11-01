@@ -27,6 +27,15 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -207,11 +216,6 @@ namespace Realms.Tests.Database
 
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => GetRealm(path));
-        }
-
-        private class LoneClass : RealmObject
-        {
-            public string Name { get; set; }
         }
 
         [Test]
@@ -697,7 +701,7 @@ namespace Realms.Tests.Database
             Assert.That(hasExpectedProp);
             Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-            var ato = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
+            var ato = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
             Assert.That(ato.DynamicApi.Get<string>(nameof(AllTypesObject.RequiredStringProperty)), Is.EqualTo("This is required!"));
 
 #if !UNITY
@@ -712,8 +716,8 @@ namespace Realms.Tests.Database
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var embeddedParent = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties))).Single();
-            var embeddedChild = embeddedParent.DynamicApi.Get<EmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
+            var embeddedParent = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties))).Single();
+            var embeddedChild = embeddedParent.DynamicApi.Get<IEmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
             Assert.That(embeddedChild.DynamicApi.Get<string>(nameof(EmbeddedAllTypesObject.StringProperty)), Is.EqualTo("This is not required!"));
 
 #if !UNITY
@@ -1057,33 +1061,33 @@ namespace Realms.Tests.Database
 
             realm.Write(() =>
             {
-                var other = (RealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
-                var myType1 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var other = (IRealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
+                var myType1 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
                 myType1.DynamicApi.Set("IntValue", 123);
                 myType1.DynamicApi.GetList<DateTimeOffset>("ListValue").Add(DateTimeOffset.UtcNow);
                 myType1.DynamicApi.GetSet<Guid>("SetValue").Add(Guid.NewGuid());
                 myType1.DynamicApi.GetDictionary<double>("DictionaryValue").Add("key", 123.456);
-                myType1.DynamicApi.Set("ObjectValue", other);
-                myType1.DynamicApi.GetList<RealmObject>("ObjectListValue").Add(other);
-                myType1.DynamicApi.GetSet<RealmObject>("ObjectSetValue").Add(other);
-                myType1.DynamicApi.GetDictionary<RealmObject>("ObjectDictionaryValue").Add("key", other);
+                myType1.DynamicApi.Set("ObjectValue", RealmValue.Object(other));
+                myType1.DynamicApi.GetList<IRealmObject>("ObjectListValue").Add(other);
+                myType1.DynamicApi.GetSet<IRealmObject>("ObjectSetValue").Add(other);
+                myType1.DynamicApi.GetDictionary<IRealmObject>("ObjectDictionaryValue").Add("key", other);
 
-                var myType2 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var myType2 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
                 myType2.DynamicApi.Set("IntValue", 456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("foo", 123.456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("bar", 987.654);
-                myType2.DynamicApi.Set("ObjectValue", other);
+                myType2.DynamicApi.Set("ObjectValue", RealmValue.Object(other));
 
                 Assert.Throws<MissingMemberException>(() => other.DynamicApi.Set("hoho", 123));
             });
 
-            var myTypes = (IQueryable<RealmObject>)realm.DynamicApi.All("MyType");
-            var otherObjects = (IQueryable<RealmObject>)realm.DynamicApi.All("OtherObject");
+            var myTypes = (IQueryable<IRealmObject>)realm.DynamicApi.All("MyType");
+            var otherObjects = (IQueryable<IRealmObject>)realm.DynamicApi.All("OtherObject");
 
             Assert.That(myTypes.Count(), Is.EqualTo(2));
             Assert.That(otherObjects.Count(), Is.EqualTo(1));
 
-            var foundById = (RealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
+            var foundById = (IRealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
             Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
             var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
 
@@ -1271,7 +1275,7 @@ namespace Realms.Tests.Database
             var ex = Assert.Throws<ArgumentException>(() => realm.All<IntPropertyObject>());
             Assert.That(ex.Message, Does.Contain($"The class {nameof(IntPropertyObject)} is not in the limited set of classes for this realm"));
 
-            var allFoos = (IQueryable<RealmObject>)realm.DynamicApi.All("Foo");
+            var allFoos = (IQueryable<IRealmObject>)realm.DynamicApi.All("Foo");
             Assert.That(allFoos.Count(), Is.EqualTo(0));
         }
 
@@ -1321,5 +1325,10 @@ namespace Realms.Tests.Database
                 });
             }
         }
+    }
+
+    public partial class LoneClass : TestRealmObject
+    {
+        public string Name { get; set; }
     }
 }

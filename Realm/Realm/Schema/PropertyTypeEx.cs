@@ -147,6 +147,7 @@ namespace Realms.Schema
                 PropertyType.NullableObjectId => typeof(ObjectId?),
                 PropertyType.NullableDecimal => typeof(Decimal128?),
                 PropertyType.NullableGuid => typeof(Guid?),
+                PropertyType.RealmValue | PropertyType.Nullable => typeof(RealmValue),
                 _ => throw new NotSupportedException($"Unexpected property type: {type}"),
             };
         }

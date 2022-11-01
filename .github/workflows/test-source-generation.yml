@@ -1,0 +1,39 @@
+name: test-source-generation
+"on":
+  workflow_call: null
+jobs:
+  run-tests:
+    runs-on: windows-latest
+    name: Source Generation
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
+      with:
+        dotnet-version: 6.0.x
+    - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo '::set-output name=executable-path::./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64'
+    - name: Run the tests
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      if: always()
+      with:
+        name: Results Source Generation
+        path: TestResults.SourceGeneration.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false

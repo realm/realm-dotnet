@@ -27,6 +27,15 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -324,7 +333,7 @@ namespace Realms.Tests.Database
 
             var text = serializationFunction(obj);
 
-            var realmTypes = new[] { typeof(RealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
+            var realmTypes = new[] { typeof(IRealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
 
             foreach (var field in realmTypes.SelectMany(t => t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)))
             {
@@ -736,52 +745,56 @@ namespace Realms.Tests.Database
                 GC.Collect();
             }
         }
+    }
 
-        [Serializable]
-        public class SerializedObject : RealmObject
+    [Serializable]
+    public partial class SerializedObject : TestRealmObject
+    {
+        public int IntValue { get; set; }
+
+        public string Name { get; set; }
+
+        public IDictionary<string, int> Dict { get; }
+
+        public IList<string> List { get; }
+
+        public ISet<string> Set { get; }
+    }
+
+    public partial class OnManagedTestClass : TestRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public OnManagedTestClass RelatedObject { get; set; }
+
+        public IList<OnManagedTestClass> RelatedCollection { get; }
+
+        [Ignored]
+        public int OnManagedCalled { get; private set; }
+
+#if TEST_WEAVER
+        protected internal override void OnManaged()
+#else
+        partial void OnManaged()
+#endif
         {
-            public int IntValue { get; set; }
-
-            public string Name { get; set; }
-
-            public IDictionary<string, int> Dict { get; }
-
-            public IList<string> List { get; }
-
-            public ISet<string> Set { get; }
+            OnManagedCalled++;
         }
+    }
 
-        private class OnManagedTestClass : RealmObject
+    public partial class ThrowsBeforeInitializer : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public object WillThrow = new Thrower();
+
+        internal class Thrower
         {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public OnManagedTestClass RelatedObject { get; set; }
-
-            public IList<OnManagedTestClass> RelatedCollection { get; }
-
-            [Ignored]
-            public int OnManagedCalled { get; private set; }
-
-            protected internal override void OnManaged()
+            public Thrower()
             {
-                OnManagedCalled++;
-            }
-        }
-
-        private class ThrowsBeforeInitializer : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public object WillThrow = new Thrower();
-
-            internal class Thrower
-            {
-                public Thrower()
-                {
-                    throw new Exception("Exception thrown before initializer.");
-                }
+                throw new Exception("Exception thrown before initializer.");
             }
         }
     }

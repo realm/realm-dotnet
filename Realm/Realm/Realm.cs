@@ -525,7 +525,7 @@ namespace Realms
         internal IRealmObjectBase MakeObject(Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata));
+            ret.CreateAndSetAccessor(objectHandle, this, metadata);
             return ret;
         }
 
@@ -692,7 +692,7 @@ namespace Realms
             var objectName = objectType.GetMappedOrOriginalName();
             Argument.Ensure(Metadata.TryGetValue(objectName, out var metadata), $"The class {objectType.Name} is not in the limited set of classes for this realm", nameof(obj));
 
-            obj.SetManagedAccessor(new ManagedAccessor(this, handle, metadata), metadata.Helper, false, true);
+            obj.CreateAndSetAccessor(handle, this, metadata, copyToRealm: true, update: false, skipDefaults: true);
         }
 
         private void AddInternal<T>(T obj, Type objectType, bool update)
@@ -724,7 +724,7 @@ namespace Realms
                 objectHandle = SharedRealmHandle.CreateObject(metadata.TableKey);
             }
 
-            obj.SetManagedAccessor(new ManagedAccessor(this, objectHandle, metadata), metadata.Helper, update, isNew);
+            obj.CreateAndSetAccessor(objectHandle, this, metadata, copyToRealm: true, update: update, skipDefaults: isNew);
         }
 
         private bool ShouldAddNewObject(IRealmObjectBase obj)
@@ -1817,7 +1817,7 @@ namespace Realms
                     ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
                     : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
 
-                result.SetManagedAccessor(new ManagedAccessor(_realm, objectHandle, metadata));
+                result.CreateAndSetAccessor(objectHandle, _realm, metadata);
 
                 return result;
             }
@@ -1846,7 +1846,7 @@ namespace Realms
                 var obj = metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, handle, metadata));
+                obj.CreateAndSetAccessor(handle, _realm, metadata);
 
                 return obj;
             }
@@ -1974,7 +1974,7 @@ namespace Realms
                 Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject, $"The class {className} represents an embedded object and thus cannot be queried directly.", nameof(className));
                 Argument.Ensure(metadata.Schema.BaseType != ObjectSchema.ObjectType.AsymmetricObject, $"The class {className} represents an asymmetric object and thus cannot be queried.", nameof(className));
 
-                return new RealmResults<RealmObject>(_realm, metadata);
+                return new RealmResults<IRealmObject>(_realm, metadata);
             }
 
             /// <summary>
@@ -1991,7 +1991,7 @@ namespace Realms
             {
                 _realm.ThrowIfDisposed();
 
-                var query = (RealmResults<RealmObject>)All(className);
+                var query = (RealmResults<IRealmObject>)All(className);
                 query.ResultsHandle.Clear(_realm.SharedRealmHandle);
             }
 
@@ -2047,14 +2047,14 @@ namespace Realms
             public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            internal RealmObject FindCore(string className, RealmValue primaryKey)
+            internal IRealmObject FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
                 var metadata = _realm.Metadata[className];
                 if (_realm.SharedRealmHandle.TryFindObject(metadata.TableKey, primaryKey, out var objectHandle))
                 {
-                    return (RealmObject)_realm.MakeObject(metadata, objectHandle);
+                    return (IRealmObject)_realm.MakeObject(metadata, objectHandle);
                 }
 
                 return null;
@@ -2073,7 +2073,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmList.NativeHandle), realmList.Metadata));
+                obj.CreateAndSetAccessor(getHandle(realmList.NativeHandle), _realm, realmList.Metadata);
 
                 return obj;
             }
@@ -2091,7 +2091,7 @@ namespace Realms
 
                 var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 
-                obj.SetManagedAccessor(new ManagedAccessor(_realm, getHandle(realmDict.NativeHandle), realmDict.Metadata));
+                obj.CreateAndSetAccessor(getHandle(realmDict.NativeHandle), _realm, realmDict.Metadata);
 
                 return obj;
             }
