@@ -113,7 +113,7 @@ namespace Realms.Tests.Sync
         }
 
         protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
-            where T : RealmObject
+            where T : IRealmObject
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 

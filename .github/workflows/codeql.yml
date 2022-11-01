@@ -46,5 +46,7 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm.SourceGenerator
+      run: msbuild Realm/Realm.SourceGenerator -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31

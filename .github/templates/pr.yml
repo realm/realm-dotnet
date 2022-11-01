@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "buildUnity", "testUnity")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "runWovenClassesTests", "runSourceGenerationTests", "buildUnity", "testUnity")
 ---
 name: PR Build
 "on":
@@ -40,6 +40,8 @@ jobs:
   _: #@ template.replace(runTests("macOS", runSyncTests = False))
   _: #@ template.replace(runTests("iOS", runSyncTests = False))
   _: #@ template.replace(runTests("Android", runSyncTests = False, additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  _: #@ template.replace(runWovenClassesTests())
+  _: #@ template.replace(runSourceGenerationTests())
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test

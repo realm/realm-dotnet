@@ -24,7 +24,7 @@ namespace Realms.Dynamic
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Ignored]
-    public class DynamicRealmObject : RealmObject, IDynamicMetaObjectProvider
+    public class DynamicRealmObject : DynamicRealmObjectBase, IRealmObject, IDynamicMetaObjectProvider
     {
         public DynamicMetaObject GetMetaObject(Expression parameter)
         {

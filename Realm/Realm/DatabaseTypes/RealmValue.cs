@@ -18,6 +18,7 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -144,7 +145,8 @@ namespace Realms
 
         private static RealmValue String(string value) => new RealmValue(value);
 
-        internal static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static RealmValue Object(IRealmObjectBase value) => new RealmValue(value);
 
         internal static RealmValue Create<T>(T value, RealmValueType type)
         {
@@ -193,7 +195,7 @@ namespace Realms
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 case RealmValueType.Object:
-                    if (!AsRealmObject().IsManaged)
+                    if (!AsIRealmObject().IsManaged)
                     {
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }
@@ -687,7 +689,7 @@ namespace Realms
                 RealmValueType.Decimal128 => AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId(),
                 RealmValueType.Guid => AsGuid(),
-                RealmValueType.Object => AsRealmObject(),
+                RealmValueType.Object => AsIRealmObject(),
                 _ => throw new NotSupportedException($"RealmValue of type {Type} is not supported."),
             };
         }
@@ -708,7 +710,7 @@ namespace Realms
                     return null;
                 }
 
-                var obj = AsRealmObject();
+                var obj = AsIRealmObject();
                 if (obj.IsManaged)
                 {
                     return obj.ObjectSchema.Name;
@@ -754,7 +756,7 @@ namespace Realms
                     RealmValueType.Double => AsDouble().GetHashCode(),
                     RealmValueType.Decimal128 => AsDecimal128().GetHashCode(),
                     RealmValueType.ObjectId => AsObjectId().GetHashCode(),
-                    RealmValueType.Object => AsRealmObject().GetHashCode(),
+                    RealmValueType.Object => AsIRealmObject().GetHashCode(),
                     _ => 0,
                 };
 
@@ -964,7 +966,7 @@ namespace Realms
                 RealmValueType.Decimal128 => AsDecimal128() == other.AsDecimal128(),
                 RealmValueType.ObjectId => AsObjectId() == other.AsObjectId(),
                 RealmValueType.Guid => AsGuid() == other.AsGuid(),
-                RealmValueType.Object => AsRealmObject().Equals(other.AsRealmObject()),
+                RealmValueType.Object => AsIRealmObject().Equals(other.AsIRealmObject()),
                 RealmValueType.Null => true,
                 _ => false,
             };

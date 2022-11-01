@@ -20,6 +20,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -30,37 +39,6 @@ namespace Realms.Tests.Database
         private const string EarlsName = "Earl Yippington III";
         private const string PipilottasName = "Pipilotta";
         private const string MaggiesName = "Maggie Mongrel";
-
-        private class DynamicDog : RealmObject
-        {
-            public string Name { get; set; }
-
-            public string Color { get; set; }
-
-            public bool Vaccinated { get; set; }
-
-            [Backlink(nameof(DynamicOwner.Dogs))]
-            public IQueryable<DynamicOwner> Owners { get; }
-        }
-
-        private class DynamicOwner : RealmObject
-        {
-            public string Name { get; set; }
-
-            public DynamicDog TopDog { get; set; }
-
-            public IList<DynamicDog> Dogs { get; }
-
-            public IList<string> Tags { get; }
-
-            public IDictionary<string, DynamicDog> DogsDictionary { get; }
-
-            public IDictionary<string, string> TagsDictionary { get; }
-
-            public ISet<DynamicDog> DogsSet { get; }
-
-            public ISet<string> TagsSet { get; }
-        }
 
         private void RunTestInAllModes(Action<Realm> test)
         {
@@ -75,35 +53,35 @@ namespace Realms.Tests.Database
                 using var realm = GetRealm(config);
                 realm.Write(() =>
                 {
-                    var ownerTim = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
+                    var ownerTim = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
                     ownerTim.DynamicApi.Set(nameof(DynamicOwner.Name), "Tim");
 
-                    var dogBilbo = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var dogBilbo = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
                     dogBilbo.DynamicApi.Set(nameof(DynamicDog.Name), BilbosName);
                     dogBilbo.DynamicApi.Set(nameof(DynamicDog.Color), "Black");
 
-                    ownerTim.DynamicApi.Set(nameof(DynamicOwner.TopDog), dogBilbo);  // set a one-one relationship
+                    ownerTim.DynamicApi.Set(nameof(DynamicOwner.TopDog), RealmValue.Object(dogBilbo));  // set a one-one relationship
                     GetDogs(ownerTim).Add(dogBilbo);
                     GetDogsDict(ownerTim).Add(BilbosName, dogBilbo);
                     GetTagsDict(ownerTim).Add(BilbosName, "great");
-                    ownerTim.DynamicApi.GetSet<RealmObject>(nameof(DynamicOwner.DogsSet)).Add(dogBilbo);
+                    ownerTim.DynamicApi.GetSet<IRealmObject>(nameof(DynamicOwner.DogsSet)).Add(dogBilbo);
                     ownerTim.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet)).Add("responsible");
 
-                    var dogEarl = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var dogEarl = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
                     dogEarl.DynamicApi.Set(nameof(DynamicDog.Name), EarlsName);
                     dogEarl.DynamicApi.Set(nameof(DynamicDog.Color), "White");
 
                     GetDogs(ownerTim).Add(dogEarl);
                     GetDogsDict(ownerTim).Add(EarlsName, dogEarl);
                     GetTagsDict(ownerTim).Add(EarlsName, "playful");
-                    ownerTim.DynamicApi.GetSet<RealmObject>(nameof(DynamicOwner.DogsSet)).Add(dogEarl);
+                    ownerTim.DynamicApi.GetSet<IRealmObject>(nameof(DynamicOwner.DogsSet)).Add(dogEarl);
                     ownerTim.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet)).Add("coffee lover");
 
                     // lonely people and dogs
-                    var ownerDani = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
+                    var ownerDani = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
                     ownerDani.DynamicApi.Set(nameof(DynamicOwner.Name), "Dani");  // the dog-less
 
-                    var dogMaggie = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);  // will remain unassigned
+                    var dogMaggie = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);  // will remain unassigned
                     dogMaggie.DynamicApi.Set(nameof(DynamicDog.Name), MaggiesName);
                     dogMaggie.DynamicApi.Set(nameof(DynamicDog.Color), "Grey");
                 });
@@ -119,28 +97,28 @@ namespace Realms.Tests.Database
             RunTestInAllModes(test);
         }
 
-        private static RealmObject FindOwner(Realm realm, string name = "Tim")
-            => ((IQueryable<RealmObject>)realm.DynamicApi.All(nameof(DynamicOwner))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicOwner.Name)) == name);
+        private static IRealmObject FindOwner(Realm realm, string name = "Tim")
+            => ((IQueryable<IRealmObject>)realm.DynamicApi.All(nameof(DynamicOwner))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicOwner.Name)) == name);
 
-        private static RealmObject FindDog(Realm realm, string name = MaggiesName)
-            => ((IQueryable<RealmObject>)realm.DynamicApi.All(nameof(DynamicDog))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicDog.Name)) == name);
+        private static IRealmObject FindDog(Realm realm, string name = MaggiesName)
+            => ((IQueryable<IRealmObject>)realm.DynamicApi.All(nameof(DynamicDog))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicDog.Name)) == name);
 
-        private static IList<RealmObject> GetDogs(RealmObject owner)
-            => owner.DynamicApi.GetList<RealmObject>(nameof(DynamicOwner.Dogs));
+        private static IList<IRealmObject> GetDogs(IRealmObject owner)
+            => owner.DynamicApi.GetList<IRealmObject>(nameof(DynamicOwner.Dogs));
 
-        private static IDictionary<string, RealmObject> GetDogsDict(RealmObject owner)
-            => owner.DynamicApi.GetDictionary<RealmObject>(nameof(DynamicOwner.DogsDictionary));
+        private static IDictionary<string, IRealmObject> GetDogsDict(IRealmObject owner)
+            => owner.DynamicApi.GetDictionary<IRealmObject>(nameof(DynamicOwner.DogsDictionary));
 
-        private static ISet<RealmObject> GetDogsSet(RealmObject owner)
-            => owner.DynamicApi.GetSet<RealmObject>(nameof(DynamicOwner.DogsSet));
+        private static ISet<IRealmObject> GetDogsSet(IRealmObject owner)
+            => owner.DynamicApi.GetSet<IRealmObject>(nameof(DynamicOwner.DogsSet));
 
-        private static IList<string> GetTags(RealmObject owner)
+        private static IList<string> GetTags(IRealmObject owner)
             => owner.DynamicApi.GetList<string>(nameof(DynamicOwner.Tags));
 
-        private static IDictionary<string, string> GetTagsDict(RealmObject owner)
+        private static IDictionary<string, string> GetTagsDict(IRealmObject owner)
             => owner.DynamicApi.GetDictionary<string>(nameof(DynamicOwner.TagsDictionary));
 
-        private static ISet<string> GetTagsSet(RealmObject owner)
+        private static ISet<string> GetTagsSet(IRealmObject owner)
             => owner.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet));
 
         [Test]
@@ -149,7 +127,7 @@ namespace Realms.Tests.Database
             RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
-                Assert.That(tim.DynamicApi.Get<RealmObject>(nameof(DynamicOwner.TopDog)).DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(BilbosName));
+                Assert.That(tim.DynamicApi.Get<IRealmObject>(nameof(DynamicOwner.TopDog)).DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(BilbosName));
             });
         }
 
@@ -249,7 +227,7 @@ namespace Realms.Tests.Database
                 });
 
                 var tim2 = FindOwner(realm);
-                Assert.That(tim2.DynamicApi.Get<RealmObject>(nameof(DynamicOwner.TopDog)), Is.Null);  // the dog departure was saved
+                Assert.That(tim2.DynamicApi.Get<IRealmObject>(nameof(DynamicOwner.TopDog)), Is.Null);  // the dog departure was saved
             });
         }
 
@@ -495,7 +473,7 @@ namespace Realms.Tests.Database
             RunTestInAllModes(realm =>
             {
                 var dani = FindOwner(realm, "Dani");
-                Assert.That(dani.DynamicApi.Get<RealmObject>(nameof(DynamicOwner.TopDog)), Is.Null);
+                Assert.That(dani.DynamicApi.Get<IRealmObject>(nameof(DynamicOwner.TopDog)), Is.Null);
             });
         }
 
@@ -692,7 +670,7 @@ namespace Realms.Tests.Database
             RunTestInAllModes(realm =>
             {
                 var tim = FindOwner(realm);
-                var topOwners = tim.DynamicApi.Get<RealmObject>(nameof(DynamicOwner.TopDog)).DynamicApi.GetBacklinksFromType(nameof(DynamicOwner), nameof(DynamicOwner.TopDog));
+                var topOwners = tim.DynamicApi.Get<IRealmObject>(nameof(DynamicOwner.TopDog)).DynamicApi.GetBacklinksFromType(nameof(DynamicOwner), nameof(DynamicOwner.TopDog));
 
                 Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
 
@@ -703,34 +681,10 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    dani.DynamicApi.Set(nameof(DynamicOwner.TopDog), maggie);
+                    dani.DynamicApi.Set(nameof(DynamicOwner.TopDog), RealmValue.Object(maggie));
                 });
 
                 Assert.That(maggie.DynamicApi.GetBacklinksFromType(nameof(DynamicOwner), nameof(DynamicOwner.TopDog)), Is.EquivalentTo(new[] { dani }));
-            });
-        }
-
-        [Test]
-        public void DynamicBacklinks_Dynamic()
-        {
-            RunDynamicTestInAllModes(realm =>
-            {
-                dynamic tim = FindOwner(realm);
-                var topOwners = tim.TopDog.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog));
-
-                Assert.That(topOwners, Is.EquivalentTo(new[] { tim }));
-
-                dynamic dani = FindOwner(realm, "Dani");
-                dynamic maggie = FindDog(realm);
-
-                Assert.That(maggie.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog)), Is.Empty);
-
-                realm.Write(() =>
-                {
-                    dani.TopDog = maggie;
-                });
-
-                Assert.That(maggie.GetBacklinks(nameof(DynamicOwner), nameof(DynamicOwner.TopDog)), Is.EquivalentTo(new[] { dani }));
             });
         }
 
@@ -916,7 +870,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var pipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -992,7 +946,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var pipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -1300,7 +1254,7 @@ namespace Realms.Tests.Database
 
                 var pipi = realm.Write(() =>
                 {
-                    var innerPipi = (RealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var innerPipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
                     innerPipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     innerPipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -1494,5 +1448,36 @@ namespace Realms.Tests.Database
         }
 
         private static bool Any(dynamic collection, Func<dynamic, bool> predicate) => ((IEnumerable<dynamic>)collection).Any(predicate);
+    }
+
+    public partial class DynamicDog : TestRealmObject
+    {
+        public string Name { get; set; }
+
+        public string Color { get; set; }
+
+        public bool Vaccinated { get; set; }
+
+        [Backlink(nameof(DynamicOwner.Dogs))]
+        public IQueryable<DynamicOwner> Owners { get; }
+    }
+
+    public partial class DynamicOwner : TestRealmObject
+    {
+        public string Name { get; set; }
+
+        public DynamicDog TopDog { get; set; }
+
+        public IList<DynamicDog> Dogs { get; }
+
+        public IList<string> Tags { get; }
+
+        public IDictionary<string, DynamicDog> DogsDictionary { get; }
+
+        public IDictionary<string, string> TagsDictionary { get; }
+
+        public ISet<DynamicDog> DogsSet { get; }
+
+        public ISet<string> TagsSet { get; }
     }
 }

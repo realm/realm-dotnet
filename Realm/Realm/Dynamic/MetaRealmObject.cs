@@ -168,9 +168,15 @@ namespace Realms.Dynamic
 
             if (expression.Type == typeof(RealmValue))
             {
-                var targetType = property.Type.UnderlyingType() == PropertyType.Object ?
-                    GetDynamicObjectType(property) :
-                    property.PropertyInfo?.PropertyType ?? property.Type.ToType();
+                Type targetType;
+                if (property.Type.UnderlyingType() == PropertyType.Object)
+                {
+                    targetType = IsTargetEmbedded(property) ? typeof(DynamicEmbeddedObject) : typeof(DynamicRealmObject);
+                }
+                else
+                {
+                    targetType = property.Type.ToType();
+                }
 
                 expression = Expression.Call(expression, RealmValueGetMethod.MakeGenericMethod(targetType));
             }

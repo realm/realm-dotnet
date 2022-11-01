@@ -145,7 +145,7 @@ namespace Realms
 
             var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 return false;
             }

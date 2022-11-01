@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Weaving;
 
 namespace Realms.Extensions
 {
@@ -29,18 +30,22 @@ namespace Realms.Extensions
 
         public static Metadata GetObjectMetadata(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as ManagedAccessor)?.Metadata;
-        }
-
-        public static void SetManagedAccessor(this IRealmObjectBase iro, IRealmAccessor accessor, Action copyToRealmAction = null)
-        {
-            iro.SetManagedAccessor(accessor, copyToRealmAction);
+            return (iro.Accessor as IMetadataObject)?.Metadata;
         }
 
         public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObjectBase iro, string propertyName, ResultsHandle resultsHandle)
             where T : IRealmObjectBase
         {
             return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
+        }
+
+        public static void CreateAndSetAccessor(this ISettableManagedAccessor iro,
+            ObjectHandle handle, Realm realm, Metadata metadata,
+            bool copyToRealm = false, bool update = false, bool skipDefaults = false)
+        {
+            var accessor = metadata.Helper.CreateAccessor() ?? new GenericManagedAccessor();
+            accessor.Initialize(realm, handle, metadata);
+            iro.SetManagedAccessor(accessor, copyToRealm ? metadata.Helper : null, update, skipDefaults);
         }
     }
 }

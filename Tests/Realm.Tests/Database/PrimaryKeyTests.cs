@@ -105,7 +105,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
@@ -127,7 +127,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(UpdatePKTestCases))]
         public void UpdatePrimaryKey_DynamicTests(Type type, object firstValue, object secondValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, firstValue);
 
@@ -221,20 +221,20 @@ namespace Realms.Tests.Database
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
         {
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
-            var first = (RealmObject)Activator.CreateInstance(type);
+            var first = (IRealmObject)Activator.CreateInstance(type);
             pkProperty.SetValue(first, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(first));
 
             Assert.That(() =>
             {
-                var second = (RealmObject)Activator.CreateInstance(type);
+                var second = (IRealmObject)Activator.CreateInstance(type);
                 pkProperty.SetValue(second, primaryKeyValue);
                 _realm.Write(() => _realm.Add(second));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
         {
             switch (pkType)
             {
@@ -251,16 +251,16 @@ namespace Realms.Tests.Database
 
                     // The double cast is necessary to avoid creating a callsite.
                     // TODO: remove the casts when https://github.com/realm/realm-dotnet/issues/2373 is done
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
 
                 case PKType.String:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
 
                 case PKType.ObjectId:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
 
                 case PKType.Guid:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+                    return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
 
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, PKType pkType)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
@@ -292,7 +292,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(UpdatePKTestCases))]
         public void UpdatePrimaryKey_ReflectionTests(Type type, object firstValue, object secondValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type);
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, firstValue);
 
@@ -329,7 +329,7 @@ namespace Realms.Tests.Database
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
         }
 
-        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
         {
             try
             {
@@ -352,7 +352,7 @@ namespace Realms.Tests.Database
                     primaryKeyValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
+                return (IRealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
             }
             catch (TargetInvocationException ex)
             {
@@ -399,7 +399,7 @@ namespace Realms.Tests.Database
         }
 
         private void RealmFind_IncorrectPKArgument_Throws<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
             var pkType = GetDatabaseType(pkInClass.PropertyType);

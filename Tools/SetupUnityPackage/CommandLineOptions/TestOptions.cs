@@ -32,6 +32,7 @@ namespace SetupUnityPackage
 
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
+            "Realm.SourceGenerator",
             "Realm.Fody",
             "Fody",
             "Realm",

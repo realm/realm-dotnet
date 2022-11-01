@@ -35,6 +35,15 @@ using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Sync
 {
@@ -1742,31 +1751,6 @@ namespace Realms.Tests.Sync
             _sessionErrorHandlers.Enqueue(handler);
         }
 
-        [Explicit]
-        public class ObjectWithPartitionValue : RealmObject
-        {
-            [PrimaryKey]
-            [MapTo("_id")]
-            public string Id { get; set; }
-
-            public string Value { get; set; }
-
-            [MapTo("realm_id")]
-            public string Partition { get; set; }
-
-            public Guid Guid { get; set; }
-        }
-
-        public class SyncObjectWithRequiredStringList : RealmObject
-        {
-            [PrimaryKey]
-            [MapTo("_id")]
-            public string Id { get; set; }
-
-            [Required]
-            public IList<string> Strings { get; }
-        }
-
         private static SessionNotificationToken? GetNotificationToken(Session session)
         {
             var sessionHandle = (SessionHandle)typeof(Session).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
@@ -1774,5 +1758,30 @@ namespace Realms.Tests.Sync
                 (SessionNotificationToken?)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle) :
                 null;
         }
+    }
+
+    [Explicit]
+    public partial class ObjectWithPartitionValue : TestRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public string Id { get; set; }
+
+        public string Value { get; set; }
+
+        [MapTo("realm_id")]
+        public string Partition { get; set; }
+
+        public Guid Guid { get; set; }
+    }
+
+    public partial class SyncObjectWithRequiredStringList : TestRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public string Id { get; set; }
+
+        [Required]
+        public IList<string> Strings { get; }
     }
 }
