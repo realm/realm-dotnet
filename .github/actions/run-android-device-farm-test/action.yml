@@ -17,7 +17,7 @@ runs:
   using: "composite"
   steps:
     - name: Run the tests
-      uses: realm/aws-devicefarm/test-application@d94e739490340474f8464f74289a0f48706dd3a3
+      uses: realm/aws-devicefarm/test-application@c929c9a9465e36c2372e0c62208fe76db3950f2e
       id: run-tests
       with:
         project_arn: ${{ inputs.project-arn}}
@@ -53,7 +53,7 @@ runs:
           Customer Artifacts.zip
     - run: |
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-        echo '::set-output name=results-path::${{ github.workspace }}/artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml'
+        echo "results-path=${{ github.workspace }}/artifacts/Host_Machine_Files/`$DEVICEFARM_LOG_DIR/TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
       name: Fetch test artifacts
       shell: pwsh
       id: get-test-results
