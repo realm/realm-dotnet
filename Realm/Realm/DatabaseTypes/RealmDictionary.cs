@@ -100,8 +100,7 @@ namespace Realms
 
         internal RealmResults<TValue> ToResults()
         {
-            var resultsHandle = _dictionaryHandle.GetValues();
-            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+            return (RealmResults<TValue>)this.Values;
         }
 
         // Get filtered results from dictionary's values
