@@ -46,14 +46,14 @@ runs:
                 - adb -s $DEVICEFARM_DEVICE_UDID shell am instrument -w -r ${{ inputs.arguments != '_' && format('-e args \"{0}\"', inputs.arguments) || '' }} ${{ inputs.app-id }}/.TestRunner
             post_test:
               commands:
-                - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/Documents/TestResults.Android.xml $DEVICEFARM_LOG_DIR/TestResults.Android.xml
+                - adb -s $DEVICEFARM_DEVICE_UDID pull /storage/emulated/0/Documents/TestResults.Android.xml test_results/TestResults.Android.xml
           artifacts:
-            - $DEVICEFARM_LOG_DIR
+            - test_results
         file_artifacts: |
           Customer Artifacts.zip
     - run: |
         Expand-Archive 'Customer Artifacts.zip' -DestinationPath artifacts
-        echo "results-path=${{ github.workspace }}/artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
+        echo "results-path=${{ github.workspace }}/artifacts/Host_Machine_Files/test_results/TestResults.Android.xml" | Out-File -FilePath $Env:GITHUB_OUTPUT -Encoding utf8 -Append
       name: Fetch test artifacts
       shell: pwsh
       id: get-test-results
