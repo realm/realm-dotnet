@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
   run-tests:
     runs-on: ${{ matrix.os.runner }}
-    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
+    name: ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -30,7 +30,7 @@ jobs:
             runtime: osx-arm64
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
-      - #@ setupDotnet(ifCondition = "matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'")
+      - #@ setupDotnet(ifCondition = "matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm' && matrix.os.runner != 'win81'")
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
