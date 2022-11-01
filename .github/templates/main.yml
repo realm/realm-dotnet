@@ -96,6 +96,7 @@ jobs:
           cd BenchmarkDotNet.Artifacts/results
           file=$(basename BenchmarkRun*json)
           echo "benchmark-results=$file" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Publish Benchmark Results
         uses: ./.github/actions/benchmark-uploader
         with:

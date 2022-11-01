@@ -44,7 +44,7 @@ jobs:
         {
           $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
         }
-        echo "build_suffix=$suffix" >> $GITHUB_OUTPUT
+        echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v3
       with:
