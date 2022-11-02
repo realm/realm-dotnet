@@ -204,16 +204,40 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObject>();
+            var robj = value.AsIRealmObject();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
                 throw new RealmException("Can't add to the collection an object that is already in another realm.");
             }
 
-            if (!robj.IsManaged)
+            switch (robj)
             {
-                Realm.Add(robj);
+                case IRealmObject topLevel:
+                    if (!robj.IsManaged)
+                    {
+                        Realm.Add(topLevel);
+                    }
+
+                    break;
+
+                // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
+                // them to the collection as RealmValues (e.g. IList<RealmValue>).
+                // This is because:
+                // * Plain embedded objects (not contained within a RealmValue), beside RealmSet, are
+                //   added by each collection handle (e.g. _listHandle.AddEmbedded()) in the respective
+                //   method (e.g. in RealmList.Add(), RealmList.Insert(), RealmDictionary.Add(), etc.)
+                //   rather than reaching RealmCollectionBase.AddToRealmIfNecessary().
+                // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
+                //   objects can't be linked to.
+                case IEmbeddedObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
+                case IAsymmetricObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
+                default:
+                    throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }
         }
 

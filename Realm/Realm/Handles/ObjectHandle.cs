@@ -188,12 +188,25 @@ namespace Realms
                     case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
-                            throw new RealmException("Can't link to an embedded object that is already managed.");
+                            throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        }
+
+                        if (GetProperty(propertyName, metadata).Type.IsRealmValue())
+                        {
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
+
+                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
+                    // a RealmValue property on the object.
+                    // This is because:
+                    // * For plain asymmetric objects (not contained within a RealmValue), the weaver
+                    //   raises a compilation error since asymmetric objects can't be linked to.
+                    case IAsymmetricObject:
+                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
 
@@ -359,6 +372,16 @@ namespace Realms
         private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
         {
             if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            {
+                return result;
+            }
+
+            throw new MissingMemberException(metadata.Schema.Name, propertyName);
+        }
+
+        private static Property GetProperty(string propertyName, Metadata metadata)
+        {
+            if (metadata.Schema.TryFindProperty(propertyName, out var result))
             {
                 return result;
             }

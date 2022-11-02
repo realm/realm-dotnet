@@ -31,9 +31,10 @@ using Realms.Native;
 namespace Realms
 {
     /// <summary>
-    /// A type that can represent any valid Realm data type. It is a valid type in and of itself,
-    /// which means that it can be used to declare a property of type <see cref="RealmValue"/> that
-    /// can hold any type.
+    /// A type that can represent any valid Realm data type. It is a valid type in and of itself, which
+    /// means that it can be used to declare a property of type <see cref="RealmValue"/>.
+    /// Please note that a <see cref="RealmValue"/> property in a managed <see cref="IRealmObjectBase">realm object</see>
+    /// cannot contain an <see cref="IEmbeddedObject">embedded object</see> or an <see cref="IAsymmetricObject">asymmetric object</see>.
     /// </summary>
     /// <example>
     /// <code>
