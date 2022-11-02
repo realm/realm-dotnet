@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
@@ -45,13 +45,10 @@ In order to use the source generation the model classes need to be declared impl
   * Inheritance is not supported, so the Realm models cannot derive from any other class.
   * Nested classes are not supported.
 
-  
-
 ### Fixed
 * Fixed a NullReferenceException being thrown when subscribing to `PropertyChanged` notifications on a `Session` instance that is then garbage collected prior to unsubscribing. (PR [#3061](https://github.com/realm/realm-dotnet/pull/3061))
 * Removed bitcode support from the iOS binary as it's no longer accepted for App Store submissions. (Issue [#3059](https://github.com/realm/realm-dotnet/issues/3059))
 * Fixed returning the parent when accessing it on an `IEmbeddedObject`. (Issue [#2742](https://github.com/realm/realm-dotnet/issues/2742))
-* Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
 * Slightly increased performance and reduced allocations when creating an enumerator for frozen collections (Issue [#2815](https://github.com/realm/realm-dotnet/issues/2815)).
 
 ### Compatibility
