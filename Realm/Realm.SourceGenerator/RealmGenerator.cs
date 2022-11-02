@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
