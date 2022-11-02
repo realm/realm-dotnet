@@ -20,12 +20,15 @@ using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
+    // TODO andrea: check everything for exceptions
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
+        private Analytics _analytics = new();
+
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
+            context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver(_analytics));
         }
 
         public void Execute(GeneratorExecutionContext context)
@@ -35,14 +38,40 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            var parser = new Parser(context);
+            var parser = new Parser(context, _analytics);
             var parsingResults = parser.Parse(scr.RealmClasses);
+
+            var submitAnalytics = Task.Run(() =>
+            {
+                try
+                {
+                    var payload = _analytics.SubmitAnalytics();
+
+                    // TODO andrea: read this from env vars
+#if REALM_PRINT_ANALYTICS
+                    // TODO andrea: likely log this in diagnostics
+                    context.ReportDiagnostic(Diagnostics.Info($@"
+----------------------------------
+Analytics payload
+{payload}
+----------------------------------"));
+#endif
+                }
+                catch (Exception e)
+                {
+                    // TODO andrea: likely log this in diagnostics
+                    // something like
+                    //context.ReportDiagnostic(Diagnostics.Info("Error submitting analytics: " + e.Message));
+                }
+            });
 
             var diagnosticsEmitter = new DiagnosticsEmitter(context);
             diagnosticsEmitter.Emit(parsingResults);
 
             var codeEmitter = new CodeEmitter(context);
             codeEmitter.Emit(parsingResults);
+
+            // TODO andrea: wait or not for the analytics task, to be seen
         }
     }
 }

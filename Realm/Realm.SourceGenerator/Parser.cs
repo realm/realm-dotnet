@@ -28,10 +28,12 @@ namespace Realms.SourceGenerator
     internal class Parser
     {
         private GeneratorExecutionContext _context;
+        private Analytics _analytics;
 
-        public Parser(GeneratorExecutionContext context)
+        public Parser(GeneratorExecutionContext context, Analytics analytics)
         {
             _context = context;
+            _analytics = analytics;
         }
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
@@ -116,6 +118,8 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.UnexpectedError(classSymbol.Name, ex.Message, ex.StackTrace));
                     throw;
                 }
+
+                _analytics.AnalyzeRealmClass(classInfo);
             }
 
             foreach (var classInfo in result.ClassInfo.Where(c => duplicateClassNames.Contains(c.Name)))

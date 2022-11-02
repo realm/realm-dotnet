@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
 
 namespace Realms.SourceGenerator
 {
@@ -27,27 +28,35 @@ namespace Realms.SourceGenerator
     {
         private readonly Dictionary<ITypeSymbol, RealmClassDefinition> _realmClassesDict = new(SymbolEqualityComparer.Default);
 
+        private Analytics _analytics;
+
         public IReadOnlyCollection<RealmClassDefinition> RealmClasses => _realmClassesDict.Values;
+
+        public SyntaxContextReceiver(Analytics analytics)
+        {
+            _analytics = analytics;
+        }
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            if (context.Node is not ClassDeclarationSyntax classSyntax)
-            {
-                return;
-            }
+            // TODO andrea: if (passed enough time from last metrics)
+            _analytics.AnalyzeSyntaxNodeForApiUsage(context);
 
-            var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
-
-            if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
+            if (context.Node is ClassDeclarationSyntax classSyntax)
             {
-                rcDefinition.ClassDeclarations.Add(classSyntax);
-                return;
-            }
+                var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
 
-            if (classSymbol.IsAnyRealmObjectType())
-            {
-                var realmClassDefinition = new RealmClassDefinition(classSymbol, new List<ClassDeclarationSyntax> { classSyntax });
-                _realmClassesDict.Add(classSymbol, realmClassDefinition);
+                if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
+                {
+                    rcDefinition.ClassDeclarations.Add(classSyntax);
+                    return;
+                }
+
+                if (classSymbol.IsAnyRealmObjectType())
+                {
+                    var realmClassDefinition = new RealmClassDefinition(classSymbol, new List<ClassDeclarationSyntax> { classSyntax });
+                    _realmClassesDict.Add(classSymbol, realmClassDefinition);
+                }
             }
         }
     }
