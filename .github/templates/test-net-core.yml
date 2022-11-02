@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 ---
 name: test-net-core
@@ -29,11 +29,8 @@ jobs:
             runner: macos-arm
             runtime: osx-arm64
     steps:
-      - #@ template.replace(checkoutCode())
-      - name: Cleanup Workspace
-        run: git clean -fdx
+      - #@ template.replace(prepareTest(cleanupWorkspace = True))
       - #@ setupDotnet(ifCondition = "matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'")
-      - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")

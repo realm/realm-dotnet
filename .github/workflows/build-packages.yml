@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 30
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -46,87 +46,87 @@ jobs:
         }
         echo "::set-output name=build_suffix::$suffix"
     - name: Fetch artifacts for macos
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-macos
         path: wrappers/build
     - name: Fetch artifacts for linux
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-linux
         path: wrappers/build
     - name: Fetch artifacts for ios-Simulator
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Simulator
         path: wrappers/build
     - name: Fetch artifacts for ios-Device
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Device
         path: wrappers/build
     - name: Fetch artifacts for ios-Catalyst
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-ios-Catalyst
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
     - name: Fetch artifacts for android-arm64-v8a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-arm64-v8a
         path: wrappers/build
     - name: Fetch artifacts for android-x86
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86
         path: wrappers/build
     - name: Fetch artifacts for android-x86_64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86_64
         path: wrappers/build
     - name: Fetch artifacts for windows-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-ARM64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm.Fody
       run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
@@ -136,6 +136,8 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.SourceGenerator
+      run: msbuild Realm/Realm.SourceGenerator -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
       run: |
@@ -144,35 +146,42 @@ jobs:
         echo "::set-output name=version::$pkgVersion"
       shell: bash
     - name: Store artifacts for Realm.Fody.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Realm.Fody.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for Realm.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Realm.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Realm.UnityUtils.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityUtils.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
+    - name: Store artifacts for Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
     - name: Store artifacts for ExtractedChangelog
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ExtractedChangelog
         path: ${{ github.workspace }}/Realm/Realm/ExtractedChangelog.md
@@ -181,7 +190,7 @@ jobs:
     - name: Check Docfx cache
       id: check-docfx-cache
       if: inputs.build-docs
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: C:\docfx
         key: docfx-2.59.4
@@ -192,7 +201,7 @@ jobs:
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       if: inputs.build-docs
       with:
         dotnet-version: 6.0.x
@@ -202,7 +211,7 @@ jobs:
         C:\docfx\docfx Docs/docfx.json
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store artifacts for Docs.zip
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Docs.zip
         path: ${{ github.workspace }}/Realm/packages/Docs.zip

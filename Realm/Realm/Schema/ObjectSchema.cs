@@ -277,12 +277,26 @@ namespace Realms.Schema
                 Argument.Ensure(type.IsRealmObject() || type.IsEmbeddedObject() || type.IsAsymmetricObject(),
                     $"The class {type.FullName} must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject", nameof(type));
 
-                Name = type.GetMappedOrOriginalName();
                 RealmSchemaType = type.GetRealmSchemaType();
 
-                foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                var schemaField = type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static);
+                if (schemaField != null)
                 {
-                    Add(Property.FromPropertyInfo(property));
+                    var objectSchema = (ObjectSchema)schemaField.GetValue(null);
+                    Name = objectSchema.Name;
+
+                    foreach (var prop in objectSchema)
+                    {
+                        Add(prop);
+                    }
+                }
+                else
+                {
+                    Name = type.GetMappedOrOriginalName();
+                    foreach (var property in type.GetTypeInfo().DeclaredProperties.Where(p => !p.IsStatic() && p.HasCustomAttribute<WovenPropertyAttribute>()))
+                    {
+                        Add(Property.FromPropertyInfo(property));
+                    }
                 }
 
                 if (Count == 0)

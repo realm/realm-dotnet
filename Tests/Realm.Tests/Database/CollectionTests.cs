@@ -23,6 +23,15 @@ using System.Reflection;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -1813,17 +1822,17 @@ namespace Realms.Tests.Database
 
             return container;
         }
+    }
 
-        private class A : RealmObject
-        {
-            public bool Value { get; set; }
+    public partial class A : TestRealmObject
+    {
+        public bool Value { get; set; }
 
-            public B B { get; set; }
-        }
+        public B B { get; set; }
+    }
 
-        private class B : RealmObject
-        {
-            public IntPropertyObject C { get; set; }
-        }
+    public partial class B : TestRealmObject
+    {
+        public IntPropertyObject C { get; set; }
     }
 }

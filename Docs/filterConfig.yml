@@ -9,10 +9,19 @@ apiRules:
     uidRegex: ^Realms\.RealmObjectBase\.GetBacklinks.*$
     type: Method
 - exclude:
+    uidRegex: ^Realms\.RealmValue\.Object
+    type: Method
+- exclude:
     uidRegex: ^Realms\.Weaving$
     type: Namespace
 - exclude:
+    uidRegex: ^Realms\.InvalidObject$
+    type: Type
+- exclude:
     uidRegex: ^Realms\.PreserveAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.GeneratedAttribute$
     type: Type
 - exclude:
     uidRegex: ^Realms\.WovenAttribute$

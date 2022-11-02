@@ -24,10 +24,10 @@ jobs:
     uses: ./.github/workflows/deploy-baas.yml
     with:
       differentiators: '["net-framework", "code-coverage", "uwp-managed", "xamarinmacos", "ios", "android", "maccatalyst"]'
+      BaseUrl: https://realm-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
@@ -43,28 +43,33 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (github.event_name == 'push' || github.event.inputs.publish-prerelease)
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.NUGET_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.NUGET_S3_SECRET_KEY }}
@@ -73,6 +78,8 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   build-unity:
     uses: ./.github/workflows/build-unity.yml
     name: Package
@@ -91,9 +98,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-uwp-managed:
@@ -106,9 +114,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       Pfx_Password: ${{ secrets.Pfx_Password }}
@@ -132,9 +141,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-ios:
@@ -147,9 +157,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-android:
@@ -162,9 +173,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
       AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
@@ -180,7 +192,7 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -189,17 +201,22 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/Tests.XUnit
@@ -222,9 +239,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   benchmark-linux:
@@ -237,7 +255,7 @@ jobs:
     - name: Cleanup Workspace
       run: rm -rf "${{ github.workspace }}/*"
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -246,17 +264,22 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/Benchmarks/PerformanceTests
@@ -280,7 +303,7 @@ jobs:
         dashboard-path: dashboard.charts
         nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
     - name: Store artifacts for dashboard.charts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: dashboard.charts
         path: ${{ github.workspace }}/dashboard.charts
@@ -297,9 +320,10 @@ jobs:
     - test-macos
     - test-ios
     - test-android
+    with:
+      BaseUrl: https://realm-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}

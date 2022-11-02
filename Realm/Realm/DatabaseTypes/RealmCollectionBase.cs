@@ -224,10 +224,10 @@ namespace Realms
                 // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
                 // them to the collection as RealmValues (e.g. IList<RealmValue>).
                 // This is because:
-                // * Plain embedded objects, beside RealmSet, are added by each collection handle
-                //   (e.g. _listHandle.AddEmbedded()) in the respective method (e.g. in RealmList.Add(),
-                //   RealmList.Insert(), RealmDictionary.Add(), etc.) rather than reaching
-                //   RealmCollectionBase.AddToRealmIfNecessary().
+                // * Plain embedded objects (not contained within a RealmValue), beside RealmSet, are
+                //   added by each collection handle (e.g. _listHandle.AddEmbedded()) in the respective
+                //   method (e.g. in RealmList.Add(), RealmList.Insert(), RealmDictionary.Add(), etc.)
+                //   rather than reaching RealmCollectionBase.AddToRealmIfNecessary().
                 // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
                 //   objects can't be linked to.
                 case IEmbeddedObject:
@@ -566,17 +566,19 @@ namespace Realms
     /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
-    internal sealed class InvalidObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InvalidObject
     {
         private InvalidObject()
         {
         }
 
-        public static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new InvalidObject();
 
-        // The method is overriden to avoid the bug in WPF
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
+            // This is to resolve the WPF bug
             return true;
         }
     }

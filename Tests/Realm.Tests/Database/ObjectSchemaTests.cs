@@ -22,6 +22,15 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -844,9 +853,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
+            Assert.That(schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject, Is.EqualTo(typeof(IEmbeddedObject).IsAssignableFrom(type)));
             Assert.That(schema.Type, Is.EqualTo(type));
-            Assert.That(schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject,
-                Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
         }
 
         [Test]
@@ -1578,17 +1586,17 @@ namespace Realms.Tests.Database
             List,
             HashSet
         }
+    }
 
-        private class RequiredPropertyClass : RealmObject
-        {
-            [Required]
-            public string FooRequired { get; set; }
-        }
+    public partial class RequiredPropertyClass : TestRealmObject
+    {
+        [Required]
+        public string FooRequired { get; set; }
+    }
 
-        [Explicit]
-        private class ExplicitClass : RealmObject
-        {
-            public int Foo { get; set; }
-        }
+    [Explicit]
+    public partial class ExplicitClass : TestRealmObject
+    {
+        public int Foo { get; set; }
     }
 }

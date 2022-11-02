@@ -20,10 +20,19 @@ using System;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
-    internal class Cities : RealmObject
+    internal partial class Cities : TestRealmObject
     {
         public string Name { get; set; }
     }
@@ -501,24 +510,24 @@ namespace Realms.Tests.Database
         {
             return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
+    }
 
-        private class Level1 : RealmObject
-        {
-            public string StringValue { get; set; }
+    public partial class Level1 : TestRealmObject
+    {
+        public string StringValue { get; set; }
 
-            public Level2 Level2 { get; set; }
-        }
+        public Level2 Level2 { get; set; }
+    }
 
-        private class Level2 : RealmObject
-        {
-            public int IntValue { get; set; }
+    public partial class Level2 : TestRealmObject
+    {
+        public int IntValue { get; set; }
 
-            public Level3 Level3 { get; set; }
-        }
+        public Level3 Level3 { get; set; }
+    }
 
-        public class Level3 : RealmObject
-        {
-            public DateTimeOffset DateValue { get; set; }
-        }
+    public partial class Level3 : TestRealmObject
+    {
+        public DateTimeOffset DateValue { get; set; }
     }
 }
