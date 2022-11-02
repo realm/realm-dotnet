@@ -54,7 +54,7 @@ jobs:
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
+    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -62,13 +62,14 @@ jobs:
         atlasUrl: ${{ inputs.atlasUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@91ef434f7407cbdbd878f340b96f1dfb498e3010
+      uses: realm/ci-actions/run-ios-simulator@e7b65d7d587e1abc358968d7ff816cc0163906d2
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
@@ -124,7 +125,7 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@91ef434f7407cbdbd878f340b96f1dfb498e3010
+      uses: realm/ci-actions/run-ios-simulator@e7b65d7d587e1abc358968d7ff816cc0163906d2
       with:
         appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
