@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.18.0 (2022-11-02)
 
 ### Enhancements
 * Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future. 
