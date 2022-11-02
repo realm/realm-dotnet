@@ -26,6 +26,7 @@ jobs:
     runs-on:
       - unity
       - ${{ matrix.platform.os }}
+      - X64
     name: Build Unity ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
@@ -50,6 +51,7 @@ jobs:
       - name: Build Unity Tests
         run: |
           unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+          ls -R ${{ github.workspace }}/Tests/Tests.Unity/
       - #@ uploadArtifacts("UnityTestsRunner.${{ matrix.platform.os }}", "Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/")
 
   run-tests-linux:
@@ -94,3 +96,23 @@ jobs:
           cat ${{ github.workspace }}\test.log
         shell: powershell
       - #@ publishTestsResults("TestResults.xml", "Unity Windows Mono_Net4")
+
+  run-tests-macos:
+    runs-on: macos-latest
+    name: Unity macOS
+    timeout-minutes: 30
+    needs:
+      - build-tests
+    if: ${{ contains(inputs.platform, 'macOS') }}
+    steps:
+      - #@ template.replace(checkoutCode())
+      - name: Download Test Runner
+        uses: #@ actionDownloadArtifact
+        with:
+          name: UnityTestsRunner.macOS
+          path: TestRunner
+      #! - name: Run Tests
+      #!   run: |
+      #!     chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
+      #!     xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
+      #! - #@ publishTestsResults("TestResults.xml", "Unity Linux Mono_Net4")

@@ -53,7 +53,7 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       settings: '["Mono-Net4"]'
-      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'
+      platform: '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }, { "os": "macOS", "testPlatform": "OSX"}]'
     needs:
     - build-packages
     - build-unity

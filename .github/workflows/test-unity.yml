@@ -19,6 +19,7 @@ jobs:
     runs-on:
     - unity
     - ${{ matrix.platform.os }}
+    - X64
     name: Build Unity ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
@@ -51,6 +52,7 @@ jobs:
     - name: Build Unity Tests
       run: |
         unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+        ls -R ${{ github.workspace }}/Tests/Tests.Unity/
     - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
       uses: actions/upload-artifact@v3
       with:
@@ -135,3 +137,25 @@ jobs:
         list-tests: failed
         path-replace-backslashes: true
         fail-on-error: false
+  run-tests-macos:
+    runs-on: macos-latest
+    name: Unity macOS
+    timeout-minutes: 30
+    needs:
+    - build-tests
+    if: ${{ contains(inputs.platform, 'macOS') }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Download Test Runner
+      uses: actions/download-artifact@v3
+      with:
+        name: UnityTestsRunner.macOS
+        path: TestRunner
