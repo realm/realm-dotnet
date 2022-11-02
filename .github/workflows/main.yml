@@ -223,7 +223,8 @@ jobs:
       run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Tests.XUnit/bin/Release/net6.0/win-x64'
+      run: echo 'executable-path=./Tests/Tests.XUnit/bin/Release/net6.0/win-x64' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run Tests
       run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
   test-weaver:
@@ -286,7 +287,8 @@ jobs:
       run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64'
+      run: echo 'executable-path=./Tests/Benchmarks/PerformanceTests/bin/Release/net6.0/linux-x64' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f "*" --join
     - name: Find Results file
@@ -294,7 +296,8 @@ jobs:
       run: |
         cd BenchmarkDotNet.Artifacts/results
         file=$(basename BenchmarkRun*json)
-        echo "::set-output name=benchmark-results::$file"
+        echo "benchmark-results=$file" >> $GITHUB_OUTPUT
+      shell: bash
     - name: Publish Benchmark Results
       uses: ./.github/actions/benchmark-uploader
       with:

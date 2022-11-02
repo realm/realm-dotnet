@@ -490,7 +490,7 @@ jobs:
       id: vcpkg_cache_key
       working-directory: wrappers/realm-core/tools/vcpkg/ports
       shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Setup Vcpkg
       id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1
@@ -541,7 +541,7 @@ jobs:
       id: vcpkg_cache_key
       working-directory: wrappers/realm-core/tools/vcpkg/ports
       shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Setup Vcpkg
       id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1

@@ -79,7 +79,8 @@ with:
     run: #@ "dotnet publish " + projectPath + " -c " + configuration + " -f " + framework + " -r " + runtime + propsArg + " --no-self-contained"
   - name: Output executable path
     id: dotnet-publish
-    run: #@ "echo '::set-output name=executable-path::./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "'"
+    run: #@ "echo 'executable-path=./" + projectPath + "/bin/" + configuration + "/" + framework + "/" + runtime + "' >> $GITHUB_OUTPUT"
+    shell: bash
 #@ end
 ---
 #@ def checkoutCode(submodules=False, registerProblemMatchers=True):
@@ -101,7 +102,7 @@ with:
     id: vcpkg_cache_key
     working-directory: wrappers/realm-core/tools/vcpkg/ports
     shell: bash
-    run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+    run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
   - name: Setup Vcpkg
     id: setup-vcpkg
     uses: friendlyanon/setup-vcpkg@v1
@@ -131,7 +132,7 @@ with:
     run: |
       cd Realm/packages
       pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-      echo "::set-output name=version::$pkgVersion"
+      echo "version=$pkgVersion" >> $GITHUB_OUTPUT
     shell: bash
 #@ end
 

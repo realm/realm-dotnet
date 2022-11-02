@@ -24,7 +24,7 @@ jobs:
           project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
           device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
           arguments: (@= baasTestArgs('android') @)
-      - #@ publishTestsResults("artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml", "Xamarin.Android")
+      - #@ publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Xamarin.Android")
   test-maui:
     runs-on: windows-latest
     name: Maui.Android

@@ -1,6 +1,20 @@
 ## vNext (TBD)
 
 ### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 11.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.18.0 (2022-11-02)
+
+### Enhancements
 * Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future. 
 In order to use the source generation the model classes need to be declared implementing one of the base interfaces (`IRealmObject`, `IEmbeddedObject` or `IAsymmetricObject`) and be declared partial. For example:
   ```cs

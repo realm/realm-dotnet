@@ -7,7 +7,7 @@ jobs:
     name: Verify TODOs
     steps:
       - uses: actions/checkout@v3
-      - uses: nirinchev/verify-todo@v1
+      - uses: nirinchev/verify-todo@ccef781a48f2a66c52a4d64de9ed18d5fe944d38
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           include: "**/*.+(cs|cpp|hpp)"

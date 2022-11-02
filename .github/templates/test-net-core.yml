@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
   run-tests:
     runs-on: ${{ matrix.os.runner }}
-    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
+    name: ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -20,14 +20,17 @@ jobs:
           runtime: linux-x64
         - runner: macos-latest
           runtime: osx-x64
-        - runner: win81
-          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
         - framework: net6.0
           os:
             runner: macos-arm
             runtime: osx-arm64
+        - framework: netcoreapp3.1
+          os:
+            runner: win81
+            runtime: win-x64
+
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
       - #@ setupDotnet(ifCondition = "matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'")
