@@ -477,6 +477,153 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void RealmValuePropertyWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueProperty = new BasicAsymmetricObject()
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueList = { new BasicAsymmetricObject() }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueSet = { new BasicAsymmetricObject() }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithAsymmetricObject_WhenAddedToRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject
+                    {
+                        RealmValueDictionary = { { "embedded", new BasicAsymmetricObject() } }
+                    };
+
+                    Assert.Throws<NotSupportedException>(() => realm.Add(rvo));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValuePropertyWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueProperty = new BasicAsymmetricObject());
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Add(new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Insert(0, new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueList[0] = new BasicAsymmetricObject());
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueSet.Add(new BasicAsymmetricObject()));
+                });
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithAsymmetricObject_WhenModifiedInRealm_Throws()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                using var realm = await GetRealmWithRealmValueSchemaAsync();
+
+                realm.Write(() =>
+                {
+                    var rvo = new RealmValueObject();
+                    realm.Add(rvo);
+
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary.Add("embedded", new BasicAsymmetricObject()));
+                    Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary["embedded"] = new BasicAsymmetricObject());
+                });
+            });
+        }
+
+        [Test]
         public void DynamicAccess([Values(true, false)] bool isDynamic)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -549,6 +696,19 @@ namespace Realms.Tests.Sync
                 }
             };
             return collection.FindAsync(filter);
+        }
+
+        private async Task<Realm> GetRealmWithRealmValueSchemaAsync()
+        {
+            var flxConfig = await GetFLXIntegrationConfigAsync();
+            flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
+            flxConfig.PopulateInitialSubscriptions = (realm) =>
+            {
+                var query = realm.All<RealmValueObject>();
+                realm.Subscriptions.Add(query);
+            };
+
+            return await GetRealmAsync(flxConfig);
         }
     }
 

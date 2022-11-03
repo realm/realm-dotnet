@@ -7,7 +7,7 @@
         <Title>Realm.SourceGenerator</Title>
         <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
         <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
-        <Documentation>Realm.SourceGenerator is a Source Generator used to generate the implementation of Realm model classes. </Documentation>
+        <Description>Realm.SourceGenerator is a Source Generator used to generate the implementation of Realm model classes. </Description>
         <DisableFody>true</DisableFody>
         <NoWarn>1701;1702;NU1701;NU5128</NoWarn>
         <LangVersion>9.0</LangVersion>

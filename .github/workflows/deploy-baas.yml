@@ -37,7 +37,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deploy@91ef434f7407cbdbd878f340b96f1dfb498e3010
+    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
       id: deploy-cluster
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -45,6 +45,7 @@ jobs:
         atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
   deploy-apps:
     name: Deploy Apps
     needs: deploy-baas

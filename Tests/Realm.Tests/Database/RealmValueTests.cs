@@ -418,6 +418,113 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmValuePropertyWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueProperty = new EmbeddedIntPropertyObject()
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueList = { new EmbeddedIntPropertyObject() }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueSet = { new EmbeddedIntPropertyObject() }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueDictionary = { { "embedded", new EmbeddedIntPropertyObject() } }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValuePropertyWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueProperty = new EmbeddedIntPropertyObject());
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Add(new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Insert(0, new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList[0] = new EmbeddedIntPropertyObject());
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueSet.Add(new EmbeddedIntPropertyObject()));
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary.Add("embedded", new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary["embedded"] = new EmbeddedIntPropertyObject());
+            });
+        }
+
+        [Test]
         public void NullTests([Values(true, false)] bool isManaged)
         {
             RealmValue rv = RealmValue.Null;
@@ -1052,21 +1159,6 @@ namespace Realms.Tests.Database
                 _ => throw new NotImplementedException(),
             };
         }
-    }
-
-    public partial class RealmValueObject : TestRealmObject
-    {
-        public int Id { get; set; }
-
-        public RealmValue RealmValueProperty { get; set; }
-
-        public IList<RealmValue> RealmValueList { get; }
-
-        public ISet<RealmValue> RealmValueSet { get; }
-
-        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
-
-        public IDictionary<string, int> TestDict { get; }
     }
 
     public partial class InternalObject : TestRealmObject, IEquatable<InternalObject>

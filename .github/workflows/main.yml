@@ -279,10 +279,6 @@ jobs:
       with:
         name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      with:
-        dotnet-version: 6.0.x
     - name: Publish Tests/Benchmarks/PerformanceTests
       run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
