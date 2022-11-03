@@ -759,9 +759,9 @@ REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeExcept
     return handle_errors(ex, [&]() {
         realm->verify_in_write();
 
-        auto full_schema = ObjectStore::schema_from_group(realm->read_group());
-        for(auto object_schema : full_schema) {
-            auto table = ObjectStore::table_for_object_type(realm->read_group(), object_schema.name);
+        realm::Group& all_tables = realm->read_group();
+        for(realm::TableKey table_key : all_tables.get_table_keys()) {
+            auto table = all_tables.get_table(table_key);
             table->clear();
         }
         return true;

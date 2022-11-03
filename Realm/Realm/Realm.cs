@@ -1575,7 +1575,7 @@ namespace Realms
         {
             ThrowIfDisposed();
 
-            this.SharedRealmHandle.RemoveAll();
+            SharedRealmHandle.RemoveAll();
         }
 
         /// <summary>

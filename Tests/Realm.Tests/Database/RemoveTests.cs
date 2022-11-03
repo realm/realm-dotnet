@@ -182,7 +182,7 @@ namespace Realms.Tests.Database
             // Reopen with the complete schema
             r1 = Realm.GetInstance(c1);
             Assert.That(r1.All<Person>(), Is.Empty);
-            r1.Dispose();
+// 1.Dispose();
         }
 
         [Test]

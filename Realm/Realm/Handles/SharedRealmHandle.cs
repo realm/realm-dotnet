@@ -225,7 +225,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_all", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool remove_all(SharedRealmHandle sharedRealm, out NativeException ex);
-            
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
 
