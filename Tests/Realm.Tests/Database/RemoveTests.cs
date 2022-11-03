@@ -160,7 +160,7 @@ namespace Realms.Tests.Database
             {
                 Schema = new[] { typeof(Person), typeof(IntPrimaryKeyWithValueObject) }
             };
-            var r1 = Realm.GetInstance(c1);
+            var r1 = GetRealm(c1);
             r1.Write(() =>
             {
                 r1.Add(new Person());
@@ -172,17 +172,15 @@ namespace Realms.Tests.Database
             {
                 Schema = new[] { typeof(IntPrimaryKeyWithValueObject) }
             };
-            var r2 = Realm.GetInstance(c2);
+            var r2 = GetRealm(c2);
             r2.Write(() =>
             {
                 r2.RemoveAll();
             });
-            r2.Dispose();
 
             // Reopen with the complete schema
             r1 = Realm.GetInstance(c1);
             Assert.That(r1.All<Person>(), Is.Empty);
-// 1.Dispose();
         }
 
         [Test]
