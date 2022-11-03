@@ -20,139 +20,79 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
-using Realms.SourceGenerator;
+using static Realms.SourceGenerator.Metric;
 
 namespace Realms.SourceGenerator
 {
+    // TODO andrea: add Unity support, for the example how one can
+    // enable or disable analytics from the menu of Unity
+
     internal class Analytics
     {
-        private const string JsonTemplate = @"{
-   ""event"": ""Run"",
-   ""properties"": {
-      ""token"": ""ce0fac19508f6c8f20066d345d360fd0"",
-      ""distinct_id"": ""%USER_ID%"",
-      ""Anonymized MAC Address"": ""%USER_ID%"",
-      ""Anonymized Bundle ID"": ""%APP_ID%"",
-      ""Binding"": ""dotnet"",
-      ""Language"": ""c#"",
-      ""Framework"": ""%FRAMEWORK%"",
-      ""Framework Version"": ""%FRAMEWORK_VERSION%"",
-      ""Sync Enabled"": ""%SYNC_ENABLED%"",
-      ""Realm Version"": ""%REALM_VERSION%"",
-      ""Host OS Type"": ""%OS_TYPE%"",
-      ""Host OS Version"": ""%OS_VERSION%"",
-      ""Target OS Type"": ""%TARGET_OS%"",
-      ""Target OS Version"": ""%TARGET_OS_VERSION%""
-   }
-}";
-
-        private class FeatureMapping
-        {
-            // TODO andrea: What about backlinks?
-            public const string IEmbeddedOjbect = "Embedded_Object";
-            public const string IAsymmetricObject = "Asymmetric_Object";
-            public const string ReferenceList = "Reference_List";
-            public const string PrimitiveList = "Primitive_List";
-            public const string ReferenceDictionary = "Reference_Dictionary";
-            public const string PrimitiveDictionary = "Primitive_Dictionary";
-            public const string ReferenceSet = "Reference_Set";
-            public const string PrimitiveSet = "Primitive_Set";
-            public const string RealmInteger = "Realm_Integer";
-            public const string RealmObjectReference = "Reference_Link";
-            public const string RealmValue = "Mixed";
-
-            // API const strings precisely match the name of the API calls in the SDK
-            public const string GetInstanceAsync = "Asynchronous_Realm_Open";
-            public const string GetInstance = "Synchronous_Realm_Open";
-            public const string FIXME = "Query_Async"; // this is not supported yet
-            public const string Find = "Query_Primary_Key";
-            public const string WriteAsync = "Write_Async";
-            public const string ThreadSafeReference = "Thread_Safe_Reference";
-            public const string FIXME_TWO = "Insert_Modified"; // TODO andrea: find out what this is, maybe modify a prop in realm.Write
-            public const string ShouldCompactOnLaunch = "Compact_On_Launch";
-            public const string MigrationCallback = "Schema_Migration_Block";
-            public const string RealmChanged = "Realm_Change_Listener";
-            public const string ListSubscribeForNotifications = "List_Change_Listener";
-            public const string SetSubscribeForNotifications = "Set_Change_Listener";
-            public const string DictionarySubscribeForNotifications = "Dictionary_Change_Listener";
-            public const string ResultSubscribeForNotifications = "Result_Change_Listener";
-            public const string PropertyChanged = "Object_Change_Listener";
-            public const string RecoverOrDiscardUnsyncedChangesHandler = "Client_Reset_Recover_Or_Discard";
-            public const string RecoverUnsyncedChangesHandler = "Client_Reset_Recover";
-            public const string DiscardUnsyncedChangesHandler = "Client_Reset_Discard";
-            public const string ManualRecoveryHandler = "Client_Reset_Manual";
-            public const string GetProgressObservable = "Progress_Notification";
-            public const string PartitionSyncConfiguration = "Pbs_Sync";
-            public const string FlexibleSyncConfiguration = "Flexible_Sync";
-            public const string Anonymous = "Auth_Anonymous";
-            public const string EmailPassword = "Auth_Email_Password";
-            public const string Facebook = "Auth_Facebook";
-            public const string Google = "Auth_Google";
-            public const string Apple = "Auth_Apple";
-            public const string JWT = "Auth_Custom_JWT";
-            public const string ApiKey = "Auth_API_Key";
-            public const string ServerApiKey = "Auth_Server_API_Key";
-            public const string Function = "Auth_Function";
-            public const string CallAsync = "Remote_Function"; // TODO andrea: needs to be added
-            public const string FIX_ME_THREE = "MongoDB_Data_Access"; // TODO andrea: needs to be added
-            public const string DynamicApi = "Dynamic_API"; // TODO andrea: needs to be added
-        }
+        public List<Diagnostic> Diagnostics { get; } = new();
 
         // TODO andrea: adding C#10's type aliases to give meaning to each string seems nice. Opinions?
         private Dictionary<string, byte> _realmFeaturesToAnalyse = new()
         {
-            { FeatureMapping.IEmbeddedOjbect, 0 },
-            { FeatureMapping.IAsymmetricObject, 0 },
-            { FeatureMapping.ReferenceList, 0 },
-            { FeatureMapping.PrimitiveList, 0 },
-            { FeatureMapping.ReferenceDictionary, 0 },
-            { FeatureMapping.PrimitiveDictionary, 0 },
-            { FeatureMapping.ReferenceSet, 0 },
-            { FeatureMapping.PrimitiveSet, 0 },
-            { FeatureMapping.RealmInteger, 0 },
-            { FeatureMapping.RealmObjectReference, 0 },
-            { FeatureMapping.RealmValue, 0 },
-            { FeatureMapping.GetInstanceAsync, 0 },
-            { FeatureMapping.GetInstance, 0 },
-            { FeatureMapping.FIXME, 0 },
-            { FeatureMapping.Find, 0 },
-            { FeatureMapping.WriteAsync, 0 },
-            { FeatureMapping.ThreadSafeReference, 0 },
-            { FeatureMapping.FIXME_TWO, 0 },
-            { FeatureMapping.ShouldCompactOnLaunch, 0 },
-            { FeatureMapping.MigrationCallback, 0 },
-            { FeatureMapping.RealmChanged, 0 },
-            { FeatureMapping.ListSubscribeForNotifications, 0 },
-            { FeatureMapping.SetSubscribeForNotifications, 0 },
-            { FeatureMapping.DictionarySubscribeForNotifications, 0 },
-            { FeatureMapping.ResultSubscribeForNotifications, 0 },
-            { FeatureMapping.PropertyChanged, 0 },
-            { FeatureMapping.RecoverOrDiscardUnsyncedChangesHandler, 0 },
-            { FeatureMapping.RecoverUnsyncedChangesHandler, 0 },
-            { FeatureMapping.DiscardUnsyncedChangesHandler, 0 },
-            { FeatureMapping.ManualRecoveryHandler, 0 },
-            { FeatureMapping.GetProgressObservable, 0 },
-            { FeatureMapping.PartitionSyncConfiguration, 0 },
-            { FeatureMapping.FlexibleSyncConfiguration, 0 },
-            { FeatureMapping.Anonymous, 0 },
-            { FeatureMapping.EmailPassword, 0 },
-            { FeatureMapping.Facebook, 0 },
-            { FeatureMapping.Google, 0 },
-            { FeatureMapping.Apple, 0 },
-            { FeatureMapping.JWT, 0 },
-            { FeatureMapping.ApiKey, 0 },
-            { FeatureMapping.ServerApiKey, 0 },
-            { FeatureMapping.Function, 0 },
-            { FeatureMapping.CallAsync, 0 },
-            { FeatureMapping.FIX_ME_THREE, 0 },
-            { FeatureMapping.DynamicApi, 0 },
+            { SdkFeature.IEmbeddedOjbect, 0 },
+            { SdkFeature.IAsymmetricObject, 0 },
+            { SdkFeature.ReferenceList, 0 },
+            { SdkFeature.PrimitiveList, 0 },
+            { SdkFeature.ReferenceDictionary, 0 },
+            { SdkFeature.PrimitiveDictionary, 0 },
+            { SdkFeature.ReferenceSet, 0 },
+            { SdkFeature.PrimitiveSet, 0 },
+            { SdkFeature.RealmInteger, 0 },
+            { SdkFeature.RealmObjectReference, 0 },
+            { SdkFeature.RealmValue, 0 },
+            { SdkFeature.GetInstanceAsync, 0 },
+            { SdkFeature.GetInstance, 0 },
+            { SdkFeature.FIXME, 0 },
+            { SdkFeature.Find, 0 },
+            { SdkFeature.WriteAsync, 0 },
+            { SdkFeature.ThreadSafeReference, 0 },
+            { SdkFeature.FIXME_TWO, 0 },
+            { SdkFeature.ShouldCompactOnLaunch, 0 },
+            { SdkFeature.MigrationCallback, 0 },
+            { SdkFeature.RealmChanged, 0 },
+            { SdkFeature.ListSubscribeForNotifications, 0 },
+            { SdkFeature.SetSubscribeForNotifications, 0 },
+            { SdkFeature.DictionarySubscribeForNotifications, 0 },
+            { SdkFeature.ResultSubscribeForNotifications, 0 },
+            { SdkFeature.PropertyChanged, 0 },
+            { SdkFeature.RecoverOrDiscardUnsyncedChangesHandler, 0 },
+            { SdkFeature.RecoverUnsyncedChangesHandler, 0 },
+            { SdkFeature.DiscardUnsyncedChangesHandler, 0 },
+            { SdkFeature.ManualRecoveryHandler, 0 },
+            { SdkFeature.GetProgressObservable, 0 },
+            { SdkFeature.PartitionSyncConfiguration, 0 },
+            { SdkFeature.FlexibleSyncConfiguration, 0 },
+            { SdkFeature.Anonymous, 0 },
+            { SdkFeature.EmailPassword, 0 },
+            { SdkFeature.Facebook, 0 },
+            { SdkFeature.Google, 0 },
+            { SdkFeature.Apple, 0 },
+            { SdkFeature.JWT, 0 },
+            { SdkFeature.ApiKey, 0 },
+            { SdkFeature.ServerApiKey, 0 },
+            { SdkFeature.Function, 0 },
+            { SdkFeature.CallAsync, 0 },
+            { SdkFeature.FIX_ME_THREE, 0 },
+            { SdkFeature.DynamicApi, 0 },
+        };
+
+        private Dictionary<string, string> _realmEnvMetrics = new()
+        {
+            { SdkFeature.UserId, string.Empty },
+            { SdkFeature.RealmSdk, ".NET" },
+            { SdkFeature.Language, "C#" },
+            { SdkFeature.HostOsType, string.Empty },
+            { SdkFeature.HostOsVersion, string.Empty },
         };
 
         private static string AnonymizedUserID
@@ -171,52 +111,86 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static byte[] GenerateComputerIdentifier()
+        public void SubmitAnalytics(GeneratorExecutionContext context)
         {
-            // Assume OS X if not Windows.
-            return NetworkInterface.GetAllNetworkInterfaces()
-                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
-                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
-                                   .FirstOrDefault();
-        }
+            var payload = string.Empty;
 
-        internal string SubmitAnalytics()
-        {
-            /*
-            if (!_config.RunAnalytics ||
-                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
+            if (Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
                 Environment.GetEnvironmentVariable("CI") != null)
             {
-                return "Analytics disabled";
+                return;
             }
-            */
 
-            // TODO andrea: properly load jsonFeatures in the payload
-            var jsonFeatures = JsonConvert.SerializeObject(_realmFeaturesToAnalyse);
+            _realmEnvMetrics[SdkFeature.UserId] = AnonymizedUserID;
 
-            var payload = GetJsonPayload();
+            ComputeHostOSNameAndVersion(out var osName, out var osVersion);
+
+            // TODO andrea: check if searching strings in this way works on non Windows platforms
+            switch (osName)
+            {
+                case string name when name.Contains(Metric.OperatingSystem.Windows):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Windows;
+                    break;
+                case string name when name.Contains(Metric.OperatingSystem.MacOS):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.MacOS;
+                    break;
+                case string name when name.Contains(Metric.OperatingSystem.Linux):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Linux;
+                    break;
+                default:
+                    Diagnostics.Add(
+                        SourceGenerator.Diagnostics.AnalyticsDebugInfo($"{osName} is not an operating system that we recognize."));
+                    break;
+            }
+
+            _realmEnvMetrics[SdkFeature.HostOsVersion] = osVersion;
+
+            bool prettyJson = false;
+#if DEBUG
+            prettyJson = true;
+#endif
+            payload = GetJsonPayload(prettyJson);
 
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
 
+            // TODO andrea: this has never been tested yet
             SendRequest(
                 "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric_stage?data=",
                 base64Payload,
                 string.Empty);
 #endif
 
-            return payload;
+            if (Environment.GetEnvironmentVariable("REALM_PRINT_ANALYTICS") != null &&
+                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null)
+            {
+                // TODO andrea: temporarily reusing the common diagnostic for analytics, this likely needs to have its own
+                Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo($@"
+----------------------------------
+Analytics payload
+{payload}
+----------------------------------"));
+            }
+
+            // TODO andrea: we may actually look for something like INTERNAL_DEBUG, so that the user never sees this
+#if DEBUG
+            foreach (var diagnostic in Diagnostics)
+            {
+                // TODO andrea: this does not up show anywhere. Investigate why.
+                context.ReportDiagnostic(diagnostic);
+            }
+#endif
         }
 
-        internal void AnalyzeRealmClass(ClassInfo classInfo)
+        public void AnalyzeRealmClass(ClassInfo classInfo)
         {
             if (classInfo.ObjectType == ObjectType.EmbeddedObject)
             {
-                _realmFeaturesToAnalyse[FeatureMapping.IEmbeddedOjbect] = 1;
+                _realmFeaturesToAnalyse[SdkFeature.IEmbeddedOjbect] = 1;
             }
             else if (classInfo.ObjectType == ObjectType.AsymmetricObject)
             {
-                _realmFeaturesToAnalyse[FeatureMapping.IAsymmetricObject] = 1;
+                _realmFeaturesToAnalyse[SdkFeature.IAsymmetricObject] = 1;
             }
 
             foreach (var property in classInfo.Properties)
@@ -225,51 +199,51 @@ namespace Realms.SourceGenerator
                 {
                     if (property.TypeInfo.InternalType.ScalarType == ScalarType.Object)
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.ReferenceList] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.ReferenceList] = 1;
                     }
                     else
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.PrimitiveList] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.PrimitiveList] = 1;
                     }
                 }
                 else if (property.TypeInfo.IsDictionary)
                 {
                     if (property.TypeInfo.InternalType.ScalarType == ScalarType.Object)
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.ReferenceDictionary] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.ReferenceDictionary] = 1;
                     }
                     else
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.PrimitiveDictionary] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.PrimitiveDictionary] = 1;
                     }
                 }
                 else if (property.TypeInfo.IsSet)
                 {
                     if (property.TypeInfo.InternalType.ScalarType == ScalarType.Object)
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.ReferenceSet] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.ReferenceSet] = 1;
                     }
                     else
                     {
-                        _realmFeaturesToAnalyse[FeatureMapping.PrimitiveSet] = 1;
+                        _realmFeaturesToAnalyse[SdkFeature.PrimitiveSet] = 1;
                     }
                 }
                 else if (property.TypeInfo.IsRealmInteger)
                 {
-                    _realmFeaturesToAnalyse[FeatureMapping.RealmInteger] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.RealmInteger] = 1;
                 }
                 else if (property.TypeInfo.TypeSymbol.IsAnyRealmObjectType())
                 {
-                    _realmFeaturesToAnalyse[FeatureMapping.RealmObjectReference] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.RealmObjectReference] = 1;
                 }
                 else if (property.TypeInfo.TypeString == "RealmValue")
                 {
-                    _realmFeaturesToAnalyse[FeatureMapping.RealmValue] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.RealmValue] = 1;
                 }
             }
         }
 
-        internal void AnalyzeSyntaxNodeForApiUsage(GeneratorSyntaxContext context)
+        public void AnalyzeSyntaxNodeForApiUsage(GeneratorSyntaxContext context)
         {
             if (context.Node is not IdentifierNameSyntax identifierNameSyntax)
             {
@@ -279,49 +253,49 @@ namespace Realms.SourceGenerator
             switch (identifierNameSyntax.ToString())
             {
                 // TODO andrea: better checks on type should be done to avoid collecting wrong information
-                case nameof(FeatureMapping.GetInstance):
-                    _realmFeaturesToAnalyse[FeatureMapping.GetInstance] = 1;
+                case nameof(SdkFeature.GetInstance):
+                    _realmFeaturesToAnalyse[SdkFeature.GetInstance] = 1;
                     break;
-                case nameof(FeatureMapping.GetInstanceAsync):
-                    _realmFeaturesToAnalyse[FeatureMapping.GetInstanceAsync] = 1;
+                case nameof(SdkFeature.GetInstanceAsync):
+                    _realmFeaturesToAnalyse[SdkFeature.GetInstanceAsync] = 1;
                     break;
-                case nameof(FeatureMapping.FIXME):
-                    _realmFeaturesToAnalyse[FeatureMapping.FIXME] = 1;
+                case nameof(SdkFeature.FIXME):
+                    _realmFeaturesToAnalyse[SdkFeature.FIXME] = 1;
                     break;
-                case nameof(FeatureMapping.Find):
-                    _realmFeaturesToAnalyse[FeatureMapping.Find] = 1;
+                case nameof(SdkFeature.Find):
+                    _realmFeaturesToAnalyse[SdkFeature.Find] = 1;
                     break;
-                case nameof(FeatureMapping.WriteAsync):
-                    _realmFeaturesToAnalyse[FeatureMapping.WriteAsync] = 1;
+                case nameof(SdkFeature.WriteAsync):
+                    _realmFeaturesToAnalyse[SdkFeature.WriteAsync] = 1;
                     break;
-                case nameof(FeatureMapping.ThreadSafeReference):
-                    _realmFeaturesToAnalyse[FeatureMapping.ThreadSafeReference] = 1;
+                case nameof(SdkFeature.ThreadSafeReference):
+                    _realmFeaturesToAnalyse[SdkFeature.ThreadSafeReference] = 1;
                     break;
-                case nameof(FeatureMapping.FIXME_TWO):
-                    _realmFeaturesToAnalyse[FeatureMapping.FIXME_TWO] = 1;
+                case nameof(SdkFeature.FIXME_TWO):
+                    _realmFeaturesToAnalyse[SdkFeature.FIXME_TWO] = 1;
                     break;
-                case nameof(FeatureMapping.ShouldCompactOnLaunch):
-                    _realmFeaturesToAnalyse[FeatureMapping.ShouldCompactOnLaunch] = 1;
+                case nameof(SdkFeature.ShouldCompactOnLaunch):
+                    _realmFeaturesToAnalyse[SdkFeature.ShouldCompactOnLaunch] = 1;
                     break;
-                case nameof(FeatureMapping.MigrationCallback):
-                    _realmFeaturesToAnalyse[FeatureMapping.MigrationCallback] = 1;
+                case nameof(SdkFeature.MigrationCallback):
+                    _realmFeaturesToAnalyse[SdkFeature.MigrationCallback] = 1;
                     break;
-                case nameof(FeatureMapping.RealmChanged):
-                    _realmFeaturesToAnalyse[FeatureMapping.RealmChanged] = 1;
+                case nameof(SdkFeature.RealmChanged):
+                    _realmFeaturesToAnalyse[SdkFeature.RealmChanged] = 1;
                     break;
                 case "SubscribeForNotifications":
-                {
-                    ITypeSymbol referenceType = null;
+                    ITypeSymbol referenceType;
                     try
                     {
                         // target.SubscribeForNotifications()
                         // ^^^^^^--------------------------------------------(              )
                         // of the SimpleMemberAccessExpression, get the first IdentifierName's type
-                        referenceType = context.SemanticModel.GetTypeInfo(identifierNameSyntax.Parent?.ChildNodes().First()).Type;
+                        referenceType = context.SemanticModel.GetTypeInfo(identifierNameSyntax.Parent.ChildNodes().First()).Type;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // most likely here "SubscribeForNotifications" is some user defined syntax token
+                        Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo(
+                            $"{identifierNameSyntax} is likely some user defined syntax token.{Environment.NewLine}{ex.Message}"));
                         break;
                     }
 
@@ -329,162 +303,182 @@ namespace Realms.SourceGenerator
                     {
                         case "IQueryable":
                         case "IOrderedQueryable":
-                            _realmFeaturesToAnalyse[FeatureMapping.ResultSubscribeForNotifications] = 1;
+                            _realmFeaturesToAnalyse[SdkFeature.ResultSubscribeForNotifications] = 1;
                             break;
                         case "IList":
-                            _realmFeaturesToAnalyse[FeatureMapping.ListSubscribeForNotifications] = 1;
+                            _realmFeaturesToAnalyse[SdkFeature.ListSubscribeForNotifications] = 1;
                             break;
                         case "ISet":
-                            _realmFeaturesToAnalyse[FeatureMapping.SetSubscribeForNotifications] = 1;
+                            _realmFeaturesToAnalyse[SdkFeature.SetSubscribeForNotifications] = 1;
                             break;
                         case "IDictionary":
-                            _realmFeaturesToAnalyse[FeatureMapping.DictionarySubscribeForNotifications] = 1;
+                            _realmFeaturesToAnalyse[SdkFeature.DictionarySubscribeForNotifications] = 1;
                             break;
                         default:
-                            // TODO andrea: report a warning -> ($"{referenceType.Name} is not a collection type that's supported for notifications");
+                            Diagnostics.Add(
+                                SourceGenerator.Diagnostics.AnalyticsDebugInfo($"{referenceType.Name} is not a collection type that is supported for notifications"));
                             break;
                     }
 
                     break;
-                }
-
-                case nameof(FeatureMapping.PropertyChanged):
-                    // TODO andrea: this is not enough, I need to check the type on which PropertyChanged is called
-                    _realmFeaturesToAnalyse[FeatureMapping.PropertyChanged] = 1;
+                case nameof(SdkFeature.PropertyChanged):
+                    // TODO andrea: this is likely not enough, I need to check the type on which PropertyChanged is called
+                    _realmFeaturesToAnalyse[SdkFeature.PropertyChanged] = 1;
                     break;
-                case nameof(FeatureMapping.RecoverOrDiscardUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[FeatureMapping.RecoverOrDiscardUnsyncedChangesHandler] = 1;
+                case nameof(SdkFeature.RecoverOrDiscardUnsyncedChangesHandler):
+                    _realmFeaturesToAnalyse[SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = 1;
                     break;
-                case nameof(FeatureMapping.RecoverUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[FeatureMapping.RecoverUnsyncedChangesHandler] = 1;
+                case nameof(SdkFeature.RecoverUnsyncedChangesHandler):
+                    _realmFeaturesToAnalyse[SdkFeature.RecoverUnsyncedChangesHandler] = 1;
                     break;
-                case nameof(FeatureMapping.DiscardUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[FeatureMapping.DiscardUnsyncedChangesHandler] = 1;
+                case nameof(SdkFeature.DiscardUnsyncedChangesHandler):
+                    _realmFeaturesToAnalyse[SdkFeature.DiscardUnsyncedChangesHandler] = 1;
                     break;
-                case nameof(FeatureMapping.ManualRecoveryHandler):
-                    _realmFeaturesToAnalyse[FeatureMapping.ManualRecoveryHandler] = 1;
+                case nameof(SdkFeature.ManualRecoveryHandler):
+                    _realmFeaturesToAnalyse[SdkFeature.ManualRecoveryHandler] = 1;
                     break;
-                case nameof(FeatureMapping.GetProgressObservable):
-                    _realmFeaturesToAnalyse[FeatureMapping.GetProgressObservable] = 1;
+                case nameof(SdkFeature.GetProgressObservable):
+                    _realmFeaturesToAnalyse[SdkFeature.GetProgressObservable] = 1;
                     break;
-                case nameof(FeatureMapping.PartitionSyncConfiguration):
-                    _realmFeaturesToAnalyse[FeatureMapping.PartitionSyncConfiguration] = 1;
+                case nameof(SdkFeature.PartitionSyncConfiguration):
+                    _realmFeaturesToAnalyse[SdkFeature.PartitionSyncConfiguration] = 1;
                     break;
-                case nameof(FeatureMapping.FlexibleSyncConfiguration):
-                    _realmFeaturesToAnalyse[FeatureMapping.FlexibleSyncConfiguration] = 1;
+                case nameof(SdkFeature.FlexibleSyncConfiguration):
+                    _realmFeaturesToAnalyse[SdkFeature.FlexibleSyncConfiguration] = 1;
                     break;
-                case nameof(FeatureMapping.Anonymous):
+                case nameof(SdkFeature.Anonymous):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.Anonymous] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.Anonymous] = 1;
                     break;
-                case nameof(FeatureMapping.EmailPassword):
+                case nameof(SdkFeature.EmailPassword):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.EmailPassword] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.EmailPassword] = 1;
                     break;
-                case nameof(FeatureMapping.Facebook):
+                case nameof(SdkFeature.Facebook):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.Facebook] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.Facebook] = 1;
                     break;
-                case nameof(FeatureMapping.Google):
+                case nameof(SdkFeature.Google):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.Google] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.Google] = 1;
                     break;
-                case nameof(FeatureMapping.Apple):
+                case nameof(SdkFeature.Apple):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.Apple] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.Apple] = 1;
                     break;
-                case nameof(FeatureMapping.JWT):
+                case nameof(SdkFeature.JWT):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.JWT] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.JWT] = 1;
                     break;
-                case nameof(FeatureMapping.ApiKey):
+                case nameof(SdkFeature.ApiKey):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.ApiKey] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.ApiKey] = 1;
                     break;
-                case nameof(FeatureMapping.ServerApiKey):
+                case nameof(SdkFeature.ServerApiKey):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.ServerApiKey] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.ServerApiKey] = 1;
                     break;
-                case nameof(FeatureMapping.Function):
+                case nameof(SdkFeature.Function):
                     if (!IsCredentials(identifierNameSyntax, context))
                     {
                         break;
                     }
 
-                    _realmFeaturesToAnalyse[FeatureMapping.Function] = 1;
+                    _realmFeaturesToAnalyse[SdkFeature.Function] = 1;
                     break;
                 default:
-                    // TODO andrea: report a warning -> ($"{entryToSearch} is not a feature that is understood");
                     break;
             }
         }
 
-        private static bool IsCredentials(IdentifierNameSyntax identifierNameSyntax, GeneratorSyntaxContext context)
+        private bool IsCredentials(IdentifierNameSyntax identifierNameSyntax, GeneratorSyntaxContext context)
         {
             try
             {
                 var parentType = context.SemanticModel.GetTypeInfo(identifierNameSyntax.Parent.ChildNodes().First()).Type.ToDisplayString();
                 return parentType == "Realms.Sync.Credentials" || parentType == "Realms.Sync.Credentials.AuthProvider";
             }
-            catch
+            catch (Exception ex)
             {
-                // most likely some user defined syntax token
+                Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo(
+                            $"{identifierNameSyntax} is likely some user defined syntax token.{Environment.NewLine}{ex.Message}"));
                 return false;
             }
         }
 
-        private static string GetJsonPayload()
+        private string GetJsonPayload(bool pretty)
         {
-            ComputeHostOSNameAndVersion(out var osName, out var osVersion);
-            return JsonTemplate;
-                /*
-                .Replace("%USER_ID%", AnonymizedUserID)
-                .Replace("%APP_ID%", _config.ModuleName)
+            var jsonPayload = new StringBuilder();
 
-                .Replace("%SYNC_ENABLED%", _config.IsUsingSync.ToString())
+            jsonPayload.Append('{');
+            if (pretty)
+            {
+                jsonPayload.AppendLine();
+            }
 
-                // Version of weaver is expected to match that of the library.
-                .Replace("%REALM_VERSION%", Assembly.GetExecutingAssembly().GetName().Version.ToString())
+            foreach (var entry in _realmEnvMetrics)
+            {
+                AppendKeyValue(entry);
+            }
 
-                .Replace("%OS_TYPE%", osName)
-                .Replace("%OS_VERSION%", osVersion)
-                .Replace("%TARGET_OS%", _config.TargetOSName)
-                .Replace("%TARGET_OS_VERSION%", _config.TargetOSVersion)
-                .Replace("%FRAMEWORK%", _config.Framework)
-                .Replace("%FRAMEWORK_VERSION%", _config.FrameworkVersion);
-                */
+            foreach (var entry in _realmFeaturesToAnalyse)
+            {
+                AppendKeyValue(entry);
+            }
+
+            var trailingCommaIndex = Environment.NewLine.Length + 1;
+            jsonPayload.Remove(jsonPayload.Length - trailingCommaIndex, 1);
+
+            jsonPayload.Append('}');
+
+            return jsonPayload.ToString();
+
+            void AppendKeyValue<Tkey, Tvalue>(KeyValuePair<Tkey, Tvalue> entry)
+            {
+                if (pretty)
+                {
+                    jsonPayload.Append('\t');
+                }
+
+                jsonPayload.Append($"\"{entry.Key}\": \"{entry.Value}\",");
+
+                if (pretty)
+                {
+                    jsonPayload.AppendLine();
+                }
+            }
         }
 
         private static void ComputeHostOSNameAndVersion(out string name, out string version)
@@ -514,10 +508,17 @@ namespace Realms.SourceGenerator
 
         private static string SHA256Hash(byte[] bytes)
         {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                return BitConverter.ToString(sha256.ComputeHash(bytes));
-            }
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            return BitConverter.ToString(sha256.ComputeHash(bytes));
+        }
+
+        private static byte[] GenerateComputerIdentifier()
+        {
+            // Assume OS X if not Windows.
+            return NetworkInterface.GetAllNetworkInterfaces()
+                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
+                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
+                                   .FirstOrDefault();
         }
     }
 }

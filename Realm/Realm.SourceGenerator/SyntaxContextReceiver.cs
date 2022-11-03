@@ -39,7 +39,7 @@ namespace Realms.SourceGenerator
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            // TODO andrea: if (passed enough time from last metrics)
+            // TODO andrea: only if (passed enough time from last metrics collection)
             _analytics.AnalyzeSyntaxNodeForApiUsage(context);
 
             if (context.Node is ClassDeclarationSyntax classSyntax)

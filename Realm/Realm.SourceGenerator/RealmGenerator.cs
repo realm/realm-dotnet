@@ -22,7 +22,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
-    // TODO andrea: check everything for exceptions
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
@@ -47,23 +46,16 @@ namespace Realms.SourceGenerator
             {
                 try
                 {
-                    var payload = _analytics.SubmitAnalytics();
-
-                    // TODO andrea: read this from env vars
-#if REALM_PRINT_ANALYTICS
-                    // TODO andrea: likely log this in diagnostics
-                    context.ReportDiagnostic(Diagnostics.Info($@"
-----------------------------------
-Analytics payload
-{payload}
-----------------------------------"));
-#endif
+                    // TODO andrea: the lifetime of context worries me a little as the generator
+                    // may be kept alive by this task if we ever decide to wait on this task.
+                    // At the same time, the only reason why I'm taking the context is to be able
+                    // to print the metrics as standard diagnostics to the user's compilation output stream.
+                    // We may look at other ways, like writing to file if necessary.
+                    _analytics.SubmitAnalytics(context);
                 }
                 catch (Exception e)
                 {
-                    // TODO andrea: likely log this in diagnostics
-                    // something like
-                    //context.ReportDiagnostic(Diagnostics.Info("Error submitting analytics: " + e.Message));
+                    context.ReportDiagnostic(Diagnostics.AnalyticsDebugInfo(e.Message));
                 }
             });
 
@@ -73,7 +65,9 @@ Analytics payload
             var codeEmitter = new CodeEmitter(context);
             codeEmitter.Emit(parsingResults);
 
-            // TODO andrea: wait or not for the analytics task, to be seen
+            // TODO andrea: investigate if we should wait or not for the analytics task to end
+            // for now I'm locking the whole compilation
+            submitAnalytics.Wait();
         }
     }
 }

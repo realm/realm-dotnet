@@ -119,6 +119,7 @@ namespace Realms.SourceGenerator
                     throw;
                 }
 
+                // TODO andrea: only if (passed enough time from last metrics collection)
                 _analytics.AnalyzeRealmClass(classInfo);
             }
 
