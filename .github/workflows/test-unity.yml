@@ -51,7 +51,7 @@ jobs:
         path: Tests/Tests.Unity
     - name: Build Unity Tests
       run: |
-        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+        unity-editor -runTests -batchmode -nographics -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
         ls -R ${{ github.workspace }}/Tests/Tests.Unity/
     - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
       uses: actions/upload-artifact@v3
