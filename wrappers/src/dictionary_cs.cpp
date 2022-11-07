@@ -21,6 +21,7 @@
 #include <realm/object-store/thread_safe_reference.hpp>
 
 #include "error_handling.hpp"
+#include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "wrapper_exceptions.hpp"
@@ -226,4 +227,11 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT Results* realm_dictionary_get_filtered_results(const object_store::Dictionary& dictionary, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            realm::Results values = dictionary.get_values();
+            return get_filtered_results(values.get_realm(), values.get_table(), values.get_query(), query_buf, query_len, arguments, args_count, values.get_descriptor_ordering());
+        });
+    }
 }   // extern "C"
