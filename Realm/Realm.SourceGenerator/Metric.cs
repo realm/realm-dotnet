@@ -40,13 +40,32 @@ namespace Realms.SourceGenerator
             public const string Arm = "ARM";
         }
 
+        public class Framework
+        {
+            public const string Unity= "Unity";
+            public const string Maui = "MAUI";
+            public const string Xamarin = "Xamarin";
+        }
+
         public class SdkFeature
         {
             public const string UserId = "User_Id";
             public const string RealmSdk = "Realm_SDK";
             public const string Language = "Language";
+            public const string LanguageVersion = "Language_Version";
             public const string HostOsType = "Host_OS_Type";
             public const string HostOsVersion = "Host_OS_Version";
+            public const string HostCpuArch = "Host_CPU_Arch";
+            public const string TargetOsType = "Target_OS_Type";
+            public const string TargetOsMinimumVersion = "Target_OS_Minimum_Version";
+            public const string TargetOsVersion = "Target_OS_Version";
+            public const string TargetCpuArch = "Target_CPU_Arch";
+            public const string RealmSdkVersion = "Realm_SDK_Version";
+            public const string CoreVersion = "Core_Version";
+            public const string Framework = "Framework";
+            public const string FrameworkVersion = "Framework_Version";
+            public const string TargetRuntime = "Target_Runtime"; // TODO andrea: Should we add this?
+            public const string TargetRuntimeVersion = "Target_Runtime_Version"; // TODO andrea: Should we add this?
 
             // TODO andrea: What about backlinks?
             public const string IEmbeddedOjbect = "Embedded_Object";
@@ -64,7 +83,7 @@ namespace Realms.SourceGenerator
             // API const strings precisely match the name of the API calls in the SDK
             public const string GetInstanceAsync = "Asynchronous_Realm_Open";
             public const string GetInstance = "Synchronous_Realm_Open";
-            public const string FIXME = "Query_Async"; // this is not supported yet
+            public const string NOT_SUPPORTED_YET = "Query_Async"; // this is not supported yet
             public const string Find = "Query_Primary_Key";
             public const string WriteAsync = "Write_Async";
             public const string ThreadSafeReference = "Thread_Safe_Reference";
@@ -93,9 +112,9 @@ namespace Realms.SourceGenerator
             public const string ApiKey = "Auth_API_Key";
             public const string ServerApiKey = "Auth_Server_API_Key";
             public const string Function = "Auth_Function";
-            public const string CallAsync = "Remote_Function"; // TODO andrea: needs to be added
-            public const string FIX_ME_THREE = "MongoDB_Data_Access"; // TODO andrea: needs to be added
-            public const string DynamicApi = "Dynamic_API"; // TODO andrea: needs to be added
+            public const string CallAsync = "Remote_Function";
+            public const string GetMongoClient = "MongoDB_Data_Access"; // TODO andrea: is this correct? Is the mongoClient we are after?
+            public const string DynamicApi = "Dynamic_API";
         }
     }
 }

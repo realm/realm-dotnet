@@ -22,13 +22,19 @@ using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
+    // TODO andrea: I'd like to use a bunch of nullable types, can we?
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
-        private Analytics _analytics = new();
+        private Analytics? _analytics;
 
         public void Initialize(GeneratorInitializationContext context)
         {
+            if (Analytics.ShouldCollectAnalytics)
+            {
+                _analytics = new();
+            }
+
             context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver(_analytics));
         }
 
@@ -42,22 +48,23 @@ namespace Realms.SourceGenerator
             var parser = new Parser(context, _analytics);
             var parsingResults = parser.Parse(scr.RealmClasses);
 
-            var submitAnalytics = Task.Run(() =>
+            _analytics?.AnalyzeEnvironment(context);
+
+            Task submitAnalytics = null;
+            if (Analytics.ShouldCollectAnalytics)
             {
-                try
+                submitAnalytics = Task.Run(() =>
                 {
-                    // TODO andrea: the lifetime of context worries me a little as the generator
-                    // may be kept alive by this task if we ever decide to wait on this task.
-                    // At the same time, the only reason why I'm taking the context is to be able
-                    // to print the metrics as standard diagnostics to the user's compilation output stream.
-                    // We may look at other ways, like writing to file if necessary.
-                    _analytics.SubmitAnalytics(context);
-                }
-                catch (Exception e)
-                {
-                    context.ReportDiagnostic(Diagnostics.AnalyticsDebugInfo(e.Message));
-                }
-            });
+                    try
+                    {
+                        _analytics.SubmitAnalytics();
+                    }
+                    catch (Exception e)
+                    {
+                        Analytics.ErrorLog(e.Message);
+                    }
+                });
+            }
 
             var diagnosticsEmitter = new DiagnosticsEmitter(context);
             diagnosticsEmitter.Emit(parsingResults);
@@ -67,7 +74,7 @@ namespace Realms.SourceGenerator
 
             // TODO andrea: investigate if we should wait or not for the analytics task to end
             // for now I'm locking the whole compilation
-            submitAnalytics.Wait();
+            submitAnalytics?.Wait();
         }
     }
 }

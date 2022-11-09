@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -34,8 +35,6 @@ namespace Realms.SourceGenerator
 
     internal class Analytics
     {
-        public List<Diagnostic> Diagnostics { get; } = new();
-
         // TODO andrea: adding C#10's type aliases to give meaning to each string seems nice. Opinions?
         private Dictionary<string, byte> _realmFeaturesToAnalyse = new()
         {
@@ -52,7 +51,7 @@ namespace Realms.SourceGenerator
             { SdkFeature.RealmValue, 0 },
             { SdkFeature.GetInstanceAsync, 0 },
             { SdkFeature.GetInstance, 0 },
-            { SdkFeature.FIXME, 0 },
+            { SdkFeature.NOT_SUPPORTED_YET, 0 },
             { SdkFeature.Find, 0 },
             { SdkFeature.WriteAsync, 0 },
             { SdkFeature.ThreadSafeReference, 0 },
@@ -82,7 +81,7 @@ namespace Realms.SourceGenerator
             { SdkFeature.ServerApiKey, 0 },
             { SdkFeature.Function, 0 },
             { SdkFeature.CallAsync, 0 },
-            { SdkFeature.FIX_ME_THREE, 0 },
+            { SdkFeature.GetMongoClient, 0 },
             { SdkFeature.DynamicApi, 0 },
         };
 
@@ -90,9 +89,21 @@ namespace Realms.SourceGenerator
         {
             { SdkFeature.UserId, string.Empty },
             { SdkFeature.RealmSdk, ".NET" },
-            { SdkFeature.Language, "C#" },
+            { SdkFeature.Language, string.Empty },
+            { SdkFeature.LanguageVersion, string.Empty },
             { SdkFeature.HostOsType, string.Empty },
             { SdkFeature.HostOsVersion, string.Empty },
+            { SdkFeature.HostCpuArch, string.Empty },
+            { SdkFeature.TargetOsType, string.Empty },
+            { SdkFeature.TargetOsMinimumVersion, string.Empty },
+            { SdkFeature.TargetOsVersion, string.Empty },
+            { SdkFeature.TargetCpuArch, string.Empty },
+            { SdkFeature.RealmSdkVersion, string.Empty },
+            { SdkFeature.CoreVersion, string.Empty },
+            { SdkFeature.Framework, string.Empty },
+            { SdkFeature.FrameworkVersion, string.Empty },
+            { SdkFeature.TargetRuntime, string.Empty },
+            { SdkFeature.TargetRuntimeVersion, string.Empty },
         };
 
         private static string AnonymizedUserID
@@ -111,45 +122,13 @@ namespace Realms.SourceGenerator
             }
         }
 
-        public void SubmitAnalytics(GeneratorExecutionContext context)
+        public void SubmitAnalytics()
         {
-            var payload = string.Empty;
-
-            if (Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
-                Environment.GetEnvironmentVariable("CI") != null)
-            {
-                return;
-            }
-
-            _realmEnvMetrics[SdkFeature.UserId] = AnonymizedUserID;
-
-            ComputeHostOSNameAndVersion(out var osName, out var osVersion);
-
-            // TODO andrea: check if searching strings in this way works on non Windows platforms
-            switch (osName)
-            {
-                case string name when name.Contains(Metric.OperatingSystem.Windows):
-                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Windows;
-                    break;
-                case string name when name.Contains(Metric.OperatingSystem.MacOS):
-                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.MacOS;
-                    break;
-                case string name when name.Contains(Metric.OperatingSystem.Linux):
-                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Linux;
-                    break;
-                default:
-                    Diagnostics.Add(
-                        SourceGenerator.Diagnostics.AnalyticsDebugInfo($"{osName} is not an operating system that we recognize."));
-                    break;
-            }
-
-            _realmEnvMetrics[SdkFeature.HostOsVersion] = osVersion;
-
             bool prettyJson = false;
 #if DEBUG
             prettyJson = true;
 #endif
-            payload = GetJsonPayload(prettyJson);
+            var payload = GetJsonPayload(prettyJson);
 
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
@@ -160,26 +139,16 @@ namespace Realms.SourceGenerator
                 base64Payload,
                 string.Empty);
 #endif
+            DebugLog(string.Format("{0}{1}", Environment.NewLine, payload));
 
-            if (Environment.GetEnvironmentVariable("REALM_PRINT_ANALYTICS") != null &&
-                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null)
+            if (Environment.GetEnvironmentVariable("REALM_PRINT_ANALYTICS") != null)
             {
-                // TODO andrea: temporarily reusing the common diagnostic for analytics, this likely needs to have its own
-                Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo($@"
+                InfoLog($@"
 ----------------------------------
 Analytics payload
 {payload}
-----------------------------------"));
+----------------------------------");
             }
-
-            // TODO andrea: we may actually look for something like INTERNAL_DEBUG, so that the user never sees this
-#if DEBUG
-            foreach (var diagnostic in Diagnostics)
-            {
-                // TODO andrea: this does not up show anywhere. Investigate why.
-                context.ReportDiagnostic(diagnostic);
-            }
-#endif
         }
 
         public void AnalyzeRealmClass(ClassInfo classInfo)
@@ -243,6 +212,97 @@ Analytics payload
             }
         }
 
+        public void AnalyzeEnvironment(GeneratorExecutionContext context)
+        {
+            _realmEnvMetrics[SdkFeature.UserId] = AnonymizedUserID;
+
+            ComputeHostOSNameAndVersion(out var osName, out var osVersion);
+
+            switch (osName)
+            {
+                case string name when name.Contains(Metric.OperatingSystem.Windows):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Windows;
+                    break;
+                case string name when name.Contains(Metric.OperatingSystem.MacOS):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.MacOS;
+                    break;
+                case string name when name.Contains(Metric.OperatingSystem.Linux):
+                    _realmEnvMetrics[SdkFeature.HostOsType] = Metric.OperatingSystem.Linux;
+                    break;
+                default:
+                    DebugLog($"{osName} is not an operating system that we recognize.");
+                    break;
+            }
+
+            _realmEnvMetrics[SdkFeature.HostOsVersion] = osVersion;
+
+            var hostArch = RuntimeInformation.ProcessArchitecture.ToString();
+            switch (hostArch)
+            {
+                case string arch when arch.Contains(nameof(CpuArchitecture.X64)):
+                    _realmEnvMetrics[SdkFeature.HostCpuArch] = CpuArchitecture.X64;
+                    break;
+                case string arch when arch.Contains(nameof(CpuArchitecture.X86)):
+                    _realmEnvMetrics[SdkFeature.HostCpuArch] = CpuArchitecture.X86;
+                    break;
+                case string arch when arch.Contains(nameof(CpuArchitecture.Arm)):
+                    _realmEnvMetrics[SdkFeature.HostCpuArch] = CpuArchitecture.Arm;
+                    break;
+                default:
+                    DebugLog($"{hostArch} is not an architecture that we recognize.");
+                    break;
+            }
+
+            _realmEnvMetrics[SdkFeature.TargetCpuArch] = context.Compilation.Options.Platform.ToString();
+
+            var compilation = (Microsoft.CodeAnalysis.CSharp.CSharpCompilation)context.Compilation;
+            _realmEnvMetrics[SdkFeature.Language] = compilation.Language;
+            _realmEnvMetrics[SdkFeature.LanguageVersion] = compilation.LanguageVersion.ToString();
+
+            var targetFramework = compilation.Assembly.GetAttributes()
+                .Where(x => x.ToString().Contains("System.Runtime.Versioning.TargetFrameworkAttribute"))
+                .Single();
+            var regexTargetFramework = new Regex(
+                "System.Runtime.Versioning.TargetFrameworkAttribute\\(\"(?<Target>\\.?\\w+),Version=(?<Version>v?\\d+\\.?\\d+)",
+                RegexOptions.Compiled);
+            var targetMatch = regexTargetFramework.Match(targetFramework.ToString());
+            _realmEnvMetrics[SdkFeature.TargetRuntime] = targetMatch.Groups["Target"].Value;
+            _realmEnvMetrics[SdkFeature.TargetRuntimeVersion] = targetMatch.Groups["Version"].Value;
+
+            foreach (var lib in compilation.ReferencedAssemblyNames)
+            {
+                if (_realmEnvMetrics[SdkFeature.RealmSdkVersion].Length != 0 &&
+                    _realmEnvMetrics[SdkFeature.Framework].Length != 0)
+                {
+                    break;
+                }
+
+                // TODO andrea: beside the Realm case, all the others need to be tested
+                switch (lib.Name)
+                {
+                    case "Realm":
+                        _realmEnvMetrics[SdkFeature.RealmSdkVersion] = lib.Version.ToString();
+                        break;
+                    case string l when l.Contains(nameof(Framework.Xamarin)):
+                        _realmEnvMetrics[SdkFeature.Framework] = Framework.Xamarin;
+                        _realmEnvMetrics[SdkFeature.FrameworkVersion] = lib.Version.ToString();
+                        break;
+                    case string l when l.Contains(nameof(Framework.Maui)):
+                        _realmEnvMetrics[SdkFeature.Framework] = Framework.Maui;
+                        _realmEnvMetrics[SdkFeature.FrameworkVersion] = lib.Version.ToString();
+                        break;
+                    case string l when l.Contains(nameof(Framework.Unity)):
+                        _realmEnvMetrics[SdkFeature.Framework] = Framework.Unity;
+                        _realmEnvMetrics[SdkFeature.FrameworkVersion] = lib.Version.ToString();
+                        break;
+                    default:
+                        break;
+                }
+
+                //TODO andrea: also search for other libs used in conjunction with Realm
+            }
+        }
+
         public void AnalyzeSyntaxNodeForApiUsage(GeneratorSyntaxContext context)
         {
             if (context.Node is not IdentifierNameSyntax identifierNameSyntax)
@@ -259,11 +319,19 @@ Analytics payload
                 case nameof(SdkFeature.GetInstanceAsync):
                     _realmFeaturesToAnalyse[SdkFeature.GetInstanceAsync] = 1;
                     break;
-                case nameof(SdkFeature.FIXME):
-                    _realmFeaturesToAnalyse[SdkFeature.FIXME] = 1;
+                case nameof(SdkFeature.NOT_SUPPORTED_YET):
+                    _realmFeaturesToAnalyse[SdkFeature.NOT_SUPPORTED_YET] = 1;
                     break;
                 case nameof(SdkFeature.Find):
-                    _realmFeaturesToAnalyse[SdkFeature.Find] = 1;
+                    if (IsOfType(context, identifierNameSyntax, "Realms.Realm"))
+                    {
+                        _realmFeaturesToAnalyse[SdkFeature.Find] = 1;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax} is likely some user define Find method.");
+                    }
+
                     break;
                 case nameof(SdkFeature.WriteAsync):
                     _realmFeaturesToAnalyse[SdkFeature.WriteAsync] = 1;
@@ -284,22 +352,8 @@ Analytics payload
                     _realmFeaturesToAnalyse[SdkFeature.RealmChanged] = 1;
                     break;
                 case "SubscribeForNotifications":
-                    ITypeSymbol referenceType;
-                    try
-                    {
-                        // target.SubscribeForNotifications()
-                        // ^^^^^^--------------------------------------------(              )
-                        // of the SimpleMemberAccessExpression, get the first IdentifierName's type
-                        referenceType = context.SemanticModel.GetTypeInfo(identifierNameSyntax.Parent.ChildNodes().First()).Type;
-                    }
-                    catch (Exception ex)
-                    {
-                        Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo(
-                            $"{identifierNameSyntax} is likely some user defined syntax token.{Environment.NewLine}{ex.Message}"));
-                        break;
-                    }
-
-                    switch (referenceType.Name)
+                    var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.Name;
+                    switch (parentType)
                     {
                         case "IQueryable":
                         case "IOrderedQueryable":
@@ -315,15 +369,23 @@ Analytics payload
                             _realmFeaturesToAnalyse[SdkFeature.DictionarySubscribeForNotifications] = 1;
                             break;
                         default:
-                            Diagnostics.Add(
-                                SourceGenerator.Diagnostics.AnalyticsDebugInfo($"{referenceType.Name} is not a collection type that is supported for notifications"));
+                            DebugLog($"{parentType} is not a collection type that is supported for notifications.");
                             break;
                     }
 
                     break;
                 case nameof(SdkFeature.PropertyChanged):
-                    // TODO andrea: this is likely not enough, I need to check the type on which PropertyChanged is called
-                    _realmFeaturesToAnalyse[SdkFeature.PropertyChanged] = 1;
+                    // TODO andrea: I'm not sure about this one. What happens when the PropertyChanged is
+                    // only bind through Xamarin and not by hands?
+                    if (GetSyntaxNodeParentType(context, identifierNameSyntax).ToDisplayString().Contains("Realms."))
+                    {
+                        _realmFeaturesToAnalyse[SdkFeature.PropertyChanged] = 1;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax} is likely some PropertyChanged on a non Realm class.");
+                    }
+
                     break;
                 case nameof(SdkFeature.RecoverOrDiscardUnsyncedChangesHandler):
                     _realmFeaturesToAnalyse[SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = 1;
@@ -347,95 +409,116 @@ Analytics payload
                     _realmFeaturesToAnalyse[SdkFeature.FlexibleSyncConfiguration] = 1;
                     break;
                 case nameof(SdkFeature.Anonymous):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.Anonymous] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.Anonymous] = 1;
                     break;
                 case nameof(SdkFeature.EmailPassword):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.EmailPassword] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.EmailPassword] = 1;
                     break;
                 case nameof(SdkFeature.Facebook):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.Facebook] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.Facebook] = 1;
                     break;
                 case nameof(SdkFeature.Google):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.Google] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.Google] = 1;
                     break;
                 case nameof(SdkFeature.Apple):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.Apple] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.Apple] = 1;
                     break;
                 case nameof(SdkFeature.JWT):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.JWT] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.JWT] = 1;
                     break;
                 case nameof(SdkFeature.ApiKey):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.ApiKey] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.ApiKey] = 1;
                     break;
                 case nameof(SdkFeature.ServerApiKey):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.ServerApiKey] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.ServerApiKey] = 1;
                     break;
                 case nameof(SdkFeature.Function):
-                    if (!IsCredentials(identifierNameSyntax, context))
+                    if (IsCredentials(context, identifierNameSyntax))
                     {
-                        break;
+                        _realmFeaturesToAnalyse[SdkFeature.Function] = 1;
                     }
 
-                    _realmFeaturesToAnalyse[SdkFeature.Function] = 1;
+                    break;
+                case nameof(SdkFeature.CallAsync):
+                    if (IsOfType(context, identifierNameSyntax, "Realms.Sync.User.FunctionsClient"))
+                    {
+                        _realmFeaturesToAnalyse[SdkFeature.CallAsync] = 1;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax} is likely some user defined CallAsync.");
+                    }
+
+                    break;
+                case nameof(SdkFeature.GetMongoClient):
+                    _realmFeaturesToAnalyse[SdkFeature.GetMongoClient] = 1;
+                    break;
+                case nameof(SdkFeature.DynamicApi):
+                    _realmFeaturesToAnalyse[SdkFeature.DynamicApi] = 1;
                     break;
                 default:
                     break;
             }
         }
 
-        private bool IsCredentials(IdentifierNameSyntax identifierNameSyntax, GeneratorSyntaxContext context)
+        // Returns null if can't get parent of the parent has no children
+        private static ITypeSymbol? GetSyntaxNodeParentType(GeneratorSyntaxContext context, IdentifierNameSyntax identifierNameSyntax)
         {
-            try
+            // target.CurrentSyntaxToken()
+            // ^^^^^^--------------------------------------------(              )
+            // of the SimpleMemberAccessExpression, get the first IdentifierName's type
+            return context.SemanticModel.GetTypeInfo(
+                identifierNameSyntax.Parent?.ChildNodes()?.FirstOrDefault()).Type;
+        }
+
+        private static bool IsOfType(GeneratorSyntaxContext context, IdentifierNameSyntax target, string typeToMatch)
+        {
+            return GetSyntaxNodeParentType(context, target)?.ToDisplayString() == typeToMatch;
+        }
+
+        private static bool IsCredentials(GeneratorSyntaxContext context, IdentifierNameSyntax identifierNameSyntax)
+        {
+            var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.ToDisplayString();
+            var isCredential = parentType == "Realms.Sync.Credentials" || parentType == "Realms.Sync.Credentials.AuthProvider";
+
+            if (!isCredential)
             {
-                var parentType = context.SemanticModel.GetTypeInfo(identifierNameSyntax.Parent.ChildNodes().First()).Type.ToDisplayString();
-                return parentType == "Realms.Sync.Credentials" || parentType == "Realms.Sync.Credentials.AuthProvider";
+                DebugLog($"{identifierNameSyntax} is not a credential that we recognize.");
             }
-            catch (Exception ex)
-            {
-                Diagnostics.Add(SourceGenerator.Diagnostics.AnalyticsDebugInfo(
-                            $"{identifierNameSyntax} is likely some user defined syntax token.{Environment.NewLine}{ex.Message}"));
-                return false;
-            }
+
+            return isCredential;
         }
 
         private string GetJsonPayload(bool pretty)
@@ -519,6 +602,30 @@ Analytics payload
                                    .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
                                    .Select(n => n.GetPhysicalAddress().GetAddressBytes())
                                    .FirstOrDefault();
+        }
+
+        public static bool ShouldCollectAnalytics =>
+            Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null
+                && Environment.GetEnvironmentVariable("CI") == null;
+
+        public static void DebugLog(string message)
+        {
+            Debug.WriteLine($"** Analytics: {message}");
+        }
+
+        public static void ErrorLog(string message)
+        {
+            Console.WriteLine($"** Analytics, Error: {message}");
+        }
+
+        public static void WarningLog(string message)
+        {
+            Console.WriteLine($"** Analytics, Warning: {message}");
+        }
+
+        public static void InfoLog(string message)
+        {
+            Console.WriteLine($"** Analytics, Info: {message}");
         }
     }
 }

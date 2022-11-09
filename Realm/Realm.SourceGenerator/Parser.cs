@@ -28,9 +28,9 @@ namespace Realms.SourceGenerator
     internal class Parser
     {
         private GeneratorExecutionContext _context;
-        private Analytics _analytics;
+        private Analytics? _analytics;
 
-        public Parser(GeneratorExecutionContext context, Analytics analytics)
+        public Parser(GeneratorExecutionContext context, Analytics? analytics)
         {
             _context = context;
             _analytics = analytics;
@@ -120,7 +120,7 @@ namespace Realms.SourceGenerator
                 }
 
                 // TODO andrea: only if (passed enough time from last metrics collection)
-                _analytics.AnalyzeRealmClass(classInfo);
+                _analytics?.AnalyzeRealmClass(classInfo);
             }
 
             foreach (var classInfo in result.ClassInfo.Where(c => duplicateClassNames.Contains(c.Name)))
