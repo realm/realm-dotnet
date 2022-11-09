@@ -177,9 +177,10 @@ namespace Realms.Tests.Database
             {
                 r2.RemoveAll();
             });
+            r2.Dispose();
 
             // Reopen with the complete schema
-            r1 = Realm.GetInstance(c1);
+            r1 = GetRealm(c1);
             Assert.That(r1.All<Person>(), Is.Empty);
         }
 
