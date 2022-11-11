@@ -277,7 +277,7 @@ namespace Realms.Tests.Database
                     // frozen version is not equivalent.
                     j -= 1;
                     container.Items.RemoveAt(j);
-            });
+                });
 
             Assert.That(container.Items, Is.Empty);
 
@@ -1452,7 +1452,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property: 'Foo'"));
+                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property 'Foo'"));
         }
 
         [Test]
