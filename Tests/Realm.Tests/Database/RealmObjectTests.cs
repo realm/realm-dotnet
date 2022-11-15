@@ -521,6 +521,18 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RealmObject_InitializedFields_GetCorrectValues()
+        {
+            var obj0 = new InitializedFieldObject();
+            var obj1 = new InitializedFieldObject();
+            var obj2 = new InitializedFieldObject();
+
+            Assert.That(obj0.Id, Is.EqualTo(0));
+            Assert.That(obj1.Id, Is.EqualTo(1));
+            Assert.That(obj2.Id, Is.EqualTo(2));
+        }
+
+        [Test]
         public void RealmObject_EqualsInvalidObject_WhenValid_ReturnsFalse()
         {
             var obj = new Person();
