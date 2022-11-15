@@ -251,7 +251,7 @@ Analytics payload
         {
             // Iterates through all constructor's instructions from the end to start.
             foreach(var constructor in type.GetConstructors()) {
-                // Index of the most recent strfld <backing_field> instruction
+                // Index of the most recent stfld <backing_field> instruction
                 var backingFieldInstructionsEnd = -1;
                 for(var i = constructor.Body.Instructions.Count - 1; i >= 0; i--) {
                     var instruction = constructor.Body.Instructions[i];
