@@ -13,12 +13,16 @@
         <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
         <IsPackable>true</IsPackable>
+        <ReportAnalyzer Condition="'$(Configuration)' == 'Debug'">true</ReportAnalyzer>
+        <Verbosity Condition="'$(Configuration)' == 'Debug'">detailed</Verbosity>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- Do not include the generator as a lib dependency. -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <IncludeSymbols>false</IncludeSymbols>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Condition="'$(Configuration)' == 'Debug'"
+                          Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

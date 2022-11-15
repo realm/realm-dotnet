@@ -26,6 +26,7 @@ namespace Realms.SourceGenerator
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
+        // null if we should not collect analytics
         private Analytics? _analytics;
 
         public void Initialize(GeneratorInitializationContext context)
@@ -59,7 +60,7 @@ namespace Realms.SourceGenerator
                     {
                         _analytics.SubmitAnalytics();
                     }
-                    catch (Exception e)
+                        catch (Exception e)
                     {
                         Analytics.ErrorLog(e.Message);
                     }
@@ -72,8 +73,9 @@ namespace Realms.SourceGenerator
             var codeEmitter = new CodeEmitter(context);
             codeEmitter.Emit(parsingResults);
 
-            // TODO andrea: investigate if we should wait or not for the analytics task to end
-            // for now I'm locking the whole compilation
+            // TODO andrea: unfortunately roslyn fully terminates after the `Execute` finishes
+            // which means that we have to synchronously wait for the analytics task to finish
+            // or spin another process. Neither of the 2 are great options.
             submitAnalytics?.Wait();
         }
     }

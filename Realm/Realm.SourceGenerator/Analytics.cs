@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -85,6 +86,368 @@ namespace Realms.SourceGenerator
             { SdkFeature.DynamicApi, 0 },
         };
 
+        // TODO andrea: this is a very weak optimization. Unfortunately O(n*m) (hence O(n)) is hard to beat
+        // when you have to go through each syntax node and compare it against an m list
+        // where it's fair to assume that m < n by a big margin.
+        // The only advantage of this optimization is that in the best case scenario the search is cut short
+        // when all searched fields are found. This is, however, something that's expected to be rare.
+        // On top of this, the optimization uses quite a larger amount of memory for another dictionary and all the
+        // delegates that are created.
+        // Plus, I don't even know the performance that calling a delegate has versus just a string
+        // comparison. I assume such cost is considerably larger.
+        // ==============================================
+        // false is returned if the method call is just a user defined method call that happens to have the same name
+        // of our api method
+        private Dictionary<string, Func<GeneratorSyntaxContext, IdentifierNameSyntax, Dictionary<string, byte>, bool>> _apiAnalysis = new()
+        {
+            {
+                nameof(SdkFeature.GetInstanceAsync), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.GetInstanceAsync] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.GetInstance),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.GetInstance] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.NOT_SUPPORTED_YET),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.NOT_SUPPORTED_YET] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.Find), (context, identifierNameSyntax, featureDict) =>
+                {
+                    // TODO andrea: add check for migration.NewRealm.DynamicApi.Find
+                    if (IsOfType(context, identifierNameSyntax, "Realms.Realm") ||
+                        IsOfType(context, identifierNameSyntax, "Realms.Realm.Dynamic"))
+                    {
+                        featureDict[SdkFeature.Find] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax.Parent} is likely some user define Find method.");
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.WriteAsync),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.WriteAsync] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.ThreadSafeReference),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.ThreadSafeReference] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.FIXME_TWO),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.FIXME_TWO] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.ShouldCompactOnLaunch),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.ShouldCompactOnLaunch] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.MigrationCallback),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.MigrationCallback] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.RealmChanged),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.RealmChanged] = 1;
+                    return true;
+                }
+            },
+            {
+                "SubscribeForNotifications", (context, identifierNameSyntax, featureDict) =>
+                {
+                    // unfortunately, this returns false until all four types are found
+                    var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.Name;
+                    switch (parentType)
+                    {
+                        case "IQueryable":
+                        case "IOrderedQueryable":
+                            featureDict[SdkFeature.ResultSubscribeForNotifications] = 1;
+                            break;
+                        case "IList":
+                            featureDict[SdkFeature.ListSubscribeForNotifications] = 1;
+                            break;
+                        case "ISet":
+                            featureDict[SdkFeature.SetSubscribeForNotifications] = 1;
+                            break;
+                        case "IDictionary":
+                            featureDict[SdkFeature.DictionarySubscribeForNotifications] = 1;
+                            break;
+                        default:
+                            DebugLog($"{parentType} is not a collection type that is supported for notifications.");
+                            break;
+                    }
+
+                    return featureDict[SdkFeature.ResultSubscribeForNotifications] == 1 &&
+                        featureDict[SdkFeature.ListSubscribeForNotifications] == 1 &&
+                        featureDict[SdkFeature.SetSubscribeForNotifications] == 1 &&
+                        featureDict[SdkFeature.DictionarySubscribeForNotifications] == 1;
+                }
+            },
+            {
+                nameof(SdkFeature.PropertyChanged), (context, identifierNameSyntax, featureDict) =>
+                {
+                    var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.ToDisplayString();
+                    if (parentType.Contains("Realms."))
+                    {
+                        featureDict[SdkFeature.PropertyChanged] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax} is likely some PropertyChanged on a non Realm class.");
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.RecoverOrDiscardUnsyncedChangesHandler),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.RecoverUnsyncedChangesHandler),  (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.RecoverUnsyncedChangesHandler] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.DiscardUnsyncedChangesHandler), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.DiscardUnsyncedChangesHandler] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.ManualRecoveryHandler), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.ManualRecoveryHandler] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.GetProgressObservable), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.GetProgressObservable] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.PartitionSyncConfiguration), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.PartitionSyncConfiguration] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.FlexibleSyncConfiguration), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.FlexibleSyncConfiguration] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.Anonymous), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.Anonymous] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.EmailPassword), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.EmailPassword] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.Facebook), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.Facebook] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.Google), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.Google] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.Apple), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.Apple] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.JWT), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.JWT] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.ApiKey), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.ApiKey] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.ServerApiKey), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.ServerApiKey] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.Function), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsCredentials(context, identifierNameSyntax))
+                    {
+                        featureDict[SdkFeature.Function] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.CallAsync), (context, identifierNameSyntax, featureDict) =>
+                {
+                    if (IsOfType(context, identifierNameSyntax, "Realms.Sync.User.FunctionsClient"))
+                    {
+                        featureDict[SdkFeature.CallAsync] = 1;
+                        return true;
+                    }
+                    else
+                    {
+                        DebugLog($"{identifierNameSyntax} is likely some user defined CallAsync.");
+                        return false;
+                    }
+                }
+            },
+            {
+                nameof(SdkFeature.GetMongoClient), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.GetMongoClient] = 1;
+                    return true;
+                }
+            },
+            {
+                nameof(SdkFeature.DynamicApi), (context, identifierNameSyntax, featureDict) =>
+                {
+                    featureDict[SdkFeature.DynamicApi] = 1;
+                    return true;
+                }
+            },
+        };
+
+        private HashSet<string> _realmClassAnalysis = new()
+        {
+            SdkFeature.IEmbeddedOjbect,
+            SdkFeature.IAsymmetricObject,
+            SdkFeature.ReferenceList,
+            SdkFeature.PrimitiveList,
+            SdkFeature.ReferenceDictionary,
+            SdkFeature.PrimitiveDictionary,
+            SdkFeature.ReferenceSet,
+            SdkFeature.PrimitiveSet,
+            SdkFeature.RealmInteger,
+            SdkFeature.RealmObjectReference,
+            SdkFeature.RealmValue,
+        };
+
         private Dictionary<string, string> _realmEnvMetrics = new()
         {
             { SdkFeature.UserId, string.Empty },
@@ -133,9 +496,18 @@ namespace Realms.SourceGenerator
 #if !DEBUG
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
 
-            // TODO andrea: this has never been tested yet
+            /*
+            use the following for testing the new endpoint
+
+curl -o - -i \
+-X GET \
+-H 'api-key: <GET IT FROM THE ATLAS PAGE>' \
+'https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=%3A+%7B+%22hello%22%3A+%22world%22%7D'
+            */
+
+            // TODO andrea: this is currently pointing to an atlas service on my account. Ask for the production link
             SendRequest(
-                "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric_stage?data=",
+                "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=",
                 base64Payload,
                 string.Empty);
 #endif
@@ -310,187 +682,201 @@ Analytics payload
                 return;
             }
 
-            switch (identifierNameSyntax.ToString())
+            var targetFeature = identifierNameSyntax.ToString();
+            foreach (var feature in _apiAnalysis)
             {
-                // TODO andrea: better checks on type should be done to avoid collecting wrong information
-                case nameof(SdkFeature.GetInstance):
-                    _realmFeaturesToAnalyse[SdkFeature.GetInstance] = 1;
-                    break;
-                case nameof(SdkFeature.GetInstanceAsync):
-                    _realmFeaturesToAnalyse[SdkFeature.GetInstanceAsync] = 1;
-                    break;
-                case nameof(SdkFeature.NOT_SUPPORTED_YET):
-                    _realmFeaturesToAnalyse[SdkFeature.NOT_SUPPORTED_YET] = 1;
-                    break;
-                case nameof(SdkFeature.Find):
-                    if (IsOfType(context, identifierNameSyntax, "Realms.Realm"))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Find] = 1;
-                    }
-                    else
-                    {
-                        DebugLog($"{identifierNameSyntax} is likely some user define Find method.");
-                    }
+                if (targetFeature == feature.Key)
+                {
+                   if (feature.Value.Invoke(context, identifierNameSyntax, _realmFeaturesToAnalyse))
+                   {
+                       _apiAnalysis.Remove(feature.Key);
+                   }
 
-                    break;
-                case nameof(SdkFeature.WriteAsync):
-                    _realmFeaturesToAnalyse[SdkFeature.WriteAsync] = 1;
-                    break;
-                case nameof(SdkFeature.ThreadSafeReference):
-                    _realmFeaturesToAnalyse[SdkFeature.ThreadSafeReference] = 1;
-                    break;
-                case nameof(SdkFeature.FIXME_TWO):
-                    _realmFeaturesToAnalyse[SdkFeature.FIXME_TWO] = 1;
-                    break;
-                case nameof(SdkFeature.ShouldCompactOnLaunch):
-                    _realmFeaturesToAnalyse[SdkFeature.ShouldCompactOnLaunch] = 1;
-                    break;
-                case nameof(SdkFeature.MigrationCallback):
-                    _realmFeaturesToAnalyse[SdkFeature.MigrationCallback] = 1;
-                    break;
-                case nameof(SdkFeature.RealmChanged):
-                    _realmFeaturesToAnalyse[SdkFeature.RealmChanged] = 1;
-                    break;
-                case "SubscribeForNotifications":
-                    var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.Name;
-                    switch (parentType)
-                    {
-                        case "IQueryable":
-                        case "IOrderedQueryable":
-                            _realmFeaturesToAnalyse[SdkFeature.ResultSubscribeForNotifications] = 1;
-                            break;
-                        case "IList":
-                            _realmFeaturesToAnalyse[SdkFeature.ListSubscribeForNotifications] = 1;
-                            break;
-                        case "ISet":
-                            _realmFeaturesToAnalyse[SdkFeature.SetSubscribeForNotifications] = 1;
-                            break;
-                        case "IDictionary":
-                            _realmFeaturesToAnalyse[SdkFeature.DictionarySubscribeForNotifications] = 1;
-                            break;
-                        default:
-                            DebugLog($"{parentType} is not a collection type that is supported for notifications.");
-                            break;
-                    }
-
-                    break;
-                case nameof(SdkFeature.PropertyChanged):
-                    // TODO andrea: I'm not sure about this one. What happens when the PropertyChanged is
-                    // only bind through Xamarin and not by hands?
-                    if (GetSyntaxNodeParentType(context, identifierNameSyntax).ToDisplayString().Contains("Realms."))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.PropertyChanged] = 1;
-                    }
-                    else
-                    {
-                        DebugLog($"{identifierNameSyntax} is likely some PropertyChanged on a non Realm class.");
-                    }
-
-                    break;
-                case nameof(SdkFeature.RecoverOrDiscardUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = 1;
-                    break;
-                case nameof(SdkFeature.RecoverUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[SdkFeature.RecoverUnsyncedChangesHandler] = 1;
-                    break;
-                case nameof(SdkFeature.DiscardUnsyncedChangesHandler):
-                    _realmFeaturesToAnalyse[SdkFeature.DiscardUnsyncedChangesHandler] = 1;
-                    break;
-                case nameof(SdkFeature.ManualRecoveryHandler):
-                    _realmFeaturesToAnalyse[SdkFeature.ManualRecoveryHandler] = 1;
-                    break;
-                case nameof(SdkFeature.GetProgressObservable):
-                    _realmFeaturesToAnalyse[SdkFeature.GetProgressObservable] = 1;
-                    break;
-                case nameof(SdkFeature.PartitionSyncConfiguration):
-                    _realmFeaturesToAnalyse[SdkFeature.PartitionSyncConfiguration] = 1;
-                    break;
-                case nameof(SdkFeature.FlexibleSyncConfiguration):
-                    _realmFeaturesToAnalyse[SdkFeature.FlexibleSyncConfiguration] = 1;
-                    break;
-                case nameof(SdkFeature.Anonymous):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Anonymous] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.EmailPassword):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.EmailPassword] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.Facebook):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Facebook] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.Google):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Google] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.Apple):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Apple] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.JWT):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.JWT] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.ApiKey):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.ApiKey] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.ServerApiKey):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.ServerApiKey] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.Function):
-                    if (IsCredentials(context, identifierNameSyntax))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.Function] = 1;
-                    }
-
-                    break;
-                case nameof(SdkFeature.CallAsync):
-                    if (IsOfType(context, identifierNameSyntax, "Realms.Sync.User.FunctionsClient"))
-                    {
-                        _realmFeaturesToAnalyse[SdkFeature.CallAsync] = 1;
-                    }
-                    else
-                    {
-                        DebugLog($"{identifierNameSyntax} is likely some user defined CallAsync.");
-                    }
-
-                    break;
-                case nameof(SdkFeature.GetMongoClient):
-                    _realmFeaturesToAnalyse[SdkFeature.GetMongoClient] = 1;
-                    break;
-                case nameof(SdkFeature.DynamicApi):
-                    _realmFeaturesToAnalyse[SdkFeature.DynamicApi] = 1;
-                    break;
-                default:
-                    break;
+                   break;
+                }
             }
+
+            //switch (identifierNameSyntax.ToString())
+            //{
+            //    // TODO andrea: better checks on type should be done to avoid collecting wrong information
+            //    case nameof(SdkFeature.GetInstance):
+            //        _realmFeaturesToAnalyse[SdkFeature.GetInstance] = 1;
+            //        break;
+            //    case nameof(SdkFeature.GetInstanceAsync):
+            //        _realmFeaturesToAnalyse[SdkFeature.GetInstanceAsync] = 1;
+            //        break;
+            //    case nameof(SdkFeature.NOT_SUPPORTED_YET):
+            //        _realmFeaturesToAnalyse[SdkFeature.NOT_SUPPORTED_YET] = 1;
+            //        break;
+            //    case nameof(SdkFeature.Find):
+            //        if (IsOfType(context, identifierNameSyntax, "Realms.Realm"))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Find] = 1;
+            //        }
+            //        else
+            //        {
+            //            DebugLog($"{identifierNameSyntax} is likely some user define Find method.");
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.WriteAsync):
+            //        _realmFeaturesToAnalyse[SdkFeature.WriteAsync] = 1;
+            //        break;
+            //    case nameof(SdkFeature.ThreadSafeReference):
+            //        _realmFeaturesToAnalyse[SdkFeature.ThreadSafeReference] = 1;
+            //        break;
+            //    case nameof(SdkFeature.FIXME_TWO):
+            //        _realmFeaturesToAnalyse[SdkFeature.FIXME_TWO] = 1;
+            //        break;
+            //    case nameof(SdkFeature.ShouldCompactOnLaunch):
+            //        _realmFeaturesToAnalyse[SdkFeature.ShouldCompactOnLaunch] = 1;
+            //        break;
+            //    case nameof(SdkFeature.MigrationCallback):
+            //        _realmFeaturesToAnalyse[SdkFeature.MigrationCallback] = 1;
+            //        break;
+            //    case nameof(SdkFeature.RealmChanged):
+            //        _realmFeaturesToAnalyse[SdkFeature.RealmChanged] = 1;
+            //        break;
+            //    case "SubscribeForNotifications":
+            //        var parentType = GetSyntaxNodeParentType(context, identifierNameSyntax)?.Name;
+            //        switch (parentType)
+            //        {
+            //            case "IQueryable":
+            //            case "IOrderedQueryable":
+            //                _realmFeaturesToAnalyse[SdkFeature.ResultSubscribeForNotifications] = 1;
+            //                break;
+            //            case "IList":
+            //                _realmFeaturesToAnalyse[SdkFeature.ListSubscribeForNotifications] = 1;
+            //                break;
+            //            case "ISet":
+            //                _realmFeaturesToAnalyse[SdkFeature.SetSubscribeForNotifications] = 1;
+            //                break;
+            //            case "IDictionary":
+            //                _realmFeaturesToAnalyse[SdkFeature.DictionarySubscribeForNotifications] = 1;
+            //                break;
+            //            default:
+            //                DebugLog($"{parentType} is not a collection type that is supported for notifications.");
+            //                break;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.PropertyChanged):
+            //        // TODO andrea: I'm not sure about this one. What happens when the PropertyChanged is
+            //        // only bind through Xamarin and not by hands?
+            //        if (GetSyntaxNodeParentType(context, identifierNameSyntax).ToDisplayString().Contains("Realms."))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.PropertyChanged] = 1;
+            //        }
+            //        else
+            //        {
+            //            DebugLog($"{identifierNameSyntax} is likely some PropertyChanged on a non Realm class.");
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.RecoverOrDiscardUnsyncedChangesHandler):
+            //        _realmFeaturesToAnalyse[SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = 1;
+            //        break;
+            //    case nameof(SdkFeature.RecoverUnsyncedChangesHandler):
+            //        _realmFeaturesToAnalyse[SdkFeature.RecoverUnsyncedChangesHandler] = 1;
+            //        break;
+            //    case nameof(SdkFeature.DiscardUnsyncedChangesHandler):
+            //        _realmFeaturesToAnalyse[SdkFeature.DiscardUnsyncedChangesHandler] = 1;
+            //        break;
+            //    case nameof(SdkFeature.ManualRecoveryHandler):
+            //        _realmFeaturesToAnalyse[SdkFeature.ManualRecoveryHandler] = 1;
+            //        break;
+            //    case nameof(SdkFeature.GetProgressObservable):
+            //        _realmFeaturesToAnalyse[SdkFeature.GetProgressObservable] = 1;
+            //        break;
+            //    case nameof(SdkFeature.PartitionSyncConfiguration):
+            //        _realmFeaturesToAnalyse[SdkFeature.PartitionSyncConfiguration] = 1;
+            //        break;
+            //    case nameof(SdkFeature.FlexibleSyncConfiguration):
+            //        _realmFeaturesToAnalyse[SdkFeature.FlexibleSyncConfiguration] = 1;
+            //        break;
+            //    case nameof(SdkFeature.Anonymous):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Anonymous] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.EmailPassword):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.EmailPassword] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.Facebook):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Facebook] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.Google):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Google] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.Apple):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Apple] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.JWT):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.JWT] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.ApiKey):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.ApiKey] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.ServerApiKey):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.ServerApiKey] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.Function):
+            //        if (IsCredentials(context, identifierNameSyntax))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.Function] = 1;
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.CallAsync):
+            //        if (IsOfType(context, identifierNameSyntax, "Realms.Sync.User.FunctionsClient"))
+            //        {
+            //            _realmFeaturesToAnalyse[SdkFeature.CallAsync] = 1;
+            //        }
+            //        else
+            //        {
+            //            DebugLog($"{identifierNameSyntax} is likely some user defined CallAsync.");
+            //        }
+
+            //        break;
+            //    case nameof(SdkFeature.GetMongoClient):
+            //        _realmFeaturesToAnalyse[SdkFeature.GetMongoClient] = 1;
+            //        break;
+            //    case nameof(SdkFeature.DynamicApi):
+            //        _realmFeaturesToAnalyse[SdkFeature.DynamicApi] = 1;
+            //        break;
+            //    default:
+            //        break;
+            //}
         }
 
         // Returns null if can't get parent of the parent has no children
@@ -583,6 +969,12 @@ Analytics payload
         private static void SendRequest(string prefixAddr, string payload, string suffixAddr)
         {
             var request = System.Net.HttpWebRequest.CreateHttp(new Uri(prefixAddr + payload + suffixAddr));
+#if DEBUG
+            var headers = new WebHeaderCollection();
+            var apiKey = System.Configuration.ConfigurationManager.AppSettings["ApiKeyTestAnalyticsCollection"];
+            headers.Add("api-key", apiKey);
+            request.Headers = headers;
+#endif
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
