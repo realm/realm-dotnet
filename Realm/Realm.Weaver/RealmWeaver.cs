@@ -258,8 +258,8 @@ Analytics payload
                     
                     // If it comes across "stfld <backing_field>", 
                     // it considers this the end index of backing field initializaion instructions.
-                    if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference) {
-                        var field = (instruction.Operand as FieldReference);
+                    if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference field)
+                    {
                         if(backingFields.Contains(field.MetadataToken)) {
                             backingFieldInstructionsEnd = i;
                         }
