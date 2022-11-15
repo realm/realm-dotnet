@@ -247,29 +247,43 @@ Analytics payload
             return WeaveModuleResult.Success(weaveResults);
         }
 
-        private void RemoveConstructorsBackingFields(TypeDefinition type, HashSet<MetadataToken> backingFields)
+        private static void RemoveBackingFields(TypeDefinition type, HashSet<MetadataToken> backingFields)
         {
+            for (var i = type.Fields.Count - 1; i >= 0; i--)
+            {
+                var field = type.Fields[i];
+                if (backingFields.Contains(field.MetadataToken))
+                {
+                    type.Fields.Remove(field);
+                }
+            }
+
             // Iterates through all constructor's instructions from the end to start.
-            foreach(var constructor in type.GetConstructors()) {
-                // Index of the most recent stfld <backing_field> instruction
+            foreach (var constructor in type.GetConstructors())
+            {
+                // Index of the most recent "Stfld <backing_field>" instruction
                 var backingFieldInstructionsEnd = -1;
-                for(var i = constructor.Body.Instructions.Count - 1; i >= 0; i--) {
+                for (var i = constructor.Body.Instructions.Count - 1; i >= 0; i--)
+                {
                     var instruction = constructor.Body.Instructions[i];
-                    
-                    // If it comes across "stfld <backing_field>", 
+
+                    // If it comes across "Stfld <backing_field>"
                     // it considers this the end index of backing field initializaion instructions.
                     if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference field)
                     {
-                        if(backingFields.Contains(field.MetadataToken)) {
+                        if (backingFields.Contains(field.MetadataToken))
+                        {
                             backingFieldInstructionsEnd = i;
                         }
                     }
 
-                    // If it comes across "Ldarg 0", 
+                    // If it comes across "Ldarg 0",
                     // it considers this the start index of backing field initializaion instructions.
                     // And removes all backing field instructions from end to start.
-                    else if (instruction.OpCode == OpCodes.Ldarg_0) {
-                        for(var j = backingFieldInstructionsEnd; j >= i; j--) {
+                    else if (instruction.OpCode == OpCodes.Ldarg_0)
+                    {
+                        for (var j = backingFieldInstructionsEnd; j >= i; j--)
+                        {
                             constructor.Body.Instructions.RemoveAt(j);
                         }
                     }
@@ -296,15 +310,15 @@ Analytics payload
                 {
                     // Stash and remove the backing field before weaving as it depends on get method.
                     var backingField = prop.GetBackingField();
-                    if (backingField != null) {
-                        type.Fields.Remove(backingField.Resolve());   
+                    if (backingField != null)
+                    {
                         backingFields.Add(backingField.MetadataToken);
                     }
 
                     var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
                     persistedProperties.Add(weaveResult);
-                    
-                    RemoveConstructorsBackingFields(type, backingFields);
+
+                    RemoveBackingFields(type, backingFields);
                 }
                 catch (Exception e)
                 {
