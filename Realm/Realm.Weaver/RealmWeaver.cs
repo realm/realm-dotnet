@@ -256,7 +256,7 @@ Analytics payload
                 for(var i = constructor.Body.Instructions.Count - 1; i >= 0; i--) {
                     var instruction = constructor.Body.Instructions[i];
                     
-                    // If it comes across "strfld <backing_field>", 
+                    // If it comes across "stfld <backing_field>", 
                     // it considers this the end index of backing field initializaion instructions.
                     if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference) {
                         var field = (instruction.Operand as FieldReference);
