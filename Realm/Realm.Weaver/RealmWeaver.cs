@@ -266,7 +266,7 @@ Analytics payload
                     }
 
                     // If it comes across "Ldarg 0", 
-                    // it considers this th start index of backing field initializaion instructions.
+                    // it considers this the start index of backing field initializaion instructions.
                     // And removes all backing field instructions from end to start.
                     else if (instruction.OpCode == OpCodes.Ldarg_0) {
                         for(var j = backingFieldInstructionsEnd; j >= i; j--) {
