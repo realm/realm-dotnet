@@ -318,7 +318,6 @@ Analytics payload
                     var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
                     persistedProperties.Add(weaveResult);
 
-                    RemoveBackingFields(type, backingFields);
                 }
                 catch (Exception e)
                 {
@@ -331,6 +330,8 @@ Analytics payload
                 }
             }
 
+            RemoveBackingFields(type, backingFields);
+            
             return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
 
