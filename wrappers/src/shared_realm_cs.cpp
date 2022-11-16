@@ -760,8 +760,8 @@ REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeExcept
         realm->verify_in_write();
 
         auto& group = realm->read_group();
-        for (auto table_key : all_tables.get_table_keys()) {
-            auto table = all_tables.get_table(table_key);
+        for (auto table_key : group.get_table_keys()) {
+            auto table = group.get_table(table_key);
             if (table->get_name().begins_with("class_")) {
                 table->clear();
             }
