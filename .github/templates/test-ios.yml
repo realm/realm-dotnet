@@ -9,7 +9,7 @@ jobs:
   test-xamarin:
     runs-on: macos-latest
     name: Xamarin.iOS
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - #@ template.replace(prepareTest())
       - #@ template.replace(buildTests("Tests/Tests.iOS", Platform="iPhoneSimulator"))

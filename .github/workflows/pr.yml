@@ -25,7 +25,7 @@ jobs:
   deploy-cluster:
     uses: ./.github/workflows/deploy-baas.yml
     with:
-      differentiators: '["code-coverage"]'
+      differentiators: '["code-coverage", "ios"]'
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
@@ -102,9 +102,16 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     needs:
     - build-packages
+    - deploy-cluster
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-    secrets: {}
+      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
+    secrets:
+      AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+      AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+      AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   test-android:
     uses: ./.github/workflows/test-android.yml
     name: Test
@@ -155,6 +162,7 @@ jobs:
     name: Cleanup
     needs:
     - test-code-coverage
+    - test-ios
     with:
       BaseUrl: https://realm-qa.mongodb.com
       AtlasBaseUrl: https://cloud-qa.mongodb.com
