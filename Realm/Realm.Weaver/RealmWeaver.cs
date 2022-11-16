@@ -254,7 +254,7 @@ Analytics payload
                 var field = type.Fields[i];
                 if (backingFields.Contains(field.MetadataToken))
                 {
-                    type.Fields.Remove(field);
+                    type.Fields.RemoveAt(i);
                 }
             }
 
