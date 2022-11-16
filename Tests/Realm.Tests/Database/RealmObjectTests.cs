@@ -523,6 +523,16 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmObject_InitializedFields_GetCorrectValues()
         {
+            // This tests the Realm object for a scenario like i.e. where we have a class that
+            // has an ID field that gets incremented every time a new class instance is created
+            // by incrementing an external variable and assigning it to the Id field.
+            //
+            // class FieldObject { Id: Generator.Id() } where Generator.Id = () => _currentId++;
+            //
+            // It could be that because of i.e. copying over initialization commands to
+            // the accessor but not removing from the original constructor, the initialization
+            // of the field would get repeated, thus leading to the _currentId being incremented
+            // twice. This test ensures we only run the initialization of fields once.
             var obj0 = new InitializedFieldObject();
             var obj1 = new InitializedFieldObject();
             var obj2 = new InitializedFieldObject();
