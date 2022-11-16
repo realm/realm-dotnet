@@ -969,12 +969,6 @@ Analytics payload
         private static void SendRequest(string prefixAddr, string payload, string suffixAddr)
         {
             var request = System.Net.HttpWebRequest.CreateHttp(new Uri(prefixAddr + payload + suffixAddr));
-#if DEBUG
-            var headers = new WebHeaderCollection();
-            var apiKey = System.Configuration.ConfigurationManager.AppSettings["ApiKeyTestAnalyticsCollection"];
-            headers.Add("api-key", apiKey);
-            request.Headers = headers;
-#endif
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
@@ -997,8 +991,8 @@ Analytics payload
         }
 
         public static bool ShouldCollectAnalytics =>
-            Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null
-                && Environment.GetEnvironmentVariable("CI") == null;
+                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null
+                    && Environment.GetEnvironmentVariable("CI") == null;
 
         public static void DebugLog(string message)
         {

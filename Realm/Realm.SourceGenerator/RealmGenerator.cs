@@ -22,12 +22,12 @@ using Microsoft.CodeAnalysis;
 
 namespace Realms.SourceGenerator
 {
-    // TODO andrea: I'd like to use a bunch of nullable types, can we?
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
+        // TODO andrea: when we embrace nullability, Analytics should be marked nullable
         // null if we should not collect analytics
-        private Analytics? _analytics;
+        private Analytics _analytics;
 
         public void Initialize(GeneratorInitializationContext context)
         {

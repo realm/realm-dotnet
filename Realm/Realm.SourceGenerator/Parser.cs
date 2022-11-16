@@ -28,9 +28,11 @@ namespace Realms.SourceGenerator
     internal class Parser
     {
         private GeneratorExecutionContext _context;
-        private Analytics? _analytics;
 
-        public Parser(GeneratorExecutionContext context, Analytics? analytics)
+        // null if we should not collect analytics
+        private Analytics _analytics;
+
+        public Parser(GeneratorExecutionContext context, Analytics analytics)
         {
             _context = context;
             _analytics = analytics;

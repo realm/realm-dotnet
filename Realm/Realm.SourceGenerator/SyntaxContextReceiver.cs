@@ -27,11 +27,12 @@ namespace Realms.SourceGenerator
     {
         private readonly Dictionary<ITypeSymbol, RealmClassDefinition> _realmClassesDict = new(SymbolEqualityComparer.Default);
 
-        private Analytics? _analytics;
+        // null if we should not collect analytics
+        private Analytics _analytics;
 
         public IReadOnlyCollection<RealmClassDefinition> RealmClasses => _realmClassesDict.Values;
 
-        public SyntaxContextReceiver(Analytics? analytics)
+        public SyntaxContextReceiver(Analytics analytics)
         {
             _analytics = analytics;
         }
