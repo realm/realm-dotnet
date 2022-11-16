@@ -258,7 +258,7 @@ Analytics payload
                 }
             }
 
-            // Iterates through all constructor's instructions from the end to start.
+            // Iterates through all constructors' instructions from the end to start.
             foreach (var constructor in type.GetConstructors())
             {
                 // Index of the most recent "Stfld <backing_field>" instruction
@@ -278,8 +278,8 @@ Analytics payload
                     }
 
                     // If it comes across "Ldarg 0",
-                    // it considers this the start index of backing field initializaion instructions.
-                    // And removes all backing field instructions from end to start.
+                    // it considers this the start index of backing field initializaion instructions
+                    // and removes all backing field instructions from end to start.
                     else if (instruction.OpCode == OpCodes.Ldarg_0)
                     {
                         for (var j = backingFieldInstructionsEnd; j >= i; j--)
