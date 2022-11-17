@@ -141,7 +141,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.NullabilityNotSupported,
                 "Nullability annotation is not valid for this type",
-                $"{className}.{propertyName} has type {propertyType}, that does not support the assigned nullability annotiation.",
+                $"{className}.{propertyName} has type {propertyType}, that does not support the assigned nullability annotation.",
                 location);
         }
 
