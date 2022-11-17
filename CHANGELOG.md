@@ -1,17 +1,30 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
+  * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `dictionary.Filter(query, arguments)` will filter the list and return a filtered collection of dictionary's values. It is roughly equivalent to `dictionary.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
+* Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
+* Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 
 ### Fixed
 * Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
+* Fix a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. (Core upgrade)
+* Fixed an assertion failure during client reset with recovery when recovering a list operation on an embedded object that has a link column in the path prefix to the list from the top level object. (Core upgrade)
+* Opening an unencrypted file with an encryption key would sometimes report a misleading error message that indicated that the problem was something other than a decryption failure. (Core upgrade)
+* Fix a rare deadlock which could occur when closing a synchronized Realm immediately after committing a write transaction when the sync worker thread has also just finished processing a changeset from the server. (Core upgrade)
+* Fix a race condition which could result in "operation cancelled" errors being delivered to async open callbacks rather than the actual sync error which caused things to fail. (Core upgrade)
+* Bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time, or as configured by the SDK. (Core upgrade)
+* Fix database corruption and encryption issues on apple platforms. (Core upgrade)
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.12.0.
 
 ## 10.18.0 (2022-11-02)
 
