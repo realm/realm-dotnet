@@ -234,6 +234,8 @@ namespace SourceGeneratorAssemblyToProcess.Generated
 
     internal class AutomaticPropertiesClassUnmanagedAccessor : UnmanagedAccessor, IAutomaticPropertiesClassAccessor
     {
+        public override ObjectSchema ObjectSchema => AutomaticPropertiesClass.RealmSchema;
+
         private int _id;
         public int Id
         {

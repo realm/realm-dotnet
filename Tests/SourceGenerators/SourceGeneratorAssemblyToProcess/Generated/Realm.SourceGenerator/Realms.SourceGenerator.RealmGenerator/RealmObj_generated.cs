@@ -234,6 +234,8 @@ namespace SourceGeneratorPlayground.Generated
 
     internal class RealmObjUnmanagedAccessor : UnmanagedAccessor, IRealmObjAccessor
     {
+        public override ObjectSchema ObjectSchema => RealmObj.RealmSchema;
+
         private int _id;
         public int Id
         {

@@ -230,6 +230,8 @@ namespace Global.Generated
 
     internal class NoNamespaceClassUnmanagedAccessor : UnmanagedAccessor, INoNamespaceClassAccessor
     {
+        public override ObjectSchema ObjectSchema => NoNamespaceClass.RealmSchema;
+
         private string _name;
         public string Name
         {
