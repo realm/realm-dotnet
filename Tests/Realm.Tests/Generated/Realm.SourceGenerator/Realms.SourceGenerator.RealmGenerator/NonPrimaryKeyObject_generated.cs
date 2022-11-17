@@ -234,6 +234,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class NonPrimaryKeyObjectUnmanagedAccessor : UnmanagedAccessor, INonPrimaryKeyObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => NonPrimaryKeyObject.RealmSchema;
+
         private string _stringValue;
         public string StringValue
         {

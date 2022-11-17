@@ -234,6 +234,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyByteObjectUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyByteObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyByteObject.RealmSchema;
+
         private byte _id;
         public byte Id
         {

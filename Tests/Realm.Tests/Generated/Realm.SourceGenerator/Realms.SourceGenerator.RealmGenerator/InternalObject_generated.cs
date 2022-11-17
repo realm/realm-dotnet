@@ -220,6 +220,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class InternalObjectUnmanagedAccessor : UnmanagedAccessor, IInternalObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => InternalObject.RealmSchema;
+
         private int _intProperty;
         public int IntProperty
         {

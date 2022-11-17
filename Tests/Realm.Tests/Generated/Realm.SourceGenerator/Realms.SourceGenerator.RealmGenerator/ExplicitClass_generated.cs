@@ -234,6 +234,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ExplicitClassUnmanagedAccessor : UnmanagedAccessor, IExplicitClassAccessor
     {
+        public override ObjectSchema ObjectSchema => ExplicitClass.RealmSchema;
+
         private int _foo;
         public int Foo
         {

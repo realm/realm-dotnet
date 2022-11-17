@@ -231,6 +231,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class RequiredPropertyClassUnmanagedAccessor : UnmanagedAccessor, IRequiredPropertyClassAccessor
     {
+        public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
+
         private string _fooRequired;
         public string FooRequired
         {

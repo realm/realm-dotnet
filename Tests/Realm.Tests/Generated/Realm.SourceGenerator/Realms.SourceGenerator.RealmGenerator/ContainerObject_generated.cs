@@ -244,6 +244,8 @@ namespace Realms.Tests.Generated
 
     internal class ContainerObjectUnmanagedAccessor : UnmanagedAccessor, IContainerObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => ContainerObject.RealmSchema;
+
         public IList<IntPropertyObject> Items { get; } = new List<IntPropertyObject>();
 
         public ContainerObjectUnmanagedAccessor(Type objectType) : base(objectType)

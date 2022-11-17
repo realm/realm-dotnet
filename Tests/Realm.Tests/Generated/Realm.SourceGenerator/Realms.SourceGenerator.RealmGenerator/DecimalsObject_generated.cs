@@ -242,6 +242,8 @@ namespace Realms.Tests.Generated
 
     internal class DecimalsObjectUnmanagedAccessor : UnmanagedAccessor, IDecimalsObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => DecimalsObject.RealmSchema;
+
         private decimal _decimalValue;
         public decimal DecimalValue
         {

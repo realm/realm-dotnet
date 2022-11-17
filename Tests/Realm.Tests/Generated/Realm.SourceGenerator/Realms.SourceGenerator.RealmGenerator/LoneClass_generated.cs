@@ -234,6 +234,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class LoneClassUnmanagedAccessor : UnmanagedAccessor, ILoneClassAccessor
     {
+        public override ObjectSchema ObjectSchema => LoneClass.RealmSchema;
+
         private string _name;
         public string Name
         {

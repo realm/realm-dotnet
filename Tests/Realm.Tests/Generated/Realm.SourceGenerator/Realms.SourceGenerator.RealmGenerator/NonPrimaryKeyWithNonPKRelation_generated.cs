@@ -248,6 +248,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class NonPrimaryKeyWithNonPKRelationUnmanagedAccessor : UnmanagedAccessor, INonPrimaryKeyWithNonPKRelationAccessor
     {
+        public override ObjectSchema ObjectSchema => NonPrimaryKeyWithNonPKRelation.RealmSchema;
+
         private string _stringValue;
         public string StringValue
         {

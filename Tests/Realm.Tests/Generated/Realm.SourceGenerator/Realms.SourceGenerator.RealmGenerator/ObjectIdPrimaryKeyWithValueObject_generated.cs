@@ -245,6 +245,8 @@ namespace Realms.Tests.Generated
 
     internal class ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor : UnmanagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectIdPrimaryKeyWithValueObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

@@ -289,6 +289,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class MixedProperties1UnmanagedAccessor : UnmanagedAccessor, IMixedProperties1Accessor
     {
+        public override ObjectSchema ObjectSchema => MixedProperties1.RealmSchema;
+
         private string _name;
         public string Name
         {

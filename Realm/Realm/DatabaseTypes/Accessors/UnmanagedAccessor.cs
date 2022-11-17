@@ -50,7 +50,7 @@ namespace Realms
         public Realm Realm => null;
 
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => null;
+        public virtual ObjectSchema ObjectSchema => null;
 
         /// <inheritdoc/>
         public int BacklinksCount => 0;

@@ -256,6 +256,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor : UnmanagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedDictionaryObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

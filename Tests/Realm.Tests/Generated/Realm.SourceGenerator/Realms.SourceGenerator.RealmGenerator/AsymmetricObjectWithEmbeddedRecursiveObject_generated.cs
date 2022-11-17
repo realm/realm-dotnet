@@ -243,6 +243,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

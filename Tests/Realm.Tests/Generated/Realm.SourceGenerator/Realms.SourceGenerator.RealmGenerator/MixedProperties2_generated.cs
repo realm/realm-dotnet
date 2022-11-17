@@ -289,6 +289,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class MixedProperties2UnmanagedAccessor : UnmanagedAccessor, IMixedProperties2Accessor
     {
+        public override ObjectSchema ObjectSchema => MixedProperties2.RealmSchema;
+
         public IList<Person> Friends { get; } = new List<Person>();
 
         private int _age;

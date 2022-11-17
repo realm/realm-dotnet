@@ -290,6 +290,8 @@ namespace Realms.Tests.Generated
 
     internal class DogUnmanagedAccessor : UnmanagedAccessor, IDogAccessor
     {
+        public override ObjectSchema ObjectSchema => Dog.RealmSchema;
+
         private string _name;
         public string Name
         {

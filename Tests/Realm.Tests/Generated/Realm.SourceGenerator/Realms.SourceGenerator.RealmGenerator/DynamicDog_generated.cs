@@ -277,6 +277,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class DynamicDogUnmanagedAccessor : UnmanagedAccessor, IDynamicDogAccessor
     {
+        public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;
+
         private string _name;
         public string Name
         {

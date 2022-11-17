@@ -271,6 +271,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class OnManagedTestClassUnmanagedAccessor : UnmanagedAccessor, IOnManagedTestClassAccessor
     {
+        public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;
+
         private int _id;
         public int Id
         {

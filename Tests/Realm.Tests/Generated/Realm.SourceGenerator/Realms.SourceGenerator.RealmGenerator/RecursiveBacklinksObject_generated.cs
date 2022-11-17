@@ -265,6 +265,8 @@ namespace Realms.Tests.Generated
 
     internal class RecursiveBacklinksObjectUnmanagedAccessor : UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => RecursiveBacklinksObject.RealmSchema;
+
         private int _id;
         public int Id
         {

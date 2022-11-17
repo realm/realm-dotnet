@@ -263,6 +263,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class OnlyListPropertiesUnmanagedAccessor : UnmanagedAccessor, IOnlyListPropertiesAccessor
     {
+        public override ObjectSchema ObjectSchema => OnlyListProperties.RealmSchema;
+
         public IList<Person> Friends { get; } = new List<Person>();
 
         public IList<Person> Enemies { get; } = new List<Person>();

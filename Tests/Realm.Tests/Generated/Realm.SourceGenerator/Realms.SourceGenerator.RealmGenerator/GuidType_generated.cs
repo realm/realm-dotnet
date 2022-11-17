@@ -460,6 +460,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class GuidTypeUnmanagedAccessor : UnmanagedAccessor, IGuidTypeAccessor
     {
+        public override ObjectSchema ObjectSchema => GuidType.RealmSchema;
+
         private Guid _id;
         public Guid Id
         {

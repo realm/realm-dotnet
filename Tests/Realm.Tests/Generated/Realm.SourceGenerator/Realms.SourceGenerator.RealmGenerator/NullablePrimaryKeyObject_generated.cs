@@ -244,6 +244,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class NullablePrimaryKeyObjectUnmanagedAccessor : UnmanagedAccessor, INullablePrimaryKeyObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => NullablePrimaryKeyObject.RealmSchema;
+
         private long? _id;
         public long? Id
         {

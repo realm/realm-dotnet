@@ -308,6 +308,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class SerializedObjectUnmanagedAccessor : UnmanagedAccessor, ISerializedObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => SerializedObject.RealmSchema;
+
         private int _intValue;
         public int IntValue
         {

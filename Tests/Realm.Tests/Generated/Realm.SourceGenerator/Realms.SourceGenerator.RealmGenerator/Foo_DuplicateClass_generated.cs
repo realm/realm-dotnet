@@ -234,6 +234,8 @@ namespace Foo.Generated
 
     internal class DuplicateClassUnmanagedAccessor : UnmanagedAccessor, IDuplicateClassAccessor
     {
+        public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
+
         private int _intValue;
         public int IntValue
         {

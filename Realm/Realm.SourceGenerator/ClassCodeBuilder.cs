@@ -691,6 +691,8 @@ return;".Indent());
 
             return $@"internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
 {{
+    public override ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
+
 {propertiesString.Indent(trimNewLines: true)}
 
     public {_unmanagedAccessorClassName}(Type objectType) : base(objectType)

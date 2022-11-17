@@ -5,6 +5,7 @@
 
 ### Fixed
 * Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
+* Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.

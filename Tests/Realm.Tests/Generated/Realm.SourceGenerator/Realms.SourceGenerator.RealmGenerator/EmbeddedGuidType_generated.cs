@@ -443,6 +443,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class EmbeddedGuidTypeUnmanagedAccessor : UnmanagedAccessor, IEmbeddedGuidTypeAccessor
     {
+        public override ObjectSchema ObjectSchema => EmbeddedGuidType.RealmSchema;
+
         private Guid _regularProperty;
         public Guid RegularProperty
         {
