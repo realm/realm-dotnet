@@ -422,7 +422,7 @@ namespace Realms.Tests.Sync
                 {
                     OnAfterReset = afterCbA
                 };
-                using var realmA = await GetRealmAsync(configA, waitForSync: true);
+                using var realmA = await GetRealmAsync(configA, waitForSync: true).Timeout(10_000, "Open Realm A");
 
                 var originalObj = realmA.Write(() =>
                 {
@@ -435,7 +435,7 @@ namespace Realms.Tests.Sync
                     toAdd.Strings.Add("2");
                     return realmA.Add(toAdd);
                 });
-                await WaitForUploadAsync(realmA);
+                await WaitForUploadAsync(realmA).Timeout(10_000, detail: "Wait for upload realm A");
 
                 var sessionA = GetSession(realmA);
                 sessionA.Stop();
@@ -461,8 +461,8 @@ namespace Realms.Tests.Sync
                     OnAfterReset = afterCbB
                 };
 
-                using var realmB = await GetRealmAsync(configB, waitForSync: true);
-                await WaitForDownloadAsync(realmB);
+                using var realmB = await GetRealmAsync(configB, waitForSync: true).Timeout(10_000, "Open Realm B");
+                await WaitForDownloadAsync(realmB).Timeout(10_000, detail: "Wait for download realm B");
 
                 var originalObjStr = realmB.All<SyncObjectWithRequiredStringList>().Single().Strings;
                 Assert.That(originalObjStr.ToArray(), Is.EqualTo(new[] { "0", "1", "2" }));
@@ -481,7 +481,7 @@ namespace Realms.Tests.Sync
                 await TriggerClientReset(realmB, restartSession: false);
 
                 // ===== clientA =====
-                await tcsAfterClientResetA.Task;
+                await tcsAfterClientResetA.Task.Timeout(10_000, "Client Reset A");
 
                 var tcsAfterRemoteUpdateA = new TaskCompletionSource<object>();
 
@@ -506,8 +506,8 @@ namespace Realms.Tests.Sync
                 // ===== clientB =====
                 sessionB.Start();
 
-                await tcsAfterClientResetB.Task;
-                await tcsAfterRemoteUpdateA.Task;
+                await tcsAfterClientResetB.Task.Timeout(10_000, "Client Reset B");
+                await tcsAfterRemoteUpdateA.Task.Timeout(10_000, "After remote update A");
                 Assert.That(stringsA.ToArray(), Is.EquivalentTo(new[] { "0", "1", "3" }));
             });
         }
@@ -708,7 +708,7 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
                 config.ClientResetHandler = (ClientResetHandlerBase)Activator.CreateInstance(handlerType);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true);
+                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "GetInstanceAsync");
 
                 realm.Write(() =>
                 {
@@ -719,7 +719,7 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(10_000, detail: "Wait for upload");
                 var session = GetSession(realm);
                 session.Stop();
 
@@ -739,7 +739,7 @@ namespace Realms.Tests.Sync
 
                 await TriggerClientReset(realm);
 
-                var args = await tcs.Task;
+                var args = await tcs.Task.Timeout(15_000, "Wait for notifications");
 
                 Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
                 Assert.That(objects.Count, Is.EqualTo(1));
@@ -897,7 +897,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Session.Error compatibility")]
         public void Session_ClientResetHandlers_Coexistence(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
@@ -925,7 +925,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
 
-                var handler = new EventHandler<ErrorEventArgs>((session, error) =>
+                var handler = new EventHandler<ErrorEventArgs>((_, error) =>
                 {
                     if (error.Exception is ClientResetException crex)
                     {
@@ -944,7 +944,7 @@ namespace Realms.Tests.Sync
 
                 // to avoid a race condition where e.g. both methods are called but because of timing differences `tcs.TrySetResult(true);` is reached
                 // earlier in a call not letting the other finish to run. This would hide an issue.
-                await tcs.Task;
+                await tcs.Task.Timeout(10_000, "Client reset expected");
                 await Task.Delay(1000);
 
                 Assert.That(onBeforeTriggered, Is.True);
