@@ -106,26 +106,26 @@ namespace Realms.Tests
                 realm.Dispose();
             }
 
-            _realms.DrainQueue(realm =>
+            _realms.DrainQueueAsync(async realm =>
             {
                 // TODO: this should be an assertion but fails on our migration tests due to https://github.com/realm/realm-core/issues/4605.
-                // Assert.That(DeleteRealmWithRetries(realm), Is.True, "Couldn't delete a Realm on teardown.");
-                DeleteRealmWithRetries(realm);
+                // Assert.That(DeleteRealmWithRetries(realm.Config), Is.True, "Couldn't delete a Realm on teardown.");
+                await DeleteRealmWithRetries(realm.Config);
             });
         }
 
-        protected static bool DeleteRealmWithRetries(Realm realm)
+        protected static async Task<bool> DeleteRealmWithRetries(RealmConfigurationBase config)
         {
             for (var i = 0; i < 100; i++)
             {
                 try
                 {
-                    Realm.DeleteRealm(realm.Config);
+                    Realm.DeleteRealm(config);
                     return true;
                 }
                 catch
                 {
-                    Task.Delay(50).Wait();
+                    await Task.Delay(50);
                 }
             }
 

@@ -62,21 +62,15 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            _sessions.DrainQueue(session => session?.CloseHandle());
+            _sessions.DrainQueueAsync(session => session?.CloseHandle());
 
             base.CustomTearDown();
 
-            _apps.DrainQueue(app => app.Handle.ResetForTesting());
+            _apps.DrainQueueAsync(app => app.Handle.ResetForTesting());
 
             _defaultApp = null;
 
-            AsyncContext.Run(async () =>
-            {
-                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
-                {
-                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
-                }
-            });
+            _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }
 
         protected void CleanupOnTearDown(Session session)

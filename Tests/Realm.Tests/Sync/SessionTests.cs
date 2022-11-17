@@ -292,7 +292,7 @@ namespace Realms.Tests.Sync
                 var onAfterTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var config = await GetConfigForApp(appType);
+                var config = await GetConfigForApp(appType).Timeout(10_000, "Get config");
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -308,15 +308,15 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
-                using var realm = await GetRealmAsync(config, waitForSync: true);
+                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(20_000, "Get Realm");
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(30_000, "Wait for client reset");
 
                 Assert.That(onBeforeTriggered, Is.True);
                 Assert.That(onAfterTriggered, Is.True);
-            });
+            }, timeout: 120_000);
         }
 
         [TestCaseSource(nameof(AppTypes))]
@@ -1283,7 +1283,7 @@ namespace Realms.Tests.Sync
                 session.Start();
                 await Task.Delay(1000);
                 session.Stop();
-                await completionTCS.Task;
+                await completionTCS.Task.Timeout(10_000);
                 Assert.That(stateChanged, Is.EqualTo(3));
                 Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 session.PropertyChanged -= NotificationChanged;

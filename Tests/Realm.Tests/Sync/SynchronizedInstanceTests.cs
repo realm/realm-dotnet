@@ -573,8 +573,8 @@ namespace Realms.Tests.Sync
             openRealm.Dispose();
             Assert.That(File.Exists(config.DatabasePath));
 
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config).Result, Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config).Result, Is.True);
         }
 
         [Test]
@@ -597,7 +597,7 @@ namespace Realms.Tests.Sync
 
                 // Ensure that the Realm can be deleted from the filesystem. If the sync
                 // session was still using it, we would get a permission denied error.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+                Assert.That(await DeleteRealmWithRetries(realm.Config), Is.True);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
                 Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
@@ -615,7 +615,7 @@ namespace Realms.Tests.Sync
             Assert.That(session.IsClosed);
 
             // Dispose should close the session and allow us to delete the Realm.
-            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+            Assert.That(DeleteRealmWithRetries(realm.Config).Result, Is.True);
         }
 
         private const int DummyDataSize = 100;
