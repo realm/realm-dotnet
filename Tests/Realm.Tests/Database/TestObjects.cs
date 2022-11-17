@@ -829,6 +829,8 @@ namespace Realms.Tests
         public IList<Dog> ListOfDogs { get; }
 
         public ISet<Dog> SetOfDogs { get; }
+
+        public IDictionary<string, Dog> DictOfDogs { get; }
     }
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)

@@ -29,14 +29,14 @@
 ## 10.18.0 (2022-11-02)
 
 ### Enhancements
-* Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future. 
+* Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future.
 In order to use the source generation the model classes need to be declared implementing one of the base interfaces (`IRealmObject`, `IEmbeddedObject` or `IAsymmetricObject`) and be declared partial. For example:
   ```cs
   public partial class Person: IRealmObject
   {
       public int Age { get; set; }
 
-      public string Name { get; set; }  
+      public string Name { get; set; }
 
       public PhoneNumber Phone { get; set; }
   }
@@ -45,15 +45,15 @@ In order to use the source generation the model classes need to be declared impl
   {
       public string Number { get; set; }
 
-      public string Prefix { get; set; }  
+      public string Prefix { get; set; }
   }
   ```
-  The source generator will then take care of adding the full implementation for the interfaces. 
+  The source generator will then take care of adding the full implementation for the interfaces.
 
   Most of the time converting the "classic" Realm model classes (classes derived from `RealmObject`, `EmbeddedObject` or `AsymmetricObject`) to use the new source generation means just defining the class as partial and switching out the base class for the corresponding interface implementation.
   The classic Realm model definition will still be supported, but will be phased out in the future.
 
-  Please note that the source generator is still in beta, so let us know if you experience any issue while using them. 
+  Please note that the source generator is still in beta, so let us know if you experience any issue while using them.
   Some additional notes:
   * `OnManaged` and `OnPropertyChanged` are now partial methods.
   * Inheritance is not supported, so the Realm models cannot derive from any other class.
@@ -85,7 +85,7 @@ In order to use the source generation the model classes need to be declared impl
 * Fixed a `NullReferenceException` occurring in `RealmObjectBase`'s finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.9.0

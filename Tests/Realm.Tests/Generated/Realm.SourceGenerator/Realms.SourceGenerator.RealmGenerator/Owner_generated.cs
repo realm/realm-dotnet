@@ -25,6 +25,7 @@ namespace Realms.Tests
             Property.Object("TopDog", "Dog", managedName: "TopDog"),
             Property.ObjectList("ListOfDogs", "Dog", managedName: "ListOfDogs"),
             Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
+            Property.ObjectDictionary("DictOfDogs", "Dog", managedName: "DictOfDogs"),
         }.Build();
 
         #region IRealmObject implementation
@@ -68,6 +69,7 @@ namespace Realms.Tests
                 {
                     newAccessor.ListOfDogs.Clear();
                     newAccessor.SetOfDogs.Clear();
+                    newAccessor.DictOfDogs.Clear();
                 }
 
                 if(!skipDefaults || oldAccessor.Name != default(string))
@@ -81,6 +83,7 @@ namespace Realms.Tests
                 newAccessor.TopDog = oldAccessor.TopDog;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfDogs, newAccessor.ListOfDogs, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetOfDogs, newAccessor.SetOfDogs, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictOfDogs, newAccessor.DictOfDogs, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -242,6 +245,8 @@ namespace Realms.Tests.Generated
         IList<Dog> ListOfDogs { get; }
 
         ISet<Dog> SetOfDogs { get; }
+
+        IDictionary<string, Dog> DictOfDogs { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -286,6 +291,20 @@ namespace Realms.Tests.Generated
                 return _setOfDogs;
             }
         }
+
+        private IDictionary<string, Dog> _dictOfDogs;
+        public IDictionary<string, Dog> DictOfDogs
+        {
+            get
+            {
+                if (_dictOfDogs == null)
+                {
+                    _dictOfDogs = GetDictionaryValue<Dog>("DictOfDogs");
+                }
+
+                return _dictOfDogs;
+            }
+        }
     }
 
     internal class OwnerUnmanagedAccessor : UnmanagedAccessor, IOwnerAccessor
@@ -317,6 +336,8 @@ namespace Realms.Tests.Generated
         public IList<Dog> ListOfDogs { get; } = new List<Dog>();
 
         public ISet<Dog> SetOfDogs { get; } = new HashSet<Dog>(RealmSet<Dog>.Comparer);
+
+        public IDictionary<string, Dog> DictOfDogs { get; } = new Dictionary<string, Dog>();
 
         public OwnerUnmanagedAccessor(Type objectType) : base(objectType)
         {
@@ -374,7 +395,11 @@ namespace Realms.Tests.Generated
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            return propertyName switch
+            {
+                "DictOfDogs" => (IDictionary<string, TValue>)DictOfDogs,
+                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+            };
         }
     }
 }
