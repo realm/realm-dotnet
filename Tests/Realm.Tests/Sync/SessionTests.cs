@@ -241,7 +241,7 @@ namespace Realms.Tests.Sync
                 var manualResetFallbackHandled = false;
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
 
-                var config = await GetConfigForApp(appType);
+                var config = await GetConfigForApp(appType).Timeout(10_000, "Get config");
 
                 void manualCb(ClientResetException err)
                 {
@@ -256,7 +256,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "Open Realm");
+                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(20_000, "Open Realm");
 
                 // This should be removed when we remove Session.Error
                 var obsoleteSessionErrorTriggered = false;
