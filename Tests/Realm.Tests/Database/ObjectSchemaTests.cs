@@ -1533,17 +1533,6 @@ namespace Realms.Tests.Database
             Assert.That(builder["Bar"], Is.EqualTo(bar));
         }
 
-#if !TEST_WEAVER
-        [Test]
-        public void UnmanagedObject_ShouldHaveSchema()
-        {
-            var person = new Person();
-
-            Assert.That(person.ObjectSchema, Is.Not.Null);
-            Assert.That(person.ObjectSchema.Count, Is.AtLeast(1));
-        }
-#endif
-
         private static void ValidateBuiltSchema(ObjectSchema.Builder builder, params Property[] expectedProperties)
         {
             var schema = builder.Build();
