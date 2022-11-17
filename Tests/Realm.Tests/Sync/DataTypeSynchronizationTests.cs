@@ -417,15 +417,15 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partition = Guid.NewGuid().ToString();
-                var realm1 = await GetIntegrationRealmAsync(partition);
-                var realm2 = await GetIntegrationRealmAsync(partition);
+                var realm1 = await GetIntegrationRealmAsync(partition).Timeout(10_000, "Open Realm 1");
+                var realm2 = await GetIntegrationRealmAsync(partition).Timeout(10_000, "Open Realm 2");
 
                 var obj1 = realm1.Write(() =>
                 {
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectAsync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2, "initial obj from 1 shows up in 2");
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);

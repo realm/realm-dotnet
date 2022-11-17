@@ -256,17 +256,17 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true);
+                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "Open Realm");
 
                 // This should be removed when we remove Session.Error
                 var obsoleteSessionErrorTriggered = false;
 
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
+                // priority is given to the newer approach in SyncConfigurationBase, so this should never be reached
                 Session.Error += OnSessionError;
 
                 await TriggerClientReset(realm);
 
-                var clientEx = await errorTcs.Task;
+                var clientEx = await errorTcs.Task.Timeout(20_000, "Expected client reset");
 
                 Assert.That(manualResetFallbackHandled, Is.True);
 
@@ -408,7 +408,7 @@ namespace Realms.Tests.Sync
 
                 // ===== clientA =====
                 var tcsAfterClientResetA = new TaskCompletionSource<object>();
-                var configA = await GetIntegrationConfigAsync(partition);
+                var configA = await GetIntegrationConfigAsync(partition).Timeout(10_000, "Get config");
                 configA.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
                 var afterCbA = GetOnAfterHandler(tcsAfterClientResetA, (before, after) =>
                 {
@@ -509,7 +509,7 @@ namespace Realms.Tests.Sync
                 await tcsAfterClientResetB.Task.Timeout(10_000, "Client Reset B");
                 await tcsAfterRemoteUpdateA.Task.Timeout(10_000, "After remote update A");
                 Assert.That(stringsA.ToArray(), Is.EquivalentTo(new[] { "0", "1", "3" }));
-            });
+            }, timeout: 120_000);
         }
 
         private async Task<SyncConfigurationBase> GetConfigForApp(string appType)
@@ -824,7 +824,7 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
 
-                var config = await GetConfigForApp(appType);
+                var config = await GetConfigForApp(appType).Timeout(10_000, "Get config");
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -854,16 +854,16 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb, manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true);
+                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "Open Realm");
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(20_000, "Expect client reset");
 
                 Assert.That(manualFallbackTriggered, Is.True);
                 Assert.That(onBeforeTriggered, Is.True);
                 Assert.That(onAfterResetTriggered, Is.True);
-            });
+            }, timeout: 120_000);
         }
 
         [Test]

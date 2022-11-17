@@ -112,12 +112,12 @@ namespace Realms.Tests.Sync
             await WaitForDownloadAsync(realm);
         }
 
-        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2, string message = null)
             where T : IRealmObject
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
+            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message);
         }
 
         protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
@@ -267,7 +267,7 @@ namespace Realms.Tests.Sync
                 session.Stop();
             }
 
-            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig);
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig).Timeout(10_000, detail: "Trigger client reset");
 
             if (restartSession)
             {

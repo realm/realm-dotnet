@@ -116,9 +116,9 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync();
+                var flxConfig = await GetFLXIntegrationConfigAsync().Timeout(10_000, "Get config");
                 flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetRealmAsync(flxConfig);
+                using var realm = await GetRealmAsync(flxConfig).Timeout(10_000, "Open Realm");
                 var partitionLike = Guid.NewGuid().ToString();
 
                 Assert.DoesNotThrow(() =>
@@ -135,10 +135,10 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(10_000, detail: "Wait for upload");
 
                 var documents = await GetRemoteObjects<BasicAsymmetricObject>(
-                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike).Timeout(10_000, "Get remote objects");
 
                 Assert.That(documents.Length, Is.EqualTo(4));
                 Assert.That(documents.Where(x => x.PartitionLike == partitionLike).Count, Is.EqualTo(4));
@@ -700,7 +700,7 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetRealmWithRealmValueSchemaAsync()
         {
-            var flxConfig = await GetFLXIntegrationConfigAsync();
+            var flxConfig = await GetFLXIntegrationConfigAsync().Timeout(10_000, "Get integration config");
             flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
             flxConfig.PopulateInitialSubscriptions = (realm) =>
             {
@@ -708,7 +708,7 @@ namespace Realms.Tests.Sync
                 realm.Subscriptions.Add(query);
             };
 
-            return await GetRealmAsync(flxConfig);
+            return await GetRealmAsync(flxConfig).Timeout(10_000, "Open Realm");
         }
     }
 
