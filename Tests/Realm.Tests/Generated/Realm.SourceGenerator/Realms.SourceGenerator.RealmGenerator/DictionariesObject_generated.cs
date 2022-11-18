@@ -51,8 +51,8 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("NullableObjectIdDictionary", Realms.RealmValueType.ObjectId, areElementsNullable: true, managedName: "NullableObjectIdDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableBinaryDictionary", Realms.RealmValueType.Data, areElementsNullable: true, managedName: "NullableBinaryDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("BinaryDictionary", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "BinaryDictionary"),
-            Realms.Schema.Property.ObjectDictionary("ObjectDictionary", "Realms.Tests.IntPropertyObject", managedName: "ObjectDictionary"),
-            Realms.Schema.Property.ObjectDictionary("EmbeddedObjectDictionary", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDictionary"),
+            Realms.Schema.Property.ObjectDictionary("ObjectDictionary", "IntPropertyObject", managedName: "ObjectDictionary"),
+            Realms.Schema.Property.ObjectDictionary("EmbeddedObjectDictionary", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDictionary"),
             Realms.Schema.Property.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
         }.Build();
 

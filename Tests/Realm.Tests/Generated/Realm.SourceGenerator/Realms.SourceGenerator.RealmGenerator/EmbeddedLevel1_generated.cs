@@ -23,7 +23,7 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("String", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
             Realms.Schema.Property.Object("Child", "EmbeddedLevel2", managedName: "Child"),
-            Realms.Schema.Property.ObjectList("Children", "Realms.Tests.EmbeddedLevel2", managedName: "Children"),
+            Realms.Schema.Property.ObjectList("Children", "EmbeddedLevel2", managedName: "Children"),
         }.Build();
 
         #region IEmbeddedObject implementation

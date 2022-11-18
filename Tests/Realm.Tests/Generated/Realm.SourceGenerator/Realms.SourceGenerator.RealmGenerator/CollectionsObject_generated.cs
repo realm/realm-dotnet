@@ -50,7 +50,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveSet("NullableDecimalSet", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimalSet"),
             Realms.Schema.Property.PrimitiveSet("NullableDecimal128Set", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimal128Set"),
             Realms.Schema.Property.PrimitiveSet("NullableObjectIdSet", Realms.RealmValueType.ObjectId, areElementsNullable: true, managedName: "NullableObjectIdSet"),
-            Realms.Schema.Property.ObjectSet("ObjectSet", "Realms.Tests.IntPropertyObject", managedName: "ObjectSet"),
+            Realms.Schema.Property.ObjectSet("ObjectSet", "IntPropertyObject", managedName: "ObjectSet"),
             Realms.Schema.Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
             Realms.Schema.Property.PrimitiveList("CharList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),
             Realms.Schema.Property.PrimitiveList("ByteList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteList"),
@@ -80,8 +80,8 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveList("NullableDecimalList", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimalList"),
             Realms.Schema.Property.PrimitiveList("NullableDecimal128List", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimal128List"),
             Realms.Schema.Property.PrimitiveList("NullableObjectIdList", Realms.RealmValueType.ObjectId, areElementsNullable: true, managedName: "NullableObjectIdList"),
-            Realms.Schema.Property.ObjectList("ObjectList", "Realms.Tests.IntPropertyObject", managedName: "ObjectList"),
-            Realms.Schema.Property.ObjectList("EmbeddedObjectList", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectList"),
+            Realms.Schema.Property.ObjectList("ObjectList", "IntPropertyObject", managedName: "ObjectList"),
+            Realms.Schema.Property.ObjectList("EmbeddedObjectList", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectList"),
             Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
             Realms.Schema.Property.PrimitiveDictionary("CharDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharDict"),
             Realms.Schema.Property.PrimitiveDictionary("ByteDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteDict"),
@@ -111,7 +111,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("NullableDecimalDict", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimalDict"),
             Realms.Schema.Property.PrimitiveDictionary("NullableDecimal128Dict", Realms.RealmValueType.Decimal128, areElementsNullable: true, managedName: "NullableDecimal128Dict"),
             Realms.Schema.Property.PrimitiveDictionary("NullableObjectIdDict", Realms.RealmValueType.ObjectId, areElementsNullable: true, managedName: "NullableObjectIdDict"),
-            Realms.Schema.Property.ObjectDictionary("ObjectDict", "Realms.Tests.IntPropertyObject", managedName: "ObjectDict"),
+            Realms.Schema.Property.ObjectDictionary("ObjectDict", "IntPropertyObject", managedName: "ObjectDict"),
             Realms.Schema.Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
 

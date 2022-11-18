@@ -25,7 +25,7 @@ namespace Realms.Tests
             Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Int", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
             Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
-            Realms.Schema.Property.Backlinks("ContainingCollections", "Realms.Tests.SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
+            Realms.Schema.Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
         }.Build();
 
         #region IRealmObject implementation

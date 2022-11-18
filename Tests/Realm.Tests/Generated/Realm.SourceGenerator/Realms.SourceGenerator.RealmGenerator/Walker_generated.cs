@@ -23,8 +23,8 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "Dog", managedName: "TopDog"),
-            Realms.Schema.Property.ObjectList("ListOfDogs", "Realms.Tests.Dog", managedName: "ListOfDogs"),
-            Realms.Schema.Property.ObjectSet("SetOfDogs", "Realms.Tests.Dog", managedName: "SetOfDogs"),
+            Realms.Schema.Property.ObjectList("ListOfDogs", "Dog", managedName: "ListOfDogs"),
+            Realms.Schema.Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
         }.Build();
 
         #region IRealmObject implementation

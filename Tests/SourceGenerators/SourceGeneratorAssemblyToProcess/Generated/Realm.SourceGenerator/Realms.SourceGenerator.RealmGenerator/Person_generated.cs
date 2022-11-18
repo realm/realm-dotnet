@@ -23,7 +23,7 @@ namespace SourceGeneratorPlayground
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Backlinks("Dogs", "SourceGeneratorPlayground.Dog", "Owner", managedName: "Dogs"),
+            Realms.Schema.Property.Backlinks("Dogs", "Dog", "Owner", managedName: "Dogs"),
         }.Build();
 
         #region IRealmObject implementation

@@ -22,8 +22,8 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicSubSubTask", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
-            Realms.Schema.Property.Backlinks("ParentSubTask", "Realms.Tests.Database.DynamicSubTask", "SubSubTasks", managedName: "ParentSubTask"),
-            Realms.Schema.Property.Backlinks("ParentTask", "Realms.Tests.Database.DynamicTask", "SubSubTasks", managedName: "ParentTask"),
+            Realms.Schema.Property.Backlinks("ParentSubTask", "DynamicSubTask", "SubSubTasks", managedName: "ParentSubTask"),
+            Realms.Schema.Property.Backlinks("ParentTask", "DynamicTask", "SubSubTasks", managedName: "ParentTask"),
         }.Build();
 
         #region IEmbeddedObject implementation

@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("BeforeBacklinks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "BeforeBacklinks"),
-            Realms.Schema.Property.Backlinks("Links", "Realms.Tests.Database.SomeClass", "BacklinkObject", managedName: "Links"),
+            Realms.Schema.Property.Backlinks("Links", "SomeClass", "BacklinkObject", managedName: "Links"),
             Realms.Schema.Property.Primitive("AfterBacklinks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "AfterBacklinks"),
         }.Build();
 

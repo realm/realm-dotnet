@@ -56,7 +56,7 @@ namespace Realms.Tests
             Realms.Schema.Property.Primitive("NullableInt16CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16CounterProperty"),
             Realms.Schema.Property.Primitive("NullableInt32CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32CounterProperty"),
             Realms.Schema.Property.Primitive("NullableInt64CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64CounterProperty"),
-            Realms.Schema.Property.Backlinks("ContainersObjects", "Realms.Tests.ObjectWithEmbeddedProperties", "AllTypesObject", managedName: "ContainersObjects"),
+            Realms.Schema.Property.Backlinks("ContainersObjects", "ObjectWithEmbeddedProperties", "AllTypesObject", managedName: "ContainersObjects"),
         }.Build();
 
         #region IEmbeddedObject implementation

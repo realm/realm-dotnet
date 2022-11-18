@@ -141,7 +141,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     if (property.TypeInfo.IsBacklink)
                     {
                         var backlinkProperty = property.GetMappedOrOriginalBacklink();
-                        var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteFullyQualifiedString;
+                        var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.TypeString;
 
                         schemaProperties.AppendLine(@$"Realms.Schema.Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}"", managedName: ""{property.Name}""),");
 
@@ -158,7 +158,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                         {
                             var builderMethodName = $"Object{property.TypeInfo.CollectionType}";
 
-                            var internalTypeString = internalType.MapTo ?? internalType.CompleteFullyQualifiedString;
+                            var internalTypeString = internalType.MapTo ?? internalType.TypeString;
                             schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
                         }
                         else if (internalTypeIsRealmValue)
@@ -185,7 +185,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
-                    var objectName = property.TypeInfo.MapTo ?? property.TypeInfo.CompleteTypeString;
+                    var objectName = property.TypeInfo.MapTo ?? property.TypeInfo.TypeString;
                     schemaProperties.AppendLine(@$"Realms.Schema.Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}"", managedName: ""{property.Name}""),");
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)

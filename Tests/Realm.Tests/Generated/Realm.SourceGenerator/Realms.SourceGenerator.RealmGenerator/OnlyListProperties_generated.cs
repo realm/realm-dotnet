@@ -21,8 +21,8 @@ namespace Realms.Tests.Database
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OnlyListProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.ObjectList("Friends", "Realms.Tests.Database.Person", managedName: "Friends"),
-            Realms.Schema.Property.ObjectList("Enemies", "Realms.Tests.Database.Person", managedName: "Enemies"),
+            Realms.Schema.Property.ObjectList("Friends", "Person", managedName: "Friends"),
+            Realms.Schema.Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
         }.Build();
 
         #region IRealmObject implementation

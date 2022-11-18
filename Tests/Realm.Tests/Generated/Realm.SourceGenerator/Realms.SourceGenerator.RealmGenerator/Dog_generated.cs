@@ -25,7 +25,7 @@ namespace Realms.Tests
             Realms.Schema.Property.Primitive("Color", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Color"),
             Realms.Schema.Property.Primitive("Vaccinated", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Vaccinated"),
             Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
-            Realms.Schema.Property.Backlinks("Owners", "Realms.Tests.Owner", "ListOfDogs", managedName: "Owners"),
+            Realms.Schema.Property.Backlinks("Owners", "Owner", "ListOfDogs", managedName: "Owners"),
         }.Build();
 
         #region IRealmObject implementation

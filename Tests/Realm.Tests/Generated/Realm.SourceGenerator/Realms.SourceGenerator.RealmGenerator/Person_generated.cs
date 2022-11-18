@@ -33,7 +33,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.Primitive("OptionalAddress", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalAddress"),
             Realms.Schema.Property.Primitive("Email", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Email_"),
             Realms.Schema.Property.Primitive("IsInteresting", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
-            Realms.Schema.Property.ObjectList("Friends", "Realms.Tests.Database.Person", managedName: "Friends"),
+            Realms.Schema.Property.ObjectList("Friends", "Person", managedName: "Friends"),
         }.Build();
 
         #region IRealmObject implementation

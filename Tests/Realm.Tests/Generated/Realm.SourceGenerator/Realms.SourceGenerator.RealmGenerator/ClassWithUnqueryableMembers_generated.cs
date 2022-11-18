@@ -24,9 +24,9 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("RealPropertyToSatisfyWeaver", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),
             Realms.Schema.Property.Object("RealmObjectProperty", "Person", managedName: "RealmObjectProperty"),
-            Realms.Schema.Property.ObjectList("RealmListProperty", "Realms.Tests.Database.Person", managedName: "RealmListProperty"),
+            Realms.Schema.Property.ObjectList("RealmListProperty", "Person", managedName: "RealmListProperty"),
             Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
-            Realms.Schema.Property.Backlinks("BacklinkProperty", "Realms.Tests.UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
+            Realms.Schema.Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
         }.Build();
 
         #region IRealmObject implementation

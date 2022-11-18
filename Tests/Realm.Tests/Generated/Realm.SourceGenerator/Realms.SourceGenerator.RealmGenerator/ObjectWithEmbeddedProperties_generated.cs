@@ -23,9 +23,9 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "PrimaryKey"),
             Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
-            Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "Realms.Tests.EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
+            Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
             Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
-            Realms.Schema.Property.ObjectDictionary("DictionaryOfAllTypesObjects", "Realms.Tests.EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
 
         #region IRealmObject implementation

@@ -171,8 +171,7 @@ namespace Realms.SourceGenerator
 
         public virtual string TypeString => TypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
 
-        public virtual string CompleteTypeString => CompleteTypeSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-
+        // This includes nullability annotation and fully qualified name (with namespaces)
         public virtual string CompleteFullyQualifiedString => CompleteTypeSymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
 
         public static PropertyTypeInfo Unsupported => new UnsupportedTypeInfo();

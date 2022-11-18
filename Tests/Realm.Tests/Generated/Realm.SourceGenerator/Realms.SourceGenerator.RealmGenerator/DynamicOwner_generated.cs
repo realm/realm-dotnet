@@ -23,11 +23,11 @@ namespace Realms.Tests.Database
         {
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
-            Realms.Schema.Property.ObjectList("Dogs", "Realms.Tests.Database.DynamicDog", managedName: "Dogs"),
+            Realms.Schema.Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
             Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: true, managedName: "Tags"),
-            Realms.Schema.Property.ObjectDictionary("DogsDictionary", "Realms.Tests.Database.DynamicDog", managedName: "DogsDictionary"),
+            Realms.Schema.Property.ObjectDictionary("DogsDictionary", "DynamicDog", managedName: "DogsDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("TagsDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "TagsDictionary"),
-            Realms.Schema.Property.ObjectSet("DogsSet", "Realms.Tests.Database.DynamicDog", managedName: "DogsSet"),
+            Realms.Schema.Property.ObjectSet("DogsSet", "DynamicDog", managedName: "DogsSet"),
             Realms.Schema.Property.PrimitiveSet("TagsSet", Realms.RealmValueType.String, areElementsNullable: true, managedName: "TagsSet"),
         }.Build();
 

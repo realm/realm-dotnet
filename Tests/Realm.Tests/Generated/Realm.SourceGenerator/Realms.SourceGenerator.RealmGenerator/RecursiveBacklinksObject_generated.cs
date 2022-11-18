@@ -23,7 +23,7 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Object("Parent", "RecursiveBacklinksObject", managedName: "Parent"),
-            Realms.Schema.Property.Backlinks("Children", "Realms.Tests.RecursiveBacklinksObject", "Parent", managedName: "Children"),
+            Realms.Schema.Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent", managedName: "Children"),
         }.Build();
 
         #region IRealmObject implementation

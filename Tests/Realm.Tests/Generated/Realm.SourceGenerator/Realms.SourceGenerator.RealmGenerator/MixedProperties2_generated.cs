@@ -21,9 +21,9 @@ namespace Realms.Tests.Database
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("MixedProperties2", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.ObjectList("Friends", "Realms.Tests.Database.Person", managedName: "Friends"),
+            Realms.Schema.Property.ObjectList("Friends", "Person", managedName: "Friends"),
             Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
-            Realms.Schema.Property.ObjectList("Enemies", "Realms.Tests.Database.Person", managedName: "Enemies"),
+            Realms.Schema.Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 

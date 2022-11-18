@@ -21,8 +21,8 @@ namespace Realms.Tests.Database
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OrderedContainer", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.ObjectList("Items", "Realms.Tests.Database.OrderedObject", managedName: "Items"),
-            Realms.Schema.Property.ObjectDictionary("ItemsDictionary", "Realms.Tests.Database.OrderedObject", managedName: "ItemsDictionary"),
+            Realms.Schema.Property.ObjectList("Items", "OrderedObject", managedName: "Items"),
+            Realms.Schema.Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),
         }.Build();
 
         #region IRealmObject implementation

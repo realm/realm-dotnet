@@ -24,7 +24,7 @@ namespace Realms.Tests.Sync
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedListObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
             Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.ObjectList("EmbeddedListObject", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedListObject"),
+            Realms.Schema.Property.ObjectList("EmbeddedListObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedListObject"),
         }.Build();
 
         #region IAsymmetricObject implementation

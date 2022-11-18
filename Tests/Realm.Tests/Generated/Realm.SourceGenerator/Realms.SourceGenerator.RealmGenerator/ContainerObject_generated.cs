@@ -21,7 +21,7 @@ namespace Realms.Tests
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ContainerObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.ObjectList("Items", "Realms.Tests.IntPropertyObject", managedName: "Items"),
+            Realms.Schema.Property.ObjectList("Items", "IntPropertyObject", managedName: "Items"),
         }.Build();
 
         #region IRealmObject implementation
