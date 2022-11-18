@@ -21,7 +21,7 @@ namespace Realms.Tests
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Object("Parent", "Realms.Tests.ClassWithUnqueryableMembers", managedName: "Parent"),
+            Realms.Schema.Property.Object("Parent", "ClassWithUnqueryableMembers", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation

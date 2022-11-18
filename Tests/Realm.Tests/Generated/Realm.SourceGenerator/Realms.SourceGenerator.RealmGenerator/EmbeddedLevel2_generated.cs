@@ -22,7 +22,7 @@ namespace Realms.Tests
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedLevel2", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Realms.Schema.Property.Primitive("String", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
-            Realms.Schema.Property.Object("Child", "Realms.Tests.EmbeddedLevel3", managedName: "Child"),
+            Realms.Schema.Property.Object("Child", "EmbeddedLevel3", managedName: "Child"),
             Realms.Schema.Property.ObjectList("Children", "Realms.Tests.EmbeddedLevel3", managedName: "Children"),
         }.Build();
 

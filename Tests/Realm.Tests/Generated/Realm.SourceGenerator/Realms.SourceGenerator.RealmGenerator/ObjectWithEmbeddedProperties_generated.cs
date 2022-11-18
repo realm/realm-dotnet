@@ -22,9 +22,9 @@ namespace Realms.Tests
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithEmbeddedProperties", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "PrimaryKey"),
-            Realms.Schema.Property.Object("AllTypesObject", "Realms.Tests.EmbeddedAllTypesObject", managedName: "AllTypesObject"),
+            Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
             Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "Realms.Tests.EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
-            Realms.Schema.Property.Object("RecursiveObject", "Realms.Tests.EmbeddedLevel1", managedName: "RecursiveObject"),
+            Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
             Realms.Schema.Property.ObjectDictionary("DictionaryOfAllTypesObjects", "Realms.Tests.EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
 

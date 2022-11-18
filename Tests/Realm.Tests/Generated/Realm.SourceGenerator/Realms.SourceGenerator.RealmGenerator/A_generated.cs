@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("A", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Value"),
-            Realms.Schema.Property.Object("B", "Realms.Tests.Database.B", managedName: "B"),
+            Realms.Schema.Property.Object("B", "B", managedName: "B"),
         }.Build();
 
         #region IRealmObject implementation

@@ -39,8 +39,8 @@ namespace Realms.Tests
             Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
             Realms.Schema.Property.Primitive("ByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "ByteArrayProperty"),
             Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
-            Realms.Schema.Property.Object("ObjectProperty", "Realms.Tests.IntPropertyObject", managedName: "ObjectProperty"),
-            Realms.Schema.Property.Object("EmbeddedObjectProperty", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectProperty"),
+            Realms.Schema.Property.Object("ObjectProperty", "IntPropertyObject", managedName: "ObjectProperty"),
+            Realms.Schema.Property.Object("EmbeddedObjectProperty", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectProperty"),
         }.Build();
 
         #region IRealmObject implementation

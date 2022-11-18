@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicSubTask", ObjectSchema.ObjectType.EmbeddedObject)
         {
             Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
-            Realms.Schema.Property.Object("CompletionReport", "Realms.Tests.Database.CompletionReport", managedName: "CompletionReport"),
+            Realms.Schema.Property.Object("CompletionReport", "CompletionReport", managedName: "CompletionReport"),
             Realms.Schema.Property.ObjectList("SubSubTasks", "Realms.Tests.Database.DynamicSubSubTask", managedName: "SubSubTasks"),
         }.Build();
 

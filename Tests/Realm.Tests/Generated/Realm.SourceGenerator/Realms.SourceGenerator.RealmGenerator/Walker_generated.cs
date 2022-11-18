@@ -22,7 +22,7 @@ namespace Realms.Tests
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Walker", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Object("TopDog", "Realms.Tests.Dog", managedName: "TopDog"),
+            Realms.Schema.Property.Object("TopDog", "Dog", managedName: "TopDog"),
             Realms.Schema.Property.ObjectList("ListOfDogs", "Realms.Tests.Dog", managedName: "ListOfDogs"),
             Realms.Schema.Property.ObjectSet("SetOfDogs", "Realms.Tests.Dog", managedName: "SetOfDogs"),
         }.Build();

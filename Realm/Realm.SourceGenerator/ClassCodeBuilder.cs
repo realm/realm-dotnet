@@ -112,7 +112,7 @@ namespace {_generatedNamespaceName}
 
             foreach (var property in _classInfo.Properties)
             {
-                var type = property.TypeInfo.CompleteTypeString;
+                var type = property.TypeInfo.CompleteFullyQualifiedString;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection;
                 var setterString = hasSetter ? " set;" : string.Empty;
@@ -141,7 +141,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     if (property.TypeInfo.IsBacklink)
                     {
                         var backlinkProperty = property.GetMappedOrOriginalBacklink();
-                        var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteTypeString;
+                        var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteFullyQualifiedString;
 
                         schemaProperties.AppendLine(@$"Realms.Schema.Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}"", managedName: ""{property.Name}""),");
 
@@ -158,7 +158,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                         {
                             var builderMethodName = $"Object{property.TypeInfo.CollectionType}";
 
-                            var internalTypeString = internalType.MapTo ?? internalType.CompleteTypeString;
+                            var internalTypeString = internalType.MapTo ?? internalType.CompleteFullyQualifiedString;
                             schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
                         }
                         else if (internalTypeIsRealmValue)
@@ -226,7 +226,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     }
                     else
                     {
-                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteTypeString}))
+                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
 {{
     newAccessor.{property.Name} = oldAccessor.{property.Name};
 }}");
@@ -510,7 +510,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
             {
                 var name = property.Name;
                 var backingFieldName = GetBackingFieldName(name);
-                var type = property.TypeInfo.CompleteTypeString;
+                var type = property.TypeInfo.CompleteFullyQualifiedString;
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
@@ -528,7 +528,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     }
                     else
                     {
-                        var parameterString = property.TypeInfo.InternalType.CompleteTypeString;
+                        var parameterString = property.TypeInfo.InternalType.CompleteFullyQualifiedString;
                         var propertyMapToName = property.GetMappedOrOriginalName();
 
                         string constructorString;
@@ -551,7 +551,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                                 throw new NotImplementedException($"Collection {property.TypeInfo.CollectionType} is not supported yet");
                         }
 
-                        var propertyString = $@"public {property.TypeInfo.CompleteTypeString} {property.Name} {{ get; }} = {constructorString};";
+                        var propertyString = $@"public {property.TypeInfo.CompleteFullyQualifiedString} {property.Name} {{ get; }} = {constructorString};";
 
                         propertiesString.AppendLine(propertyString);
                         propertiesString.AppendLine();
@@ -735,7 +735,7 @@ return;".Indent());
 
             foreach (var property in _classInfo.Properties)
             {
-                var type = property.TypeInfo.CompleteTypeString;
+                var type = property.TypeInfo.CompleteFullyQualifiedString;
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
@@ -743,7 +743,7 @@ return;".Indent());
                 {
                     var backingFieldName = GetBackingFieldName(property.Name);
                     var backingFieldString = $@"private {type} {backingFieldName};";
-                    var internalTypeString = property.TypeInfo.InternalType.CompleteTypeString;
+                    var internalTypeString = property.TypeInfo.InternalType.CompleteFullyQualifiedString;
 
                     string getFieldString;
 

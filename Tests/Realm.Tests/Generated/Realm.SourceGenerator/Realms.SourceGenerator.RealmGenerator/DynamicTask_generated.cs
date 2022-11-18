@@ -23,7 +23,7 @@ namespace Realms.Tests.Database
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
-            Realms.Schema.Property.Object("CompletionReport", "Realms.Tests.Database.CompletionReport", managedName: "CompletionReport"),
+            Realms.Schema.Property.Object("CompletionReport", "CompletionReport", managedName: "CompletionReport"),
             Realms.Schema.Property.ObjectList("SubTasks", "Realms.Tests.Database.DynamicSubTask", managedName: "SubTasks"),
             Realms.Schema.Property.ObjectList("SubSubTasks", "Realms.Tests.Database.DynamicSubSubTask", managedName: "SubSubTasks"),
             Realms.Schema.Property.ObjectDictionary("SubTasksDictionary", "Realms.Tests.Database.DynamicSubTask", managedName: "SubTasksDictionary"),

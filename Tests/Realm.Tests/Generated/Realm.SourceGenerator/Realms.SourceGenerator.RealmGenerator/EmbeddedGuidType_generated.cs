@@ -29,7 +29,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.PrimitiveList("OptionalList", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalList"),
             Realms.Schema.Property.PrimitiveSet("OptionalSet", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalSet"),
             Realms.Schema.Property.PrimitiveDictionary("OptionalDict", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalDict"),
-            Realms.Schema.Property.Object("LinkProperty", "Realms.Tests.Database.GuidType", managedName: "LinkProperty"),
+            Realms.Schema.Property.Object("LinkProperty", "GuidType", managedName: "LinkProperty"),
             Realms.Schema.Property.RealmValue("MixedProperty", managedName: "MixedProperty"),
             Realms.Schema.Property.RealmValueList("MixedList", managedName: "MixedList"),
             Realms.Schema.Property.RealmValueSet("MixedSet", managedName: "MixedSet"),

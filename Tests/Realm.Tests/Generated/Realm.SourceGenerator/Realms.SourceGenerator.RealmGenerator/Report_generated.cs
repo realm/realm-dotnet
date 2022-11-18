@@ -24,7 +24,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Ref", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Ref"),
             Realms.Schema.Property.Primitive("Date", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Date"),
-            Realms.Schema.Property.Object("Parent", "Realms.Tests.Database.Product", managedName: "Parent"),
+            Realms.Schema.Property.Object("Parent", "Product", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation

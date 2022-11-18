@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OnManagedTestClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Object("RelatedObject", "Realms.Tests.Database.OnManagedTestClass", managedName: "RelatedObject"),
+            Realms.Schema.Property.Object("RelatedObject", "OnManagedTestClass", managedName: "RelatedObject"),
             Realms.Schema.Property.ObjectList("RelatedCollection", "Realms.Tests.Database.OnManagedTestClass", managedName: "RelatedCollection"),
         }.Build();
 

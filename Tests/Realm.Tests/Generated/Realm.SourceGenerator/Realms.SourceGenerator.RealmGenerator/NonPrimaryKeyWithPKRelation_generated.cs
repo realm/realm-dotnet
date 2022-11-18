@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
-            Realms.Schema.Property.Object("OtherObject", "Realms.Tests.Database.PrimaryKeyObject", managedName: "OtherObject"),
+            Realms.Schema.Property.Object("OtherObject", "PrimaryKeyObject", managedName: "OtherObject"),
         }.Build();
 
         #region IRealmObject implementation

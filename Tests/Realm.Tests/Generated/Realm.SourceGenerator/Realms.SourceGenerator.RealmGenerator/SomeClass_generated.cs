@@ -21,7 +21,7 @@ namespace Realms.Tests.Database
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SomeClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Object("BacklinkObject", "Realms.Tests.Database.BacklinkObject", managedName: "BacklinkObject"),
+            Realms.Schema.Property.Object("BacklinkObject", "BacklinkObject", managedName: "BacklinkObject"),
         }.Build();
 
         #region IRealmObject implementation

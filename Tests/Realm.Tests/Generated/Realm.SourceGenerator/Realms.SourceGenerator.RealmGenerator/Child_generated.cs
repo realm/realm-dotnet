@@ -23,7 +23,7 @@ namespace Realms.Tests.Database
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Object("Parent", "Realms.Tests.Database.Parent", managedName: "Parent"),
+            Realms.Schema.Property.Object("Parent", "Parent", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation
