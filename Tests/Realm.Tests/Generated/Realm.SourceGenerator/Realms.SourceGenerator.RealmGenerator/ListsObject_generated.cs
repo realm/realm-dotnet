@@ -52,7 +52,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveList("NullableGuidList", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "NullableGuidList"),
             Realms.Schema.Property.PrimitiveList("NullableStringList", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NullableStringList"),
             Realms.Schema.Property.PrimitiveList("NullableByteArrayList", Realms.RealmValueType.Data, areElementsNullable: true, managedName: "NullableByteArrayList"),
-            Realms.Schema.Property.Realms.RealmValueList("RealmValueList", managedName: "RealmValueList"),
+            Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
         }.Build();
 
         #region IRealmObject implementation

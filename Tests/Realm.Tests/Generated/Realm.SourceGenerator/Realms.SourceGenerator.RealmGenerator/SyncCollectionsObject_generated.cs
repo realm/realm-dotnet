@@ -40,7 +40,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveList("DateTimeOffsetList", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetList"),
             Realms.Schema.Property.ObjectList("ObjectList", "Realms.Tests.IntPropertyObject", managedName: "ObjectList"),
             Realms.Schema.Property.ObjectList("EmbeddedObjectList", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectList"),
-            Realms.Schema.Property.Realms.RealmValueList("RealmValueList", managedName: "RealmValueList"),
+            Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
             Realms.Schema.Property.PrimitiveSet("CharSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharSet"),
             Realms.Schema.Property.PrimitiveSet("ByteSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteSet"),
             Realms.Schema.Property.PrimitiveSet("Int16Set", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16Set"),
@@ -56,7 +56,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveSet("ByteArraySet", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArraySet"),
             Realms.Schema.Property.PrimitiveSet("DateTimeOffsetSet", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetSet"),
             Realms.Schema.Property.ObjectSet("ObjectSet", "Realms.Tests.IntPropertyObject", managedName: "ObjectSet"),
-            Realms.Schema.Property.Realms.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
+            Realms.Schema.Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
             Realms.Schema.Property.PrimitiveDictionary("CharDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharDict"),
             Realms.Schema.Property.PrimitiveDictionary("ByteDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteDict"),
             Realms.Schema.Property.PrimitiveDictionary("Int16Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16Dict"),
@@ -73,7 +73,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("DateTimeOffsetDict", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetDict"),
             Realms.Schema.Property.ObjectDictionary("ObjectDict", "Realms.Tests.IntPropertyObject", managedName: "ObjectDict"),
             Realms.Schema.Property.ObjectDictionary("EmbeddedObjectDict", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDict"),
-            Realms.Schema.Property.Realms.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
+            Realms.Schema.Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
 
         #region IRealmObject implementation

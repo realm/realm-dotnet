@@ -53,7 +53,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("BinaryDictionary", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "BinaryDictionary"),
             Realms.Schema.Property.ObjectDictionary("ObjectDictionary", "Realms.Tests.IntPropertyObject", managedName: "ObjectDictionary"),
             Realms.Schema.Property.ObjectDictionary("EmbeddedObjectDictionary", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDictionary"),
-            Realms.Schema.Property.Realms.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
+            Realms.Schema.Property.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
         }.Build();
 
         #region IRealmObject implementation

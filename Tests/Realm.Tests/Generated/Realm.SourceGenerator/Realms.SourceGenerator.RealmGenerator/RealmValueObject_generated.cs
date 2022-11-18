@@ -23,9 +23,9 @@ namespace Realms.Tests
         {
             Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
-            Realms.Schema.Property.Realms.RealmValueList("RealmValueList", managedName: "RealmValueList"),
-            Realms.Schema.Property.Realms.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
-            Realms.Schema.Property.Realms.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
+            Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
+            Realms.Schema.Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
+            Realms.Schema.Property.RealmValueDictionary("RealmValueDictionary", managedName: "RealmValueDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("TestDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "TestDict"),
         }.Build();
 

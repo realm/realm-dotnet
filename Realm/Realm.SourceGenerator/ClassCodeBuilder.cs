@@ -163,7 +163,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                         }
                         else if (internalTypeIsRealmValue)
                         {
-                            var builderMethodName = $"Realms.RealmValue{property.TypeInfo.CollectionType}";
+                            var builderMethodName = $"RealmValue{property.TypeInfo.CollectionType}";
 
                             schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
                         }
