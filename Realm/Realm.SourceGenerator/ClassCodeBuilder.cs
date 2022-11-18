@@ -122,7 +122,7 @@ namespace {_generatedNamespaceName}
             }
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never)]
-internal interface {_accessorInterfaceName} : IRealmAccessor
+internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
 }}";
@@ -143,7 +143,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                         var backlinkProperty = property.GetMappedOrOriginalBacklink();
                         var backlinkType = property.TypeInfo.InternalType.MapTo ?? property.TypeInfo.InternalType.CompleteTypeString;
 
-                        schemaProperties.AppendLine(@$"Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}"", managedName: ""{property.Name}""),");
+                        schemaProperties.AppendLine(@$"Realms.Schema.Property.Backlinks(""{property.GetMappedOrOriginalName()}"", ""{backlinkType}"", ""{backlinkProperty}"", managedName: ""{property.Name}""),");
 
                         // Nothing to do for the copy to realm part
                     }
@@ -159,13 +159,13 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             var builderMethodName = $"Object{property.TypeInfo.CollectionType}";
 
                             var internalTypeString = internalType.MapTo ?? internalType.CompleteTypeString;
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
+                            schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", ""{internalTypeString}"", managedName: ""{property.Name}""),");
                         }
                         else if (internalTypeIsRealmValue)
                         {
-                            var builderMethodName = $"RealmValue{property.TypeInfo.CollectionType}";
+                            var builderMethodName = $"Realms.RealmValue{property.TypeInfo.CollectionType}";
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
+                            schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
                         }
                         else
                         {
@@ -174,7 +174,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                             var internalTypeString = GetRealmValueType(internalType);
                             var internalTypeNullable = property.IsRequired ? "false" : internalType.IsNullable.ToCodeString();
 
-                            schemaProperties.AppendLine(@$"Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}, managedName: ""{property.Name}""),");
+                            schemaProperties.AppendLine(@$"Realms.Schema.Property.{builderMethodName}(""{property.GetMappedOrOriginalName()}"", {internalTypeString}, areElementsNullable: {internalTypeNullable}, managedName: ""{property.Name}""),");
                         }
 
                         skipDefaultsContent.AppendLine($"newAccessor.{property.Name}.Clear();");
@@ -186,7 +186,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 else if (property.TypeInfo.ScalarType == ScalarType.Object)
                 {
                     var objectName = property.TypeInfo.MapTo ?? property.TypeInfo.CompleteTypeString;
-                    schemaProperties.AppendLine(@$"Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}"", managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Object(""{property.GetMappedOrOriginalName()}"", ""{objectName}"", managedName: ""{property.Name}""),");
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
@@ -200,7 +200,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {
-                    schemaProperties.AppendLine(@$"Property.RealmValue(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.RealmValue(""{property.GetMappedOrOriginalName()}"", managedName: ""{property.Name}""),");
 
                     copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
@@ -210,7 +210,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
                     var isIndexed = property.IsIndexed.ToCodeString();
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
                     var shouldSetAlways = property.IsRequired ||
                         property.TypeInfo.NullableAnnotation == NullableAnnotation.Annotated ||
@@ -247,7 +247,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
             var objectTypeString = $"ObjectSchema.ObjectType.{_classInfo.ObjectType}";
 
-            var schema = @$"public static ObjectSchema RealmSchema = new ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
+            var schema = @$"public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
@@ -284,7 +284,7 @@ internal interface {_accessorInterfaceName} : IRealmAccessor
 
 private {_accessorInterfaceName} _accessor;
 
-IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
 internal {_accessorInterfaceName} Accessor => _accessor ?? (_accessor = new {_unmanagedAccessorClassName}(typeof({_classInfo.Name})));
 
@@ -298,22 +298,22 @@ public bool IsValid => Accessor.IsValid;
 public bool IsFrozen => Accessor.IsFrozen;
 
 [IgnoreDataMember, XmlIgnore]
-public Realm Realm => Accessor.Realm;
+public Realms.Realm Realm => Accessor.Realm;
 
 [IgnoreDataMember, XmlIgnore]
-public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
 [IgnoreDataMember, XmlIgnore]
-public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
 [IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
 $@"[IgnoreDataMember, XmlIgnore]
-public IRealmObjectBase Parent => Accessor.GetParent();")}
+public Realms.IRealmObjectBase Parent => Accessor.GetParent();")}
 
-public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;
     var oldAccessor = ({_accessorInterfaceName})_accessor;
@@ -412,9 +412,9 @@ private void UnsubscribeFromNotifications()
     Accessor.UnsubscribeFromNotifications();
 }}")}
 
-public static explicit operator {_classInfo.Name}(RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 
-public static implicit operator RealmValue({_classInfo.Name} val) => RealmValue.Object(val);
+public static implicit operator Realms.RealmValue({_classInfo.Name} val) => Realms.RealmValue.Object(val);
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -437,7 +437,7 @@ $@"public override bool Equals(object obj)
         return !IsValid;
     }}
 
-    if (obj is not IRealmObjectBase iro)
+    if (obj is not Realms.IRealmObjectBase iro)
     {{
         return false;
     }}
@@ -477,18 +477,18 @@ $@"public override string ToString() => Accessor.ToString();")}";
             var valueAccessor = primaryKeyProperty == null ? "null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never)]
-private class {_helperClassName} : IRealmObjectHelper
+private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 {{
-    public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+    public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
     {{
         throw new InvalidOperationException(""This method should not be called for source generated classes."");
     }}
 
-    public ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
+    public Realms.ManagedAccessor CreateAccessor() => new {_managedAccessorClassName}();
 
-    public IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
+    public Realms.IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
 
-    public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+    public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
     {{
         value = {valueAccessor};
         return {BoolToString(primaryKeyProperty != null)};
@@ -689,7 +689,7 @@ return;".Indent());
 }};";
             }
 
-            return $@"internal class {_unmanagedAccessorClassName} : UnmanagedAccessor, {_accessorInterfaceName}
+            return $@"internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesString.Indent(trimNewLines: true)}
 
@@ -697,17 +697,17 @@ return;".Indent());
     {{
     }}
 
-    public override RealmValue GetValue(string propertyName)
+    public override Realms.RealmValue GetValue(string propertyName)
     {{
 {getValueBody.Indent(2, trimNewLines: true)}
     }}
 
-    public override void SetValue(string propertyName, RealmValue val)
+    public override void SetValue(string propertyName, Realms.RealmValue val)
     {{
 {setValueBody.Indent(2, trimNewLines: true)}
     }}
 
-    public override void SetValueUnique(string propertyName, RealmValue val)
+    public override void SetValueUnique(string propertyName, Realms.RealmValue val)
     {{
 {setValueUniqueLines.Indent(2, trimNewLines: true)}
     }}
@@ -794,7 +794,7 @@ public {type} {name}
             }
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never)]
-internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfaceName}
+internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
 }}";
@@ -826,7 +826,7 @@ internal class {_managedAccessorClassName} : ManagedAccessor, {_accessorInterfac
                 _ => throw new NotImplementedException(),
             };
 
-            return "RealmValueType." + endString;
+            return "Realms.RealmValueType." + endString;
         }
 
         private static string BoolToString(bool value) => value ? "true" : "false";

@@ -19,20 +19,20 @@ namespace Realms.Tests.Database
     [Woven(typeof(SerializedObjectObjectHelper))]
     public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("IntValue", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.PrimitiveDictionary("Dict", RealmValueType.Int, areElementsNullable: false, managedName: "Dict"),
-            Property.PrimitiveList("List", RealmValueType.String, areElementsNullable: true, managedName: "List"),
-            Property.PrimitiveSet("Set", RealmValueType.String, areElementsNullable: true, managedName: "Set"),
+            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.PrimitiveDictionary("Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Dict"),
+            Realms.Schema.Property.PrimitiveList("List", Realms.RealmValueType.String, areElementsNullable: true, managedName: "List"),
+            Realms.Schema.Property.PrimitiveSet("Set", Realms.RealmValueType.String, areElementsNullable: true, managedName: "Set"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ISerializedObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ISerializedObjectAccessor Accessor => _accessor ?? (_accessor = new SerializedObjectUnmanagedAccessor(typeof(SerializedObject)));
 
@@ -46,18 +46,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ISerializedObjectAccessor)managedAccessor;
             var oldAccessor = (ISerializedObjectAccessor)_accessor;
@@ -175,9 +175,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SerializedObject(RealmValue val) => val.AsRealmObject<SerializedObject>();
+        public static explicit operator SerializedObject(Realms.RealmValue val) => val.AsRealmObject<SerializedObject>();
 
-        public static implicit operator RealmValue(SerializedObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SerializedObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -199,7 +199,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -212,18 +212,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class SerializedObjectObjectHelper : IRealmObjectHelper
+        private class SerializedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new SerializedObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new SerializedObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new SerializedObject();
+            public Realms.IRealmObjectBase CreateInstance() => new SerializedObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -235,21 +235,21 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ISerializedObjectAccessor : IRealmAccessor
+    internal interface ISerializedObjectAccessor : Realms.IRealmAccessor
     {
         int IntValue { get; set; }
 
         string Name { get; set; }
 
-        IDictionary<string, int> Dict { get; }
+        System.Collections.Generic.IDictionary<string, int> Dict { get; }
 
-        IList<string> List { get; }
+        System.Collections.Generic.IList<string> List { get; }
 
-        ISet<string> Set { get; }
+        System.Collections.Generic.ISet<string> Set { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class SerializedObjectManagedAccessor : ManagedAccessor, ISerializedObjectAccessor
+    internal class SerializedObjectManagedAccessor : Realms.ManagedAccessor, ISerializedObjectAccessor
     {
         public int IntValue
         {
@@ -263,8 +263,8 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Name", value);
         }
 
-        private IDictionary<string, int> _dict;
-        public IDictionary<string, int> Dict
+        private System.Collections.Generic.IDictionary<string, int> _dict;
+        public System.Collections.Generic.IDictionary<string, int> Dict
         {
             get
             {
@@ -277,8 +277,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private IList<string> _list;
-        public IList<string> List
+        private System.Collections.Generic.IList<string> _list;
+        public System.Collections.Generic.IList<string> List
         {
             get
             {
@@ -291,8 +291,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private ISet<string> _set;
-        public ISet<string> Set
+        private System.Collections.Generic.ISet<string> _set;
+        public System.Collections.Generic.ISet<string> Set
         {
             get
             {
@@ -306,7 +306,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class SerializedObjectUnmanagedAccessor : UnmanagedAccessor, ISerializedObjectAccessor
+    internal class SerializedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISerializedObjectAccessor
     {
         private int _intValue;
         public int IntValue
@@ -330,17 +330,17 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
+        public System.Collections.Generic.IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
 
-        public IList<string> List { get; } = new List<string>();
+        public System.Collections.Generic.IList<string> List { get; } = new List<string>();
 
-        public ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+        public System.Collections.Generic.ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
 
         public SerializedObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -350,7 +350,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -365,7 +365,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

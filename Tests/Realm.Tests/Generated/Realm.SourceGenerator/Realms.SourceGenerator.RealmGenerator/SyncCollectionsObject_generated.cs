@@ -20,67 +20,67 @@ namespace Realms.Tests
     [Woven(typeof(SyncCollectionsObjectObjectHelper))]
     public partial class SyncCollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncCollectionsObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncCollectionsObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
-            Property.PrimitiveList("CharList", RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),
-            Property.PrimitiveList("ByteList", RealmValueType.Int, areElementsNullable: false, managedName: "ByteList"),
-            Property.PrimitiveList("Int16List", RealmValueType.Int, areElementsNullable: false, managedName: "Int16List"),
-            Property.PrimitiveList("Int32List", RealmValueType.Int, areElementsNullable: false, managedName: "Int32List"),
-            Property.PrimitiveList("Int64List", RealmValueType.Int, areElementsNullable: false, managedName: "Int64List"),
-            Property.PrimitiveList("FloatList", RealmValueType.Float, areElementsNullable: false, managedName: "FloatList"),
-            Property.PrimitiveList("DoubleList", RealmValueType.Double, areElementsNullable: false, managedName: "DoubleList"),
-            Property.PrimitiveList("BooleanList", RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanList"),
-            Property.PrimitiveList("DecimalList", RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalList"),
-            Property.PrimitiveList("Decimal128List", RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128List"),
-            Property.PrimitiveList("ObjectIdList", RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdList"),
-            Property.PrimitiveList("StringList", RealmValueType.String, areElementsNullable: false, managedName: "StringList"),
-            Property.PrimitiveList("ByteArrayList", RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayList"),
-            Property.PrimitiveList("DateTimeOffsetList", RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetList"),
-            Property.ObjectList("ObjectList", "IntPropertyObject", managedName: "ObjectList"),
-            Property.ObjectList("EmbeddedObjectList", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectList"),
-            Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
-            Property.PrimitiveSet("CharSet", RealmValueType.Int, areElementsNullable: false, managedName: "CharSet"),
-            Property.PrimitiveSet("ByteSet", RealmValueType.Int, areElementsNullable: false, managedName: "ByteSet"),
-            Property.PrimitiveSet("Int16Set", RealmValueType.Int, areElementsNullable: false, managedName: "Int16Set"),
-            Property.PrimitiveSet("Int32Set", RealmValueType.Int, areElementsNullable: false, managedName: "Int32Set"),
-            Property.PrimitiveSet("Int64Set", RealmValueType.Int, areElementsNullable: false, managedName: "Int64Set"),
-            Property.PrimitiveSet("FloatSet", RealmValueType.Float, areElementsNullable: false, managedName: "FloatSet"),
-            Property.PrimitiveSet("DoubleSet", RealmValueType.Double, areElementsNullable: false, managedName: "DoubleSet"),
-            Property.PrimitiveSet("BooleanSet", RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanSet"),
-            Property.PrimitiveSet("DecimalSet", RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalSet"),
-            Property.PrimitiveSet("Decimal128Set", RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128Set"),
-            Property.PrimitiveSet("ObjectIdSet", RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdSet"),
-            Property.PrimitiveSet("StringSet", RealmValueType.String, areElementsNullable: false, managedName: "StringSet"),
-            Property.PrimitiveSet("ByteArraySet", RealmValueType.Data, areElementsNullable: false, managedName: "ByteArraySet"),
-            Property.PrimitiveSet("DateTimeOffsetSet", RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetSet"),
-            Property.ObjectSet("ObjectSet", "IntPropertyObject", managedName: "ObjectSet"),
-            Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
-            Property.PrimitiveDictionary("CharDict", RealmValueType.Int, areElementsNullable: false, managedName: "CharDict"),
-            Property.PrimitiveDictionary("ByteDict", RealmValueType.Int, areElementsNullable: false, managedName: "ByteDict"),
-            Property.PrimitiveDictionary("Int16Dict", RealmValueType.Int, areElementsNullable: false, managedName: "Int16Dict"),
-            Property.PrimitiveDictionary("Int32Dict", RealmValueType.Int, areElementsNullable: false, managedName: "Int32Dict"),
-            Property.PrimitiveDictionary("Int64Dict", RealmValueType.Int, areElementsNullable: false, managedName: "Int64Dict"),
-            Property.PrimitiveDictionary("FloatDict", RealmValueType.Float, areElementsNullable: false, managedName: "FloatDict"),
-            Property.PrimitiveDictionary("DoubleDict", RealmValueType.Double, areElementsNullable: false, managedName: "DoubleDict"),
-            Property.PrimitiveDictionary("BooleanDict", RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanDict"),
-            Property.PrimitiveDictionary("DecimalDict", RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalDict"),
-            Property.PrimitiveDictionary("Decimal128Dict", RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128Dict"),
-            Property.PrimitiveDictionary("ObjectIdDict", RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdDict"),
-            Property.PrimitiveDictionary("StringDict", RealmValueType.String, areElementsNullable: false, managedName: "StringDict"),
-            Property.PrimitiveDictionary("ByteArrayDict", RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayDict"),
-            Property.PrimitiveDictionary("DateTimeOffsetDict", RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetDict"),
-            Property.ObjectDictionary("ObjectDict", "IntPropertyObject", managedName: "ObjectDict"),
-            Property.ObjectDictionary("EmbeddedObjectDict", "EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDict"),
-            Property.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
+            Realms.Schema.Property.PrimitiveList("CharList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),
+            Realms.Schema.Property.PrimitiveList("ByteList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteList"),
+            Realms.Schema.Property.PrimitiveList("Int16List", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16List"),
+            Realms.Schema.Property.PrimitiveList("Int32List", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int32List"),
+            Realms.Schema.Property.PrimitiveList("Int64List", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int64List"),
+            Realms.Schema.Property.PrimitiveList("FloatList", Realms.RealmValueType.Float, areElementsNullable: false, managedName: "FloatList"),
+            Realms.Schema.Property.PrimitiveList("DoubleList", Realms.RealmValueType.Double, areElementsNullable: false, managedName: "DoubleList"),
+            Realms.Schema.Property.PrimitiveList("BooleanList", Realms.RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanList"),
+            Realms.Schema.Property.PrimitiveList("DecimalList", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalList"),
+            Realms.Schema.Property.PrimitiveList("Decimal128List", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128List"),
+            Realms.Schema.Property.PrimitiveList("ObjectIdList", Realms.RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdList"),
+            Realms.Schema.Property.PrimitiveList("StringList", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringList"),
+            Realms.Schema.Property.PrimitiveList("ByteArrayList", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayList"),
+            Realms.Schema.Property.PrimitiveList("DateTimeOffsetList", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetList"),
+            Realms.Schema.Property.ObjectList("ObjectList", "Realms.Tests.IntPropertyObject", managedName: "ObjectList"),
+            Realms.Schema.Property.ObjectList("EmbeddedObjectList", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectList"),
+            Realms.Schema.Property.Realms.RealmValueList("RealmValueList", managedName: "RealmValueList"),
+            Realms.Schema.Property.PrimitiveSet("CharSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharSet"),
+            Realms.Schema.Property.PrimitiveSet("ByteSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteSet"),
+            Realms.Schema.Property.PrimitiveSet("Int16Set", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16Set"),
+            Realms.Schema.Property.PrimitiveSet("Int32Set", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int32Set"),
+            Realms.Schema.Property.PrimitiveSet("Int64Set", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int64Set"),
+            Realms.Schema.Property.PrimitiveSet("FloatSet", Realms.RealmValueType.Float, areElementsNullable: false, managedName: "FloatSet"),
+            Realms.Schema.Property.PrimitiveSet("DoubleSet", Realms.RealmValueType.Double, areElementsNullable: false, managedName: "DoubleSet"),
+            Realms.Schema.Property.PrimitiveSet("BooleanSet", Realms.RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanSet"),
+            Realms.Schema.Property.PrimitiveSet("DecimalSet", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalSet"),
+            Realms.Schema.Property.PrimitiveSet("Decimal128Set", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128Set"),
+            Realms.Schema.Property.PrimitiveSet("ObjectIdSet", Realms.RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdSet"),
+            Realms.Schema.Property.PrimitiveSet("StringSet", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringSet"),
+            Realms.Schema.Property.PrimitiveSet("ByteArraySet", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArraySet"),
+            Realms.Schema.Property.PrimitiveSet("DateTimeOffsetSet", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetSet"),
+            Realms.Schema.Property.ObjectSet("ObjectSet", "Realms.Tests.IntPropertyObject", managedName: "ObjectSet"),
+            Realms.Schema.Property.Realms.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),
+            Realms.Schema.Property.PrimitiveDictionary("CharDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharDict"),
+            Realms.Schema.Property.PrimitiveDictionary("ByteDict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteDict"),
+            Realms.Schema.Property.PrimitiveDictionary("Int16Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16Dict"),
+            Realms.Schema.Property.PrimitiveDictionary("Int32Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int32Dict"),
+            Realms.Schema.Property.PrimitiveDictionary("Int64Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int64Dict"),
+            Realms.Schema.Property.PrimitiveDictionary("FloatDict", Realms.RealmValueType.Float, areElementsNullable: false, managedName: "FloatDict"),
+            Realms.Schema.Property.PrimitiveDictionary("DoubleDict", Realms.RealmValueType.Double, areElementsNullable: false, managedName: "DoubleDict"),
+            Realms.Schema.Property.PrimitiveDictionary("BooleanDict", Realms.RealmValueType.Bool, areElementsNullable: false, managedName: "BooleanDict"),
+            Realms.Schema.Property.PrimitiveDictionary("DecimalDict", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "DecimalDict"),
+            Realms.Schema.Property.PrimitiveDictionary("Decimal128Dict", Realms.RealmValueType.Decimal128, areElementsNullable: false, managedName: "Decimal128Dict"),
+            Realms.Schema.Property.PrimitiveDictionary("ObjectIdDict", Realms.RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdDict"),
+            Realms.Schema.Property.PrimitiveDictionary("StringDict", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringDict"),
+            Realms.Schema.Property.PrimitiveDictionary("ByteArrayDict", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayDict"),
+            Realms.Schema.Property.PrimitiveDictionary("DateTimeOffsetDict", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetDict"),
+            Realms.Schema.Property.ObjectDictionary("ObjectDict", "Realms.Tests.IntPropertyObject", managedName: "ObjectDict"),
+            Realms.Schema.Property.ObjectDictionary("EmbeddedObjectDict", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObjectDict"),
+            Realms.Schema.Property.Realms.RealmValueDictionary("RealmValueDict", managedName: "RealmValueDict"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ISyncCollectionsObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ISyncCollectionsObjectAccessor Accessor => _accessor ?? (_accessor = new SyncCollectionsObjectUnmanagedAccessor(typeof(SyncCollectionsObject)));
 
@@ -94,18 +94,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ISyncCollectionsObjectAccessor)managedAccessor;
             var oldAccessor = (ISyncCollectionsObjectAccessor)_accessor;
@@ -311,9 +311,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SyncCollectionsObject(RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
+        public static explicit operator SyncCollectionsObject(Realms.RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
 
-        public static implicit operator RealmValue(SyncCollectionsObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncCollectionsObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -335,7 +335,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -348,18 +348,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class SyncCollectionsObjectObjectHelper : IRealmObjectHelper
+        private class SyncCollectionsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new SyncCollectionsObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new SyncCollectionsObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new SyncCollectionsObject();
+            public Realms.IRealmObjectBase CreateInstance() => new SyncCollectionsObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((ISyncCollectionsObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -371,130 +371,130 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ISyncCollectionsObjectAccessor : IRealmAccessor
+    internal interface ISyncCollectionsObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
-        Guid GuidProperty { get; set; }
+        System.Guid GuidProperty { get; set; }
 
-        IList<char> CharList { get; }
+        System.Collections.Generic.IList<char> CharList { get; }
 
-        IList<byte> ByteList { get; }
+        System.Collections.Generic.IList<byte> ByteList { get; }
 
-        IList<short> Int16List { get; }
+        System.Collections.Generic.IList<short> Int16List { get; }
 
-        IList<int> Int32List { get; }
+        System.Collections.Generic.IList<int> Int32List { get; }
 
-        IList<long> Int64List { get; }
+        System.Collections.Generic.IList<long> Int64List { get; }
 
-        IList<float> FloatList { get; }
+        System.Collections.Generic.IList<float> FloatList { get; }
 
-        IList<double> DoubleList { get; }
+        System.Collections.Generic.IList<double> DoubleList { get; }
 
-        IList<bool> BooleanList { get; }
+        System.Collections.Generic.IList<bool> BooleanList { get; }
 
-        IList<decimal> DecimalList { get; }
+        System.Collections.Generic.IList<decimal> DecimalList { get; }
 
-        IList<Decimal128> Decimal128List { get; }
+        System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; }
 
-        IList<ObjectId> ObjectIdList { get; }
+        System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; }
 
-        IList<string> StringList { get; }
+        System.Collections.Generic.IList<string> StringList { get; }
 
-        IList<byte[]> ByteArrayList { get; }
+        System.Collections.Generic.IList<byte[]> ByteArrayList { get; }
 
-        IList<DateTimeOffset> DateTimeOffsetList { get; }
+        System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; }
 
-        IList<IntPropertyObject> ObjectList { get; }
+        System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; }
 
-        IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+        System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
 
-        IList<RealmValue> RealmValueList { get; }
+        System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
 
-        ISet<char> CharSet { get; }
+        System.Collections.Generic.ISet<char> CharSet { get; }
 
-        ISet<byte> ByteSet { get; }
+        System.Collections.Generic.ISet<byte> ByteSet { get; }
 
-        ISet<short> Int16Set { get; }
+        System.Collections.Generic.ISet<short> Int16Set { get; }
 
-        ISet<int> Int32Set { get; }
+        System.Collections.Generic.ISet<int> Int32Set { get; }
 
-        ISet<long> Int64Set { get; }
+        System.Collections.Generic.ISet<long> Int64Set { get; }
 
-        ISet<float> FloatSet { get; }
+        System.Collections.Generic.ISet<float> FloatSet { get; }
 
-        ISet<double> DoubleSet { get; }
+        System.Collections.Generic.ISet<double> DoubleSet { get; }
 
-        ISet<bool> BooleanSet { get; }
+        System.Collections.Generic.ISet<bool> BooleanSet { get; }
 
-        ISet<decimal> DecimalSet { get; }
+        System.Collections.Generic.ISet<decimal> DecimalSet { get; }
 
-        ISet<Decimal128> Decimal128Set { get; }
+        System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; }
 
-        ISet<ObjectId> ObjectIdSet { get; }
+        System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; }
 
-        ISet<string> StringSet { get; }
+        System.Collections.Generic.ISet<string> StringSet { get; }
 
-        ISet<byte[]> ByteArraySet { get; }
+        System.Collections.Generic.ISet<byte[]> ByteArraySet { get; }
 
-        ISet<DateTimeOffset> DateTimeOffsetSet { get; }
+        System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; }
 
-        ISet<IntPropertyObject> ObjectSet { get; }
+        System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; }
 
-        ISet<RealmValue> RealmValueSet { get; }
+        System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; }
 
-        IDictionary<string, char> CharDict { get; }
+        System.Collections.Generic.IDictionary<string, char> CharDict { get; }
 
-        IDictionary<string, byte> ByteDict { get; }
+        System.Collections.Generic.IDictionary<string, byte> ByteDict { get; }
 
-        IDictionary<string, short> Int16Dict { get; }
+        System.Collections.Generic.IDictionary<string, short> Int16Dict { get; }
 
-        IDictionary<string, int> Int32Dict { get; }
+        System.Collections.Generic.IDictionary<string, int> Int32Dict { get; }
 
-        IDictionary<string, long> Int64Dict { get; }
+        System.Collections.Generic.IDictionary<string, long> Int64Dict { get; }
 
-        IDictionary<string, float> FloatDict { get; }
+        System.Collections.Generic.IDictionary<string, float> FloatDict { get; }
 
-        IDictionary<string, double> DoubleDict { get; }
+        System.Collections.Generic.IDictionary<string, double> DoubleDict { get; }
 
-        IDictionary<string, bool> BooleanDict { get; }
+        System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; }
 
-        IDictionary<string, decimal> DecimalDict { get; }
+        System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; }
 
-        IDictionary<string, Decimal128> Decimal128Dict { get; }
+        System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; }
 
-        IDictionary<string, ObjectId> ObjectIdDict { get; }
+        System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; }
 
-        IDictionary<string, string> StringDict { get; }
+        System.Collections.Generic.IDictionary<string, string> StringDict { get; }
 
-        IDictionary<string, byte[]> ByteArrayDict { get; }
+        System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; }
 
-        IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+        System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; }
 
-        IDictionary<string, IntPropertyObject> ObjectDict { get; }
+        System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; }
 
-        IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
+        System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
 
-        IDictionary<string, RealmValue> RealmValueDict { get; }
+        System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class SyncCollectionsObjectManagedAccessor : ManagedAccessor, ISyncCollectionsObjectAccessor
+    internal class SyncCollectionsObjectManagedAccessor : Realms.ManagedAccessor, ISyncCollectionsObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
-        public Guid GuidProperty
+        public System.Guid GuidProperty
         {
-            get => (Guid)GetValue("GuidProperty");
+            get => (System.Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
         }
 
-        private IList<char> _charList;
-        public IList<char> CharList
+        private System.Collections.Generic.IList<char> _charList;
+        public System.Collections.Generic.IList<char> CharList
         {
             get
             {
@@ -507,8 +507,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<byte> _byteList;
-        public IList<byte> ByteList
+        private System.Collections.Generic.IList<byte> _byteList;
+        public System.Collections.Generic.IList<byte> ByteList
         {
             get
             {
@@ -521,8 +521,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<short> _int16List;
-        public IList<short> Int16List
+        private System.Collections.Generic.IList<short> _int16List;
+        public System.Collections.Generic.IList<short> Int16List
         {
             get
             {
@@ -535,8 +535,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<int> _int32List;
-        public IList<int> Int32List
+        private System.Collections.Generic.IList<int> _int32List;
+        public System.Collections.Generic.IList<int> Int32List
         {
             get
             {
@@ -549,8 +549,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<long> _int64List;
-        public IList<long> Int64List
+        private System.Collections.Generic.IList<long> _int64List;
+        public System.Collections.Generic.IList<long> Int64List
         {
             get
             {
@@ -563,8 +563,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<float> _floatList;
-        public IList<float> FloatList
+        private System.Collections.Generic.IList<float> _floatList;
+        public System.Collections.Generic.IList<float> FloatList
         {
             get
             {
@@ -577,8 +577,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<double> _doubleList;
-        public IList<double> DoubleList
+        private System.Collections.Generic.IList<double> _doubleList;
+        public System.Collections.Generic.IList<double> DoubleList
         {
             get
             {
@@ -591,8 +591,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<bool> _booleanList;
-        public IList<bool> BooleanList
+        private System.Collections.Generic.IList<bool> _booleanList;
+        public System.Collections.Generic.IList<bool> BooleanList
         {
             get
             {
@@ -605,8 +605,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<decimal> _decimalList;
-        public IList<decimal> DecimalList
+        private System.Collections.Generic.IList<decimal> _decimalList;
+        public System.Collections.Generic.IList<decimal> DecimalList
         {
             get
             {
@@ -619,36 +619,36 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<Decimal128> _decimal128List;
-        public IList<Decimal128> Decimal128List
+        private System.Collections.Generic.IList<MongoDB.Bson.Decimal128> _decimal128List;
+        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List
         {
             get
             {
                 if (_decimal128List == null)
                 {
-                    _decimal128List = GetListValue<Decimal128>("Decimal128List");
+                    _decimal128List = GetListValue<MongoDB.Bson.Decimal128>("Decimal128List");
                 }
 
                 return _decimal128List;
             }
         }
 
-        private IList<ObjectId> _objectIdList;
-        public IList<ObjectId> ObjectIdList
+        private System.Collections.Generic.IList<MongoDB.Bson.ObjectId> _objectIdList;
+        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList
         {
             get
             {
                 if (_objectIdList == null)
                 {
-                    _objectIdList = GetListValue<ObjectId>("ObjectIdList");
+                    _objectIdList = GetListValue<MongoDB.Bson.ObjectId>("ObjectIdList");
                 }
 
                 return _objectIdList;
             }
         }
 
-        private IList<string> _stringList;
-        public IList<string> StringList
+        private System.Collections.Generic.IList<string> _stringList;
+        public System.Collections.Generic.IList<string> StringList
         {
             get
             {
@@ -661,8 +661,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<byte[]> _byteArrayList;
-        public IList<byte[]> ByteArrayList
+        private System.Collections.Generic.IList<byte[]> _byteArrayList;
+        public System.Collections.Generic.IList<byte[]> ByteArrayList
         {
             get
             {
@@ -675,64 +675,64 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IList<DateTimeOffset> _dateTimeOffsetList;
-        public IList<DateTimeOffset> DateTimeOffsetList
+        private System.Collections.Generic.IList<System.DateTimeOffset> _dateTimeOffsetList;
+        public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList
         {
             get
             {
                 if (_dateTimeOffsetList == null)
                 {
-                    _dateTimeOffsetList = GetListValue<DateTimeOffset>("DateTimeOffsetList");
+                    _dateTimeOffsetList = GetListValue<System.DateTimeOffset>("DateTimeOffsetList");
                 }
 
                 return _dateTimeOffsetList;
             }
         }
 
-        private IList<IntPropertyObject> _objectList;
-        public IList<IntPropertyObject> ObjectList
+        private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _objectList;
+        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList
         {
             get
             {
                 if (_objectList == null)
                 {
-                    _objectList = GetListValue<IntPropertyObject>("ObjectList");
+                    _objectList = GetListValue<Realms.Tests.IntPropertyObject>("ObjectList");
                 }
 
                 return _objectList;
             }
         }
 
-        private IList<EmbeddedIntPropertyObject> _embeddedObjectList;
-        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList
+        private System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectList;
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList
         {
             get
             {
                 if (_embeddedObjectList == null)
                 {
-                    _embeddedObjectList = GetListValue<EmbeddedIntPropertyObject>("EmbeddedObjectList");
+                    _embeddedObjectList = GetListValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectList");
                 }
 
                 return _embeddedObjectList;
             }
         }
 
-        private IList<RealmValue> _realmValueList;
-        public IList<RealmValue> RealmValueList
+        private System.Collections.Generic.IList<Realms.RealmValue> _realmValueList;
+        public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList
         {
             get
             {
                 if (_realmValueList == null)
                 {
-                    _realmValueList = GetListValue<RealmValue>("RealmValueList");
+                    _realmValueList = GetListValue<Realms.RealmValue>("RealmValueList");
                 }
 
                 return _realmValueList;
             }
         }
 
-        private ISet<char> _charSet;
-        public ISet<char> CharSet
+        private System.Collections.Generic.ISet<char> _charSet;
+        public System.Collections.Generic.ISet<char> CharSet
         {
             get
             {
@@ -745,8 +745,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<byte> _byteSet;
-        public ISet<byte> ByteSet
+        private System.Collections.Generic.ISet<byte> _byteSet;
+        public System.Collections.Generic.ISet<byte> ByteSet
         {
             get
             {
@@ -759,8 +759,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<short> _int16Set;
-        public ISet<short> Int16Set
+        private System.Collections.Generic.ISet<short> _int16Set;
+        public System.Collections.Generic.ISet<short> Int16Set
         {
             get
             {
@@ -773,8 +773,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<int> _int32Set;
-        public ISet<int> Int32Set
+        private System.Collections.Generic.ISet<int> _int32Set;
+        public System.Collections.Generic.ISet<int> Int32Set
         {
             get
             {
@@ -787,8 +787,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<long> _int64Set;
-        public ISet<long> Int64Set
+        private System.Collections.Generic.ISet<long> _int64Set;
+        public System.Collections.Generic.ISet<long> Int64Set
         {
             get
             {
@@ -801,8 +801,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<float> _floatSet;
-        public ISet<float> FloatSet
+        private System.Collections.Generic.ISet<float> _floatSet;
+        public System.Collections.Generic.ISet<float> FloatSet
         {
             get
             {
@@ -815,8 +815,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<double> _doubleSet;
-        public ISet<double> DoubleSet
+        private System.Collections.Generic.ISet<double> _doubleSet;
+        public System.Collections.Generic.ISet<double> DoubleSet
         {
             get
             {
@@ -829,8 +829,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<bool> _booleanSet;
-        public ISet<bool> BooleanSet
+        private System.Collections.Generic.ISet<bool> _booleanSet;
+        public System.Collections.Generic.ISet<bool> BooleanSet
         {
             get
             {
@@ -843,8 +843,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<decimal> _decimalSet;
-        public ISet<decimal> DecimalSet
+        private System.Collections.Generic.ISet<decimal> _decimalSet;
+        public System.Collections.Generic.ISet<decimal> DecimalSet
         {
             get
             {
@@ -857,36 +857,36 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<Decimal128> _decimal128Set;
-        public ISet<Decimal128> Decimal128Set
+        private System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> _decimal128Set;
+        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set
         {
             get
             {
                 if (_decimal128Set == null)
                 {
-                    _decimal128Set = GetSetValue<Decimal128>("Decimal128Set");
+                    _decimal128Set = GetSetValue<MongoDB.Bson.Decimal128>("Decimal128Set");
                 }
 
                 return _decimal128Set;
             }
         }
 
-        private ISet<ObjectId> _objectIdSet;
-        public ISet<ObjectId> ObjectIdSet
+        private System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> _objectIdSet;
+        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet
         {
             get
             {
                 if (_objectIdSet == null)
                 {
-                    _objectIdSet = GetSetValue<ObjectId>("ObjectIdSet");
+                    _objectIdSet = GetSetValue<MongoDB.Bson.ObjectId>("ObjectIdSet");
                 }
 
                 return _objectIdSet;
             }
         }
 
-        private ISet<string> _stringSet;
-        public ISet<string> StringSet
+        private System.Collections.Generic.ISet<string> _stringSet;
+        public System.Collections.Generic.ISet<string> StringSet
         {
             get
             {
@@ -899,8 +899,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<byte[]> _byteArraySet;
-        public ISet<byte[]> ByteArraySet
+        private System.Collections.Generic.ISet<byte[]> _byteArraySet;
+        public System.Collections.Generic.ISet<byte[]> ByteArraySet
         {
             get
             {
@@ -913,50 +913,50 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private ISet<DateTimeOffset> _dateTimeOffsetSet;
-        public ISet<DateTimeOffset> DateTimeOffsetSet
+        private System.Collections.Generic.ISet<System.DateTimeOffset> _dateTimeOffsetSet;
+        public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet
         {
             get
             {
                 if (_dateTimeOffsetSet == null)
                 {
-                    _dateTimeOffsetSet = GetSetValue<DateTimeOffset>("DateTimeOffsetSet");
+                    _dateTimeOffsetSet = GetSetValue<System.DateTimeOffset>("DateTimeOffsetSet");
                 }
 
                 return _dateTimeOffsetSet;
             }
         }
 
-        private ISet<IntPropertyObject> _objectSet;
-        public ISet<IntPropertyObject> ObjectSet
+        private System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> _objectSet;
+        public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet
         {
             get
             {
                 if (_objectSet == null)
                 {
-                    _objectSet = GetSetValue<IntPropertyObject>("ObjectSet");
+                    _objectSet = GetSetValue<Realms.Tests.IntPropertyObject>("ObjectSet");
                 }
 
                 return _objectSet;
             }
         }
 
-        private ISet<RealmValue> _realmValueSet;
-        public ISet<RealmValue> RealmValueSet
+        private System.Collections.Generic.ISet<Realms.RealmValue> _realmValueSet;
+        public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet
         {
             get
             {
                 if (_realmValueSet == null)
                 {
-                    _realmValueSet = GetSetValue<RealmValue>("RealmValueSet");
+                    _realmValueSet = GetSetValue<Realms.RealmValue>("RealmValueSet");
                 }
 
                 return _realmValueSet;
             }
         }
 
-        private IDictionary<string, char> _charDict;
-        public IDictionary<string, char> CharDict
+        private System.Collections.Generic.IDictionary<string, char> _charDict;
+        public System.Collections.Generic.IDictionary<string, char> CharDict
         {
             get
             {
@@ -969,8 +969,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, byte> _byteDict;
-        public IDictionary<string, byte> ByteDict
+        private System.Collections.Generic.IDictionary<string, byte> _byteDict;
+        public System.Collections.Generic.IDictionary<string, byte> ByteDict
         {
             get
             {
@@ -983,8 +983,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, short> _int16Dict;
-        public IDictionary<string, short> Int16Dict
+        private System.Collections.Generic.IDictionary<string, short> _int16Dict;
+        public System.Collections.Generic.IDictionary<string, short> Int16Dict
         {
             get
             {
@@ -997,8 +997,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, int> _int32Dict;
-        public IDictionary<string, int> Int32Dict
+        private System.Collections.Generic.IDictionary<string, int> _int32Dict;
+        public System.Collections.Generic.IDictionary<string, int> Int32Dict
         {
             get
             {
@@ -1011,8 +1011,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, long> _int64Dict;
-        public IDictionary<string, long> Int64Dict
+        private System.Collections.Generic.IDictionary<string, long> _int64Dict;
+        public System.Collections.Generic.IDictionary<string, long> Int64Dict
         {
             get
             {
@@ -1025,8 +1025,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, float> _floatDict;
-        public IDictionary<string, float> FloatDict
+        private System.Collections.Generic.IDictionary<string, float> _floatDict;
+        public System.Collections.Generic.IDictionary<string, float> FloatDict
         {
             get
             {
@@ -1039,8 +1039,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, double> _doubleDict;
-        public IDictionary<string, double> DoubleDict
+        private System.Collections.Generic.IDictionary<string, double> _doubleDict;
+        public System.Collections.Generic.IDictionary<string, double> DoubleDict
         {
             get
             {
@@ -1053,8 +1053,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, bool> _booleanDict;
-        public IDictionary<string, bool> BooleanDict
+        private System.Collections.Generic.IDictionary<string, bool> _booleanDict;
+        public System.Collections.Generic.IDictionary<string, bool> BooleanDict
         {
             get
             {
@@ -1067,8 +1067,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, decimal> _decimalDict;
-        public IDictionary<string, decimal> DecimalDict
+        private System.Collections.Generic.IDictionary<string, decimal> _decimalDict;
+        public System.Collections.Generic.IDictionary<string, decimal> DecimalDict
         {
             get
             {
@@ -1081,36 +1081,36 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, Decimal128> _decimal128Dict;
-        public IDictionary<string, Decimal128> Decimal128Dict
+        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> _decimal128Dict;
+        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict
         {
             get
             {
                 if (_decimal128Dict == null)
                 {
-                    _decimal128Dict = GetDictionaryValue<Decimal128>("Decimal128Dict");
+                    _decimal128Dict = GetDictionaryValue<MongoDB.Bson.Decimal128>("Decimal128Dict");
                 }
 
                 return _decimal128Dict;
             }
         }
 
-        private IDictionary<string, ObjectId> _objectIdDict;
-        public IDictionary<string, ObjectId> ObjectIdDict
+        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> _objectIdDict;
+        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict
         {
             get
             {
                 if (_objectIdDict == null)
                 {
-                    _objectIdDict = GetDictionaryValue<ObjectId>("ObjectIdDict");
+                    _objectIdDict = GetDictionaryValue<MongoDB.Bson.ObjectId>("ObjectIdDict");
                 }
 
                 return _objectIdDict;
             }
         }
 
-        private IDictionary<string, string> _stringDict;
-        public IDictionary<string, string> StringDict
+        private System.Collections.Generic.IDictionary<string, string> _stringDict;
+        public System.Collections.Generic.IDictionary<string, string> StringDict
         {
             get
             {
@@ -1123,8 +1123,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, byte[]> _byteArrayDict;
-        public IDictionary<string, byte[]> ByteArrayDict
+        private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDict;
+        public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict
         {
             get
             {
@@ -1137,56 +1137,56 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private IDictionary<string, DateTimeOffset> _dateTimeOffsetDict;
-        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict
+        private System.Collections.Generic.IDictionary<string, System.DateTimeOffset> _dateTimeOffsetDict;
+        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict
         {
             get
             {
                 if (_dateTimeOffsetDict == null)
                 {
-                    _dateTimeOffsetDict = GetDictionaryValue<DateTimeOffset>("DateTimeOffsetDict");
+                    _dateTimeOffsetDict = GetDictionaryValue<System.DateTimeOffset>("DateTimeOffsetDict");
                 }
 
                 return _dateTimeOffsetDict;
             }
         }
 
-        private IDictionary<string, IntPropertyObject> _objectDict;
-        public IDictionary<string, IntPropertyObject> ObjectDict
+        private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDict;
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict
         {
             get
             {
                 if (_objectDict == null)
                 {
-                    _objectDict = GetDictionaryValue<IntPropertyObject>("ObjectDict");
+                    _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDict");
                 }
 
                 return _objectDict;
             }
         }
 
-        private IDictionary<string, EmbeddedIntPropertyObject> _embeddedObjectDict;
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict
+        private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectDict;
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict
         {
             get
             {
                 if (_embeddedObjectDict == null)
                 {
-                    _embeddedObjectDict = GetDictionaryValue<EmbeddedIntPropertyObject>("EmbeddedObjectDict");
+                    _embeddedObjectDict = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectDict");
                 }
 
                 return _embeddedObjectDict;
             }
         }
 
-        private IDictionary<string, RealmValue> _realmValueDict;
-        public IDictionary<string, RealmValue> RealmValueDict
+        private System.Collections.Generic.IDictionary<string, Realms.RealmValue> _realmValueDict;
+        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict
         {
             get
             {
                 if (_realmValueDict == null)
                 {
-                    _realmValueDict = GetDictionaryValue<RealmValue>("RealmValueDict");
+                    _realmValueDict = GetDictionaryValue<Realms.RealmValue>("RealmValueDict");
                 }
 
                 return _realmValueDict;
@@ -1194,10 +1194,10 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class SyncCollectionsObjectUnmanagedAccessor : UnmanagedAccessor, ISyncCollectionsObjectAccessor
+    internal class SyncCollectionsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncCollectionsObjectAccessor
     {
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -1207,8 +1207,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private Guid _guidProperty;
-        public Guid GuidProperty
+        private System.Guid _guidProperty;
+        public System.Guid GuidProperty
         {
             get => _guidProperty;
             set
@@ -1218,111 +1218,111 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IList<char> CharList { get; } = new List<char>();
+        public System.Collections.Generic.IList<char> CharList { get; } = new List<char>();
 
-        public IList<byte> ByteList { get; } = new List<byte>();
+        public System.Collections.Generic.IList<byte> ByteList { get; } = new List<byte>();
 
-        public IList<short> Int16List { get; } = new List<short>();
+        public System.Collections.Generic.IList<short> Int16List { get; } = new List<short>();
 
-        public IList<int> Int32List { get; } = new List<int>();
+        public System.Collections.Generic.IList<int> Int32List { get; } = new List<int>();
 
-        public IList<long> Int64List { get; } = new List<long>();
+        public System.Collections.Generic.IList<long> Int64List { get; } = new List<long>();
 
-        public IList<float> FloatList { get; } = new List<float>();
+        public System.Collections.Generic.IList<float> FloatList { get; } = new List<float>();
 
-        public IList<double> DoubleList { get; } = new List<double>();
+        public System.Collections.Generic.IList<double> DoubleList { get; } = new List<double>();
 
-        public IList<bool> BooleanList { get; } = new List<bool>();
+        public System.Collections.Generic.IList<bool> BooleanList { get; } = new List<bool>();
 
-        public IList<decimal> DecimalList { get; } = new List<decimal>();
+        public System.Collections.Generic.IList<decimal> DecimalList { get; } = new List<decimal>();
 
-        public IList<Decimal128> Decimal128List { get; } = new List<Decimal128>();
+        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; } = new List<MongoDB.Bson.Decimal128>();
 
-        public IList<ObjectId> ObjectIdList { get; } = new List<ObjectId>();
+        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; } = new List<MongoDB.Bson.ObjectId>();
 
-        public IList<string> StringList { get; } = new List<string>();
+        public System.Collections.Generic.IList<string> StringList { get; } = new List<string>();
 
-        public IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
+        public System.Collections.Generic.IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
 
-        public IList<DateTimeOffset> DateTimeOffsetList { get; } = new List<DateTimeOffset>();
+        public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; } = new List<System.DateTimeOffset>();
 
-        public IList<IntPropertyObject> ObjectList { get; } = new List<IntPropertyObject>();
+        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; } = new List<Realms.Tests.IntPropertyObject>();
 
-        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<EmbeddedIntPropertyObject>();
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<Realms.Tests.EmbeddedIntPropertyObject>();
 
-        public IList<RealmValue> RealmValueList { get; } = new List<RealmValue>();
+        public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; } = new List<Realms.RealmValue>();
 
-        public ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
+        public System.Collections.Generic.ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
 
-        public ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
+        public System.Collections.Generic.ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
 
-        public ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
+        public System.Collections.Generic.ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
 
-        public ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
+        public System.Collections.Generic.ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
 
-        public ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
+        public System.Collections.Generic.ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
 
-        public ISet<float> FloatSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
+        public System.Collections.Generic.ISet<float> FloatSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
 
-        public ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
+        public System.Collections.Generic.ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
 
-        public ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
+        public System.Collections.Generic.ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
 
-        public ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
+        public System.Collections.Generic.ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
 
-        public ISet<Decimal128> Decimal128Set { get; } = new HashSet<Decimal128>(RealmSet<Decimal128>.Comparer);
+        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; } = new HashSet<MongoDB.Bson.Decimal128>(RealmSet<MongoDB.Bson.Decimal128>.Comparer);
 
-        public ISet<ObjectId> ObjectIdSet { get; } = new HashSet<ObjectId>(RealmSet<ObjectId>.Comparer);
+        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; } = new HashSet<MongoDB.Bson.ObjectId>(RealmSet<MongoDB.Bson.ObjectId>.Comparer);
 
-        public ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+        public System.Collections.Generic.ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
 
-        public ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
+        public System.Collections.Generic.ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
 
-        public ISet<DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<DateTimeOffset>(RealmSet<DateTimeOffset>.Comparer);
+        public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset>(RealmSet<System.DateTimeOffset>.Comparer);
 
-        public ISet<IntPropertyObject> ObjectSet { get; } = new HashSet<IntPropertyObject>(RealmSet<IntPropertyObject>.Comparer);
+        public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; } = new HashSet<Realms.Tests.IntPropertyObject>(RealmSet<Realms.Tests.IntPropertyObject>.Comparer);
 
-        public ISet<RealmValue> RealmValueSet { get; } = new HashSet<RealmValue>(RealmSet<RealmValue>.Comparer);
+        public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; } = new HashSet<Realms.RealmValue>(RealmSet<Realms.RealmValue>.Comparer);
 
-        public IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
+        public System.Collections.Generic.IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
 
-        public IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
+        public System.Collections.Generic.IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
 
-        public IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
+        public System.Collections.Generic.IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
 
-        public IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
+        public System.Collections.Generic.IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
 
-        public IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
+        public System.Collections.Generic.IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
 
-        public IDictionary<string, float> FloatDict { get; } = new Dictionary<string, float>();
+        public System.Collections.Generic.IDictionary<string, float> FloatDict { get; } = new Dictionary<string, float>();
 
-        public IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
+        public System.Collections.Generic.IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
 
-        public IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
+        public System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
 
-        public IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
+        public System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
 
-        public IDictionary<string, Decimal128> Decimal128Dict { get; } = new Dictionary<string, Decimal128>();
+        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; } = new Dictionary<string, MongoDB.Bson.Decimal128>();
 
-        public IDictionary<string, ObjectId> ObjectIdDict { get; } = new Dictionary<string, ObjectId>();
+        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId>();
 
-        public IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
+        public System.Collections.Generic.IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
 
-        public IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
+        public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
 
-        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, DateTimeOffset>();
+        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset>();
 
-        public IDictionary<string, IntPropertyObject> ObjectDict { get; } = new Dictionary<string, IntPropertyObject>();
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; } = new Dictionary<string, EmbeddedIntPropertyObject>();
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject>();
 
-        public IDictionary<string, RealmValue> RealmValueDict { get; } = new Dictionary<string, RealmValue>();
+        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; } = new Dictionary<string, Realms.RealmValue>();
 
         public SyncCollectionsObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -1332,28 +1332,28 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "_id":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 case "GuidProperty":
-                    GuidProperty = (Guid)val;
+                    GuidProperty = (System.Guid)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

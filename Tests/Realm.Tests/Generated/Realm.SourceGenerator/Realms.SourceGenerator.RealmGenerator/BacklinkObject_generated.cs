@@ -19,18 +19,18 @@ namespace Realms.Tests.Database
     [Woven(typeof(BacklinkObjectObjectHelper))]
     public partial class BacklinkObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("BeforeBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "BeforeBacklinks"),
-            Property.Backlinks("Links", "SomeClass", "BacklinkObject", managedName: "Links"),
-            Property.Primitive("AfterBacklinks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "AfterBacklinks"),
+            Realms.Schema.Property.Primitive("BeforeBacklinks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "BeforeBacklinks"),
+            Realms.Schema.Property.Backlinks("Links", "Realms.Tests.Database.SomeClass", "BacklinkObject", managedName: "Links"),
+            Realms.Schema.Property.Primitive("AfterBacklinks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "AfterBacklinks"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IBacklinkObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IBacklinkObjectAccessor Accessor => _accessor ?? (_accessor = new BacklinkObjectUnmanagedAccessor(typeof(BacklinkObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IBacklinkObjectAccessor)managedAccessor;
             var oldAccessor = (IBacklinkObjectAccessor)_accessor;
@@ -163,9 +163,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator BacklinkObject(RealmValue val) => val.AsRealmObject<BacklinkObject>();
+        public static explicit operator BacklinkObject(Realms.RealmValue val) => val.AsRealmObject<BacklinkObject>();
 
-        public static implicit operator RealmValue(BacklinkObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BacklinkObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -187,7 +187,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -200,18 +200,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class BacklinkObjectObjectHelper : IRealmObjectHelper
+        private class BacklinkObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new BacklinkObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new BacklinkObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new BacklinkObject();
+            public Realms.IRealmObjectBase CreateInstance() => new BacklinkObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -223,17 +223,17 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IBacklinkObjectAccessor : IRealmAccessor
+    internal interface IBacklinkObjectAccessor : Realms.IRealmAccessor
     {
         string BeforeBacklinks { get; set; }
 
-        IQueryable<SomeClass> Links { get; }
+        System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links { get; }
 
         string AfterBacklinks { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class BacklinkObjectManagedAccessor : ManagedAccessor, IBacklinkObjectAccessor
+    internal class BacklinkObjectManagedAccessor : Realms.ManagedAccessor, IBacklinkObjectAccessor
     {
         public string BeforeBacklinks
         {
@@ -241,14 +241,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("BeforeBacklinks", value);
         }
 
-        private IQueryable<SomeClass> _links;
-        public IQueryable<SomeClass> Links
+        private System.Linq.IQueryable<Realms.Tests.Database.SomeClass> _links;
+        public System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links
         {
             get
             {
                 if (_links == null)
                 {
-                    _links = GetBacklinks<SomeClass>("Links");
+                    _links = GetBacklinks<Realms.Tests.Database.SomeClass>("Links");
                 }
 
                 return _links;
@@ -262,7 +262,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class BacklinkObjectUnmanagedAccessor : UnmanagedAccessor, IBacklinkObjectAccessor
+    internal class BacklinkObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBacklinkObjectAccessor
     {
         private string _beforeBacklinks;
         public string BeforeBacklinks
@@ -275,7 +275,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IQueryable<SomeClass> Links => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         private string _afterBacklinks;
         public string AfterBacklinks
@@ -292,7 +292,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -303,7 +303,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -318,7 +318,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

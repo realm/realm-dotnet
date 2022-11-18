@@ -19,19 +19,19 @@ namespace Realms.Tests.Database
     [Woven(typeof(ProductObjectHelper))]
     public partial class Product : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Product", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Product", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Primitive("Date", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Date"),
-            Property.ObjectList("Reports", "Report", managedName: "Reports"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Date", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Date"),
+            Realms.Schema.Property.ObjectList("Reports", "Realms.Tests.Database.Report", managedName: "Reports"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IProductAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IProductAccessor Accessor => _accessor ?? (_accessor = new ProductUnmanagedAccessor(typeof(Product)));
 
@@ -45,18 +45,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IProductAccessor)managedAccessor;
             var oldAccessor = (IProductAccessor)_accessor;
@@ -174,9 +174,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Product(RealmValue val) => val.AsRealmObject<Product>();
+        public static explicit operator Product(Realms.RealmValue val) => val.AsRealmObject<Product>();
 
-        public static implicit operator RealmValue(Product val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Product val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -198,7 +198,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -211,18 +211,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ProductObjectHelper : IRealmObjectHelper
+        private class ProductObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ProductManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ProductManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Product();
+            public Realms.IRealmObjectBase CreateInstance() => new Product();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IProductAccessor : IRealmAccessor
+    internal interface IProductAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
@@ -242,11 +242,11 @@ namespace Realms.Tests.Database.Generated
 
         string Date { get; set; }
 
-        IList<Report> Reports { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Report> Reports { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ProductManagedAccessor : ManagedAccessor, IProductAccessor
+    internal class ProductManagedAccessor : Realms.ManagedAccessor, IProductAccessor
     {
         public int Id
         {
@@ -266,14 +266,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Date", value);
         }
 
-        private IList<Report> _reports;
-        public IList<Report> Reports
+        private System.Collections.Generic.IList<Realms.Tests.Database.Report> _reports;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Report> Reports
         {
             get
             {
                 if (_reports == null)
                 {
-                    _reports = GetListValue<Report>("Reports");
+                    _reports = GetListValue<Realms.Tests.Database.Report>("Reports");
                 }
 
                 return _reports;
@@ -281,7 +281,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class ProductUnmanagedAccessor : UnmanagedAccessor, IProductAccessor
+    internal class ProductUnmanagedAccessor : Realms.UnmanagedAccessor, IProductAccessor
     {
         private int _id;
         public int Id
@@ -316,13 +316,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Report> Reports { get; } = new List<Report>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.Report> Reports { get; } = new List<Realms.Tests.Database.Report>();
 
         public ProductUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -333,7 +333,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -351,7 +351,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

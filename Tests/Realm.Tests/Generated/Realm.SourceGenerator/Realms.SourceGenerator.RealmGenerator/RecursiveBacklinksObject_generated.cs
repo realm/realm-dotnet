@@ -19,18 +19,18 @@ namespace Realms.Tests
     [Woven(typeof(RecursiveBacklinksObjectObjectHelper))]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Object("Parent", "RecursiveBacklinksObject", managedName: "Parent"),
-            Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent", managedName: "Children"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Object("Parent", "Realms.Tests.RecursiveBacklinksObject", managedName: "Parent"),
+            Realms.Schema.Property.Backlinks("Children", "Realms.Tests.RecursiveBacklinksObject", "Parent", managedName: "Children"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IRecursiveBacklinksObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IRecursiveBacklinksObjectAccessor Accessor => _accessor ?? (_accessor = new RecursiveBacklinksObjectUnmanagedAccessor(typeof(RecursiveBacklinksObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IRecursiveBacklinksObjectAccessor)managedAccessor;
             var oldAccessor = (IRecursiveBacklinksObjectAccessor)_accessor;
@@ -164,9 +164,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RecursiveBacklinksObject(RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
+        public static explicit operator RecursiveBacklinksObject(Realms.RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
 
-        public static implicit operator RealmValue(RecursiveBacklinksObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RecursiveBacklinksObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -188,7 +188,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -201,18 +201,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class RecursiveBacklinksObjectObjectHelper : IRealmObjectHelper
+        private class RecursiveBacklinksObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new RecursiveBacklinksObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new RecursiveBacklinksObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new RecursiveBacklinksObject();
+            public Realms.IRealmObjectBase CreateInstance() => new RecursiveBacklinksObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -224,17 +224,17 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IRecursiveBacklinksObjectAccessor : IRealmAccessor
+    internal interface IRecursiveBacklinksObjectAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
-        RecursiveBacklinksObject Parent { get; set; }
+        Realms.Tests.RecursiveBacklinksObject Parent { get; set; }
 
-        IQueryable<RecursiveBacklinksObject> Children { get; }
+        System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class RecursiveBacklinksObjectManagedAccessor : ManagedAccessor, IRecursiveBacklinksObjectAccessor
+    internal class RecursiveBacklinksObjectManagedAccessor : Realms.ManagedAccessor, IRecursiveBacklinksObjectAccessor
     {
         public int Id
         {
@@ -242,20 +242,20 @@ namespace Realms.Tests.Generated
             set => SetValue("Id", value);
         }
 
-        public RecursiveBacklinksObject Parent
+        public Realms.Tests.RecursiveBacklinksObject Parent
         {
-            get => (RecursiveBacklinksObject)GetValue("Parent");
+            get => (Realms.Tests.RecursiveBacklinksObject)GetValue("Parent");
             set => SetValue("Parent", value);
         }
 
-        private IQueryable<RecursiveBacklinksObject> _children;
-        public IQueryable<RecursiveBacklinksObject> Children
+        private System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> _children;
+        public System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children
         {
             get
             {
                 if (_children == null)
                 {
-                    _children = GetBacklinks<RecursiveBacklinksObject>("Children");
+                    _children = GetBacklinks<Realms.Tests.RecursiveBacklinksObject>("Children");
                 }
 
                 return _children;
@@ -263,7 +263,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class RecursiveBacklinksObjectUnmanagedAccessor : UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
+    internal class RecursiveBacklinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
     {
         private int _id;
         public int Id
@@ -276,8 +276,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RecursiveBacklinksObject _parent;
-        public RecursiveBacklinksObject Parent
+        private Realms.Tests.RecursiveBacklinksObject _parent;
+        public Realms.Tests.RecursiveBacklinksObject Parent
         {
             get => _parent;
             set
@@ -287,13 +287,13 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IQueryable<RecursiveBacklinksObject> Children => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public RecursiveBacklinksObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -304,7 +304,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -312,14 +312,14 @@ namespace Realms.Tests.Generated
                     Id = (int)val;
                     return;
                 case "Parent":
-                    Parent = (RecursiveBacklinksObject)val;
+                    Parent = (Realms.Tests.RecursiveBacklinksObject)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

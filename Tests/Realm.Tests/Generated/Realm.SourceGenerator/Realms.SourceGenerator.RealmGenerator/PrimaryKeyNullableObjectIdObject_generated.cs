@@ -20,16 +20,16 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyNullableObjectIdObjectObjectHelper))]
     public partial class PrimaryKeyNullableObjectIdObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IPrimaryKeyNullableObjectIdObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IPrimaryKeyNullableObjectIdObjectAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyNullableObjectIdObjectUnmanagedAccessor(typeof(PrimaryKeyNullableObjectIdObject)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPrimaryKeyNullableObjectIdObjectAccessor)managedAccessor;
             var oldAccessor = (IPrimaryKeyNullableObjectIdObjectAccessor)_accessor;
@@ -155,9 +155,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyNullableObjectIdObject(RealmValue val) => val.AsRealmObject<PrimaryKeyNullableObjectIdObject>();
+        public static explicit operator PrimaryKeyNullableObjectIdObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyNullableObjectIdObject>();
 
-        public static implicit operator RealmValue(PrimaryKeyNullableObjectIdObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyNullableObjectIdObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -179,7 +179,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -192,18 +192,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyNullableObjectIdObjectObjectHelper : IRealmObjectHelper
+        private class PrimaryKeyNullableObjectIdObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PrimaryKeyNullableObjectIdObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PrimaryKeyNullableObjectIdObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new PrimaryKeyNullableObjectIdObject();
+            public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyNullableObjectIdObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IPrimaryKeyNullableObjectIdObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -215,25 +215,25 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyNullableObjectIdObjectAccessor : IRealmAccessor
+    internal interface IPrimaryKeyNullableObjectIdObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId? Id { get; set; }
+        MongoDB.Bson.ObjectId? Id { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyNullableObjectIdObjectManagedAccessor : ManagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
+    internal class PrimaryKeyNullableObjectIdObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
     {
-        public ObjectId? Id
+        public MongoDB.Bson.ObjectId? Id
         {
-            get => (ObjectId?)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId?)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
     }
 
-    internal class PrimaryKeyNullableObjectIdObjectUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
+    internal class PrimaryKeyNullableObjectIdObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
     {
-        private ObjectId? _id;
-        public ObjectId? Id
+        private MongoDB.Bson.ObjectId? _id;
+        public MongoDB.Bson.ObjectId? Id
         {
             get => _id;
             set
@@ -247,7 +247,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -256,7 +256,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -267,14 +267,14 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId?)val;
+            Id = (MongoDB.Bson.ObjectId?)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

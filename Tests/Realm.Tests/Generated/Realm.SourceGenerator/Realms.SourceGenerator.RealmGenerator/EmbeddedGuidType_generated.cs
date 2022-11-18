@@ -19,28 +19,28 @@ namespace Realms.Tests.Database
     [Woven(typeof(EmbeddedGuidTypeObjectHelper))]
     public partial class EmbeddedGuidType : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Property.Primitive("RegularProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RegularProperty"),
-            Property.PrimitiveList("GuidList", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidList"),
-            Property.PrimitiveSet("GuidSet", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidSet"),
-            Property.PrimitiveDictionary("GuidDict", RealmValueType.Guid, areElementsNullable: false, managedName: "GuidDict"),
-            Property.Primitive("OptionalProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalProperty"),
-            Property.PrimitiveList("OptionalList", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalList"),
-            Property.PrimitiveSet("OptionalSet", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalSet"),
-            Property.PrimitiveDictionary("OptionalDict", RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalDict"),
-            Property.Object("LinkProperty", "GuidType", managedName: "LinkProperty"),
-            Property.RealmValue("MixedProperty", managedName: "MixedProperty"),
-            Property.RealmValueList("MixedList", managedName: "MixedList"),
-            Property.RealmValueSet("MixedSet", managedName: "MixedSet"),
-            Property.RealmValueDictionary("MixedDict", managedName: "MixedDict"),
+            Realms.Schema.Property.Primitive("RegularProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RegularProperty"),
+            Realms.Schema.Property.PrimitiveList("GuidList", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidList"),
+            Realms.Schema.Property.PrimitiveSet("GuidSet", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidSet"),
+            Realms.Schema.Property.PrimitiveDictionary("GuidDict", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidDict"),
+            Realms.Schema.Property.Primitive("OptionalProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalProperty"),
+            Realms.Schema.Property.PrimitiveList("OptionalList", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalList"),
+            Realms.Schema.Property.PrimitiveSet("OptionalSet", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalSet"),
+            Realms.Schema.Property.PrimitiveDictionary("OptionalDict", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalDict"),
+            Realms.Schema.Property.Object("LinkProperty", "Realms.Tests.Database.GuidType", managedName: "LinkProperty"),
+            Realms.Schema.Property.RealmValue("MixedProperty", managedName: "MixedProperty"),
+            Realms.Schema.Property.Realms.RealmValueList("MixedList", managedName: "MixedList"),
+            Realms.Schema.Property.Realms.RealmValueSet("MixedSet", managedName: "MixedSet"),
+            Realms.Schema.Property.Realms.RealmValueDictionary("MixedDict", managedName: "MixedDict"),
         }.Build();
 
         #region IEmbeddedObject implementation
 
         private IEmbeddedGuidTypeAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IEmbeddedGuidTypeAccessor Accessor => _accessor ?? (_accessor = new EmbeddedGuidTypeUnmanagedAccessor(typeof(EmbeddedGuidType)));
 
@@ -54,21 +54,21 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedGuidTypeAccessor)managedAccessor;
             var oldAccessor = (IEmbeddedGuidTypeAccessor)_accessor;
@@ -198,9 +198,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedGuidType(RealmValue val) => val.AsRealmObject<EmbeddedGuidType>();
+        public static explicit operator EmbeddedGuidType(Realms.RealmValue val) => val.AsRealmObject<EmbeddedGuidType>();
 
-        public static implicit operator RealmValue(EmbeddedGuidType val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedGuidType val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -235,18 +235,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class EmbeddedGuidTypeObjectHelper : IRealmObjectHelper
+        private class EmbeddedGuidTypeObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new EmbeddedGuidTypeManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new EmbeddedGuidTypeManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new EmbeddedGuidType();
+            public Realms.IRealmObjectBase CreateInstance() => new EmbeddedGuidType();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -258,182 +258,182 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IEmbeddedGuidTypeAccessor : IRealmAccessor
+    internal interface IEmbeddedGuidTypeAccessor : Realms.IRealmAccessor
     {
-        Guid RegularProperty { get; set; }
+        System.Guid RegularProperty { get; set; }
 
-        IList<Guid> GuidList { get; }
+        System.Collections.Generic.IList<System.Guid> GuidList { get; }
 
-        ISet<Guid> GuidSet { get; }
+        System.Collections.Generic.ISet<System.Guid> GuidSet { get; }
 
-        IDictionary<string, Guid> GuidDict { get; }
+        System.Collections.Generic.IDictionary<string, System.Guid> GuidDict { get; }
 
-        Guid? OptionalProperty { get; set; }
+        System.Guid? OptionalProperty { get; set; }
 
-        IList<Guid?> OptionalList { get; }
+        System.Collections.Generic.IList<System.Guid?> OptionalList { get; }
 
-        ISet<Guid?> OptionalSet { get; }
+        System.Collections.Generic.ISet<System.Guid?> OptionalSet { get; }
 
-        IDictionary<string, Guid?> OptionalDict { get; }
+        System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; }
 
-        GuidType LinkProperty { get; set; }
+        Realms.Tests.Database.GuidType LinkProperty { get; set; }
 
-        RealmValue MixedProperty { get; set; }
+        Realms.RealmValue MixedProperty { get; set; }
 
-        IList<RealmValue> MixedList { get; }
+        System.Collections.Generic.IList<Realms.RealmValue> MixedList { get; }
 
-        ISet<RealmValue> MixedSet { get; }
+        System.Collections.Generic.ISet<Realms.RealmValue> MixedSet { get; }
 
-        IDictionary<string, RealmValue> MixedDict { get; }
+        System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class EmbeddedGuidTypeManagedAccessor : ManagedAccessor, IEmbeddedGuidTypeAccessor
+    internal class EmbeddedGuidTypeManagedAccessor : Realms.ManagedAccessor, IEmbeddedGuidTypeAccessor
     {
-        public Guid RegularProperty
+        public System.Guid RegularProperty
         {
-            get => (Guid)GetValue("RegularProperty");
+            get => (System.Guid)GetValue("RegularProperty");
             set => SetValue("RegularProperty", value);
         }
 
-        private IList<Guid> _guidList;
-        public IList<Guid> GuidList
+        private System.Collections.Generic.IList<System.Guid> _guidList;
+        public System.Collections.Generic.IList<System.Guid> GuidList
         {
             get
             {
                 if (_guidList == null)
                 {
-                    _guidList = GetListValue<Guid>("GuidList");
+                    _guidList = GetListValue<System.Guid>("GuidList");
                 }
 
                 return _guidList;
             }
         }
 
-        private ISet<Guid> _guidSet;
-        public ISet<Guid> GuidSet
+        private System.Collections.Generic.ISet<System.Guid> _guidSet;
+        public System.Collections.Generic.ISet<System.Guid> GuidSet
         {
             get
             {
                 if (_guidSet == null)
                 {
-                    _guidSet = GetSetValue<Guid>("GuidSet");
+                    _guidSet = GetSetValue<System.Guid>("GuidSet");
                 }
 
                 return _guidSet;
             }
         }
 
-        private IDictionary<string, Guid> _guidDict;
-        public IDictionary<string, Guid> GuidDict
+        private System.Collections.Generic.IDictionary<string, System.Guid> _guidDict;
+        public System.Collections.Generic.IDictionary<string, System.Guid> GuidDict
         {
             get
             {
                 if (_guidDict == null)
                 {
-                    _guidDict = GetDictionaryValue<Guid>("GuidDict");
+                    _guidDict = GetDictionaryValue<System.Guid>("GuidDict");
                 }
 
                 return _guidDict;
             }
         }
 
-        public Guid? OptionalProperty
+        public System.Guid? OptionalProperty
         {
-            get => (Guid?)GetValue("OptionalProperty");
+            get => (System.Guid?)GetValue("OptionalProperty");
             set => SetValue("OptionalProperty", value);
         }
 
-        private IList<Guid?> _optionalList;
-        public IList<Guid?> OptionalList
+        private System.Collections.Generic.IList<System.Guid?> _optionalList;
+        public System.Collections.Generic.IList<System.Guid?> OptionalList
         {
             get
             {
                 if (_optionalList == null)
                 {
-                    _optionalList = GetListValue<Guid?>("OptionalList");
+                    _optionalList = GetListValue<System.Guid?>("OptionalList");
                 }
 
                 return _optionalList;
             }
         }
 
-        private ISet<Guid?> _optionalSet;
-        public ISet<Guid?> OptionalSet
+        private System.Collections.Generic.ISet<System.Guid?> _optionalSet;
+        public System.Collections.Generic.ISet<System.Guid?> OptionalSet
         {
             get
             {
                 if (_optionalSet == null)
                 {
-                    _optionalSet = GetSetValue<Guid?>("OptionalSet");
+                    _optionalSet = GetSetValue<System.Guid?>("OptionalSet");
                 }
 
                 return _optionalSet;
             }
         }
 
-        private IDictionary<string, Guid?> _optionalDict;
-        public IDictionary<string, Guid?> OptionalDict
+        private System.Collections.Generic.IDictionary<string, System.Guid?> _optionalDict;
+        public System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict
         {
             get
             {
                 if (_optionalDict == null)
                 {
-                    _optionalDict = GetDictionaryValue<Guid?>("OptionalDict");
+                    _optionalDict = GetDictionaryValue<System.Guid?>("OptionalDict");
                 }
 
                 return _optionalDict;
             }
         }
 
-        public GuidType LinkProperty
+        public Realms.Tests.Database.GuidType LinkProperty
         {
-            get => (GuidType)GetValue("LinkProperty");
+            get => (Realms.Tests.Database.GuidType)GetValue("LinkProperty");
             set => SetValue("LinkProperty", value);
         }
 
-        public RealmValue MixedProperty
+        public Realms.RealmValue MixedProperty
         {
-            get => (RealmValue)GetValue("MixedProperty");
+            get => (Realms.RealmValue)GetValue("MixedProperty");
             set => SetValue("MixedProperty", value);
         }
 
-        private IList<RealmValue> _mixedList;
-        public IList<RealmValue> MixedList
+        private System.Collections.Generic.IList<Realms.RealmValue> _mixedList;
+        public System.Collections.Generic.IList<Realms.RealmValue> MixedList
         {
             get
             {
                 if (_mixedList == null)
                 {
-                    _mixedList = GetListValue<RealmValue>("MixedList");
+                    _mixedList = GetListValue<Realms.RealmValue>("MixedList");
                 }
 
                 return _mixedList;
             }
         }
 
-        private ISet<RealmValue> _mixedSet;
-        public ISet<RealmValue> MixedSet
+        private System.Collections.Generic.ISet<Realms.RealmValue> _mixedSet;
+        public System.Collections.Generic.ISet<Realms.RealmValue> MixedSet
         {
             get
             {
                 if (_mixedSet == null)
                 {
-                    _mixedSet = GetSetValue<RealmValue>("MixedSet");
+                    _mixedSet = GetSetValue<Realms.RealmValue>("MixedSet");
                 }
 
                 return _mixedSet;
             }
         }
 
-        private IDictionary<string, RealmValue> _mixedDict;
-        public IDictionary<string, RealmValue> MixedDict
+        private System.Collections.Generic.IDictionary<string, Realms.RealmValue> _mixedDict;
+        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict
         {
             get
             {
                 if (_mixedDict == null)
                 {
-                    _mixedDict = GetDictionaryValue<RealmValue>("MixedDict");
+                    _mixedDict = GetDictionaryValue<Realms.RealmValue>("MixedDict");
                 }
 
                 return _mixedDict;
@@ -441,10 +441,10 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class EmbeddedGuidTypeUnmanagedAccessor : UnmanagedAccessor, IEmbeddedGuidTypeAccessor
+    internal class EmbeddedGuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedGuidTypeAccessor
     {
-        private Guid _regularProperty;
-        public Guid RegularProperty
+        private System.Guid _regularProperty;
+        public System.Guid RegularProperty
         {
             get => _regularProperty;
             set
@@ -454,14 +454,14 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Guid> GuidList { get; } = new List<Guid>();
+        public System.Collections.Generic.IList<System.Guid> GuidList { get; } = new List<System.Guid>();
 
-        public ISet<Guid> GuidSet { get; } = new HashSet<Guid>(RealmSet<Guid>.Comparer);
+        public System.Collections.Generic.ISet<System.Guid> GuidSet { get; } = new HashSet<System.Guid>(RealmSet<System.Guid>.Comparer);
 
-        public IDictionary<string, Guid> GuidDict { get; } = new Dictionary<string, Guid>();
+        public System.Collections.Generic.IDictionary<string, System.Guid> GuidDict { get; } = new Dictionary<string, System.Guid>();
 
-        private Guid? _optionalProperty;
-        public Guid? OptionalProperty
+        private System.Guid? _optionalProperty;
+        public System.Guid? OptionalProperty
         {
             get => _optionalProperty;
             set
@@ -471,14 +471,14 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Guid?> OptionalList { get; } = new List<Guid?>();
+        public System.Collections.Generic.IList<System.Guid?> OptionalList { get; } = new List<System.Guid?>();
 
-        public ISet<Guid?> OptionalSet { get; } = new HashSet<Guid?>(RealmSet<Guid?>.Comparer);
+        public System.Collections.Generic.ISet<System.Guid?> OptionalSet { get; } = new HashSet<System.Guid?>(RealmSet<System.Guid?>.Comparer);
 
-        public IDictionary<string, Guid?> OptionalDict { get; } = new Dictionary<string, Guid?>();
+        public System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; } = new Dictionary<string, System.Guid?>();
 
-        private GuidType _linkProperty;
-        public GuidType LinkProperty
+        private Realms.Tests.Database.GuidType _linkProperty;
+        public Realms.Tests.Database.GuidType LinkProperty
         {
             get => _linkProperty;
             set
@@ -488,8 +488,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private RealmValue _mixedProperty;
-        public RealmValue MixedProperty
+        private Realms.RealmValue _mixedProperty;
+        public Realms.RealmValue MixedProperty
         {
             get => _mixedProperty;
             set
@@ -499,17 +499,17 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<RealmValue> MixedList { get; } = new List<RealmValue>();
+        public System.Collections.Generic.IList<Realms.RealmValue> MixedList { get; } = new List<Realms.RealmValue>();
 
-        public ISet<RealmValue> MixedSet { get; } = new HashSet<RealmValue>(RealmSet<RealmValue>.Comparer);
+        public System.Collections.Generic.ISet<Realms.RealmValue> MixedSet { get; } = new HashSet<Realms.RealmValue>(RealmSet<Realms.RealmValue>.Comparer);
 
-        public IDictionary<string, RealmValue> MixedDict { get; } = new Dictionary<string, RealmValue>();
+        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; } = new Dictionary<string, Realms.RealmValue>();
 
         public EmbeddedGuidTypeUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -521,28 +521,28 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "RegularProperty":
-                    RegularProperty = (Guid)val;
+                    RegularProperty = (System.Guid)val;
                     return;
                 case "OptionalProperty":
-                    OptionalProperty = (Guid?)val;
+                    OptionalProperty = (System.Guid?)val;
                     return;
                 case "LinkProperty":
-                    LinkProperty = (GuidType)val;
+                    LinkProperty = (Realms.Tests.Database.GuidType)val;
                     return;
                 case "MixedProperty":
-                    MixedProperty = (RealmValue)val;
+                    MixedProperty = (Realms.RealmValue)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

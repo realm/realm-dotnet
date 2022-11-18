@@ -19,23 +19,23 @@ namespace Realms.Tests
     [Woven(typeof(RemappedTypeObjectObjectHelper))]
     public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("__RemappedTypeObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("__RemappedTypeObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
-            Property.Object("NormalLink", "__RemappedTypeObject", managedName: "NormalLink"),
-            Property.Object("__mappedLink", "__RemappedTypeObject", managedName: "MappedLink"),
-            Property.ObjectList("NormalList", "__RemappedTypeObject", managedName: "NormalList"),
-            Property.ObjectList("__mappedList", "__RemappedTypeObject", managedName: "MappedList"),
-            Property.Backlinks("NormalBacklink", "__RemappedTypeObject", "NormalLink", managedName: "NormalBacklink"),
-            Property.Backlinks("__mappedBacklink", "__RemappedTypeObject", "__mappedLink", managedName: "MappedBacklink"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Object("NormalLink", "__RemappedTypeObject", managedName: "NormalLink"),
+            Realms.Schema.Property.Object("__mappedLink", "__RemappedTypeObject", managedName: "MappedLink"),
+            Realms.Schema.Property.ObjectList("NormalList", "__RemappedTypeObject", managedName: "NormalList"),
+            Realms.Schema.Property.ObjectList("__mappedList", "__RemappedTypeObject", managedName: "MappedList"),
+            Realms.Schema.Property.Backlinks("NormalBacklink", "__RemappedTypeObject", "NormalLink", managedName: "NormalBacklink"),
+            Realms.Schema.Property.Backlinks("__mappedBacklink", "__RemappedTypeObject", "__mappedLink", managedName: "MappedBacklink"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IRemappedTypeObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IRemappedTypeObjectAccessor Accessor => _accessor ?? (_accessor = new RemappedTypeObjectUnmanagedAccessor(typeof(RemappedTypeObject)));
 
@@ -49,18 +49,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IRemappedTypeObjectAccessor)managedAccessor;
             var oldAccessor = (IRemappedTypeObjectAccessor)_accessor;
@@ -186,9 +186,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RemappedTypeObject(RealmValue val) => val.AsRealmObject<RemappedTypeObject>();
+        public static explicit operator RemappedTypeObject(Realms.RealmValue val) => val.AsRealmObject<RemappedTypeObject>();
 
-        public static implicit operator RealmValue(RemappedTypeObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RemappedTypeObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -210,7 +210,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -223,18 +223,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class RemappedTypeObjectObjectHelper : IRealmObjectHelper
+        private class RemappedTypeObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new RemappedTypeObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new RemappedTypeObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new RemappedTypeObject();
+            public Realms.IRealmObjectBase CreateInstance() => new RemappedTypeObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IRemappedTypeObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -246,27 +246,27 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IRemappedTypeObjectAccessor : IRealmAccessor
+    internal interface IRemappedTypeObjectAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
         string StringValue { get; set; }
 
-        RemappedTypeObject NormalLink { get; set; }
+        Realms.Tests.RemappedTypeObject NormalLink { get; set; }
 
-        RemappedTypeObject MappedLink { get; set; }
+        Realms.Tests.RemappedTypeObject MappedLink { get; set; }
 
-        IList<RemappedTypeObject> NormalList { get; }
+        System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> NormalList { get; }
 
-        IList<RemappedTypeObject> MappedList { get; }
+        System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> MappedList { get; }
 
-        IQueryable<RemappedTypeObject> NormalBacklink { get; }
+        System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> NormalBacklink { get; }
 
-        IQueryable<RemappedTypeObject> MappedBacklink { get; }
+        System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> MappedBacklink { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class RemappedTypeObjectManagedAccessor : ManagedAccessor, IRemappedTypeObjectAccessor
+    internal class RemappedTypeObjectManagedAccessor : Realms.ManagedAccessor, IRemappedTypeObjectAccessor
     {
         public int Id
         {
@@ -280,68 +280,68 @@ namespace Realms.Tests.Generated
             set => SetValue("StringValue", value);
         }
 
-        public RemappedTypeObject NormalLink
+        public Realms.Tests.RemappedTypeObject NormalLink
         {
-            get => (RemappedTypeObject)GetValue("NormalLink");
+            get => (Realms.Tests.RemappedTypeObject)GetValue("NormalLink");
             set => SetValue("NormalLink", value);
         }
 
-        public RemappedTypeObject MappedLink
+        public Realms.Tests.RemappedTypeObject MappedLink
         {
-            get => (RemappedTypeObject)GetValue("__mappedLink");
+            get => (Realms.Tests.RemappedTypeObject)GetValue("__mappedLink");
             set => SetValue("__mappedLink", value);
         }
 
-        private IList<RemappedTypeObject> _normalList;
-        public IList<RemappedTypeObject> NormalList
+        private System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> _normalList;
+        public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> NormalList
         {
             get
             {
                 if (_normalList == null)
                 {
-                    _normalList = GetListValue<RemappedTypeObject>("NormalList");
+                    _normalList = GetListValue<Realms.Tests.RemappedTypeObject>("NormalList");
                 }
 
                 return _normalList;
             }
         }
 
-        private IList<RemappedTypeObject> _mappedList;
-        public IList<RemappedTypeObject> MappedList
+        private System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> _mappedList;
+        public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> MappedList
         {
             get
             {
                 if (_mappedList == null)
                 {
-                    _mappedList = GetListValue<RemappedTypeObject>("__mappedList");
+                    _mappedList = GetListValue<Realms.Tests.RemappedTypeObject>("__mappedList");
                 }
 
                 return _mappedList;
             }
         }
 
-        private IQueryable<RemappedTypeObject> _normalBacklink;
-        public IQueryable<RemappedTypeObject> NormalBacklink
+        private System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> _normalBacklink;
+        public System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> NormalBacklink
         {
             get
             {
                 if (_normalBacklink == null)
                 {
-                    _normalBacklink = GetBacklinks<RemappedTypeObject>("NormalBacklink");
+                    _normalBacklink = GetBacklinks<Realms.Tests.RemappedTypeObject>("NormalBacklink");
                 }
 
                 return _normalBacklink;
             }
         }
 
-        private IQueryable<RemappedTypeObject> _mappedBacklink;
-        public IQueryable<RemappedTypeObject> MappedBacklink
+        private System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> _mappedBacklink;
+        public System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> MappedBacklink
         {
             get
             {
                 if (_mappedBacklink == null)
                 {
-                    _mappedBacklink = GetBacklinks<RemappedTypeObject>("__mappedBacklink");
+                    _mappedBacklink = GetBacklinks<Realms.Tests.RemappedTypeObject>("__mappedBacklink");
                 }
 
                 return _mappedBacklink;
@@ -349,7 +349,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class RemappedTypeObjectUnmanagedAccessor : UnmanagedAccessor, IRemappedTypeObjectAccessor
+    internal class RemappedTypeObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedTypeObjectAccessor
     {
         private int _id;
         public int Id
@@ -373,8 +373,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RemappedTypeObject _normalLink;
-        public RemappedTypeObject NormalLink
+        private Realms.Tests.RemappedTypeObject _normalLink;
+        public Realms.Tests.RemappedTypeObject NormalLink
         {
             get => _normalLink;
             set
@@ -384,8 +384,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RemappedTypeObject _mappedLink;
-        public RemappedTypeObject MappedLink
+        private Realms.Tests.RemappedTypeObject _mappedLink;
+        public Realms.Tests.RemappedTypeObject MappedLink
         {
             get => _mappedLink;
             set
@@ -395,19 +395,19 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IList<RemappedTypeObject> NormalList { get; } = new List<RemappedTypeObject>();
+        public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> NormalList { get; } = new List<Realms.Tests.RemappedTypeObject>();
 
-        public IList<RemappedTypeObject> MappedList { get; } = new List<RemappedTypeObject>();
+        public System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> MappedList { get; } = new List<Realms.Tests.RemappedTypeObject>();
 
-        public IQueryable<RemappedTypeObject> NormalBacklink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> NormalBacklink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public IQueryable<RemappedTypeObject> MappedBacklink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> MappedBacklink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public RemappedTypeObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -421,7 +421,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -431,17 +431,17 @@ namespace Realms.Tests.Generated
                     StringValue = (string)val;
                     return;
                 case "NormalLink":
-                    NormalLink = (RemappedTypeObject)val;
+                    NormalLink = (Realms.Tests.RemappedTypeObject)val;
                     return;
                 case "__mappedLink":
-                    MappedLink = (RemappedTypeObject)val;
+                    MappedLink = (Realms.Tests.RemappedTypeObject)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {

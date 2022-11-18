@@ -19,17 +19,17 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithObjectPropertiesObjectHelper))]
     public partial class ObjectWithObjectProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithObjectProperties", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithObjectProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Object("StandaloneObject", "IntPropertyObject", managedName: "StandaloneObject"),
-            Property.Object("EmbeddedObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedObject"),
+            Realms.Schema.Property.Object("StandaloneObject", "Realms.Tests.IntPropertyObject", managedName: "StandaloneObject"),
+            Realms.Schema.Property.Object("EmbeddedObject", "Realms.Tests.EmbeddedIntPropertyObject", managedName: "EmbeddedObject"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IObjectWithObjectPropertiesAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IObjectWithObjectPropertiesAccessor Accessor => _accessor ?? (_accessor = new ObjectWithObjectPropertiesUnmanagedAccessor(typeof(ObjectWithObjectProperties)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithObjectPropertiesAccessor)managedAccessor;
             var oldAccessor = (IObjectWithObjectPropertiesAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithObjectProperties(RealmValue val) => val.AsRealmObject<ObjectWithObjectProperties>();
+        public static explicit operator ObjectWithObjectProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithObjectProperties>();
 
-        public static implicit operator RealmValue(ObjectWithObjectProperties val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithObjectProperties val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ObjectWithObjectPropertiesObjectHelper : IRealmObjectHelper
+        private class ObjectWithObjectPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ObjectWithObjectPropertiesManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectWithObjectPropertiesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ObjectWithObjectProperties();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectWithObjectProperties();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -220,33 +220,33 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithObjectPropertiesAccessor : IRealmAccessor
+    internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
     {
-        IntPropertyObject StandaloneObject { get; set; }
+        Realms.Tests.IntPropertyObject StandaloneObject { get; set; }
 
-        EmbeddedIntPropertyObject EmbeddedObject { get; set; }
+        Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithObjectPropertiesManagedAccessor : ManagedAccessor, IObjectWithObjectPropertiesAccessor
+    internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
     {
-        public IntPropertyObject StandaloneObject
+        public Realms.Tests.IntPropertyObject StandaloneObject
         {
-            get => (IntPropertyObject)GetValue("StandaloneObject");
+            get => (Realms.Tests.IntPropertyObject)GetValue("StandaloneObject");
             set => SetValue("StandaloneObject", value);
         }
 
-        public EmbeddedIntPropertyObject EmbeddedObject
+        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
         {
-            get => (EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
+            get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
             set => SetValue("EmbeddedObject", value);
         }
     }
 
-    internal class ObjectWithObjectPropertiesUnmanagedAccessor : UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
+    internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
     {
-        private IntPropertyObject _standaloneObject;
-        public IntPropertyObject StandaloneObject
+        private Realms.Tests.IntPropertyObject _standaloneObject;
+        public Realms.Tests.IntPropertyObject StandaloneObject
         {
             get => _standaloneObject;
             set
@@ -256,8 +256,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private EmbeddedIntPropertyObject _embeddedObject;
-        public EmbeddedIntPropertyObject EmbeddedObject
+        private Realms.Tests.EmbeddedIntPropertyObject _embeddedObject;
+        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
         {
             get => _embeddedObject;
             set
@@ -271,7 +271,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -281,22 +281,22 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "StandaloneObject":
-                    StandaloneObject = (IntPropertyObject)val;
+                    StandaloneObject = (Realms.Tests.IntPropertyObject)val;
                     return;
                 case "EmbeddedObject":
-                    EmbeddedObject = (EmbeddedIntPropertyObject)val;
+                    EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

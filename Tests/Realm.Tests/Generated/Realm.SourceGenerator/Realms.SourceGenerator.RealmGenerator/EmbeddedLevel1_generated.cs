@@ -19,18 +19,18 @@ namespace Realms.Tests
     [Woven(typeof(EmbeddedLevel1ObjectHelper))]
     public partial class EmbeddedLevel1 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedLevel1", ObjectSchema.ObjectType.EmbeddedObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedLevel1", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Property.Primitive("String", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
-            Property.Object("Child", "EmbeddedLevel2", managedName: "Child"),
-            Property.ObjectList("Children", "EmbeddedLevel2", managedName: "Children"),
+            Realms.Schema.Property.Primitive("String", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "String"),
+            Realms.Schema.Property.Object("Child", "Realms.Tests.EmbeddedLevel2", managedName: "Child"),
+            Realms.Schema.Property.ObjectList("Children", "Realms.Tests.EmbeddedLevel2", managedName: "Children"),
         }.Build();
 
         #region IEmbeddedObject implementation
 
         private IEmbeddedLevel1Accessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IEmbeddedLevel1Accessor Accessor => _accessor ?? (_accessor = new EmbeddedLevel1UnmanagedAccessor(typeof(EmbeddedLevel1)));
 
@@ -44,21 +44,21 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedLevel1Accessor)managedAccessor;
             var oldAccessor = (IEmbeddedLevel1Accessor)_accessor;
@@ -169,9 +169,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedLevel1(RealmValue val) => val.AsRealmObject<EmbeddedLevel1>();
+        public static explicit operator EmbeddedLevel1(Realms.RealmValue val) => val.AsRealmObject<EmbeddedLevel1>();
 
-        public static implicit operator RealmValue(EmbeddedLevel1 val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedLevel1 val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -193,7 +193,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -206,18 +206,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class EmbeddedLevel1ObjectHelper : IRealmObjectHelper
+        private class EmbeddedLevel1ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new EmbeddedLevel1ManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new EmbeddedLevel1ManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new EmbeddedLevel1();
+            public Realms.IRealmObjectBase CreateInstance() => new EmbeddedLevel1();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -229,17 +229,17 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IEmbeddedLevel1Accessor : IRealmAccessor
+    internal interface IEmbeddedLevel1Accessor : Realms.IRealmAccessor
     {
         string String { get; set; }
 
-        EmbeddedLevel2 Child { get; set; }
+        Realms.Tests.EmbeddedLevel2 Child { get; set; }
 
-        IList<EmbeddedLevel2> Children { get; }
+        System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> Children { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class EmbeddedLevel1ManagedAccessor : ManagedAccessor, IEmbeddedLevel1Accessor
+    internal class EmbeddedLevel1ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel1Accessor
     {
         public string String
         {
@@ -247,20 +247,20 @@ namespace Realms.Tests.Generated
             set => SetValue("String", value);
         }
 
-        public EmbeddedLevel2 Child
+        public Realms.Tests.EmbeddedLevel2 Child
         {
-            get => (EmbeddedLevel2)GetValue("Child");
+            get => (Realms.Tests.EmbeddedLevel2)GetValue("Child");
             set => SetValue("Child", value);
         }
 
-        private IList<EmbeddedLevel2> _children;
-        public IList<EmbeddedLevel2> Children
+        private System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> _children;
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> Children
         {
             get
             {
                 if (_children == null)
                 {
-                    _children = GetListValue<EmbeddedLevel2>("Children");
+                    _children = GetListValue<Realms.Tests.EmbeddedLevel2>("Children");
                 }
 
                 return _children;
@@ -268,7 +268,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class EmbeddedLevel1UnmanagedAccessor : UnmanagedAccessor, IEmbeddedLevel1Accessor
+    internal class EmbeddedLevel1UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel1Accessor
     {
         private string _string;
         public string String
@@ -281,8 +281,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private EmbeddedLevel2 _child;
-        public EmbeddedLevel2 Child
+        private Realms.Tests.EmbeddedLevel2 _child;
+        public Realms.Tests.EmbeddedLevel2 Child
         {
             get => _child;
             set
@@ -292,13 +292,13 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IList<EmbeddedLevel2> Children { get; } = new List<EmbeddedLevel2>();
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> Children { get; } = new List<Realms.Tests.EmbeddedLevel2>();
 
         public EmbeddedLevel1UnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -308,7 +308,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -316,14 +316,14 @@ namespace Realms.Tests.Generated
                     String = (string)val;
                     return;
                 case "Child":
-                    Child = (EmbeddedLevel2)val;
+                    Child = (Realms.Tests.EmbeddedLevel2)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

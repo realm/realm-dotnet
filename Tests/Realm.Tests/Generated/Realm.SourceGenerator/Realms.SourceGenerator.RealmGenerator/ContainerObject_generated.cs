@@ -19,16 +19,16 @@ namespace Realms.Tests
     [Woven(typeof(ContainerObjectObjectHelper))]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ContainerObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ContainerObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.ObjectList("Items", "IntPropertyObject", managedName: "Items"),
+            Realms.Schema.Property.ObjectList("Items", "Realms.Tests.IntPropertyObject", managedName: "Items"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IContainerObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IContainerObjectAccessor Accessor => _accessor ?? (_accessor = new ContainerObjectUnmanagedAccessor(typeof(ContainerObject)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IContainerObjectAccessor)managedAccessor;
             var oldAccessor = (IContainerObjectAccessor)_accessor;
@@ -159,9 +159,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ContainerObject(RealmValue val) => val.AsRealmObject<ContainerObject>();
+        public static explicit operator ContainerObject(Realms.RealmValue val) => val.AsRealmObject<ContainerObject>();
 
-        public static implicit operator RealmValue(ContainerObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ContainerObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -183,7 +183,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -196,18 +196,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ContainerObjectObjectHelper : IRealmObjectHelper
+        private class ContainerObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ContainerObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ContainerObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ContainerObject();
+            public Realms.IRealmObjectBase CreateInstance() => new ContainerObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -219,22 +219,22 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IContainerObjectAccessor : IRealmAccessor
+    internal interface IContainerObjectAccessor : Realms.IRealmAccessor
     {
-        IList<IntPropertyObject> Items { get; }
+        System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ContainerObjectManagedAccessor : ManagedAccessor, IContainerObjectAccessor
+    internal class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
     {
-        private IList<IntPropertyObject> _items;
-        public IList<IntPropertyObject> Items
+        private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _items;
+        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items
         {
             get
             {
                 if (_items == null)
                 {
-                    _items = GetListValue<IntPropertyObject>("Items");
+                    _items = GetListValue<Realms.Tests.IntPropertyObject>("Items");
                 }
 
                 return _items;
@@ -242,25 +242,25 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class ContainerObjectUnmanagedAccessor : UnmanagedAccessor, IContainerObjectAccessor
+    internal class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
     {
-        public IList<IntPropertyObject> Items { get; } = new List<IntPropertyObject>();
+        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; } = new List<Realms.Tests.IntPropertyObject>();
 
         public ContainerObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

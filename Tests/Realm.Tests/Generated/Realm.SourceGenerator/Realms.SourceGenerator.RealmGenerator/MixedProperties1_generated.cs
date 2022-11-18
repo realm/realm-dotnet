@@ -19,19 +19,19 @@ namespace Realms.Tests.Database
     [Woven(typeof(MixedProperties1ObjectHelper))]
     public partial class MixedProperties1 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("MixedProperties1", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("MixedProperties1", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.ObjectList("Friends", "Person", managedName: "Friends"),
-            Property.Primitive("Age", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
-            Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.ObjectList("Friends", "Realms.Tests.Database.Person", managedName: "Friends"),
+            Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
+            Realms.Schema.Property.ObjectList("Enemies", "Realms.Tests.Database.Person", managedName: "Enemies"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IMixedProperties1Accessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IMixedProperties1Accessor Accessor => _accessor ?? (_accessor = new MixedProperties1UnmanagedAccessor(typeof(MixedProperties1)));
 
@@ -45,18 +45,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IMixedProperties1Accessor)managedAccessor;
             var oldAccessor = (IMixedProperties1Accessor)_accessor;
@@ -172,9 +172,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator MixedProperties1(RealmValue val) => val.AsRealmObject<MixedProperties1>();
+        public static explicit operator MixedProperties1(Realms.RealmValue val) => val.AsRealmObject<MixedProperties1>();
 
-        public static implicit operator RealmValue(MixedProperties1 val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(MixedProperties1 val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -209,18 +209,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class MixedProperties1ObjectHelper : IRealmObjectHelper
+        private class MixedProperties1ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new MixedProperties1ManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new MixedProperties1ManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new MixedProperties1();
+            public Realms.IRealmObjectBase CreateInstance() => new MixedProperties1();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -232,19 +232,19 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IMixedProperties1Accessor : IRealmAccessor
+    internal interface IMixedProperties1Accessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
 
-        IList<Person> Friends { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
 
         int Age { get; set; }
 
-        IList<Person> Enemies { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class MixedProperties1ManagedAccessor : ManagedAccessor, IMixedProperties1Accessor
+    internal class MixedProperties1ManagedAccessor : Realms.ManagedAccessor, IMixedProperties1Accessor
     {
         public string Name
         {
@@ -252,14 +252,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Name", value);
         }
 
-        private IList<Person> _friends;
-        public IList<Person> Friends
+        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
         {
             get
             {
                 if (_friends == null)
                 {
-                    _friends = GetListValue<Person>("Friends");
+                    _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
                 }
 
                 return _friends;
@@ -272,14 +272,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Age", value);
         }
 
-        private IList<Person> _enemies;
-        public IList<Person> Enemies
+        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _enemies;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies
         {
             get
             {
                 if (_enemies == null)
                 {
-                    _enemies = GetListValue<Person>("Enemies");
+                    _enemies = GetListValue<Realms.Tests.Database.Person>("Enemies");
                 }
 
                 return _enemies;
@@ -287,7 +287,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class MixedProperties1UnmanagedAccessor : UnmanagedAccessor, IMixedProperties1Accessor
+    internal class MixedProperties1UnmanagedAccessor : Realms.UnmanagedAccessor, IMixedProperties1Accessor
     {
         private string _name;
         public string Name
@@ -300,7 +300,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Person> Friends { get; } = new List<Person>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
 
         private int _age;
         public int Age
@@ -313,13 +313,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Person> Enemies { get; } = new List<Person>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
 
         public MixedProperties1UnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -329,7 +329,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -344,7 +344,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

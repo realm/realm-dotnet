@@ -19,17 +19,17 @@ namespace Realms.Tests
     [Woven(typeof(IntPrimaryKeyWithValueObjectObjectHelper))]
     public partial class IntPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IntPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IntPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IIntPrimaryKeyWithValueObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IIntPrimaryKeyWithValueObjectAccessor Accessor => _accessor ?? (_accessor = new IntPrimaryKeyWithValueObjectUnmanagedAccessor(typeof(IntPrimaryKeyWithValueObject)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IIntPrimaryKeyWithValueObjectAccessor)managedAccessor;
             var oldAccessor = (IIntPrimaryKeyWithValueObjectAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IntPrimaryKeyWithValueObject(RealmValue val) => val.AsRealmObject<IntPrimaryKeyWithValueObject>();
+        public static explicit operator IntPrimaryKeyWithValueObject(Realms.RealmValue val) => val.AsRealmObject<IntPrimaryKeyWithValueObject>();
 
-        public static implicit operator RealmValue(IntPrimaryKeyWithValueObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IntPrimaryKeyWithValueObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class IntPrimaryKeyWithValueObjectObjectHelper : IRealmObjectHelper
+        private class IntPrimaryKeyWithValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new IntPrimaryKeyWithValueObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new IntPrimaryKeyWithValueObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new IntPrimaryKeyWithValueObject();
+            public Realms.IRealmObjectBase CreateInstance() => new IntPrimaryKeyWithValueObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IIntPrimaryKeyWithValueObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -222,7 +222,7 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IIntPrimaryKeyWithValueObjectAccessor : IRealmAccessor
+    internal interface IIntPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
@@ -230,7 +230,7 @@ namespace Realms.Tests.Generated
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class IntPrimaryKeyWithValueObjectManagedAccessor : ManagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
+    internal class IntPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
     {
         public int Id
         {
@@ -245,7 +245,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class IntPrimaryKeyWithValueObjectUnmanagedAccessor : UnmanagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
+    internal class IntPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
     {
         private int _id;
         public int Id
@@ -273,7 +273,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -283,7 +283,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -297,7 +297,7 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {

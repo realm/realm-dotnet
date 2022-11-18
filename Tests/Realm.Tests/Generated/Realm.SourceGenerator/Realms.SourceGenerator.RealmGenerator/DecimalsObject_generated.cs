@@ -20,17 +20,17 @@ namespace Realms.Tests
     [Woven(typeof(DecimalsObjectObjectHelper))]
     public partial class DecimalsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("DecimalValue", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
-            Property.Primitive("Decimal128Value", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
+            Realms.Schema.Property.Primitive("DecimalValue", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
+            Realms.Schema.Property.Primitive("Decimal128Value", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IDecimalsObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IDecimalsObjectAccessor Accessor => _accessor ?? (_accessor = new DecimalsObjectUnmanagedAccessor(typeof(DecimalsObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDecimalsObjectAccessor)managedAccessor;
             var oldAccessor = (IDecimalsObjectAccessor)_accessor;
@@ -157,9 +157,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DecimalsObject(RealmValue val) => val.AsRealmObject<DecimalsObject>();
+        public static explicit operator DecimalsObject(Realms.RealmValue val) => val.AsRealmObject<DecimalsObject>();
 
-        public static implicit operator RealmValue(DecimalsObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DecimalsObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -181,7 +181,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -194,18 +194,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class DecimalsObjectObjectHelper : IRealmObjectHelper
+        private class DecimalsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new DecimalsObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new DecimalsObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new DecimalsObject();
+            public Realms.IRealmObjectBase CreateInstance() => new DecimalsObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -217,15 +217,15 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDecimalsObjectAccessor : IRealmAccessor
+    internal interface IDecimalsObjectAccessor : Realms.IRealmAccessor
     {
         decimal DecimalValue { get; set; }
 
-        Decimal128 Decimal128Value { get; set; }
+        MongoDB.Bson.Decimal128 Decimal128Value { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DecimalsObjectManagedAccessor : ManagedAccessor, IDecimalsObjectAccessor
+    internal class DecimalsObjectManagedAccessor : Realms.ManagedAccessor, IDecimalsObjectAccessor
     {
         public decimal DecimalValue
         {
@@ -233,14 +233,14 @@ namespace Realms.Tests.Generated
             set => SetValue("DecimalValue", value);
         }
 
-        public Decimal128 Decimal128Value
+        public MongoDB.Bson.Decimal128 Decimal128Value
         {
-            get => (Decimal128)GetValue("Decimal128Value");
+            get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Value");
             set => SetValue("Decimal128Value", value);
         }
     }
 
-    internal class DecimalsObjectUnmanagedAccessor : UnmanagedAccessor, IDecimalsObjectAccessor
+    internal class DecimalsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDecimalsObjectAccessor
     {
         private decimal _decimalValue;
         public decimal DecimalValue
@@ -253,8 +253,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private Decimal128 _decimal128Value;
-        public Decimal128 Decimal128Value
+        private MongoDB.Bson.Decimal128 _decimal128Value;
+        public MongoDB.Bson.Decimal128 Decimal128Value
         {
             get => _decimal128Value;
             set
@@ -268,7 +268,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -278,7 +278,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -286,14 +286,14 @@ namespace Realms.Tests.Generated
                     DecimalValue = (decimal)val;
                     return;
                 case "Decimal128Value":
-                    Decimal128Value = (Decimal128)val;
+                    Decimal128Value = (MongoDB.Bson.Decimal128)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

@@ -19,16 +19,16 @@ namespace Realms.Tests.Database
     [Woven(typeof(LoneClassObjectHelper))]
     public partial class LoneClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("LoneClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("LoneClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ILoneClassAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ILoneClassAccessor Accessor => _accessor ?? (_accessor = new LoneClassUnmanagedAccessor(typeof(LoneClass)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ILoneClassAccessor)managedAccessor;
             var oldAccessor = (ILoneClassAccessor)_accessor;
@@ -157,9 +157,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator LoneClass(RealmValue val) => val.AsRealmObject<LoneClass>();
+        public static explicit operator LoneClass(Realms.RealmValue val) => val.AsRealmObject<LoneClass>();
 
-        public static implicit operator RealmValue(LoneClass val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(LoneClass val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -181,7 +181,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -194,18 +194,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class LoneClassObjectHelper : IRealmObjectHelper
+        private class LoneClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new LoneClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new LoneClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new LoneClass();
+            public Realms.IRealmObjectBase CreateInstance() => new LoneClass();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -217,13 +217,13 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ILoneClassAccessor : IRealmAccessor
+    internal interface ILoneClassAccessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class LoneClassManagedAccessor : ManagedAccessor, ILoneClassAccessor
+    internal class LoneClassManagedAccessor : Realms.ManagedAccessor, ILoneClassAccessor
     {
         public string Name
         {
@@ -232,7 +232,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class LoneClassUnmanagedAccessor : UnmanagedAccessor, ILoneClassAccessor
+    internal class LoneClassUnmanagedAccessor : Realms.UnmanagedAccessor, ILoneClassAccessor
     {
         private string _name;
         public string Name
@@ -249,7 +249,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -258,7 +258,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

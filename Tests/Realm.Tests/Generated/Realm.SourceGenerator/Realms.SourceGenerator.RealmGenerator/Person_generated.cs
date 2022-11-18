@@ -19,28 +19,28 @@ namespace Realms.Tests.Database
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("FirstName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
-            Property.Primitive("LastName", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "LastName"),
-            Property.Primitive("Score", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Score"),
-            Property.Primitive("Latitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Latitude"),
-            Property.Primitive("Longitude", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Longitude"),
-            Property.Primitive("Salary", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Salary"),
-            Property.Primitive("IsAmbivalent", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "IsAmbivalent"),
-            Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
-            Property.Primitive("PublicCertificateBytes", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PublicCertificateBytes"),
-            Property.Primitive("OptionalAddress", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalAddress"),
-            Property.Primitive("Email", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Email_"),
-            Property.Primitive("IsInteresting", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
-            Property.ObjectList("Friends", "Person", managedName: "Friends"),
+            Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
+            Realms.Schema.Property.Primitive("LastName", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "LastName"),
+            Realms.Schema.Property.Primitive("Score", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Score"),
+            Realms.Schema.Property.Primitive("Latitude", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Latitude"),
+            Realms.Schema.Property.Primitive("Longitude", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Longitude"),
+            Realms.Schema.Property.Primitive("Salary", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Salary"),
+            Realms.Schema.Property.Primitive("IsAmbivalent", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "IsAmbivalent"),
+            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
+            Realms.Schema.Property.Primitive("PublicCertificateBytes", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PublicCertificateBytes"),
+            Realms.Schema.Property.Primitive("OptionalAddress", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalAddress"),
+            Realms.Schema.Property.Primitive("Email", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Email_"),
+            Realms.Schema.Property.Primitive("IsInteresting", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
+            Realms.Schema.Property.ObjectList("Friends", "Realms.Tests.Database.Person", managedName: "Friends"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IPersonAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IPersonAccessor Accessor => _accessor ?? (_accessor = new PersonUnmanagedAccessor(typeof(Person)));
 
@@ -54,18 +54,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPersonAccessor)managedAccessor;
             var oldAccessor = (IPersonAccessor)_accessor;
@@ -213,9 +213,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
+        public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
 
-        public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Person val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -237,7 +237,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -248,18 +248,18 @@ namespace Realms.Tests.Database
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PersonObjectHelper : IRealmObjectHelper
+        private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Person();
+            public Realms.IRealmObjectBase CreateInstance() => new Person();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -271,7 +271,7 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPersonAccessor : IRealmAccessor
+    internal interface IPersonAccessor : Realms.IRealmAccessor
     {
         string FirstName { get; set; }
 
@@ -287,7 +287,7 @@ namespace Realms.Tests.Database.Generated
 
         bool? IsAmbivalent { get; set; }
 
-        DateTimeOffset Birthday { get; set; }
+        System.DateTimeOffset Birthday { get; set; }
 
         byte[] PublicCertificateBytes { get; set; }
 
@@ -297,11 +297,11 @@ namespace Realms.Tests.Database.Generated
 
         bool IsInteresting { get; set; }
 
-        IList<Person> Friends { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
+    internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
     {
         public string FirstName
         {
@@ -345,9 +345,9 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("IsAmbivalent", value);
         }
 
-        public DateTimeOffset Birthday
+        public System.DateTimeOffset Birthday
         {
-            get => (DateTimeOffset)GetValue("Birthday");
+            get => (System.DateTimeOffset)GetValue("Birthday");
             set => SetValue("Birthday", value);
         }
 
@@ -375,14 +375,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("IsInteresting", value);
         }
 
-        private IList<Person> _friends;
-        public IList<Person> Friends
+        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
         {
             get
             {
                 if (_friends == null)
                 {
-                    _friends = GetListValue<Person>("Friends");
+                    _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
                 }
 
                 return _friends;
@@ -390,7 +390,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
+    internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
     {
         private string _firstName;
         public string FirstName
@@ -469,8 +469,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private DateTimeOffset _birthday;
-        public DateTimeOffset Birthday
+        private System.DateTimeOffset _birthday;
+        public System.DateTimeOffset Birthday
         {
             get => _birthday;
             set
@@ -524,13 +524,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<Person> Friends { get; } = new List<Person>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
 
         public PersonUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -550,7 +550,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -576,7 +576,7 @@ namespace Realms.Tests.Database.Generated
                     IsAmbivalent = (bool?)val;
                     return;
                 case "Birthday":
-                    Birthday = (DateTimeOffset)val;
+                    Birthday = (System.DateTimeOffset)val;
                     return;
                 case "PublicCertificateBytes":
                     PublicCertificateBytes = (byte[])val;
@@ -595,7 +595,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

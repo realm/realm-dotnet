@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(NonPrimaryKeyWithPKRelationObjectHelper))]
     public partial class NonPrimaryKeyWithPKRelation : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
-            Property.Object("OtherObject", "PrimaryKeyObject", managedName: "OtherObject"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Object("OtherObject", "Realms.Tests.Database.PrimaryKeyObject", managedName: "OtherObject"),
         }.Build();
 
         #region IRealmObject implementation
 
         private INonPrimaryKeyWithPKRelationAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal INonPrimaryKeyWithPKRelationAccessor Accessor => _accessor ?? (_accessor = new NonPrimaryKeyWithPKRelationUnmanagedAccessor(typeof(NonPrimaryKeyWithPKRelation)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (INonPrimaryKeyWithPKRelationAccessor)managedAccessor;
             var oldAccessor = (INonPrimaryKeyWithPKRelationAccessor)_accessor;
@@ -163,9 +163,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator NonPrimaryKeyWithPKRelation(RealmValue val) => val.AsRealmObject<NonPrimaryKeyWithPKRelation>();
+        public static explicit operator NonPrimaryKeyWithPKRelation(Realms.RealmValue val) => val.AsRealmObject<NonPrimaryKeyWithPKRelation>();
 
-        public static implicit operator RealmValue(NonPrimaryKeyWithPKRelation val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(NonPrimaryKeyWithPKRelation val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -187,7 +187,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -200,18 +200,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class NonPrimaryKeyWithPKRelationObjectHelper : IRealmObjectHelper
+        private class NonPrimaryKeyWithPKRelationObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new NonPrimaryKeyWithPKRelationManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new NonPrimaryKeyWithPKRelationManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new NonPrimaryKeyWithPKRelation();
+            public Realms.IRealmObjectBase CreateInstance() => new NonPrimaryKeyWithPKRelation();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -223,15 +223,15 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface INonPrimaryKeyWithPKRelationAccessor : IRealmAccessor
+    internal interface INonPrimaryKeyWithPKRelationAccessor : Realms.IRealmAccessor
     {
         string StringValue { get; set; }
 
-        PrimaryKeyObject OtherObject { get; set; }
+        Realms.Tests.Database.PrimaryKeyObject OtherObject { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class NonPrimaryKeyWithPKRelationManagedAccessor : ManagedAccessor, INonPrimaryKeyWithPKRelationAccessor
+    internal class NonPrimaryKeyWithPKRelationManagedAccessor : Realms.ManagedAccessor, INonPrimaryKeyWithPKRelationAccessor
     {
         public string StringValue
         {
@@ -239,14 +239,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("StringValue", value);
         }
 
-        public PrimaryKeyObject OtherObject
+        public Realms.Tests.Database.PrimaryKeyObject OtherObject
         {
-            get => (PrimaryKeyObject)GetValue("OtherObject");
+            get => (Realms.Tests.Database.PrimaryKeyObject)GetValue("OtherObject");
             set => SetValue("OtherObject", value);
         }
     }
 
-    internal class NonPrimaryKeyWithPKRelationUnmanagedAccessor : UnmanagedAccessor, INonPrimaryKeyWithPKRelationAccessor
+    internal class NonPrimaryKeyWithPKRelationUnmanagedAccessor : Realms.UnmanagedAccessor, INonPrimaryKeyWithPKRelationAccessor
     {
         private string _stringValue;
         public string StringValue
@@ -259,8 +259,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private PrimaryKeyObject _otherObject;
-        public PrimaryKeyObject OtherObject
+        private Realms.Tests.Database.PrimaryKeyObject _otherObject;
+        public Realms.Tests.Database.PrimaryKeyObject OtherObject
         {
             get => _otherObject;
             set
@@ -274,7 +274,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -284,7 +284,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -292,14 +292,14 @@ namespace Realms.Tests.Database.Generated
                     StringValue = (string)val;
                     return;
                 case "OtherObject":
-                    OtherObject = (PrimaryKeyObject)val;
+                    OtherObject = (Realms.Tests.Database.PrimaryKeyObject)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

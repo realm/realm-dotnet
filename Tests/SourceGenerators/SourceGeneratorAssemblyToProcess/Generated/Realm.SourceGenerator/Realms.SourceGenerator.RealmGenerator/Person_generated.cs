@@ -19,18 +19,18 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(PersonObjectHelper))]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Backlinks("Dogs", "Dog", "Owner", managedName: "Dogs"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Backlinks("Dogs", "SourceGeneratorPlayground.Dog", "Owner", managedName: "Dogs"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IPersonAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IPersonAccessor Accessor => _accessor ?? (_accessor = new PersonUnmanagedAccessor(typeof(Person)));
 
@@ -44,18 +44,18 @@ namespace SourceGeneratorPlayground
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPersonAccessor)managedAccessor;
             var oldAccessor = (IPersonAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace SourceGeneratorPlayground
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Person(RealmValue val) => val.AsRealmObject<Person>();
+        public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
 
-        public static implicit operator RealmValue(Person val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Person val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace SourceGeneratorPlayground
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace SourceGeneratorPlayground
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PersonObjectHelper : IRealmObjectHelper
+        private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PersonManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Person();
+            public Realms.IRealmObjectBase CreateInstance() => new Person();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IPersonAccessor)instance.Accessor).Id;
                 return true;
@@ -220,21 +220,21 @@ namespace SourceGeneratorPlayground
 namespace SourceGeneratorPlayground.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPersonAccessor : IRealmAccessor
+    internal interface IPersonAccessor : Realms.IRealmAccessor
     {
-        Guid Id { get; set; }
+        System.Guid Id { get; set; }
 
         string Name { get; set; }
 
-        IQueryable<Dog> Dogs { get; }
+        System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonManagedAccessor : ManagedAccessor, IPersonAccessor
+    internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
     {
-        public Guid Id
+        public System.Guid Id
         {
-            get => (Guid)GetValue("Id");
+            get => (System.Guid)GetValue("Id");
             set => SetValueUnique("Id", value);
         }
 
@@ -244,14 +244,14 @@ namespace SourceGeneratorPlayground.Generated
             set => SetValue("Name", value);
         }
 
-        private IQueryable<Dog> _dogs;
-        public IQueryable<Dog> Dogs
+        private System.Linq.IQueryable<SourceGeneratorPlayground.Dog> _dogs;
+        public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs
         {
             get
             {
                 if (_dogs == null)
                 {
-                    _dogs = GetBacklinks<Dog>("Dogs");
+                    _dogs = GetBacklinks<SourceGeneratorPlayground.Dog>("Dogs");
                 }
 
                 return _dogs;
@@ -259,10 +259,10 @@ namespace SourceGeneratorPlayground.Generated
         }
     }
 
-    internal class PersonUnmanagedAccessor : UnmanagedAccessor, IPersonAccessor
+    internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
     {
-        private Guid _id = Guid.NewGuid();
-        public Guid Id
+        private System.Guid _id = Guid.NewGuid();
+        public System.Guid Id
         {
             get => _id;
             set
@@ -283,13 +283,13 @@ namespace SourceGeneratorPlayground.Generated
             }
         }
 
-        public IQueryable<Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public PersonUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -300,7 +300,7 @@ namespace SourceGeneratorPlayground.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -314,14 +314,14 @@ namespace SourceGeneratorPlayground.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "Id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (Guid)val;
+            Id = (System.Guid)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
