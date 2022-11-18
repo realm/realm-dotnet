@@ -45,18 +45,8 @@ namespace Realms.DataBinding
                 return null;
             }
 
-            if (_schema != null)
-            {
-                if (_schema.Any(p => p.ManagedName == name))
-                {
-                    return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
-                }
-
-                return result;
-            }
-
             // Schema is null only for woven unmanaged objects
-            if (result?.GetCustomAttribute<WovenPropertyAttribute>() != null)
+            if (_schema?.Any(p => p.ManagedName == name) ?? result.GetCustomAttribute<WovenPropertyAttribute>() != null)
             {
                 return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
             }
