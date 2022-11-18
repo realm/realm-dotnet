@@ -270,6 +270,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class ObjectWithPartitionValueUnmanagedAccessor : UnmanagedAccessor, IObjectWithPartitionValueAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
+
         private string _id;
         public string Id
         {

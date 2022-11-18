@@ -834,6 +834,8 @@ namespace Realms.Tests.Generated
 
     internal class DictionariesObjectUnmanagedAccessor : UnmanagedAccessor, IDictionariesObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => DictionariesObject.RealmSchema;
+
         public IDictionary<string, char> CharDictionary { get; } = new Dictionary<string, char>();
 
         public IDictionary<string, byte> ByteDictionary { get; } = new Dictionary<string, byte>();

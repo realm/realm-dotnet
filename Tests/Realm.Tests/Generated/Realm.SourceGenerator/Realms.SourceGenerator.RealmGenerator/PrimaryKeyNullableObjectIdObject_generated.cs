@@ -232,6 +232,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyNullableObjectIdObjectUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyNullableObjectIdObject.RealmSchema;
+
         private ObjectId? _id;
         public ObjectId? Id
         {

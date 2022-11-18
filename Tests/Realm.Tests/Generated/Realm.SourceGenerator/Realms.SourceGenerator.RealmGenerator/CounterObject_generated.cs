@@ -312,6 +312,8 @@ namespace Realms.Tests.Generated
 
     internal class CounterObjectUnmanagedAccessor : UnmanagedAccessor, ICounterObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => CounterObject.RealmSchema;
+
         private int _id;
         public int Id
         {

@@ -249,6 +249,8 @@ namespace SourceGeneratorAssemblyToProcess.Generated
 
     internal class NamespaceObjUnmanagedAccessor : UnmanagedAccessor, INamespaceObjAccessor
     {
+        public override ObjectSchema ObjectSchema => NamespaceObj.RealmSchema;
+
         private int _id;
         public int Id
         {

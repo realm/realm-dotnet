@@ -231,6 +231,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class AgedObjectUnmanagedAccessor : UnmanagedAccessor, IAgedObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => AgedObject.RealmSchema;
+
         private DateTimeOffset _birthday;
         public DateTimeOffset Birthday
         {

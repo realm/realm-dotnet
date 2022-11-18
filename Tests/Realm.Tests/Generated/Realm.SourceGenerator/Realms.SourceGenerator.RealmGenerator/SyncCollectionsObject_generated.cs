@@ -1196,6 +1196,8 @@ namespace Realms.Tests.Generated
 
     internal class SyncCollectionsObjectUnmanagedAccessor : UnmanagedAccessor, ISyncCollectionsObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => SyncCollectionsObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

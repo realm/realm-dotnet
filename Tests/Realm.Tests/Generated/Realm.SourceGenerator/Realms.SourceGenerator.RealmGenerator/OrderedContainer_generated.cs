@@ -263,6 +263,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class OrderedContainerUnmanagedAccessor : UnmanagedAccessor, IOrderedContainerAccessor
     {
+        public override ObjectSchema ObjectSchema => OrderedContainer.RealmSchema;
+
         public IList<OrderedObject> Items { get; } = new List<OrderedObject>();
 
         public IDictionary<string, OrderedObject> ItemsDictionary { get; } = new Dictionary<string, OrderedObject>();

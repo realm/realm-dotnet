@@ -234,6 +234,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ThrowsBeforeInitializerUnmanagedAccessor : UnmanagedAccessor, IThrowsBeforeInitializerAccessor
     {
+        public override ObjectSchema ObjectSchema => ThrowsBeforeInitializer.RealmSchema;
+
         private int _id;
         public int Id
         {

@@ -351,6 +351,8 @@ namespace Realms.Tests.Generated
 
     internal class RemappedTypeObjectUnmanagedAccessor : UnmanagedAccessor, IRemappedTypeObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => RemappedTypeObject.RealmSchema;
+
         private int _id;
         public int Id
         {

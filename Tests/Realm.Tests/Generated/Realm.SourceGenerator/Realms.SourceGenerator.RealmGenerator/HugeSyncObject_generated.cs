@@ -245,6 +245,8 @@ namespace Realms.Tests.Generated
 
     internal class HugeSyncObjectUnmanagedAccessor : UnmanagedAccessor, IHugeSyncObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => HugeSyncObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

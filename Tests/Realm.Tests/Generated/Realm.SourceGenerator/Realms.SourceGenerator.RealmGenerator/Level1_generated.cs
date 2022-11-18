@@ -248,6 +248,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class Level1UnmanagedAccessor : UnmanagedAccessor, ILevel1Accessor
     {
+        public override ObjectSchema ObjectSchema => Level1.RealmSchema;
+
         private string _stringValue;
         public string StringValue
         {

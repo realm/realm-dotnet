@@ -247,6 +247,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class CompletionReportUnmanagedAccessor : UnmanagedAccessor, ICompletionReportAccessor
     {
+        public override ObjectSchema ObjectSchema => CompletionReport.RealmSchema;
+
         private DateTimeOffset _completionDate;
         public DateTimeOffset CompletionDate
         {

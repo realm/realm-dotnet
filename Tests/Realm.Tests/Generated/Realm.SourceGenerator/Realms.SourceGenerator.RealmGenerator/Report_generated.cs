@@ -274,6 +274,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ReportUnmanagedAccessor : UnmanagedAccessor, IReportAccessor
     {
+        public override ObjectSchema ObjectSchema => Report.RealmSchema;
+
         private int _id;
         public int Id
         {

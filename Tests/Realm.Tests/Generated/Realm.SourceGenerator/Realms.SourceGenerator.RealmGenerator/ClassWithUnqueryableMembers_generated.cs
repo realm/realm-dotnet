@@ -302,6 +302,8 @@ namespace Realms.Tests.Generated
 
     internal class ClassWithUnqueryableMembersUnmanagedAccessor : UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
     {
+        public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
+
         private string _realPropertyToSatisfyWeaver;
         public string RealPropertyToSatisfyWeaver
         {

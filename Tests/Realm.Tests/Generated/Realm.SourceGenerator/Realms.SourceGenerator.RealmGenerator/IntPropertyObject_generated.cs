@@ -270,6 +270,8 @@ namespace Realms.Tests.Generated
 
     internal class IntPropertyObjectUnmanagedAccessor : UnmanagedAccessor, IIntPropertyObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
+
         private ObjectId _id = ObjectId.GenerateNewId();
         public ObjectId Id
         {

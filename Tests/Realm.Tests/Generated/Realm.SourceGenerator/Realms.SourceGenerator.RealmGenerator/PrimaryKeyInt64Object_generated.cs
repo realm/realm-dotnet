@@ -234,6 +234,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyInt64ObjectUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyInt64ObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyInt64Object.RealmSchema;
+
         private long _id;
         public long Id
         {

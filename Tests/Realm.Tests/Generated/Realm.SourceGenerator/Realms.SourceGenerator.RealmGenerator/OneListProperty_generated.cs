@@ -244,6 +244,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class OneListPropertyUnmanagedAccessor : UnmanagedAccessor, IOneListPropertyAccessor
     {
+        public override ObjectSchema ObjectSchema => OneListProperty.RealmSchema;
+
         public IList<Person> People { get; } = new List<Person>();
 
         public OneListPropertyUnmanagedAccessor(Type objectType) : base(objectType)

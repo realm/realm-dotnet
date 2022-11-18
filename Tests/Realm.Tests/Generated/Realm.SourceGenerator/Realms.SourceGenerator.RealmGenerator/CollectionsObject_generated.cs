@@ -1955,6 +1955,8 @@ namespace Realms.Tests.Generated
 
     internal class CollectionsObjectUnmanagedAccessor : UnmanagedAccessor, ICollectionsObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => CollectionsObject.RealmSchema;
+
         public ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
 
         public ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);

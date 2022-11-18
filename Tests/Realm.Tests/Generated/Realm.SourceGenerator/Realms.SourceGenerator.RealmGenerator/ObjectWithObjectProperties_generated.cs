@@ -245,6 +245,8 @@ namespace Realms.Tests.Generated
 
     internal class ObjectWithObjectPropertiesUnmanagedAccessor : UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
+
         private IntPropertyObject _standaloneObject;
         public IntPropertyObject StandaloneObject
         {

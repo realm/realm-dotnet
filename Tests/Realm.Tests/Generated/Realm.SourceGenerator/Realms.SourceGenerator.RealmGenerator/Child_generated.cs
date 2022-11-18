@@ -261,6 +261,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ChildUnmanagedAccessor : UnmanagedAccessor, IChildAccessor
     {
+        public override ObjectSchema ObjectSchema => Child.RealmSchema;
+
         private long _id;
         public long Id
         {
