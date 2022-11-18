@@ -542,8 +542,8 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(realm);
 
                 Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
-                
-                realm.Write(() => {realm.RemoveAll();});
+
+                realm.Write(() => { realm.RemoveAll(); });
 
                 Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
                 await WaitForUploadAsync(realm);
