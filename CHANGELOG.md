@@ -9,6 +9,7 @@
   The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
+* Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 
 ### Fixed
 * Fixed issue where Realm parameters' initialization would get run twice, resulting in unexpected behavior.

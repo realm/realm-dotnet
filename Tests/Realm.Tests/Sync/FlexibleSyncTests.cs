@@ -1551,6 +1551,94 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Integration_RealmRemoveAllWithSubscriptions()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                var realm1 = await GetFLXIntegrationRealmAsync();
+                realm1.Subscriptions.Update(() =>
+                {
+                    realm1.Subscriptions.Add(realm1.All<SyncCollectionsObject>().Where(o => o.GuidProperty == testGuid));
+                    realm1.Subscriptions.Add(realm1.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                // Get int property objects in random order just to make sure removal is value-related rather than chronological.
+                var ito2 = GetIntPropertyObject(2, testGuid);
+                var ito1 = GetIntPropertyObject(1, testGuid);
+                var ito3 = GetIntPropertyObject(3, testGuid);
+
+                var colObj1 = realm1.Write(() =>
+                {
+                    var collection = realm1.Add(new SyncCollectionsObject
+                    {
+                        GuidProperty = testGuid,
+                    });
+
+                    collection.ObjectList.Add(ito1);
+                    collection.ObjectList.Add(ito2);
+                    collection.ObjectList.Add(ito3);
+
+                    // Add 1 and 2 again
+                    collection.ObjectList.Add(ito1);
+                    collection.ObjectList.Add(ito2);
+
+                    collection.ObjectSet.Add(ito1);
+                    collection.ObjectSet.Add(ito2);
+                    collection.ObjectSet.Add(ito3);
+
+                    collection.ObjectDict.Add("1", ito1);
+                    collection.ObjectDict.Add("2", ito2);
+                    collection.ObjectDict.Add("3", ito3);
+                    collection.ObjectDict.Add("1_again", ito1);
+                    collection.ObjectDict.Add("3_again", ito3);
+                    return collection;
+                });
+
+                Assert.That(colObj1.ObjectList.Count, Is.EqualTo(5));
+                Assert.That(colObj1.ObjectSet.Count, Is.EqualTo(3));
+                Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(5));
+                Assert.That(realm1.All<IntPropertyObject>().Count(), Is.EqualTo(3));
+
+                await WaitForUploadAsync(realm1);
+
+                var realm2 = await GetFLXIntegrationRealmAsync();
+
+                realm2.Subscriptions.Update(() =>
+                {
+                    realm2.Subscriptions.Add(realm2.All<IntPropertyObject>().Where(o => o.GuidProperty == testGuid && o.Int >= 2));
+                });
+
+                await WaitForSubscriptionsAsync(realm2);
+
+                // No collections synced
+                Assert.That(realm2.All<SyncCollectionsObject>().Count(), Is.EqualTo(0));
+
+                // Only objects >= 2 synced
+                Assert.That(realm2.All<IntPropertyObject>().Count(), Is.EqualTo(2));
+
+                realm2.Write(() =>
+                {
+                    realm2.RemoveAll();
+                });
+
+                await TestHelpers.WaitForConditionAsync(() => realm1.All<IntPropertyObject>().Count() == 1);
+
+                Assert.That(colObj1.ObjectList.Count, Is.EqualTo(2));
+                Assert.That(colObj1.ObjectSet.Count, Is.EqualTo(1));
+                Assert.That(colObj1.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 1 }));
+
+                Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(5));
+                Assert.That(colObj1.ObjectDict["1"].Int, Is.EqualTo(1));
+                Assert.That(colObj1.ObjectDict["1_again"].Int, Is.EqualTo(1));
+                Assert.That(colObj1.ObjectDict["2"], Is.Null);
+                Assert.That(colObj1.ObjectDict["3"], Is.Null);
+                Assert.That(colObj1.ObjectDict["3_again"], Is.Null);
+            });
+        }
+
+        [Test]
         public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledMultipleTimes()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
