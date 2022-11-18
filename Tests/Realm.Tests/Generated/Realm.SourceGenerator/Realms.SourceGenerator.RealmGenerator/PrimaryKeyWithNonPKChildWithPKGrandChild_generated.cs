@@ -261,6 +261,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class PrimaryKeyWithNonPKChildWithPKGrandChildUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithNonPKChildWithPKGrandChildAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyWithNonPKChildWithPKGrandChild.RealmSchema;
+
         private long _id;
         public long Id
         {

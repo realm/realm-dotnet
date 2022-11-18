@@ -235,6 +235,8 @@ namespace Realms.Tests.Generated
 
     internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
     {
+        public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
+
         private Realms.Tests.ClassWithUnqueryableMembers _parent;
         public Realms.Tests.ClassWithUnqueryableMembers Parent
         {

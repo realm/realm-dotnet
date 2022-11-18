@@ -236,6 +236,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class BUnmanagedAccessor : Realms.UnmanagedAccessor, IBAccessor
     {
+        public override ObjectSchema ObjectSchema => B.RealmSchema;
+
         private Realms.Tests.IntPropertyObject _c;
         public Realms.Tests.IntPropertyObject C
         {

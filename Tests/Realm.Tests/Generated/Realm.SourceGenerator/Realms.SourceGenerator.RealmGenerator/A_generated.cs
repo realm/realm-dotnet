@@ -248,6 +248,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class AUnmanagedAccessor : Realms.UnmanagedAccessor, IAAccessor
     {
+        public override ObjectSchema ObjectSchema => A.RealmSchema;
+
         private bool _value;
         public bool Value
         {

@@ -592,6 +592,8 @@ namespace Realms.Tests.Generated
 
     internal class AllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => AllTypesObject.RealmSchema;
+
         private char _charProperty;
         public char CharProperty
         {

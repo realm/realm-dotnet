@@ -243,6 +243,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
+
         private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
         public MongoDB.Bson.ObjectId Id
         {

@@ -231,6 +231,8 @@ namespace Realms.Tests.Generated
 
     internal class RequiredStringObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredStringObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => RequiredStringObject.RealmSchema;
+
         private string _string;
         public string String
         {

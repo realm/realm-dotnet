@@ -247,6 +247,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ObjectV2UnmanagedAccessor : Realms.UnmanagedAccessor, IObjectV2Accessor
     {
+        public override ObjectSchema ObjectSchema => ObjectV2.RealmSchema;
+
         private string _id;
         public string Id
         {

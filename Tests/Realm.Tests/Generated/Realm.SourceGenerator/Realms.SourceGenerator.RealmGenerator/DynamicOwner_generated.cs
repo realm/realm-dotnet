@@ -366,6 +366,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class DynamicOwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicOwnerAccessor
     {
+        public override ObjectSchema ObjectSchema => DynamicOwner.RealmSchema;
+
         private string _name;
         public string Name
         {

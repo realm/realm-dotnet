@@ -234,6 +234,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyInt32ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt32ObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyInt32Object.RealmSchema;
+
         private int _id;
         public int Id
         {

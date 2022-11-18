@@ -247,6 +247,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ObjectV1UnmanagedAccessor : Realms.UnmanagedAccessor, IObjectV1Accessor
     {
+        public override ObjectSchema ObjectSchema => ObjectV1.RealmSchema;
+
         private int _id;
         public int Id
         {

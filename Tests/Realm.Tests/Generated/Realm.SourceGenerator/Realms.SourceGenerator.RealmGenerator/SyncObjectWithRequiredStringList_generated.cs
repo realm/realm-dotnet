@@ -257,6 +257,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
     {
+        public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
+
         private string _id;
         public string Id
         {

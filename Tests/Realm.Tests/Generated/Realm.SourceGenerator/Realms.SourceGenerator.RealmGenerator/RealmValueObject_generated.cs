@@ -324,6 +324,8 @@ namespace Realms.Tests.Generated
 
     internal class RealmValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRealmValueObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => RealmValueObject.RealmSchema;
+
         private int _id = TestHelpers.Random.Next();
         public int Id
         {

@@ -283,6 +283,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class ProductUnmanagedAccessor : Realms.UnmanagedAccessor, IProductAccessor
     {
+        public override ObjectSchema ObjectSchema => Product.RealmSchema;
+
         private int _id;
         public int Id
         {

@@ -296,6 +296,8 @@ namespace Realms.Tests.Generated
 
     internal class ObjectWithEmbeddedPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithEmbeddedPropertiesAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectWithEmbeddedProperties.RealmSchema;
+
         private int _primaryKey;
         public int PrimaryKey
         {

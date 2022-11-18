@@ -244,6 +244,8 @@ namespace Realms.Tests.Generated
 
     internal class ObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithRequiredStringListAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectWithRequiredStringList.RealmSchema;
+
         public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
 
         public ObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)

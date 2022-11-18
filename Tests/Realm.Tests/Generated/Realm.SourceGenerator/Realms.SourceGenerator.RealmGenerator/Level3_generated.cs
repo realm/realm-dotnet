@@ -231,6 +231,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class Level3UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel3Accessor
     {
+        public override ObjectSchema ObjectSchema => Level3.RealmSchema;
+
         private System.DateTimeOffset _dateValue;
         public System.DateTimeOffset DateValue
         {

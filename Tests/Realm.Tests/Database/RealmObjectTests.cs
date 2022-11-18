@@ -133,12 +133,15 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManagedAndUnmanaged()
         {
             var person = new Person();
 
+#if TEST_WEAVER
             Assert.That(person.ObjectSchema, Is.Null);
-
+#else
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+#endif
             _realm.Write(() =>
             {
                 _realm.Add(person);

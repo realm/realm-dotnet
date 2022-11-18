@@ -271,6 +271,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class DynamicSubSubTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicSubSubTaskAccessor
     {
+        public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
+
         private string _summary;
         public string Summary
         {

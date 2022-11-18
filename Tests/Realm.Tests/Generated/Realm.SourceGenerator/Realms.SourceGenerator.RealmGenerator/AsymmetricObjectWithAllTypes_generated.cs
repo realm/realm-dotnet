@@ -542,6 +542,8 @@ namespace Realms.Tests.Sync.Generated
 
     internal class AsymmetricObjectWithAllTypesUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithAllTypesAccessor
     {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithAllTypes.RealmSchema;
+
         private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
         public MongoDB.Bson.ObjectId Id
         {

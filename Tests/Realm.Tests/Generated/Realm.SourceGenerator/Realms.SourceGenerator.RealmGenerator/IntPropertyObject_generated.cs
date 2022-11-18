@@ -270,6 +270,8 @@ namespace Realms.Tests.Generated
 
     internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
+
         private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
         public MongoDB.Bson.ObjectId Id
         {

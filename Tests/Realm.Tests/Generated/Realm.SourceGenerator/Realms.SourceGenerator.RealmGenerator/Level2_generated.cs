@@ -248,6 +248,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class Level2UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel2Accessor
     {
+        public override ObjectSchema ObjectSchema => Level2.RealmSchema;
+
         private int _intValue;
         public int IntValue
         {

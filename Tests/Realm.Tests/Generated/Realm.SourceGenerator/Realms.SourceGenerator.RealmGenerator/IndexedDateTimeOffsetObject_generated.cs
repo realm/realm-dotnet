@@ -231,6 +231,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class IndexedDateTimeOffsetObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedDateTimeOffsetObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => IndexedDateTimeOffsetObject.RealmSchema;
+
         private System.DateTimeOffset _dateTimeOffset;
         public System.DateTimeOffset DateTimeOffset
         {

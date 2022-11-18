@@ -231,6 +231,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyNullableByteObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableByteObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyNullableByteObject.RealmSchema;
+
         private byte? _id;
         public byte? Id
         {

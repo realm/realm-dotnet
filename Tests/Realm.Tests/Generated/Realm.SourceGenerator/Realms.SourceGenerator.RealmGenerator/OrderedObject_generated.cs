@@ -245,6 +245,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class OrderedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IOrderedObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => OrderedObject.RealmSchema;
+
         private int _order;
         public int Order
         {

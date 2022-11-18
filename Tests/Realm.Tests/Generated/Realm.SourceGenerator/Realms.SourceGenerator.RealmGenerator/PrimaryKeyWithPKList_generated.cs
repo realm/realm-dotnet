@@ -270,6 +270,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class PrimaryKeyWithPKListUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyWithPKList.RealmSchema;
+
         private long _id;
         public long Id
         {

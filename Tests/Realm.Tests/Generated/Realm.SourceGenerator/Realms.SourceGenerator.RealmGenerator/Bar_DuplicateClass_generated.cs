@@ -234,6 +234,8 @@ namespace Bar.Generated
 
     internal class DuplicateClassUnmanagedAccessor : Realms.UnmanagedAccessor, IDuplicateClassAccessor
     {
+        public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
+
         private string _stringValue;
         public string StringValue
         {

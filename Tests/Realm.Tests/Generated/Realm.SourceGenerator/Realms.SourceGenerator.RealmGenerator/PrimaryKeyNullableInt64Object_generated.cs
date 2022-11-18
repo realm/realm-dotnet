@@ -231,6 +231,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyNullableInt64ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt64ObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyNullableInt64Object.RealmSchema;
+
         private long? _id;
         public long? Id
         {

@@ -392,6 +392,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
     {
+        public override ObjectSchema ObjectSchema => Person.RealmSchema;
+
         private string _firstName;
         public string FirstName
         {

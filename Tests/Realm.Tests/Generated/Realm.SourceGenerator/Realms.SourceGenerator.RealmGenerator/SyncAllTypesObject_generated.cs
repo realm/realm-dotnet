@@ -446,6 +446,8 @@ namespace Realms.Tests.Generated
 
     internal class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;
+
         private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
         public MongoDB.Bson.ObjectId Id
         {

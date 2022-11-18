@@ -234,6 +234,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt16ObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyInt16Object.RealmSchema;
+
         private short _id;
         public short Id
         {

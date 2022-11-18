@@ -309,6 +309,8 @@ namespace Realms.Tests.Generated
 
     internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
     {
+        public override ObjectSchema ObjectSchema => Owner.RealmSchema;
+
         private string _name;
         public string Name
         {

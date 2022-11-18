@@ -815,6 +815,8 @@ namespace Realms.Tests.Generated
 
     internal class ListsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IListsObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => ListsObject.RealmSchema;
+
         public System.Collections.Generic.IList<char> CharList { get; } = new List<char>();
 
         public System.Collections.Generic.IList<byte> ByteList { get; } = new List<byte>();

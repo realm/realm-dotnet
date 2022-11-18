@@ -318,6 +318,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class DynamicTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicTaskAccessor
     {
+        public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;
+
         private string _id;
         public string Id
         {

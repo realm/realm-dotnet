@@ -247,6 +247,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class NoListPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, INoListPropertiesAccessor
     {
+        public override ObjectSchema ObjectSchema => NoListProperties.RealmSchema;
+
         private string _name;
         public string Name
         {

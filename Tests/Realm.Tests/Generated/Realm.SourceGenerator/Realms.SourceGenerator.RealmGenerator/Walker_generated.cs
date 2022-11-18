@@ -290,6 +290,8 @@ namespace Realms.Tests.Generated
 
     internal class WalkerUnmanagedAccessor : Realms.UnmanagedAccessor, IWalkerAccessor
     {
+        public override ObjectSchema ObjectSchema => Walker.RealmSchema;
+
         private string _name;
         public string Name
         {

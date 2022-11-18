@@ -235,6 +235,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class SomeClassUnmanagedAccessor : Realms.UnmanagedAccessor, ISomeClassAccessor
     {
+        public override ObjectSchema ObjectSchema => SomeClass.RealmSchema;
+
         private Realms.Tests.Database.BacklinkObject _backlinkObject;
         public Realms.Tests.Database.BacklinkObject BacklinkObject
         {

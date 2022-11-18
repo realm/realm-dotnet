@@ -235,6 +235,8 @@ namespace Realms.Tests.Generated
 
     internal class EmbeddedIntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedIntPropertyObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => EmbeddedIntPropertyObject.RealmSchema;
+
         private int _int;
         public int Int
         {

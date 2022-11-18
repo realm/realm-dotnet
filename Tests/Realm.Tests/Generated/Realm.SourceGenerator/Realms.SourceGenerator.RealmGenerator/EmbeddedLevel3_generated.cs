@@ -237,6 +237,8 @@ namespace Realms.Tests.Generated
 
     internal class EmbeddedLevel3UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel3Accessor
     {
+        public override ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;
+
         private string _string;
         public string String
         {

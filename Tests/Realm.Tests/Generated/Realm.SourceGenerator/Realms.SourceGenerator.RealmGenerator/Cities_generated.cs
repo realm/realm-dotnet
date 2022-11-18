@@ -234,6 +234,8 @@ namespace Realms.Tests.Database.Generated
 
     internal class CitiesUnmanagedAccessor : Realms.UnmanagedAccessor, ICitiesAccessor
     {
+        public override ObjectSchema ObjectSchema => Cities.RealmSchema;
+
         private string _name;
         public string Name
         {

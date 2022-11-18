@@ -244,6 +244,8 @@ namespace Realms.Tests.Generated
 
     internal class RequiredPrimaryKeyStringObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPrimaryKeyStringObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => RequiredPrimaryKeyStringObject.RealmSchema;
+
         private string _id;
         public string Id
         {

@@ -231,6 +231,8 @@ namespace Realms.Tests.Generated
 
     internal class PrimaryKeyGuidObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyGuidObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => PrimaryKeyGuidObject.RealmSchema;
+
         private System.Guid _id;
         public System.Guid Id
         {
