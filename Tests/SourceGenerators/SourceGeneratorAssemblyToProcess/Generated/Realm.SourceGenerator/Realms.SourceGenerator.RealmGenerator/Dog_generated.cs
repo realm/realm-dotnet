@@ -22,7 +22,7 @@ namespace SourceGeneratorPlayground
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Object("Owner", "SourceGeneratorPlayground.Person", managedName: "Owner"),
+            Realms.Schema.Property.Object("Owner", "Person", managedName: "Owner"),
         }.Build();
 
         #region IRealmObject implementation

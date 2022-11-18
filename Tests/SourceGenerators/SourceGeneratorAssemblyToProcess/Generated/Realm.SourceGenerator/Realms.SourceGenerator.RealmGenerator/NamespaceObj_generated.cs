@@ -23,7 +23,7 @@ namespace SourceGeneratorAssemblyToProcess
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NamespaceObj", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Object("OtherNamespaceObj", "OtherNamespace.OtherNamespaceObj", managedName: "OtherNamespaceObj"),
+            Realms.Schema.Property.Object("OtherNamespaceObj", "OtherNamespaceObj", managedName: "OtherNamespaceObj"),
         }.Build();
 
         #region IRealmObject implementation
