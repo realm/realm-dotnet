@@ -21,6 +21,7 @@
 * Fix a race condition which could result in "operation cancelled" errors being delivered to async open callbacks rather than the actual sync error which caused things to fail. (Core upgrade)
 * Bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time, or as configured by the SDK. (Core upgrade)
 * Fix database corruption and encryption issues on apple platforms. (Core upgrade)
+* Added fully qualified names for source generated filed, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099) 
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 
 ### Compatibility

@@ -19,16 +19,16 @@ namespace Realms.Tests
     [Woven(typeof(UnqueryableBacklinksObjectHelper))]
     public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Object("Parent", "ClassWithUnqueryableMembers", managedName: "Parent"),
+            Realms.Schema.Property.Object("Parent", "ClassWithUnqueryableMembers", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IUnqueryableBacklinksAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IUnqueryableBacklinksAccessor Accessor => _accessor ?? (_accessor = new UnqueryableBacklinksUnmanagedAccessor(typeof(UnqueryableBacklinks)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IUnqueryableBacklinksAccessor)managedAccessor;
             var oldAccessor = (IUnqueryableBacklinksAccessor)_accessor;
@@ -158,9 +158,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator UnqueryableBacklinks(RealmValue val) => val.AsRealmObject<UnqueryableBacklinks>();
+        public static explicit operator UnqueryableBacklinks(Realms.RealmValue val) => val.AsRealmObject<UnqueryableBacklinks>();
 
-        public static implicit operator RealmValue(UnqueryableBacklinks val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(UnqueryableBacklinks val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -182,7 +182,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -195,18 +195,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class UnqueryableBacklinksObjectHelper : IRealmObjectHelper
+        private class UnqueryableBacklinksObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new UnqueryableBacklinksManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new UnqueryableBacklinksManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new UnqueryableBacklinks();
+            public Realms.IRealmObjectBase CreateInstance() => new UnqueryableBacklinks();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -218,27 +218,27 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IUnqueryableBacklinksAccessor : IRealmAccessor
+    internal interface IUnqueryableBacklinksAccessor : Realms.IRealmAccessor
     {
-        ClassWithUnqueryableMembers Parent { get; set; }
+        Realms.Tests.ClassWithUnqueryableMembers Parent { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class UnqueryableBacklinksManagedAccessor : ManagedAccessor, IUnqueryableBacklinksAccessor
+    internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
     {
-        public ClassWithUnqueryableMembers Parent
+        public Realms.Tests.ClassWithUnqueryableMembers Parent
         {
-            get => (ClassWithUnqueryableMembers)GetValue("Parent");
+            get => (Realms.Tests.ClassWithUnqueryableMembers)GetValue("Parent");
             set => SetValue("Parent", value);
         }
     }
 
-    internal class UnqueryableBacklinksUnmanagedAccessor : UnmanagedAccessor, IUnqueryableBacklinksAccessor
+    internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
     {
         public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
 
-        private ClassWithUnqueryableMembers _parent;
-        public ClassWithUnqueryableMembers Parent
+        private Realms.Tests.ClassWithUnqueryableMembers _parent;
+        public Realms.Tests.ClassWithUnqueryableMembers Parent
         {
             get => _parent;
             set
@@ -252,7 +252,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -261,19 +261,19 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "Parent":
-                    Parent = (ClassWithUnqueryableMembers)val;
+                    Parent = (Realms.Tests.ClassWithUnqueryableMembers)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

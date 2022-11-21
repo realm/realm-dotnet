@@ -19,19 +19,19 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicDogObjectHelper))]
     public partial class DynamicDog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicDog", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicDog", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Primitive("Color", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Color"),
-            Property.Primitive("Vaccinated", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Vaccinated"),
-            Property.Backlinks("Owners", "DynamicOwner", "Dogs", managedName: "Owners"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Color", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Color"),
+            Realms.Schema.Property.Primitive("Vaccinated", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Vaccinated"),
+            Realms.Schema.Property.Backlinks("Owners", "DynamicOwner", "Dogs", managedName: "Owners"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IDynamicDogAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IDynamicDogAccessor Accessor => _accessor ?? (_accessor = new DynamicDogUnmanagedAccessor(typeof(DynamicDog)));
 
@@ -45,18 +45,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDynamicDogAccessor)managedAccessor;
             var oldAccessor = (IDynamicDogAccessor)_accessor;
@@ -168,9 +168,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicDog(RealmValue val) => val.AsRealmObject<DynamicDog>();
+        public static explicit operator DynamicDog(Realms.RealmValue val) => val.AsRealmObject<DynamicDog>();
 
-        public static implicit operator RealmValue(DynamicDog val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicDog val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -192,7 +192,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -205,18 +205,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class DynamicDogObjectHelper : IRealmObjectHelper
+        private class DynamicDogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new DynamicDogManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new DynamicDogManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new DynamicDog();
+            public Realms.IRealmObjectBase CreateInstance() => new DynamicDog();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -228,7 +228,7 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDynamicDogAccessor : IRealmAccessor
+    internal interface IDynamicDogAccessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
 
@@ -236,11 +236,11 @@ namespace Realms.Tests.Database.Generated
 
         bool Vaccinated { get; set; }
 
-        IQueryable<DynamicOwner> Owners { get; }
+        System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DynamicDogManagedAccessor : ManagedAccessor, IDynamicDogAccessor
+    internal class DynamicDogManagedAccessor : Realms.ManagedAccessor, IDynamicDogAccessor
     {
         public string Name
         {
@@ -260,14 +260,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Vaccinated", value);
         }
 
-        private IQueryable<DynamicOwner> _owners;
-        public IQueryable<DynamicOwner> Owners
+        private System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> _owners;
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners
         {
             get
             {
                 if (_owners == null)
                 {
-                    _owners = GetBacklinks<DynamicOwner>("Owners");
+                    _owners = GetBacklinks<Realms.Tests.Database.DynamicOwner>("Owners");
                 }
 
                 return _owners;
@@ -275,7 +275,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class DynamicDogUnmanagedAccessor : UnmanagedAccessor, IDynamicDogAccessor
+    internal class DynamicDogUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicDogAccessor
     {
         public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;
 
@@ -312,13 +312,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IQueryable<DynamicOwner> Owners => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public DynamicDogUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -330,7 +330,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -348,7 +348,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

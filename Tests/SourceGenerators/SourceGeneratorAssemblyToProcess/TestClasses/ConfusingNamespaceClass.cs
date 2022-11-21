@@ -18,12 +18,10 @@
 
 using Realms;
 
-namespace SourceGeneratorAssemblyToProcess
+namespace SourceGeneratorAssemblyToProcess.Realm
 {
-    public partial class AutomaticPropertiesClass : IRealmObject
+    public partial class ConfusingNamespaceClass : IRealmObject
     {
         public int Id { get; set; }
-
-        public string NonAutomaticProp => null;
     }
 }

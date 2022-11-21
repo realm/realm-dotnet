@@ -19,18 +19,18 @@ namespace Realms.Tests.Database
     [Woven(typeof(PrimaryKeyWithPKListObjectHelper))]
     public partial class PrimaryKeyWithPKList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyWithPKList", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyWithPKList", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
-            Property.ObjectList("ListValue", "PrimaryKeyObject", managedName: "ListValue"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.ObjectList("ListValue", "PrimaryKeyObject", managedName: "ListValue"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IPrimaryKeyWithPKListAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IPrimaryKeyWithPKListAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyWithPKListUnmanagedAccessor(typeof(PrimaryKeyWithPKList)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPrimaryKeyWithPKListAccessor)managedAccessor;
             var oldAccessor = (IPrimaryKeyWithPKListAccessor)_accessor;
@@ -169,9 +169,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyWithPKList(RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
+        public static explicit operator PrimaryKeyWithPKList(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
 
-        public static implicit operator RealmValue(PrimaryKeyWithPKList val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyWithPKList val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -193,7 +193,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -206,18 +206,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyWithPKListObjectHelper : IRealmObjectHelper
+        private class PrimaryKeyWithPKListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PrimaryKeyWithPKListManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PrimaryKeyWithPKListManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new PrimaryKeyWithPKList();
+            public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyWithPKList();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IPrimaryKeyWithPKListAccessor)instance.Accessor).Id;
                 return true;
@@ -229,17 +229,17 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyWithPKListAccessor : IRealmAccessor
+    internal interface IPrimaryKeyWithPKListAccessor : Realms.IRealmAccessor
     {
         long Id { get; set; }
 
         string StringValue { get; set; }
 
-        IList<PrimaryKeyObject> ListValue { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.PrimaryKeyObject> ListValue { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyWithPKListManagedAccessor : ManagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class PrimaryKeyWithPKListManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyWithPKListAccessor
     {
         public long Id
         {
@@ -253,14 +253,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("StringValue", value);
         }
 
-        private IList<PrimaryKeyObject> _listValue;
-        public IList<PrimaryKeyObject> ListValue
+        private System.Collections.Generic.IList<Realms.Tests.Database.PrimaryKeyObject> _listValue;
+        public System.Collections.Generic.IList<Realms.Tests.Database.PrimaryKeyObject> ListValue
         {
             get
             {
                 if (_listValue == null)
                 {
-                    _listValue = GetListValue<PrimaryKeyObject>("ListValue");
+                    _listValue = GetListValue<Realms.Tests.Database.PrimaryKeyObject>("ListValue");
                 }
 
                 return _listValue;
@@ -268,7 +268,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class PrimaryKeyWithPKListUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
+    internal class PrimaryKeyWithPKListUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
     {
         public override ObjectSchema ObjectSchema => PrimaryKeyWithPKList.RealmSchema;
 
@@ -294,13 +294,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<PrimaryKeyObject> ListValue { get; } = new List<PrimaryKeyObject>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.PrimaryKeyObject> ListValue { get; } = new List<Realms.Tests.Database.PrimaryKeyObject>();
 
         public PrimaryKeyWithPKListUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -310,7 +310,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -324,7 +324,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "Id")
             {

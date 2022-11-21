@@ -19,18 +19,18 @@ namespace Realms.Tests.Database
     [Woven(typeof(OnManagedTestClassObjectHelper))]
     public partial class OnManagedTestClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnManagedTestClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OnManagedTestClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Object("RelatedObject", "OnManagedTestClass", managedName: "RelatedObject"),
-            Property.ObjectList("RelatedCollection", "OnManagedTestClass", managedName: "RelatedCollection"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Object("RelatedObject", "OnManagedTestClass", managedName: "RelatedObject"),
+            Realms.Schema.Property.ObjectList("RelatedCollection", "OnManagedTestClass", managedName: "RelatedCollection"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IOnManagedTestClassAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IOnManagedTestClassAccessor Accessor => _accessor ?? (_accessor = new OnManagedTestClassUnmanagedAccessor(typeof(OnManagedTestClass)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOnManagedTestClassAccessor)managedAccessor;
             var oldAccessor = (IOnManagedTestClassAccessor)_accessor;
@@ -170,9 +170,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OnManagedTestClass(RealmValue val) => val.AsRealmObject<OnManagedTestClass>();
+        public static explicit operator OnManagedTestClass(Realms.RealmValue val) => val.AsRealmObject<OnManagedTestClass>();
 
-        public static implicit operator RealmValue(OnManagedTestClass val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OnManagedTestClass val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -194,7 +194,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -207,18 +207,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class OnManagedTestClassObjectHelper : IRealmObjectHelper
+        private class OnManagedTestClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new OnManagedTestClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new OnManagedTestClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new OnManagedTestClass();
+            public Realms.IRealmObjectBase CreateInstance() => new OnManagedTestClass();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IOnManagedTestClassAccessor)instance.Accessor).Id;
                 return true;
@@ -230,17 +230,17 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOnManagedTestClassAccessor : IRealmAccessor
+    internal interface IOnManagedTestClassAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
-        OnManagedTestClass RelatedObject { get; set; }
+        Realms.Tests.Database.OnManagedTestClass RelatedObject { get; set; }
 
-        IList<OnManagedTestClass> RelatedCollection { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OnManagedTestClassManagedAccessor : ManagedAccessor, IOnManagedTestClassAccessor
+    internal class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
     {
         public int Id
         {
@@ -248,20 +248,20 @@ namespace Realms.Tests.Database.Generated
             set => SetValueUnique("Id", value);
         }
 
-        public OnManagedTestClass RelatedObject
+        public Realms.Tests.Database.OnManagedTestClass RelatedObject
         {
-            get => (OnManagedTestClass)GetValue("RelatedObject");
+            get => (Realms.Tests.Database.OnManagedTestClass)GetValue("RelatedObject");
             set => SetValue("RelatedObject", value);
         }
 
-        private IList<OnManagedTestClass> _relatedCollection;
-        public IList<OnManagedTestClass> RelatedCollection
+        private System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> _relatedCollection;
+        public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection
         {
             get
             {
                 if (_relatedCollection == null)
                 {
-                    _relatedCollection = GetListValue<OnManagedTestClass>("RelatedCollection");
+                    _relatedCollection = GetListValue<Realms.Tests.Database.OnManagedTestClass>("RelatedCollection");
                 }
 
                 return _relatedCollection;
@@ -269,7 +269,7 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class OnManagedTestClassUnmanagedAccessor : UnmanagedAccessor, IOnManagedTestClassAccessor
+    internal class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
     {
         public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;
 
@@ -284,8 +284,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private OnManagedTestClass _relatedObject;
-        public OnManagedTestClass RelatedObject
+        private Realms.Tests.Database.OnManagedTestClass _relatedObject;
+        public Realms.Tests.Database.OnManagedTestClass RelatedObject
         {
             get => _relatedObject;
             set
@@ -295,13 +295,13 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IList<OnManagedTestClass> RelatedCollection { get; } = new List<OnManagedTestClass>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; } = new List<Realms.Tests.Database.OnManagedTestClass>();
 
         public OnManagedTestClassUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -311,21 +311,21 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "Id":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 case "RelatedObject":
-                    RelatedObject = (OnManagedTestClass)val;
+                    RelatedObject = (Realms.Tests.Database.OnManagedTestClass)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "Id")
             {

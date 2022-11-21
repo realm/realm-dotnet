@@ -19,16 +19,16 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(EmbeddedObjObjectHelper))]
     public partial class EmbeddedObj : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("EmbeddedObj", ObjectSchema.ObjectType.EmbeddedObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedObj", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
         #region IEmbeddedObject implementation
 
         private IEmbeddedObjAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IEmbeddedObjAccessor Accessor => _accessor ?? (_accessor = new EmbeddedObjUnmanagedAccessor(typeof(EmbeddedObj)));
 
@@ -42,21 +42,21 @@ namespace SourceGeneratorPlayground
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IEmbeddedObjAccessor)managedAccessor;
             var oldAccessor = (IEmbeddedObjAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace SourceGeneratorPlayground
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedObj(RealmValue val) => val.AsRealmObject<EmbeddedObj>();
+        public static explicit operator EmbeddedObj(Realms.RealmValue val) => val.AsRealmObject<EmbeddedObj>();
 
-        public static implicit operator RealmValue(EmbeddedObj val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedObj val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace SourceGeneratorPlayground
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace SourceGeneratorPlayground
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class EmbeddedObjObjectHelper : IRealmObjectHelper
+        private class EmbeddedObjObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new EmbeddedObjManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new EmbeddedObj();
+            public Realms.IRealmObjectBase CreateInstance() => new EmbeddedObj();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -220,13 +220,13 @@ namespace SourceGeneratorPlayground
 namespace SourceGeneratorPlayground.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IEmbeddedObjAccessor : IRealmAccessor
+    internal interface IEmbeddedObjAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class EmbeddedObjManagedAccessor : ManagedAccessor, IEmbeddedObjAccessor
+    internal class EmbeddedObjManagedAccessor : Realms.ManagedAccessor, IEmbeddedObjAccessor
     {
         public int Id
         {
@@ -235,7 +235,7 @@ namespace SourceGeneratorPlayground.Generated
         }
     }
 
-    internal class EmbeddedObjUnmanagedAccessor : UnmanagedAccessor, IEmbeddedObjAccessor
+    internal class EmbeddedObjUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedObjAccessor
     {
         public override ObjectSchema ObjectSchema => EmbeddedObj.RealmSchema;
 
@@ -254,7 +254,7 @@ namespace SourceGeneratorPlayground.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -263,7 +263,7 @@ namespace SourceGeneratorPlayground.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -275,7 +275,7 @@ namespace SourceGeneratorPlayground.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

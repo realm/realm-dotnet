@@ -19,20 +19,20 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithEmbeddedPropertiesObjectHelper))]
     public partial class ObjectWithEmbeddedProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithEmbeddedProperties", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithEmbeddedProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("PrimaryKey", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "PrimaryKey"),
-            Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
-            Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
-            Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
-            Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
+            Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "PrimaryKey"),
+            Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
+            Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
+            Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "DictionaryOfAllTypesObjects"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IObjectWithEmbeddedPropertiesAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IObjectWithEmbeddedPropertiesAccessor Accessor => _accessor ?? (_accessor = new ObjectWithEmbeddedPropertiesUnmanagedAccessor(typeof(ObjectWithEmbeddedProperties)));
 
@@ -46,18 +46,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithEmbeddedPropertiesAccessor)managedAccessor;
             var oldAccessor = (IObjectWithEmbeddedPropertiesAccessor)_accessor;
@@ -171,9 +171,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithEmbeddedProperties(RealmValue val) => val.AsRealmObject<ObjectWithEmbeddedProperties>();
+        public static explicit operator ObjectWithEmbeddedProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithEmbeddedProperties>();
 
-        public static implicit operator RealmValue(ObjectWithEmbeddedProperties val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithEmbeddedProperties val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -195,7 +195,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -208,18 +208,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ObjectWithEmbeddedPropertiesObjectHelper : IRealmObjectHelper
+        private class ObjectWithEmbeddedPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ObjectWithEmbeddedPropertiesManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectWithEmbeddedPropertiesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ObjectWithEmbeddedProperties();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectWithEmbeddedProperties();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IObjectWithEmbeddedPropertiesAccessor)instance.Accessor).PrimaryKey;
                 return true;
@@ -231,21 +231,21 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithEmbeddedPropertiesAccessor : IRealmAccessor
+    internal interface IObjectWithEmbeddedPropertiesAccessor : Realms.IRealmAccessor
     {
         int PrimaryKey { get; set; }
 
-        EmbeddedAllTypesObject AllTypesObject { get; set; }
+        Realms.Tests.EmbeddedAllTypesObject AllTypesObject { get; set; }
 
-        IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+        System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
-        EmbeddedLevel1 RecursiveObject { get; set; }
+        Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
 
-        IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
+        System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithEmbeddedPropertiesManagedAccessor : ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
+    internal class ObjectWithEmbeddedPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithEmbeddedPropertiesAccessor
     {
         public int PrimaryKey
         {
@@ -253,40 +253,40 @@ namespace Realms.Tests.Generated
             set => SetValueUnique("PrimaryKey", value);
         }
 
-        public EmbeddedAllTypesObject AllTypesObject
+        public Realms.Tests.EmbeddedAllTypesObject AllTypesObject
         {
-            get => (EmbeddedAllTypesObject)GetValue("AllTypesObject");
+            get => (Realms.Tests.EmbeddedAllTypesObject)GetValue("AllTypesObject");
             set => SetValue("AllTypesObject", value);
         }
 
-        private IList<EmbeddedAllTypesObject> _listOfAllTypesObjects;
-        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects
+        private System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> _listOfAllTypesObjects;
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects
         {
             get
             {
                 if (_listOfAllTypesObjects == null)
                 {
-                    _listOfAllTypesObjects = GetListValue<EmbeddedAllTypesObject>("ListOfAllTypesObjects");
+                    _listOfAllTypesObjects = GetListValue<Realms.Tests.EmbeddedAllTypesObject>("ListOfAllTypesObjects");
                 }
 
                 return _listOfAllTypesObjects;
             }
         }
 
-        public EmbeddedLevel1 RecursiveObject
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
-            get => (EmbeddedLevel1)GetValue("RecursiveObject");
+            get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
             set => SetValue("RecursiveObject", value);
         }
 
-        private IDictionary<string, EmbeddedAllTypesObject> _dictionaryOfAllTypesObjects;
-        public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects
+        private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> _dictionaryOfAllTypesObjects;
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects
         {
             get
             {
                 if (_dictionaryOfAllTypesObjects == null)
                 {
-                    _dictionaryOfAllTypesObjects = GetDictionaryValue<EmbeddedAllTypesObject>("DictionaryOfAllTypesObjects");
+                    _dictionaryOfAllTypesObjects = GetDictionaryValue<Realms.Tests.EmbeddedAllTypesObject>("DictionaryOfAllTypesObjects");
                 }
 
                 return _dictionaryOfAllTypesObjects;
@@ -294,7 +294,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class ObjectWithEmbeddedPropertiesUnmanagedAccessor : UnmanagedAccessor, IObjectWithEmbeddedPropertiesAccessor
+    internal class ObjectWithEmbeddedPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithEmbeddedPropertiesAccessor
     {
         public override ObjectSchema ObjectSchema => ObjectWithEmbeddedProperties.RealmSchema;
 
@@ -309,8 +309,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private EmbeddedAllTypesObject _allTypesObject;
-        public EmbeddedAllTypesObject AllTypesObject
+        private Realms.Tests.EmbeddedAllTypesObject _allTypesObject;
+        public Realms.Tests.EmbeddedAllTypesObject AllTypesObject
         {
             get => _allTypesObject;
             set
@@ -320,10 +320,10 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<EmbeddedAllTypesObject>();
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<Realms.Tests.EmbeddedAllTypesObject>();
 
-        private EmbeddedLevel1 _recursiveObject;
-        public EmbeddedLevel1 RecursiveObject
+        private Realms.Tests.EmbeddedLevel1 _recursiveObject;
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
             get => _recursiveObject;
             set
@@ -333,13 +333,13 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; } = new Dictionary<string, EmbeddedAllTypesObject>();
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; } = new Dictionary<string, Realms.Tests.EmbeddedAllTypesObject>();
 
         public ObjectWithEmbeddedPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -350,24 +350,24 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "PrimaryKey":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 case "AllTypesObject":
-                    AllTypesObject = (EmbeddedAllTypesObject)val;
+                    AllTypesObject = (Realms.Tests.EmbeddedAllTypesObject)val;
                     return;
                 case "RecursiveObject":
-                    RecursiveObject = (EmbeddedLevel1)val;
+                    RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "PrimaryKey")
             {

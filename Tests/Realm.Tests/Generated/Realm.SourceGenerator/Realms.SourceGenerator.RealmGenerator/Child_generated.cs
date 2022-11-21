@@ -19,18 +19,18 @@ namespace Realms.Tests.Database
     [Woven(typeof(ChildObjectHelper))]
     public partial class Child : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Child", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Child", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Object("Parent", "Parent", managedName: "Parent"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Object("Parent", "Parent", managedName: "Parent"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IChildAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IChildAccessor Accessor => _accessor ?? (_accessor = new ChildUnmanagedAccessor(typeof(Child)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IChildAccessor)managedAccessor;
             var oldAccessor = (IChildAccessor)_accessor;
@@ -168,9 +168,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Child(RealmValue val) => val.AsRealmObject<Child>();
+        public static explicit operator Child(Realms.RealmValue val) => val.AsRealmObject<Child>();
 
-        public static implicit operator RealmValue(Child val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Child val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -192,7 +192,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -205,18 +205,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ChildObjectHelper : IRealmObjectHelper
+        private class ChildObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ChildManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ChildManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Child();
+            public Realms.IRealmObjectBase CreateInstance() => new Child();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IChildAccessor)instance.Accessor).Id;
                 return true;
@@ -228,17 +228,17 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IChildAccessor : IRealmAccessor
+    internal interface IChildAccessor : Realms.IRealmAccessor
     {
         long Id { get; set; }
 
         string Name { get; set; }
 
-        Parent Parent { get; set; }
+        Realms.Tests.Database.Parent Parent { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ChildManagedAccessor : ManagedAccessor, IChildAccessor
+    internal class ChildManagedAccessor : Realms.ManagedAccessor, IChildAccessor
     {
         public long Id
         {
@@ -252,14 +252,14 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Name", value);
         }
 
-        public Parent Parent
+        public Realms.Tests.Database.Parent Parent
         {
-            get => (Parent)GetValue("Parent");
+            get => (Realms.Tests.Database.Parent)GetValue("Parent");
             set => SetValue("Parent", value);
         }
     }
 
-    internal class ChildUnmanagedAccessor : UnmanagedAccessor, IChildAccessor
+    internal class ChildUnmanagedAccessor : Realms.UnmanagedAccessor, IChildAccessor
     {
         public override ObjectSchema ObjectSchema => Child.RealmSchema;
 
@@ -285,8 +285,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private Parent _parent;
-        public Parent Parent
+        private Realms.Tests.Database.Parent _parent;
+        public Realms.Tests.Database.Parent Parent
         {
             get => _parent;
             set
@@ -300,7 +300,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -311,7 +311,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -321,14 +321,14 @@ namespace Realms.Tests.Database.Generated
                     Name = (string)val;
                     return;
                 case "Parent":
-                    Parent = (Parent)val;
+                    Parent = (Realms.Tests.Database.Parent)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "Id")
             {

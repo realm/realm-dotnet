@@ -20,17 +20,17 @@ namespace Realms.Tests
     [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper))]
     public partial class ObjectIdPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectIdPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectIdPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IObjectIdPrimaryKeyWithValueObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IObjectIdPrimaryKeyWithValueObjectAccessor Accessor => _accessor ?? (_accessor = new ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor(typeof(ObjectIdPrimaryKeyWithValueObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectIdPrimaryKeyWithValueObjectAccessor)managedAccessor;
             var oldAccessor = (IObjectIdPrimaryKeyWithValueObjectAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectIdPrimaryKeyWithValueObject(RealmValue val) => val.AsRealmObject<ObjectIdPrimaryKeyWithValueObject>();
+        public static explicit operator ObjectIdPrimaryKeyWithValueObject(Realms.RealmValue val) => val.AsRealmObject<ObjectIdPrimaryKeyWithValueObject>();
 
-        public static implicit operator RealmValue(ObjectIdPrimaryKeyWithValueObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectIdPrimaryKeyWithValueObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ObjectIdPrimaryKeyWithValueObjectObjectHelper : IRealmObjectHelper
+        private class ObjectIdPrimaryKeyWithValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ObjectIdPrimaryKeyWithValueObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectIdPrimaryKeyWithValueObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ObjectIdPrimaryKeyWithValueObject();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectIdPrimaryKeyWithValueObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IObjectIdPrimaryKeyWithValueObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -220,19 +220,19 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectIdPrimaryKeyWithValueObjectAccessor : IRealmAccessor
+    internal interface IObjectIdPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
         string StringValue { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectIdPrimaryKeyWithValueObjectManagedAccessor : ManagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
+    internal class ObjectIdPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
@@ -243,12 +243,12 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor : UnmanagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
+    internal class ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
     {
         public override ObjectSchema ObjectSchema => ObjectIdPrimaryKeyWithValueObject.RealmSchema;
 
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -273,7 +273,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -283,7 +283,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -297,14 +297,14 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
