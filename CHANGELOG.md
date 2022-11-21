@@ -25,10 +25,10 @@
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 
 ### Compatibility
-* Realm Studio: 12.0.0 or later.
+* Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 12.12.0.
+* Using Core 13.0.0.
 
 ## 10.18.0 (2022-11-02)
 
