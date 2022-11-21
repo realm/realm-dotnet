@@ -31,12 +31,33 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
+        /// <summary>
+        /// The state of a transaction.
+        /// </summary>
+        public enum TransactionState
+        {
+            /// <summary>
+            /// When a transaction is ongoing.
+            /// </summary>
+            Running,
+
+            /// <summary>
+            /// When the transaction has either committed or rolled back.
+            /// </summary>
+            Closed,
+        }
+
         private Realm _realm;
+
+        public TransactionState State { get; set; }
 
         internal Transaction(Realm realm)
         {
             _realm = realm;
+            State = TransactionState.Running;
         }
+
+
 
         /// <summary>
         /// Will automatically <see cref="Rollback"/> the transaction on existing scope, if not explicitly Committed.
@@ -117,6 +138,7 @@ namespace Realms
         private void FinishTransaction()
         {
             _realm.DrainTransactionQueue();
+            State = TransactionState.Closed;
             _realm = null;
         }
     }

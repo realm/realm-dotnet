@@ -200,6 +200,21 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void TransactionStateIsCorrect()
+        {
+            // Arrange
+            using var realm = GetRealm();
+            using var ts1 = realm.BeginWrite();
+            // Assert
+            Assert.That(ts1.State, Is.EqualTo(Transaction.TransactionState.Running));
+            ts1.Commit();
+            Assert.That(ts1.State, Is.EqualTo(Transaction.TransactionState.Closed));
+            using var ts2 = realm.BeginWrite();
+            ts2.Rollback();
+            Assert.That(ts2.State, Is.EqualTo(Transaction.TransactionState.Closed));
+        }
+
+        [Test]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
