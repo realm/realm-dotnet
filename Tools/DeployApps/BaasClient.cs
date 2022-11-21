@@ -528,7 +528,7 @@ namespace Baas
                         return null;
                     }
 
-                    var appName = name[..^_appSuffix.Length];
+                    var appName = name.Substring(0, name.Length - _appSuffix.Length);
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
                 .Where(a => a != null)
