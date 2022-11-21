@@ -388,7 +388,7 @@ namespace Baas
 
             var asymmetricTables = new[] { "BasicAsymmetricObject", "AsymmetricObjectWithAllTypes" };
 
-            var (app, mongoServiceId) = await CreateAppCore(name, new
+            var (app, _) = await CreateAppCore(name, new
             {
                 flexible_sync = new
                 {
@@ -411,13 +411,14 @@ namespace Baas
                     },
                     asymmetric_tables = asymmetricTables,
                 }
-            });
-
-            foreach (var table in asymmetricTables)
+            }, initializeMongoService: async (app, mongoServiceId) =>
             {
-                var rule = Schemas.GenericFlxBaasRule(Differentiator, table);
-                await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
-            }
+                foreach (var table in asymmetricTables)
+                {
+                    var rule = Schemas.GenericFlxBaasRule(Differentiator, table);
+                    await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
+                }
+            });
 
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
@@ -442,7 +443,7 @@ namespace Baas
             await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
 
-        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
+        private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig, Func<BaasApp, string, Task> initializeMongoService = null)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
             var appId = doc["_id"].AsString;
@@ -468,7 +469,7 @@ namespace Baas
                 runResetFunction = true,
             });
 
-            var mongoServiceId = await CreateMongodbService(app, syncConfig);
+            var mongoServiceId = await CreateMongodbService(app, syncConfig, initializeMongoService);
 
             await PutAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/sync/config", new
             {
@@ -568,12 +569,17 @@ namespace Baas
             return content;
         }
 
-        private async Task<string> CreateMongodbService(BaasApp app, object syncConfig)
+        private async Task<string> CreateMongodbService(BaasApp app, object syncConfig, Func<BaasApp, string, Task> initializeMongoService = null)
         {
             var serviceName = _clusterName == null ? "mongodb" : "mongodb-atlas";
             object mongoConfig = _clusterName == null ? new { uri = "mongodb://localhost:26000" } : new { clusterName = _clusterName };
 
             var mongoServiceId = await CreateService(app, "BackingDB", serviceName, mongoConfig);
+
+            if (initializeMongoService != null)
+            {
+                await initializeMongoService(app, mongoServiceId);
+            }
 
             // The cluster linking must be separated from enabling sync because Atlas
             // takes a few seconds to provision a user for BaaS, meaning enabling sync
