@@ -179,6 +179,12 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(AppTypes))]
         public void Session_ClientReset_ManualRecovery_InitiateClientReset(string appType)
         {
+            if (appType == AppConfigType.FlexibleSync)
+            {
+                Assert.Ignore("Crashes on flx with an assertion in Core.");
+                return;
+            }
+
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
@@ -458,11 +464,11 @@ namespace Realms.Tests.Sync
             if (appType == AppConfigType.FlexibleSync)
             {
                 var flxConfig = GetFLXIntegrationConfig(user);
-                //flxConfig.PopulateInitialSubscriptions = (realm) =>
-                //{
-                //    var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
-                //    realm.Subscriptions.Add(query);
-                //};
+                flxConfig.PopulateInitialSubscriptions = (realm) =>
+                {
+                    var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
+                    realm.Subscriptions.Add(query);
+                };
 
                 config = flxConfig;
             }
@@ -471,7 +477,7 @@ namespace Realms.Tests.Sync
                 config = GetIntegrationConfig(user);
             }
 
-            //config.Schema = new[] { typeof(ObjectWithPartitionValue) };
+            config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
             return (config, guid);
         }
@@ -576,7 +582,6 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, afterCb: afterCb);
-                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
 
@@ -603,7 +608,7 @@ namespace Realms.Tests.Sync
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(30_000, "Expected client reset");
                 Assert.That(onAfterTriggered, Is.True);
 
                 var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.Discard ?
@@ -649,22 +654,21 @@ namespace Realms.Tests.Sync
 
                 var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
                 Assert.That(objects.Count, Is.EqualTo(2));
-                var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
-                objects.CollectionChanged += onCollectionChanged;
+                var tcs = new TaskCompletionSource<ChangeSet>();
+                using var token = objects.SubscribeForNotifications((sender, changes, _) =>
+                {
+                    if (changes != null)
+                    {
+                        tcs.TrySetResult(changes);
+                    }
+                });
 
                 await TriggerClientReset(realm);
 
                 var args = await tcs.Task.Timeout(15_000, "Wait for notifications");
 
-                Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+                Assert.That(args.DeletedIndices.Length, Is.EqualTo(1));
                 Assert.That(objects.Count, Is.EqualTo(1));
-
-                objects.CollectionChanged -= onCollectionChanged;
-
-                void onCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
-                {
-                    tcs.TrySetResult(args);
-                }
             }, timeout: 120_000);
         }
 
@@ -812,7 +816,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Session.Error compatibility")]
+        [Test, Obsolete("Testing Session.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientResetHandlers_Coexistence(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
@@ -867,7 +871,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_WithNewClientResetHandlers_DoesntRaiseSessionError(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
@@ -900,7 +904,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientReset_OldSessionError_InitiateClientReset_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -940,7 +944,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_Error_OldSessionError_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -974,7 +978,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientReset_ManualRecovery_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1019,7 +1023,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_Error_OnSessionError_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
