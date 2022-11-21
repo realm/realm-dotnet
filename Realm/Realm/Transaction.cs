@@ -23,6 +23,19 @@ using Realms.Helpers;
 
 namespace Realms
 {
+    public enum State
+    {
+        /// <summary>
+        /// When a transaction is ongoing.
+        /// </summary>
+        Running,
+
+        /// <summary>
+        /// When the transaction has either committed or rolled back.
+        /// </summary>
+        Closed,
+    }
+
     /// <summary>
     /// Provides a scope to safely read and write to a <see cref="Realm"/>. Must use explicitly via <see cref="Realm.BeginWrite"/>.
     /// </summary>
@@ -31,30 +44,17 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
+        private Realm _realm;
+
         /// <summary>
         /// The state of a transaction.
         /// </summary>
-        public enum TransactionState
-        {
-            /// <summary>
-            /// When a transaction is ongoing.
-            /// </summary>
-            Running,
-
-            /// <summary>
-            /// When the transaction has either committed or rolled back.
-            /// </summary>
-            Closed,
-        }
-
-        private Realm _realm;
-
-        public TransactionState State { get; set; }
+        public State State { get; private set; }
 
         internal Transaction(Realm realm)
         {
             _realm = realm;
-            State = TransactionState.Running;
+            State = State.Running;
         }
 
 
@@ -138,7 +138,7 @@ namespace Realms
         private void FinishTransaction()
         {
             _realm.DrainTransactionQueue();
-            State = TransactionState.Closed;
+            State = State.Closed;
             _realm = null;
         }
     }
