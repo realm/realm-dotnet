@@ -592,6 +592,8 @@ namespace SourceGeneratorAssemblyToProcess.Generated
 
     internal class AllTypesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesClassAccessor
     {
+        public override ObjectSchema ObjectSchema => AllTypesClass.RealmSchema;
+
         private char _charProperty;
         public char CharProperty
         {

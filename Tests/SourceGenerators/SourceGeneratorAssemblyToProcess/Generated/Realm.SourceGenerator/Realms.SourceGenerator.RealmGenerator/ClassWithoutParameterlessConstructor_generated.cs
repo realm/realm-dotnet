@@ -236,6 +236,8 @@ namespace SourceGeneratorAssemblyToProcess.Generated
 
     internal class ClassWithoutParameterlessConstructorUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithoutParameterlessConstructorAccessor
     {
+        public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
+
         private string _name;
         public string Name
         {

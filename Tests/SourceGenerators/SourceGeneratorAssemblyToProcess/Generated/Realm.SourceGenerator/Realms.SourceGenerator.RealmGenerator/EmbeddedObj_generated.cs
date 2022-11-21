@@ -237,6 +237,8 @@ namespace SourceGeneratorPlayground.Generated
 
     internal class EmbeddedObjUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedObjAccessor
     {
+        public override ObjectSchema ObjectSchema => EmbeddedObj.RealmSchema;
+
         private int _id;
         public int Id
         {

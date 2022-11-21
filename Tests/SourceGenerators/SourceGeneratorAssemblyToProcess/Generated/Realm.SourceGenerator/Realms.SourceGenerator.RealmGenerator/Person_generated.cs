@@ -261,6 +261,8 @@ namespace SourceGeneratorPlayground.Generated
 
     internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
     {
+        public override ObjectSchema ObjectSchema => Person.RealmSchema;
+
         private System.Guid _id = Guid.NewGuid();
         public System.Guid Id
         {

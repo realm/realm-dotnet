@@ -234,6 +234,8 @@ namespace OtherNamespace.Generated
 
     internal class OtherNamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, IOtherNamespaceObjAccessor
     {
+        public override ObjectSchema ObjectSchema => OtherNamespaceObj.RealmSchema;
+
         private int _id;
         public int Id
         {

@@ -247,6 +247,8 @@ namespace SourceGeneratorAssemblyToProcess.Generated
 
     internal class PartialClassUnmanagedAccessor : Realms.UnmanagedAccessor, IPartialClassAccessor
     {
+        public override ObjectSchema ObjectSchema => PartialClass.RealmSchema;
+
         private int _id;
         public int Id
         {

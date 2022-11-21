@@ -248,6 +248,8 @@ namespace SourceGeneratorPlayground.Generated
 
     internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
     {
+        public override ObjectSchema ObjectSchema => Dog.RealmSchema;
+
         private string _name;
         public string Name
         {

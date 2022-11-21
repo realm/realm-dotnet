@@ -234,6 +234,8 @@ namespace SourceGeneratorAssemblyToProcess.Realm.Generated
 
     internal class ConfusingNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IConfusingNamespaceClassAccessor
     {
+        public override ObjectSchema ObjectSchema => ConfusingNamespaceClass.RealmSchema;
+
         private int _id;
         public int Id
         {
