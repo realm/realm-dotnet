@@ -27,6 +27,8 @@ namespace Realms.Tests.Sync
             Property.Primitive("Guid", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
 
+        private ObjectWithPartitionValue() {}
+
         #region IRealmObject implementation
 
         private IObjectWithPartitionValueAccessor _accessor;
@@ -270,7 +272,7 @@ namespace Realms.Tests.Sync.Generated
 
     internal class ObjectWithPartitionValueUnmanagedAccessor : UnmanagedAccessor, IObjectWithPartitionValueAccessor
     {
-        private string _id;
+        private string _id = Guid.NewGuid().ToString();
         public string Id
         {
             get => _id;
