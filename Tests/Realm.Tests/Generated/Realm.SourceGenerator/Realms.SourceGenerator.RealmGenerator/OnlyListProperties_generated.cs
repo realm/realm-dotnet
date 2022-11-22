@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(OnlyListPropertiesObjectHelper))]
     public partial class OnlyListProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OnlyListProperties", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OnlyListProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.ObjectList("Friends", "Person", managedName: "Friends"),
-            Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
+            Realms.Schema.Property.ObjectList("Friends", "Person", managedName: "Friends"),
+            Realms.Schema.Property.ObjectList("Enemies", "Person", managedName: "Enemies"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IOnlyListPropertiesAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IOnlyListPropertiesAccessor Accessor => _accessor ?? (_accessor = new OnlyListPropertiesUnmanagedAccessor(typeof(OnlyListProperties)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOnlyListPropertiesAccessor)managedAccessor;
             var oldAccessor = (IOnlyListPropertiesAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OnlyListProperties(RealmValue val) => val.AsRealmObject<OnlyListProperties>();
+        public static explicit operator OnlyListProperties(Realms.RealmValue val) => val.AsRealmObject<OnlyListProperties>();
 
-        public static implicit operator RealmValue(OnlyListProperties val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OnlyListProperties val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class OnlyListPropertiesObjectHelper : IRealmObjectHelper
+        private class OnlyListPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new OnlyListPropertiesManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new OnlyListPropertiesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new OnlyListProperties();
+            public Realms.IRealmObjectBase CreateInstance() => new OnlyListProperties();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -222,38 +222,38 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOnlyListPropertiesAccessor : IRealmAccessor
+    internal interface IOnlyListPropertiesAccessor : Realms.IRealmAccessor
     {
-        IList<Person> Friends { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
 
-        IList<Person> Enemies { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OnlyListPropertiesManagedAccessor : ManagedAccessor, IOnlyListPropertiesAccessor
+    internal class OnlyListPropertiesManagedAccessor : Realms.ManagedAccessor, IOnlyListPropertiesAccessor
     {
-        private IList<Person> _friends;
-        public IList<Person> Friends
+        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
         {
             get
             {
                 if (_friends == null)
                 {
-                    _friends = GetListValue<Person>("Friends");
+                    _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
                 }
 
                 return _friends;
             }
         }
 
-        private IList<Person> _enemies;
-        public IList<Person> Enemies
+        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _enemies;
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies
         {
             get
             {
                 if (_enemies == null)
                 {
-                    _enemies = GetListValue<Person>("Enemies");
+                    _enemies = GetListValue<Realms.Tests.Database.Person>("Enemies");
                 }
 
                 return _enemies;
@@ -261,27 +261,29 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class OnlyListPropertiesUnmanagedAccessor : UnmanagedAccessor, IOnlyListPropertiesAccessor
+    internal class OnlyListPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IOnlyListPropertiesAccessor
     {
-        public IList<Person> Friends { get; } = new List<Person>();
+        public override ObjectSchema ObjectSchema => OnlyListProperties.RealmSchema;
 
-        public IList<Person> Enemies { get; } = new List<Person>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
+
+        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
 
         public OnlyListPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

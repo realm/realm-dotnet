@@ -19,16 +19,16 @@ namespace Realms.Tests
     [Woven(typeof(PrimaryKeyGuidObjectObjectHelper))]
     public partial class PrimaryKeyGuidObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("PrimaryKeyGuidObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyGuidObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Guid, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IPrimaryKeyGuidObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IPrimaryKeyGuidObjectAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyGuidObjectUnmanagedAccessor(typeof(PrimaryKeyGuidObject)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IPrimaryKeyGuidObjectAccessor)managedAccessor;
             var oldAccessor = (IPrimaryKeyGuidObjectAccessor)_accessor;
@@ -154,9 +154,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyGuidObject(RealmValue val) => val.AsRealmObject<PrimaryKeyGuidObject>();
+        public static explicit operator PrimaryKeyGuidObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyGuidObject>();
 
-        public static implicit operator RealmValue(PrimaryKeyGuidObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyGuidObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -178,7 +178,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -191,18 +191,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyGuidObjectObjectHelper : IRealmObjectHelper
+        private class PrimaryKeyGuidObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new PrimaryKeyGuidObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PrimaryKeyGuidObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new PrimaryKeyGuidObject();
+            public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyGuidObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IPrimaryKeyGuidObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -214,25 +214,27 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyGuidObjectAccessor : IRealmAccessor
+    internal interface IPrimaryKeyGuidObjectAccessor : Realms.IRealmAccessor
     {
-        Guid Id { get; set; }
+        System.Guid Id { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyGuidObjectManagedAccessor : ManagedAccessor, IPrimaryKeyGuidObjectAccessor
+    internal class PrimaryKeyGuidObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyGuidObjectAccessor
     {
-        public Guid Id
+        public System.Guid Id
         {
-            get => (Guid)GetValue("_id");
+            get => (System.Guid)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
     }
 
-    internal class PrimaryKeyGuidObjectUnmanagedAccessor : UnmanagedAccessor, IPrimaryKeyGuidObjectAccessor
+    internal class PrimaryKeyGuidObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyGuidObjectAccessor
     {
-        private Guid _id;
-        public Guid Id
+        public override ObjectSchema ObjectSchema => PrimaryKeyGuidObject.RealmSchema;
+
+        private System.Guid _id;
+        public System.Guid Id
         {
             get => _id;
             set
@@ -246,7 +248,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -255,7 +257,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -266,14 +268,14 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (Guid)val;
+            Id = (System.Guid)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

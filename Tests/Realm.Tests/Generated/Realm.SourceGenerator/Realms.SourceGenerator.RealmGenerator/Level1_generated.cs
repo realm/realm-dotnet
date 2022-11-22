@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(Level1ObjectHelper))]
     public partial class Level1 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Level1", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Level1", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
-            Property.Object("Level2", "Level2", managedName: "Level2"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Object("Level2", "Level2", managedName: "Level2"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ILevel1Accessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ILevel1Accessor Accessor => _accessor ?? (_accessor = new Level1UnmanagedAccessor(typeof(Level1)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ILevel1Accessor)managedAccessor;
             var oldAccessor = (ILevel1Accessor)_accessor;
@@ -163,9 +163,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Level1(RealmValue val) => val.AsRealmObject<Level1>();
+        public static explicit operator Level1(Realms.RealmValue val) => val.AsRealmObject<Level1>();
 
-        public static implicit operator RealmValue(Level1 val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Level1 val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -187,7 +187,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -200,18 +200,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class Level1ObjectHelper : IRealmObjectHelper
+        private class Level1ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new Level1ManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new Level1ManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Level1();
+            public Realms.IRealmObjectBase CreateInstance() => new Level1();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -223,15 +223,15 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ILevel1Accessor : IRealmAccessor
+    internal interface ILevel1Accessor : Realms.IRealmAccessor
     {
         string StringValue { get; set; }
 
-        Level2 Level2 { get; set; }
+        Realms.Tests.Database.Level2 Level2 { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class Level1ManagedAccessor : ManagedAccessor, ILevel1Accessor
+    internal class Level1ManagedAccessor : Realms.ManagedAccessor, ILevel1Accessor
     {
         public string StringValue
         {
@@ -239,15 +239,17 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("StringValue", value);
         }
 
-        public Level2 Level2
+        public Realms.Tests.Database.Level2 Level2
         {
-            get => (Level2)GetValue("Level2");
+            get => (Realms.Tests.Database.Level2)GetValue("Level2");
             set => SetValue("Level2", value);
         }
     }
 
-    internal class Level1UnmanagedAccessor : UnmanagedAccessor, ILevel1Accessor
+    internal class Level1UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel1Accessor
     {
+        public override ObjectSchema ObjectSchema => Level1.RealmSchema;
+
         private string _stringValue;
         public string StringValue
         {
@@ -259,8 +261,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        private Level2 _level2;
-        public Level2 Level2
+        private Realms.Tests.Database.Level2 _level2;
+        public Realms.Tests.Database.Level2 Level2
         {
             get => _level2;
             set
@@ -274,7 +276,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -284,7 +286,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -292,14 +294,14 @@ namespace Realms.Tests.Database.Generated
                     StringValue = (string)val;
                     return;
                 case "Level2":
-                    Level2 = (Level2)val;
+                    Level2 = (Realms.Tests.Database.Level2)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

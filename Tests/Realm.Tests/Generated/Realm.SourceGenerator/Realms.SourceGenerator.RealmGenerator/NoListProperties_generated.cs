@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(NoListPropertiesObjectHelper))]
     public partial class NoListProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("NoListProperties", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoListProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Primitive("Age", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
         }.Build();
 
         #region IRealmObject implementation
 
         private INoListPropertiesAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal INoListPropertiesAccessor Accessor => _accessor ?? (_accessor = new NoListPropertiesUnmanagedAccessor(typeof(NoListProperties)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (INoListPropertiesAccessor)managedAccessor;
             var oldAccessor = (INoListPropertiesAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator NoListProperties(RealmValue val) => val.AsRealmObject<NoListProperties>();
+        public static explicit operator NoListProperties(Realms.RealmValue val) => val.AsRealmObject<NoListProperties>();
 
-        public static implicit operator RealmValue(NoListProperties val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(NoListProperties val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class NoListPropertiesObjectHelper : IRealmObjectHelper
+        private class NoListPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new NoListPropertiesManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new NoListPropertiesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new NoListProperties();
+            public Realms.IRealmObjectBase CreateInstance() => new NoListProperties();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface INoListPropertiesAccessor : IRealmAccessor
+    internal interface INoListPropertiesAccessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
 
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database.Generated
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class NoListPropertiesManagedAccessor : ManagedAccessor, INoListPropertiesAccessor
+    internal class NoListPropertiesManagedAccessor : Realms.ManagedAccessor, INoListPropertiesAccessor
     {
         public string Name
         {
@@ -245,8 +245,10 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class NoListPropertiesUnmanagedAccessor : UnmanagedAccessor, INoListPropertiesAccessor
+    internal class NoListPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, INoListPropertiesAccessor
     {
+        public override ObjectSchema ObjectSchema => NoListProperties.RealmSchema;
+
         private string _name;
         public string Name
         {
@@ -273,7 +275,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -283,7 +285,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -298,7 +300,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

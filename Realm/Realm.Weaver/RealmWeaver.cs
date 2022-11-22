@@ -247,6 +247,50 @@ Analytics payload
             return WeaveModuleResult.Success(weaveResults);
         }
 
+        private static void RemoveBackingFields(TypeDefinition type, HashSet<MetadataToken> backingFields)
+        {
+            for (var i = type.Fields.Count - 1; i >= 0; i--)
+            {
+                var field = type.Fields[i];
+                if (backingFields.Contains(field.MetadataToken))
+                {
+                    type.Fields.RemoveAt(i);
+                }
+            }
+
+            // Iterates through all constructors' instructions from the end to start.
+            foreach (var constructor in type.GetConstructors())
+            {
+                // Index of the most recent "Stfld <backing_field>" instruction
+                var backingFieldInstructionsEnd = -1;
+                for (var i = constructor.Body.Instructions.Count - 1; i >= 0; i--)
+                {
+                    var instruction = constructor.Body.Instructions[i];
+
+                    // If it comes across "Stfld <backing_field>"
+                    // it considers this the end index of backing field initializaion instructions.
+                    if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference field)
+                    {
+                        if (backingFields.Contains(field.MetadataToken))
+                        {
+                            backingFieldInstructionsEnd = i;
+                        }
+                    }
+
+                    // If it comes across "Ldarg 0",
+                    // it considers this the start index of backing field initializaion instructions
+                    // and removes all backing field instructions from end to start.
+                    else if (instruction.OpCode == OpCodes.Ldarg_0)
+                    {
+                        for (var j = backingFieldInstructionsEnd; j >= i; j--)
+                        {
+                            constructor.Body.Instructions.RemoveAt(j);
+                        }
+                    }
+                }
+            }
+        }
+
         private WeaveTypeResult WeaveGeneratedType(TypeDefinition type)
         {
             _logger.Debug("Weaving generated " + type.Name);
@@ -256,14 +300,21 @@ Analytics payload
             var interfaceType = _moduleDefinition.GetType($"{@namespace}.Generated", interfaceName);
 
             var persistedProperties = new List<WeavePropertyResult>();
+            var backingFields = new HashSet<MetadataToken>();
 
             // We need to weave all (and only) the properties in the accessor interface
             foreach (var interfaceProperty in interfaceType.Properties)
             {
                 var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
-
                 try
                 {
+                    // Stash and remove the backing field before weaving as it depends on get method.
+                    var backingField = prop.GetBackingField();
+                    if (backingField != null)
+                    {
+                        backingFields.Add(backingField.MetadataToken);
+                    }
+
                     var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
                     persistedProperties.Add(weaveResult);
                 }
@@ -277,6 +328,8 @@ Analytics payload
                     return WeaveTypeResult.Error(type.Name, isGenerated: true);
                 }
             }
+
+            RemoveBackingFields(type, backingFields);
 
             return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
         }
@@ -310,15 +363,16 @@ Analytics payload
             //// This is equivalent to:
             ////   get => Accessor.Property;
 
-            var start = prop.GetMethod.Body.Instructions.First();
             var il = prop.GetMethod.Body.GetILProcessor();
+            prop.GetMethod.Body.Instructions.Clear();
+            prop.GetMethod.Body.Variables.Clear();
 
             var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
 
-            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(start, il.Create(OpCodes.Call, accessorGetter));
-            il.InsertBefore(start, il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
-            il.InsertBefore(start, il.Create(OpCodes.Ret));
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Call, accessorGetter));
+            il.Append(il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
+            il.Append(il.Create(OpCodes.Ret));
         }
 
         private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)

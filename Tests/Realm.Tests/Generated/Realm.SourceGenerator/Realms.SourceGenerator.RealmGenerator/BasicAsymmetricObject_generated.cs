@@ -20,17 +20,17 @@ namespace Realms.Tests.Sync
     [Woven(typeof(BasicAsymmetricObjectObjectHelper))]
     public partial class BasicAsymmetricObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("BasicAsymmetricObject", ObjectSchema.ObjectType.AsymmetricObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BasicAsymmetricObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("PartitionLike", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PartitionLike"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("PartitionLike", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PartitionLike"),
         }.Build();
 
         #region IAsymmetricObject implementation
 
         private IBasicAsymmetricObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IBasicAsymmetricObjectAccessor Accessor => _accessor ?? (_accessor = new BasicAsymmetricObjectUnmanagedAccessor(typeof(BasicAsymmetricObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IBasicAsymmetricObjectAccessor)managedAccessor;
             var oldAccessor = (IBasicAsymmetricObjectAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator BasicAsymmetricObject(RealmValue val) => val.AsRealmObject<BasicAsymmetricObject>();
+        public static explicit operator BasicAsymmetricObject(Realms.RealmValue val) => val.AsRealmObject<BasicAsymmetricObject>();
 
-        public static implicit operator RealmValue(BasicAsymmetricObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BasicAsymmetricObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace Realms.Tests.Sync
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace Realms.Tests.Sync
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class BasicAsymmetricObjectObjectHelper : IRealmObjectHelper
+        private class BasicAsymmetricObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new BasicAsymmetricObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new BasicAsymmetricObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new BasicAsymmetricObject();
+            public Realms.IRealmObjectBase CreateInstance() => new BasicAsymmetricObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IBasicAsymmetricObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -220,19 +220,19 @@ namespace Realms.Tests.Sync
 namespace Realms.Tests.Sync.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IBasicAsymmetricObjectAccessor : IRealmAccessor
+    internal interface IBasicAsymmetricObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
         string PartitionLike { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class BasicAsymmetricObjectManagedAccessor : ManagedAccessor, IBasicAsymmetricObjectAccessor
+    internal class BasicAsymmetricObjectManagedAccessor : Realms.ManagedAccessor, IBasicAsymmetricObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
@@ -243,10 +243,12 @@ namespace Realms.Tests.Sync.Generated
         }
     }
 
-    internal class BasicAsymmetricObjectUnmanagedAccessor : UnmanagedAccessor, IBasicAsymmetricObjectAccessor
+    internal class BasicAsymmetricObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBasicAsymmetricObjectAccessor
     {
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        public override ObjectSchema ObjectSchema => BasicAsymmetricObject.RealmSchema;
+
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -271,7 +273,7 @@ namespace Realms.Tests.Sync.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -281,7 +283,7 @@ namespace Realms.Tests.Sync.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -295,14 +297,14 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

@@ -1,8 +1,8 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License")
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,14 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Realms;
-
-namespace SourceGeneratorAssemblyToProcess
+namespace Realms.Tests.Database
 {
-    public partial class AutomaticPropertiesClass : IRealmObject
+    public static class Generator
     {
-        public int Id { get; set; }
+        private static int _currentId;
 
-        public string NonAutomaticProp => null;
+        public static int GetId() => _currentId++;
+    }
+
+    public partial class InitializedFieldObject : Realms.IRealmObject
+    {
+        public int Id { get; set; } = Generator.GetId();
     }
 }

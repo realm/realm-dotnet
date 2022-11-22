@@ -19,16 +19,16 @@ namespace Realms.Tests.Database
     [Woven(typeof(AgedObjectObjectHelper))]
     public partial class AgedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AgedObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AgedObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Birthday", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
+            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IAgedObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IAgedObjectAccessor Accessor => _accessor ?? (_accessor = new AgedObjectUnmanagedAccessor(typeof(AgedObject)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAgedObjectAccessor)managedAccessor;
             var oldAccessor = (IAgedObjectAccessor)_accessor;
@@ -154,9 +154,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AgedObject(RealmValue val) => val.AsRealmObject<AgedObject>();
+        public static explicit operator AgedObject(Realms.RealmValue val) => val.AsRealmObject<AgedObject>();
 
-        public static implicit operator RealmValue(AgedObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AgedObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -191,18 +191,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class AgedObjectObjectHelper : IRealmObjectHelper
+        private class AgedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new AgedObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new AgedObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new AgedObject();
+            public Realms.IRealmObjectBase CreateInstance() => new AgedObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -214,25 +214,27 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAgedObjectAccessor : IRealmAccessor
+    internal interface IAgedObjectAccessor : Realms.IRealmAccessor
     {
-        DateTimeOffset Birthday { get; set; }
+        System.DateTimeOffset Birthday { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AgedObjectManagedAccessor : ManagedAccessor, IAgedObjectAccessor
+    internal class AgedObjectManagedAccessor : Realms.ManagedAccessor, IAgedObjectAccessor
     {
-        public DateTimeOffset Birthday
+        public System.DateTimeOffset Birthday
         {
-            get => (DateTimeOffset)GetValue("Birthday");
+            get => (System.DateTimeOffset)GetValue("Birthday");
             set => SetValue("Birthday", value);
         }
     }
 
-    internal class AgedObjectUnmanagedAccessor : UnmanagedAccessor, IAgedObjectAccessor
+    internal class AgedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAgedObjectAccessor
     {
-        private DateTimeOffset _birthday;
-        public DateTimeOffset Birthday
+        public override ObjectSchema ObjectSchema => AgedObject.RealmSchema;
+
+        private System.DateTimeOffset _birthday;
+        public System.DateTimeOffset Birthday
         {
             get => _birthday;
             set
@@ -246,7 +248,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -255,19 +257,19 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "Birthday":
-                    Birthday = (DateTimeOffset)val;
+                    Birthday = (System.DateTimeOffset)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

@@ -525,6 +525,40 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void RemoveAll_RemovesAllElements([Values(true, false)] bool originalEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realmConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (originalEncrypted)
+                {
+                    realmConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                using var realm = GetRealm(realmConfig);
+
+                AddDummyData(realm, true);
+
+                await WaitForUploadAsync(realm);
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+
+                realm.Write(() => { realm.RemoveAll(); });
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+
+                // Ensure that the Realm can be deleted from the filesystem. If the sync
+                // session was still using it, we would get a permission denied error.
+                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+
+                using var asyncRealm = await GetRealmAsync(realmConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+            });
+        }
+
+        [Test]
         public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
                                                    [Values(true, false)] bool copyEncrypted)
         {

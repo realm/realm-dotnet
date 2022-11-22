@@ -19,16 +19,16 @@ namespace Realms.Tests
     [Woven(typeof(ObjectWithRequiredStringListObjectHelper))]
     public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
+            Realms.Schema.Property.PrimitiveList("Strings", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IObjectWithRequiredStringListAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IObjectWithRequiredStringListAccessor Accessor => _accessor ?? (_accessor = new ObjectWithRequiredStringListUnmanagedAccessor(typeof(ObjectWithRequiredStringList)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithRequiredStringListAccessor)managedAccessor;
             var oldAccessor = (IObjectWithRequiredStringListAccessor)_accessor;
@@ -159,9 +159,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithRequiredStringList(RealmValue val) => val.AsRealmObject<ObjectWithRequiredStringList>();
+        public static explicit operator ObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<ObjectWithRequiredStringList>();
 
-        public static implicit operator RealmValue(ObjectWithRequiredStringList val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithRequiredStringList val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -183,7 +183,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -196,18 +196,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ObjectWithRequiredStringListObjectHelper : IRealmObjectHelper
+        private class ObjectWithRequiredStringListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ObjectWithRequiredStringListManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectWithRequiredStringListManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ObjectWithRequiredStringList();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectWithRequiredStringList();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -219,16 +219,16 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithRequiredStringListAccessor : IRealmAccessor
+    internal interface IObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
     {
-        IList<string> Strings { get; }
+        System.Collections.Generic.IList<string> Strings { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithRequiredStringListManagedAccessor : ManagedAccessor, IObjectWithRequiredStringListAccessor
+    internal class ObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, IObjectWithRequiredStringListAccessor
     {
-        private IList<string> _strings;
-        public IList<string> Strings
+        private System.Collections.Generic.IList<string> _strings;
+        public System.Collections.Generic.IList<string> Strings
         {
             get
             {
@@ -242,25 +242,27 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class ObjectWithRequiredStringListUnmanagedAccessor : UnmanagedAccessor, IObjectWithRequiredStringListAccessor
+    internal class ObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithRequiredStringListAccessor
     {
-        public IList<string> Strings { get; } = new List<string>();
+        public override ObjectSchema ObjectSchema => ObjectWithRequiredStringList.RealmSchema;
+
+        public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
 
         public ObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

@@ -19,21 +19,21 @@ namespace Realms.Tests.Sync
     [Woven(typeof(ObjectWithPartitionValueObjectHelper))]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
-            Property.Primitive("Value", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
-            Property.Primitive("realm_id", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
-            Property.Primitive("Guid", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
+            Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
+            Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
 
-        private ObjectWithPartitionValue() {}
+        private ObjectWithPartitionValue() { }
 
         #region IRealmObject implementation
 
         private IObjectWithPartitionValueAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IObjectWithPartitionValueAccessor Accessor => _accessor ?? (_accessor = new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue)));
 
@@ -47,18 +47,18 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IObjectWithPartitionValueAccessor)managedAccessor;
             var oldAccessor = (IObjectWithPartitionValueAccessor)_accessor;
@@ -66,15 +66,15 @@ namespace Realms.Tests.Sync
 
             if (helper != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(string))
+                if (!skipDefaults || oldAccessor.Id != default(string))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
-                if(!skipDefaults || oldAccessor.Partition != default(string))
+                if (!skipDefaults || oldAccessor.Partition != default(string))
                 {
                     newAccessor.Partition = oldAccessor.Partition;
                 }
@@ -171,9 +171,9 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithPartitionValue(RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
+        public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
 
-        public static implicit operator RealmValue(ObjectWithPartitionValue val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -195,7 +195,7 @@ namespace Realms.Tests.Sync
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -208,18 +208,18 @@ namespace Realms.Tests.Sync
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class ObjectWithPartitionValueObjectHelper : IRealmObjectHelper
+        private class ObjectWithPartitionValueObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new ObjectWithPartitionValueManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectWithPartitionValueManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new ObjectWithPartitionValue();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectWithPartitionValue();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IObjectWithPartitionValueAccessor)instance.Accessor).Id;
                 return true;
@@ -231,7 +231,7 @@ namespace Realms.Tests.Sync
 namespace Realms.Tests.Sync.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithPartitionValueAccessor : IRealmAccessor
+    internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
     {
         string Id { get; set; }
 
@@ -239,11 +239,11 @@ namespace Realms.Tests.Sync.Generated
 
         string Partition { get; set; }
 
-        Guid Guid { get; set; }
+        System.Guid Guid { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithPartitionValueManagedAccessor : ManagedAccessor, IObjectWithPartitionValueAccessor
+    internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
     {
         public string Id
         {
@@ -263,15 +263,17 @@ namespace Realms.Tests.Sync.Generated
             set => SetValue("realm_id", value);
         }
 
-        public Guid Guid
+        public System.Guid Guid
         {
-            get => (Guid)GetValue("Guid");
+            get => (System.Guid)GetValue("Guid");
             set => SetValue("Guid", value);
         }
     }
 
-    internal class ObjectWithPartitionValueUnmanagedAccessor : UnmanagedAccessor, IObjectWithPartitionValueAccessor
+    internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
     {
+        public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
+
         private string _id = Guid.NewGuid().ToString();
         public string Id
         {
@@ -305,8 +307,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private Guid _guid;
-        public Guid Guid
+        private System.Guid _guid;
+        public System.Guid Guid
         {
             get => _guid;
             set
@@ -320,7 +322,7 @@ namespace Realms.Tests.Sync.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -332,7 +334,7 @@ namespace Realms.Tests.Sync.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -345,14 +347,14 @@ namespace Realms.Tests.Sync.Generated
                     Partition = (string)val;
                     return;
                 case "Guid":
-                    Guid = (Guid)val;
+                    Guid = (System.Guid)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
