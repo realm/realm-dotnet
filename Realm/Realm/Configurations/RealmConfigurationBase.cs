@@ -137,12 +137,12 @@ namespace Realms
         {
             if (string.IsNullOrEmpty(optionalPath))
             {
-                return Path.Combine(InteropConfig.TryDefaultStorageFolder("realm"), DefaultRealmName);
+                return Path.Combine(InteropConfig.GetDefaultStorageFolder("realm"), DefaultRealmName);
             }
 
             if (!Path.IsPathRooted(optionalPath))
             {
-                optionalPath = Path.Combine(InteropConfig.TryDefaultStorageFolder("realm"), optionalPath);
+                optionalPath = Path.Combine(InteropConfig.GetDefaultStorageFolder("realm"), optionalPath);
             }
 
             if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))

@@ -47,7 +47,7 @@ namespace Realms.Tests.Sync
                 LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.DefaultStorageFolder,
+                BaseFilePath = InteropConfig.GetDefaultStorageFolder("app configuration"),
                 CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
