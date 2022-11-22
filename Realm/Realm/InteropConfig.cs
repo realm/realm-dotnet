@@ -70,6 +70,18 @@ namespace Realms
             set => _customStorageFolder = value;
         }
 
+        public static string TryDefaultStorageFolder(string type)
+        {
+            try
+            {
+                return DefaultStorageFolder;
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new InvalidOperationException($"Couldn't determine a writable folder where to store {type} file. Specify absolute path manually.");
+            }
+        }
+
         public static void AddPotentialStorageFolder(string folder)
         {
 #if DEBUG

@@ -158,7 +158,7 @@ namespace Realms.Sync
             var nativeConfig = new Native.AppConfiguration
             {
                 AppId = config.AppId,
-                BaseFilePath = config.BaseFilePath ?? InteropConfig.DefaultStorageFolder,
+                BaseFilePath = config.BaseFilePath ?? InteropConfig.TryDefaultStorageFolder("app configuration"),
                 BaseUrl = config.BaseUri?.ToString().TrimEnd('/'),
                 LocalAppName = config.LocalAppName,
                 LocalAppVersion = config.LocalAppVersion,
