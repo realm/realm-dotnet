@@ -55,7 +55,7 @@ namespace Realms
         private Realm _realm;
 
         /// <summary>
-        /// The state of a transaction.
+        /// Gets the state of this transaction.
         /// </summary>
         public TransactionState State { get; private set; }
 
