@@ -28,12 +28,13 @@
 * Fixed an issue where fetching a user's profile while the user logs out would result in an assertion failure. (Core upgrade)
 * Removed the ".tmp_compaction_space" file being left over after compacting a Realm on Windows. (Core upgrade)
 * Fixed an issue where sets would consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core upgrade)
+* Fixed wrong assertion on query error that could result in a crash. (Core upgrade)
 
 ### Compatibility
-* Realm Studio: 13.0.0 or later.
+* Realm Studio: 13.1.0 or later.
 
 ### Internal
-* Using Core 13.0.0.
+* Using Core 13.1.0.
 
 ## 10.18.0 (2022-11-02)
 
