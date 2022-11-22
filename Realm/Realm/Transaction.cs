@@ -23,17 +23,26 @@ using Realms.Helpers;
 
 namespace Realms
 {
-    public enum State
+        /// <summary>
+        /// Represents the state of a <see cref="Transaction"/>.
+        /// </summary>
+    [Flags]
+    public enum TransactionState
     {
         /// <summary>
-        /// When a transaction is ongoing.
+        /// Initial state when the user started the transaction.
         /// </summary>
-        Running,
+        Running = 0,
 
         /// <summary>
-        /// When the transaction has either committed or rolled back.
+        /// When a transaction successfully committed its changes.
         /// </summary>
-        Closed,
+        Committed = 1,
+
+        /// <summary>
+        /// When a transaction rolled back the ongoing changes.
+        /// </summary>
+        RolledBack = 2,
     }
 
     /// <summary>
@@ -49,12 +58,12 @@ namespace Realms
         /// <summary>
         /// The state of a transaction.
         /// </summary>
-        public State State { get; private set; }
+        public TransactionState State { get; private set; }
 
         internal Transaction(Realm realm)
         {
             _realm = realm;
-            State = State.Running;
+            State = TransactionState.Running;
         }
 
 
@@ -80,6 +89,7 @@ namespace Realms
         {
             EnsureActionFeasibility("roll back");
             _realm.SharedRealmHandle.CancelTransaction();
+            State = TransactionState.RolledBack;
             FinishTransaction();
         }
 
@@ -91,6 +101,7 @@ namespace Realms
         {
             EnsureActionFeasibility("commit");
             _realm.SharedRealmHandle.CommitTransaction();
+            State = TransactionState.Committed;
             FinishTransaction();
         }
 
@@ -138,7 +149,6 @@ namespace Realms
         private void FinishTransaction()
         {
             _realm.DrainTransactionQueue();
-            State = State.Closed;
             _realm = null;
         }
     }

@@ -205,14 +205,14 @@ namespace Realms.Tests.Database
             // Arrange
             using var realm = GetRealm();
             using var ts1 = realm.BeginWrite();
-            
+
             // Assert
-            Assert.That(ts1.State, Is.EqualTo(State.Running));
+            Assert.That(ts1.State.HasFlag(TransactionState.Running), Is.True);
             ts1.Commit();
-            Assert.That(ts1.State, Is.EqualTo(State.Closed));
+            Assert.That(ts1.State.HasFlag(TransactionState.Committed), Is.True);
             using var ts2 = realm.BeginWrite();
             ts2.Rollback();
-            Assert.That(ts2.State, Is.EqualTo(State.Closed));
+            Assert.That(ts2.State.HasFlag(TransactionState.RolledBack), Is.True);
         }
 
         [Test]
