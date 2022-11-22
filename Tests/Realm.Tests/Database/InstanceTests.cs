@@ -207,12 +207,12 @@ namespace Realms.Tests.Database
             using var ts1 = realm.BeginWrite();
 
             // Assert
-            Assert.That(ts1.State.HasFlag(TransactionState.Running), Is.True);
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Running));
             ts1.Commit();
-            Assert.That(ts1.State.HasFlag(TransactionState.Committed), Is.True);
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Committed));
             using var ts2 = realm.BeginWrite();
             ts2.Rollback();
-            Assert.That(ts2.State.HasFlag(TransactionState.RolledBack), Is.True);
+            Assert.That(ts2.State, Is.EqualTo(TransactionState.RolledBack));
         }
 
         [Test]

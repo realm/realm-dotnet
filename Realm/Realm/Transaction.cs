@@ -26,23 +26,22 @@ namespace Realms
         /// <summary>
         /// Represents the state of a <see cref="Transaction"/>.
         /// </summary>
-    [Flags]
     public enum TransactionState
     {
         /// <summary>
         /// Initial state when the user started the transaction.
         /// </summary>
-        Running = 0,
+        Running,
 
         /// <summary>
         /// When a transaction successfully committed its changes.
         /// </summary>
-        Committed = 1,
+        Committed,
 
         /// <summary>
         /// When a transaction rolled back the ongoing changes.
         /// </summary>
-        RolledBack = 2,
+        RolledBack,
     }
 
     /// <summary>
