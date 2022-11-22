@@ -152,6 +152,7 @@ namespace Realms.Sync
                     throw new ArgumentException($"{nameof(AppConfiguration.MetadataPersistenceMode)} must be set to {nameof(MetadataPersistenceMode.Encrypted)} when {nameof(AppConfiguration.MetadataEncryptionKey)} is set.");
                 }
             }
+
             var httpClient = config.HttpClientHandler == null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
             var clientHandle = GCHandle.Alloc(httpClient);
             var nativeConfig = new Native.AppConfiguration
