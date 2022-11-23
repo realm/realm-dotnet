@@ -23,23 +23,23 @@ using Realms.Helpers;
 
 namespace Realms
 {
-        /// <summary>
-        /// Represents the state of a <see cref="Transaction"/>.
-        /// </summary>
+    /// <summary>
+    /// Represents the state of a <see cref="Transaction"/>.
+    /// </summary>
     public enum TransactionState
     {
         /// <summary>
-        /// Initial state when the user started the transaction.
+        /// The transaction is running.
         /// </summary>
         Running,
 
         /// <summary>
-        /// When a transaction successfully committed its changes.
+        /// The transaction is successfully committed.
         /// </summary>
         Committed,
 
         /// <summary>
-        /// When a transaction rolled back the ongoing changes.
+        /// The transaction rolled back its changes.
         /// </summary>
         RolledBack,
     }
@@ -65,8 +65,6 @@ namespace Realms
             State = TransactionState.Running;
         }
 
-
-
         /// <summary>
         /// Will automatically <see cref="Rollback"/> the transaction on existing scope, if not explicitly Committed.
         /// </summary>
@@ -88,8 +86,7 @@ namespace Realms
         {
             EnsureActionFeasibility("roll back");
             _realm.SharedRealmHandle.CancelTransaction();
-            State = TransactionState.RolledBack;
-            FinishTransaction();
+            FinishTransaction(TransactionState.RolledBack);
         }
 
         /// <summary>
@@ -100,8 +97,7 @@ namespace Realms
         {
             EnsureActionFeasibility("commit");
             _realm.SharedRealmHandle.CommitTransaction();
-            State = TransactionState.Committed;
-            FinishTransaction();
+            FinishTransaction(TransactionState.Committed);
         }
 
         /// <summary>
@@ -134,7 +130,7 @@ namespace Realms
             }
 
             await _realm.SharedRealmHandle.CommitTransactionAsync(synchronizationContext, cancellationToken);
-            FinishTransaction();
+            FinishTransaction(TransactionState.Committed);
         }
 
         private void EnsureActionFeasibility(string executingAction)
@@ -145,8 +141,9 @@ namespace Realms
             }
         }
 
-        private void FinishTransaction()
+        private void FinishTransaction(TransactionState state)
         {
+            State = state;
             _realm.DrainTransactionQueue();
             _realm = null;
         }
