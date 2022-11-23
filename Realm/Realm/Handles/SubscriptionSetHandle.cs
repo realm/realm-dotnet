@@ -321,13 +321,17 @@ namespace Realms.Sync
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target;
 
-            if (message.Type == RealmValueType.Null)
+            switch (message.Type)
             {
-                tcs.TrySetResult(state);
-            }
-            else
-            {
-                tcs.TrySetException(new SubscriptionException(message.AsString()));
+                case RealmValueType.Null:
+                    tcs.TrySetResult(state);
+                    break;
+                case RealmValueType.Int when message.AsInt() == -1:
+                    tcs.TrySetCanceled();
+                    break;
+                default:
+                    tcs.TrySetException(new SubscriptionException(message.AsString()));
+                    break;
             }
         }
     }
