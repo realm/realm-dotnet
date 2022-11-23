@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            var path = Path.Combine(InteropConfig.GetDefaultStorageFolder("realm"), Guid.NewGuid().ToString());
+            var path = Path.Combine(InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store the Realm file. When constructing the RealmConfiguration, provide an absolute optionalPath where writes are allowed."), Guid.NewGuid().ToString());
             var config = GetFakeConfig(optionalPath: path);
 
             Realm.DeleteRealm(config);

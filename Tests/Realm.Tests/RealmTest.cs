@@ -43,7 +43,7 @@ namespace Realms.Tests
 #pragma warning disable CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
             InteropConfig.SetDefaultStorageFolder(Path.Combine(Path.GetTempPath(), $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}"));
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
-            Directory.CreateDirectory(InteropConfig.GetDefaultStorageFolder("realm"));
+            Directory.CreateDirectory(InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store the Realm file. When constructing the RealmConfiguration, provide an absolute optionalPath where writes are allowed."));
 #endif
         }
 

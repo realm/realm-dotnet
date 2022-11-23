@@ -64,10 +64,10 @@ namespace Realms
 
         private static string _customStorageFolder;
 
-        public static string GetDefaultStorageFolder(string type) =>
+        public static string GetDefaultStorageFolder(string errorMessage) =>
             _customStorageFolder ??
             _defaultStorageFolder.Value ??
-            throw new InvalidOperationException($"Couldn't determine a writable folder where to store {type} file. Specify absolute path manually.");
+            throw new InvalidOperationException(errorMessage);
 
         public static void SetDefaultStorageFolder(string value)
         {

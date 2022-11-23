@@ -763,7 +763,7 @@ namespace Realms.Tests.Database
         [TestCase("søren")]
         public void GetInstance_WhenPathContainsNonASCIICharacters_ShouldWork(string path)
         {
-            var folder = Path.Combine(InteropConfig.GetDefaultStorageFolder("realm"), path);
+            var folder = Path.Combine(InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store the Realm file. When constructing the RealmConfiguration, provide an absolute optionalPath where writes are allowed."), path);
             Directory.CreateDirectory(folder);
             var realmPath = Path.Combine(folder, "my.realm");
             var config = new RealmConfiguration(realmPath);
