@@ -27,7 +27,7 @@ namespace Realms.Tests.Sync
             Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
 
-        private ObjectWithPartitionValue() { }
+        private ObjectWithPartitionValue() {}
 
         #region IRealmObject implementation
 
@@ -66,15 +66,15 @@ namespace Realms.Tests.Sync
 
             if (helper != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(string))
+                if(!skipDefaults || oldAccessor.Id != default(string))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if (!skipDefaults || oldAccessor.Value != default(string))
+                if(!skipDefaults || oldAccessor.Value != default(string))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
-                if (!skipDefaults || oldAccessor.Partition != default(string))
+                if(!skipDefaults || oldAccessor.Partition != default(string))
                 {
                     newAccessor.Partition = oldAccessor.Partition;
                 }

@@ -102,6 +102,8 @@ namespace Realms.Tests.Sync
             {
                 TestHelpers.RunAsyncTest(testFunc, timeout);
             }
+
+            Task.Delay(1000).Wait();
         }
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";

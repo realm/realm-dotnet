@@ -543,7 +543,10 @@ namespace Realms.Tests.Sync
 
                 Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
 
-                realm.Write(() => { realm.RemoveAll(); });
+                realm.Write(() =>
+                {
+                    realm.RemoveAll();
+                });
 
                 Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
                 await WaitForUploadAsync(realm);
@@ -551,7 +554,7 @@ namespace Realms.Tests.Sync
 
                 // Ensure that the Realm can be deleted from the filesystem. If the sync
                 // session was still using it, we would get a permission denied error.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+                Assert.That(await DeleteRealmWithRetries(realm.Config), Is.True);
 
                 using var asyncRealm = await GetRealmAsync(realmConfig);
                 Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));

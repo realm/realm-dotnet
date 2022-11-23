@@ -54,7 +54,7 @@ using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marsh
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
-using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm* realm);
+using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -154,7 +154,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     
     if (configuration.invoke_initial_data_callback) {
         config.initialization_function = [configuration_handle](SharedRealm realm) {
-            auto error = s_initialize_data(configuration_handle->handle(), &realm);
+            auto error = s_initialize_data(configuration_handle->handle(), realm);
             if (error) {
                 throw ManagedExceptionDuringCallback("Exception occurred in a Realm.InitialDataCallback callback.", error);
             }
@@ -282,7 +282,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         if (configuration.invoke_initial_data_callback) {
             config.initialization_function = [configuration_handle](SharedRealm realm) {
-                auto error = s_initialize_data(configuration_handle->handle(), &realm);
+                auto error = s_initialize_data(configuration_handle->handle(), realm);
                 if (error) {
                     throw ManagedExceptionDuringCallback("Exception occurred in a Realm.PopulateInitialDatacallback.", error);
                 }
