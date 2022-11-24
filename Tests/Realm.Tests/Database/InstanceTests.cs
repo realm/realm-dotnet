@@ -213,13 +213,21 @@ namespace Realms.Tests.Database
             using var ts2 = realm1.BeginWrite();
             ts2.Rollback();
             Assert.That(ts2.State, Is.EqualTo(TransactionState.RolledBack));
+        }
+
+        [Test]
+        public void TransactionStateIsCorrectAsync()
+        {
             TestHelpers.RunAsyncTest(async () =>
             {
-                using var realm2 = GetRealm();
-                var ts3 = await realm2.BeginWriteAsync();
-                Assert.That(ts3.State, Is.EqualTo(TransactionState.Running));
-                await ts3.CommitAsync();
-                Assert.That(ts3.State, Is.EqualTo(TransactionState.Committed));
+                // Arrange
+                using var realm = GetRealm();
+                var ts = await realm.BeginWriteAsync();
+                
+                // Assert
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
+                await ts.CommitAsync();
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Committed));
             });
         }
 
