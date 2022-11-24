@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
 * Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
 * Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
   * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
