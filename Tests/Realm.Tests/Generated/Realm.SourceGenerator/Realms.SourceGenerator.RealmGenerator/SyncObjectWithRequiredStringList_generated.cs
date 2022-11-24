@@ -19,17 +19,17 @@ namespace Realms.Tests.Sync
     [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper))]
     public partial class SyncObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
-            Property.PrimitiveList("Strings", RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.PrimitiveList("Strings", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ISyncObjectWithRequiredStringListAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ISyncObjectWithRequiredStringListAccessor Accessor => _accessor ?? (_accessor = new SyncObjectWithRequiredStringListUnmanagedAccessor(typeof(SyncObjectWithRequiredStringList)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ISyncObjectWithRequiredStringListAccessor)managedAccessor;
             var oldAccessor = (ISyncObjectWithRequiredStringListAccessor)_accessor;
@@ -164,9 +164,9 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SyncObjectWithRequiredStringList(RealmValue val) => val.AsRealmObject<SyncObjectWithRequiredStringList>();
+        public static explicit operator SyncObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<SyncObjectWithRequiredStringList>();
 
-        public static implicit operator RealmValue(SyncObjectWithRequiredStringList val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -188,7 +188,7 @@ namespace Realms.Tests.Sync
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -201,18 +201,18 @@ namespace Realms.Tests.Sync
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class SyncObjectWithRequiredStringListObjectHelper : IRealmObjectHelper
+        private class SyncObjectWithRequiredStringListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new SyncObjectWithRequiredStringListManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new SyncObjectWithRequiredStringListManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new SyncObjectWithRequiredStringList();
+            public Realms.IRealmObjectBase CreateInstance() => new SyncObjectWithRequiredStringList();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((ISyncObjectWithRequiredStringListAccessor)instance.Accessor).Id;
                 return true;
@@ -224,15 +224,15 @@ namespace Realms.Tests.Sync
 namespace Realms.Tests.Sync.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ISyncObjectWithRequiredStringListAccessor : IRealmAccessor
+    internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
     {
         string Id { get; set; }
 
-        IList<string> Strings { get; }
+        System.Collections.Generic.IList<string> Strings { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class SyncObjectWithRequiredStringListManagedAccessor : ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
+    internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
     {
         public string Id
         {
@@ -240,8 +240,8 @@ namespace Realms.Tests.Sync.Generated
             set => SetValueUnique("_id", value);
         }
 
-        private IList<string> _strings;
-        public IList<string> Strings
+        private System.Collections.Generic.IList<string> _strings;
+        public System.Collections.Generic.IList<string> Strings
         {
             get
             {
@@ -255,8 +255,10 @@ namespace Realms.Tests.Sync.Generated
         }
     }
 
-    internal class SyncObjectWithRequiredStringListUnmanagedAccessor : UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
+    internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
     {
+        public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
+
         private string _id;
         public string Id
         {
@@ -268,13 +270,13 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        public IList<string> Strings { get; } = new List<string>();
+        public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
 
         public SyncObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -283,7 +285,7 @@ namespace Realms.Tests.Sync.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -294,7 +296,7 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {

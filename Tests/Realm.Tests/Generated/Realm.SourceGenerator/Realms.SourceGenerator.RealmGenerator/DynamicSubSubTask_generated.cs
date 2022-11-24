@@ -19,18 +19,18 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicSubSubTaskObjectHelper))]
     public partial class DynamicSubSubTask : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DynamicSubSubTask", ObjectSchema.ObjectType.EmbeddedObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicSubSubTask", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Property.Primitive("Summary", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
-            Property.Backlinks("ParentSubTask", "DynamicSubTask", "SubSubTasks", managedName: "ParentSubTask"),
-            Property.Backlinks("ParentTask", "DynamicTask", "SubSubTasks", managedName: "ParentTask"),
+            Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Summary"),
+            Realms.Schema.Property.Backlinks("ParentSubTask", "DynamicSubTask", "SubSubTasks", managedName: "ParentSubTask"),
+            Realms.Schema.Property.Backlinks("ParentTask", "DynamicTask", "SubSubTasks", managedName: "ParentTask"),
         }.Build();
 
         #region IEmbeddedObject implementation
 
         private IDynamicSubSubTaskAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IDynamicSubSubTaskAccessor Accessor => _accessor ?? (_accessor = new DynamicSubSubTaskUnmanagedAccessor(typeof(DynamicSubSubTask)));
 
@@ -44,21 +44,21 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDynamicSubSubTaskAccessor)managedAccessor;
             var oldAccessor = (IDynamicSubSubTaskAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicSubSubTask(RealmValue val) => val.AsRealmObject<DynamicSubSubTask>();
+        public static explicit operator DynamicSubSubTask(Realms.RealmValue val) => val.AsRealmObject<DynamicSubSubTask>();
 
-        public static implicit operator RealmValue(DynamicSubSubTask val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicSubSubTask val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class DynamicSubSubTaskObjectHelper : IRealmObjectHelper
+        private class DynamicSubSubTaskObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new DynamicSubSubTaskManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new DynamicSubSubTaskManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new DynamicSubSubTask();
+            public Realms.IRealmObjectBase CreateInstance() => new DynamicSubSubTask();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -222,17 +222,17 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDynamicSubSubTaskAccessor : IRealmAccessor
+    internal interface IDynamicSubSubTaskAccessor : Realms.IRealmAccessor
     {
         string Summary { get; set; }
 
-        IQueryable<DynamicSubTask> ParentSubTask { get; }
+        System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask { get; }
 
-        IQueryable<DynamicTask> ParentTask { get; }
+        System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DynamicSubSubTaskManagedAccessor : ManagedAccessor, IDynamicSubSubTaskAccessor
+    internal class DynamicSubSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubSubTaskAccessor
     {
         public string Summary
         {
@@ -240,28 +240,28 @@ namespace Realms.Tests.Database.Generated
             set => SetValue("Summary", value);
         }
 
-        private IQueryable<DynamicSubTask> _parentSubTask;
-        public IQueryable<DynamicSubTask> ParentSubTask
+        private System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> _parentSubTask;
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask
         {
             get
             {
                 if (_parentSubTask == null)
                 {
-                    _parentSubTask = GetBacklinks<DynamicSubTask>("ParentSubTask");
+                    _parentSubTask = GetBacklinks<Realms.Tests.Database.DynamicSubTask>("ParentSubTask");
                 }
 
                 return _parentSubTask;
             }
         }
 
-        private IQueryable<DynamicTask> _parentTask;
-        public IQueryable<DynamicTask> ParentTask
+        private System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> _parentTask;
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask
         {
             get
             {
                 if (_parentTask == null)
                 {
-                    _parentTask = GetBacklinks<DynamicTask>("ParentTask");
+                    _parentTask = GetBacklinks<Realms.Tests.Database.DynamicTask>("ParentTask");
                 }
 
                 return _parentTask;
@@ -269,8 +269,10 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class DynamicSubSubTaskUnmanagedAccessor : UnmanagedAccessor, IDynamicSubSubTaskAccessor
+    internal class DynamicSubSubTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicSubSubTaskAccessor
     {
+        public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
+
         private string _summary;
         public string Summary
         {
@@ -282,15 +284,15 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public IQueryable<DynamicSubTask> ParentSubTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public IQueryable<DynamicTask> ParentTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public DynamicSubSubTaskUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -301,7 +303,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -313,7 +315,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

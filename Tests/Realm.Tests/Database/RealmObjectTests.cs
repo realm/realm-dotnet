@@ -133,12 +133,15 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManagedAndUnmanaged()
         {
             var person = new Person();
 
+#if TEST_WEAVER
             Assert.That(person.ObjectSchema, Is.Null);
-
+#else
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+#endif
             _realm.Write(() =>
             {
                 _realm.Add(person);
@@ -518,6 +521,27 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(obj.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_InitializedFields_GetCorrectValues()
+        {
+            // This test ensures we only run the initialization instructions of Realm Object fields once.
+            // i.e. where we have a class that has an ID field that gets incremented every time a new class
+            // instance is created by incrementing an external variable and assigning it to the Id field.
+            //
+            // class FieldObject { Id: Generator.Id() } where Generator.Id = () => _currentId++;
+            //
+            // It could be that because of i.e. copying over initialization commands to the accessor
+            // but not removing from the original constructor, the initialization of the field
+            // would get repeated, thus leading to the _currentId being incremented twice.
+            var obj0 = new InitializedFieldObject();
+            var obj1 = new InitializedFieldObject();
+            var obj2 = new InitializedFieldObject();
+
+            Assert.That(obj0.Id, Is.EqualTo(0));
+            Assert.That(obj1.Id, Is.EqualTo(1));
+            Assert.That(obj2.Id, Is.EqualTo(2));
         }
 
         [Test]

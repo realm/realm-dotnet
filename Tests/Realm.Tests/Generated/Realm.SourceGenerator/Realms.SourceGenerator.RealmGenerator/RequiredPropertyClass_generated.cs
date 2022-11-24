@@ -19,16 +19,16 @@ namespace Realms.Tests.Database
     [Woven(typeof(RequiredPropertyClassObjectHelper))]
     public partial class RequiredPropertyClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("RequiredPropertyClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPropertyClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("FooRequired", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "FooRequired"),
+            Realms.Schema.Property.Primitive("FooRequired", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "FooRequired"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IRequiredPropertyClassAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IRequiredPropertyClassAccessor Accessor => _accessor ?? (_accessor = new RequiredPropertyClassUnmanagedAccessor(typeof(RequiredPropertyClass)));
 
@@ -42,18 +42,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IRequiredPropertyClassAccessor)managedAccessor;
             var oldAccessor = (IRequiredPropertyClassAccessor)_accessor;
@@ -154,9 +154,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RequiredPropertyClass(RealmValue val) => val.AsRealmObject<RequiredPropertyClass>();
+        public static explicit operator RequiredPropertyClass(Realms.RealmValue val) => val.AsRealmObject<RequiredPropertyClass>();
 
-        public static implicit operator RealmValue(RequiredPropertyClass val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RequiredPropertyClass val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -191,18 +191,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class RequiredPropertyClassObjectHelper : IRealmObjectHelper
+        private class RequiredPropertyClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new RequiredPropertyClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new RequiredPropertyClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new RequiredPropertyClass();
+            public Realms.IRealmObjectBase CreateInstance() => new RequiredPropertyClass();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -214,13 +214,13 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IRequiredPropertyClassAccessor : IRealmAccessor
+    internal interface IRequiredPropertyClassAccessor : Realms.IRealmAccessor
     {
         string FooRequired { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class RequiredPropertyClassManagedAccessor : ManagedAccessor, IRequiredPropertyClassAccessor
+    internal class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
     {
         public string FooRequired
         {
@@ -229,8 +229,10 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class RequiredPropertyClassUnmanagedAccessor : UnmanagedAccessor, IRequiredPropertyClassAccessor
+    internal class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
     {
+        public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
+
         private string _fooRequired;
         public string FooRequired
         {
@@ -246,7 +248,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -255,7 +257,7 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -267,7 +269,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

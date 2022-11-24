@@ -427,6 +427,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
+                Argument.NotNull(functionArgs, nameof(functionArgs));
 
                 var tcs = new TaskCompletionSource<object>();
                 _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToNativeJson(), tcs);

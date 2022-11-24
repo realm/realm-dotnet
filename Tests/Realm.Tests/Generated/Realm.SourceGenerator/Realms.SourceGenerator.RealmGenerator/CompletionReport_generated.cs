@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(CompletionReportObjectHelper))]
     public partial class CompletionReport : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Property.Primitive("CompletionDate", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CompletionDate"),
-            Property.Primitive("Remarks", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Remarks"),
+            Realms.Schema.Property.Primitive("CompletionDate", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CompletionDate"),
+            Realms.Schema.Property.Primitive("Remarks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Remarks"),
         }.Build();
 
         #region IEmbeddedObject implementation
 
         private ICompletionReportAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ICompletionReportAccessor Accessor => _accessor ?? (_accessor = new CompletionReportUnmanagedAccessor(typeof(CompletionReport)));
 
@@ -43,21 +43,21 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ICompletionReportAccessor)managedAccessor;
             var oldAccessor = (ICompletionReportAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator CompletionReport(RealmValue val) => val.AsRealmObject<CompletionReport>();
+        public static explicit operator CompletionReport(Realms.RealmValue val) => val.AsRealmObject<CompletionReport>();
 
-        public static implicit operator RealmValue(CompletionReport val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(CompletionReport val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class CompletionReportObjectHelper : IRealmObjectHelper
+        private class CompletionReportObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new CompletionReportManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new CompletionReportManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new CompletionReport();
+            public Realms.IRealmObjectBase CreateInstance() => new CompletionReport();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -222,19 +222,19 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ICompletionReportAccessor : IRealmAccessor
+    internal interface ICompletionReportAccessor : Realms.IRealmAccessor
     {
-        DateTimeOffset CompletionDate { get; set; }
+        System.DateTimeOffset CompletionDate { get; set; }
 
         string Remarks { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class CompletionReportManagedAccessor : ManagedAccessor, ICompletionReportAccessor
+    internal class CompletionReportManagedAccessor : Realms.ManagedAccessor, ICompletionReportAccessor
     {
-        public DateTimeOffset CompletionDate
+        public System.DateTimeOffset CompletionDate
         {
-            get => (DateTimeOffset)GetValue("CompletionDate");
+            get => (System.DateTimeOffset)GetValue("CompletionDate");
             set => SetValue("CompletionDate", value);
         }
 
@@ -245,10 +245,12 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class CompletionReportUnmanagedAccessor : UnmanagedAccessor, ICompletionReportAccessor
+    internal class CompletionReportUnmanagedAccessor : Realms.UnmanagedAccessor, ICompletionReportAccessor
     {
-        private DateTimeOffset _completionDate;
-        public DateTimeOffset CompletionDate
+        public override ObjectSchema ObjectSchema => CompletionReport.RealmSchema;
+
+        private System.DateTimeOffset _completionDate;
+        public System.DateTimeOffset CompletionDate
         {
             get => _completionDate;
             set
@@ -273,7 +275,7 @@ namespace Realms.Tests.Database.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -283,12 +285,12 @@ namespace Realms.Tests.Database.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "CompletionDate":
-                    CompletionDate = (DateTimeOffset)val;
+                    CompletionDate = (System.DateTimeOffset)val;
                     return;
                 case "Remarks":
                     Remarks = (string)val;
@@ -298,7 +300,7 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

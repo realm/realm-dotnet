@@ -19,24 +19,24 @@ namespace Realms.Tests
     [Woven(typeof(CounterObjectObjectHelper))]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("CounterObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CounterObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
-            Property.Primitive("Int16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
-            Property.Primitive("Int32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
-            Property.Primitive("Int64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
-            Property.Primitive("NullableByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
-            Property.Primitive("NullableInt16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
-            Property.Primitive("NullableInt32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
-            Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
+            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
+            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
+            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
+            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
+            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
+            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
+            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
         }.Build();
 
         #region IRealmObject implementation
 
         private ICounterObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal ICounterObjectAccessor Accessor => _accessor ?? (_accessor = new CounterObjectUnmanagedAccessor(typeof(CounterObject)));
 
@@ -50,18 +50,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (ICounterObjectAccessor)managedAccessor;
             var oldAccessor = (ICounterObjectAccessor)_accessor;
@@ -173,9 +173,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator CounterObject(RealmValue val) => val.AsRealmObject<CounterObject>();
+        public static explicit operator CounterObject(Realms.RealmValue val) => val.AsRealmObject<CounterObject>();
 
-        public static implicit operator RealmValue(CounterObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(CounterObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -197,7 +197,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -208,18 +208,18 @@ namespace Realms.Tests
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class CounterObjectObjectHelper : IRealmObjectHelper
+        private class CounterObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new CounterObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new CounterObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new CounterObject();
+            public Realms.IRealmObjectBase CreateInstance() => new CounterObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((ICounterObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -231,29 +231,29 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ICounterObjectAccessor : IRealmAccessor
+    internal interface ICounterObjectAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
 
-        RealmInteger<byte> ByteProperty { get; set; }
+        Realms.RealmInteger<byte> ByteProperty { get; set; }
 
-        RealmInteger<short> Int16Property { get; set; }
+        Realms.RealmInteger<short> Int16Property { get; set; }
 
-        RealmInteger<int> Int32Property { get; set; }
+        Realms.RealmInteger<int> Int32Property { get; set; }
 
-        RealmInteger<long> Int64Property { get; set; }
+        Realms.RealmInteger<long> Int64Property { get; set; }
 
-        RealmInteger<byte>? NullableByteProperty { get; set; }
+        Realms.RealmInteger<byte>? NullableByteProperty { get; set; }
 
-        RealmInteger<short>? NullableInt16Property { get; set; }
+        Realms.RealmInteger<short>? NullableInt16Property { get; set; }
 
-        RealmInteger<int>? NullableInt32Property { get; set; }
+        Realms.RealmInteger<int>? NullableInt32Property { get; set; }
 
-        RealmInteger<long>? NullableInt64Property { get; set; }
+        Realms.RealmInteger<long>? NullableInt64Property { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class CounterObjectManagedAccessor : ManagedAccessor, ICounterObjectAccessor
+    internal class CounterObjectManagedAccessor : Realms.ManagedAccessor, ICounterObjectAccessor
     {
         public int Id
         {
@@ -261,57 +261,59 @@ namespace Realms.Tests.Generated
             set => SetValueUnique("_id", value);
         }
 
-        public RealmInteger<byte> ByteProperty
+        public Realms.RealmInteger<byte> ByteProperty
         {
-            get => (RealmInteger<byte>)GetValue("ByteProperty");
+            get => (Realms.RealmInteger<byte>)GetValue("ByteProperty");
             set => SetValue("ByteProperty", value);
         }
 
-        public RealmInteger<short> Int16Property
+        public Realms.RealmInteger<short> Int16Property
         {
-            get => (RealmInteger<short>)GetValue("Int16Property");
+            get => (Realms.RealmInteger<short>)GetValue("Int16Property");
             set => SetValue("Int16Property", value);
         }
 
-        public RealmInteger<int> Int32Property
+        public Realms.RealmInteger<int> Int32Property
         {
-            get => (RealmInteger<int>)GetValue("Int32Property");
+            get => (Realms.RealmInteger<int>)GetValue("Int32Property");
             set => SetValue("Int32Property", value);
         }
 
-        public RealmInteger<long> Int64Property
+        public Realms.RealmInteger<long> Int64Property
         {
-            get => (RealmInteger<long>)GetValue("Int64Property");
+            get => (Realms.RealmInteger<long>)GetValue("Int64Property");
             set => SetValue("Int64Property", value);
         }
 
-        public RealmInteger<byte>? NullableByteProperty
+        public Realms.RealmInteger<byte>? NullableByteProperty
         {
-            get => (RealmInteger<byte>?)GetValue("NullableByteProperty");
+            get => (Realms.RealmInteger<byte>?)GetValue("NullableByteProperty");
             set => SetValue("NullableByteProperty", value);
         }
 
-        public RealmInteger<short>? NullableInt16Property
+        public Realms.RealmInteger<short>? NullableInt16Property
         {
-            get => (RealmInteger<short>?)GetValue("NullableInt16Property");
+            get => (Realms.RealmInteger<short>?)GetValue("NullableInt16Property");
             set => SetValue("NullableInt16Property", value);
         }
 
-        public RealmInteger<int>? NullableInt32Property
+        public Realms.RealmInteger<int>? NullableInt32Property
         {
-            get => (RealmInteger<int>?)GetValue("NullableInt32Property");
+            get => (Realms.RealmInteger<int>?)GetValue("NullableInt32Property");
             set => SetValue("NullableInt32Property", value);
         }
 
-        public RealmInteger<long>? NullableInt64Property
+        public Realms.RealmInteger<long>? NullableInt64Property
         {
-            get => (RealmInteger<long>?)GetValue("NullableInt64Property");
+            get => (Realms.RealmInteger<long>?)GetValue("NullableInt64Property");
             set => SetValue("NullableInt64Property", value);
         }
     }
 
-    internal class CounterObjectUnmanagedAccessor : UnmanagedAccessor, ICounterObjectAccessor
+    internal class CounterObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICounterObjectAccessor
     {
+        public override ObjectSchema ObjectSchema => CounterObject.RealmSchema;
+
         private int _id;
         public int Id
         {
@@ -323,8 +325,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<byte> _byteProperty;
-        public RealmInteger<byte> ByteProperty
+        private Realms.RealmInteger<byte> _byteProperty;
+        public Realms.RealmInteger<byte> ByteProperty
         {
             get => _byteProperty;
             set
@@ -334,8 +336,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<short> _int16Property;
-        public RealmInteger<short> Int16Property
+        private Realms.RealmInteger<short> _int16Property;
+        public Realms.RealmInteger<short> Int16Property
         {
             get => _int16Property;
             set
@@ -345,8 +347,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<int> _int32Property;
-        public RealmInteger<int> Int32Property
+        private Realms.RealmInteger<int> _int32Property;
+        public Realms.RealmInteger<int> Int32Property
         {
             get => _int32Property;
             set
@@ -356,8 +358,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<long> _int64Property;
-        public RealmInteger<long> Int64Property
+        private Realms.RealmInteger<long> _int64Property;
+        public Realms.RealmInteger<long> Int64Property
         {
             get => _int64Property;
             set
@@ -367,8 +369,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<byte>? _nullableByteProperty;
-        public RealmInteger<byte>? NullableByteProperty
+        private Realms.RealmInteger<byte>? _nullableByteProperty;
+        public Realms.RealmInteger<byte>? NullableByteProperty
         {
             get => _nullableByteProperty;
             set
@@ -378,8 +380,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<short>? _nullableInt16Property;
-        public RealmInteger<short>? NullableInt16Property
+        private Realms.RealmInteger<short>? _nullableInt16Property;
+        public Realms.RealmInteger<short>? NullableInt16Property
         {
             get => _nullableInt16Property;
             set
@@ -389,8 +391,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<int>? _nullableInt32Property;
-        public RealmInteger<int>? NullableInt32Property
+        private Realms.RealmInteger<int>? _nullableInt32Property;
+        public Realms.RealmInteger<int>? NullableInt32Property
         {
             get => _nullableInt32Property;
             set
@@ -400,8 +402,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private RealmInteger<long>? _nullableInt64Property;
-        public RealmInteger<long>? NullableInt64Property
+        private Realms.RealmInteger<long>? _nullableInt64Property;
+        public Realms.RealmInteger<long>? NullableInt64Property
         {
             get => _nullableInt64Property;
             set
@@ -415,7 +417,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -432,42 +434,42 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "_id":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 case "ByteProperty":
-                    ByteProperty = (RealmInteger<byte>)val;
+                    ByteProperty = (Realms.RealmInteger<byte>)val;
                     return;
                 case "Int16Property":
-                    Int16Property = (RealmInteger<short>)val;
+                    Int16Property = (Realms.RealmInteger<short>)val;
                     return;
                 case "Int32Property":
-                    Int32Property = (RealmInteger<int>)val;
+                    Int32Property = (Realms.RealmInteger<int>)val;
                     return;
                 case "Int64Property":
-                    Int64Property = (RealmInteger<long>)val;
+                    Int64Property = (Realms.RealmInteger<long>)val;
                     return;
                 case "NullableByteProperty":
-                    NullableByteProperty = (RealmInteger<byte>?)val;
+                    NullableByteProperty = (Realms.RealmInteger<byte>?)val;
                     return;
                 case "NullableInt16Property":
-                    NullableInt16Property = (RealmInteger<short>?)val;
+                    NullableInt16Property = (Realms.RealmInteger<short>?)val;
                     return;
                 case "NullableInt32Property":
-                    NullableInt32Property = (RealmInteger<int>?)val;
+                    NullableInt32Property = (Realms.RealmInteger<int>?)val;
                     return;
                 case "NullableInt64Property":
-                    NullableInt64Property = (RealmInteger<long>?)val;
+                    NullableInt64Property = (Realms.RealmInteger<long>?)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {

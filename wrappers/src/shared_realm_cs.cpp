@@ -754,6 +754,22 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
     });
 }
 
+REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        realm->verify_in_write();
+
+        auto& group = realm->read_group();
+        for (auto table_key : group.get_table_keys()) {
+            auto table = group.get_table(table_key);
+            if (table->get_name().begins_with("class_")) {
+                table->clear();
+            }
+        }
+        return true;
+    });
+}
+
 REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {

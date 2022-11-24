@@ -19,17 +19,17 @@ namespace Realms.Tests.Database
     [Woven(typeof(OrderedContainerObjectHelper))]
     public partial class OrderedContainer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("OrderedContainer", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OrderedContainer", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.ObjectList("Items", "OrderedObject", managedName: "Items"),
-            Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),
+            Realms.Schema.Property.ObjectList("Items", "OrderedObject", managedName: "Items"),
+            Realms.Schema.Property.ObjectDictionary("ItemsDictionary", "OrderedObject", managedName: "ItemsDictionary"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IOrderedContainerAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IOrderedContainerAccessor Accessor => _accessor ?? (_accessor = new OrderedContainerUnmanagedAccessor(typeof(OrderedContainer)));
 
@@ -43,18 +43,18 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOrderedContainerAccessor)managedAccessor;
             var oldAccessor = (IOrderedContainerAccessor)_accessor;
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OrderedContainer(RealmValue val) => val.AsRealmObject<OrderedContainer>();
+        public static explicit operator OrderedContainer(Realms.RealmValue val) => val.AsRealmObject<OrderedContainer>();
 
-        public static implicit operator RealmValue(OrderedContainer val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OrderedContainer val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -199,18 +199,18 @@ namespace Realms.Tests.Database
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class OrderedContainerObjectHelper : IRealmObjectHelper
+        private class OrderedContainerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new OrderedContainerManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new OrderedContainerManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new OrderedContainer();
+            public Realms.IRealmObjectBase CreateInstance() => new OrderedContainer();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -222,38 +222,38 @@ namespace Realms.Tests.Database
 namespace Realms.Tests.Database.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOrderedContainerAccessor : IRealmAccessor
+    internal interface IOrderedContainerAccessor : Realms.IRealmAccessor
     {
-        IList<OrderedObject> Items { get; }
+        System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items { get; }
 
-        IDictionary<string, OrderedObject> ItemsDictionary { get; }
+        System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OrderedContainerManagedAccessor : ManagedAccessor, IOrderedContainerAccessor
+    internal class OrderedContainerManagedAccessor : Realms.ManagedAccessor, IOrderedContainerAccessor
     {
-        private IList<OrderedObject> _items;
-        public IList<OrderedObject> Items
+        private System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> _items;
+        public System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items
         {
             get
             {
                 if (_items == null)
                 {
-                    _items = GetListValue<OrderedObject>("Items");
+                    _items = GetListValue<Realms.Tests.Database.OrderedObject>("Items");
                 }
 
                 return _items;
             }
         }
 
-        private IDictionary<string, OrderedObject> _itemsDictionary;
-        public IDictionary<string, OrderedObject> ItemsDictionary
+        private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> _itemsDictionary;
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary
         {
             get
             {
                 if (_itemsDictionary == null)
                 {
-                    _itemsDictionary = GetDictionaryValue<OrderedObject>("ItemsDictionary");
+                    _itemsDictionary = GetDictionaryValue<Realms.Tests.Database.OrderedObject>("ItemsDictionary");
                 }
 
                 return _itemsDictionary;
@@ -261,27 +261,29 @@ namespace Realms.Tests.Database.Generated
         }
     }
 
-    internal class OrderedContainerUnmanagedAccessor : UnmanagedAccessor, IOrderedContainerAccessor
+    internal class OrderedContainerUnmanagedAccessor : Realms.UnmanagedAccessor, IOrderedContainerAccessor
     {
-        public IList<OrderedObject> Items { get; } = new List<OrderedObject>();
+        public override ObjectSchema ObjectSchema => OrderedContainer.RealmSchema;
 
-        public IDictionary<string, OrderedObject> ItemsDictionary { get; } = new Dictionary<string, OrderedObject>();
+        public System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items { get; } = new List<Realms.Tests.Database.OrderedObject>();
+
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.OrderedObject>();
 
         public OrderedContainerUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

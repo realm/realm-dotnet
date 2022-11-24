@@ -27,6 +27,7 @@ namespace SourceGeneratorTests
         [TestCase("NoNamespaceClass")]
         [TestCase("PartialClass")]
         [TestCase("AutomaticPropertiesClass")]
+        [TestCase("ConfusingNamespaceClass")]
         [TestCase("PersonWithDog", "Person", "Dog")]
         public async Task ComparisonTest(string filename, params string[] classNames)
         {

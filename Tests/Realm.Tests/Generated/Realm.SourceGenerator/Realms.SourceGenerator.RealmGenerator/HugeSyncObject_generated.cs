@@ -20,17 +20,17 @@ namespace Realms.Tests
     [Woven(typeof(HugeSyncObjectObjectHelper))]
     public partial class HugeSyncObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("HugeSyncObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("HugeSyncObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Data", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Data"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Data", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Data"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IHugeSyncObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IHugeSyncObjectAccessor Accessor => _accessor ?? (_accessor = new HugeSyncObjectUnmanagedAccessor(typeof(HugeSyncObject)));
 
@@ -44,18 +44,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IHugeSyncObjectAccessor)managedAccessor;
             var oldAccessor = (IHugeSyncObjectAccessor)_accessor;
@@ -160,9 +160,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator HugeSyncObject(RealmValue val) => val.AsRealmObject<HugeSyncObject>();
+        public static explicit operator HugeSyncObject(Realms.RealmValue val) => val.AsRealmObject<HugeSyncObject>();
 
-        public static implicit operator RealmValue(HugeSyncObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(HugeSyncObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -184,7 +184,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -197,18 +197,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class HugeSyncObjectObjectHelper : IRealmObjectHelper
+        private class HugeSyncObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new HugeSyncObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new HugeSyncObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new HugeSyncObject();
+            public Realms.IRealmObjectBase CreateInstance() => new HugeSyncObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IHugeSyncObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -220,19 +220,19 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IHugeSyncObjectAccessor : IRealmAccessor
+    internal interface IHugeSyncObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
         byte[] Data { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class HugeSyncObjectManagedAccessor : ManagedAccessor, IHugeSyncObjectAccessor
+    internal class HugeSyncObjectManagedAccessor : Realms.ManagedAccessor, IHugeSyncObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
@@ -243,10 +243,12 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class HugeSyncObjectUnmanagedAccessor : UnmanagedAccessor, IHugeSyncObjectAccessor
+    internal class HugeSyncObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IHugeSyncObjectAccessor
     {
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        public override ObjectSchema ObjectSchema => HugeSyncObject.RealmSchema;
+
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -271,7 +273,7 @@ namespace Realms.Tests.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -281,7 +283,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -295,14 +297,14 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

@@ -1,28 +1,47 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
+* Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
+* Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
+  * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `dictionary.Filter(query, arguments)` will filter the list and return a filtered collection of dictionary's values. It is roughly equivalent to `dictionary.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
+* Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
+* Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
+* Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 
 ### Fixed
+* Fixed issue where Realm parameters' initialization would get run twice, resulting in unexpected behavior.
 * Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
+* Fix a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. (Core upgrade)
+* Fixed an assertion failure during client reset with recovery when recovering a list operation on an embedded object that has a link column in the path prefix to the list from the top level object. (Core upgrade)
+* Opening an unencrypted file with an encryption key would sometimes report a misleading error message that indicated that the problem was something other than a decryption failure. (Core upgrade)
+* Fix a rare deadlock which could occur when closing a synchronized Realm immediately after committing a write transaction when the sync worker thread has also just finished processing a changeset from the server. (Core upgrade)
+* Fix a race condition which could result in "operation cancelled" errors being delivered to async open callbacks rather than the actual sync error which caused things to fail. (Core upgrade)
+* Bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time, or as configured by the SDK. (Core upgrade)
+* Fix database corruption and encryption issues on apple platforms. (Core upgrade)
+* Added fully qualified names for source generated filed, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099) 
+* Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.12.0.
 
 ## 10.18.0 (2022-11-02)
 
 ### Enhancements
-* Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future. 
+* Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future.
 In order to use the source generation the model classes need to be declared implementing one of the base interfaces (`IRealmObject`, `IEmbeddedObject` or `IAsymmetricObject`) and be declared partial. For example:
   ```cs
   public partial class Person: IRealmObject
   {
       public int Age { get; set; }
 
-      public string Name { get; set; }  
+      public string Name { get; set; }
 
       public PhoneNumber Phone { get; set; }
   }
@@ -31,15 +50,15 @@ In order to use the source generation the model classes need to be declared impl
   {
       public string Number { get; set; }
 
-      public string Prefix { get; set; }  
+      public string Prefix { get; set; }
   }
   ```
-  The source generator will then take care of adding the full implementation for the interfaces. 
+  The source generator will then take care of adding the full implementation for the interfaces.
 
   Most of the time converting the "classic" Realm model classes (classes derived from `RealmObject`, `EmbeddedObject` or `AsymmetricObject`) to use the new source generation means just defining the class as partial and switching out the base class for the corresponding interface implementation.
   The classic Realm model definition will still be supported, but will be phased out in the future.
 
-  Please note that the source generator is still in beta, so let us know if you experience any issue while using them. 
+  Please note that the source generator is still in beta, so let us know if you experience any issue while using them.
   Some additional notes:
   * `OnManaged` and `OnPropertyChanged` are now partial methods.
   * Inheritance is not supported, so the Realm models cannot derive from any other class.
@@ -71,7 +90,7 @@ In order to use the source generation the model classes need to be declared impl
 * Fixed a `NullReferenceException` occurring in `RealmObjectBase`'s finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
 
 ### Compatibility
-* Realm Studio: 11.0.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
 * Using Core 12.9.0

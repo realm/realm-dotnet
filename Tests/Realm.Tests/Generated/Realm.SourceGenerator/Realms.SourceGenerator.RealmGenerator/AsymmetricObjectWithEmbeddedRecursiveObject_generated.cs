@@ -21,17 +21,17 @@ namespace Realms.Tests.Sync
     [Woven(typeof(AsymmetricObjectWithEmbeddedRecursiveObjectObjectHelper))]
     public partial class AsymmetricObjectWithEmbeddedRecursiveObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AsymmetricObjectWithEmbeddedRecursiveObject", ObjectSchema.ObjectType.AsymmetricObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedRecursiveObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),
         }.Build();
 
         #region IAsymmetricObject implementation
 
         private IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor Accessor => _accessor ?? (_accessor = new AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedRecursiveObject)));
 
@@ -45,18 +45,18 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor)managedAccessor;
             var oldAccessor = (IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor)_accessor;
@@ -158,9 +158,9 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AsymmetricObjectWithEmbeddedRecursiveObject(RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedRecursiveObject>();
+        public static explicit operator AsymmetricObjectWithEmbeddedRecursiveObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedRecursiveObject>();
 
-        public static implicit operator RealmValue(AsymmetricObjectWithEmbeddedRecursiveObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedRecursiveObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -182,7 +182,7 @@ namespace Realms.Tests.Sync
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -195,18 +195,18 @@ namespace Realms.Tests.Sync
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class AsymmetricObjectWithEmbeddedRecursiveObjectObjectHelper : IRealmObjectHelper
+        private class AsymmetricObjectWithEmbeddedRecursiveObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new AsymmetricObjectWithEmbeddedRecursiveObject();
+            public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithEmbeddedRecursiveObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -218,33 +218,35 @@ namespace Realms.Tests.Sync
 namespace Realms.Tests.Sync.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor : IRealmAccessor
+    internal interface IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
-        EmbeddedLevel1 RecursiveObject { get; set; }
+        Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+    internal class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
-        public EmbeddedLevel1 RecursiveObject
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
-            get => (EmbeddedLevel1)GetValue("RecursiveObject");
+            get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
             set => SetValue("RecursiveObject", value);
         }
     }
 
-    internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+    internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
     {
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
+
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -254,8 +256,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private EmbeddedLevel1 _recursiveObject;
-        public EmbeddedLevel1 RecursiveObject
+        private Realms.Tests.EmbeddedLevel1 _recursiveObject;
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
             get => _recursiveObject;
             set
@@ -269,7 +271,7 @@ namespace Realms.Tests.Sync.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -279,28 +281,28 @@ namespace Realms.Tests.Sync.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
                 case "_id":
                     throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                 case "RecursiveObject":
-                    RecursiveObject = (EmbeddedLevel1)val;
+                    RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)
