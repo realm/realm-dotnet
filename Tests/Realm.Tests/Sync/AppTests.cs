@@ -47,7 +47,7 @@ namespace Realms.Tests.Sync
                 LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store app files (such as metadata and Realm files). When constructing the app, set AppConfiguration.BaseFilePath to an absolute path where the app is allowed to write."),
+                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
                 CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
