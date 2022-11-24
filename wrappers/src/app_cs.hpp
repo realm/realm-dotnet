@@ -126,13 +126,11 @@ namespace binding {
     using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
     using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
     using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
-    using StringCallbackT = void(void* tcs_ptr, const std::string response, MarshaledAppError err);
     using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
     extern std::function<VoidCallbackT> s_void_callback;
     extern std::function<UserCallbackT> s_user_callback;
     extern std::function<BsonCallbackT> s_bson_callback;
-    extern std::function<StringCallbackT> s_string_callback;
     extern std::function<ApiKeysCallbackT> s_api_keys_callback;
 
     inline auto get_string_callback_handler(void* tcs_ptr) {
@@ -141,10 +139,10 @@ namespace binding {
                 std::string error_category = err->error_code.message();
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
-                s_string_callback(tcs_ptr, "", app_error);
+                s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
             }
             else {
-                s_string_callback(tcs_ptr, *response, MarshaledAppError());
+                s_bson_callback(tcs_ptr, to_capi_value(*response), MarshaledAppError());
             }
         };
     }
