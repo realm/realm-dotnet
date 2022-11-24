@@ -87,7 +87,7 @@ namespace realm {
             void* managed_http_client;
         };
 
-        class SyncLogger : public util::RootLogger {
+        class SyncLogger : public util::Logger {
         public:
             SyncLogger(void* delegate)
                 : managed_logger(delegate)
