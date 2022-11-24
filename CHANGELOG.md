@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
 * Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
 * Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
 * Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
