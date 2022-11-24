@@ -20,44 +20,44 @@ namespace Realms.Tests.Sync
     [Woven(typeof(AsymmetricObjectWithAllTypesObjectHelper))]
     public partial class AsymmetricObjectWithAllTypes : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AsymmetricObjectWithAllTypes", ObjectSchema.ObjectType.AsymmetricObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithAllTypes", ObjectSchema.ObjectType.AsymmetricObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("CharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
-            Property.Primitive("ByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
-            Property.Primitive("Int16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
-            Property.Primitive("Int32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
-            Property.Primitive("Int64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
-            Property.Primitive("SingleProperty", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "SingleProperty"),
-            Property.Primitive("DoubleProperty", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DoubleProperty"),
-            Property.Primitive("BooleanProperty", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "BooleanProperty"),
-            Property.Primitive("DecimalProperty", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalProperty"),
-            Property.Primitive("Decimal128Property", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Property"),
-            Property.Primitive("ObjectIdProperty", RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ObjectIdProperty"),
-            Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
-            Property.Primitive("RequiredStringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RequiredStringProperty"),
-            Property.Primitive("StringProperty", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
-            Property.Primitive("ByteArrayProperty", RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "ByteArrayProperty"),
-            Property.Primitive("NullableCharProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableCharProperty"),
-            Property.Primitive("NullableByteProperty", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
-            Property.Primitive("NullableInt16Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
-            Property.Primitive("NullableInt32Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
-            Property.Primitive("NullableInt64Property", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
-            Property.Primitive("NullableSingleProperty", RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableSingleProperty"),
-            Property.Primitive("NullableDoubleProperty", RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDoubleProperty"),
-            Property.Primitive("NullableBooleanProperty", RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableBooleanProperty"),
-            Property.Primitive("NullableDateTimeOffsetProperty", RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDateTimeOffsetProperty"),
-            Property.Primitive("NullableDecimalProperty", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimalProperty"),
-            Property.Primitive("NullableDecimal128Property", RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimal128Property"),
-            Property.Primitive("NullableObjectIdProperty", RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableObjectIdProperty"),
-            Property.Primitive("NullableGuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableGuidProperty"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("CharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
+            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
+            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
+            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
+            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
+            Realms.Schema.Property.Primitive("SingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "SingleProperty"),
+            Realms.Schema.Property.Primitive("DoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DoubleProperty"),
+            Realms.Schema.Property.Primitive("BooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "BooleanProperty"),
+            Realms.Schema.Property.Primitive("DecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalProperty"),
+            Realms.Schema.Property.Primitive("Decimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Property"),
+            Realms.Schema.Property.Primitive("ObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ObjectIdProperty"),
+            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
+            Realms.Schema.Property.Primitive("RequiredStringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RequiredStringProperty"),
+            Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
+            Realms.Schema.Property.Primitive("ByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "ByteArrayProperty"),
+            Realms.Schema.Property.Primitive("NullableCharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableCharProperty"),
+            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
+            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
+            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
+            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
+            Realms.Schema.Property.Primitive("NullableSingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableSingleProperty"),
+            Realms.Schema.Property.Primitive("NullableDoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDoubleProperty"),
+            Realms.Schema.Property.Primitive("NullableBooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableBooleanProperty"),
+            Realms.Schema.Property.Primitive("NullableDateTimeOffsetProperty", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDateTimeOffsetProperty"),
+            Realms.Schema.Property.Primitive("NullableDecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimalProperty"),
+            Realms.Schema.Property.Primitive("NullableDecimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimal128Property"),
+            Realms.Schema.Property.Primitive("NullableObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableObjectIdProperty"),
+            Realms.Schema.Property.Primitive("NullableGuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableGuidProperty"),
         }.Build();
 
         #region IAsymmetricObject implementation
 
         private IAsymmetricObjectWithAllTypesAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IAsymmetricObjectWithAllTypesAccessor Accessor => _accessor ?? (_accessor = new AsymmetricObjectWithAllTypesUnmanagedAccessor(typeof(AsymmetricObjectWithAllTypes)));
 
@@ -71,18 +71,18 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAsymmetricObjectWithAllTypesAccessor)managedAccessor;
             var oldAccessor = (IAsymmetricObjectWithAllTypesAccessor)_accessor;
@@ -241,9 +241,9 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AsymmetricObjectWithAllTypes(RealmValue val) => val.AsRealmObject<AsymmetricObjectWithAllTypes>();
+        public static explicit operator AsymmetricObjectWithAllTypes(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithAllTypes>();
 
-        public static implicit operator RealmValue(AsymmetricObjectWithAllTypes val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AsymmetricObjectWithAllTypes val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -265,7 +265,7 @@ namespace Realms.Tests.Sync
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -278,18 +278,18 @@ namespace Realms.Tests.Sync
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class AsymmetricObjectWithAllTypesObjectHelper : IRealmObjectHelper
+        private class AsymmetricObjectWithAllTypesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new AsymmetricObjectWithAllTypesManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new AsymmetricObjectWithAllTypesManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new AsymmetricObjectWithAllTypes();
+            public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithAllTypes();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IAsymmetricObjectWithAllTypesAccessor)instance.Accessor).Id;
                 return true;
@@ -301,9 +301,9 @@ namespace Realms.Tests.Sync
 namespace Realms.Tests.Sync.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAsymmetricObjectWithAllTypesAccessor : IRealmAccessor
+    internal interface IAsymmetricObjectWithAllTypesAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
         char CharProperty { get; set; }
 
@@ -323,11 +323,11 @@ namespace Realms.Tests.Sync.Generated
 
         decimal DecimalProperty { get; set; }
 
-        Decimal128 Decimal128Property { get; set; }
+        MongoDB.Bson.Decimal128 Decimal128Property { get; set; }
 
-        ObjectId ObjectIdProperty { get; set; }
+        MongoDB.Bson.ObjectId ObjectIdProperty { get; set; }
 
-        Guid GuidProperty { get; set; }
+        System.Guid GuidProperty { get; set; }
 
         string RequiredStringProperty { get; set; }
 
@@ -351,23 +351,23 @@ namespace Realms.Tests.Sync.Generated
 
         bool? NullableBooleanProperty { get; set; }
 
-        DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
+        System.DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
 
         decimal? NullableDecimalProperty { get; set; }
 
-        Decimal128? NullableDecimal128Property { get; set; }
+        MongoDB.Bson.Decimal128? NullableDecimal128Property { get; set; }
 
-        ObjectId? NullableObjectIdProperty { get; set; }
+        MongoDB.Bson.ObjectId? NullableObjectIdProperty { get; set; }
 
-        Guid? NullableGuidProperty { get; set; }
+        System.Guid? NullableGuidProperty { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AsymmetricObjectWithAllTypesManagedAccessor : ManagedAccessor, IAsymmetricObjectWithAllTypesAccessor
+    internal class AsymmetricObjectWithAllTypesManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithAllTypesAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
@@ -425,21 +425,21 @@ namespace Realms.Tests.Sync.Generated
             set => SetValue("DecimalProperty", value);
         }
 
-        public Decimal128 Decimal128Property
+        public MongoDB.Bson.Decimal128 Decimal128Property
         {
-            get => (Decimal128)GetValue("Decimal128Property");
+            get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Property");
             set => SetValue("Decimal128Property", value);
         }
 
-        public ObjectId ObjectIdProperty
+        public MongoDB.Bson.ObjectId ObjectIdProperty
         {
-            get => (ObjectId)GetValue("ObjectIdProperty");
+            get => (MongoDB.Bson.ObjectId)GetValue("ObjectIdProperty");
             set => SetValue("ObjectIdProperty", value);
         }
 
-        public Guid GuidProperty
+        public System.Guid GuidProperty
         {
-            get => (Guid)GetValue("GuidProperty");
+            get => (System.Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
         }
 
@@ -509,9 +509,9 @@ namespace Realms.Tests.Sync.Generated
             set => SetValue("NullableBooleanProperty", value);
         }
 
-        public DateTimeOffset? NullableDateTimeOffsetProperty
+        public System.DateTimeOffset? NullableDateTimeOffsetProperty
         {
-            get => (DateTimeOffset?)GetValue("NullableDateTimeOffsetProperty");
+            get => (System.DateTimeOffset?)GetValue("NullableDateTimeOffsetProperty");
             set => SetValue("NullableDateTimeOffsetProperty", value);
         }
 
@@ -521,31 +521,31 @@ namespace Realms.Tests.Sync.Generated
             set => SetValue("NullableDecimalProperty", value);
         }
 
-        public Decimal128? NullableDecimal128Property
+        public MongoDB.Bson.Decimal128? NullableDecimal128Property
         {
-            get => (Decimal128?)GetValue("NullableDecimal128Property");
+            get => (MongoDB.Bson.Decimal128?)GetValue("NullableDecimal128Property");
             set => SetValue("NullableDecimal128Property", value);
         }
 
-        public ObjectId? NullableObjectIdProperty
+        public MongoDB.Bson.ObjectId? NullableObjectIdProperty
         {
-            get => (ObjectId?)GetValue("NullableObjectIdProperty");
+            get => (MongoDB.Bson.ObjectId?)GetValue("NullableObjectIdProperty");
             set => SetValue("NullableObjectIdProperty", value);
         }
 
-        public Guid? NullableGuidProperty
+        public System.Guid? NullableGuidProperty
         {
-            get => (Guid?)GetValue("NullableGuidProperty");
+            get => (System.Guid?)GetValue("NullableGuidProperty");
             set => SetValue("NullableGuidProperty", value);
         }
     }
 
-    internal class AsymmetricObjectWithAllTypesUnmanagedAccessor : UnmanagedAccessor, IAsymmetricObjectWithAllTypesAccessor
+    internal class AsymmetricObjectWithAllTypesUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithAllTypesAccessor
     {
         public override ObjectSchema ObjectSchema => AsymmetricObjectWithAllTypes.RealmSchema;
 
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -654,8 +654,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private Decimal128 _decimal128Property;
-        public Decimal128 Decimal128Property
+        private MongoDB.Bson.Decimal128 _decimal128Property;
+        public MongoDB.Bson.Decimal128 Decimal128Property
         {
             get => _decimal128Property;
             set
@@ -665,8 +665,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private ObjectId _objectIdProperty;
-        public ObjectId ObjectIdProperty
+        private MongoDB.Bson.ObjectId _objectIdProperty;
+        public MongoDB.Bson.ObjectId ObjectIdProperty
         {
             get => _objectIdProperty;
             set
@@ -676,8 +676,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private Guid _guidProperty;
-        public Guid GuidProperty
+        private System.Guid _guidProperty;
+        public System.Guid GuidProperty
         {
             get => _guidProperty;
             set
@@ -808,8 +808,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private DateTimeOffset? _nullableDateTimeOffsetProperty;
-        public DateTimeOffset? NullableDateTimeOffsetProperty
+        private System.DateTimeOffset? _nullableDateTimeOffsetProperty;
+        public System.DateTimeOffset? NullableDateTimeOffsetProperty
         {
             get => _nullableDateTimeOffsetProperty;
             set
@@ -830,8 +830,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private Decimal128? _nullableDecimal128Property;
-        public Decimal128? NullableDecimal128Property
+        private MongoDB.Bson.Decimal128? _nullableDecimal128Property;
+        public MongoDB.Bson.Decimal128? NullableDecimal128Property
         {
             get => _nullableDecimal128Property;
             set
@@ -841,8 +841,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private ObjectId? _nullableObjectIdProperty;
-        public ObjectId? NullableObjectIdProperty
+        private MongoDB.Bson.ObjectId? _nullableObjectIdProperty;
+        public MongoDB.Bson.ObjectId? NullableObjectIdProperty
         {
             get => _nullableObjectIdProperty;
             set
@@ -852,8 +852,8 @@ namespace Realms.Tests.Sync.Generated
             }
         }
 
-        private Guid? _nullableGuidProperty;
-        public Guid? NullableGuidProperty
+        private System.Guid? _nullableGuidProperty;
+        public System.Guid? NullableGuidProperty
         {
             get => _nullableGuidProperty;
             set
@@ -867,7 +867,7 @@ namespace Realms.Tests.Sync.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -904,7 +904,7 @@ namespace Realms.Tests.Sync.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -938,13 +938,13 @@ namespace Realms.Tests.Sync.Generated
                     DecimalProperty = (decimal)val;
                     return;
                 case "Decimal128Property":
-                    Decimal128Property = (Decimal128)val;
+                    Decimal128Property = (MongoDB.Bson.Decimal128)val;
                     return;
                 case "ObjectIdProperty":
-                    ObjectIdProperty = (ObjectId)val;
+                    ObjectIdProperty = (MongoDB.Bson.ObjectId)val;
                     return;
                 case "GuidProperty":
-                    GuidProperty = (Guid)val;
+                    GuidProperty = (System.Guid)val;
                     return;
                 case "RequiredStringProperty":
                     RequiredStringProperty = (string)val;
@@ -980,33 +980,33 @@ namespace Realms.Tests.Sync.Generated
                     NullableBooleanProperty = (bool?)val;
                     return;
                 case "NullableDateTimeOffsetProperty":
-                    NullableDateTimeOffsetProperty = (DateTimeOffset?)val;
+                    NullableDateTimeOffsetProperty = (System.DateTimeOffset?)val;
                     return;
                 case "NullableDecimalProperty":
                     NullableDecimalProperty = (decimal?)val;
                     return;
                 case "NullableDecimal128Property":
-                    NullableDecimal128Property = (Decimal128?)val;
+                    NullableDecimal128Property = (MongoDB.Bson.Decimal128?)val;
                     return;
                 case "NullableObjectIdProperty":
-                    NullableObjectIdProperty = (ObjectId?)val;
+                    NullableObjectIdProperty = (MongoDB.Bson.ObjectId?)val;
                     return;
                 case "NullableGuidProperty":
-                    NullableGuidProperty = (Guid?)val;
+                    NullableGuidProperty = (System.Guid?)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

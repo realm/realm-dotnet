@@ -19,16 +19,16 @@ namespace Bar
     [Woven(typeof(DuplicateClassObjectHelper))]
     public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("StringValue", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IDuplicateClassAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IDuplicateClassAccessor Accessor => _accessor ?? (_accessor = new DuplicateClassUnmanagedAccessor(typeof(DuplicateClass)));
 
@@ -42,18 +42,18 @@ namespace Bar
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDuplicateClassAccessor)managedAccessor;
             var oldAccessor = (IDuplicateClassAccessor)_accessor;
@@ -157,9 +157,9 @@ namespace Bar
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DuplicateClass(RealmValue val) => val.AsRealmObject<DuplicateClass>();
+        public static explicit operator DuplicateClass(Realms.RealmValue val) => val.AsRealmObject<DuplicateClass>();
 
-        public static implicit operator RealmValue(DuplicateClass val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DuplicateClass val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -181,7 +181,7 @@ namespace Bar
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -194,18 +194,18 @@ namespace Bar
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class DuplicateClassObjectHelper : IRealmObjectHelper
+        private class DuplicateClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new DuplicateClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new DuplicateClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new DuplicateClass();
+            public Realms.IRealmObjectBase CreateInstance() => new DuplicateClass();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -217,13 +217,13 @@ namespace Bar
 namespace Bar.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDuplicateClassAccessor : IRealmAccessor
+    internal interface IDuplicateClassAccessor : Realms.IRealmAccessor
     {
         string StringValue { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DuplicateClassManagedAccessor : ManagedAccessor, IDuplicateClassAccessor
+    internal class DuplicateClassManagedAccessor : Realms.ManagedAccessor, IDuplicateClassAccessor
     {
         public string StringValue
         {
@@ -232,7 +232,7 @@ namespace Bar.Generated
         }
     }
 
-    internal class DuplicateClassUnmanagedAccessor : UnmanagedAccessor, IDuplicateClassAccessor
+    internal class DuplicateClassUnmanagedAccessor : Realms.UnmanagedAccessor, IDuplicateClassAccessor
     {
         public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
 
@@ -251,7 +251,7 @@ namespace Bar.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -260,7 +260,7 @@ namespace Bar.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -272,7 +272,7 @@ namespace Bar.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

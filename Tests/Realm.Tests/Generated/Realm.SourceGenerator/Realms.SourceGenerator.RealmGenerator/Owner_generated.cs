@@ -19,20 +19,20 @@ namespace Realms.Tests
     [Woven(typeof(OwnerObjectHelper))]
     public partial class Owner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Owner", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Owner", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Object("TopDog", "Dog", managedName: "TopDog"),
-            Property.ObjectList("ListOfDogs", "Dog", managedName: "ListOfDogs"),
-            Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
-            Property.ObjectDictionary("DictOfDogs", "Dog", managedName: "DictOfDogs"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Object("TopDog", "Dog", managedName: "TopDog"),
+            Realms.Schema.Property.ObjectList("ListOfDogs", "Dog", managedName: "ListOfDogs"),
+            Realms.Schema.Property.ObjectSet("SetOfDogs", "Dog", managedName: "SetOfDogs"),
+            Realms.Schema.Property.ObjectDictionary("DictOfDogs", "Dog", managedName: "DictOfDogs"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IOwnerAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IOwnerAccessor Accessor => _accessor ?? (_accessor = new OwnerUnmanagedAccessor(typeof(Owner)));
 
@@ -46,18 +46,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IOwnerAccessor)managedAccessor;
             var oldAccessor = (IOwnerAccessor)_accessor;
@@ -176,9 +176,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Owner(RealmValue val) => val.AsRealmObject<Owner>();
+        public static explicit operator Owner(Realms.RealmValue val) => val.AsRealmObject<Owner>();
 
-        public static implicit operator RealmValue(Owner val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Owner val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -200,7 +200,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -213,18 +213,18 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class OwnerObjectHelper : IRealmObjectHelper
+        private class OwnerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new OwnerManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new OwnerManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Owner();
+            public Realms.IRealmObjectBase CreateInstance() => new Owner();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -236,21 +236,21 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOwnerAccessor : IRealmAccessor
+    internal interface IOwnerAccessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
 
-        Dog TopDog { get; set; }
+        Realms.Tests.Dog TopDog { get; set; }
 
-        IList<Dog> ListOfDogs { get; }
+        System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; }
 
-        ISet<Dog> SetOfDogs { get; }
+        System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; }
 
-        IDictionary<string, Dog> DictOfDogs { get; }
+        System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OwnerManagedAccessor : ManagedAccessor, IOwnerAccessor
+    internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
     {
         public string Name
         {
@@ -258,48 +258,48 @@ namespace Realms.Tests.Generated
             set => SetValue("Name", value);
         }
 
-        public Dog TopDog
+        public Realms.Tests.Dog TopDog
         {
-            get => (Dog)GetValue("TopDog");
+            get => (Realms.Tests.Dog)GetValue("TopDog");
             set => SetValue("TopDog", value);
         }
 
-        private IList<Dog> _listOfDogs;
-        public IList<Dog> ListOfDogs
+        private System.Collections.Generic.IList<Realms.Tests.Dog> _listOfDogs;
+        public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs
         {
             get
             {
                 if (_listOfDogs == null)
                 {
-                    _listOfDogs = GetListValue<Dog>("ListOfDogs");
+                    _listOfDogs = GetListValue<Realms.Tests.Dog>("ListOfDogs");
                 }
 
                 return _listOfDogs;
             }
         }
 
-        private ISet<Dog> _setOfDogs;
-        public ISet<Dog> SetOfDogs
+        private System.Collections.Generic.ISet<Realms.Tests.Dog> _setOfDogs;
+        public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs
         {
             get
             {
                 if (_setOfDogs == null)
                 {
-                    _setOfDogs = GetSetValue<Dog>("SetOfDogs");
+                    _setOfDogs = GetSetValue<Realms.Tests.Dog>("SetOfDogs");
                 }
 
                 return _setOfDogs;
             }
         }
 
-        private IDictionary<string, Dog> _dictOfDogs;
-        public IDictionary<string, Dog> DictOfDogs
+        private System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> _dictOfDogs;
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs
         {
             get
             {
                 if (_dictOfDogs == null)
                 {
-                    _dictOfDogs = GetDictionaryValue<Dog>("DictOfDogs");
+                    _dictOfDogs = GetDictionaryValue<Realms.Tests.Dog>("DictOfDogs");
                 }
 
                 return _dictOfDogs;
@@ -307,7 +307,7 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class OwnerUnmanagedAccessor : UnmanagedAccessor, IOwnerAccessor
+    internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
     {
         public override ObjectSchema ObjectSchema => Owner.RealmSchema;
 
@@ -322,8 +322,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private Dog _topDog;
-        public Dog TopDog
+        private Realms.Tests.Dog _topDog;
+        public Realms.Tests.Dog TopDog
         {
             get => _topDog;
             set
@@ -333,17 +333,17 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IList<Dog> ListOfDogs { get; } = new List<Dog>();
+        public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; } = new List<Realms.Tests.Dog>();
 
-        public ISet<Dog> SetOfDogs { get; } = new HashSet<Dog>(RealmSet<Dog>.Comparer);
+        public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; } = new HashSet<Realms.Tests.Dog>(RealmSet<Realms.Tests.Dog>.Comparer);
 
-        public IDictionary<string, Dog> DictOfDogs { get; } = new Dictionary<string, Dog>();
+        public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; } = new Dictionary<string, Realms.Tests.Dog>();
 
         public OwnerUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -353,7 +353,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -361,14 +361,14 @@ namespace Realms.Tests.Generated
                     Name = (string)val;
                     return;
                 case "TopDog":
-                    TopDog = (Dog)val;
+                    TopDog = (Realms.Tests.Dog)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

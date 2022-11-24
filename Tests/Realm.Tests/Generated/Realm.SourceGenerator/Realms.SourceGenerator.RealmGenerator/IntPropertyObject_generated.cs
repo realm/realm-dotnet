@@ -20,19 +20,19 @@ namespace Realms.Tests
     [Woven(typeof(IntPropertyObjectObjectHelper))]
     public partial class IntPropertyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("IntPropertyObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IntPropertyObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("_id", RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Property.Primitive("Int", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
-            Property.Primitive("GuidProperty", RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
-            Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Int", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
+            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
+            Realms.Schema.Property.Backlinks("ContainingCollections", "SyncCollectionsObject", "ObjectList", managedName: "ContainingCollections"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IIntPropertyObjectAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IIntPropertyObjectAccessor Accessor => _accessor ?? (_accessor = new IntPropertyObjectUnmanagedAccessor(typeof(IntPropertyObject)));
 
@@ -46,18 +46,18 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IIntPropertyObjectAccessor)managedAccessor;
             var oldAccessor = (IIntPropertyObjectAccessor)_accessor;
@@ -163,9 +163,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IntPropertyObject(RealmValue val) => val.AsRealmObject<IntPropertyObject>();
+        public static explicit operator IntPropertyObject(Realms.RealmValue val) => val.AsRealmObject<IntPropertyObject>();
 
-        public static implicit operator RealmValue(IntPropertyObject val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IntPropertyObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -187,7 +187,7 @@ namespace Realms.Tests
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -198,18 +198,18 @@ namespace Realms.Tests
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class IntPropertyObjectObjectHelper : IRealmObjectHelper
+        private class IntPropertyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new IntPropertyObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new IntPropertyObjectManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new IntPropertyObject();
+            public Realms.IRealmObjectBase CreateInstance() => new IntPropertyObject();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = ((IIntPropertyObjectAccessor)instance.Accessor).Id;
                 return true;
@@ -221,23 +221,23 @@ namespace Realms.Tests
 namespace Realms.Tests.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IIntPropertyObjectAccessor : IRealmAccessor
+    internal interface IIntPropertyObjectAccessor : Realms.IRealmAccessor
     {
-        ObjectId Id { get; set; }
+        MongoDB.Bson.ObjectId Id { get; set; }
 
         int Int { get; set; }
 
-        Guid GuidProperty { get; set; }
+        System.Guid GuidProperty { get; set; }
 
-        IQueryable<SyncCollectionsObject> ContainingCollections { get; }
+        System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class IntPropertyObjectManagedAccessor : ManagedAccessor, IIntPropertyObjectAccessor
+    internal class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
     {
-        public ObjectId Id
+        public MongoDB.Bson.ObjectId Id
         {
-            get => (ObjectId)GetValue("_id");
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
             set => SetValueUnique("_id", value);
         }
 
@@ -247,20 +247,20 @@ namespace Realms.Tests.Generated
             set => SetValue("Int", value);
         }
 
-        public Guid GuidProperty
+        public System.Guid GuidProperty
         {
-            get => (Guid)GetValue("GuidProperty");
+            get => (System.Guid)GetValue("GuidProperty");
             set => SetValue("GuidProperty", value);
         }
 
-        private IQueryable<SyncCollectionsObject> _containingCollections;
-        public IQueryable<SyncCollectionsObject> ContainingCollections
+        private System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> _containingCollections;
+        public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections
         {
             get
             {
                 if (_containingCollections == null)
                 {
-                    _containingCollections = GetBacklinks<SyncCollectionsObject>("ContainingCollections");
+                    _containingCollections = GetBacklinks<Realms.Tests.SyncCollectionsObject>("ContainingCollections");
                 }
 
                 return _containingCollections;
@@ -268,12 +268,12 @@ namespace Realms.Tests.Generated
         }
     }
 
-    internal class IntPropertyObjectUnmanagedAccessor : UnmanagedAccessor, IIntPropertyObjectAccessor
+    internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
     {
         public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
 
-        private ObjectId _id = ObjectId.GenerateNewId();
-        public ObjectId Id
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
         {
             get => _id;
             set
@@ -294,8 +294,8 @@ namespace Realms.Tests.Generated
             }
         }
 
-        private Guid _guidProperty;
-        public Guid GuidProperty
+        private System.Guid _guidProperty;
+        public System.Guid GuidProperty
         {
             get => _guidProperty;
             set
@@ -305,13 +305,13 @@ namespace Realms.Tests.Generated
             }
         }
 
-        public IQueryable<SyncCollectionsObject> ContainingCollections => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+        public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
         public IntPropertyObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -323,7 +323,7 @@ namespace Realms.Tests.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -333,21 +333,21 @@ namespace Realms.Tests.Generated
                     Int = (int)val;
                     return;
                 case "GuidProperty":
-                    GuidProperty = (Guid)val;
+                    GuidProperty = (System.Guid)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             if (propertyName != "_id")
             {
                 throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            Id = (ObjectId)val;
+            Id = (MongoDB.Bson.ObjectId)val;
         }
 
         public override IList<T> GetListValue<T>(string propertyName)

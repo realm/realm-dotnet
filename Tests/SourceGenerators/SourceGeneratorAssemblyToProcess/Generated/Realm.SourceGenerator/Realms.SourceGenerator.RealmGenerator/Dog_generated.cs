@@ -19,17 +19,17 @@ namespace SourceGeneratorPlayground
     [Woven(typeof(DogObjectHelper))]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Name", RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Property.Object("Owner", "Person", managedName: "Owner"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Object("Owner", "Person", managedName: "Owner"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IDogAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IDogAccessor Accessor => _accessor ?? (_accessor = new DogUnmanagedAccessor(typeof(Dog)));
 
@@ -43,18 +43,18 @@ namespace SourceGeneratorPlayground
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IDogAccessor)managedAccessor;
             var oldAccessor = (IDogAccessor)_accessor;
@@ -163,9 +163,9 @@ namespace SourceGeneratorPlayground
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Dog(RealmValue val) => val.AsRealmObject<Dog>();
+        public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator RealmValue(Dog val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dog val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -187,7 +187,7 @@ namespace SourceGeneratorPlayground
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -200,18 +200,18 @@ namespace SourceGeneratorPlayground
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class DogObjectHelper : IRealmObjectHelper
+        private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new DogManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new DogManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new Dog();
+            public Realms.IRealmObjectBase CreateInstance() => new Dog();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -223,15 +223,15 @@ namespace SourceGeneratorPlayground
 namespace SourceGeneratorPlayground.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDogAccessor : IRealmAccessor
+    internal interface IDogAccessor : Realms.IRealmAccessor
     {
         string Name { get; set; }
 
-        Person Owner { get; set; }
+        SourceGeneratorPlayground.Person Owner { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DogManagedAccessor : ManagedAccessor, IDogAccessor
+    internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
     {
         public string Name
         {
@@ -239,14 +239,14 @@ namespace SourceGeneratorPlayground.Generated
             set => SetValue("Name", value);
         }
 
-        public Person Owner
+        public SourceGeneratorPlayground.Person Owner
         {
-            get => (Person)GetValue("Owner");
+            get => (SourceGeneratorPlayground.Person)GetValue("Owner");
             set => SetValue("Owner", value);
         }
     }
 
-    internal class DogUnmanagedAccessor : UnmanagedAccessor, IDogAccessor
+    internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
     {
         public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
@@ -261,8 +261,8 @@ namespace SourceGeneratorPlayground.Generated
             }
         }
 
-        private Person _owner;
-        public Person Owner
+        private SourceGeneratorPlayground.Person _owner;
+        public SourceGeneratorPlayground.Person Owner
         {
             get => _owner;
             set
@@ -276,7 +276,7 @@ namespace SourceGeneratorPlayground.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -286,7 +286,7 @@ namespace SourceGeneratorPlayground.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -294,14 +294,14 @@ namespace SourceGeneratorPlayground.Generated
                     Name = (string)val;
                     return;
                 case "Owner":
-                    Owner = (Person)val;
+                    Owner = (SourceGeneratorPlayground.Person)val;
                     return;
                 default:
                     throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }

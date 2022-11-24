@@ -19,16 +19,16 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(AutomaticPropertiesClassObjectHelper))]
     public partial class AutomaticPropertiesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static ObjectSchema RealmSchema = new ObjectSchema.Builder("AutomaticPropertiesClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AutomaticPropertiesClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Property.Primitive("Id", RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
         }.Build();
 
         #region IRealmObject implementation
 
         private IAutomaticPropertiesClassAccessor _accessor;
 
-        IRealmAccessor IRealmObjectBase.Accessor => Accessor;
+        Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
         internal IAutomaticPropertiesClassAccessor Accessor => _accessor ?? (_accessor = new AutomaticPropertiesClassUnmanagedAccessor(typeof(AutomaticPropertiesClass)));
 
@@ -42,18 +42,18 @@ namespace SourceGeneratorAssemblyToProcess
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realm Realm => Accessor.Realm;
+        public Realms.Realm Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
 
         [IgnoreDataMember, XmlIgnore]
-        public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
+        public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(IRealmAccessor managedAccessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
             var newAccessor = (IAutomaticPropertiesClassAccessor)managedAccessor;
             var oldAccessor = (IAutomaticPropertiesClassAccessor)_accessor;
@@ -157,9 +157,9 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AutomaticPropertiesClass(RealmValue val) => val.AsRealmObject<AutomaticPropertiesClass>();
+        public static explicit operator AutomaticPropertiesClass(Realms.RealmValue val) => val.AsRealmObject<AutomaticPropertiesClass>();
 
-        public static implicit operator RealmValue(AutomaticPropertiesClass val) => RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AutomaticPropertiesClass val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -181,7 +181,7 @@ namespace SourceGeneratorAssemblyToProcess
                 return !IsValid;
             }
 
-            if (obj is not IRealmObjectBase iro)
+            if (obj is not Realms.IRealmObjectBase iro)
             {
                 return false;
             }
@@ -194,18 +194,18 @@ namespace SourceGeneratorAssemblyToProcess
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class AutomaticPropertiesClassObjectHelper : IRealmObjectHelper
+        private class AutomaticPropertiesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
-            public void CopyToRealm(IRealmObjectBase instance, bool update, bool skipDefaults)
+            public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public ManagedAccessor CreateAccessor() => new AutomaticPropertiesClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new AutomaticPropertiesClassManagedAccessor();
 
-            public IRealmObjectBase CreateInstance() => new AutomaticPropertiesClass();
+            public Realms.IRealmObjectBase CreateInstance() => new AutomaticPropertiesClass();
 
-            public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
                 value = null;
                 return false;
@@ -217,13 +217,13 @@ namespace SourceGeneratorAssemblyToProcess
 namespace SourceGeneratorAssemblyToProcess.Generated
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAutomaticPropertiesClassAccessor : IRealmAccessor
+    internal interface IAutomaticPropertiesClassAccessor : Realms.IRealmAccessor
     {
         int Id { get; set; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AutomaticPropertiesClassManagedAccessor : ManagedAccessor, IAutomaticPropertiesClassAccessor
+    internal class AutomaticPropertiesClassManagedAccessor : Realms.ManagedAccessor, IAutomaticPropertiesClassAccessor
     {
         public int Id
         {
@@ -232,7 +232,7 @@ namespace SourceGeneratorAssemblyToProcess.Generated
         }
     }
 
-    internal class AutomaticPropertiesClassUnmanagedAccessor : UnmanagedAccessor, IAutomaticPropertiesClassAccessor
+    internal class AutomaticPropertiesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAutomaticPropertiesClassAccessor
     {
         public override ObjectSchema ObjectSchema => AutomaticPropertiesClass.RealmSchema;
 
@@ -251,7 +251,7 @@ namespace SourceGeneratorAssemblyToProcess.Generated
         {
         }
 
-        public override RealmValue GetValue(string propertyName)
+        public override Realms.RealmValue GetValue(string propertyName)
         {
             return propertyName switch
             {
@@ -260,7 +260,7 @@ namespace SourceGeneratorAssemblyToProcess.Generated
             };
         }
 
-        public override void SetValue(string propertyName, RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
         {
             switch (propertyName)
             {
@@ -272,7 +272,7 @@ namespace SourceGeneratorAssemblyToProcess.Generated
             }
         }
 
-        public override void SetValueUnique(string propertyName, RealmValue val)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
         {
             throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
         }
