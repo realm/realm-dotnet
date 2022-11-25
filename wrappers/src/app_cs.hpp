@@ -140,9 +140,11 @@ namespace binding {
                 MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
 
                 s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
+            } else if (response) {
+                s_bson_callback(tcs_ptr, to_capi_value(*response), MarshaledAppError());
             }
             else {
-                s_bson_callback(tcs_ptr, to_capi_value(*response), MarshaledAppError());
+                s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
             }
         };
     }
