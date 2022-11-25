@@ -247,7 +247,7 @@ extern "C" {
         handle_errors(ex, [&] {
             Utf16StringAccessor function_name(function_name_buf, function_name_len);
             Utf16StringAccessor args_accessor(args_buf, args_len);
-            app->call_function(user, function_name, args_accessor.to_string_view(), nullptr, get_string_callback_handler(tcs_ptr));
+            app->call_function(user, function_name, args_accessor.to_string_view(), std::nullopt, get_string_callback_handler(tcs_ptr));
         });
     }
 
