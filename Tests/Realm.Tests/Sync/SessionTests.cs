@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -35,12 +34,8 @@ using Realms.Sync.Native;
 using Realms.Sync.Testing;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -1691,6 +1686,12 @@ namespace Realms.Tests.Sync
         {
             Guid = guid;
         }
+
+#if TEST_WEAVER
+        private ObjectWithPartitionValue()
+        {
+        }
+#endif
     }
 
     public partial class SyncObjectWithRequiredStringList : TestRealmObject

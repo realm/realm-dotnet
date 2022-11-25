@@ -327,7 +327,7 @@ namespace Realms.Sync
                     tcs.TrySetResult(state);
                     break;
                 case RealmValueType.Int when message.AsInt() == -1:
-                    tcs.TrySetCanceled();
+                    tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
                     break;
                 default:
                     tcs.TrySetException(new SubscriptionException(message.AsString()));
