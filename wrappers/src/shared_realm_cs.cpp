@@ -37,9 +37,6 @@
 #include <unordered_set>
 #include <sstream>
 
-using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-
 using namespace realm;
 using namespace realm::binding;
 using namespace realm::sync;
@@ -55,6 +52,10 @@ using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
 using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
+
+using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using SharedSubscriptionSet = std::shared_ptr<SubscriptionSet>;
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -777,10 +778,11 @@ REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm
     });
 }
 
-REALM_EXPORT SubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new SubscriptionSet(realm->get_latest_subscription_set());
+        auto p = new SubscriptionSet(realm->get_latest_subscription_set());
+        return new SharedSubscriptionSet(p);
     });
 }
 

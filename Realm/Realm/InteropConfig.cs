@@ -59,15 +59,19 @@ namespace Realms
                 }
             }
 
-            throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
+            return null;
         });
 
         private static string _customStorageFolder;
 
-        public static string DefaultStorageFolder
+        public static string GetDefaultStorageFolder(string errorMessage) =>
+            _customStorageFolder ??
+            _defaultStorageFolder.Value ??
+            throw new InvalidOperationException(errorMessage);
+
+        public static void SetDefaultStorageFolder(string value)
         {
-            get => _customStorageFolder ?? _defaultStorageFolder.Value;
-            set => _customStorageFolder = value;
+            _customStorageFolder = value;
         }
 
         public static void AddPotentialStorageFolder(string folder)

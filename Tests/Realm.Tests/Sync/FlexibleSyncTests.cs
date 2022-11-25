@@ -1117,8 +1117,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // TODO: enable this when https://github.com/realm/realm-core/issues/5208 is fixed
-        [Test, Ignore("Failing, reenable when https://github.com/realm/realm-core/issues/5208 is fixed")]
+        [Test]
         public void Integration_CloseRealmBeforeWaitCompletes()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1140,7 +1139,7 @@ namespace Realms.Tests.Sync
                     waitTask = WaitForSubscriptionsAsync(realm);
                 }
 
-                await waitTask;
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => waitTask);
             });
         }
 

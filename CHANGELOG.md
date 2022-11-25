@@ -1,6 +1,8 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
+* Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
 * Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
 * Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
   * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
@@ -10,6 +12,7 @@
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
+* Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
 
 ### Fixed
 * Fixed issue where Realm parameters' initialization would get run twice, resulting in unexpected behavior.
@@ -21,8 +24,9 @@
 * Fix a race condition which could result in "operation cancelled" errors being delivered to async open callbacks rather than the actual sync error which caused things to fail. (Core upgrade)
 * Bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time, or as configured by the SDK. (Core upgrade)
 * Fix database corruption and encryption issues on apple platforms. (Core upgrade)
-* Added fully qualified names for source generated filed, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099) 
+* Added fully qualified names for source generated files, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099)
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
+* Fixed a crash that would occur if you close a synchronized Realm while waiting for `SubscriptionSet.WaitForSynchronizationAsync`. (Issue [#2952](https://github.com/realm/realm-dotnet/issues/2952))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
