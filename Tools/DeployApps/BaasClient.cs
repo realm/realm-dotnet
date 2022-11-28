@@ -212,12 +212,12 @@ namespace Baas
 
             var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
-            var baseUrl = extracted.GetValueOrDefault("baasurl");
-            var baasCluster = extracted.GetValueOrDefault("baascluster");
-            var baasApiKey = extracted.GetValueOrDefault("baasapikey");
-            var baasPrivateApiKey = extracted.GetValueOrDefault("baasprivateapikey");
-            var groupId = extracted.GetValueOrDefault("baasprojectid");
-            var differentiator = extracted.GetValueOrDefault("baasdifferentiator");
+            extracted.TryGetValue("baasurl", out var baseUrl);
+            extracted.TryGetValue("baascluster", out var baasCluster);
+            extracted.TryGetValue("baasapikey", out var baasApiKey);
+            extracted.TryGetValue("baasprivateapikey", out var baasPrivateApiKey);
+            extracted.TryGetValue("baasprojectid", out var groupId);
+            extracted.TryGetValue("baasdifferentiator", out var differentiator);
 
             if (string.IsNullOrEmpty(baseUrl))
             {
@@ -231,18 +231,6 @@ namespace Baas
                 : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
             return (client, baseUri, remaining);
-
-            bool ExtractArg(int index, string name, ref string value)
-            {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
-                {
-                    value = arg.Replace($"--{name}=", string.Empty);
-                    return true;
-                }
-
-                return false;
-            }
         }
 
         private async Task Authenticate(string provider, object credentials)
