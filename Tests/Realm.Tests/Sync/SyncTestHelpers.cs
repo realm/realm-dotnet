@@ -17,12 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -103,6 +108,7 @@ namespace Realms.Tests.Sync
                 TestHelpers.RunAsyncTest(testFunc, timeout);
             }
 
+            // TODO: remove when https://github.com/realm/realm-core/issues/6052 is fixed
             Task.Delay(1000).Wait();
         }
 
@@ -136,6 +142,38 @@ namespace Realms.Tests.Sync
             return remainingArgs;
         }
 
+        public static (string[] RemainingArgs, AsyncFileLogger Logger) SetLoggerFromArgs(string[] args)
+        {
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
+
+            if (extracted.TryGetValue("realmloglevel", out var logLevel))
+            {
+                TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
+                Logger.LogLevel = Enum.Parse<LogLevel>(logLevel);
+            }
+
+            AsyncFileLogger logger = null;
+            if (extracted.TryGetValue("realmlogfile", out var logFile))
+            {
+                if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
+                {
+                    TestHelpers.Output.WriteLine($"Setting sync logger to file: {logFile}");
+
+                    // We're running in a test runner, so we need to use the sync logger
+                    Logger.Default = Logger.File(logFile);
+                }
+                else
+                {
+                    TestHelpers.Output.WriteLine($"Setting async logger to file: {logFile}");
+
+                    // We're running standalone (likely on CI), so we use the async logger
+                    Logger.Default = logger = new AsyncFileLogger(logFile);
+                }
+            }
+
+            return (remaining, logger);
+        }
+
         public static string[] ExtractBaasSettings(string[] args)
         {
             return AsyncContext.Run(async () =>
@@ -159,7 +197,7 @@ namespace Realms.Tests.Sync
                 var privateApiKey = System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
                 var groupId = System.Configuration.ConfigurationManager.AppSettings["GroupId"];
 
-                _baasClient = await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient ??= await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {
@@ -175,6 +213,64 @@ namespace Realms.Tests.Sync
         {
             var app = _apps[appConfigType];
             return _baasClient.SetAutomaticRecoveryEnabled(app, enabled);
+        }
+
+        public class AsyncFileLogger : Logger, IDisposable
+        {
+            private readonly ConcurrentQueue<string> _queue = new();
+            private readonly string _filePath;
+            private readonly Encoding _encoding;
+            private readonly AutoResetEvent _hasNewItems = new(false);
+            private readonly AutoResetEvent _flush = new(false);
+            private readonly Task _runner;
+            private volatile bool _isFlushing;
+
+            public AsyncFileLogger(string filePath, Encoding encoding = null)
+            {
+                _filePath = filePath;
+                _encoding = encoding ?? Encoding.UTF8;
+                _runner = Task.Run(Run);
+            }
+
+            public void Dispose()
+            {
+                _isFlushing = true;
+                _flush.Set();
+                _runner.Wait();
+
+                _hasNewItems.Dispose();
+                _flush.Dispose();
+            }
+
+            protected override void LogImpl(LogLevel level, string message)
+            {
+                if (!_isFlushing)
+                {
+                    _queue.Enqueue(FormatLog(level, message));
+                    _hasNewItems.Set();
+                }
+            }
+
+            private void Run()
+            {
+                while (true)
+                {
+                    WaitHandle.WaitAny(new[] { _hasNewItems, _flush });
+
+                    var sb = new StringBuilder();
+                    while (_queue.TryDequeue(out var item))
+                    {
+                        sb.AppendLine(item);
+                    }
+
+                    System.IO.File.AppendAllText(_filePath, sb.ToString(), _encoding);
+
+                    if (_isFlushing)
+                    {
+                        return;
+                    }
+                }
+            }
         }
     }
 }

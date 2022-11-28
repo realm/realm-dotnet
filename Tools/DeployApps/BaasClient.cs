@@ -26,10 +26,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using static Baas.BaasClient.FunctionReturn;
 
 namespace Baas
 {
@@ -40,6 +42,36 @@ namespace Baas
         public const string ObjectIdPartitionKey = "pbs-oid";
         public const string UUIDPartitionKey = "pbs-uuid";
         public const string FlexibleSync = "flx";
+    }
+
+    public static class ArgumentHelper
+    {
+        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        {
+            var extracted = new Dictionary<string, string>();
+            var remainingArgs = new List<string>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!toExtract.Any(name => ExtractArg(i, name)))
+                {
+                    remainingArgs.Add(args[i]);
+                }
+            }
+
+            return (extracted, remainingArgs.ToArray());
+
+            bool ExtractArg(int index, string name)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
+        }
     }
 
     public class BaasClient
@@ -178,31 +210,18 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var result = new List<string>();
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
-            string baasCluster = null;
-            string baasApiKey = null;
-            string baasPrivateApiKey = null;
-            string groupId = null;
-            string baseUrl = null;
-            string differentiator = null;
-
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!ExtractArg(i, "baasurl", ref baseUrl) &&
-                    !ExtractArg(i, "baascluster", ref baasCluster) &&
-                    !ExtractArg(i, "baasapikey", ref baasApiKey) &&
-                    !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
-                    !ExtractArg(i, "baasprojectid", ref groupId) &&
-                    !ExtractArg(i, "baasdifferentiator", ref differentiator))
-                {
-                    result.Add(args[i]);
-                }
-            }
+            var baseUrl = extracted.GetValueOrDefault("baasurl");
+            var baasCluster = extracted.GetValueOrDefault("baascluster");
+            var baasApiKey = extracted.GetValueOrDefault("baasapikey");
+            var baasPrivateApiKey = extracted.GetValueOrDefault("baasprivateapikey");
+            var groupId = extracted.GetValueOrDefault("baasprojectid");
+            var differentiator = extracted.GetValueOrDefault("baasdifferentiator");
 
             if (string.IsNullOrEmpty(baseUrl))
             {
-                return (null, null, result.ToArray());
+                return (null, null, remaining);
             }
 
             var baseUri = new Uri(baseUrl);
@@ -211,7 +230,7 @@ namespace Baas
                 ? await Docker(baseUri, differentiator, output)
                 : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
-            return (client, baseUri, result.ToArray());
+            return (client, baseUri, remaining);
 
             bool ExtractArg(int index, string name, ref string value)
             {

@@ -165,7 +165,7 @@ namespace Realms.Logging
 
         private class FileLogger : Logger
         {
-            private readonly object locker = new object();
+            private readonly object locker = new();
             private readonly string _filePath;
             private readonly Encoding _encoding;
 
@@ -205,7 +205,7 @@ namespace Realms.Logging
 
         internal class InMemoryLogger : Logger
         {
-            private readonly StringBuilder _builder = new StringBuilder();
+            private readonly StringBuilder _builder = new();
 
             protected override void LogImpl(LogLevel level, string message)
             {
