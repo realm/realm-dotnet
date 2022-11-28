@@ -146,10 +146,11 @@ namespace Realms.Tests.Sync
         {
             var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
 
-            if (extracted.TryGetValue("realmloglevel", out var logLevel))
+            if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
             {
                 TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
-                Logger.LogLevel = Enum.Parse<LogLevel>(logLevel);
+
+                Logger.LogLevel = logLevel;
             }
 
             AsyncFileLogger logger = null;
