@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            var path = Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString());
+            var path = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), Guid.NewGuid().ToString());
             var config = GetFakeConfig(optionalPath: path);
 
             Realm.DeleteRealm(config);
