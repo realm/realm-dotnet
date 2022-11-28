@@ -346,16 +346,7 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SharedSubscriptionSet& su
                             s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
                         }
                         else {
-                            auto& reason = status.get_status().reason();
-                            if (status.get_status().code() == realm::ErrorCodes::Error::LogicError && reason == "Active SubscriptionSet without a SubscriptionStore") {
-                                // If we get this particular error message (matched by string because it doesn't have a specific error code), we
-                                // pretend the wait was cancelled - if we lost the subscription set, that's likely because the Realm was closed
-                                // before the wait completes.
-                                s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(-1));
-                            }
-                            else {
-                                s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(reason));
-                            }
+                            s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
                         }
                     }
                     else {

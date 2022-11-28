@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -146,12 +147,12 @@ namespace Realms.Tests
             return result;
         }
 
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "cts is disposed by the using - the compiler seems to be having a hard time due to the ternary")]
         protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, int timeout = 10000, CancellationToken? cancellationToken = default)
         {
             using var cts = cancellationToken != null ? null : new CancellationTokenSource(timeout);
             try
             {
-
                 var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts.Token);
                 CleanupOnTearDown(result);
                 return result;

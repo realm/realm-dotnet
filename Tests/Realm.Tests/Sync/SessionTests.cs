@@ -176,6 +176,7 @@ namespace Realms.Tests.Sync
         {
             if (appType == AppConfigType.FlexibleSync)
             {
+                // TODO: remove when https://github.com/realm/realm-core/issues/6053 is fixed
                 Assert.Ignore("Crashes on flx with an assertion in Core.");
                 return;
             }
@@ -512,7 +513,7 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(15_000, detail: "Wait for upload");
                 var session = GetSession(realm);
                 session.Stop();
 
@@ -528,7 +529,7 @@ namespace Realms.Tests.Sync
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(20_000, "Expected client reset");
                 Assert.That(onBeforeTriggered, Is.True);
 
                 var objs = realm.All<ObjectWithPartitionValue>();
@@ -551,7 +552,7 @@ namespace Realms.Tests.Sync
                     Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value),
                         Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
                 }
-            });
+            }, timeout: 120_000);
         }
 
         [Test]
@@ -588,7 +589,7 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(20_000, detail: "Wait for upload");
 
                 var session = GetSession(realm);
                 session.Stop();
@@ -612,7 +613,7 @@ namespace Realms.Tests.Sync
                 await TestHelpers.WaitForConditionAsync(() => realm.All<ObjectWithPartitionValue>().Count() == expected.Length, attempts: 300);
 
                 Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
-            });
+            }, timeout: 120_000);
         }
 
         [Test]

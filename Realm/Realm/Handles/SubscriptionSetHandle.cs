@@ -269,6 +269,10 @@ namespace Realms.Sync
 
                 return await tcs.Task;
             }
+            catch (Exception ex) when (ex.Message == "Active SubscriptionSet without a SubscriptionStore")
+            {
+                throw new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed.");
+            }
             finally
             {
                 tcsHandle.Free();

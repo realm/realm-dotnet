@@ -1139,7 +1139,8 @@ namespace Realms.Tests.Sync
                     waitTask = WaitForSubscriptionsAsync(realm);
                 }
 
-                await TestHelpers.AssertThrows<TaskCanceledException>(() => waitTask);
+                var ex = await TestHelpers.AssertThrows<TaskCanceledException>(() => waitTask);
+                Assert.That(ex.Message, Is.EqualTo("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
             });
         }
 
@@ -1881,13 +1882,13 @@ namespace Realms.Tests.Sync
                 else
                 {
                     Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending), "State should be 'Pending' before synchronization");
-                    await WaitForSubscriptionsAsync(realm);
+                    await WaitForSubscriptionsAsync(realm).Timeout(20_000);
                 }
 
                 var query = realm.All<SyncAllTypesObject>().ToArray().Select(o => o.DoubleProperty);
                 Assert.That(query.Count(), Is.EqualTo(2));
                 Assert.That(query, Is.EquivalentTo(new[] { 1.5, 2.5 }));
-            });
+            }, timeout: 60_000);
         }
 
         [Test]
