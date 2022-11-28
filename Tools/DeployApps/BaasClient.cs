@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
@@ -102,6 +103,7 @@ namespace Baas
         private readonly TextWriter _output;
 
         private string _groupId;
+        private string _refreshToken;
 
         private string _shortDifferentiator
         {
@@ -228,7 +230,8 @@ namespace Baas
         {
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
 
-            _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
+            _refreshToken = authDoc["refresh_token"].AsString;
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
         public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
@@ -606,6 +609,24 @@ namespace Baas
             return;
         }
 
+        private async Task RefreshAccessTokenAsync()
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, new Uri("auth/session", UriKind.Relative));
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _refreshToken);
+
+            var response = await _client.SendAsync(message);
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to refresh access token - {response.StatusCode}: {content}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = BsonSerializer.Deserialize<BsonDocument>(json);
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", doc["access_token"].AsString);
+        }
+
         private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
 
         private Task<T> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
@@ -625,8 +646,14 @@ namespace Baas
             var response = await _client.SendAsync(message);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Unauthorized && _refreshToken != null)
+                {
+                    await RefreshAccessTokenAsync();
+                    return await SendAsync<T>(method, relativePath, payload);
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
-                throw new Exception($"An error occurred while executing {method} {relativePath}: {content}");
+                throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
             }
 
             response.EnsureSuccessStatusCode();

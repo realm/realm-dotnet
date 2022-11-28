@@ -225,7 +225,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(20_000, "Open Realm");
+                using var realm = await GetRealmAsync(config, waitForSync: true, timeout: 20_000);
 
                 await TriggerClientReset(realm);
 
@@ -262,7 +262,7 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
-                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(20_000, "Get Realm");
+                using var realm = await GetRealmAsync(config, waitForSync: true, timeout: 20000);
 
                 await TriggerClientReset(realm);
 
@@ -344,7 +344,7 @@ namespace Realms.Tests.Sync
 
                 // ===== clientA =====
                 var tcsAfterClientResetA = new TaskCompletionSource<object>();
-                var configA = await GetIntegrationConfigAsync(partition).Timeout(10_000, "Get config");
+                var configA = await GetIntegrationConfigAsync(partition);
                 configA.Schema = new[] { typeof(SyncObjectWithRequiredStringList) };
                 var afterCbA = GetOnAfterHandler(tcsAfterClientResetA, (before, after) =>
                 {
@@ -358,7 +358,7 @@ namespace Realms.Tests.Sync
                 {
                     OnAfterReset = afterCbA
                 };
-                using var realmA = await GetRealmAsync(configA, waitForSync: true).Timeout(10_000, "Open Realm A");
+                using var realmA = await GetRealmAsync(configA, waitForSync: true);
 
                 var originalObj = realmA.Write(() =>
                 {
@@ -397,7 +397,7 @@ namespace Realms.Tests.Sync
                     OnAfterReset = afterCbB
                 };
 
-                using var realmB = await GetRealmAsync(configB, waitForSync: true).Timeout(10_000, "Open Realm B");
+                using var realmB = await GetRealmAsync(configB, waitForSync: true);
                 await WaitForDownloadAsync(realmB).Timeout(10_000, detail: "Wait for download realm B");
 
                 var originalObjStr = realmB.All<SyncObjectWithRequiredStringList>().Single().Strings;
@@ -452,7 +452,7 @@ namespace Realms.Tests.Sync
         {
             var appConfig = SyncTestHelpers.GetAppConfig(appType);
             var app = App.Create(appConfig);
-            var user = await GetUserAsync(app).Timeout(10_000, "Get user in GetConfigForApp");
+            var user = await GetUserAsync(app);
 
             var guid = Guid.NewGuid();
             SyncConfigurationBase config;
@@ -625,7 +625,7 @@ namespace Realms.Tests.Sync
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
                 config.ClientResetHandler = new DiscardUnsyncedChangesHandler();
 
-                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "GetInstanceAsync");
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
@@ -768,7 +768,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb, manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true).Timeout(10_000, "Open Realm");
+                using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 await TriggerClientReset(realm);
 

@@ -146,11 +146,25 @@ namespace Realms.Tests
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, CancellationToken cancellationToken = default)
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, int timeout = 10000, CancellationToken? cancellationToken = default)
         {
-            var result = await Realm.GetInstanceAsync(config, cancellationToken);
-            CleanupOnTearDown(result);
-            return result;
+            using var cts = cancellationToken != null ? null : new CancellationTokenSource(timeout);
+            try
+            {
+
+                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts.Token);
+                CleanupOnTearDown(result);
+                return result;
+            }
+            catch (TaskCanceledException)
+            {
+                if (cts?.IsCancellationRequested == true)
+                {
+                    throw new TimeoutException($"Timed out waiting for Realm to open after {timeout} ms");
+                }
+
+                throw;
+            }
         }
 
         protected Realm Freeze(Realm realm)

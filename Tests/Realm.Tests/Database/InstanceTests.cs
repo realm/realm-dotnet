@@ -617,7 +617,7 @@ namespace Realms.Tests.Database
                 var sw = new Stopwatch();
                 sw.Start();
 
-                using var realm = await GetRealmAsync(config).Timeout(1000);
+                using var realm = await GetRealmAsync(config, 1000);
 
                 sw.Stop();
 

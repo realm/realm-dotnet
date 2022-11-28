@@ -116,9 +116,9 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var flxConfig = await GetFLXIntegrationConfigAsync().Timeout(10_000, "Get config");
+                var flxConfig = await GetFLXIntegrationConfigAsync();
                 flxConfig.Schema = new[] { typeof(BasicAsymmetricObject) };
-                using var realm = await GetRealmAsync(flxConfig).Timeout(10_000, "Open Realm");
+                using var realm = await GetRealmAsync(flxConfig);
                 var partitionLike = Guid.NewGuid().ToString();
 
                 Assert.DoesNotThrow(() =>
@@ -700,7 +700,7 @@ namespace Realms.Tests.Sync
 
         private async Task<Realm> GetRealmWithRealmValueSchemaAsync()
         {
-            var flxConfig = await GetFLXIntegrationConfigAsync().Timeout(10_000, "Get integration config");
+            var flxConfig = await GetFLXIntegrationConfigAsync();
             flxConfig.Schema = new[] { typeof(RealmValueObject), typeof(BasicAsymmetricObject) };
             flxConfig.PopulateInitialSubscriptions = (realm) =>
             {
@@ -708,7 +708,7 @@ namespace Realms.Tests.Sync
                 realm.Subscriptions.Add(query);
             };
 
-            return await GetRealmAsync(flxConfig).Timeout(10_000, "Open Realm");
+            return await GetRealmAsync(flxConfig);
         }
     }
 

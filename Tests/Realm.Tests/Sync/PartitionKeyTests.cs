@@ -34,8 +34,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = Guid.NewGuid().ToString();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 1");
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 2");
+                var config1 = await GetIntegrationConfigAsync(partitionValue);
+                var config2 = await GetIntegrationConfigAsync(partitionValue);
 
                 await RunPartitionKeyTestsCore(config1, config2);
             }, timeout: 120_000);
@@ -47,8 +47,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = TestHelpers.Random.Next(int.MinValue, int.MaxValue);
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 1");
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 2");
+                var config1 = await GetIntegrationConfigAsync(partitionValue);
+                var config2 = await GetIntegrationConfigAsync(partitionValue);
 
                 await RunPartitionKeyTestsCore(config1, config2);
             }, timeout: 120_000);
@@ -60,8 +60,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = ObjectId.GenerateNewId();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 1");
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 2");
+                var config1 = await GetIntegrationConfigAsync(partitionValue);
+                var config2 = await GetIntegrationConfigAsync(partitionValue);
 
                 await RunPartitionKeyTestsCore(config1, config2);
             }, timeout: 120_000);
@@ -73,8 +73,8 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var partitionValue = Guid.NewGuid();
-                var config1 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 1");
-                var config2 = await GetIntegrationConfigAsync(partitionValue).Timeout(20000, "Get config 2");
+                var config1 = await GetIntegrationConfigAsync(partitionValue);
+                var config2 = await GetIntegrationConfigAsync(partitionValue);
 
                 await RunPartitionKeyTestsCore(config1, config2);
             }, timeout: 120_000);
@@ -97,8 +97,8 @@ namespace Realms.Tests.Sync
             config1.Schema = schema;
             config2.Schema = schema;
 
-            using var realm1 = await GetRealmAsync(config1).Timeout(30000, "Open Realm 1");
-            using var realm2 = await GetRealmAsync(config2).Timeout(30000, "Open Realm 2");
+            using var realm1 = await GetRealmAsync(config1, 30_000);
+            using var realm2 = await GetRealmAsync(config2, 30_000);
 
             await AssertChangePropagation(realm1, realm2).Timeout(30000, detail: "Assert changes 1");
             await AssertChangePropagation(realm2, realm1).Timeout(30000, detail: "Assert changes 2");

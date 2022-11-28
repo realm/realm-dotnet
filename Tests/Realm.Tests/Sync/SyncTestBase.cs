@@ -35,15 +35,7 @@ namespace Realms.Tests.Sync
         private readonly ConcurrentQueue<App> _apps = new();
         private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
 
-        private App _defaultApp;
-
-        protected App DefaultApp
-        {
-            get
-            {
-                return _defaultApp ?? CreateApp();
-            }
-        }
+        protected App DefaultApp => CreateApp();
 
         protected App CreateApp(AppConfiguration config = null)
         {
@@ -51,11 +43,6 @@ namespace Realms.Tests.Sync
 
             var app = App.Create(config);
             _apps.Enqueue(app);
-
-            if (_defaultApp == null)
-            {
-                _defaultApp = app;
-            }
 
             return app;
         }
@@ -67,8 +54,6 @@ namespace Realms.Tests.Sync
             base.CustomTearDown();
 
             _apps.DrainQueueAsync(app => app.Handle.ResetForTesting());
-
-            _defaultApp = null;
 
             _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }
@@ -119,14 +104,14 @@ namespace Realms.Tests.Sync
             app ??= DefaultApp;
             username ??= SyncTestHelpers.GetVerifiedUsername();
             password ??= SyncTestHelpers.DefaultPassword;
-            await app.EmailPasswordAuth.RegisterUserAsync(username, password);
+            await app.EmailPasswordAuth.RegisterUserAsync(username, password).Timeout(10_000, detail: "Failed to register user");
             var credentials = Credentials.EmailPassword(username, password);
 
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    return await app.LogInAsync(credentials);
+                    return await app.LogInAsync(credentials).Timeout(10_000, "Failed to login user");
                 }
                 catch (AppException ex) when (ex.Message.Contains("confirmation required"))
                 {
@@ -146,10 +131,10 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
-        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
+        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
-            return await GetRealmAsync(config);
+            return await GetRealmAsync(config, timeout);
         }
 
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
@@ -215,9 +200,9 @@ namespace Realms.Tests.Sync
             _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
-        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, CancellationToken cancellationToken = default)
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, int timeout = 10000, CancellationToken cancellationToken = default)
         {
-            var realm = await GetRealmAsync(config, cancellationToken);
+            var realm = await GetRealmAsync(config, timeout, cancellationToken);
             if (waitForSync)
             {
                 await WaitForUploadAsync(realm);
