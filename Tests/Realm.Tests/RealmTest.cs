@@ -41,9 +41,9 @@ namespace Realms.Tests
         {
 #if !UNITY
 #pragma warning disable CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
-            InteropConfig.DefaultStorageFolder = Path.Combine(Path.GetTempPath(), $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}");
+            InteropConfig.SetDefaultStorageFolder(Path.Combine(Path.GetTempPath(), $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}"));
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
-            Directory.CreateDirectory(InteropConfig.DefaultStorageFolder);
+            Directory.CreateDirectory(InteropConfig.GetDefaultStorageFolder("No error expected here"));
 #endif
         }
 

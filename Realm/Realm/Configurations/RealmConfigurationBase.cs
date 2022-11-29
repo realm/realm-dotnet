@@ -135,14 +135,15 @@ namespace Realms
         /// <returns>A full path including name of Realm file.</returns>
         public static string GetPathToRealm(string optionalPath = null)
         {
+            const string errorMessage = "Could not determine a writable folder to store the Realm file. When constructing the RealmConfiguration, provide an absolute optionalPath where writes are allowed.";
             if (string.IsNullOrEmpty(optionalPath))
             {
-                return Path.Combine(InteropConfig.DefaultStorageFolder, DefaultRealmName);
+                return Path.Combine(InteropConfig.GetDefaultStorageFolder(errorMessage), DefaultRealmName);
             }
 
             if (!Path.IsPathRooted(optionalPath))
             {
-                optionalPath = Path.Combine(InteropConfig.DefaultStorageFolder, optionalPath);
+                optionalPath = Path.Combine(InteropConfig.GetDefaultStorageFolder(errorMessage), optionalPath);
             }
 
             if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
