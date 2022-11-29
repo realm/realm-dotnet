@@ -177,7 +177,7 @@ extern "C" {
                 sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
                     auto logger = std::make_shared<SyncLogger>(managed_logger);
                     logger->set_level_threshold(level);
-                    return std::shared_ptr<util::Logger>(logger);
+                    return logger;
                 };
             }
 
