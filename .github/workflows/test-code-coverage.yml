@@ -150,9 +150,8 @@ jobs:
       with:
         name: test-run.log
         path: ${{ github.workspace }}/test-run.log
-        retention-days: 7
+        retention-days: 14
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
     - name: Publish Coverage
       id: publish-coveralls
       uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
