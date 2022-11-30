@@ -182,9 +182,9 @@ public:
         return m_managed_state_handle.handle();
     }
 
-    TcsRegistryWithVersion& realm_pending_refresh_callbacks()
+    TcsRegistryWithVersion& pending_refresh_callbacks()
     {
-        return m_realm_pending_refresh_callbacks;
+        return m_pending_refresh_callbacks;
     }
 
     // TODO: this should go away once https://github.com/realm/realm-core/issues/4584 is resolved
@@ -192,12 +192,12 @@ public:
 
 private:
     GCHandleHolder m_managed_state_handle;
-    TcsRegistryWithVersion m_realm_pending_refresh_callbacks;
+    TcsRegistryWithVersion m_pending_refresh_callbacks;
 };
 
 void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
 
-} // namespace bindings  
+} // namespace bindings
 } // namespace realm
 
 #endif /* defined(SHARED_REALM_CS_HPP) */

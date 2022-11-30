@@ -80,12 +80,14 @@ namespace binding {
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
         if (auto ptr = realm.lock()) {
-            auto version_id = ptr->read_transaction_version();
-            auto tcss = m_realm_pending_refresh_callbacks.remove_for_version(version_id.version);
+            util::Optional<VersionID> version_id = *ptr->current_transaction_version();
+            if (version_id) {
+                auto tcss = m_pending_refresh_callbacks.remove_for_version((*version_id).version);
 
-            NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
-            for (auto& tcs : tcss) {
-                s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
+                NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
+                for (auto& tcs : tcss) {
+                    s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
+                }
             }
         }
 
@@ -783,7 +785,7 @@ REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_t
         }
 
         auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
-        csharp_context->realm_pending_refresh_callbacks().add(*latest_snapshot_version, managed_tcs);
+        csharp_context->pending_refresh_callbacks().add(*latest_snapshot_version, managed_tcs);
 
         return true;
     });
