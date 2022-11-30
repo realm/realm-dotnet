@@ -81,11 +81,11 @@ namespace binding {
     {
         if (auto ptr = realm.lock()) {
             auto version_id = ptr->read_transaction_version();
-            auto tokens = m_realm_pending_refresh_callbacks.remove_for_version(version_id.version);
+            auto tcss = m_realm_pending_refresh_callbacks.remove_for_version(version_id.version);
 
             NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
-            for (auto& token : tokens) {
-                s_handle_task_completion(token, /* invoke_async */ false, nativeEx);
+            for (auto& tcs : tcss) {
+                s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
             }
         }
 
@@ -768,9 +768,17 @@ REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, 
 
 REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_tcs, NativeException::Marshallable& ex) {
     return handle_errors(ex, [&]() {
+        if (realm->is_frozen()) {
+            return false;
+        }
+
         const util::Optional<DB::version_type>& latest_snapshot_version = realm->latest_snapshot_version();
-        const util::Optional<realm::VersionID> current_version = realm->current_transaction_version();
-        if (!latest_snapshot_version || !current_version || *latest_snapshot_version == (*current_version).version || realm->is_frozen()) {
+        if (!latest_snapshot_version) {
+            return false;
+        }
+
+        const util::Optional<VersionID> current_version = realm->current_transaction_version();
+        if (!current_version || *latest_snapshot_version <= (*current_version).version) {
             return false;
         }
 

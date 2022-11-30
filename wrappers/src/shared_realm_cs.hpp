@@ -153,7 +153,7 @@ public:
     {
         std::vector<uint64_t> tokens;
         std::vector<void*> tcs_vector;
-        tokens.reserve(m_tcs.size());
+
         for (const auto& [token, request] : m_tcs) {
             if (auto& [expected, tcs] = request; expected <= version) {
                 tcs_vector.push_back(tcs);
@@ -172,11 +172,11 @@ private:
     uint64_t m_next_token = 0;
 };
 
-class CSharpBindingContext: public BindingContext {
+class CSharpBindingContext : public BindingContext {
 public:
     CSharpBindingContext(GCHandleHolder managed_state_handle);
     void did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed) override;
-        
+
     void* get_managed_state_handle()
     {
         return m_managed_state_handle.handle();
