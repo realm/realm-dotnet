@@ -22,10 +22,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -190,6 +200,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void TransactionStateIsCorrect()
+        {
+            // Arrange
+            using var realm1 = GetRealm();
+            using var ts1 = realm1.BeginWrite();
+
+            // Assert
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Running));
+            ts1.Commit();
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Committed));
+            using var ts2 = realm1.BeginWrite();
+            ts2.Rollback();
+            Assert.That(ts2.State, Is.EqualTo(TransactionState.RolledBack));
+        }
+
+        [Test]
+        public void TransactionStateIsCorrectAsync()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                // Arrange
+                using var realm = GetRealm();
+                var ts = await realm.BeginWriteAsync();
+                
+                // Assert
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
+                await ts.CommitAsync();
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Committed));
+            });
+        }
+
+        [Test]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
@@ -202,15 +244,10 @@ namespace Realms.Tests.Database
         [Test]
         public void GetInstanceShouldThrowWithBadPath()
         {
-            var path = TestHelpers.IsWindows ? "C:\\Windows" : "/";
+            var path = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C:\\Windows" : "/";
 
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => GetRealm(path));
-        }
-
-        private class LoneClass : RealmObject
-        {
-            public string Name { get; set; }
         }
 
         [Test]
@@ -259,7 +296,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
-            Assert.That(ex.Message, Does.Contain("must descend directly from RealmObject or EmbeddedObject"));
+            Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject"));
         }
 
         [TestCase(true)]
@@ -689,37 +726,36 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
-            Assert.That(allTypesSchema.IsEmbedded, Is.False);
+            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
             Assert.That(hasExpectedProp);
             Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-            var ato = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
+            var ato = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
             Assert.That(ato.DynamicApi.Get<string>(nameof(AllTypesObject.RequiredStringProperty)), Is.EqualTo("This is required!"));
 
-            if (!TestHelpers.IsUnity)
-            {
-                dynamic dynamicAto = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
-                Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
-            }
+#if !UNITY
+            dynamic dynamicAto = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
+            Assert.That(dynamicAto.RequiredStringProperty, Is.EqualTo("This is required!"));
+#endif
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-            Assert.That(embeddedAllTypesSchema.IsEmbedded, Is.True);
+            Assert.That(embeddedAllTypesSchema.BaseType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
 
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var embeddedParent = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties))).Single();
-            var embeddedChild = embeddedParent.DynamicApi.Get<EmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
+            var embeddedParent = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties))).Single();
+            var embeddedChild = embeddedParent.DynamicApi.Get<IEmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
             Assert.That(embeddedChild.DynamicApi.Get<string>(nameof(EmbeddedAllTypesObject.StringProperty)), Is.EqualTo("This is not required!"));
 
-            if (!TestHelpers.IsUnity)
-            {
-                dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
-                Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
-            }
+#if !UNITY
+            dynamic dynamicEmbeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
+            Assert.That(dynamicEmbeddedParent.AllTypesObject.StringProperty, Is.EqualTo("This is not required!"));
+#endif
         }
 
         [Test]
@@ -759,7 +795,7 @@ namespace Realms.Tests.Database
         [TestCase("søren")]
         public void GetInstance_WhenPathContainsNonASCIICharacters_ShouldWork(string path)
         {
-            var folder = Path.Combine(InteropConfig.DefaultStorageFolder, path);
+            var folder = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), path);
             Directory.CreateDirectory(folder);
             var realmPath = Path.Combine(folder, "my.realm");
             var config = new RealmConfiguration(realmPath);
@@ -1034,7 +1070,7 @@ namespace Realms.Tests.Database
             {
                 Schema = new RealmSchema.Builder
                 {
-                    new ObjectSchema.Builder("MyType")
+                    new ObjectSchema.Builder("MyType", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.Primitive("IntValue", RealmValueType.Int),
                         Property.PrimitiveList("ListValue", RealmValueType.Date),
@@ -1045,7 +1081,7 @@ namespace Realms.Tests.Database
                         Property.ObjectSet("ObjectSetValue", "OtherObject"),
                         Property.ObjectDictionary("ObjectDictionaryValue", "OtherObject"),
                     },
-                    new ObjectSchema.Builder("OtherObject")
+                    new ObjectSchema.Builder("OtherObject", ObjectSchema.ObjectType.RealmObject)
                     {
                         Property.Primitive("Id", RealmValueType.String, isPrimaryKey: true),
                         Property.Backlinks("MyTypes", "MyType", "ObjectValue")
@@ -1057,33 +1093,33 @@ namespace Realms.Tests.Database
 
             realm.Write(() =>
             {
-                var other = (RealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
-                var myType1 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var other = (IRealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
+                var myType1 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
                 myType1.DynamicApi.Set("IntValue", 123);
                 myType1.DynamicApi.GetList<DateTimeOffset>("ListValue").Add(DateTimeOffset.UtcNow);
                 myType1.DynamicApi.GetSet<Guid>("SetValue").Add(Guid.NewGuid());
                 myType1.DynamicApi.GetDictionary<double>("DictionaryValue").Add("key", 123.456);
-                myType1.DynamicApi.Set("ObjectValue", other);
-                myType1.DynamicApi.GetList<RealmObject>("ObjectListValue").Add(other);
-                myType1.DynamicApi.GetSet<RealmObject>("ObjectSetValue").Add(other);
-                myType1.DynamicApi.GetDictionary<RealmObject>("ObjectDictionaryValue").Add("key", other);
+                myType1.DynamicApi.Set("ObjectValue", RealmValue.Object(other));
+                myType1.DynamicApi.GetList<IRealmObject>("ObjectListValue").Add(other);
+                myType1.DynamicApi.GetSet<IRealmObject>("ObjectSetValue").Add(other);
+                myType1.DynamicApi.GetDictionary<IRealmObject>("ObjectDictionaryValue").Add("key", other);
 
-                var myType2 = (RealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var myType2 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
                 myType2.DynamicApi.Set("IntValue", 456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("foo", 123.456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("bar", 987.654);
-                myType2.DynamicApi.Set("ObjectValue", other);
+                myType2.DynamicApi.Set("ObjectValue", RealmValue.Object(other));
 
                 Assert.Throws<MissingMemberException>(() => other.DynamicApi.Set("hoho", 123));
             });
 
-            var myTypes = (IQueryable<RealmObject>)realm.DynamicApi.All("MyType");
-            var otherObjects = (IQueryable<RealmObject>)realm.DynamicApi.All("OtherObject");
+            var myTypes = (IQueryable<IRealmObject>)realm.DynamicApi.All("MyType");
+            var otherObjects = (IQueryable<IRealmObject>)realm.DynamicApi.All("OtherObject");
 
             Assert.That(myTypes.Count(), Is.EqualTo(2));
             Assert.That(otherObjects.Count(), Is.EqualTo(1));
 
-            var foundById = (RealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
+            var foundById = (IRealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
             Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
             var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
 
@@ -1271,8 +1307,29 @@ namespace Realms.Tests.Database
             var ex = Assert.Throws<ArgumentException>(() => realm.All<IntPropertyObject>());
             Assert.That(ex.Message, Does.Contain($"The class {nameof(IntPropertyObject)} is not in the limited set of classes for this realm"));
 
-            var allFoos = (IQueryable<RealmObject>)realm.DynamicApi.All("Foo");
+            var allFoos = (IQueryable<IRealmObject>)realm.DynamicApi.All("Foo");
             Assert.That(allFoos.Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void RealmWithFrozenObjects_WhenDeleted_DoesNotThrow()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+            var frozenObj = realm.Write(() =>
+            {
+                return realm.Add(new IntPropertyObject
+                {
+                    Int = 1
+                }).Freeze();
+            });
+
+            frozenObj.Realm.Dispose();
+            realm.Dispose();
+
+            Assert.That(frozenObj.Realm.IsClosed, Is.True);
+            Assert.That(realm.IsClosed, Is.True);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
         }
 
         private const int DummyDataSize = 200;
@@ -1300,5 +1357,10 @@ namespace Realms.Tests.Database
                 });
             }
         }
+    }
+
+    public partial class LoneClass : TestRealmObject
+    {
+        public string Name { get; set; }
     }
 }

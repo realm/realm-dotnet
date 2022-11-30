@@ -18,115 +18,158 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using Realms.DataBinding;
 using Realms.Exceptions;
 using Realms.Schema;
 
 namespace Realms
 {
-    internal class ManagedAccessor
+    /// <summary>
+    /// Represents the base class for an accessor to be used with a managed object.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public abstract class ManagedAccessor
         : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
         private Lazy<int> _hashCode;
-
-        private Realm _realm;
-
-        private ObjectHandle _objectHandle;
-
-        private Metadata _metadata;
 
         private NotificationTokenHandle _notificationToken;
 
         private Action<string> _onNotifyPropertyChanged;
 
-        public ObjectHandle ObjectHandle => _objectHandle;
+        internal ObjectHandle ObjectHandle { get; private set; }
 
+        /// <inheritdoc/>
         public bool IsManaged => true;
 
-        public bool IsValid => _objectHandle?.IsValid != false;
+        /// <inheritdoc/>
+        public bool IsValid => ObjectHandle?.IsValid != false;
 
-        public bool IsFrozen => _realm?.IsFrozen == true;
+        /// <inheritdoc/>
+        public bool IsFrozen => Realm?.IsFrozen == true;
 
-        public Realm Realm => _realm;
+        /// <inheritdoc/>
+        public Realm Realm { get; private set; }
 
-        public ObjectSchema ObjectSchema => _metadata?.Schema;
+        /// <inheritdoc/>
+        public ObjectSchema ObjectSchema => Metadata?.Schema;
 
-        public int BacklinksCount => _objectHandle?.GetBacklinkCount() ?? 0;
+        /// <inheritdoc/>
+        public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
 
-        public IThreadConfinedHandle Handle => _objectHandle;
+        /// <inheritdoc/>
+        IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
-        public Metadata Metadata => _metadata;
+        internal Metadata Metadata { get; private set; }
 
-        public RealmObjectBase.Dynamic DynamicApi => new(this);
+        /// <inheritdoc/>
+        public DynamicObjectApi DynamicApi => new(this);
 
-        internal ManagedAccessor(Realm realm,
+        /// <inheritdoc/>
+        Metadata IMetadataObject.Metadata => Metadata;
+
+        internal void Initialize(Realm realm,
             ObjectHandle objectHandle,
             Metadata metadata)
         {
-            _realm = realm;
-            _objectHandle = objectHandle;
-            _metadata = metadata;
-            _hashCode = new Lazy<int>(() => _objectHandle.GetObjHash());
+            Realm = realm;
+            ObjectHandle = objectHandle;
+            Metadata = metadata;
+            _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="ManagedAccessor"/> class.
+        /// </summary>
+        ~ManagedAccessor()
+        {
+            UnsubscribeFromNotifications();
+        }
+
+        /// <inheritdoc/>
         public RealmValue GetValue(string propertyName)
         {
-            return _objectHandle.GetValue(propertyName, _metadata, _realm);
+            return ObjectHandle.GetValue(propertyName, Metadata, Realm);
         }
 
+        /// <inheritdoc/>
         public void SetValue(string propertyName, RealmValue val)
         {
-            _objectHandle.SetValue(propertyName, _metadata, val, _realm);
+            ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
         }
 
+        /// <inheritdoc/>
         public void SetValueUnique(string propertyName, RealmValue val)
         {
-            if (_realm.IsInMigration)
+            if (Realm.IsInMigration)
             {
-                _objectHandle.SetValue(propertyName, _metadata, val, _realm);
+                ObjectHandle.SetValue(propertyName, Metadata, val, Realm);
             }
             else
             {
-                _objectHandle.SetValueUnique(propertyName, _metadata, val);
+                ObjectHandle.SetValueUnique(propertyName, Metadata, val);
             }
         }
 
+        /// <inheritdoc/>
         public IList<T> GetListValue<T>(string propertyName)
         {
-            _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetList<T>(_realm, propertyName, _metadata, property.ObjectType);
+            Metadata.Schema.TryFindProperty(propertyName, out var property);
+            return ObjectHandle.GetList<T>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public ISet<T> GetSetValue<T>(string propertyName)
         {
-            _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetSet<T>(_realm, propertyName, _metadata, property.ObjectType);
+            Metadata.Schema.TryFindProperty(propertyName, out var property);
+            return ObjectHandle.GetSet<T>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
         {
-            _metadata.Schema.TryFindProperty(propertyName, out var property);
-            return _objectHandle.GetDictionary<TValue>(_realm, propertyName, _metadata, property.ObjectType);
+            Metadata.Schema.TryFindProperty(propertyName, out var property);
+            return ObjectHandle.GetDictionary<TValue>(Realm, propertyName, Metadata, property.ObjectType);
         }
 
+        /// <inheritdoc/>
         public IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : IRealmObjectBase
         {
-            var resultsHandle = _objectHandle.GetBacklinks(propertyName, _metadata);
+            var resultsHandle = ObjectHandle.GetBacklinks(propertyName, Metadata);
             return GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
         internal RealmResults<T> GetBacklinksForHandle<T>(string propertyName, ResultsHandle resultsHandle)
             where T : IRealmObjectBase
         {
-            _metadata.Schema.TryFindProperty(propertyName, out var property);
-            var relatedMeta = _realm.Metadata[property.ObjectType];
+            Metadata.Schema.TryFindProperty(propertyName, out var property);
+            var relatedMeta = Realm.Metadata[property.ObjectType];
 
-            return new RealmResults<T>(_realm, resultsHandle, relatedMeta);
+            return new RealmResults<T>(Realm, resultsHandle, relatedMeta);
         }
 
+        /// <inheritdoc/>
+        public IRealmObjectBase GetParent()
+        {
+            if (Metadata.Schema.BaseType != ObjectSchema.ObjectType.EmbeddedObject)
+            {
+                throw new InvalidOperationException("It is not possible to access a parent of an object that is not embedded.");
+            }
+
+            var parentHandle = ObjectHandle.GetParent(out var tableKey);
+            var parentMetadata = Realm.Metadata[tableKey];
+
+            return Realm.MakeObject(parentMetadata, parentHandle);
+        }
+
+        /// <inheritdoc/>
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
@@ -148,6 +191,7 @@ namespace Realms
             });
         }
 
+        /// <inheritdoc/>
         public void UnsubscribeFromNotifications()
         {
             _notificationToken?.Dispose();
@@ -155,15 +199,9 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
         {
-            var managedException = exception?.Convert();
-
-            if (managedException != null)
-            {
-                Realm.NotifyError(managedException);
-            }
-            else if (changes.HasValue)
+            if (changes.HasValue)
             {
                 foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
                 {
@@ -179,7 +217,7 @@ namespace Realms
 
                         if (i == propertyIndex)
                         {
-                            RaisePropertyChanged(property.PropertyInfo?.Name ?? property.Name);
+                            RaisePropertyChanged(property.ManagedName);
                             break;
                         }
 
@@ -205,16 +243,33 @@ namespace Realms
             _onNotifyPropertyChanged(propertyName);
         }
 
+        /// <summary>
+        /// Returns all the objects that link to this object in the specified relationship.
+        /// </summary>
+        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
+        /// <param name="property">The property that is on the other end of the relationship.</param>
+        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
+        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
+        /// <inheritdoc/>
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
+        {
+#pragma warning disable CA1062 // Validate arguments of public methods
+            return TypeInfoHelper.GetInfo(obj);
+#pragma warning restore CA1062 // Validate arguments of public methods
+        }
+
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             return _hashCode.Value;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
-            var typeName = _metadata.Schema.Type.Name;
+            var typeName = Metadata.Schema.Type.Name;
 
             if (!IsValid)
             {
@@ -231,6 +286,7 @@ namespace Realms
             return typeName;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             if (obj is not ManagedAccessor ma)
@@ -245,5 +301,10 @@ namespace Realms
 
             return ObjectHandle.ObjEquals(ma.ObjectHandle);
         }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]
+    internal class GenericManagedAccessor : ManagedAccessor
+    {
     }
 }

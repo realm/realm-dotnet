@@ -4,7 +4,7 @@
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "ignoreSkippedJobsCondition", "buildUnity")
 
 #@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody" ]:
+#@ for pkg in [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]:
   - name: #@ "Fetch " + pkg
     uses: #@ actionDownloadArtifact
     with:
@@ -35,7 +35,7 @@ jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
     name: Wrappers
-  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Xamarin.Android", "MacCatalyst"]))
+  _: #@ template.replace(deployBaas([".NET Framework", "Code Coverage", "UWP Managed", "Xamarin.macOS", "iOS", "Android", "MacCatalyst"]))
   build-packages:
     uses: ./.github/workflows/build-packages.yml
     name: Package
@@ -54,10 +54,10 @@ jobs:
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net5.0\", \"net6.0\"]"))
+  _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net6.0\"]"))
   _: #@ template.replace(runTests("macOS"))
   _: #@ template.replace(runTests("iOS"))
-  _: #@ template.replace(runTests("Xamarin.Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  _: #@ template.replace(runTests("Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
   test-xunit:
     runs-on: windows-latest
     name: Test xUnit Compatibility
@@ -86,7 +86,6 @@ jobs:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupDotnet()
       - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"
@@ -95,7 +94,8 @@ jobs:
         run: |
           cd BenchmarkDotNet.Artifacts/results
           file=$(basename BenchmarkRun*json)
-          echo "::set-output name=benchmark-results::$file"
+          echo "benchmark-results=$file" >> $GITHUB_OUTPUT
+        shell: bash
       - name: Publish Benchmark Results
         uses: ./.github/actions/benchmark-uploader
         with:
@@ -104,4 +104,4 @@ jobs:
           dashboard-path: dashboard.charts
           nuget-package: ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg
       - #@ uploadArtifacts("dashboard.charts", "dashboard.charts", 30)
-  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Xamarin.Android"]))
+  _: #@ template.replace(cleanupBaas([".NET Framework", "Code Coverage", "UWP Managed", "MacOS", "iOS", "Android"]))

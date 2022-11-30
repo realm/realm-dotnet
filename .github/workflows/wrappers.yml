@@ -34,268 +34,284 @@ jobs:
       wrappers-windows-uwp-ARM64: ${{ steps.check-cache-windows-uwp-ARM64.outputs.cache-hit }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache for macos
       id: check-cache-macos
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-macos
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for linux
       id: check-cache-linux
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-linux
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-linux.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for ios-Simulator
       id: check-cache-ios-Simulator
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Simulator-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-ios-Simulator
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-ios-Simulator
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Simulator.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for ios-Device
       id: check-cache-ios-Device
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Device-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-ios-Device
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-ios-Device
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Device.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for ios-Catalyst
       id: check-cache-ios-Catalyst
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-Catalyst-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-ios-Catalyst
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-ios-Catalyst
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-ios-Catalyst.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-armeabi-v7a
       id: check-cache-android-armeabi-v7a
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-armeabi-v7a-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-armeabi-v7a
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-android-armeabi-v7a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-armeabi-v7a.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-arm64-v8a
       id: check-cache-android-arm64-v8a
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-arm64-v8a-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-arm64-v8a
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-android-arm64-v8a
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-arm64-v8a.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-x86
       id: check-cache-android-x86
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-x86
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-android-x86
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-x86_64
       id: check-cache-android-x86_64
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-x86_64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
     - name: Store artifacts for wrappers-android-x86_64
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-android-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'ubuntu' && steps.check-cache-android-x86_64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for windows-Win32
       id: check-cache-windows-Win32
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-Win32-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-Win32
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-x64
       id: check-cache-windows-x64
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-x64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-x64
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-ARM64
       id: check-cache-windows-ARM64
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-ARM64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-ARM64
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-ARM64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-uwp-Win32
       id: check-cache-windows-uwp-Win32
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-Win32-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-Win32
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-uwp-Win32
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-Win32.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-uwp-x64
       id: check-cache-windows-uwp-x64
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-x64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-x64
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-uwp-x64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-x64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-uwp-ARM
       id: check-cache-windows-uwp-ARM
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-ARM-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-ARM
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
     - name: Check cache for windows-uwp-ARM64
       id: check-cache-windows-uwp-ARM64
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-ARM64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'windows'
     - name: Store artifacts for wrappers-windows-uwp-ARM64
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
       if: matrix.os == 'windows' && steps.check-cache-windows-uwp-ARM64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'windows'
   macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: macOS
     timeout-minutes: 90
     needs:
@@ -303,13 +319,13 @@ jobs:
     if: needs.check-cache.outputs.wrappers-macos != 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-macos-Release-${{hashFiles('./wrappers/**')}}
@@ -317,13 +333,14 @@ jobs:
       run: ./wrappers/build-macos.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-macos
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-macos
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
   ios:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: iOS
     strategy:
       matrix:
@@ -336,25 +353,30 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98
+      with:
+        xcode-version: 14.0.1
     - name: Build wrappers
       run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-ios-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-ios-Simulator != 'true' || needs.check-cache.outputs.wrappers-ios-Device != 'true' || needs.check-cache.outputs.wrappers-ios-Catalyst != 'true'
   linux:
     runs-on: ubuntu-latest
@@ -365,7 +387,7 @@ jobs:
     if: needs.check-cache.outputs.wrappers-linux != 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
@@ -375,7 +397,7 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
@@ -383,7 +405,7 @@ jobs:
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build CentOS image
-      uses: docker/build-push-action@375f72aff65b645c51f122f04a776df8416b222b
+      uses: docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7
       with:
         tags: wrappers-centos:latest
         file: ./wrappers/centos.Dockerfile
@@ -398,11 +420,12 @@ jobs:
         run: /work/wrappers/build.sh --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-linux
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
   android:
     runs-on: ubuntu-20.04
     name: Android
@@ -418,13 +441,13 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-android-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
@@ -432,11 +455,12 @@ jobs:
       run: ./wrappers/build-android.sh --ARCH=${{ matrix.arch }} --configuration=Release
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-android-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-android-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-android-armeabi-v7a != 'true' || needs.check-cache.outputs.wrappers-android-arm64-v8a != 'true' || needs.check-cache.outputs.wrappers-android-x86 != 'true' || needs.check-cache.outputs.wrappers-android-x86_64 != 'true'
   windows:
     runs-on: windows-latest
@@ -452,13 +476,13 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
@@ -466,22 +490,27 @@ jobs:
       id: vcpkg_cache_key
       working-directory: wrappers/realm-core/tools/vcpkg/ports
       shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Setup Vcpkg
+      id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg-windows-${{ matrix.arch }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-        cache-restore-keys: vcpkg-windows-${{ matrix.arch }}-
+        cache-key: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+        cache-restore-keys: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+    - name: Refetch vcpkg
+      run: git fetch --unshallow
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-windows-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-ARM64 != 'true'
   uwp:
     runs-on: windows-latest
@@ -498,13 +527,13 @@ jobs:
     - check-cache
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Check cache
       id: check-cache
-      uses: nirinchev/cache@d7c96a77c26ab70dd32b202c885cb4b34d95d8a8
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
@@ -512,20 +541,25 @@ jobs:
       id: vcpkg_cache_key
       working-directory: wrappers/realm-core/tools/vcpkg/ports
       shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
     - name: Setup Vcpkg
+      id: setup-vcpkg
       uses: friendlyanon/setup-vcpkg@v1
       with:
         path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg-uwp-${{ matrix.arch }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-        cache-restore-keys: vcpkg-uwp-${{ matrix.arch }}-
+        cache-key: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
+        cache-restore-keys: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
+    - name: Refetch vcpkg
+      run: git fetch --unshallow
+      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: wrappers-windows-uwp-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
+        if-no-files-found: error
     if: needs.check-cache.outputs.wrappers-windows-uwp-Win32 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-x64 != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM != 'true' || needs.check-cache.outputs.wrappers-windows-uwp-ARM64 != 'true'

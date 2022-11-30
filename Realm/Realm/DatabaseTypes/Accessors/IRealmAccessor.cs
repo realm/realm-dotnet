@@ -19,13 +19,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Realms.Schema;
 
 namespace Realms
 {
     /// <summary>
     /// Represents an accessor that encapsulates the methods and properties necessary for interfacing with the associated Realm object.
-    /// This interface is used only internally for now.
     /// </summary>
     public interface IRealmAccessor
     {
@@ -79,7 +79,7 @@ namespace Realms
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
-        RealmObjectBase.Dynamic DynamicApi { get; }
+        DynamicObjectApi DynamicApi { get; }
 
         /// <summary>
         /// Gets the value of a property of the object.
@@ -142,6 +142,14 @@ namespace Realms
             where T : IRealmObjectBase;
 
         /// <summary>
+        /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
+        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
+        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
+        /// </summary>
+        /// <returns>The parent of the embedded object.</returns>
+        IRealmObjectBase GetParent();
+
+        /// <summary>
         /// A method called internally to subscribe to the notifications for the associated object.
         /// </summary>
         /// <param name="notifyPropertyChangedDelegate">The delegate invoked when a notification is raised.</param>
@@ -151,5 +159,14 @@ namespace Realms
         /// A method called internally to unsubscribe to the notifications for the associated object.
         /// </summary>
         void UnsubscribeFromNotifications();
+
+        /// <summary>
+        /// Gets the <see cref="TypeInfo"/> of the input object.
+        /// </summary>
+        /// <param name="obj">The object to derive the <see cref="TypeInfo"/> from.</param>
+        /// <returns>
+        /// The <see cref="TypeInfo"/> of the input object.
+        /// </returns>
+        TypeInfo GetTypeInfo(IRealmObjectBase obj);
     }
 }

@@ -20,6 +20,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
@@ -716,28 +725,6 @@ namespace Realms.Tests.Database
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
         // shows a workaround for our lack of cascading delete
-        public class Product : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string Date { get; set; }
-
-            public IList<Report> Reports { get; } // child objects
-        }
-
-        public class Report : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Ref { get; set; }
-
-            public string Date { get; set; }
-
-            public Product Parent { get; set; } // Parent object reference
-        }
-
         [Test]
         public void TestDeleteChildren()
         {
@@ -783,5 +770,27 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+    }
+
+    public partial class Product : TestRealmObject
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Date { get; set; }
+
+        public IList<Report> Reports { get; } // child objects
+    }
+
+    public partial class Report : TestRealmObject
+    {
+        public int Id { get; set; }
+
+        public string Ref { get; set; }
+
+        public string Date { get; set; }
+
+        public Product Parent { get; set; } // Parent object reference
     }
 }

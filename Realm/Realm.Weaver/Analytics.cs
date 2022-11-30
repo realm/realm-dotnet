@@ -147,7 +147,7 @@ namespace RealmWeaver
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
 
             SendRequest(
-                "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric_stage?data=",
+                "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=",
                 base64Payload,
                 string.Empty);
 #endif

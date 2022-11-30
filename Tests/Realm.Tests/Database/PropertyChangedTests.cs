@@ -22,6 +22,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -768,7 +777,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
 
             Assert.That(notifiedPropertyNames.Count, Is.EqualTo(1));
-            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(RealmObjectBase.IsValid)));
+            Assert.That(notifiedPropertyNames[0], Is.EqualTo(nameof(IRealmObjectBase.IsValid)));
             Assert.That(person.IsValid, Is.False);
         }
 
@@ -835,50 +844,52 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
+    }
 
-        private class AgedObject : RealmObject
+    public partial class BacklinkObject : TestRealmObject
+    {
+        public string BeforeBacklinks { get; set; }
+
+        [Backlink(nameof(SomeClass.BacklinkObject))]
+        public IQueryable<SomeClass> Links { get; }
+
+        public string AfterBacklinks { get; set; }
+    }
+
+    public partial class SomeClass : TestRealmObject
+    {
+        public BacklinkObject BacklinkObject { get; set; }
+    }
+
+    public partial class AgedObject : TestRealmObject
+    {
+        public DateTimeOffset Birthday { get; set; }
+
+        public int Age
         {
-            public DateTimeOffset Birthday { get; set; }
-
-            public int Age
+            get
             {
-                get
+                var now = DateTimeOffset.UtcNow;
+                var age = now.Year - Birthday.Year;
+                if (Birthday.AddYears(age) > now)
                 {
-                    var now = DateTimeOffset.UtcNow;
-                    var age = now.Year - Birthday.Year;
-                    if (Birthday.AddYears(age) > now)
-                    {
-                        age--;
-                    }
-
-                    return age;
+                    age--;
                 }
-            }
 
-            protected override void OnPropertyChanged(string propertyName)
-            {
-                base.OnPropertyChanged(propertyName);
-
-                if (propertyName == nameof(Birthday))
-                {
-                    RaisePropertyChanged(nameof(Age));
-                }
+                return age;
             }
         }
 
-        private class BacklinkObject : RealmObject
+#if TEST_WEAVER
+        protected override void OnPropertyChanged(string propertyName)
+#else
+        partial void OnPropertyChanged(string propertyName)
+#endif
         {
-            public string BeforeBacklinks { get; set; }
-
-            [Backlink(nameof(SomeClass.BacklinkObject))]
-            public IQueryable<SomeClass> Links { get; }
-
-            public string AfterBacklinks { get; set; }
-        }
-
-        private class SomeClass : RealmObject
-        {
-            public BacklinkObject BacklinkObject { get; set; }
+            if (propertyName == nameof(Birthday))
+            {
+                RaisePropertyChanged(nameof(Age));
+            }
         }
     }
 }

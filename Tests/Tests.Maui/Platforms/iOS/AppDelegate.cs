@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using Foundation;
+using Realms.Tests;
 
 namespace Tests.Maui;
 
@@ -25,7 +26,10 @@ public class AppDelegate : MauiUIApplicationDelegate
 {
     protected override MauiApp CreateMauiApp()
     {
+        TestHelpers.IsAOTTarget = true;
+
         var arguments = NSProcessInfo.ProcessInfo.Arguments
+                             .Skip(1) // the first argument is always the executable itself
                              .Select(a => a.Replace("-app-arg=", string.Empty))
                              .ToArray();
 

@@ -34,7 +34,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes, IntPtr notificationException);
+        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes);
 
         private static class NativeMethods
         {
@@ -99,6 +99,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(DictionaryHandle handle,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                out NativeException ex);
         }
 
         public override bool IsValid
@@ -168,9 +174,7 @@ namespace Realms
         }
 
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-        {
-            throw new NotImplementedException("Dictionaries can't be filtered yet.");
-        }
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
@@ -334,11 +338,11 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes, IntPtr exception)
+        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value);
             }
         }
     }

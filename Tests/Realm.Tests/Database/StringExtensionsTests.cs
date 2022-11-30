@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
             new object[] { string.Empty, string.Empty, StringComparison.Ordinal, true },
 
             // "".IndexOf("", StringComparison.OrdinalIgnoreCase) == -1 for .NET Native ?!
-#if DEBUG || !WINDOWS_UWP
+#if DEBUG
             new object[] { string.Empty, string.Empty, StringComparison.OrdinalIgnoreCase, true }
 #endif
         };

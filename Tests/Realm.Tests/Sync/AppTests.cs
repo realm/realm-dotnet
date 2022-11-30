@@ -47,7 +47,7 @@ namespace Realms.Tests.Sync
                 LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.DefaultStorageFolder,
+                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
                 CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
@@ -164,13 +164,13 @@ namespace Realms.Tests.Sync
             });
         }
 
-#if MONOANDROID
-        private class TestHttpClientHandler : Xamarin.Android.Net.AndroidClientHandler
-#else
-        private class TestHttpClientHandler : HttpClientHandler
-#endif
+        private class TestHttpClientHandler : DelegatingHandler
         {
             public readonly List<(HttpMethod Method, string Url)> Requests = new();
+
+            public TestHttpClientHandler() : base(TestHelpers.TestHttpHandlerFactory())
+            {
+            }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {

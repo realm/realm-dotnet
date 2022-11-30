@@ -217,7 +217,7 @@ namespace Realms.Sync
             }
         }
 
-        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal);
+        internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal, ServerRequestsAction action) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal, action);
 
         internal static void RaiseError(Session session, Exception error)
         {

@@ -893,7 +893,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection("users");
 
                 var customDataDoc = BsonDocument.Parse(@"{
                     _id: ObjectId(""" + ObjectId.GenerateNewId() + @"""),
@@ -926,7 +926,7 @@ namespace Realms.Tests.Sync
                 var updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
                 Assert.That(updatedData, Is.Null);
 
-                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName).GetCollection<CustomDataDocument>("users");
+                var collection = user.GetMongoClient("BackingDB").GetDatabase(SyncTestHelpers.RemoteMongoDBName()).GetCollection<CustomDataDocument>("users");
 
                 var customDataDoc = new CustomDataDocument
                 {

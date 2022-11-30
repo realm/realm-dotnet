@@ -1,6 +1,6 @@
 {
   "name": "io.realm.unity",
-  "version": "10.15.1",
+  "version": "10.18.0",
   "displayName": "Realm",
   "description": "Realm is an embedded mobile database for Unity",
   "unity": "2021.1",

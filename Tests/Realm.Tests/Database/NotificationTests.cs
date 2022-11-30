@@ -25,31 +25,21 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class NotificationTests : RealmInstanceTest
     {
-        private class OrderedContainer : RealmObject
-        {
-            public IList<OrderedObject> Items { get; }
-
-            public IDictionary<string, OrderedObject> ItemsDictionary { get; }
-        }
-
-        private class OrderedObject : RealmObject
-        {
-            public int Order { get; set; }
-
-            public bool IsPartOfResults { get; set; }
-
-            public override string ToString()
-            {
-                return $"[OrderedObject: Order={Order}]";
-            }
-        }
-
         [Test]
         public void ShouldTriggerRealmChangedEvent()
         {
@@ -858,5 +848,24 @@ namespace Realms.Tests.Database
             new object[] { new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1 },
             new object[] { new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 2, 4 }, -1 },
         };
+    }
+
+    public partial class OrderedContainer : TestRealmObject
+    {
+        public IList<OrderedObject> Items { get; }
+
+        public IDictionary<string, OrderedObject> ItemsDictionary { get; }
+    }
+
+    public partial class OrderedObject : TestRealmObject
+    {
+        public int Order { get; set; }
+
+        public bool IsPartOfResults { get; set; }
+
+        public override string ToString()
+        {
+            return $"[OrderedObject: Order={Order}]";
+        }
     }
 }

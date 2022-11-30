@@ -14,39 +14,6 @@ name: CodeQL
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
-  analyze-cpp:
-    name: Analyze C++
-    runs-on: windows-2019
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: cpp
-        queries: security-and-quality
-    - name: Get vcpkg submodule commit sha
-      id: vcpkg_cache_key
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-      shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
-    - name: Setup Vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg-windows-x64-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-        cache-restore-keys: vcpkg-windows-x64-
-    - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
   analyze-csharp:
     name: Analyze C#
     runs-on: windows-2019
@@ -56,19 +23,19 @@ jobs:
       security-events: write
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31
       with:
         languages: csharp
         queries: security-and-quality
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.202
     - name: Build Realm.Fody
@@ -79,5 +46,7 @@ jobs:
       run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm.SourceGenerator
+      run: msbuild Realm/Realm.SourceGenerator -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31

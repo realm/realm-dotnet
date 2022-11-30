@@ -31,6 +31,9 @@ using namespace realm;
 using namespace realm::binding;
 using namespace realm::sync;
 
+using SharedSubscriptionSet = std::shared_ptr<SubscriptionSet>;
+using SharedMutableSubscriptionSet = std::shared_ptr<MutableSubscriptionSet>;
+
 struct CSharpSubscription {
     realm_value_t id = realm_value_t{};
 
@@ -112,47 +115,47 @@ REALM_EXPORT void realm_subscriptionset_install_callbacks(SubscriptionCallbackT*
     realm::binding::s_can_call_managed = true;
 }
 
-REALM_EXPORT size_t realm_subscriptionset_get_count(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_get_count(SharedSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return subs.size();
+        return subs->size();
     });
 }
 
 
 
-REALM_EXPORT CSharpState realm_subscriptionset_get_state(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT CSharpState realm_subscriptionset_get_state(SharedSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return core_to_csharp_state(subs.state());
+        return core_to_csharp_state(subs->state());
     });
 }
 
-REALM_EXPORT int64_t realm_subscriptionset_get_version(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT int64_t realm_subscriptionset_get_version(SharedSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return subs.version();
+        return subs->version();
     });
 }
 
 
-REALM_EXPORT void realm_subscriptionset_get_at_index(SubscriptionSet& subs, size_t index, void* callback, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_subscriptionset_get_at_index(SharedSubscriptionSet& subs, size_t index, void* callback, NativeException::Marshallable& ex)
 {
     get_subscription(callback, ex, [&] {
-        const size_t count = subs.size();
+        const size_t count = subs->size();
         if (index >= count)
             throw IndexOutOfRangeException("Get from SubscriptionSet", index, count);
 
-        return subs.at(index);
+        return subs->at(index);
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_find_by_name(SubscriptionSet& subs, uint16_t* name_buf, size_t name_len, void* callback, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_subscriptionset_find_by_name(SharedSubscriptionSet& subs, uint16_t* name_buf, size_t name_len, void* callback, NativeException::Marshallable& ex)
 {
     get_subscription(callback, ex, [&]() -> util::Optional<Subscription> {
         Utf16StringAccessor name(name_buf, name_len);
-        auto it = subs.find(name);
-        if (it == subs.end()) {
+        auto it = subs->find(name);
+        if (it == subs->end()) {
             return util::none;
         }
 
@@ -160,11 +163,11 @@ REALM_EXPORT void realm_subscriptionset_find_by_name(SubscriptionSet& subs, uint
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_find_by_query(SubscriptionSet& subs, Results& results, void* callback, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_subscriptionset_find_by_query(SharedSubscriptionSet& subs, Results& results, void* callback, NativeException::Marshallable& ex)
 {
     get_subscription(callback, ex, [&]() -> util::Optional<Subscription> {
-        auto it = subs.find(results.get_query());
-        if (it == subs.end()) {
+        auto it = subs->find(results.get_query());
+        if (it == subs->end()) {
             return util::none;
         }
 
@@ -172,7 +175,7 @@ REALM_EXPORT void realm_subscriptionset_find_by_query(SubscriptionSet& subs, Res
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_add_results(MutableSubscriptionSet& subs,
+REALM_EXPORT void realm_subscriptionset_add_results(SharedMutableSubscriptionSet& subs,
     Results& results,
     uint16_t* name_buf, size_t name_len,
     bool update_existing, void* callback, NativeException::Marshallable& ex)
@@ -183,26 +186,26 @@ REALM_EXPORT void realm_subscriptionset_add_results(MutableSubscriptionSet& subs
 
         if (name_buf) {
             Utf16StringAccessor name(name_buf, name_len);
-            auto it = subs.find(name);
-            if (it == subs.end() || update_existing || (it->object_class_name() == object_type && it->query_string() == query_str)) {
-                return *subs.insert_or_assign(name.to_string(), results.get_query()).first;
+            auto it = subs->find(name);
+            if (it == subs->end() || update_existing || (it->object_class_name() == object_type && it->query_string() == query_str)) {
+                return *subs->insert_or_assign(name.to_string(), results.get_query()).first;
             }
             else {
                 throw DuplicateSubscriptionException(name.to_string(), std::string(it->query_string()), query_str);
             }
         }
         else {
-            return *subs.insert_or_assign(results.get_query()).first;
+            return *subs->insert_or_assign(results.get_query()).first;
         }
     });
 }
 
-REALM_EXPORT bool realm_subscriptionset_remove(MutableSubscriptionSet& subs, uint16_t* name_buf, size_t name_len, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_subscriptionset_remove(SharedMutableSubscriptionSet& subs, uint16_t* name_buf, size_t name_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor name(name_buf, name_len);
-        if (auto it = subs.find(name); it != subs.end()) {
-            subs.erase(it);
+        if (auto it = subs->find(name); it != subs->end()) {
+            subs->erase(it);
             return true;
         }
         
@@ -210,13 +213,13 @@ REALM_EXPORT bool realm_subscriptionset_remove(MutableSubscriptionSet& subs, uin
     });
 }
 
-REALM_EXPORT bool realm_subscriptionset_remove_by_id(MutableSubscriptionSet& subs, realm_value_t id, NativeException::Marshallable& ex)
+REALM_EXPORT bool realm_subscriptionset_remove_by_id(SharedMutableSubscriptionSet& subs, realm_value_t id, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         auto subId = from_capi(id.object_id);
-        for (auto it = subs.begin(); it != subs.end(); it++) {
+        for (auto it = subs->begin(); it != subs->end(); it++) {
             if (it->id() == subId) {
-                subs.erase(it);
+                subs->erase(it);
                 return true;
             }
         }
@@ -225,7 +228,7 @@ REALM_EXPORT bool realm_subscriptionset_remove_by_id(MutableSubscriptionSet& sub
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_by_query(MutableSubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_query(SharedMutableSubscriptionSet& subs, Results& results, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
@@ -233,9 +236,9 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_query(MutableSubscriptionSet
         const auto query_desc = results.get_query().get_description();
         const auto class_name = results.get_object_type();
         
-        for (auto it = subs.begin(); it != subs.end();) {
+        for (auto it = subs->begin(); it != subs->end();) {
             if (it->object_class_name() == class_name && it->query_string() == query_desc && (remove_named || it->name().empty())) {
-                it = subs.erase(it);
+                it = subs->erase(it);
                 removed++;
             }
             else {
@@ -247,15 +250,15 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_query(MutableSubscriptionSet
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_by_type(MutableSubscriptionSet& subs, uint16_t* type_buf, size_t type_len, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SharedMutableSubscriptionSet& subs, uint16_t* type_buf, size_t type_len, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         size_t removed = 0;
         Utf16StringAccessor type(type_buf, type_len);
 
-        for (auto it = subs.begin(); it != subs.end();) {
+        for (auto it = subs->begin(); it != subs->end();) {
             if (it->object_class_name() == type && (remove_named || it->name().empty())) {
-                it = subs.erase(it);
+                it = subs->erase(it);
                 removed++;
             }
             else {
@@ -267,19 +270,19 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_type(MutableSubscriptionSet&
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_remove_all(MutableSubscriptionSet& subs, bool remove_named, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_remove_all(SharedMutableSubscriptionSet& subs, bool remove_named, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
         if (remove_named) {
-            auto size = subs.size();
-            subs.clear();
+            auto size = subs->size();
+            subs->clear();
             return size;
         }
 
         size_t removed = 0;
-        for (auto it = subs.begin(); it != subs.end();) {
+        for (auto it = subs->begin(); it != subs->end();) {
             if (it->name().empty()) {
-                it = subs.erase(it);
+                it = subs->erase(it);
                 removed++;
             }
             else {
@@ -291,54 +294,62 @@ REALM_EXPORT size_t realm_subscriptionset_remove_all(MutableSubscriptionSet& sub
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_destroy(SubscriptionSet* subs)
+REALM_EXPORT void realm_subscriptionset_destroy(SharedSubscriptionSet* subs)
 {
     delete subs;
 }
 
-REALM_EXPORT void realm_subscriptionset_destroy_mutable(MutableSubscriptionSet* subs)
+REALM_EXPORT void realm_subscriptionset_destroy_mutable(SharedMutableSubscriptionSet* subs)
 {
     delete subs;
 }
 
-REALM_EXPORT MutableSubscriptionSet* realm_subscriptionset_begin_write(SubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT SharedMutableSubscriptionSet* realm_subscriptionset_begin_write(SharedSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new MutableSubscriptionSet(subs.make_mutable_copy());
+        auto p = new MutableSubscriptionSet(subs->make_mutable_copy());
+        return new SharedMutableSubscriptionSet(p);
     });
 }
 
-REALM_EXPORT SubscriptionSet* realm_subscriptionset_commit_write(MutableSubscriptionSet& subs, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSubscriptionSet* realm_subscriptionset_commit_write(SharedMutableSubscriptionSet& subs, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new SubscriptionSet(std::move(subs).commit());
+        auto p = new SubscriptionSet(std::move(*subs).commit());
+        return new SharedSubscriptionSet(p);
     });
 }
 
-REALM_EXPORT size_t realm_subscriptionset_get_error(SubscriptionSet& subs, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
+REALM_EXPORT size_t realm_subscriptionset_get_error(SharedSubscriptionSet& subs, uint16_t* buffer, size_t buffer_length, bool& is_null, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        is_null = subs.error_str().is_null();
+        is_null = subs->error_str().is_null();
         if (is_null) {
             return (size_t)0;
         }
 
-        return stringdata_to_csharpstringbuffer(subs.error_str(), buffer, buffer_length);
+        return stringdata_to_csharpstringbuffer(subs->error_str(), buffer, buffer_length);
     });
 }
 
-REALM_EXPORT void realm_subscriptionset_wait_for_state(SubscriptionSet* subs, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT void realm_subscriptionset_wait_for_state(SharedSubscriptionSet& subs, void* task_completion_source, NativeException::Marshallable& ex)
 {
+    using WeakSubscriptionSet = std::weak_ptr<SubscriptionSet>;
     handle_errors(ex, [&] {
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
-            .get_async([task_completion_source, subs](StatusWith<SubscriptionSet::State> status) mutable noexcept {
+            .get_async([task_completion_source, weak_subs=WeakSubscriptionSet(subs)](StatusWith<SubscriptionSet::State> status) mutable noexcept {
                 try {
-                    subs->refresh();
-                    if (status.is_ok()) {
-                        s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
+                    if (auto subs = weak_subs.lock()) {
+                        subs->refresh();
+                        if (status.is_ok()) {
+                            s_state_wait_callback(task_completion_source, core_to_csharp_state(status.get_value()), realm_value_t{});
+                        }
+                        else {
+                            s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
+                        }
                     }
                     else {
-                        s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi_value(status.get_status().reason()));
+                        s_state_wait_callback(task_completion_source, CSharpState::Error, to_capi(-1));
                     }
                 }
                 catch (...) {

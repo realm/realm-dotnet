@@ -219,6 +219,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool remove_type(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeLength, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_all", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool remove_all(SharedRealmHandle sharedRealm, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
 
@@ -686,6 +689,13 @@ namespace Realms
             return result;
         }
 
+        public bool RemoveAll()
+        {
+            var result = NativeMethods.remove_all(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
         public ResultsHandle CreateResults(TableKey tableKey)
         {
             var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
@@ -922,7 +932,7 @@ namespace Realms
                         name = @object.Name,
                         properties_start = start,
                         properties_end = properties.Count,
-                        is_embedded = @object.IsEmbedded,
+                        table_type = @object.BaseType,
                     };
                 }).ToArray();
                 Properties = properties.ToArray();

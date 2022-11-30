@@ -21,6 +21,7 @@
 #include <realm/object-store/thread_safe_reference.hpp>
 
 #include "error_handling.hpp"
+#include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "wrapper_exceptions.hpp"
@@ -31,209 +32,206 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        auto dict_key = from_capi(key.string);
-        if (dictionary.contains(dict_key))
-        {
-            throw KeyAlreadyExistsException(dict_key);
-        }
+    REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            auto dict_key = from_capi(key.string);
+            if (dictionary.contains(dict_key))
+            {
+                throw KeyAlreadyExistsException(dict_key);
+            }
 
-        dictionary.insert(dict_key, from_capi(value));
-    });
-}
-
-REALM_EXPORT Object* realm_dictionary_add_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto dict_key = from_capi(key.string);
-        if (dictionary.contains(dict_key))
-        {
-            throw KeyAlreadyExistsException(dict_key);
-        }
-
-        return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(dict_key));
-    });
-}
-
-REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        dictionary.insert(from_capi(key.string), from_capi(value));
-    });
-}
-
-REALM_EXPORT Object* realm_dictionary_set_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(from_capi(key.string)));
-    });
-}
-
-REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto mixed_value = dictionary.try_get_any(from_capi(key.string));
-        if (mixed_value)
-        {
-            *value = to_capi(dictionary, *mixed_value);
-            return true;
-        }
-
-        return false;
-    });
-}
-
-REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictionary, size_t ndx, realm_value_t* key, realm_value_t* value, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        const size_t count = dictionary.size();
-        if (ndx >= count)
-            throw IndexOutOfRangeException("Get from RealmDictionary", ndx, count);
-
-        auto pair = dictionary.get_pair(ndx);
-        *key = to_capi(Mixed(pair.first));
-        *value = to_capi(dictionary, pair.second);
-    });
-}
-
-REALM_EXPORT bool realm_dictionary_remove(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto dict_key = from_capi(key.string);
-        if (dictionary.contains(dict_key))
-        {
-            dictionary.erase(dict_key);
-            return true;
-        }
-
-        return false;
-    });
-}
-
-REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto dict_key = from_capi(key.string);
-        auto dict_value = dictionary.try_get_any(dict_key);
-
-        if (dict_value && are_equal(value, *dict_value))
-        {
-            dictionary.erase(dict_key);
-            return true;
-        }
-        
-        return false;
-    });
-}
-
-REALM_EXPORT bool realm_dictionary_contains_key(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return dictionary.contains(from_capi(key.string));
-    });
-}
-
-REALM_EXPORT void realm_dictionary_clear(object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        dictionary.remove_all();
-    });
-}
-
-REALM_EXPORT size_t realm_dictionary_get_size(object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return dictionary.size();
-    });
-}
-
-REALM_EXPORT void realm_dictionary_destroy(object_store::Dictionary* dictionary)
-{
-    delete dictionary;
-}
-
-REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
-            return dictionary->add_notification_callback(callback);
+            dictionary.insert(dict_key, from_capi(value));
         });
-    });
-}
+    }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_key_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [=]() {
-        auto context = new ManagedNotificationTokenContext();
-        context->managed_object = managed_dict;
-        context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes, std::exception_ptr e) {
-            if (e) {
-                try {
-                    std::rethrow_exception(e);
-                }
-                catch (...) {
-                    auto exception = convert_exception();
-                    auto marshallable_exception = exception.for_marshalling();
-                    s_dictionary_notification_callback(context->managed_object, nullptr, &marshallable_exception);
-                }
+    REALM_EXPORT Object* realm_dictionary_add_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto dict_key = from_capi(key.string);
+            if (dictionary.contains(dict_key))
+            {
+                throw KeyAlreadyExistsException(dict_key);
             }
-            else if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
-                s_dictionary_notification_callback(context->managed_object, nullptr, nullptr);
-            }
-            else {
-                auto deletions = get_keys_vector(changes.deletions);
-                auto insertions = get_keys_vector(changes.insertions);
-                auto modifications = get_keys_vector(changes.modifications);
 
-                MarshallableDictionaryChangeSet marshallable_changes{
-                    { deletions.data(), deletions.size() },
-                    { insertions.data(), insertions.size() },
-                    { modifications.data(), modifications.size() },
-                };
-
-                s_dictionary_notification_callback(context->managed_object, &marshallable_changes, nullptr);
-            }
+            return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(dict_key));
         });
+    }
 
-        return context;
-    });
-}
+    REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            dictionary.insert(from_capi(key.string), from_capi(value));
+        });
+    }
 
-REALM_EXPORT bool realm_dictionary_get_is_valid(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return dictionary.is_valid();
-    });
-}
+    REALM_EXPORT Object* realm_dictionary_set_embedded(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new Object(dictionary.get_realm(), dictionary.get_object_schema(), dictionary.insert_embedded(from_capi(key.string)));
+        });
+    }
 
-REALM_EXPORT ThreadSafeReference* realm_dictionary_get_thread_safe_reference(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new ThreadSafeReference(dictionary);
-    });
-}
+    REALM_EXPORT bool realm_dictionary_try_get(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t* value, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto mixed_value = dictionary.try_get_any(from_capi(key.string));
+            if (mixed_value)
+            {
+                *value = to_capi(dictionary, *mixed_value);
+                return true;
+            }
 
-REALM_EXPORT object_store::Dictionary* realm_dictionary_freeze(const object_store::Dictionary& dictionary, const SharedRealm& realm, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new object_store::Dictionary(dictionary.freeze(realm));
-    });
-}
+            return false;
+        });
+    }
 
-REALM_EXPORT Results* realm_dictionary_get_values(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Results(dictionary.get_values());
-    });
-}
+    REALM_EXPORT void realm_dictionary_get_at_index(object_store::Dictionary& dictionary, size_t ndx, realm_value_t* key, realm_value_t* value, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            const size_t count = dictionary.size();
+            if (ndx >= count)
+                throw IndexOutOfRangeException("Get from RealmDictionary", ndx, count);
 
-REALM_EXPORT Results* realm_dictionary_get_keys(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return new Results(dictionary.get_keys());
-    });
-}
+            auto pair = dictionary.get_pair(ndx);
+            *key = to_capi(Mixed(pair.first));
+            *value = to_capi(dictionary, pair.second);
+        });
+    }
 
+    REALM_EXPORT bool realm_dictionary_remove(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto dict_key = from_capi(key.string);
+            if (dictionary.contains(dict_key))
+            {
+                dictionary.erase(dict_key);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    REALM_EXPORT bool realm_dictionary_remove_value(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            auto dict_key = from_capi(key.string);
+            auto dict_value = dictionary.try_get_any(dict_key);
+
+            if (dict_value && are_equal(value, *dict_value))
+            {
+                dictionary.erase(dict_key);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    REALM_EXPORT bool realm_dictionary_contains_key(object_store::Dictionary& dictionary, realm_value_t key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return dictionary.contains(from_capi(key.string));
+        });
+    }
+
+    REALM_EXPORT void realm_dictionary_clear(object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        handle_errors(ex, [&]() {
+            dictionary.remove_all();
+        });
+    }
+
+    REALM_EXPORT size_t realm_dictionary_get_size(object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return dictionary.size();
+        });
+    }
+
+    REALM_EXPORT void realm_dictionary_destroy(object_store::Dictionary* dictionary)
+    {
+        delete dictionary;
+    }
+
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [=]() {
+            return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
+                return dictionary->add_notification_callback(callback);
+            });
+        });
+    }
+
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_key_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [=]() {
+            auto context = new ManagedNotificationTokenContext();
+            context->managed_object = managed_dict;
+            context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes) {
+                if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
+                    s_dictionary_notification_callback(context->managed_object, nullptr);
+                }
+                else {
+                    auto deletions = get_keys_vector(changes.deletions);
+                    auto insertions = get_keys_vector(changes.insertions);
+                    auto modifications = get_keys_vector(changes.modifications);
+
+                    MarshallableDictionaryChangeSet marshallable_changes{
+                        { deletions.data(), deletions.size() },
+                        { insertions.data(), insertions.size() },
+                        { modifications.data(), modifications.size() },
+                    };
+
+                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
+                }
+            });
+
+            return context;
+        });
+    }
+
+    REALM_EXPORT bool realm_dictionary_get_is_valid(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return dictionary.is_valid();
+        });
+    }
+
+    REALM_EXPORT ThreadSafeReference* realm_dictionary_get_thread_safe_reference(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new ThreadSafeReference(dictionary);
+        });
+    }
+
+    REALM_EXPORT object_store::Dictionary* realm_dictionary_freeze(const object_store::Dictionary& dictionary, const SharedRealm& realm, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new object_store::Dictionary(dictionary.freeze(realm));
+        });
+    }
+
+    REALM_EXPORT Results* realm_dictionary_get_values(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new Results(dictionary.get_values());
+        });
+    }
+
+    REALM_EXPORT Results* realm_dictionary_get_keys(const object_store::Dictionary& dictionary, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return new Results(dictionary.get_keys());
+        });
+    }
+
+    REALM_EXPORT Results* realm_dictionary_get_filtered_results(const object_store::Dictionary& dictionary, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            realm::Results values = dictionary.get_values();
+            return get_filtered_results(values.get_realm(), values.get_table(), values.get_query(), query_buf, query_len, arguments, args_count, values.get_descriptor_ordering());
+        });
+    }
 }   // extern "C"

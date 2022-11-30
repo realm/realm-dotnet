@@ -22,6 +22,15 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -498,7 +507,8 @@ namespace Realms.Tests.Database
         {
             var builder = new ObjectSchema.Builder(typeof(ClassWithUnqueryableMembers));
             Assert.That(builder.Name, Is.EqualTo(nameof(ClassWithUnqueryableMembers)));
-            Assert.That(builder.IsEmbedded, Is.False);
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicField)), Is.False);
             Assert.That(builder.Contains(nameof(ClassWithUnqueryableMembers.PublicMethod)), Is.False);
@@ -521,7 +531,8 @@ namespace Realms.Tests.Database
         {
             var builder = new ObjectSchema.Builder(typeof(PrimaryKeyGuidObject));
             Assert.That(builder.Name, Is.EqualTo(nameof(PrimaryKeyGuidObject)));
-            Assert.That(builder.IsEmbedded, Is.False);
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(builder.RealmSchemaType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             Assert.That(builder.Count, Is.EqualTo(1));
 
@@ -543,25 +554,45 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_CanBuildEmptySchema()
         {
-            var builder = new ObjectSchema.Builder("MyClass", isEmbedded: true);
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.EmbeddedObject);
             var schema = builder.Build();
 
             Assert.That(schema.Count, Is.Zero);
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
-            Assert.That(schema.IsEmbedded, Is.True);
+            Assert.That(builder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+        }
+
+        [Test, Obsolete("Testing depreccated ObjectSchema.Builder API")]
+        public void ObjectSchemaBuilder_ObsoleteAPIKeepsWorking()
+        {
+            var myClassBuilder = new ObjectSchema.Builder("myClass");
+            myClassBuilder.Add(Property.FromType<int>("Foo"));
+            var myClassSchema = myClassBuilder.Build();
+
+            Assert.That(myClassSchema.Count, Is.EqualTo(1));
+            Assert.That(myClassSchema.Name, Is.EqualTo("myClass"));
+            Assert.That(myClassBuilder["Foo"].Type, Is.EqualTo(PropertyType.Int));
+            Assert.That(myClassBuilder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.RealmObject));
+
+            var myOtherClassBuilder = new ObjectSchema.Builder("myOtherClass", isEmbedded: true);
+            var myOtherClassSchema = myOtherClassBuilder.Build();
+
+            Assert.That(myOtherClassSchema.Count, Is.EqualTo(0));
+            Assert.That(myOtherClassSchema.Name, Is.EqualTo("myOtherClass"));
+            Assert.That(myOtherClassBuilder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
         }
 
         [Test]
         public void ObjectSchemaBuilder_InvalidArguments()
         {
-            Assert.Throws<ArgumentNullException>(() => new ObjectSchema.Builder(null, isEmbedded: true));
-            Assert.Throws<ArgumentException>(() => new ObjectSchema.Builder(string.Empty, isEmbedded: true));
+            Assert.Throws<ArgumentNullException>(() => new ObjectSchema.Builder(null, ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.Throws<ArgumentException>(() => new ObjectSchema.Builder(string.Empty, ObjectSchema.ObjectType.EmbeddedObject));
         }
 
         [Test]
         public void ObjectSchemaBuilder_Indexer_InvalidArguments()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             // null is not a valid name
             Assert.Throws<ArgumentNullException>(() => _ = builder[null]);
@@ -579,7 +610,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Indexer_GetSet()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             Assert.That(builder.Count, Is.Zero);
 
@@ -597,7 +628,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Indexer_ReplaceExisting()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             var propertyToSet = Property.Primitive("Foo", RealmValueType.Int);
             builder["Foo"] = propertyToSet;
@@ -618,7 +649,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Add_AddsProperty()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
             var propertyBar = Property.Primitive("Bar", RealmValueType.Int);
@@ -636,7 +667,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Add_WhenDuplicate_Throws()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
             var propertyFooAgain = Property.Primitive("Foo", RealmValueType.String);
@@ -655,7 +686,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Add_ReturnsSameBuilderInstance()
         {
-            var builder = new ObjectSchema.Builder("MyClass");
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject);
 
             var propertyFoo = Property.Primitive("Foo", RealmValueType.Int);
 
@@ -667,7 +698,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_ContainsItem_ReturnsTrueForMatches()
         {
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Foo", RealmValueType.Int)
             };
@@ -684,7 +715,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_ContainsString_ReturnsTrueForMatches()
         {
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Foo", RealmValueType.Int)
             };
@@ -700,7 +731,7 @@ namespace Realms.Tests.Database
         {
             var propertyToRemain = Property.Primitive("Foo", RealmValueType.Decimal128);
             var propertyToRemove = Property.Object("Bar", "MyOtherClass");
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 propertyToRemain,
                 propertyToRemove
@@ -719,7 +750,7 @@ namespace Realms.Tests.Database
         {
             var foo = Property.Primitive("Foo", RealmValueType.Decimal128);
             var bar = Property.Object("Bar", "MyOtherClass");
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 foo,
                 bar
@@ -740,7 +771,7 @@ namespace Realms.Tests.Database
         {
             var propertyToRemain = Property.Primitive("Foo", RealmValueType.Decimal128);
             var propertyToRemove = Property.Object("Bar", "MyOtherClass");
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 propertyToRemain,
                 propertyToRemove
@@ -759,7 +790,7 @@ namespace Realms.Tests.Database
         {
             var foo = Property.Primitive("Foo", RealmValueType.Decimal128);
             var bar = Property.Object("Bar", "MyOtherClass");
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 foo,
                 bar
@@ -777,7 +808,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Build_WhenMultiplePKProperties_Throws()
         {
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("PK1", RealmValueType.Int, isPrimaryKey: true),
                 Property.Primitive("PK2", RealmValueType.Int, isPrimaryKey: true),
@@ -791,7 +822,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Build_ResolvesPrimaryKey()
         {
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
                 Property.Primitive("PK", RealmValueType.Int, isPrimaryKey: true),
@@ -806,7 +837,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ObjectSchemaBuilder_Build_WhenNoPK()
         {
-            var builder = new ObjectSchema.Builder("MyClass")
+            var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
                 Property.Primitive("SomeOtherProp", RealmValueType.Int, isIndexed: true),
@@ -822,7 +853,7 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(type);
 
             Assert.That(schema.Name, Is.EqualTo(type.Name));
-            Assert.That(schema.IsEmbedded, Is.EqualTo(type.BaseType == typeof(EmbeddedObject)));
+            Assert.That(schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject, Is.EqualTo(typeof(IEmbeddedObject).IsAssignableFrom(type)));
             Assert.That(schema.Type, Is.EqualTo(type));
         }
 
@@ -832,7 +863,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(RemappedTypeObject));
 
             Assert.That(schema.Name, Is.EqualTo("__RemappedTypeObject"));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.TryFindProperty("__mappedLink", out var remappedProp), Is.True);
             Assert.That(remappedProp.Type, Is.EqualTo(PropertyType.Object | PropertyType.Nullable));
             Assert.That(remappedProp.ObjectType, Is.EqualTo("__RemappedTypeObject"));
@@ -844,7 +876,8 @@ namespace Realms.Tests.Database
             var schema = ObjectSchema.FromType(typeof(PrimaryKeyStringObject));
 
             Assert.That(schema.Name, Is.EqualTo(nameof(PrimaryKeyStringObject)));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.PrimaryKeyProperty, Is.Not.Null);
             Assert.That(schema.PrimaryKeyProperty.Value.IsPrimaryKey, Is.True);
             Assert.That(schema.PrimaryKeyProperty.Value.Type, Is.EqualTo(PropertyType.NullableString));
@@ -884,7 +917,7 @@ namespace Realms.Tests.Database
 
             Assert.That(originalSchema, Is.EquivalentTo(builder));
             Assert.That(originalSchema.Name, Is.EqualTo(builder.Name));
-            Assert.That(originalSchema.IsEmbedded, Is.EqualTo(builder.IsEmbedded));
+            Assert.That(originalSchema.BaseType, Is.EqualTo(builder.RealmSchemaType));
         }
 
         [Test]
@@ -896,7 +929,7 @@ namespace Realms.Tests.Database
             Assert.That(typedSchema.Type, Is.EqualTo(typedBuilder.Type));
             Assert.That(typedBuilder.Type, Is.EqualTo(typeof(PrimaryKeyGuidObject)));
 
-            var untypedSchema = new ObjectSchema.Builder("Foo")
+            var untypedSchema = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.FromType<int>("Bar")
             }.Build();
@@ -982,8 +1015,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchema_ImplicitConversion_FromObjectSchemas_WithDuplicates([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
         {
-            var foo1 = new ObjectSchema.Builder("Foo").Build();
-            var foo2 = new ObjectSchema.Builder("Foo").Build();
+            var foo1 = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var foo2 = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
             var ex = Assert.Throws<ArgumentException>(() =>
             {
                 RealmSchema schema = collectionType switch
@@ -1000,7 +1033,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchema_ImplicitConversion_FromObjectSchemas_WithNulls([Values(BclCollectionType.Array, BclCollectionType.List)] BclCollectionType collectionType)
         {
-            var foo = new ObjectSchema.Builder("Foo").Build();
+            var foo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
             var ex = Assert.Throws<ArgumentNullException>(() =>
             {
                 RealmSchema schema = collectionType switch
@@ -1180,13 +1213,13 @@ namespace Realms.Tests.Database
 
             // null is not a valid name
             Assert.Throws<ArgumentNullException>(() => _ = builder[null]);
-            Assert.Throws<ArgumentNullException>(() => builder[null] = new ObjectSchema.Builder("Foo").Build());
+            Assert.Throws<ArgumentNullException>(() => builder[null] = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build());
 
             // Getting a non-existent item
             Assert.Throws<KeyNotFoundException>(() => _ = builder["non-existent"]);
 
             // Mismatch between provided name and property name
-            var ex = Assert.Throws<ArgumentException>(() => builder["Bar"] = new ObjectSchema.Builder("Foo").Build());
+            var ex = Assert.Throws<ArgumentException>(() => builder["Bar"] = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build());
             Assert.That(ex.Message, Does.Contain("Bar"));
             Assert.That(ex.Message, Does.Contain("Foo"));
         }
@@ -1198,7 +1231,7 @@ namespace Realms.Tests.Database
 
             Assert.That(builder.Count, Is.Zero);
 
-            var schemaToSet = new ObjectSchema.Builder("Foo").Build();
+            var schemaToSet = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
             builder["Foo"] = schemaToSet;
 
             Assert.That(builder.Count, Is.EqualTo(1));
@@ -1218,7 +1251,7 @@ namespace Realms.Tests.Database
             Assert.That(builder.Count, Is.EqualTo(1));
             Assert.That(builder[nameof(AllTypesObject)].Type, Is.EqualTo(typeof(AllTypesObject)));
 
-            var schemaToReplace = new ObjectSchema.Builder(nameof(AllTypesObject))
+            var schemaToReplace = new ObjectSchema.Builder(nameof(AllTypesObject), ObjectSchema.ObjectType.RealmObject)
                 .Add(Property.Primitive("Foo", RealmValueType.String))
                 .Build();
             builder[nameof(AllTypesObject)] = schemaToReplace;
@@ -1249,8 +1282,8 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var schemaFoo = new ObjectSchema.Builder("Foo").Build();
-            var schemaFooAgain = new ObjectSchema.Builder("Foo").Build();
+            var schemaFoo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var schemaFooAgain = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
 
             builder.Add(schemaFoo);
 
@@ -1266,7 +1299,7 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var schemaFoo = new ObjectSchema.Builder("Foo").Build();
+            var schemaFoo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
 
             var returnedBuilder = builder.Add(schemaFoo);
 
@@ -1278,12 +1311,12 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var fooBuilder = new ObjectSchema.Builder("Foo")
+            var fooBuilder = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Prop1", RealmValueType.String)
             };
 
-            var barBuilder = new ObjectSchema.Builder("Bar")
+            var barBuilder = new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Prop2", RealmValueType.Float)
             };
@@ -1301,12 +1334,12 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var fooBuilder = new ObjectSchema.Builder("Foo")
+            var fooBuilder = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Prop", RealmValueType.String)
             };
 
-            var fooBuilderAgain = new ObjectSchema.Builder("Foo");
+            var fooBuilderAgain = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject);
 
             builder.Add(fooBuilder);
 
@@ -1322,7 +1355,7 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder();
 
-            var schemaFoo = new ObjectSchema.Builder("Foo");
+            var schemaFoo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject);
 
             var returnedBuilder = builder.Add(schemaFoo);
 
@@ -1388,7 +1421,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchemaBuilder_ContainsItem_ReturnsTrueForMatches()
         {
-            var fooBuilder = new ObjectSchema.Builder("Foo")
+            var fooBuilder = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Bar", RealmValueType.Double)
             };
@@ -1403,7 +1436,7 @@ namespace Realms.Tests.Database
 
             // Should return false for different name or different instance
             Assert.That(builder.Contains(fooBuilder.Build()), Is.False);
-            Assert.That(builder.Contains(new ObjectSchema.Builder("Bar").Build()), Is.False);
+            Assert.That(builder.Contains(new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject).Build()), Is.False);
 
             Assert.Throws<ArgumentNullException>(() => builder.Contains((ObjectSchema)null));
         }
@@ -1413,7 +1446,7 @@ namespace Realms.Tests.Database
         {
             var builder = new RealmSchema.Builder
             {
-                new ObjectSchema.Builder("Foo")
+                new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject)
             };
 
             Assert.That(builder.Contains("Foo"), Is.True);
@@ -1425,8 +1458,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchemaBuilder_RemoveItem()
         {
-            var foo = new ObjectSchema.Builder("Foo").Build();
-            var bar = new ObjectSchema.Builder("Bar").Build();
+            var foo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var bar = new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject).Build();
             var builder = new RealmSchema.Builder
             {
                 foo,
@@ -1444,8 +1477,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchemaBuilder_RemoveItem_WhenItemIsNotEqual_DoesntRemove()
         {
-            var foo = new ObjectSchema.Builder("Foo").Build();
-            var bar = new ObjectSchema.Builder("Bar").Build();
+            var foo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var bar = new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject).Build();
             var builder = new RealmSchema.Builder
             {
                 foo,
@@ -1454,9 +1487,9 @@ namespace Realms.Tests.Database
 
             Assert.That(builder.Count, Is.EqualTo(2));
 
-            var fooAgain = new ObjectSchema.Builder("Foo").Build();
+            var fooAgain = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
             Assert.That(builder.Remove(fooAgain), Is.False);
-            Assert.That(builder.Remove(new ObjectSchema.Builder("FooFoo").Build()), Is.False);
+            Assert.That(builder.Remove(new ObjectSchema.Builder("FooFoo", ObjectSchema.ObjectType.RealmObject).Build()), Is.False);
 
             Assert.That(builder.Count, Is.EqualTo(2));
         }
@@ -1464,8 +1497,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchemaBuilder_RemoveString()
         {
-            var foo = new ObjectSchema.Builder("Foo").Build();
-            var bar = new ObjectSchema.Builder("Bar").Build();
+            var foo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var bar = new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject).Build();
             var builder = new RealmSchema.Builder
             {
                 foo,
@@ -1483,8 +1516,8 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSchemaBuilder_RemoveString_WhenItemIsNotEquivalent_DoesntRemove()
         {
-            var foo = new ObjectSchema.Builder("Foo").Build();
-            var bar = new ObjectSchema.Builder("Bar").Build();
+            var foo = new ObjectSchema.Builder("Foo", ObjectSchema.ObjectType.RealmObject).Build();
+            var bar = new ObjectSchema.Builder("Bar", ObjectSchema.ObjectType.RealmObject).Build();
             var builder = new RealmSchema.Builder
             {
                 foo,
@@ -1504,7 +1537,8 @@ namespace Realms.Tests.Database
         {
             var schema = builder.Build();
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
-            Assert.That(schema.IsEmbedded, Is.False);
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(schema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
             Assert.That(schema.Count, Is.EqualTo(expectedProperties.Length));
 
             foreach (var prop in expectedProperties)
@@ -1552,17 +1586,17 @@ namespace Realms.Tests.Database
             List,
             HashSet
         }
+    }
 
-        private class RequiredPropertyClass : RealmObject
-        {
-            [Required]
-            public string FooRequired { get; set; }
-        }
+    public partial class RequiredPropertyClass : TestRealmObject
+    {
+        [Required]
+        public string FooRequired { get; set; }
+    }
 
-        [Explicit]
-        private class ExplicitClass : RealmObject
-        {
-            public int Foo { get; set; }
-        }
+    [Explicit]
+    public partial class ExplicitClass : TestRealmObject
+    {
+        public int Foo { get; set; }
     }
 }

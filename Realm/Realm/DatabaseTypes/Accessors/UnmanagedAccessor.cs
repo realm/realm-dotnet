@@ -18,97 +18,158 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using Realms.DataBinding;
 using Realms.Schema;
 
 namespace Realms
 {
-    internal class UnmanagedAccessor
-        : IRealmAccessor
+    /// <summary>
+    /// Represents the base class for an accessor to be used with an unmanaged object.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public abstract class UnmanagedAccessor : IRealmAccessor
     {
-        private Type _objectType;
+        private readonly Type _objectType;
 
+        private Action<string> _onNotifyPropertyChanged;
+
+        /// <inheritdoc/>
+        public bool IsManaged => false;
+
+        /// <inheritdoc/>
+        public bool IsValid => true;
+
+        /// <inheritdoc/>
+        public bool IsFrozen => false;
+
+        /// <inheritdoc/>
+        public Realm Realm => null;
+
+        /// <inheritdoc/>
+        public virtual ObjectSchema ObjectSchema => null;
+
+        /// <inheritdoc/>
+        public int BacklinksCount => 0;
+
+        /// <inheritdoc/>
+        public DynamicObjectApi DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
+
+        /// <inheritdoc/>
+        public IRealmObjectBase GetParent() => null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
+        /// </summary>
+        /// <param name="objectType">The runtype type of the realm object.</param>
         public UnmanagedAccessor(Type objectType)
         {
             _objectType = objectType;
         }
 
-        public bool IsManaged => false;
-
-        public bool IsValid => true;
-
-        public bool IsFrozen => false;
-
-        public Realm Realm => null;
-
-        public ObjectSchema ObjectSchema => null;
-
-        public int BacklinksCount => 0;
-
-        public RealmObjectBase.Dynamic DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
-
+        /// <inheritdoc/>
         public IQueryable<T> GetBacklinks<T>(string propertyName)
             where T : IRealmObjectBase
-        {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
+            => throw new NotSupportedException("Using the GetBacklinks is only possible for managed (persisted) objects.");
 
-            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
+        /// <inheritdoc/>
+        public abstract IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName);
+
+        /// <inheritdoc/>
+        public abstract IList<T> GetListValue<T>(string propertyName);
+
+        /// <inheritdoc/>
+        public abstract ISet<T> GetSetValue<T>(string propertyName);
+
+        /// <inheritdoc/>
+        public abstract RealmValue GetValue(string propertyName);
+
+        /// <inheritdoc/>
+        public abstract void SetValue(string propertyName, RealmValue val);
+
+        /// <inheritdoc/>
+        public abstract void SetValueUnique(string propertyName, RealmValue val);
+
+        /// <inheritdoc/>
+        public virtual void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
+        {
+            _onNotifyPropertyChanged = notifyPropertyChangedDelegate;
         }
 
-        public static ThreadSafeReference GetSafeReference()
+        /// <inheritdoc/>
+        public virtual void UnsubscribeFromNotifications()
         {
-            Debug.Assert(false, "Object is not managed, but managed access was attempted");
-
-            throw new InvalidOperationException("Object is not managed, but managed access was attempted");
+            _onNotifyPropertyChanged = null;
         }
 
-        public IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        /// <summary>
+        /// Invokes the property changed delegate.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to notify about.</param>
+        protected void RaisePropertyChanged(string propertyName)
         {
-            return new Dictionary<string, TValue>();
+            _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
-        public IList<T> GetListValue<T>(string propertyName)
+        /// <inheritdoc/>
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
         {
-            return new List<T>();
+#pragma warning disable CA1062 // Validate arguments of public methods
+            return TypeInfoHelper.GetInfo(obj);
+#pragma warning restore CA1062 // Validate arguments of public methods
         }
 
-        public ISet<T> GetSetValue<T>(string propertyName)
-        {
-            return new HashSet<T>(RealmSet<T>.Comparer);
-        }
-
-        public RealmValue GetValue(string propertyName)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
-
-        public void SetValue(string propertyName, RealmValue val)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
-
-        public void SetValueUnique(string propertyName, RealmValue val)
-        {
-            throw new NotImplementedException("This should not be used for now");
-        }
-
-        public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
-        {
-        }
-
-        public void UnsubscribeFromNotifications()
-        {
-        }
-
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{_objectType.Name} (unmanaged)";
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            return false;
+            return ReferenceEquals(this, obj);
+        }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]
+    internal class GenericUnmanagedAccessor : UnmanagedAccessor
+    {
+        public GenericUnmanagedAccessor(Type type) : base(type)
+        {
+        }
+
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            return new List<T>();
+        }
+
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            return new HashSet<T>(RealmSet<T>.Comparer);
+        }
+
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            return new Dictionary<string, TValue>();
+        }
+
+        public override RealmValue GetValue(string propertyName)
+        {
+            throw new NotSupportedException("This should not be used for now");
+        }
+
+        public override void SetValue(string propertyName, RealmValue val)
+        {
+            throw new NotSupportedException("This should not be used for now");
+        }
+
+        public override void SetValueUnique(string propertyName, RealmValue val)
+        {
+            throw new NotSupportedException("This should not be used for now");
         }
     }
 }

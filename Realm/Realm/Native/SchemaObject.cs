@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Runtime.InteropServices;
+using Realms.Schema;
 
 namespace Realms.Native
 {
@@ -31,7 +32,6 @@ namespace Realms.Native
         internal int properties_start;
         internal int properties_end;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool is_embedded;
+        internal ObjectSchema.ObjectType table_type;
     }
 }

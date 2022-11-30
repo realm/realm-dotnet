@@ -96,7 +96,7 @@ static bool byteswap_guids(TableRef table, bool& found_non_v4_uuid)
                 primitive_columns.push_back(col);
             }
         }
-        return false; // keep iterating
+        return IteratorControl::AdvanceToNext; // keep iterating
     });
 
     if (!has_uuid_column)

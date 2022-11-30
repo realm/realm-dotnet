@@ -41,7 +41,7 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new();
 
         private NotificationTokenHandle _notificationToken;
 
@@ -146,7 +146,7 @@ namespace Realms
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
-            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
+            _isEmbedded = metadata?.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject;
         }
 
         ~RealmCollectionBase()
@@ -204,16 +204,40 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObject>();
+            var robj = value.AsIRealmObject();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
                 throw new RealmException("Can't add to the collection an object that is already in another realm.");
             }
 
-            if (!robj.IsManaged)
+            switch (robj)
             {
-                Realm.Add(robj);
+                case IRealmObject topLevel:
+                    if (!robj.IsManaged)
+                    {
+                        Realm.Add(topLevel);
+                    }
+
+                    break;
+
+                // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
+                // them to the collection as RealmValues (e.g. IList<RealmValue>).
+                // This is because:
+                // * Plain embedded objects (not contained within a RealmValue), beside RealmSet, are
+                //   added by each collection handle (e.g. _listHandle.AddEmbedded()) in the respective
+                //   method (e.g. in RealmList.Add(), RealmList.Insert(), RealmDictionary.Add(), etc.)
+                //   rather than reaching RealmCollectionBase.AddToRealmIfNecessary().
+                // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
+                //   objects can't be linked to.
+                case IEmbeddedObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
+                case IAsymmetricObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
+                default:
+                    throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }
         }
 
@@ -395,9 +419,8 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
         {
-            var managedException = exception?.Convert();
             ChangeSet changeset = null;
             if (changes != null)
             {
@@ -417,7 +440,7 @@ namespace Realms
 
             foreach (var callback in _callbacks.ToArray())
             {
-                callback(this, changeset, managedException);
+                callback(this, changeset, null);
             }
         }
 
@@ -488,8 +511,9 @@ namespace Realms
                 _index = -1;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it. Only collections of objects support snapshotting.
-                _shouldDisposeHandle = parent.IsValid && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
+                // snapshot if the collection is frozen.
+                _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
                 _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
@@ -542,17 +566,19 @@ namespace Realms
     /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
-    internal sealed class InvalidObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InvalidObject
     {
         private InvalidObject()
         {
         }
 
-        public static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new InvalidObject();
 
-        // The method is overriden to avoid the bug in WPF
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
+            // This is to resolve the WPF bug
             return true;
         }
     }

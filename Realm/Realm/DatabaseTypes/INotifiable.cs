@@ -33,8 +33,7 @@ namespace Realms
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
-        /// <param name="exception">An exception if one occurred.</param>
-        void NotifyCallbacks(TChangeset? changes, NativeException? exception);
+        void NotifyCallbacks(TChangeset? changes);
     }
 
     internal class NotificationToken<TCallback> : IDisposable
