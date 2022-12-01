@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using Mono.Cecil.Cil;
 using RealmWeaver;
+using static RealmWeaver.Analytics;
 
 public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 {
@@ -55,14 +56,29 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Threading";
     }
 
-    private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
+    private Config GetAnalyticsConfig(FrameworkName frameworkName)
     {
-        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
+        var analyticsCollection = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result ? AnalyticsCollection.Disabled : AnalyticsCollection.Full;
 
-        var config = new Analytics.Config
+        if (analyticsCollection != AnalyticsCollection.Disabled)
+        {
+            if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
+            {
+                analyticsCollection = collection;
+            }
+            else
+            {
+#if DEBUG
+                analyticsCollection = AnalyticsCollection.DryRun;
+#endif
+            }
+        }
+
+        var config = new Config
         {
             Framework = "xamarin", // This is for backwards compatibility
-            RunAnalytics = !disableAnalytics,
+            AnalyticsCollection = analyticsCollection,
+            AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
         };
 
         config.FrameworkVersion = frameworkName.Version.ToString();

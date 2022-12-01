@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Mono.Cecil;
@@ -199,6 +200,11 @@ namespace RealmWeaver
                 try
                 {
                     var payload = analytics.SubmitAnalytics();
+                    if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
+                    {
+                        File.WriteAllText(analyticsConfig.AnalyticsLogPath, payload);
+                    }
+
 #if DEBUG
                     _logger.Info($@"
 ----------------------------------

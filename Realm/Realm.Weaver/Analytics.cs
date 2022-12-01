@@ -132,7 +132,7 @@ namespace RealmWeaver
 
         internal string SubmitAnalytics()
         {
-            if (!_config.RunAnalytics ||
+            if (_config.AnalyticsCollection == AnalyticsCollection.Disabled ||
                 Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
                 Environment.GetEnvironmentVariable("CI") != null)
             {
@@ -143,14 +143,15 @@ namespace RealmWeaver
 
             // uncomment next line to inspect the payload under Windows VS build
             // Debugger.Launch();
-#if !DEBUG
-            var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+            if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
+            {
+                var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
 
-            SendRequest(
-                "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=",
-                base64Payload,
-                string.Empty);
-#endif
+                SendRequest(
+                    "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=",
+                    base64Payload,
+                    string.Empty);
+            }
 
             return payload;
         }
@@ -190,7 +191,9 @@ namespace RealmWeaver
 
         public class Config
         {
-            public bool RunAnalytics { get; set; }
+            public AnalyticsCollection AnalyticsCollection { get; set; }
+
+            public string AnalyticsLogPath { get; set; }
 
             public string TargetOSName { get; set; }
 
@@ -203,6 +206,14 @@ namespace RealmWeaver
             public string ModuleName { get; set; }
 
             public string FrameworkVersion { get; set; }
+        }
+
+        public enum AnalyticsCollection
+        {
+            Disabled,
+            DryRun,
+            Minimal,
+            Full,
         }
     }
 }
