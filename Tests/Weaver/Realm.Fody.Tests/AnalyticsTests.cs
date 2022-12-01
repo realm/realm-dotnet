@@ -104,7 +104,11 @@ namespace Analytics
 
         private static void CompileAnalyticsProject(params string[] constants)
         {
-            Directory.Delete(Path.Combine(_analyticsAssemblyLocation.Value, "bin"), recursive: true);
+            var binPath = Path.Combine(_analyticsAssemblyLocation.Value, "bin");
+            if (Directory.Exists(binPath))
+            {
+                Directory.Delete(binPath, recursive: true);
+            }
 
             var targetProject = Path.Combine(_analyticsAssemblyLocation.Value, "AnalyticsAssembly.csproj");
 

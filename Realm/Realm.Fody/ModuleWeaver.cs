@@ -66,12 +66,12 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             {
                 analyticsCollection = collection;
             }
+#if DEBUG
             else
             {
-#if DEBUG
                 analyticsCollection = AnalyticsCollection.DryRun;
-#endif
             }
+#endif
         }
 
         var config = new Config

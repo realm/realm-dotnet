@@ -223,7 +223,7 @@ namespace Realms.Tests.Database
                 // Arrange
                 using var realm = GetRealm();
                 var ts = await realm.BeginWriteAsync();
-                
+
                 // Assert
                 Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
                 await ts.CommitAsync();
