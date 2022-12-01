@@ -126,7 +126,14 @@ namespace Realms.Tests.Sync
             }
 
             var result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
-            Assert.That(result.status, Is.EqualTo(BaasClient.FunctionReturn.Result.success));
+            if (result.Deleted > 0)
+            {
+                // This is kind of a hack, but it appears like there's a race condition on the server, where the deletion might not be
+                // registered and the server will not respond with a client reset. Doing the request again gives the server some extra time
+                // to process the deletion.
+                result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
+                Assert.That(result.Deleted, Is.EqualTo(0));
+            }
         }
 
         public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)

@@ -78,14 +78,7 @@ namespace Baas
     {
         public class FunctionReturn
         {
-            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "The enum is only used internally")]
-            public enum Result
-            {
-                success = 0,
-                failure = 1
-            }
-
-            public Result status { get; set; } = Result.failure;
+            public int Deleted { get; set; }
         }
 
         private const string ConfirmFuncSource =
@@ -116,12 +109,12 @@ namespace Baas
                   let dbName = '__realm_sync';
                   if (appId !== '')
                   {
-                    dbName = [dbName, '_', appId].join('');
+                    dbName += `_${appId}`;
                   }
                   const deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: userId });
                   console.log('Deleted documents: ' + deletionResult.deletedCount);
 
-                  return { status: deletionResult.deletedCount > 0 ? 'success' : 'failure' };
+                  return { Deleted: deletionResult.deletedCount };
                 } catch(err) {
                   throw 'Deletion failed: ' + err;
                 }
