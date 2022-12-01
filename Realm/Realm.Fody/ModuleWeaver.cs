@@ -58,19 +58,25 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
     private Config GetAnalyticsConfig(FrameworkName frameworkName)
     {
-        var analyticsCollection = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result ? AnalyticsCollection.Disabled : AnalyticsCollection.Full;
-
-        if (analyticsCollection != AnalyticsCollection.Disabled)
+        AnalyticsCollection analyticsCollection;
+        if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
         {
-            if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
-            {
-                analyticsCollection = collection;
-            }
+            analyticsCollection = collection;
+        }
+        else if (bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var disableAnalytics))
+        {
+            analyticsCollection = disableAnalytics ? AnalyticsCollection.Disabled : AnalyticsCollection.Full;
+        }
+        else if (Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null || Environment.GetEnvironmentVariable("CI") != null)
+        {
+            analyticsCollection = AnalyticsCollection.Disabled;
+        }
+        else
+        {
 #if DEBUG
-            else
-            {
-                analyticsCollection = AnalyticsCollection.DryRun;
-            }
+            analyticsCollection = AnalyticsCollection.DryRun;
+#else
+            analyticsCollection = AnalyticsCollection.Full;
 #endif
         }
 

@@ -210,12 +210,16 @@ namespace RealmWeaver
                     // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
 
+                    var analyticsEnabled = AnalyticsEnabled &&
+                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
+                        Environment.GetEnvironmentVariable("CI") == null;
+
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
                         FrameworkVersion = Application.unityVersion,
                         Framework = framework,
-                        AnalyticsCollection = AnalyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
+                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
                     };
 
                     var results = weaver.Execute(analyticsConfig);

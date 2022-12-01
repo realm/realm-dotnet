@@ -22,7 +22,8 @@ using Realms.Sync;
 
 public class Program
 {
-    public static void Main(string[] args)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+    public static async Task Main(string[] args)
     {
     }
 
@@ -48,4 +49,5 @@ public class Program
         _ = new SyncConfiguration(null, null);
 #endif
     }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }

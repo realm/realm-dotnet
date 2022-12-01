@@ -132,9 +132,7 @@ namespace RealmWeaver
 
         internal string SubmitAnalytics()
         {
-            if (_config.AnalyticsCollection == AnalyticsCollection.Disabled ||
-                Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null ||
-                Environment.GetEnvironmentVariable("CI") != null)
+            if (_config.AnalyticsCollection == AnalyticsCollection.Disabled)
             {
                 return "Analytics disabled";
             }
