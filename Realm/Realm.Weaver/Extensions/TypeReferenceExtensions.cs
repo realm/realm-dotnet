@@ -18,6 +18,7 @@
 
 using System.ComponentModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -26,6 +27,8 @@ using RealmWeaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeReferenceExtensions
 {
+    private static readonly Regex NullableRegex = new Regex("^System.Nullable`1<(?<typeName>.*)>$");
+
     public static SequencePoint GetSequencePoint(this TypeDefinition @this)
     {
         return GetCtorSequencePoint() ?? GetPropSequencePoint();
@@ -45,6 +48,84 @@ internal static class TypeReferenceExtensions
                 .FirstOrDefault(sp => sp != null);
         }
     }
+
+    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
+    {
+        return IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
+    }
+
+    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references)
+    {
+        return IsDescendantOf(@this, references.AsymmetricObject);
+    }
+
+    public static bool IsEmbeddedObjectDescendant(this TypeReference @this, ImportedReferences references)
+    {
+        return IsDescendantOf(@this, references.EmbeddedObject);
+    }
+
+    public static bool IsSameAs(this TypeReference @this, TypeReference other)
+    {
+        if (@this is null || other is null)
+        {
+            return false;
+        }
+
+        return @this.FullName == other.FullName && @this.GetAssemblyName() == other.GetAssemblyName();
+    }
+
+    public static string GetAssemblyName(this TypeReference @this)
+    {
+        switch (@this.Scope.MetadataScopeType)
+        {
+            case MetadataScopeType.AssemblyNameReference:
+                return ((AssemblyNameReference)@this.Scope).FullName;
+            case MetadataScopeType.ModuleReference:
+                return ((ModuleReference)@this.Scope).Name;
+            default:
+                return ((ModuleDefinition)@this.Scope).Assembly.FullName;
+        }
+    }
+
+    public static string ToFriendlyString(this TypeReference type)
+    {
+        if (!string.IsNullOrEmpty(type.Namespace))
+        {
+            return type.ToString().Replace(type.Namespace, string.Empty).TrimStart('.');
+        }
+
+        return type.ToString();
+    }
+
+    public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
+    {
+        var nullableMatch = NullableRegex.Match(type.FullName);
+        isNullable = nullableMatch.Success;
+        if (isNullable)
+        {
+            var genericType = (GenericInstanceType)type;
+            type = genericType.GenericArguments.Single();
+        }
+
+        var result = type.Name == "RealmInteger`1" && type.Namespace == "Realms";
+        if (result)
+        {
+            var genericType = (GenericInstanceType)type;
+            genericArgumentType = genericType.GenericArguments.Single();
+            return true;
+        }
+
+        genericArgumentType = null;
+        return false;
+    }
+
+    public static bool IsNullable(this TypeReference reference)
+    {
+        return NullableRegex.IsMatch(reference.FullName);
+    }
+
+    public static bool IsIRealmObjectBaseImplementor(this TypeReference type, ImportedReferences references) =>
+        IsImplementorOf(type, references.IRealmObjectBase);
 
     private static bool IsDescendantOf(TypeReference @this, params TypeReference[] targetTypes)
     {
@@ -83,46 +164,29 @@ internal static class TypeReferenceExtensions
         return false;
     }
 
-    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
+    private static bool IsImplementorOf(TypeReference @this, params TypeReference[] targetInterfaces)
     {
-        return IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
-    }
-
-    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references)
-    {
-        return IsDescendantOf(@this, references.AsymmetricObject);
-    }
-
-    public static bool IsSameAs(this TypeReference @this, TypeReference other)
-    {
-        if (@this is null || other is null)
+        try
         {
-            return false;
+            if (@this == null || !Weaver.ShouldTraverseAssembly(@this.Module.Assembly.Name))
+            {
+                return false;
+            }
+
+            var definition = @this?.Resolve();
+            if (definition == null)
+            {
+                return false;
+            }
+
+            return TypeDefinitionExtensions.IsImplementorOf(definition, targetInterfaces);
+        }
+        catch
+        {
+            // Unity may fail to resolve some of its assemblies, but that's okay
+            // they don't contain RealmObject classes.
         }
 
-        return @this.FullName == other.FullName && @this.GetAssemblyName() == other.GetAssemblyName();
-    }
-
-    public static string GetAssemblyName(this TypeReference @this)
-    {
-        switch (@this.Scope.MetadataScopeType)
-        {
-            case MetadataScopeType.AssemblyNameReference:
-                return ((AssemblyNameReference)@this.Scope).FullName;
-            case MetadataScopeType.ModuleReference:
-                return ((ModuleReference)@this.Scope).Name;
-            default:
-                return ((ModuleDefinition)@this.Scope).Assembly.FullName;
-        }
-    }
-
-    public static string ToFriendlyString(this TypeReference type)
-    {
-        if (!string.IsNullOrEmpty(type.Namespace))
-        {
-            return type.ToString().Replace(type.Namespace, string.Empty).TrimStart('.');
-        }
-
-        return type.ToString();
+        return false;
     }
 }

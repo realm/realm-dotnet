@@ -37,9 +37,10 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
-        var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);
+        var weaver = new Weaver(ModuleDefinition, this, frameworkName);
 
-        var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
+        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
+        var executionResult = weaver.Execute(disableAnalytics);// GetAnalyticsConfig(frameworkName));
         WriteInfo(executionResult.ToString());
     }
 
@@ -53,68 +54,6 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Collections";
         yield return "System.ObjectModel";
         yield return "System.Threading";
-    }
-
-    private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
-    {
-        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
-
-        var config = new Analytics.Config
-        {
-            Framework = "xamarin", // This is for backwards compatibility
-            RunAnalytics = !disableAnalytics,
-        };
-
-        config.FrameworkVersion = frameworkName.Version.ToString();
-        config.TargetOSName = GetTargetOSName(frameworkName);
-
-        // For backward compatibility
-        config.TargetOSVersion = frameworkName.Version.ToString();
-
-        return config;
-    }
-
-    private static string GetTargetOSName(FrameworkName frameworkName)
-    {
-        try
-        {
-            // Legacy reporting used ios, osx, and android
-            switch (frameworkName.Identifier)
-            {
-                case "Xamarin.iOS":
-                    return "ios";
-                case "Xamarin.Mac":
-                    return "osx";
-                case "MonoAndroid":
-                case "Mono.Android":
-                    return "android";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-android", StringComparison.OrdinalIgnoreCase))
-            {
-                return "android";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-ios", StringComparison.OrdinalIgnoreCase))
-            {
-                return "ios";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase))
-            {
-                return "osx";
-            }
-        }
-        catch
-        {
-#if DEBUG
-            // Make sure we get build failures and address the problem in debug,
-            // but don't fail users' builds because of that.
-            throw;
-#endif
-        }
-
-        return "windows";
     }
 
     void ILogger.Debug(string message)
