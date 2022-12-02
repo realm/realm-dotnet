@@ -45,7 +45,7 @@ namespace Realms.Sync
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void BsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
+            public delegate void StringCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, IntPtr api_keys_len, AppError error);
@@ -55,7 +55,7 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
-                UserCallback user_callback, VoidTaskCallback void_callback, BsonCallback bson_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
+                UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[] encryptionKey, out NativeException ex);
@@ -154,13 +154,13 @@ namespace Realms.Sync
             NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
             NativeMethods.UserCallback userLogin = HandleUserCallback;
             NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
-            NativeMethods.BsonCallback bsonCallback = HandleBsonCallback;
+            NativeMethods.StringCallback stringCallback = HandleStringCallback;
             NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
 
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(userLogin);
             GCHandle.Alloc(taskCallback);
-            GCHandle.Alloc(bsonCallback);
+            GCHandle.Alloc(stringCallback);
             GCHandle.Alloc(apiKeysCallback);
 
             //// This is a hack due to a mixup of what OS uses as platform/SDK and what is displayed in the UI.
@@ -191,7 +191,7 @@ namespace Realms.Sync
                 platform, platform.IntPtrLength(),
                 platformVersion, platformVersion.IntPtrLength(),
                 sdkVersion, sdkVersion.IntPtrLength(),
-                userLogin, taskCallback, bsonCallback, logMessage, apiKeysCallback);
+                userLogin, taskCallback, stringCallback, logMessage, apiKeysCallback);
         }
 
         internal AppHandle(IntPtr handle) : base(handle)
@@ -398,8 +398,8 @@ namespace Realms.Sync
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.BsonCallback))]
-        private static void HandleBsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
+        [MonoPInvokeCallback(typeof(NativeMethods.StringCallback))]
+        private static void HandleStringCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<string>)tcsHandle.Target;

@@ -251,16 +251,13 @@ extern "C" {
     {
         handle_errors(ex, [&] {
             Utf16StringAccessor function_name(function_name_buf, function_name_len);
-            Utf16StringAccessor args_accessor(args_buf, args_len);
-            app->call_function(user, function_name, args_accessor.to_string_view(), std::nullopt, get_string_callback_handler(tcs_ptr));
-
-            auto args = to_array(args_buf, args_len);
-            if (service_buf != nullptr) {
-                Utf16StringAccessor service_name(service_buf, service_len);
-                app->call_function(user, function_name, args, service_name, get_bson_callback_handler(tcs_ptr));
+            Utf16StringAccessor args(args_buf, args_len);
+            if (service_buf) {
+                Utf16StringAccessor service(service_buf, service_len);
+                app->call_function(user, function_name, args, service, get_string_callback_handler(tcs_ptr));
             }
             else {
-                app->call_function(user, function_name, args, get_bson_callback_handler(tcs_ptr));
+                app->call_function(user, function_name, args, std::nullopt, get_string_callback_handler(tcs_ptr));
             }
         });
     }
