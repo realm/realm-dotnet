@@ -447,9 +447,9 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function decoded as <typeparamref name="T"/>.
             /// </returns>
-            public Task<T> CallAsync<T>(string name, params object[] args) => CallAsyncImpl<T>(name, serviceName: null, args.ToNativeJson());
+            public Task<T> CallAsync<T>(string name, params object[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
 
-            internal async Task<T> CallAsyncImpl<T>(string name, string serviceName, string args)
+            internal async Task<T> CallSerializedAsync<T>(string name, string args, string serviceName = null)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 

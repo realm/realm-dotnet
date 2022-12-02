@@ -121,8 +121,7 @@ namespace Realms.Sync
             {
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
-                var handle = MongoCollectionHandle.Create(Client.User.Handle, Client.ServiceName, Name, name);
-                return new Collection<TDocument>(this, name, handle);
+                return new Collection<TDocument>(this, name);
             }
         }
 
@@ -133,8 +132,6 @@ namespace Realms.Sync
         public class Collection<TDocument>
             where TDocument : class
         {
-            private readonly MongoCollectionHandle _handle;
-
             /// <summary>
             /// Gets the <see cref="Database"/> this collection belongs to.
             /// </summary>
@@ -147,11 +144,10 @@ namespace Realms.Sync
             /// <value>The collection name.</value>
             public string Name { get; }
 
-            internal Collection(Database database, string name, MongoCollectionHandle handle)
+            internal Collection(Database database, string name)
             {
                 Database = database;
                 Name = name;
-                _handle = handle;
             }
 
             /// <summary>
@@ -167,7 +163,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(doc, nameof(doc));
 
-                return await CallAsync<InsertResult>("insertOne", "document", doc);
+                return await InvokeOperationAsync<InsertResult>("insertOne", "document", doc);
             }
 
             /// <summary>
@@ -184,7 +180,7 @@ namespace Realms.Sync
                 Argument.NotNull(docs, nameof(docs));
                 Argument.Ensure(docs.All(d => d != null), "Collection must not contain null elements.", nameof(docs));
 
-                return await CallAsync<InsertManyResult>("insertMany", "documents", docs);
+                return await InvokeOperationAsync<InsertManyResult>("insertMany", "documents", docs);
             }
 
             /// <summary>
@@ -214,7 +210,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await CallAsync<UpdateResult>("updateOne", "query", filter, "update", updateDocument, "upsert", upsert);
+                return await InvokeOperationAsync<UpdateResult>("updateOne", "query", filter, "update", updateDocument, "upsert", upsert);
             }
 
             /// <summary>
@@ -244,7 +240,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await CallAsync<UpdateResult>("updateMany", "query", filter, "update", updateDocument, "upsert", upsert);
+                return await InvokeOperationAsync<UpdateResult>("updateMany", "query", filter, "update", updateDocument, "upsert", upsert);
             }
 
             /// <summary>
@@ -259,7 +255,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
-            public Task<DeleteResult> DeleteOneAsync(object filter = null) => CallAsync<DeleteResult>("deleteOne", "query", filter);
+            public Task<DeleteResult> DeleteOneAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteOne", "query", filter);
 
             /// <summary>
             /// Removes one or more documents from a collection. If no documents match the <paramref name="filter"/>, the collection is not modified.
@@ -273,7 +269,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
-            public Task<DeleteResult> DeleteManyAsync(object filter = null) => CallAsync<DeleteResult>("deleteMany", "query", filter);
+            public Task<DeleteResult> DeleteManyAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteMany", "query", filter);
 
             /// <summary>
             /// Finds the all documents in the collection up to <paramref name="limit"/>.
@@ -292,7 +288,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
             public Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
-                => CallAsync<TDocument[]>("find", "query", filter, "project", projection, "sort", sort, "limit", limit);
+                => InvokeOperationAsync<TDocument[]>("find", "query", filter, "project", projection, "sort", sort, "limit", limit);
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -310,7 +306,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
             public Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
-                => CallAsync<TDocument>("findOne", "query", filter, "project", projection, "sort", sort);
+                => InvokeOperationAsync<TDocument>("findOne", "query", filter, "project", projection, "sort", sort);
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -343,7 +339,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await CallAsync<TDocument>("findOneAndUpdate", "filter", filter, "update", updateDocument, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
+                return await InvokeOperationAsync<TDocument>("findOneAndUpdate", "filter", filter, "update", updateDocument, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
             }
 
             /// <summary>
@@ -381,7 +377,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 
-                return await CallAsync<TDocument>("findOneAndReplace", "filter", filter, "update", replacementDoc, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
+                return await InvokeOperationAsync<TDocument>("findOneAndReplace", "filter", filter, "update", replacementDoc, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
             }
 
             /// <summary>
@@ -400,7 +396,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
             public Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
-                => CallAsync<TDocument>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
+                => InvokeOperationAsync<TDocument>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <typeparamref name="TProjection"/> array.
@@ -414,7 +410,7 @@ namespace Realms.Sync
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
-            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline) => CallAsync<TProjection[]>("aggregate", "pipeline", pipeline);
+            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline) => InvokeOperationAsync<TProjection[]>("aggregate", "pipeline", pipeline);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <see cref="BsonDocument"/> array.
@@ -441,9 +437,9 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
-            public Task<long> CountAsync(object filter = null, long? limit = null) => CallAsync<long>("count", "query", filter, "limit", limit);
+            public Task<long> CountAsync(object filter = null, long? limit = null) => InvokeOperationAsync<long>("count", "query", filter, "limit", limit);
 
-            private async Task<T> CallAsync<T>(string functionName, params object[] args)
+            private async Task<T> InvokeOperationAsync<T>(string functionName, params object[] args)
             {
                 var jsonBuilder = new StringBuilder();
                 jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
@@ -460,7 +456,7 @@ namespace Realms.Sync
 
                 jsonBuilder.Append("}]");
 
-                return await Database.Client.User.Functions.CallAsyncImpl<T>(functionName, Database.Client.ServiceName, jsonBuilder.ToString());
+                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, Database.Client.ServiceName, jsonBuilder.ToString());
             }
         }
 
