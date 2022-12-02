@@ -166,7 +166,14 @@ namespace Realms.Sync
             {
                 Argument.NotNull(doc, nameof(doc));
 
-                return await _handle.InsertOne<InsertResult>(doc.ToNativeJson());
+                var payload = new
+                {
+                    database = Database.Name,
+                    collection = Name,
+                    document = doc
+                };
+
+                return await Database.Client.User.Functions.CallAsync<InsertResult>("insertOne", new[] { payload }, Database.Client.ServiceName);
             }
 
             /// <summary>
