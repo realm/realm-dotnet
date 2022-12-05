@@ -25,18 +25,9 @@ namespace Realms.SourceGenerator
     [Generator]
     public class RealmGenerator : ISourceGenerator
     {
-        // TODO andrea: when we embrace nullability, Analytics should be marked nullable
-        // null if we should not collect analytics
-        private Analytics _analytics;
-
         public void Initialize(GeneratorInitializationContext context)
         {
-            if (Analytics.ShouldCollectAnalytics)
-            {
-                _analytics = new();
-            }
-
-            context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver(_analytics));
+            context.RegisterForSyntaxNotifications(() => new SyntaxContextReceiver());
         }
 
         public void Execute(GeneratorExecutionContext context)
@@ -46,37 +37,14 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            var parser = new Parser(context, _analytics);
+            var parser = new Parser(context);
             var parsingResults = parser.Parse(scr.RealmClasses);
-
-            _analytics?.AnalyzeEnvironment(context);
-
-            Task submitAnalytics = null;
-            if (Analytics.ShouldCollectAnalytics)
-            {
-                submitAnalytics = Task.Run(() =>
-                {
-                    try
-                    {
-                        _analytics.SubmitAnalytics();
-                    }
-                        catch (Exception e)
-                    {
-                        Analytics.ErrorLog(e.Message);
-                    }
-                });
-            }
 
             var diagnosticsEmitter = new DiagnosticsEmitter(context);
             diagnosticsEmitter.Emit(parsingResults);
 
             var codeEmitter = new CodeEmitter(context);
             codeEmitter.Emit(parsingResults);
-
-            // TODO andrea: unfortunately roslyn fully terminates after the `Execute` finishes
-            // which means that we have to synchronously wait for the analytics task to finish
-            // or spin another process. Neither of the 2 are great options.
-            submitAnalytics?.Wait();
         }
     }
 }

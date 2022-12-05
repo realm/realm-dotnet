@@ -37,7 +37,8 @@ namespace RealmWeaver
         {
             public const string X86 = "x86";
             public const string X64 = "x64";
-            public const string Arm = "ARM";
+            public const string Arm = "Arm";
+            public const string Arm64 = "Arm64";
         }
 
         public class Framework

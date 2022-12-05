@@ -86,7 +86,6 @@ namespace RealmWeaver
         */
 
         private readonly ImportedReferences _references;
-        private readonly FrameworkName _frameworkName;
 
         #region FeatureDiciontaries
 
@@ -573,7 +572,7 @@ namespace RealmWeaver
 
         #endregion
 
-        //private readonly Config _config;
+        private readonly Config _config;
 
         /*
         private string JsonPayload
@@ -605,10 +604,10 @@ namespace RealmWeaver
         //    _config = config;
         //}
 
-        internal Analytics(ImportedReferences references, FrameworkName frameworkName)
+        internal Analytics(Config config, ImportedReferences references)
         {
             _references = references;
-            _frameworkName = frameworkName;
+            _config = config;
         }
 
         private void AnalyzeRealmClass(TypeDefinition type)
@@ -661,7 +660,18 @@ namespace RealmWeaver
                 _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[HostOsType] = osType;
                 _realmEnvMetrics[HostOsVersion] = osVersion;
-                _realmEnvMetrics[HostCpuArch] = osVersion;
+                _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
+                _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
+                //_realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
+                _realmEnvMetrics[TargetOsVersion] = _config.TargetOSVersion;
+                _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
+
+                // TODO andrea: need to find msbuild properties and not custom attributes
+                //_realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
+                //    .Where(a => a.ToString() == "LangVersion").SingleOrDefault().ToString();
+                
+                //_realmEnvMetrics[Framework] = ;
+                _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
 
                 foreach (var type in module.Types)
                 {
@@ -670,7 +680,7 @@ namespace RealmWeaver
             }
             catch (Exception e)
             {
-                ErrorLog($"Could not analytics the user's assembly.{Environment.NewLine}{e.Message}");
+                ErrorLog($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
             }
         }
 
@@ -694,7 +704,7 @@ namespace RealmWeaver
             }
         }
 
-        internal void SubmitAnalytics()
+        internal string SubmitAnalytics()
         {
             try
             {
@@ -712,10 +722,13 @@ namespace RealmWeaver
                 var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
 
                 SendRequest(sendAddr, base64Payload, string.Empty);
+
+                return payload;
             }
             catch (Exception e)
             {
-               ErrorLog($"Could not submit analytics.{Environment.NewLine}{e.Message}");
+                ErrorLog($"Could not submit analytics.{Environment.NewLine}{e.Message}");
+                return e.Message;
             }
         }
 
@@ -860,21 +873,21 @@ namespace RealmWeaver
 
         private static bool IsInRealmNamespace(object operand) => IsFromNamespace(operand, "Realms.Realm");
 
-        //public class Config
-        //{
-        //    public bool RunAnalytics { get; set; }
+        public class Config
+        {
+            public bool RunAnalytics { get; set; }
 
-        //    public string TargetOSName { get; set; }
+            public string TargetOSName { get; set; }
 
-        //    public string TargetOSVersion { get; set; }
+            public string TargetOSVersion { get; set; }
 
-        //    public string Framework { get; set; }
+            public string Framework { get; set; }
 
-        //    public bool IsUsingSync { get; set; }
+            public bool IsUsingSync { get; set; }
 
-        //    public string ModuleName { get; set; }
+            public string ModuleName { get; set; }
 
-        //    public string FrameworkVersion { get; set; }
-        //}
+            public string FrameworkVersion { get; set; }
+        }
     }
 }

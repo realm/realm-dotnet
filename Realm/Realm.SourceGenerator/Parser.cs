@@ -29,13 +29,9 @@ namespace Realms.SourceGenerator
     {
         private GeneratorExecutionContext _context;
 
-        // null if we should not collect analytics
-        private Analytics _analytics;
-
-        public Parser(GeneratorExecutionContext context, Analytics analytics)
+        public Parser(GeneratorExecutionContext context)
         {
             _context = context;
-            _analytics = analytics;
         }
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
@@ -120,9 +116,6 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.UnexpectedError(classSymbol.Name, ex.Message, ex.StackTrace));
                     throw;
                 }
-
-                // TODO andrea: only if (passed enough time from last metrics collection)
-                _analytics?.AnalyzeRealmClass(classInfo);
             }
 
             foreach (var classInfo in result.ClassInfo.Where(c => duplicateClassNames.Contains(c.Name)))

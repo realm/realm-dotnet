@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -135,7 +134,6 @@ namespace RealmWeaver
 
         private readonly ImportedReferences _references;
         private readonly ModuleDefinition _moduleDefinition;
-        private readonly FrameworkName _frameworkName;
         private readonly ILogger _logger;
 
         private IEnumerable<MatchingType> GetMatchingTypes()
@@ -167,19 +165,18 @@ namespace RealmWeaver
             }
         }
 
-        public Weaver(ModuleDefinition module, ILogger logger, FrameworkName frameworkName)
+        public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
             System.Diagnostics.Debugger.Launch();
 
             _moduleDefinition = module;
             _logger = logger;
-            _frameworkName = frameworkName;
-            _references = ImportedReferences.Create(_moduleDefinition, _frameworkName.Identifier);
+            _references = ImportedReferences.Create(_moduleDefinition, framework);
             _propertyChanged_DoNotNotify_Ctor = new Lazy<MethodReference>(GetOrAddPropertyChanged_DoNotNotify);
         }
 
-        public WeaveModuleResult Execute(bool disableAnalytics)//Analytics.Config analyticsConfig)
+        public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -194,50 +191,21 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-//            var submitAnalytics = Task.Run(() =>
-//            {
-//                analyticsConfig.ModuleName = _moduleDefinition.Name;
-//                analyticsConfig.IsUsingSync = IsUsingSync();
-//                var analytics = new Analytics(analyticsConfig);
-//                try
-//                {
-//                    var payload = analytics.SubmitAnalytics();
-//#if DEBUG
-//                    _logger.Info($@"
-//----------------------------------
-//Analytics payload
-//{payload}
-//----------------------------------");
-//#endif
-//                }
-//                catch (Exception e)
-//                {
-//                    _logger.Debug("Error submitting analytics: " + e.Message);
-//                }
-//            });
-
             // TODO andrea: in here analyze the class properties
             var matchingTypes = GetMatchingTypes().ToArray();
 
-#if DEBUG
-            disableAnalytics = false;
-#endif
-
             Task analyzeAPITask = null;
-            if (!disableAnalytics && AnalyticsUtils.ShouldRunAnalytics)
+            if (!analyticsConfig.RunAnalytics && AnalyticsUtils.ShouldRunAnalytics)
             {
                 // TODO andrea: add check to avoid to instantiate if not needed to do analytics
                 // TODO andrea: also after knowing if to instantiate one or not, check for timestamp file
-                var analytics = new Analytics(_references, _frameworkName);
-
-                //analyzeAPITask = Task.Run(() =>
-                //{
+                var analytics = new Analytics(analyticsConfig, _references);
+                analyzeAPITask = Task.Run(() =>
+                {
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
                     // TODO andrea: this may as well go into AnalyzeUserAssembly
                     analytics.SubmitAnalytics();
-
-                    // add here the call for the collection API metrics
-                //});
+                });
             }
 
             var weaveResults = matchingTypes.Select(matchingType =>
@@ -262,7 +230,6 @@ namespace RealmWeaver
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
             analyzeAPITask?.Wait();
-            //submitAnalytics.Wait();
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful);
             if (failedResults.Any())

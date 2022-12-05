@@ -37,10 +37,10 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
-        var weaver = new Weaver(ModuleDefinition, this, frameworkName);
+        var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);
 
         var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
-        var executionResult = weaver.Execute(disableAnalytics);// GetAnalyticsConfig(frameworkName));
+        var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
         WriteInfo(executionResult.ToString());
     }
 
@@ -54,6 +54,25 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Collections";
         yield return "System.ObjectModel";
         yield return "System.Threading";
+    }
+
+    private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
+    {
+        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
+
+        var config = new Analytics.Config
+        {
+            Framework = "xamarin", // This is for backwards compatibility
+            RunAnalytics = !disableAnalytics,
+        };
+
+        config.FrameworkVersion = frameworkName.Version.ToString();
+        config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
+
+        // For backward compatibility
+        config.TargetOSVersion = frameworkName.Version.ToString();
+
+        return config;
     }
 
     void ILogger.Debug(string message)

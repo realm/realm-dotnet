@@ -17,16 +17,13 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using RealmWeaver;
+using Mono.Cecil;
 using static RealmWeaver.Metric;
 
 namespace RealmWeaver
@@ -39,7 +36,7 @@ namespace RealmWeaver
             {
                 try
                 {
-                    var id = GenerateComputerIdentifier();
+                    var id = GenerateComputerIdentifier;
                     return id != null ? SHA256Hash(id) : "UNKNOWN";
                 }
                 catch
@@ -49,67 +46,18 @@ namespace RealmWeaver
             }
         }
 
-        /*
-        private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
-        {
-            var config = new Analytics.Config
-            {
-                Framework = "xamarin", // This is for backwards compatibility
-                RunAnalytics = !disableAnalytics,
-            };
-
-            config.FrameworkVersion = frameworkName.Version.ToString();
-            config.TargetOSName = GetTargetOSName(frameworkName);
-
-            // For backward compatibility
-            config.TargetOSVersion = frameworkName.Version.ToString();
-
-            return config;
-        }
-        */
-
-        public static string GetTargetOSName(FrameworkName frameworkName)
-        {
-            try
-            {
-                // Legacy reporting used ios, osx, and android
-                switch (frameworkName.Identifier)
+        public static string GetTargetOsName(FrameworkName frameworkName) =>
+            WrapInTryCatch(() =>
+                frameworkName.Identifier switch
                 {
-                    case "Xamarin.iOS":
-                        return "ios";
-                    case "Xamarin.Mac":
-                        return "osx";
-                    case "MonoAndroid":
-                    case "Mono.Android":
-                        return "android";
-                }
-
-                if (frameworkName.Identifier.EndsWith("-android", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "android";
-                }
-
-                if (frameworkName.Identifier.EndsWith("-ios", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "ios";
-                }
-
-                if (frameworkName.Identifier.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase))
-                {
-                    return "osx";
-                }
-            }
-            catch
-            {
-#if DEBUG
-                // Make sure we get build failures and address the problem in debug,
-                // but don't fail users' builds because of that.
-                throw;
-#endif
-            }
-
-            return "windows";
-        }
+                    string s when s.ContainsIgnoreCase("android") => Metric.OperatingSystem.Android,
+                    string s when s.ContainsIgnoreCase("ios") => Metric.OperatingSystem.Ios,
+                    string s when s.ContainsIgnoreCase("mac") ||
+                        s.ContainsIgnoreCase("macos") ||
+                        s.ContainsIgnoreCase("maccatalyst") => Metric.OperatingSystem.MacOS,
+                    string s when s.ContainsIgnoreCase("tvos") => Metric.OperatingSystem.TvOs,
+                    _ => Metric.OperatingSystem.Windows,
+                });
 
         public static string SHA256Hash(byte[] bytes)
         {
@@ -134,55 +82,75 @@ namespace RealmWeaver
                 osVersion = Environment.OSVersion.VersionString;
             }
 
-            switch (osType)
-            {
-                case string n when n.Contains(Metric.OperatingSystem.Windows):
-                    osType = Metric.OperatingSystem.Windows;
-                    break;
-                case string n when n.Contains(Metric.OperatingSystem.MacOS):
-                    osType = Metric.OperatingSystem.MacOS;
-                    break;
-                case string n when n.Contains(Metric.OperatingSystem.Linux):
-                    osType = Metric.OperatingSystem.Linux;
-                    break;
-                default:
-                    DebugLog($"{osType} is not an operating system that we recognize.");
-                    break;
-            }
+            osType = ConvertOsNameToMetricsVersion(osType);
         }
 
-        public static byte[] GenerateComputerIdentifier()
-        {
+        public static string GetHostCpuArchitecture =>
+            WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.ProcessArchitecture.ToString()));
+
+        public static string GetTargetCpuArchitecture(ModuleDefinition module) =>
+            // TODO andrea: module.Architecture reports "I386" which isn't a value I could find in the documentation of MS. Investigate
+            WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(module.Architecture.ToString()));
+
+        public static byte[] GenerateComputerIdentifier =>
             // Assume OS X if not Windows.
-            return NetworkInterface.GetAllNetworkInterfaces()
-                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
-                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
-                                   .FirstOrDefault();
-        }
+            NetworkInterface.GetAllNetworkInterfaces()
+                .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
+                .Select(n => n.GetPhysicalAddress().GetAddressBytes())
+                .FirstOrDefault();
 
         // TODO andrea: add here check on timestamp file, maybe
         public static bool ShouldRunAnalytics =>
             Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                 Environment.GetEnvironmentVariable("CI") == null;
 
-        public static void DebugLog(string message)
-        {
-            Debug.WriteLine($"** Analytics: {message}");
-        }
+        public static void DebugLog(string message) => Debug.WriteLine($"** Analytics: {message}");
 
-        public static void ErrorLog(string message)
-        {
-            Console.WriteLine($"** Analytics, Error: {message}");
-        }
+        public static void ErrorLog(string message) => Console.WriteLine($"** Analytics, Error: {message}");
 
-        public static void WarningLog(string message)
-        {
-            Console.WriteLine($"** Analytics, Warning: {message}");
-        }
+        public static void WarningLog(string message) => Console.WriteLine($"** Analytics, Warning: {message}");
 
-        public static void InfoLog(string message)
+        public static void InfoLog(string message) => Console.WriteLine($"** Analytics, Info: {message}");
+
+        private static string ConvertOsNameToMetricsVersion(string osName) =>
+            WrapInTryCatch(() =>
+                osName switch
+                {
+                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Windows) => Metric.OperatingSystem.Windows,
+                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.MacOS) => Metric.OperatingSystem.MacOS,
+                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Linux) => Metric.OperatingSystem.Linux,
+                    _ => $"{osName} is an unknown operating system."
+                });
+
+        private static string ConvertArchitectureToMetricsVersion(string arch) =>
+            arch switch
+            {
+                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)) => CpuArchitecture.Arm,
+                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)) => CpuArchitecture.Arm64,
+                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) ||
+                    s.ContainsIgnoreCase("amd64") => CpuArchitecture.X64,
+                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) ||
+                    s.ContainsIgnoreCase("i386") => CpuArchitecture.X86,
+                _ => throw new ArgumentException($"{RuntimeInformation.ProcessArchitecture} is an unknown architecture")
+            };
+
+        private static bool ContainsIgnoreCase(this string @this, string strCompare) =>
+            @this.IndexOf(strCompare, StringComparison.OrdinalIgnoreCase) > -1;
+
+        private static string WrapInTryCatch(Func<string> func)
         {
-            Console.WriteLine($"** Analytics, Info: {message}");
+            try
+            {
+                return func();
+            }
+            catch
+            {
+#if DEBUG
+                // Make sure we get build failures and address the problem in debug,
+                // but don't fail users' builds because of that.
+                throw;
+#endif
+            }
         }
     }
 }

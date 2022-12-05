@@ -27,21 +27,10 @@ namespace Realms.SourceGenerator
     {
         private readonly Dictionary<ITypeSymbol, RealmClassDefinition> _realmClassesDict = new(SymbolEqualityComparer.Default);
 
-        // null if we should not collect analytics
-        private Analytics _analytics;
-
         public IReadOnlyCollection<RealmClassDefinition> RealmClasses => _realmClassesDict.Values;
-
-        public SyntaxContextReceiver(Analytics analytics)
-        {
-            _analytics = analytics;
-        }
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            // TODO andrea: only if (passed enough time from last metrics collection)
-            _analytics?.AnalyzeSyntaxNodeForApiUsage(context);
-
             if (context.Node is ClassDeclarationSyntax classSyntax)
             {
                 var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
