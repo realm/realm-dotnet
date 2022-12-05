@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Mono.Cecil;
@@ -168,7 +169,7 @@ namespace RealmWeaver
         public Weaver(ModuleDefinition module, ILogger logger, string framework)
         {
             //// UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-            System.Diagnostics.Debugger.Launch();
+            //// System.Diagnostics.Debugger.Launch();
 
             _moduleDefinition = module;
             _logger = logger;
@@ -191,7 +192,6 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-            // TODO andrea: in here analyze the class properties
             var matchingTypes = GetMatchingTypes().ToArray();
 
             Task analyzeAPITask = null;
@@ -204,7 +204,11 @@ namespace RealmWeaver
                 {
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
                     // TODO andrea: this may as well go into AnalyzeUserAssembly
-                    analytics.SubmitAnalytics();
+                    var payload = analytics.SubmitAnalytics();
+                    if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
+                    {
+                        File.WriteAllText(analyticsConfig.AnalyticsLogPath, payload);
+                    }
                 });
             }
 

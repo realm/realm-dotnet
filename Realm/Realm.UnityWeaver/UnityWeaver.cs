@@ -28,6 +28,7 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEngine;
+using static RealmWeaver.Analytics;
 
 namespace RealmWeaver
 {
@@ -209,12 +210,16 @@ namespace RealmWeaver
                     // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
 
-                    var analyticsConfig = new Analytics.Config
+                    var analyticsEnabled = AnalyticsEnabled &&
+                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
+                        Environment.GetEnvironmentVariable("CI") == null;
+
+                    var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
                         FrameworkVersion = Application.unityVersion,
                         Framework = framework,
-                        RunAnalytics = AnalyticsEnabled
+                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
                     };
 
                     var results = weaver.Execute(analyticsConfig);

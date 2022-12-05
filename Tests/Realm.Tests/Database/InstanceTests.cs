@@ -200,6 +200,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void TransactionStateIsCorrect()
+        {
+            // Arrange
+            using var realm1 = GetRealm();
+            using var ts1 = realm1.BeginWrite();
+
+            // Assert
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Running));
+            ts1.Commit();
+            Assert.That(ts1.State, Is.EqualTo(TransactionState.Committed));
+            using var ts2 = realm1.BeginWrite();
+            ts2.Rollback();
+            Assert.That(ts2.State, Is.EqualTo(TransactionState.RolledBack));
+        }
+
+        [Test]
+        public void TransactionStateIsCorrectAsync()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                // Arrange
+                using var realm = GetRealm();
+                var ts = await realm.BeginWriteAsync();
+
+                // Assert
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
+                await ts.CommitAsync();
+                Assert.That(ts.State, Is.EqualTo(TransactionState.Committed));
+            });
+        }
+
+        [Test]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
@@ -763,7 +795,7 @@ namespace Realms.Tests.Database
         [TestCase("søren")]
         public void GetInstance_WhenPathContainsNonASCIICharacters_ShouldWork(string path)
         {
-            var folder = Path.Combine(InteropConfig.DefaultStorageFolder, path);
+            var folder = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), path);
             Directory.CreateDirectory(folder);
             var realmPath = Path.Combine(folder, "my.realm");
             var config = new RealmConfiguration(realmPath);

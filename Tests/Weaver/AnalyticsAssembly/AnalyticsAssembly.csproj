@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;netcoreapp3.1;net6.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup Label="References">
+    <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(AnalyticsConstants)' == ''">
+    <DefineConstants>$(DefineConstants);CREATE_APP_STRING;LOGIN_ANONYMOUS;CREATE_LEGACY_SYNC_CONFIG</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AnalyticsConstants)' != ''">
+    <DefineConstants>$(DefineConstants);$(AnalyticsConstants)</DefineConstants>
+  </PropertyGroup>
+
+</Project>
