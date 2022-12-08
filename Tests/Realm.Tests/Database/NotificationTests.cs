@@ -196,6 +196,111 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void PrimitivePropertyInObjectShouldFireNotificationOnChange()
+        {
+            var testObject = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(testObject));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            _realm.Write(() =>
+            {
+                testObject.StringProperty = "foo";
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CollectionPropertiesInObjectShouldNotFireNotificationsOnChange()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+
+            var testObject1 = new TestNotificationObject();
+            var testObject2 = new TestNotificationObject();
+            var testObject3 = new TestNotificationObject();
+            var testObject4 = new TestNotificationObject();
+            var testObject5 = new TestNotificationObject();
+            var list = testObject.ListProperty;
+            var set = testObject.SetProperty;
+            var dictionary = testObject.DictionaryProperty;
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                list.Add(testObject1);
+                list.Add(testObject4);
+                list.Add(testObject5);
+                set.Add(testObject2);
+                dictionary.Add("foo", testObject3);
+            });
+            _realm.Refresh();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                list.First().StringProperty = "foo1";
+                set.First().StringProperty = "foo2";
+                dictionary.First().Value.StringProperty = "foo3";
+            });
+            _realm.Refresh();
+
+            // Moving
+            _realm.Write(() =>
+            {
+                list.Move(0, 1);
+            });
+            _realm.Refresh();
+
+            // Removing
+            _realm.Write(() =>
+            {
+                _realm.Remove(list.First());
+                _realm.Remove(set.First());
+                dictionary.Remove("foo");
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Link_ShouldOnlyFireNotificationForReassignment()
+        {
+            var testObject = new TestNotificationObject();
+            var otherTestObject = new TestNotificationObject();
+            var person = new Person();
+            testObject.SameTypeLinkProperty = otherTestObject;
+            testObject.DifferentTypeLinkProperty = person;
+            _realm.Write(() => _realm.Add(testObject));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            _realm.Write(() =>
+            {
+                // Should not fire a propertyChanged
+                testObject.SameTypeLinkProperty.StringProperty = "foo";
+                testObject.DifferentTypeLinkProperty.Nickname = "bar";
+            });
+            _realm.Refresh();
+            _realm.Write(() =>
+            {
+                testObject.SameTypeLinkProperty = new TestNotificationObject();
+                testObject.DifferentTypeLinkProperty = new Person();
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(2));
+        }
+
+        [Test]
         public void Results_WhenUnsubscribed_ShouldStopReceivingNotifications()
         {
             _realm.Write(() =>
