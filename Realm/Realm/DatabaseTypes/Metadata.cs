@@ -42,5 +42,15 @@ namespace Realms
             PropertyIndices = new ReadOnlyDictionary<string, IntPtr>(propertyIndices);
             Schema = schema;
         }
+
+        public static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
+        {
+            if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            {
+                return result;
+            }
+
+            throw new MissingMemberException(metadata.Schema.Name, propertyName);
+        }
     }
 }
