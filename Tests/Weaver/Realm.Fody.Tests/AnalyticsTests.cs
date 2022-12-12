@@ -110,11 +110,12 @@ namespace Analytics
                 // TODO andrea: investigate failures with other targets
                 try
                 {
+                    CompileAnalyticsProject(kvp.Value);
                     ValidateAnalyticsPayload(kvp.Key);
                 }
                 catch (Exception e)
                 {
-                    Assert.Fail(e.Message);
+                    Assert.Fail($"Exception: {e.Message}");
                 }
             }
         }
