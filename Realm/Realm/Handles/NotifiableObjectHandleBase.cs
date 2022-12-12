@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -51,7 +52,7 @@ namespace Realms
         {
         }
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, List<IntPtr> propertyIndices = null);
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 

@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
 using Realms.Native;
@@ -82,7 +85,7 @@ namespace Realms
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_indices, IntPtr p_i_count, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);
@@ -351,11 +354,12 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, List<IntPtr> propertyIndices = null)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
+            IntPtr[] pIArray = propertyIndices.ToArray();
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, pIArray, (IntPtr)pIArray.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root, result);
         }

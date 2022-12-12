@@ -181,12 +181,23 @@ namespace Realms
                 throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
             }
 
+            PropertyType collectionFlag = PropertyType.Array | PropertyType.Dictionary | PropertyType.Set;
+            List<IntPtr> propertyIndices = new List<IntPtr>();
+
+            foreach (Property p in ObjectSchema)
+            {
+                if (!p.Type.HasFlag(collectionFlag))
+                {
+                    propertyIndices.Add(Metadata.GetPropertyIndex(p.Name, Metadata));
+                }
+            }
+
             Realm.ExecuteOutsideTransaction(() =>
             {
                 if (ObjectHandle.IsValid)
                 {
                     var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle));
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), propertyIndices);
                 }
             });
         }

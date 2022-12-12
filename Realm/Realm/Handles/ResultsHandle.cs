@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -159,7 +160,7 @@ namespace Realms
             return new SortDescriptorHandle(Root, result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, List<IntPtr> propertyIndices = null)
         {
             EnsureIsOpen();
 
