@@ -85,7 +85,7 @@ namespace Realms
             public static extern IntPtr get_thread_safe_reference(ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_indices, IntPtr p_i_count, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ObjectHandle objectHandle, IntPtr managedObjectHandle, [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] property_indices, IntPtr property_count, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_backlink_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_backlink_count(ObjectHandle objectHandle, out NativeException ex);

@@ -32,7 +32,6 @@ namespace Realms.Tests.Database
 {
     public partial class TestNotificationObject : TestRealmObject
     {
-        // Automatically implemented (overridden) properties
         public string StringProperty { get; set; }
 
         public IList<TestNotificationObject> ListProperty { get; }
