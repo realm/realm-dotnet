@@ -142,7 +142,7 @@ namespace Realms.DataBinding
             return new Lazy<MethodInfo>(() =>
             {
                 var mi = _pi.GetSetMethod(nonPublic);
-                return new WovenSetterMethodInfo(mi);
+                return new WovenSetterMethodInfo(mi, _pi.GetMethod);
             });
         }
     }

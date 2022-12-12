@@ -219,6 +219,33 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ReflectableSetValue_IfSameValue_ShouldDoNothing()
+        {
+            var owner = AddDogAndOwner();
+            var dog = owner.TopDog;
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+
+            string propertyChanged = null;
+
+            owner.PropertyChanged += (sender, e) =>
+            {
+                propertyChanged = e.PropertyName;
+            };
+
+            var namePi = typeInfo.GetProperty(nameof(Owner.Name));
+            namePi.SetValue(owner, OwnerName);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+
+            var dogPi = typeInfo.GetProperty(nameof(Owner.TopDog));
+            dogPi.SetValue(owner, dog);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+        }
+
+        [Test]
         public void Setter_WhenNotInTransaction_ShouldThrow()
         {
             var owner = AddDogAndOwner();
