@@ -36,11 +36,11 @@ namespace Realms
             CancellationToken cancellationToken = default) => default;
 
         public Task WriteAsync(Action action, CancellationToken cancellationToken = default) => default;
-        
+
         public T Find<T>(long? primaryKey) where T : IRealmObject => default;
 
         public T Find<T>(string primaryKey) where T : IRealmObject => default;
-        
+
         public T Find<T>(ObjectId? primaryKey) where T : IRealmObject => default;
 
         public T Find<T>(Guid? primaryKey) where T : IRealmObject => default;
@@ -49,8 +49,14 @@ namespace Realms
 
         public RealmObject Add(RealmObject obj, bool update) => default;
 
+        public Dynamic DynamicApi => default;
+
         public void Add<T>(IEnumerable<T> objs, bool update = false)
             where T : RealmObject
+        {
+        }
+
+        public class Dynamic
         {
         }
     }

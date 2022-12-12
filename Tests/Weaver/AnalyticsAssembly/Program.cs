@@ -41,7 +41,7 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        GetInstanceMethod();
+
     }
 
 #if GET_INSTANCE_ASYNC
@@ -59,7 +59,7 @@ public class Program
     }
 #endif
 
-#if FIND && GET_INSTANCE 
+#if FIND
     public static void FindByPk()
     {
         var realm = Realm.GetInstance();
@@ -68,7 +68,7 @@ public class Program
 #endif
 
 
-#if WRITE_ASYNC && GET_INSTANCE
+#if WRITE_ASYNC
     public static async Task WriteAsyncMethod()
     {
         var realm = Realm.GetInstance();
@@ -103,7 +103,7 @@ public class Program
     }
 #endif
 
-#if REALM_CHANGED && GET_INSTANCE
+#if REALM_CHANGED
     public static void RealmChangedMethod()
     {
         var realm = Realm.GetInstance();
@@ -147,7 +147,14 @@ public class Program
     }
 #endif
 
-#if RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER && FLEXIBLE_SYNC_CONFIGURATION
+#if FLEXIBLE_SYNC_CONFIGURATION
+    public static void FlexibleSyncMethod()
+    {
+        _ = new FlexibleSyncConfiguration(new User());
+    }
+#endif
+
+#if RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER
     public static void RecoverOrDiscardUnsyncedChangesHandlerMethod()
     {
         _ = new FlexibleSyncConfiguration(new User())
@@ -157,7 +164,7 @@ public class Program
     }
 #endif
 
-#if RECOVER_UNSYNCED_CHANGES_HANDLER && FLEXIBLE_SYNC_CONFIGURATION
+#if RECOVER_UNSYNCED_CHANGES_HANDLER
     public static void RecoverUnsyncedChangesHandlerMethod()
     {
         _ = new FlexibleSyncConfiguration(new User())
@@ -167,7 +174,7 @@ public class Program
     }
 #endif
 
-#if DISCARD_UNSYNCED_CHANGES_HANDLER && FLEXIBLE_SYNC_CONFIGURATION
+#if DISCARD_UNSYNCED_CHANGES_HANDLER
     public static void DiscardUnsyncedChangesHandlerMethod()
     {
         _ = new FlexibleSyncConfiguration(new User())
@@ -177,7 +184,7 @@ public class Program
     }
 #endif
 
-#if RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER && FLEXIBLE_SYNC_CONFIGURATION
+#if MANUAL_RECOVERY_HANDLER
     public static void ManualRecoveryHandlerMethod()
     {
         _ = new FlexibleSyncConfiguration(new User())
@@ -285,7 +292,12 @@ public class Program
     }
 #endif
 
-    // TODO andrea: missing only DynamicApi
+#if DYNAMIC_API
+    public static void DynamicApiMethod()
+    {
+        _ = Realm.GetInstance().DynamicApi;
+    }
+#endif
 
 #if EMBEDDED_OBJECT
     public partial class EmbeddedTestClass : TestEmbeddedObject
@@ -294,11 +306,16 @@ public class Program
     }
 #endif
 
+    public class JustForObjectReference : TestRealmObject
+    {
+
+    }
+
     // IRealmObject in here is just temporary to make Find work
     public class RootRealmClass : TestRealmObject, IRealmObject
     {
-#if EMBEDDED_OBJECT || REALM_OBJECT_REFERENCE
-        EmbeddedTestClass Embedded { get; set; }
+#if REALM_OBJECT_REFERENCE
+        JustForObjectReference JustForRef { get; set; }
 #endif
 
 #if REFERENCE_LIST

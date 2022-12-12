@@ -110,12 +110,11 @@ namespace Analytics
                 // TODO andrea: investigate failures with other targets
                 try
                 {
-                    CompileAnalyticsProject(kvp.Value);
                     ValidateAnalyticsPayload(kvp.Key);
                 }
-                catch
+                catch (Exception e)
                 {
-
+                    Assert.Fail(e.Message);
                 }
             }
         }
@@ -165,7 +164,27 @@ namespace Analytics
 
             var targetProject = Path.Combine(_analyticsAssemblyLocation.Value, "AnalyticsAssembly.csproj");
 
-            Process.Start("dotnet", $"build {targetProject} -p:AnalyticsConstants={string.Join(";", constants)} --configuration=Release").WaitForExit();
+            RunCommand("dotnet", $"build {targetProject} -p:AnalyticsConstants={string.Join(";", constants)} --configuration=Release");
+        }
+
+        private static void RunCommand(string command, string arguments)
+        {
+            var process = new Process();
+            process.StartInfo.FileName = command;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.Start();
+
+            // this is only for debugging
+            /*
+            var output = process.StandardOutput.ReadToEnd();
+            Console.WriteLine(output);
+            var err = process.StandardError.ReadToEnd();
+            Console.WriteLine(err);
+            */
+            process.WaitForExit();
         }
     }
 }

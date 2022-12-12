@@ -50,8 +50,6 @@ namespace Realms.SourceGenerator
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
             NotPersistedPropertyWithRealmAttributes = 26,
-            Analytics = 27, // TODO andrea: I don't think we should go deeper,
-                            // just a general enum should suffice as it's all internal
         }
 
         #region Errors
@@ -294,19 +292,6 @@ namespace Realms.SourceGenerator
                 $"{className}.{propertyName} has one or more Realm attributes applied, but it's not persisted, so those attributes will be ignored.",
                 location);
         }
-
-        // TODO andrea: this should likely go as it's not needed
-        //public static Diagnostic AnalyticsDebugInfo(string message)
-        //{
-        //    return CreateDiagnostic(
-        //        Id.Analytics,
-        //        "Unrecognized token during analytics",
-        //        $"Something went wrong while parsing a token during analytics",
-        //        DiagnosticSeverity.Info, // TODO andrea: check if this should instead be "Info" or "Hidden"
-        //        Location.None,
-        //        category: "RealmAnalytics",
-        //        description: $"Debug Message: {message}");
-        //}
 
         #endregion
 

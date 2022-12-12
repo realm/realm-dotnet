@@ -452,7 +452,7 @@ namespace RealmWeaver
             {
                 nameof(CallAsync), (instruction, featureDict, references) =>
                 {
-                    if (IsFromNamespace(instruction.Operand, "Realms.Sync.User/FunctionsClient"))
+                    if (IsFromNamespace(instruction.Operand, "Realms.Sync.FunctionsClient"))
                     {
                         featureDict[CallAsync] = 1;
                         return true;
@@ -502,7 +502,8 @@ namespace RealmWeaver
                         return false;
                     }
 
-                    if (property.PropertyType.IsIRealmObjectBaseImplementor(references))
+                    if (property.PropertyType.IsIRealmObjectBaseImplementor(references) ||
+                        property.PropertyType.IsRealmObjectDescendant(references))
                     {
                         featureDict[RealmObjectReference] = 1;
                         return true;
