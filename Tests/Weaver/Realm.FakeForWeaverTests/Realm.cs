@@ -17,20 +17,37 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
+using MongoDB.Bson;
+using System;
 
 namespace Realms
 {
     public class Realm
     {
-        public T Add<T>(T obj, bool update) where T : RealmObject
-        {
-            return default(T);
-        }
+        public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
-        public RealmObject Add(RealmObject obj, bool update)
-        {
-            return null;
-        }
+        public event RealmChangedEventHandler RealmChanged;
+
+        public static Realm GetInstance(RealmConfigurationBase config = null) => default;
+
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null,
+            CancellationToken cancellationToken = default) => default;
+
+        public Task WriteAsync(Action action, CancellationToken cancellationToken = default) => default;
+        
+        public T Find<T>(long? primaryKey) where T : IRealmObject => default;
+
+        public T Find<T>(string primaryKey) where T : IRealmObject => default;
+        
+        public T Find<T>(ObjectId? primaryKey) where T : IRealmObject => default;
+
+        public T Find<T>(Guid? primaryKey) where T : IRealmObject => default;
+
+        public T Add<T>(T obj, bool update) where T : RealmObject => default;
+
+        public RealmObject Add(RealmObject obj, bool update) => default;
 
         public void Add<T>(IEnumerable<T> objs, bool update = false)
             where T : RealmObject

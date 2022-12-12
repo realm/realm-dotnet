@@ -16,11 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Realm.Fody.Tests")]
+
 namespace RealmWeaver
 {
-    internal class Metric
+    // TODO andrea: make this internal again after getting InternalsVisibleTo to work
+    internal static class Metric
     {
-        public class OperatingSystem
+        public static class OperatingSystem
         {
             public const string Linux = "Linux";
             public const string MacOS = "macOS";
@@ -33,7 +38,7 @@ namespace RealmWeaver
             public const string TvOs = "tvOS";
         }
 
-        public class CpuArchitecture
+        public static class CpuArchitecture
         {
             public const string X86 = "x86";
             public const string X64 = "x64";
@@ -41,14 +46,14 @@ namespace RealmWeaver
             public const string Arm64 = "Arm64";
         }
 
-        public class Framework
+        public static class Framework
         {
             public const string Unity= "Unity";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
         }
 
-        public class SdkFeature
+        public static class SdkFeature
         {
             public const string UserId = "User_Id";
             public const string ProjectId = "Project_Id";

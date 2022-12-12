@@ -195,8 +195,8 @@ namespace RealmWeaver
             var matchingTypes = GetMatchingTypes().ToArray();
 
             Task analyzeAPITask = null;
-            if (!analyticsConfig.RunAnalytics && AnalyticsUtils.ShouldRunAnalytics)
-            {
+            //if (!analyticsConfig.RunAnalytics && AnalyticsUtils.ShouldRunAnalytics)
+            //{
                 // TODO andrea: add check to avoid to instantiate if not needed to do analytics
                 // TODO andrea: also after knowing if to instantiate one or not, check for timestamp file
                 var analytics = new Analytics(analyticsConfig, _references);
@@ -210,7 +210,7 @@ namespace RealmWeaver
                         File.WriteAllText(analyticsConfig.AnalyticsLogPath, payload);
                     }
                 });
-            }
+            //}
 
             var weaveResults = matchingTypes.Select(matchingType =>
             {

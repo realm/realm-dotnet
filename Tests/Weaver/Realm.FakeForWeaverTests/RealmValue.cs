@@ -154,5 +154,9 @@ namespace Realms
         public static implicit operator RealmValue(string val) => default;
 
         public static implicit operator RealmValue(RealmObjectBase val) => default;
+
+        public static RealmValue Object(IRealmObjectBase value) => default;
+
+        public RealmObjectBase AsRealmObject() => default;
     }
 }

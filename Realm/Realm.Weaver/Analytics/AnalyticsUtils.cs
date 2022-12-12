@@ -104,6 +104,7 @@ namespace RealmWeaver
             Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                 Environment.GetEnvironmentVariable("CI") == null;
 
+        // TODO andrea: these should all be replaced by our implementation of logger
         public static void DebugLog(string message) => Debug.WriteLine($"** Analytics: {message}");
 
         public static void ErrorLog(string message) => Console.WriteLine($"** Analytics, Error: {message}");

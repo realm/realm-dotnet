@@ -2,15 +2,24 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;netcoreapp3.1;net6.0</TargetFrameworks>
+    <!--<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    -->
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+  </ItemGroup>
 
   <ItemGroup Label="References">
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj" />
+   <!-- <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+   -->
   </ItemGroup>
 
   <PropertyGroup Condition="'$(AnalyticsConstants)' == ''">
-    <DefineConstants>$(DefineConstants);CREATE_APP_STRING;LOGIN_ANONYMOUS;CREATE_LEGACY_SYNC_CONFIG</DefineConstants>
-  </PropertyGroup>
+    <DefineConstants>$(DefineConstants);EMBEDDED_OBJECT;ASYMMETRIC_OBJECT;REFERENCE_LIST;PRIMITIVE_LIST;REFERENCE_DICTIONARY;PRIMITIVE_DICTIONARY;REFERENCE_SET;PRIMITIVE_SET;REALM_INTEGER;REALM_OBJECT_REFERENCE;REALM_VALUE;GET_INSTANCE_ASYNC;GET_INSTANCE;NOT_SUPPORTED_YET;FIND;WRITE_ASYNC;THREAD_SAFE_REFERENCE;FIXME_TWO;SHOULD_COMPACT_ON_LAUNCH;MIGRATION_CALLBACK;REALM_CHANGED;LIST_SUBSCRIBE_FOR_NOTIFICATIONS;SET_SUBSCRIBE_FOR_NOTIFICATIONS;DICTIONARY_SUBSCRIBE_FOR_NOTIFICATIONS;RESULT_SUBSCRIBE_FOR_NOTIFICATIONS;PROPERTY_CHANGED;RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER;RECOVER_UNSYNCED_CHANGES_HANDLER;DISCARD_UNSYNCED_CHANGES_HANDLER;MANUAL_RECOVERY_HANDLER;GET_PROGRESS_OBSERVABLE;PARTITION_SYNC_CONFIGURATION;FLEXIBLE_SYNC_CONFIGURATION;ANONYMOUS;EMAIL_PASSWORD;FACEBOOK;GOOGLE;APPLE;JWT;API_KEY;SERVER_API_KEY;FUNCTION;CALL_ASYNC;GET_MONGO_CLIENT;DYNAMIC_API;
+    </DefineConstants>
+  --></PropertyGroup>
 
   <PropertyGroup Condition="'$(AnalyticsConstants)' != ''">
     <DefineConstants>$(DefineConstants);$(AnalyticsConstants)</DefineConstants>

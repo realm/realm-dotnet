@@ -477,17 +477,17 @@ namespace RealmWeaver
             },
         };
 
-        private Dictionary<string, Func<PropertyDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<PropertyDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
+        private Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
         {
             {
-                nameof(IEmbeddedOjbect), (property, featureDict, references) =>
+                nameof(IEmbeddedOjbect), (member, featureDict, references) =>
                 {
                     featureDict[IEmbeddedOjbect] = 1;
                     return true;
                 }
             },
             {
-                nameof(IAsymmetricObject), (property, featureDict, references) =>
+                nameof(IAsymmetricObject), (member, featureDict, references) =>
                 {
                     featureDict[IAsymmetricObject] = 1;
                     return true;
@@ -495,8 +495,13 @@ namespace RealmWeaver
             },
             {
                 // TODO andrea: I'm not sure if there's a better way to look for classes
-                "Class", (property, featureDict, references) =>
+                "Class", (member, featureDict, references) =>
                 {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return false;
+                    }
+
                     if (property.PropertyType.IsIRealmObjectBaseImplementor(references))
                     {
                         featureDict[RealmObjectReference] = 1;
@@ -507,15 +512,20 @@ namespace RealmWeaver
                 }
             },
             {
-                nameof(RealmValue), (property, featureDict, references) =>
+                nameof(RealmValue), (member, featureDict, references) =>
                 {
                     featureDict[RealmValue] = 1;
                     return true;
                 }
             },
             {
-                "IList`1", (property, featureDict, references) =>
+                "IList`1", (member, featureDict, references) =>
                 {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return false;
+                    }
+
                     if (((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive)
                     {
                         featureDict[PrimitiveList] = 1;
@@ -530,8 +540,13 @@ namespace RealmWeaver
                 }
             },
             {
-                "IDictionary`2", (property, featureDict, references) =>
+                "IDictionary`2", (member, featureDict, references) =>
                 {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return false;
+                    }
+
                     if (((GenericInstanceType)property.PropertyType).GenericArguments[1].IsPrimitive)
                     {
                         featureDict[PrimitiveDictionary] = 1;
@@ -546,8 +561,13 @@ namespace RealmWeaver
                 }
             },
             {
-                "ISet`1", (property, featureDict, references) =>
+                "ISet`1", (member, featureDict, references) =>
                 {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return false;
+                    }
+
                     if (((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive)
                     {
                         featureDict[PrimitiveSet] = 1;
@@ -562,7 +582,7 @@ namespace RealmWeaver
                 }
             },
             {
-                "RealmInteger`1", (property, featureDict, references) =>
+                "RealmInteger`1", (member, featureDict, references) =>
                 {
                     featureDict[RealmInteger] = 1;
                     return true;
@@ -612,6 +632,25 @@ namespace RealmWeaver
 
         private void AnalyzeRealmClass(TypeDefinition type)
         {
+            if (_classAnalysisSetters.ContainsKey(nameof(IAsymmetricObject)) &&
+                (type.IsIAsymmetricObjectImplementor(_references) ||
+                type.IsAsymmetricObjectDescendant(_references)))
+            {
+                if (_classAnalysisSetters[nameof(IAsymmetricObject)].Invoke(type, _realmFeaturesToAnalyse, _references))
+                {
+                    _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
+                }
+            }
+            else if (_classAnalysisSetters.ContainsKey(nameof(IEmbeddedOjbect)) &&
+                (type.IsIEmbeddedObjectImplementor(_references) ||
+                type.IsEmbeddedObjectDescendant(_references)))
+            {
+                if (_classAnalysisSetters[nameof(IEmbeddedOjbect)].Invoke(type, _realmFeaturesToAnalyse, _references))
+                {
+                    _classAnalysisSetters.Remove(nameof(IEmbeddedOjbect));
+                }
+            }
+
             foreach (var property in type.Properties)
             {
                 var key = property.PropertyType.Name;
@@ -627,23 +666,6 @@ namespace RealmWeaver
                     {
                         // if the byte is set, remove the entry from the dict to avoid unnecessary work
                         _classAnalysisSetters.Remove(key);
-                    }
-                }
-
-                if (_classAnalysisSetters.ContainsKey(nameof(IAsymmetricObject)) &&
-                    property.DeclaringType.IsIAsymmetricObjectImplementor(_references))
-                {
-                    if (_classAnalysisSetters[nameof(IAsymmetricObject)].Invoke(property, _realmFeaturesToAnalyse, _references))
-                    {
-                        _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
-                    }
-                }
-                else if (_classAnalysisSetters.ContainsKey(nameof(IEmbeddedOjbect)) &&
-                    property.DeclaringType.IsIEmbeddedObjectImplementor(_references))
-                {
-                    if (_classAnalysisSetters[nameof(IEmbeddedOjbect)].Invoke(property, _realmFeaturesToAnalyse, _references))
-                    {
-                        _classAnalysisSetters.Remove(nameof(IEmbeddedOjbect));
                     }
                 }
             }
@@ -708,6 +730,11 @@ namespace RealmWeaver
         {
             try
             {
+                if (_config.AnalyticsCollection == AnalyticsCollection.Disabled)
+                {
+                    return "Analytics disabled";
+                }
+
                 var pretty = false;
                 var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
@@ -716,12 +743,11 @@ namespace RealmWeaver
 #endif
                 var payload = GetJsonPayload(pretty);
 
-                // uncomment next line to inspect the payload under Windows VS build
-                // Debugger.Launch();
-
-                var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-
-                SendRequest(sendAddr, base64Payload, string.Empty);
+                if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
+                {
+                    var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+                    SendRequest(sendAddr, base64Payload, string.Empty);
+                }
 
                 return payload;
             }
@@ -801,10 +827,12 @@ namespace RealmWeaver
                         continue;
                     }
 
-                    var index = new int[] {
+                    var index = new int[]
+                    {
                         key.IndexOf("get_", StringComparison.Ordinal),
                         key.IndexOf("set_", StringComparison.Ordinal),
-                        key.IndexOf("add_", StringComparison.Ordinal) }.Max();
+                        key.IndexOf("add_", StringComparison.Ordinal)
+                    }.Max();
 
                     if (index > -1)
                     {
@@ -850,6 +878,8 @@ namespace RealmWeaver
                     return true;
                 }
             }
+            // TODO andrea: currently the tests don't include the SG so this attribute is never found
+            // when classes inherit from any IRealmObject Interface
             else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
             {
                 // Generated types
@@ -875,7 +905,9 @@ namespace RealmWeaver
 
         public class Config
         {
-            public bool RunAnalytics { get; set; }
+            public AnalyticsCollection AnalyticsCollection { get; set; }
+
+            public string AnalyticsLogPath { get; set; }
 
             public string TargetOSName { get; set; }
 
@@ -888,6 +920,14 @@ namespace RealmWeaver
             public string ModuleName { get; set; }
 
             public string FrameworkVersion { get; set; }
+        }
+
+        public enum AnalyticsCollection
+        {
+            Disabled,
+            DryRun,
+            Minimal,
+            Full,
         }
     }
 }

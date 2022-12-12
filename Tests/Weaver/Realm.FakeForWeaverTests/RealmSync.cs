@@ -35,10 +35,6 @@ namespace Realms.Sync
     {
     }
 
-    public class User
-    {
-    }
-
     public class Credentials
     {
         public static Credentials Anonymous(bool reuseExisting = true) => null;
@@ -60,45 +56,11 @@ namespace Realms.Sync
         public static Credentials ServerApiKey(string serverApiKey) => null;
     }
 
-    public class FlexibleSyncConfiguration : SyncConfigurationBase
-    {
-        public FlexibleSyncConfiguration(User user, string optionalPath = null)
-            : base(user)
-        {
-        }
-    }
-
-    public class SyncConfigurationBase
-    {
-        protected SyncConfigurationBase(User user)
-        {
-        }
-    }
-
     [Obsolete("Use PartitionSyncConfiguration instead.")]
     public class SyncConfiguration : PartitionSyncConfiguration
     {
         public SyncConfiguration(string partition, User user, string optionalPath = null)
             : base(partition, user, optionalPath)
-        {
-        }
-    }
-
-    public class PartitionSyncConfiguration : SyncConfigurationBase
-    {
-        public PartitionSyncConfiguration(string partition, User user, string optionalPath = null) : base(user)
-        {
-        }
-
-        public PartitionSyncConfiguration(long? partition, User user, string optionalPath = null) : base(user)
-        {
-        }
-
-        public PartitionSyncConfiguration(ObjectId? partition, User user, string optionalPath = null) : base(user)
-        {
-        }
-
-        public PartitionSyncConfiguration(Guid? partition, User user, string optionalPath = null) : base(user)
         {
         }
     }
