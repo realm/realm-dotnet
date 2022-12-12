@@ -286,7 +286,7 @@ extern "C" {
         TableKey tk = object->get_object_schema().table_key;
         ColKey ck;
         KeyPathArray keyPathArray;
-        for (int i = 0; i < property_count; i ++) {
+        for (int i = 0; i < property_count; i++) {
             KeyPath keyPath;
             auto prop = get_property(*object, property_indices[i]);
             ck = prop.column_key;
