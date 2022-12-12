@@ -186,7 +186,7 @@ namespace Realms
 
             foreach (Property p in ObjectSchema)
             {
-                if (!p.Type.HasFlag(collectionFlag))
+                if ((p.Type & collectionFlag) == 0)
                 {
                     propertyIndices.Add(Metadata.GetPropertyIndex(p.Name, Metadata));
                 }

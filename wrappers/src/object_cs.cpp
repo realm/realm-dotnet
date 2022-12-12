@@ -23,6 +23,7 @@
 #include "realm_export_decls.hpp"
 #include "timestamp_helpers.hpp"
 
+#include <cstddef>
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
@@ -280,11 +281,21 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
     {
+        TableKey tk = object->get_object_schema().table_key;
+        ColKey ck;
+        KeyPathArray keyPathArray;
+        for (int i = 0; i < property_count; i ++) {
+            KeyPath keyPath;
+            auto prop = get_property(*object, property_indices[i]);
+            ck = prop.column_key;
+            keyPath.push_back(std::make_pair(tk, ck));
+            keyPathArray.push_back(keyPath);
+        }
         return handle_errors(ex, [&]() {
-            return subscribe_for_notifications(managed_object, [object](CollectionChangeCallback callback) {
-                return object->add_notification_callback(callback);
+            return subscribe_for_notifications(managed_object, [object, keyPathArray](CollectionChangeCallback callback) {
+                return object->add_notification_callback(callback, keyPathArray);
             }, new ObjectSchema(object->get_object_schema()));
         });
     }
