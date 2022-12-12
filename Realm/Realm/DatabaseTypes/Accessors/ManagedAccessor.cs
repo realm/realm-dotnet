@@ -182,15 +182,7 @@ namespace Realms
             }
 
             PropertyType collectionFlag = PropertyType.Array | PropertyType.Dictionary | PropertyType.Set;
-            List<IntPtr> propertyIndices = new List<IntPtr>();
-
-            foreach (Property p in ObjectSchema)
-            {
-                if ((p.Type & collectionFlag) == 0)
-                {
-                    propertyIndices.Add(Metadata.GetPropertyIndex(p.Name, Metadata));
-                }
-            }
+            List<IntPtr> propertyIndices = (from p in ObjectSchema where (p.Type & collectionFlag) == 0 select Metadata.GetPropertyIndex(p.Name, Metadata)).ToList();
 
             Realm.ExecuteOutsideTransaction(() =>
             {
