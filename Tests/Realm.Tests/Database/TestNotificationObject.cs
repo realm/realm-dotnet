@@ -34,14 +34,20 @@ namespace Realms.Tests.Database
     {
         public string StringProperty { get; set; }
 
-        public IList<TestNotificationObject> ListProperty { get; }
+        public IList<TestNotificationObject> ListSameType { get; }
 
-        public ISet<TestNotificationObject> SetProperty { get; }
+        public ISet<TestNotificationObject> SetSameType { get; }
 
-        public IDictionary<string, TestNotificationObject> DictionaryProperty { get; }
+        public IDictionary<string, TestNotificationObject> DictionarySameType { get; }
 
-        public TestNotificationObject SameTypeLinkProperty { get; set; }
+        public TestNotificationObject LinkSameType { get; set; }
 
-        public Person DifferentTypeLinkProperty { get; set; }
+        public IList<Person> ListDifferentType { get; }
+
+        public ISet<Person> SetDifferentType { get; }
+
+        public IDictionary<string, Person> DictionaryDifferentType { get; }
+
+        public Person LinkDifferentType { get; set; }
     }
 }

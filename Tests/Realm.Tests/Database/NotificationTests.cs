@@ -214,13 +214,75 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void CollectionPropertiesInObjectShouldNotFireNotificationsOnChange()
+        public void CollectionPropertiesOfDifferentTypeShouldNotFireNotificationsOnChange()
         {
             var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
-            var notificationCount = 0;
             testObject.PropertyChanged += (sender, e) =>
             {
-                notificationCount++;
+                Assert.That(e.PropertyName, Is.EqualTo("StringProperty"));
+            };
+
+            var testPerson1 = new Person();
+            var testPerson2 = new Person();
+            var testPerson3 = new Person();
+            var testPerson4 = new Person();
+            var testPerson5 = new Person();
+            var list = testObject.ListDifferentType;
+            var set = testObject.SetDifferentType;
+            var dictionary = testObject.DictionaryDifferentType;
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                list.Add(testPerson1);
+                set.Add(testPerson2);
+                dictionary.Add("foo", testPerson3);
+            });
+            _realm.Refresh();
+
+            // Update primitive property while inserting
+            _realm.Write(() =>
+            {
+                // Only this assignment should fire a notification
+                testObject.StringProperty = "foo";
+                list.Add(testPerson4);
+                list.Add(testPerson5);
+            });
+            _realm.Refresh();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                list.First().Nickname = "foo1";
+                set.First().Nickname = "foo2";
+                dictionary.First().Value.Nickname = "foo3";
+            });
+            _realm.Refresh();
+
+            // Moving
+            _realm.Write(() =>
+            {
+                list.Move(0, 1);
+            });
+            _realm.Refresh();
+
+            // Removing
+            _realm.Write(() =>
+            {
+                _realm.Remove(list.First());
+                _realm.Remove(set.First());
+                dictionary.Remove("foo");
+            });
+            _realm.Refresh();
+        }
+
+        [Test]
+        public void CollectionPropertiesOfSameTypeShouldNotFireNotificationsOnChange()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                Assert.That(e.PropertyName, Is.EqualTo("StringProperty"));
             };
 
             var testObject1 = new TestNotificationObject();
@@ -228,18 +290,25 @@ namespace Realms.Tests.Database
             var testObject3 = new TestNotificationObject();
             var testObject4 = new TestNotificationObject();
             var testObject5 = new TestNotificationObject();
-            var list = testObject.ListProperty;
-            var set = testObject.SetProperty;
-            var dictionary = testObject.DictionaryProperty;
+            var list = testObject.ListSameType;
+            var set = testObject.SetSameType;
+            var dictionary = testObject.DictionarySameType;
 
             // Insertions
             _realm.Write(() =>
             {
                 list.Add(testObject1);
-                list.Add(testObject4);
-                list.Add(testObject5);
                 set.Add(testObject2);
                 dictionary.Add("foo", testObject3);
+            });
+
+            // Update primitive property while inserting
+            _realm.Write(() =>
+            {
+                // Only this assignment should fire a notification
+                testObject.StringProperty = "foo";
+                list.Add(testObject4);
+                list.Add(testObject5);
             });
             _realm.Refresh();
 
@@ -267,7 +336,6 @@ namespace Realms.Tests.Database
                 dictionary.Remove("foo");
             });
             _realm.Refresh();
-            Assert.That(notificationCount, Is.EqualTo(0));
         }
 
         [Test]
@@ -276,8 +344,8 @@ namespace Realms.Tests.Database
             var testObject = new TestNotificationObject();
             var otherTestObject = new TestNotificationObject();
             var person = new Person();
-            testObject.SameTypeLinkProperty = otherTestObject;
-            testObject.DifferentTypeLinkProperty = person;
+            testObject.LinkSameType = otherTestObject;
+            testObject.LinkDifferentType = person;
             _realm.Write(() => _realm.Add(testObject));
             var notificationCount = 0;
             testObject.PropertyChanged += (sender, e) =>
@@ -287,14 +355,14 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 // Should not fire a propertyChanged
-                testObject.SameTypeLinkProperty.StringProperty = "foo";
-                testObject.DifferentTypeLinkProperty.Nickname = "bar";
+                testObject.LinkSameType.StringProperty = "foo";
+                testObject.LinkDifferentType.Nickname = "bar";
             });
             _realm.Refresh();
             _realm.Write(() =>
             {
-                testObject.SameTypeLinkProperty = new TestNotificationObject();
-                testObject.DifferentTypeLinkProperty = new Person();
+                testObject.LinkSameType = new TestNotificationObject();
+                testObject.LinkDifferentType = new Person();
             });
             _realm.Refresh();
             Assert.That(notificationCount, Is.EqualTo(2));
