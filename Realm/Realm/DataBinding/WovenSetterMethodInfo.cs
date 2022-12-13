@@ -64,15 +64,13 @@ namespace Realms.DataBinding
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            var realmObject = obj as IRealmObjectBase;
-
-            if (realmObject?.IsManaged == true)
+            if (obj is IRealmObjectBase realmObject && realmObject.IsManaged == true)
             {
                 var currentValue = _getterMi.Invoke(realmObject, null);
                 var newValue = parameters[0];
 
                 // We don't call the setter if the current value is equal to the new value due to a bug in MAUI (https://github.com/realm/realm-dotnet/issues/3128)
-                if (currentValue?.Equals(newValue) == true || (currentValue == null && newValue == null) )
+                if (currentValue?.Equals(newValue) == true || (currentValue == null && newValue == null))
                 {
                     return null;
                 }
@@ -80,7 +78,7 @@ namespace Realms.DataBinding
                 var managingRealm = realmObject.Realm;
 
                 // If managingRealm is not null and not currently in transaction, wrap setting the property in a realm.Write(...)
-                if (realmObject.Realm?.IsInTransaction == false)
+                if (managingRealm?.IsInTransaction == false)
                 {
                     return managingRealm.Write(() =>
                     {
