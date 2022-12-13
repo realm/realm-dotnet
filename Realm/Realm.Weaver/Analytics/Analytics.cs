@@ -248,8 +248,7 @@ namespace RealmWeaver
                             break;
                     }
 
-                    // TODO andrea: check why these aren't recognized as bytes
-                    return (byte)(featureDict[ResultSubscribeForNotifications] &
+                    return (featureDict[ResultSubscribeForNotifications] &
                         featureDict[ListSubscribeForNotifications] &
                         featureDict[SetSubscribeForNotifications] &
                         featureDict[DictionarySubscribeForNotifications]) == 0x1;
