@@ -217,9 +217,11 @@ namespace Realms.Tests.Database
         public void CollectionPropertiesOfDifferentTypeShouldNotFireNotificationsOnChange()
         {
             var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var propertyEventArgs = new List<string>();
+
             testObject.PropertyChanged += (sender, e) =>
             {
-                Assert.That(e.PropertyName, Is.EqualTo("StringProperty"));
+                propertyEventArgs.Add(e.PropertyName);
             };
 
             var testPerson1 = new Person();
@@ -239,16 +241,19 @@ namespace Realms.Tests.Database
                 dictionary.Add("foo", testPerson3);
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Update primitive property while inserting
             _realm.Write(() =>
             {
-                // Only this assignment should fire a notification
                 testObject.StringProperty = "foo";
                 list.Add(testPerson4);
                 list.Add(testPerson5);
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
@@ -258,6 +263,7 @@ namespace Realms.Tests.Database
                 dictionary.First().Value.Nickname = "foo3";
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Moving
             _realm.Write(() =>
@@ -265,6 +271,7 @@ namespace Realms.Tests.Database
                 list.Move(0, 1);
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Removing
             _realm.Write(() =>
@@ -274,15 +281,17 @@ namespace Realms.Tests.Database
                 dictionary.Remove("foo");
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void CollectionPropertiesOfSameTypeShouldNotFireNotificationsOnChange()
         {
             var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var propertyEventArgs = new List<string>();
             testObject.PropertyChanged += (sender, e) =>
             {
-                Assert.That(e.PropertyName, Is.EqualTo("StringProperty"));
+                propertyEventArgs.Add(e.PropertyName);
             };
 
             var testObject1 = new TestNotificationObject();
@@ -301,16 +310,20 @@ namespace Realms.Tests.Database
                 set.Add(testObject2);
                 dictionary.Add("foo", testObject3);
             });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Update primitive property while inserting
             _realm.Write(() =>
             {
-                // Only this assignment should fire a notification
                 testObject.StringProperty = "foo";
                 list.Add(testObject4);
                 list.Add(testObject5);
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
@@ -320,6 +333,7 @@ namespace Realms.Tests.Database
                 dictionary.First().Value.StringProperty = "foo3";
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Moving
             _realm.Write(() =>
@@ -327,6 +341,7 @@ namespace Realms.Tests.Database
                 list.Move(0, 1);
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
 
             // Removing
             _realm.Write(() =>
@@ -336,6 +351,7 @@ namespace Realms.Tests.Database
                 dictionary.Remove("foo");
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -347,25 +363,31 @@ namespace Realms.Tests.Database
             testObject.LinkSameType = otherTestObject;
             testObject.LinkDifferentType = person;
             _realm.Write(() => _realm.Add(testObject));
-            var notificationCount = 0;
+            var propertyEventArgs = new List<string>();
             testObject.PropertyChanged += (sender, e) =>
             {
-                notificationCount++;
+                propertyEventArgs.Add(e.PropertyName);
             };
             _realm.Write(() =>
             {
                 // Should not fire a propertyChanged
-                testObject.LinkSameType.StringProperty = "foo";
-                testObject.LinkDifferentType.Nickname = "bar";
+                testObject.StringProperty = "foo";
+                testObject.LinkSameType.StringProperty = "bar";
+                testObject.LinkDifferentType.Nickname = "foobar";
             });
             _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
+            
             _realm.Write(() =>
             {
                 testObject.LinkSameType = new TestNotificationObject();
                 testObject.LinkDifferentType = new Person();
             });
             _realm.Refresh();
-            Assert.That(notificationCount, Is.EqualTo(2));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "LinkDifferentType", "LinkSameType" }));
         }
 
         [Test]
