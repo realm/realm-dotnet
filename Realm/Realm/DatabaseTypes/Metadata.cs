@@ -43,14 +43,14 @@ namespace Realms
             Schema = schema;
         }
 
-        public static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
+        public IntPtr GetPropertyIndex(string propertyName)
         {
-            if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            if (PropertyIndices.TryGetValue(propertyName, out var result))
             {
                 return result;
             }
 
-            throw new MissingMemberException(metadata.Schema.Name, propertyName);
+            throw new MissingMemberException(Schema.Name, propertyName);
         }
     }
 }
