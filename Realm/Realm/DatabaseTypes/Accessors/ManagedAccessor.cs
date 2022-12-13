@@ -43,6 +43,8 @@ namespace Realms
 
         private Action<string> _onNotifyPropertyChanged;
 
+        private IntPtr[] _propertyIndices;
+
         internal ObjectHandle ObjectHandle { get; private set; }
 
         /// <inheritdoc/>
@@ -169,6 +171,18 @@ namespace Realms
             return Realm.MakeObject(parentMetadata, parentHandle);
         }
 
+        private IntPtr[] GetPropertyIndices()
+        {
+            if (_propertyIndices != null)
+            {
+                return _propertyIndices;
+            }
+
+            const PropertyType collectionFlag = PropertyType.Array | PropertyType.Dictionary | PropertyType.Set;
+            _propertyIndices = (from p in ObjectSchema where (p.Type & collectionFlag) == 0 select Metadata.GetPropertyIndex(p.Name)).ToArray();
+            return _propertyIndices;
+        }
+
         /// <inheritdoc/>
         public void SubscribeForNotifications(Action<string> notifyPropertyChangedDelegate)
         {
@@ -181,15 +195,13 @@ namespace Realms
                 throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
             }
 
-            PropertyType collectionFlag = PropertyType.Array | PropertyType.Dictionary | PropertyType.Set;
-            IntPtr[] propertyIndices = (from p in ObjectSchema where (p.Type & collectionFlag) == 0 select Metadata.GetPropertyIndex(p.Name)).ToArray();
 
             Realm.ExecuteOutsideTransaction(() =>
             {
                 if (ObjectHandle.IsValid)
                 {
                     var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), propertyIndices);
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), GetPropertyIndices());
                 }
             });
         }
