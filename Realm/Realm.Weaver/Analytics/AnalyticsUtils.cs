@@ -150,6 +150,8 @@ namespace RealmWeaver
                 // Make sure we get build failures and address the problem in debug,
                 // but don't fail users' builds because of that.
                 throw;
+#else
+                return string.Empty;
 #endif
             }
         }
