@@ -68,15 +68,19 @@ namespace Realms.DataBinding
 
             if (realmObject?.IsManaged == true)
             {
-                if (_getterMi.Invoke(realmObject, null).Equals(parameters[0]))
+                var currentValue = _getterMi.Invoke(realmObject, null);
+                var newValue = parameters[0];
+
+                // We don't call the setter if the current value is equal to the new value due to a bug in MAUI (https://github.com/realm/realm-dotnet/issues/3128)
+                if (currentValue?.Equals(newValue) == true || (currentValue == null && newValue == null) )
                 {
                     return null;
                 }
 
-                var managingRealm = (obj as IRealmObjectBase)?.Realm;
+                var managingRealm = realmObject.Realm;
 
                 // If managingRealm is not null and not currently in transaction, wrap setting the property in a realm.Write(...)
-                if (managingRealm?.IsInTransaction == false)
+                if (realmObject.Realm?.IsInTransaction == false)
                 {
                     return managingRealm.Write(() =>
                     {
