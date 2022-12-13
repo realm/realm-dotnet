@@ -87,7 +87,7 @@ namespace realm {
             void* managed_http_client;
         };
 
-        class SyncLogger : public util::RootLogger {
+        class SyncLogger : public util::Logger {
         public:
             SyncLogger(void* delegate)
                 : managed_logger(delegate)
@@ -175,9 +175,9 @@ extern "C" {
             void* managed_logger = app_config.managed_logger;
             if (managed_logger) {
                 sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
-                    auto logger = std::make_unique<SyncLogger>(managed_logger);
+                    auto logger = std::make_shared<SyncLogger>(managed_logger);
                     logger->set_level_threshold(level);
-                    return std::unique_ptr<util::Logger>(logger.release());
+                    return logger;
                 };
             }
 
