@@ -841,7 +841,8 @@ namespace Realms
         {
             if (invoke_async)
             {
-                // The task awaiting on this tcs should only continue once the native method Realm::run_writes has finished to run.
+                // There are situations where we want to let the native function exit before dispatching the continuation.
+                // One example is Realm::run_writes which needs to complete before we can start writing to the Realm.
                 SynchronizationContext.Current.Post(_ =>
                 {
                     HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
