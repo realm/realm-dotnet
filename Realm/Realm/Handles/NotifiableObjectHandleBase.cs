@@ -52,7 +52,7 @@ namespace Realms
         {
         }
 
-        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, List<IntPtr> propertyIndices = null);
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null);
 
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 

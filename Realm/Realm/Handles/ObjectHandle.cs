@@ -354,10 +354,10 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, List<IntPtr> propertyIndices = null)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null)
         {
             EnsureIsOpen();
-            IntPtr[] pIArray = propertyIndices?.Any() != true ? Array.Empty<IntPtr>() : propertyIndices.ToArray();
+            IntPtr[] pIArray = propertyIndices == null ? Array.Empty<IntPtr>() : propertyIndices.ToArray();
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, pIArray, (IntPtr)pIArray.Length, out var nativeException);
             nativeException.ThrowIfNecessary();
 
