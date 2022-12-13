@@ -64,7 +64,7 @@ namespace Realms.DataBinding
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            if (obj is IRealmObjectBase realmObject && realmObject.IsManaged == true)
+            if (obj is IRealmObjectBase realmObject && realmObject.IsManaged)
             {
                 var currentValue = _getterMi.Invoke(realmObject, null);
                 var newValue = parameters[0];
