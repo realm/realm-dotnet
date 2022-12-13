@@ -40,6 +40,7 @@
 
 ### Internal
 * Using Core 13.1.0.
+* Replaced `Realm.RefreshAsync` with a native implementation. (PR [#2995](https://github.com/realm/realm-dotnet/pull/2995))
 
 ## 10.18.0 (2022-11-02)
 
