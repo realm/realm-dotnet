@@ -16,24 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-//#if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
-using TestRealmObject = Realms.RealmObject;
-//#else
-//using TestAsymmetricObject = Realms.IAsymmetricObject;
-//using TestEmbeddedObject = Realms.IEmbeddedObject;
-//using TestRealmObject = Realms.IRealmObject;
-//#endif
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 public class Program
 {
@@ -306,20 +304,19 @@ public class Program
     }
 #endif
 
-    public class JustForObjectReference : TestRealmObject
+    public partial class JustForObjectReference : TestRealmObject
     {
 
     }
 
-    // IRealmObject in here is just temporary to make Find work
-    public class RootRealmClass : TestRealmObject, IRealmObject
+    public partial class RootRealmClass : TestRealmObject
     {
 #if REALM_OBJECT_REFERENCE
         JustForObjectReference JustForRef { get; set; }
 #endif
 
 #if REFERENCE_LIST
-        IList<object> ReferenceList { get; }
+        IList<JustForObjectReference> ReferenceList { get; }
 #endif
 
 #if PRIMITIVE_LIST
@@ -327,15 +324,15 @@ public class Program
 #endif
 
 #if REFERENCE_DICTIONARY
-        IDictionary<int, object> ReferenceDictionary { get; }
+        IDictionary<string, JustForObjectReference> ReferenceDictionary { get; }
 #endif
 
 #if PRIMITIVE_DICTIONARY
-        IDictionary<int, int> PrimitiveDictionary { get; }
+        IDictionary<string, int> PrimitiveDictionary { get; }
 #endif
 
 #if REFERENCE_SET
-        ISet<object> ReferenceSet { get; }
+        ISet<JustForObjectReference> ReferenceSet { get; }
 #endif
 
 #if PRIMITIVE_SET
