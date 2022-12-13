@@ -17,24 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using System.Text;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Cecil.Rocks;
 
 using static RealmWeaver.AnalyticsUtils;
 using static RealmWeaver.Metric.SdkFeature;
 
 namespace RealmWeaver
 {
+    // TODO andrea: review and update this comment
     // Asynchronously submits build information to Realm when the assembly weaver
     // is running
     //
@@ -63,28 +57,6 @@ namespace RealmWeaver
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
-        /*
-        private const string JsonTemplate = @"{
-   ""event"": ""Run"",
-   ""properties"": {
-      ""token"": ""ce0fac19508f6c8f20066d345d360fd0"",
-      ""distinct_id"": ""%USER_ID%"",
-      ""Anonymized MAC Address"": ""%USER_ID%"",
-      ""Anonymized Bundle ID"": ""%APP_ID%"",
-      ""Binding"": ""dotnet"",
-      ""Language"": ""c#"",
-      ""Framework"": ""%FRAMEWORK%"",
-      ""Framework Version"": ""%FRAMEWORK_VERSION%"",
-      ""Sync Enabled"": ""%SYNC_ENABLED%"",
-      ""Realm Version"": ""%REALM_VERSION%"",
-      ""Host OS Type"": ""%OS_TYPE%"",
-      ""Host OS Version"": ""%OS_VERSION%"",
-      ""Target OS Type"": ""%TARGET_OS%"",
-      ""Target OS Version"": ""%TARGET_OS_VERSION%""
-   }
-}";
-        */
-
         private readonly ImportedReferences _references;
 
         #region FeatureDiciontaries
@@ -155,8 +127,6 @@ namespace RealmWeaver
             { CoreVersion, string.Empty },
             { Framework, string.Empty },
             { FrameworkVersion, string.Empty },
-            { TargetUserRuntime, string.Empty },
-            { TargetUserRuntimeVersion, string.Empty },
         };
 
         private Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
@@ -594,36 +564,6 @@ namespace RealmWeaver
         #endregion
 
         private readonly Config _config;
-
-        /*
-        private string JsonPayload
-        {
-            get
-            {
-                ComputeHostOSNameAndVersion(out var osName, out var osVersion);
-                return JsonTemplate
-                    .Replace("%USER_ID%", AnonymizedUserID)
-                    .Replace("%APP_ID%", _config.ModuleName)
-
-                    .Replace("%SYNC_ENABLED%", _config.IsUsingSync.ToString())
-
-                    // Version of weaver is expected to match that of the library.
-                    .Replace("%REALM_VERSION%", Assembly.GetExecutingAssembly().GetName().Version.ToString())
-
-                    .Replace("%OS_TYPE%", osName)
-                    .Replace("%OS_VERSION%", osVersion)
-                    .Replace("%TARGET_OS%", _config.TargetOSName)
-                    .Replace("%TARGET_OS_VERSION%", _config.TargetOSVersion)
-                    .Replace("%FRAMEWORK%", _config.Framework)
-                    .Replace("%FRAMEWORK_VERSION%", _config.FrameworkVersion);
-            }
-        }
-        */
-        //internal Analytics(Config config)
-        //{
-        //    config.ModuleName = SHA256Hash(Encoding.UTF8.GetBytes(config.ModuleName));
-        //    _config = config;
-        //}
 
         internal Analytics(Config config, ImportedReferences references)
         {

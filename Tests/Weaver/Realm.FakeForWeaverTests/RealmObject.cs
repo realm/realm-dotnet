@@ -92,17 +92,17 @@ namespace Realms
 
         //IRealmAccessor IRealmObjectBase.Accessor => default;
 
-        public bool Accessor { get; }
+        //public bool Accessor { get; }
 
-        public bool IsValid { get; }
+        //public bool IsValid { get; }
 
-        public bool IsFrozen { get; }
+        //public bool IsFrozen { get; }
 
-        public Schema.ObjectSchema ObjectSchema { get; }
+        //public Schema.ObjectSchema ObjectSchema { get; }
 
-        public DynamicObjectApi DynamicApi { get; }
+        //public DynamicObjectApi DynamicApi { get; }
 
-        public int BacklinksCount { get; }
+        //public int BacklinksCount { get; }
 
         private void LogString(string s)
         {

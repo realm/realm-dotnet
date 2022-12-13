@@ -71,8 +71,6 @@ namespace RealmWeaver
             public const string CoreVersion = "Core_Version";
             public const string Framework = "Framework";
             public const string FrameworkVersion = "Framework_Version";
-            public const string TargetUserRuntime = "Target_Runtime"; // TODO andrea: Should we add this?
-            public const string TargetUserRuntimeVersion = "Target_Runtime_Version"; // TODO andrea: Should we add this?
 
             // TODO andrea: What about backlinks?
             public const string IEmbeddedOjbect = "Embedded_Object";
