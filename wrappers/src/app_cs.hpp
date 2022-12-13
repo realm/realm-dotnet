@@ -133,6 +133,22 @@ namespace binding {
     extern std::function<BsonCallbackT> s_bson_callback;
     extern std::function<ApiKeysCallbackT> s_api_keys_callback;
 
+    inline auto get_string_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](const std::string* response, util::Optional<AppError> err) {
+            if (err) {
+                std::string error_category = err->error_code.message();
+                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+
+                s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
+            } else if (response) {
+                s_bson_callback(tcs_ptr, to_capi_value(*response), MarshaledAppError());
+            }
+            else {
+                s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
+            }
+        };
+    }
+
     inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {

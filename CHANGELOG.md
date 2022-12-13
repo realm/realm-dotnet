@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Removed redundant serialization/deserialization of arguments in CallAsync. (Issue [#3079](https://github.com/realm/realm-dotnet/issues/3079))
 * Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
 * Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
 * Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
@@ -12,6 +13,8 @@
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
+* The realm file will be shrunk if the larger file size is no longer needed. (Core upgrade)
+* Most of the file growth caused by version pinning is eliminated. (Core upgrade)
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
 
 ### Fixed
@@ -26,13 +29,17 @@
 * Fix database corruption and encryption issues on apple platforms. (Core upgrade)
 * Added fully qualified names for source generated files, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099)
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
+* Fixed an issue where fetching a user's profile while the user logs out would result in an assertion failure. (Core upgrade)
+* Removed the ".tmp_compaction_space" file being left over after compacting a Realm on Windows. (Core upgrade)
+* Fixed an issue where sets would consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core upgrade)
+* Fixed wrong assertion on query error that could result in a crash. (Core upgrade)
 * Fixed a crash that would occur if you close a synchronized Realm while waiting for `SubscriptionSet.WaitForSynchronizationAsync`. (Issue [#2952](https://github.com/realm/realm-dotnet/issues/2952))
 
 ### Compatibility
-* Realm Studio: 12.0.0 or later.
+* Realm Studio: 13.1.0 or later.
 
 ### Internal
-* Using Core 12.12.0.
+* Using Core 13.1.0.
 * Replaced `Realm.RefreshAsync` with a native implementation. (PR [#2995](https://github.com/realm/realm-dotnet/pull/2995))
 
 ## 10.18.0 (2022-11-02)

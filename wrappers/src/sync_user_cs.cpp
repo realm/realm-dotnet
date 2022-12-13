@@ -246,9 +246,8 @@ extern "C" {
     {
         handle_errors(ex, [&] {
             Utf16StringAccessor function_name(function_name_buf, function_name_len);
-
-            auto args = to_array(args_buf, args_len);
-            app->call_function(user, function_name, args, get_bson_callback_handler(tcs_ptr));
+            Utf16StringAccessor args_accessor(args_buf, args_len);
+            app->call_function(user, function_name, args_accessor.to_string_view(), std::nullopt, get_string_callback_handler(tcs_ptr));
         });
     }
 

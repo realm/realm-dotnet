@@ -523,6 +523,11 @@ public:
     {
         return std::string(m_data.get(), m_size);
     }
+    
+    std::string_view to_string_view() const
+    {
+        return std::string_view(m_data.get(), m_size);
+    }
 
     operator std::string() const noexcept
     {
