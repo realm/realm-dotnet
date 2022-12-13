@@ -61,6 +61,12 @@
     </None>
     <!-- macOS -->
     <Content Include="wrappers-props\xamarinmac\wrappers.props" Pack="true" PackagePath="build\xamarinmac\Realm.props" />
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\osx\native</PackagePath>
+      <Link>wrappers\Darwin\librealm-wrappers.dylib</Link>
+    </None>
+    <!-- Linux -->
     <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
