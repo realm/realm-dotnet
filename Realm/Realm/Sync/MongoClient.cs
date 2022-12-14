@@ -456,7 +456,7 @@ namespace Realms.Sync
 
                 jsonBuilder.Append("}]");
 
-                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, Database.Client.ServiceName, jsonBuilder.ToString());
+                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), Database.Client.ServiceName);
             }
         }
 
