@@ -22,7 +22,6 @@ using System.Runtime.CompilerServices;
 
 namespace RealmWeaver
 {
-    // TODO andrea: make this internal again after getting InternalsVisibleTo to work
     internal static class Metric
     {
         public static class OperatingSystem
@@ -85,7 +84,6 @@ namespace RealmWeaver
             public const string RealmObjectReference = "Reference_Link";
             public const string RealmValue = "Mixed";
 
-            // API const strings precisely match the name of the API calls in the SDK
             public const string GetInstanceAsync = "Asynchronous_Realm_Open";
             public const string GetInstance = "Synchronous_Realm_Open";
             public const string NOT_SUPPORTED_YET = "Query_Async"; // this is not supported yet

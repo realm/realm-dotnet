@@ -58,6 +58,7 @@ namespace RealmWeaver
     internal class Analytics
     {
         private readonly ImportedReferences _references;
+        private ILogger _logger;
 
         #region FeatureDiciontaries
 
@@ -564,10 +565,11 @@ namespace RealmWeaver
 
         private readonly Config _config;
 
-        internal Analytics(Config config, ImportedReferences references)
+        internal Analytics(Config config, ImportedReferences references, ILogger logger)
         {
             _references = references;
             _config = config;
+            _logger = logger;
         }
 
         private void AnalyzeRealmClass(TypeDefinition type)
@@ -642,7 +644,7 @@ namespace RealmWeaver
             }
             catch (Exception e)
             {
-                ErrorLog($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
+                _logger.Error($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
             }
         }
 
@@ -693,7 +695,7 @@ namespace RealmWeaver
             }
             catch (Exception e)
             {
-                ErrorLog($"Could not submit analytics.{Environment.NewLine}{e.Message}");
+                _logger.Error($"Could not submit analytics.{Environment.NewLine}{e.Message}");
                 return e.Message;
             }
         }
