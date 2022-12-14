@@ -203,7 +203,6 @@ namespace RealmWeaver
                 analyzeAPITask = Task.Run(() =>
                 {
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
-                    // TODO andrea: this may as well go into AnalyzeUserAssembly
                     var payload = analytics.SubmitAnalytics();
                     if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
                     {
