@@ -379,7 +379,7 @@ namespace Realms.Tests.Database
             Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
             Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
             propertyEventArgs.Clear();
-            
+
             _realm.Write(() =>
             {
                 testObject.LinkSameType = new TestNotificationObject();
@@ -429,7 +429,7 @@ namespace Realms.Tests.Database
             // Moving
             _realm.Write(() =>
             {
-                testObject.ListSameType.Move(0,2);;
+                testObject.ListSameType.Move(0, 2);
             });
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));

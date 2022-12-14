@@ -195,7 +195,6 @@ namespace Realms
                 throw new RealmFrozenException("It is not possible to add a change listener to a frozen RealmObjectBase since it never changes.");
             }
 
-
             Realm.ExecuteOutsideTransaction(() =>
             {
                 if (ObjectHandle.IsValid)
