@@ -36,55 +36,55 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 
 namespace realm {
-    namespace binding {
-        inline AuthProvider to_auth_provider(const std::string& provider) {
-            if (provider == IdentityProviderAnonymous) {
-                return AuthProvider::ANONYMOUS;
-            }
-
-            if (provider == IdentityProviderFacebook) {
-                return AuthProvider::FACEBOOK;
-            }
-
-            if (provider == IdentityProviderGoogle) {
-                return AuthProvider::GOOGLE;
-            }
-
-            if (provider == IdentityProviderApple) {
-                return AuthProvider::APPLE;
-            }
-
-            if (provider == IdentityProviderCustom) {
-                return AuthProvider::CUSTOM;
-            }
-
-            if (provider == IdentityProviderUsernamePassword) {
-                return AuthProvider::USERNAME_PASSWORD;
-            }
-
-            if (provider == IdentityProviderFunction) {
-                return AuthProvider::FUNCTION;
-            }
-
-            if (provider == IdentityProviderUserAPIKey) {
-                return AuthProvider::USER_API_KEY;
-            }
-
-            if (provider == IdentityProviderServerAPIKey) {
-                return AuthProvider::SERVER_API_KEY;
-            }
-
-            return (AuthProvider)999;
-        }
+namespace binding {
+inline AuthProvider to_auth_provider(const std::string& provider) {
+    if (provider == IdentityProviderAnonymous) {
+        return AuthProvider::ANONYMOUS;
     }
 
-    void to_json(nlohmann::json& j, const SyncUserIdentity& i)
-    {
-        j = nlohmann::json{
-            { "Id", i.id },
-            { "Provider", to_auth_provider(i.provider_type)}
-        };
+    if (provider == IdentityProviderFacebook) {
+        return AuthProvider::FACEBOOK;
     }
+
+    if (provider == IdentityProviderGoogle) {
+        return AuthProvider::GOOGLE;
+    }
+
+    if (provider == IdentityProviderApple) {
+        return AuthProvider::APPLE;
+    }
+
+    if (provider == IdentityProviderCustom) {
+        return AuthProvider::CUSTOM;
+    }
+
+    if (provider == IdentityProviderUsernamePassword) {
+        return AuthProvider::USERNAME_PASSWORD;
+    }
+
+    if (provider == IdentityProviderFunction) {
+        return AuthProvider::FUNCTION;
+    }
+
+    if (provider == IdentityProviderUserAPIKey) {
+        return AuthProvider::USER_API_KEY;
+    }
+
+    if (provider == IdentityProviderServerAPIKey) {
+        return AuthProvider::SERVER_API_KEY;
+    }
+
+    return (AuthProvider)999;
+}
+}
+
+void to_json(nlohmann::json& j, const SyncUserIdentity& i)
+{
+    j = nlohmann::json{
+        { "Id", i.id },
+        { "Provider", to_auth_provider(i.provider_type)}
+    };
+}
 }
 
 extern "C" {
@@ -242,12 +242,23 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_call_function(SharedSyncUser& user, SharedApp& app, uint16_t* function_name_buf, size_t function_name_len, uint16_t* args_buf, size_t args_len, void* tcs_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT void realm_syncuser_call_function(SharedSyncUser& user,
+        SharedApp& app,
+        uint16_t* function_name_buf, size_t function_name_len,
+        uint16_t* args_buf, size_t args_len,
+        uint16_t* service_buf, size_t service_len,
+        void* tcs_ptr, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&] {
             Utf16StringAccessor function_name(function_name_buf, function_name_len);
-            Utf16StringAccessor args_accessor(args_buf, args_len);
-            app->call_function(user, function_name, args_accessor.to_string_view(), std::nullopt, get_string_callback_handler(tcs_ptr));
+            Utf16StringAccessor args(args_buf, args_len);
+            if (service_buf) {
+                Utf16StringAccessor service(service_buf, service_len);
+                app->call_function(user, function_name, args, service, get_string_callback_handler(tcs_ptr));
+            }
+            else {
+                app->call_function(user, function_name, args, std::nullopt, get_string_callback_handler(tcs_ptr));
+            }
         });
     }
 
