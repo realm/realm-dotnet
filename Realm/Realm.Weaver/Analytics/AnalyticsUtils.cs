@@ -48,16 +48,23 @@ namespace RealmWeaver
 
         public static string GetTargetOsName(FrameworkName frameworkName) =>
             WrapInTryCatch(() =>
-                frameworkName.Identifier switch
+            {
+                switch (frameworkName.Identifier)
                 {
-                    string s when s.ContainsIgnoreCase("android") => Metric.OperatingSystem.Android,
-                    string s when s.ContainsIgnoreCase("ios") => Metric.OperatingSystem.Ios,
-                    string s when s.ContainsIgnoreCase("mac") ||
-                        s.ContainsIgnoreCase("macos") ||
-                        s.ContainsIgnoreCase("maccatalyst") => Metric.OperatingSystem.MacOS,
-                    string s when s.ContainsIgnoreCase("tvos") => Metric.OperatingSystem.TvOs,
-                    _ => Metric.OperatingSystem.Windows,
-                });
+                    case string s when s.ContainsIgnoreCase("android"):
+                        return Metric.OperatingSystem.Android;
+                    case string s when s.ContainsIgnoreCase("ios"):
+                        return Metric.OperatingSystem.Ios;
+                    case string s when s.ContainsIgnoreCase("mac") ||
+                            s.ContainsIgnoreCase("macos") ||
+                            s.ContainsIgnoreCase("maccatalyst"):
+                        return Metric.OperatingSystem.MacOS;
+                    case string s when s.ContainsIgnoreCase("tvos"):
+                        return Metric.OperatingSystem.TvOs;
+                    default:
+                        return Metric.OperatingSystem.Windows;
+                }
+            });
 
         public static string SHA256Hash(byte[] bytes)
         {
@@ -115,25 +122,37 @@ namespace RealmWeaver
 
         private static string ConvertOsNameToMetricsVersion(string osName) =>
             WrapInTryCatch(() =>
-                osName switch
+            {
+                switch (osName)
                 {
-                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Windows) => Metric.OperatingSystem.Windows,
-                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.MacOS) => Metric.OperatingSystem.MacOS,
-                    string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Linux) => Metric.OperatingSystem.Linux,
-                    _ => $"{osName} is an unknown operating system."
-                });
+                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Windows):
+                        return Metric.OperatingSystem.Windows;
+                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.MacOS):
+                        return Metric.OperatingSystem.MacOS;
+                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Linux):
+                        return Metric.OperatingSystem.Linux;
+                    default:
+                        return $"{osName} is an unknown operating system.";
+                }
+            });
 
         private static string ConvertArchitectureToMetricsVersion(string arch) =>
-            arch switch
+            WrapInTryCatch(() =>
             {
-                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)) => CpuArchitecture.Arm,
-                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)) => CpuArchitecture.Arm64,
-                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) ||
-                    s.ContainsIgnoreCase("amd64") => CpuArchitecture.X64,
-                string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) ||
-                    s.ContainsIgnoreCase("i386") => CpuArchitecture.X86,
-                _ => throw new ArgumentException($"{RuntimeInformation.ProcessArchitecture} is an unknown architecture")
-            };
+                switch (arch)
+                {
+                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)):
+                        return CpuArchitecture.Arm;
+                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)):
+                        return CpuArchitecture.Arm64;
+                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) || s.ContainsIgnoreCase("amd64"):
+                        return CpuArchitecture.X64;
+                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) || s.ContainsIgnoreCase("i386"):
+                        return CpuArchitecture.X86;
+                    default:
+                        throw new ArgumentException($"{RuntimeInformation.ProcessArchitecture} is an unknown architecture");
+                }
+            });
 
         private static bool ContainsIgnoreCase(this string @this, string strCompare) =>
             @this.IndexOf(strCompare, StringComparison.OrdinalIgnoreCase) > -1;
