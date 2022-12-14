@@ -42,12 +42,4 @@ namespace Realms.Sync
         ReportIndefinitely,
         ForCurrentlyOutstandingWork
     }
-
-    internal class SyncProgressObservable : IObservable<SyncProgress>
-    {
-        public IDisposable Subscribe(IObserver<SyncProgress> observer) => default;
-
-        public SyncProgressObservable(SessionHandle sessionHandle, ProgressDirection direction, ProgressMode mode)
-        { }
-    }
 }

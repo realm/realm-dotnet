@@ -16,15 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace Realms
 {
+    public abstract class ManagedAccessor
+    {
+    }
+
     public class RealmObject : RealmObjectBase
     {
     }
@@ -37,17 +39,12 @@ namespace Realms
     {
     }
 
-
-    public interface IRealmObjectBase : ISettableManagedAccessor
-    {
-    }
-
-    public interface ISettableManagedAccessor
+    public interface IRealmObjectBase
     {
     }
 
     public interface IRealmObject: IRealmObjectBase
-    { 
+    {
     }
 
     public interface IEmbeddedObject: IRealmObjectBase
@@ -155,39 +152,5 @@ namespace Realms
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-    }
-    
-    public abstract class ManagedAccessor
-    {
-        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
-        { return null; }
-    }
-
-    public struct DynamicObjectApi
-    {
-    }
-
-    namespace Schema
-    {
-        public class ObjectSchema
-        {
-
-            public enum ObjectType : byte
-            {
-                RealmObject = 0,
-                EmbeddedObject = 1,
-                AsymmetricObject = 2,
-            }
-
-            public class Builder
-            {
-                public Builder(string name, ObjectType schemaType)
-                { }
-            }
-        }
-    }
-
-    public class InvalidObject
-    {
     }
 }

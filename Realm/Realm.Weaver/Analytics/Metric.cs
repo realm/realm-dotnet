@@ -73,7 +73,7 @@ namespace RealmWeaver
             public const string FrameworkVersion = "Framework_Version";
 
             // TODO andrea: What about backlinks?
-            public const string IEmbeddedOjbect = "Embedded_Object";
+            public const string IEmbeddedObject = "Embedded_Object";
             public const string IAsymmetricObject = "Asymmetric_Object";
             public const string ReferenceList = "Reference_List";
             public const string PrimitiveList = "Primitive_List";

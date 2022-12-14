@@ -18,6 +18,7 @@
 
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms;
@@ -297,6 +298,9 @@ public class Program
     }
 #endif
 
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+}
+
 #if EMBEDDED_OBJECT
     public partial class EmbeddedTestClass : TestEmbeddedObject
     {
@@ -311,6 +315,8 @@ public class Program
 
     public partial class RootRealmClass : TestRealmObject
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
 #if REALM_OBJECT_REFERENCE
         JustForObjectReference JustForRef { get; set; }
 #endif
@@ -354,6 +360,3 @@ public class Program
         public int Int32Property { get; set; }
     }
 #endif
-
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-}

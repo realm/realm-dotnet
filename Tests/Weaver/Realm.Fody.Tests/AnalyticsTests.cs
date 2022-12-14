@@ -37,7 +37,7 @@ namespace Analytics
     {
         private static readonly Dictionary<string, string> _featureMap = new Dictionary<string, string>()
         {
-            [SdkFeature.IEmbeddedOjbect] = "EMBEDDED_OBJECT",
+            [SdkFeature.IEmbeddedObject] = "EMBEDDED_OBJECT",
             [SdkFeature.IAsymmetricObject] = "ASYMMETRIC_OBJECT",
             [SdkFeature.ReferenceList] = "REFERENCE_LIST",
             [SdkFeature.PrimitiveList] = "PRIMITIVE_LIST",
@@ -174,17 +174,20 @@ namespace Analytics
             process.StartInfo.FileName = command;
             process.StartInfo.Arguments = arguments;
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.Start();
-
+            
             // this is only for debugging
             /*
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            
+
             var output = process.StandardOutput.ReadToEnd();
             Console.WriteLine(output);
             var err = process.StandardError.ReadToEnd();
             Console.WriteLine(err);
             */
+
+            process.Start();
             process.WaitForExit();
         }
     }

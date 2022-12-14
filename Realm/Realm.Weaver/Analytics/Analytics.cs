@@ -63,7 +63,7 @@ namespace RealmWeaver
 
         private Dictionary<string, byte> _realmFeaturesToAnalyse = new Dictionary<string, byte>()
         {
-            [IEmbeddedOjbect] = 0,
+            [IEmbeddedObject] = 0,
             [IAsymmetricObject] = 0,
             [ReferenceList] = 0,
             [PrimitiveList] = 0,
@@ -449,9 +449,9 @@ namespace RealmWeaver
         private Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
         {
             {
-                nameof(IEmbeddedOjbect), (member, featureDict, references) =>
+                nameof(IEmbeddedObject), (member, featureDict, references) =>
                 {
-                    featureDict[IEmbeddedOjbect] = 1;
+                    featureDict[IEmbeddedObject] = 1;
                     return true;
                 }
             },
@@ -581,13 +581,13 @@ namespace RealmWeaver
                     _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
                 }
             }
-            else if (_classAnalysisSetters.ContainsKey(nameof(IEmbeddedOjbect)) &&
+            else if (_classAnalysisSetters.ContainsKey(nameof(IEmbeddedObject)) &&
                 (type.IsIEmbeddedObjectImplementor(_references) ||
                 type.IsEmbeddedObjectDescendant(_references)))
             {
-                if (_classAnalysisSetters[nameof(IEmbeddedOjbect)].Invoke(type, _realmFeaturesToAnalyse, _references))
+                if (_classAnalysisSetters[nameof(IEmbeddedObject)].Invoke(type, _realmFeaturesToAnalyse, _references))
                 {
-                    _classAnalysisSetters.Remove(nameof(IEmbeddedOjbect));
+                    _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
                 }
             }
 
@@ -808,26 +808,8 @@ namespace RealmWeaver
             }
         }
 
-        private static bool IsValidRealmType(TypeDefinition type, ImportedReferences references)
-        {
-            if (type.IsRealmObjectDescendant(references))
-            {
-                // Classic types
-                if (type.IsValidRealmObjectBaseInheritor(references))
-                {
-                    return true;
-                }
-            }
-            // TODO andrea: currently the tests don't include the SG so this attribute is never found
-            // when classes inherit from any IRealmObject Interface
-            else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
-            {
-                // Generated types
-                return true;
-            }
-
-            return false;
-        }
+        private static bool IsValidRealmType(TypeDefinition type, ImportedReferences references) =>
+            type.IsRealmObjectDescendant(references) || type.IsIRealmObjectBaseImplementor(references);
 
         private static bool IsFromNamespace(object operand, string targetNamespace)
         {

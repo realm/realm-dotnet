@@ -25,8 +25,6 @@ namespace Realms
 {
     public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
 
-    //public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet changes, Exception error);
-
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     { }
 }

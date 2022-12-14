@@ -17,24 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Threading.Tasks;
-using MongoDB.Bson;
 
 namespace Realms.Sync
 {
-    public class App
-    {
-        public static App Create(AppConfiguration config) => null;
-
-        public static App Create(string appId) => null;
-
-        public Task<User> LogInAsync(Credentials credentials) => null;
-    }
-
-    public class AppConfiguration
-    {
-    }
-
     public class Credentials
     {
         public static Credentials Anonymous(bool reuseExisting = true) => null;

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;netcoreapp3.1;net6.0</TargetFrameworks>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +10,6 @@
 
   <ItemGroup Label="References">
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj" />
-    <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(AnalyticsConstants)' == ''">

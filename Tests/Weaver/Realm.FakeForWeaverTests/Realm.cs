@@ -45,16 +45,7 @@ namespace Realms
 
         public T Find<T>(Guid? primaryKey) where T : IRealmObject => default;
 
-        public T Add<T>(T obj, bool update) where T : RealmObject => default;
-
-        public RealmObject Add(RealmObject obj, bool update) => default;
-
         public Dynamic DynamicApi => default;
-
-        public void Add<T>(IEnumerable<T> objs, bool update = false)
-            where T : RealmObject
-        {
-        }
 
         public class Dynamic
         {
