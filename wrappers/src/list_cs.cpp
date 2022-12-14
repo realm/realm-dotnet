@@ -212,11 +212,15 @@ REALM_EXPORT void list_destroy(List* list)
     delete list;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_list, [list](CollectionChangeCallback callback) {
-            return list->add_notification_callback(callback, KeyPathArray());
+        return subscribe_for_notifications(managed_list, [list, property_indices](CollectionChangeCallback callback) {
+            if (!property_indices) {
+                return list->add_notification_callback(callback);
+            } else {
+                return list->add_notification_callback(callback, KeyPathArray());
+            }
         });
     });
 }

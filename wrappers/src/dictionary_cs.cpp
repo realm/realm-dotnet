@@ -155,11 +155,15 @@ extern "C" {
         delete dictionary;
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
-                return dictionary->add_notification_callback(callback, KeyPathArray());
+            return subscribe_for_notifications(managed_dict, [dictionary, property_indices](CollectionChangeCallback callback) {
+                if (!property_indices) {
+                    return dictionary->add_notification_callback(callback);
+                } else {
+                    return dictionary->add_notification_callback(callback, KeyPathArray());
+                }
             });
         });
     }

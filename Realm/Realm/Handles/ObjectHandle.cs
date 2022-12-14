@@ -357,8 +357,8 @@ namespace Realms
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null)
         {
             EnsureIsOpen();
-            IntPtr[] pIArray = propertyIndices == null ? Array.Empty<IntPtr>() : propertyIndices.ToArray();
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, pIArray, (IntPtr)pIArray.Length, out var nativeException);
+            var propertyIndicesLength = propertyIndices == null ? (IntPtr)0 : (IntPtr)propertyIndices.Length;
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, propertyIndices, propertyIndicesLength, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new NotificationTokenHandle(Root, result);
