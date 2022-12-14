@@ -159,7 +159,7 @@ extern "C" {
     {
         return handle_errors(ex, [=]() {
             return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
-                return dictionary->add_notification_callback(callback);
+                return dictionary->add_notification_callback(callback, KeyPathArray());
             });
         });
     }

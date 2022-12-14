@@ -216,7 +216,7 @@ REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(Lis
 {
     return handle_errors(ex, [=]() {
         return subscribe_for_notifications(managed_list, [list](CollectionChangeCallback callback) {
-            return list->add_notification_callback(callback);
+            return list->add_notification_callback(callback, KeyPathArray());
         });
     });
 }

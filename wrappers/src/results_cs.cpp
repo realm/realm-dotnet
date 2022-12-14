@@ -105,7 +105,7 @@ REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(
 {
     return handle_errors(ex, [=]() {
         return subscribe_for_notifications(managed_results, [results](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback);
+            return results->add_notification_callback(callback, KeyPathArray());
         });
     });
 }
