@@ -464,7 +464,6 @@ namespace RealmWeaver
                 }
             },
             {
-                // TODO andrea: I'm not sure if there's a better way to look for classes
                 "Class", (member, featureDict, references) =>
                 {
                     if (!(member is PropertyDefinition property))
@@ -606,7 +605,7 @@ namespace RealmWeaver
                 {
                     if (_classAnalysisSetters[key].Invoke(property, _realmFeaturesToAnalyse, _references))
                     {
-                        // if the byte is set, remove the entry from the dict to avoid unnecessary work
+                        // if the byte is set, remove the entry from the dict to avoid future unnecessary work
                         _classAnalysisSetters.Remove(key);
                     }
                 }
