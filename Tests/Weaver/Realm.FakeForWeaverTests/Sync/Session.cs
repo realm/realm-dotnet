@@ -17,14 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.ComponentModel;
 
 namespace Realms.Sync
 {
-    public class Session : INotifyPropertyChanged
+    public class Session
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public IObservable<SyncProgress> GetProgressObservable(ProgressDirection direction, ProgressMode mode) => default;
     }
 

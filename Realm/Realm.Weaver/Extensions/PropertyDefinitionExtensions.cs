@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using RealmWeaver;
@@ -30,8 +29,6 @@ using static RealmWeaver.Weaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class PropertyDefinitionExtensions
 {
-    private static readonly Regex NullableRegex = new Regex("^System.Nullable`1<(?<typeName>.*)>$");
-
     private static readonly IEnumerable<string> _indexableTypes = new[]
     {
         StringTypeName,

@@ -96,10 +96,12 @@ namespace RealmWeaver
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.ProcessArchitecture.ToString()));
 
         public static string GetTargetCpuArchitecture(ModuleDefinition module) =>
+
             // TODO andrea: module.Architecture reports "I386" which isn't a value I could find in the documentation of MS. Investigate
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(module.Architecture.ToString()));
 
         public static byte[] GenerateComputerIdentifier =>
+
             // Assume OS X if not Windows.
             NetworkInterface.GetAllNetworkInterfaces()
                 .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
