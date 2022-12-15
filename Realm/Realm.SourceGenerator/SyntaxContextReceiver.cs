@@ -31,24 +31,23 @@ namespace Realms.SourceGenerator
 
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
-            if (context.Node is ClassDeclarationSyntax classSyntax)
+            if (context.Node is not ClassDeclarationSyntax classSyntax)
             {
-                if (context.SemanticModel.GetDeclaredSymbol(classSyntax) is not ITypeSymbol classSymbol)
-                {
-                    return;
-                }
+                return;
+            }
 
-                if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
-                {
-                    rcDefinition.ClassDeclarations.Add(classSyntax);
-                    return;
-                }
+            var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
 
-                if (classSymbol.IsAnyRealmObjectType())
-                {
-                    var realmClassDefinition = new RealmClassDefinition(classSymbol, new List<ClassDeclarationSyntax> { classSyntax });
-                    _realmClassesDict.Add(classSymbol, realmClassDefinition);
-                }
+            if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
+            {
+                rcDefinition.ClassDeclarations.Add(classSyntax);
+                return;
+            }
+
+            if (classSymbol.IsAnyRealmObjectType())
+            {
+                var realmClassDefinition = new RealmClassDefinition(classSymbol, new List<ClassDeclarationSyntax> { classSyntax });
+                _realmClassesDict.Add(classSymbol, realmClassDefinition);
             }
         }
     }
