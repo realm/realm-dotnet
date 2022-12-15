@@ -719,7 +719,7 @@ namespace RealmWeaver
                 AppendKeyValue(entry);
             }
 
-            var trailingCommaIndex = Environment.NewLine.Length + 1;
+            var trailingCommaIndex = pretty ? Environment.NewLine.Length + 1 : 1;
             jsonPayload.Remove(jsonPayload.Length - trailingCommaIndex, 1);
 
             jsonPayload.Append('}');

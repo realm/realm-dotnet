@@ -40,7 +40,6 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);
 
-        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
         var executionResult = weaver.Execute(GetAnalyticsConfig(frameworkName));
         WriteInfo(executionResult.ToString());
     }
