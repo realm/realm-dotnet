@@ -33,7 +33,10 @@ namespace Realms.SourceGenerator
         {
             if (context.Node is ClassDeclarationSyntax classSyntax)
             {
-                var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
+                if (context.SemanticModel.GetDeclaredSymbol(classSyntax) is not ITypeSymbol classSymbol)
+                {
+                    return;
+                }
 
                 if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
                 {

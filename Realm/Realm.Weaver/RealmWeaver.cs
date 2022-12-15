@@ -195,21 +195,17 @@ namespace RealmWeaver
             var matchingTypes = GetMatchingTypes().ToArray();
 
             Task analyzeAPITask = null;
-            //if (!analyticsConfig.RunAnalytics && AnalyticsUtils.ShouldRunAnalytics)
-            //{
-                // TODO andrea: add check to avoid to instantiate if not needed to do analytics
-                // TODO andrea: also after knowing if to instantiate one or not, check for timestamp file
+            var metricsResult = "Analytics disabled";
+
+            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
+            {
                 var analytics = new Analytics(analyticsConfig, _references, _logger);
-                analyzeAPITask = Task.Run(() =>
+                analyzeAPITask = Task.Run(async () =>
                 {
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
-                    var payload = analytics.SubmitAnalytics();
-                    if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
-                    {
-                        File.WriteAllText(analyticsConfig.AnalyticsLogPath, payload);
-                    }
+                    metricsResult = await analytics.SubmitAnalytics();
                 });
-            //}
+            }
 
             var weaveResults = matchingTypes.Select(matchingType =>
             {
@@ -233,6 +229,10 @@ namespace RealmWeaver
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
             analyzeAPITask?.Wait();
+            if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
+            {
+                File.WriteAllText(analyticsConfig.AnalyticsLogPath, metricsResult);
+            }
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful);
             if (failedResults.Any())

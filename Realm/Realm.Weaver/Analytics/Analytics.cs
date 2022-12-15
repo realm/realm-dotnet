@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
@@ -58,11 +60,11 @@ namespace RealmWeaver
     internal class Analytics
     {
         private readonly ImportedReferences _references;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         #region FeatureDiciontaries
 
-        private Dictionary<string, byte> _realmFeaturesToAnalyse = new Dictionary<string, byte>()
+        private readonly Dictionary<string, byte> _realmFeaturesToAnalyse = new Dictionary<string, byte>()
         {
             [IEmbeddedObject] = 0,
             [IAsymmetricObject] = 0,
@@ -71,10 +73,10 @@ namespace RealmWeaver
             [ReferenceDictionary] = 0,
             [PrimitiveDictionary] = 0,
             [ReferenceSet] = 0,
-            [PrimitiveSet ] = 0,
-            [RealmInteger ] = 0,
-            [RealmObjectReference ] = 0,
-            [RealmValue ] = 0,
+            [PrimitiveSet] = 0,
+            [RealmInteger] = 0,
+            [RealmObjectReference] = 0,
+            [RealmValue] = 0,
             [GetInstanceAsync] = 0,
             [GetInstance] = 0,
             [NOT_SUPPORTED_YET] = 0,
@@ -111,7 +113,7 @@ namespace RealmWeaver
             [DynamicApi] = 0,
         };
 
-        private Dictionary<string, string> _realmEnvMetrics = new Dictionary<string, string>()
+        private readonly Dictionary<string, string> _realmEnvMetrics = new Dictionary<string, string>()
         {
             { UserId, string.Empty },
             { RealmSdk, ".NET" },
@@ -130,7 +132,7 @@ namespace RealmWeaver
             { FrameworkVersion, string.Empty },
         };
 
-        private Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
+        private readonly Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
         {
             {
                 nameof(GetInstanceAsync), (instruction, featureDict, references) =>
@@ -447,7 +449,7 @@ namespace RealmWeaver
             },
         };
 
-        private Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
+        private readonly Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
         {
             {
                 nameof(IEmbeddedObject), (member, featureDict, references) =>
@@ -573,23 +575,19 @@ namespace RealmWeaver
 
         private void AnalyzeRealmClass(TypeDefinition type)
         {
-            if (_classAnalysisSetters.ContainsKey(nameof(IAsymmetricObject)) &&
-                (type.IsIAsymmetricObjectImplementor(_references) ||
-                type.IsAsymmetricObjectDescendant(_references)))
+            Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
+
+            if (_classAnalysisSetters.TryGetValue(nameof(IAsymmetricObject), out featureFunc) &&
+                (type.IsIAsymmetricObjectImplementor(_references) || type.IsAsymmetricObjectDescendant(_references)) &&
+                featureFunc.Invoke(type, _realmFeaturesToAnalyse, _references))
             {
-                if (_classAnalysisSetters[nameof(IAsymmetricObject)].Invoke(type, _realmFeaturesToAnalyse, _references))
-                {
-                    _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
-                }
+                _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
             }
-            else if (_classAnalysisSetters.ContainsKey(nameof(IEmbeddedObject)) &&
-                (type.IsIEmbeddedObjectImplementor(_references) ||
-                type.IsEmbeddedObjectDescendant(_references)))
+            else if (_classAnalysisSetters.TryGetValue(nameof(IEmbeddedObject), out featureFunc) &&
+                (type.IsIEmbeddedObjectImplementor(_references) || type.IsEmbeddedObjectDescendant(_references)) &&
+                featureFunc.Invoke(type, _realmFeaturesToAnalyse, _references))
             {
-                if (_classAnalysisSetters[nameof(IEmbeddedObject)].Invoke(type, _realmFeaturesToAnalyse, _references))
-                {
-                    _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
-                }
+                _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
             }
 
             foreach (var property in type.Properties)
@@ -601,13 +599,11 @@ namespace RealmWeaver
                     key = property.PropertyType.MetadataType.ToString();
                 }
 
-                if (_classAnalysisSetters.ContainsKey(key))
+                if (_classAnalysisSetters.TryGetValue(key, out featureFunc) &&
+                    featureFunc.Invoke(property, _realmFeaturesToAnalyse, _references))
                 {
-                    if (_classAnalysisSetters[key].Invoke(property, _realmFeaturesToAnalyse, _references))
-                    {
-                        // if the byte is set, remove the entry from the dict to avoid future unnecessary work
-                        _classAnalysisSetters.Remove(key);
-                    }
+                    // if the byte is set, remove the entry from the dict to avoid future unnecessary work
+                    _classAnalysisSetters.Remove(key);
                 }
             }
         }
@@ -625,15 +621,16 @@ namespace RealmWeaver
                 _realmEnvMetrics[HostOsVersion] = osVersion;
                 _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
-                //_realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
+
+                // _realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
                 _realmEnvMetrics[TargetOsVersion] = _config.TargetOSVersion;
                 _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
 
                 // TODO andrea: need to find msbuild properties and not custom attributes
-                //_realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
+                // _realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
                 //    .Where(a => a.ToString() == "LangVersion").SingleOrDefault().ToString();
-                
-                //_realmEnvMetrics[Framework] = ;
+
+                // _realmEnvMetrics[Framework] = ;
                 _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
 
                 foreach (var type in module.Types)
@@ -667,15 +664,10 @@ namespace RealmWeaver
             }
         }
 
-        internal string SubmitAnalytics()
+        internal async Task<string> SubmitAnalytics()
         {
             try
             {
-                if (_config.AnalyticsCollection == AnalyticsCollection.Disabled)
-                {
-                    return "Analytics disabled";
-                }
-
                 var pretty = false;
                 var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
@@ -687,7 +679,7 @@ namespace RealmWeaver
                 if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
                 {
                     var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-                    SendRequest(sendAddr, base64Payload, string.Empty);
+                    await SendRequest(sendAddr, base64Payload, string.Empty);
                 }
 
                 return payload;
@@ -742,13 +734,14 @@ namespace RealmWeaver
             }
         }
 
-        private static void SendRequest(string prefixAddr, string payload, string suffixAddr)
+        private static async Task SendRequest(string prefixAddr, string payload, string suffixAddr)
         {
-            var request = System.Net.HttpWebRequest.CreateHttp(new Uri(prefixAddr + payload + suffixAddr));
-            request.Method = "GET";
-            request.Timeout = 4000;
-            request.ReadWriteTimeout = 2000;
-            request.GetResponse();
+            using var httpClient = new HttpClient()
+            {
+                Timeout = TimeSpan.FromSeconds(4)
+            };
+
+            await httpClient.GetAsync(new Uri(prefixAddr + payload + suffixAddr));
         }
 
         private void AnalyzeTypeMethods(TypeDefinition type)
@@ -798,12 +791,10 @@ namespace RealmWeaver
                         key = ((MemberReference)cil.Operand).DeclaringType.Name;
                     }
 
-                    if (_apiAnalysisSetters.ContainsKey(key))
+                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
+                        _apiAnalysisSetters[key].Invoke(cil, _realmFeaturesToAnalyse, _references))
                     {
-                        if (_apiAnalysisSetters[key].Invoke(cil, _realmFeaturesToAnalyse, _references))
-                        {
-                            _apiAnalysisSetters.Remove(key);
-                        }
+                        _apiAnalysisSetters.Remove(key);
                     }
                 }
             }

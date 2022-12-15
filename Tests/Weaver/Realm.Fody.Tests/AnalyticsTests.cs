@@ -107,7 +107,6 @@ namespace Analytics
         {
             foreach (var kvp in _featureMap)
             {
-                // TODO andrea: investigate failures with other targets
                 try
                 {
                     CompileAnalyticsProject(kvp.Value);
