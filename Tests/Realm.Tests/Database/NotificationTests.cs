@@ -370,7 +370,7 @@ namespace Realms.Tests.Database
             };
             _realm.Write(() =>
             {
-                // Should not fire a propertyChanged
+                // Should should only fire for 'testObject.StringProperty = "foo"' since this isn't a nested property.
                 testObject.StringProperty = "foo";
                 testObject.LinkSameType.StringProperty = "bar";
                 testObject.LinkDifferentType.Nickname = "foobar";
@@ -414,7 +414,7 @@ namespace Realms.Tests.Database
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
             Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
-            eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            eventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
@@ -436,7 +436,7 @@ namespace Realms.Tests.Database
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Move));
             Assert.That(eventArgs[0].OldStartingIndex, Is.EqualTo(0));
             Assert.That(eventArgs[0].NewStartingIndex, Is.EqualTo(2));
-            eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            eventArgs.Clear();
 
             // Deletion
             _realm.Write(() =>
@@ -457,9 +457,13 @@ namespace Realms.Tests.Database
             var testObject = new TestNotificationObject();
             _realm.Write(() => _realm.Add(testObject));
             var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var eventArgsForFilter = new List<NotifyCollectionChangedEventArgs>();
             var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
+            var handlerForFilter = new NotifyCollectionChangedEventHandler((sender, e) => eventArgsForFilter.Add(e));
             var query = _realm.All<TestNotificationObject>().AsRealmCollection();
+            var queryWithFilter = _realm.All<TestNotificationObject>().Where(t => t.StringProperty.Contains("f")).AsRealmCollection();
             query.CollectionChanged += handler;
+            queryWithFilter.CollectionChanged += handlerForFilter;
 
             var testObject1 = new TestNotificationObject();
             var testObject2 = new TestNotificationObject();
@@ -476,9 +480,23 @@ namespace Realms.Tests.Database
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
             Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
-            eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            eventArgs.Clear();
 
             // Modifications
+            // this will be treated as adds for eventArgsForFilter since they now they satisfy the result filter and are added.
+            _realm.Write(() =>
+            {
+                testObject1.StringProperty = "foo3";
+                testObject2.StringProperty = "foo1";
+                testObject3.StringProperty = "foo2";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs, Is.Empty);
+            Assert.That(eventArgsForFilter.Count, Is.EqualTo(1));
+            Assert.That(eventArgsForFilter[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            eventArgsForFilter.Clear();
+
+            // Modifications2
             _realm.Write(() =>
             {
                 testObject1.StringProperty = "foo1";
@@ -486,7 +504,7 @@ namespace Realms.Tests.Database
                 testObject3.StringProperty = "foo3";
             });
             _realm.Refresh();
-            Assert.That(eventArgs, Is.Empty);
+            Assert.That(eventArgsForFilter, Is.Empty);
 
             // Deletion
             _realm.Write(() =>
@@ -525,7 +543,7 @@ namespace Realms.Tests.Database
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
             Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
-            eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            eventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
@@ -574,7 +592,7 @@ namespace Realms.Tests.Database
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
             Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
-            eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            eventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
