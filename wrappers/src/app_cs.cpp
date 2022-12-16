@@ -42,7 +42,7 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
-using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
+using StringCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
 using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
 namespace realm {
@@ -54,7 +54,7 @@ namespace realm {
         std::function<LogMessageCallbackT> s_log_message_callback;
         std::function<UserCallbackT> s_user_callback;
         std::function<VoidCallbackT> s_void_callback;
-        std::function<BsonCallbackT> s_bson_callback;
+        std::function<StringCallbackT> s_string_callback;
         std::function<ApiKeysCallbackT> s_api_keys_callback;
 
         struct AppConfiguration
@@ -87,7 +87,7 @@ namespace realm {
             void* managed_http_client;
         };
 
-        class SyncLogger : public util::RootLogger {
+        class SyncLogger : public util::Logger {
         public:
             SyncLogger(void* delegate)
                 : managed_logger(delegate)
@@ -109,7 +109,7 @@ extern "C" {
         uint16_t* sdk_version, size_t sdk_version_len,
         UserCallbackT* user_callback,
         VoidCallbackT* void_callback,
-        BsonCallbackT* bson_callback,
+        StringCallbackT* string_callback,
         LogMessageCallbackT* log_message_callback,
         ApiKeysCallbackT* api_keys_callback)
     {
@@ -119,7 +119,7 @@ extern "C" {
 
         s_user_callback = wrap_managed_callback(user_callback);
         s_void_callback = wrap_managed_callback(void_callback);
-        s_bson_callback = wrap_managed_callback(bson_callback);
+        s_string_callback = wrap_managed_callback(string_callback);
         s_log_message_callback = wrap_managed_callback(log_message_callback);
         s_api_keys_callback = wrap_managed_callback(api_keys_callback);
 
@@ -175,9 +175,9 @@ extern "C" {
             void* managed_logger = app_config.managed_logger;
             if (managed_logger) {
                 sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
-                    auto logger = std::make_unique<SyncLogger>(managed_logger);
+                    auto logger = std::make_shared<SyncLogger>(managed_logger);
                     logger->set_level_threshold(level);
-                    return std::unique_ptr<util::Logger>(logger.release());
+                    return logger;
                 };
             }
 

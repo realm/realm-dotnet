@@ -1251,26 +1251,14 @@ namespace Realms
         /// </returns>
         public Task<bool> RefreshAsync()
         {
-            if (!SharedRealmHandle.HasChanged())
-            {
-                return Task.FromResult(false);
-            }
+            ThrowIfDisposed();
 
             if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Task.FromResult(Refresh());
             }
 
-            var tcs = new TaskCompletionSource<bool>();
-
-            RealmChanged += Handler;
-            return tcs.Task;
-
-            void Handler(object sender, EventArgs e)
-            {
-                ((Realm)sender).RealmChanged -= Handler;
-                tcs.TrySetResult(true);
-            }
+            return SharedRealmHandle.RefreshAsync();
         }
 
         /// <summary>

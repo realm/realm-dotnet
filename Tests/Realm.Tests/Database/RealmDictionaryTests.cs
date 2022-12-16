@@ -1133,7 +1133,7 @@ namespace Realms.Tests.Database
             Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(2));
             Assert.That(changeSet.DeletedIndices.Length, Is.EqualTo(2));
             Assert.That(changeSet.ModifiedIndices.Length, Is.EqualTo(1));
-            Assert.That(oldDogs.ElementAt(changeSet.ModifiedIndices[0]).Name, Is.EqualTo("foo"));
+            Assert.That(oldDogs.ElementAt(changeSet.NewModifiedIndices[0]).Name, Is.EqualTo("foo"));
         }
 
         [Test]
