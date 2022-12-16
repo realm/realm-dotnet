@@ -104,11 +104,12 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
 REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, [results, property_indices](CollectionChangeCallback callback) {
-            if (!property_indices){
+        return subscribe_for_notifications(managed_results, [&](CollectionChangeCallback callback) {
+            if (!property_indices) {
                 return results->add_notification_callback(callback);
             } else {
-                return results->add_notification_callback(callback, KeyPathArray());
+                auto keyPathArray = construct_key_path_array(results->get_object_schema(), property_indices, property_count);
+                return results->add_notification_callback(callback, keyPathArray);
             }
         });
     });

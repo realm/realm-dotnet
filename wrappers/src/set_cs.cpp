@@ -159,11 +159,12 @@ REALM_EXPORT void realm_set_destroy(object_store::Set* set)
 REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, [set, property_indices](CollectionChangeCallback callback) {
+        return subscribe_for_notifications(managed_set, [&](CollectionChangeCallback callback) {
             if (!property_indices) {
                 return set->add_notification_callback(callback);
             } else {
-                return set->add_notification_callback(callback, KeyPathArray());
+                auto keyPathArray = construct_key_path_array(set->get_object_schema(), property_indices, property_count);
+                return set->add_notification_callback(callback, keyPathArray);
             }
         });
     });

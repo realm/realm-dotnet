@@ -158,11 +158,12 @@ extern "C" {
     REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [dictionary, property_indices](CollectionChangeCallback callback) {
+            return subscribe_for_notifications(managed_dict, [&](CollectionChangeCallback callback) {
                 if (!property_indices) {
                     return dictionary->add_notification_callback(callback);
                 } else {
-                    return dictionary->add_notification_callback(callback, KeyPathArray());
+                    auto keyPathArray = construct_key_path_array(dictionary->get_object_schema(), property_indices, property_count);
+                    return dictionary->add_notification_callback(callback, keyPathArray);
                 }
             });
         });
