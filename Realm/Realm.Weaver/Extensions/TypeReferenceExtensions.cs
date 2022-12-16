@@ -49,20 +49,14 @@ internal static class TypeReferenceExtensions
         }
     }
 
-    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references)
-    {
-        return IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
-    }
+    public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references) =>
+        IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);
 
-    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references)
-    {
-        return IsDescendantOf(@this, references.AsymmetricObject);
-    }
+    public static bool IsAsymmetricObjectDescendant(this TypeReference @this, ImportedReferences references) =>
+        IsDescendantOf(@this, references.AsymmetricObject);
 
-    public static bool IsEmbeddedObjectDescendant(this TypeReference @this, ImportedReferences references)
-    {
-        return IsDescendantOf(@this, references.EmbeddedObject);
-    }
+    public static bool IsEmbeddedObjectDescendant(this TypeReference @this, ImportedReferences references) =>
+        IsDescendantOf(@this, references.EmbeddedObject);
 
     public static bool IsSameAs(this TypeReference @this, TypeReference other)
     {
@@ -119,10 +113,8 @@ internal static class TypeReferenceExtensions
         return false;
     }
 
-    public static bool IsNullable(this TypeReference reference)
-    {
-        return NullableRegex.IsMatch(reference.FullName);
-    }
+    public static bool IsNullable(this TypeReference reference) =>
+        NullableRegex.IsMatch(reference.FullName);
 
     public static bool IsIRealmObjectBaseImplementor(this TypeReference type, ImportedReferences references) =>
         IsImplementorOf(type, references.IRealmObjectBase);

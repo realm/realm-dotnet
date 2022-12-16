@@ -736,12 +736,11 @@ namespace RealmWeaver
 
         private static async Task SendRequest(string prefixAddr, string payload, string suffixAddr)
         {
-            using var httpClient = new HttpClient()
+            using (var httpClient = new HttpClient())
             {
-                Timeout = TimeSpan.FromSeconds(4)
-            };
-
-            await httpClient.GetAsync(new Uri(prefixAddr + payload + suffixAddr));
+                httpClient.Timeout = TimeSpan.FromSeconds(4);
+                await httpClient.GetAsync(new Uri(prefixAddr + payload + suffixAddr));
+            }
         }
 
         private void AnalyzeTypeMethods(TypeDefinition type)
@@ -792,7 +791,7 @@ namespace RealmWeaver
                     }
 
                     if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
-                        _apiAnalysisSetters[key].Invoke(cil, _realmFeaturesToAnalyse, _references))
+                        featureFunc.Invoke(cil, _realmFeaturesToAnalyse, _references))
                     {
                         _apiAnalysisSetters.Remove(key);
                     }

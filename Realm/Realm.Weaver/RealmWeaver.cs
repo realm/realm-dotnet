@@ -199,9 +199,9 @@ namespace RealmWeaver
 
             if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
             {
-                var analytics = new Analytics(analyticsConfig, _references, _logger);
                 analyzeAPITask = Task.Run(async () =>
                 {
+                    var analytics = new Analytics(analyticsConfig, _references, _logger);
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
                     metricsResult = await analytics.SubmitAnalytics();
                 });

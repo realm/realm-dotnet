@@ -13,8 +13,8 @@
         <LangVersion>9.0</LangVersion>
         <IsRoslynComponent>true</IsRoslynComponent>
         <IsPackable>true</IsPackable>
-        <ReportAnalyzer Condition="'$(Configuration)' == 'DEBUG'">true</ReportAnalyzer>
-        <Verbosity Condition="'$(Configuration)' == 'DEBUG'">detailed</Verbosity>
+        <ReportAnalyzer Condition="'$(Configuration)' == 'Debug'">true</ReportAnalyzer>
+        <Verbosity Condition="'$(Configuration)' == 'Debug'">detailed</Verbosity>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- Do not include the generator as a lib dependency. -->
         <IncludeBuildOutput>false</IncludeBuildOutput>

@@ -61,8 +61,7 @@ public class Program
 #if FIND
     public static void FindByPk()
     {
-        var realm = Realm.GetInstance();
-        _ = realm.Find<RootRealmClass>("aKey");
+        _ = Realm.GetInstance().Find<RootRealmClass>("aKey");
     }
 #endif
 
@@ -70,8 +69,7 @@ public class Program
 #if WRITE_ASYNC
     public static async Task WriteAsyncMethod()
     {
-        var realm = Realm.GetInstance();
-        await realm.WriteAsync(() => { });
+        _ = Realm.GetInstance().WriteAsync(() => { });
     }
 #endif
 
@@ -105,8 +103,7 @@ public class Program
 #if REALM_CHANGED
     public static void RealmChangedMethod()
     {
-        var realm = Realm.GetInstance();
-        realm.RealmChanged += (sender, args) => { };
+        Realm.GetInstance().RealmChanged += (sender, args) => { };
     }
 #endif
 
@@ -141,15 +138,7 @@ public class Program
 #if PROPERTY_CHANGED
     public static void PropertyChangedMethod()
     {
-        var obj = new RootRealmClass();
-        obj.PropertyChanged += (sender, e) => { };
-    }
-#endif
-
-#if FLEXIBLE_SYNC_CONFIGURATION
-    public static void FlexibleSyncMethod()
-    {
-        _ = new FlexibleSyncConfiguration(new User());
+        new RootRealmClass().PropertyChanged += (sender, e) => { };
     }
 #endif
 

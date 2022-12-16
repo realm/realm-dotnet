@@ -47,7 +47,7 @@ namespace RealmWeaver
 
         public static class Framework
         {
-            public const string Unity= "Unity";
+            public const string Unity = "Unity";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
         }
