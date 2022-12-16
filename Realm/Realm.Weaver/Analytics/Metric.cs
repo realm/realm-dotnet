@@ -71,7 +71,7 @@ namespace RealmWeaver
             public const string Framework = "Framework";
             public const string FrameworkVersion = "Framework_Version";
 
-            // TODO andrea: What about backlinks?
+            // TODO andrea: Add entry for backlinks
             public const string IEmbeddedObject = "Embedded_Object";
             public const string IAsymmetricObject = "Asymmetric_Object";
             public const string ReferenceList = "Reference_List";
@@ -90,7 +90,7 @@ namespace RealmWeaver
             public const string Find = "Query_Primary_Key";
             public const string WriteAsync = "Write_Async";
             public const string ThreadSafeReference = "Thread_Safe_Reference";
-            public const string FIXME_TWO = "Insert_Modified"; // TODO andrea: find out what this is, maybe modify a prop in realm.Write
+            public const string Add = "Insert_Modified"; // TODO andrea: realm.Add(new Obj, true);
             public const string ShouldCompactOnLaunch = "Compact_On_Launch";
             public const string MigrationCallback = "Schema_Migration_Block";
             public const string RealmChanged = "Realm_Change_Listener";
@@ -116,7 +116,7 @@ namespace RealmWeaver
             public const string ServerApiKey = "Auth_Server_API_Key";
             public const string Function = "Auth_Function";
             public const string CallAsync = "Remote_Function";
-            public const string GetMongoClient = "MongoDB_Data_Access"; // TODO andrea: is this correct? Is the mongoClient we are after?
+            public const string GetMongoClient = "MongoDB_Data_Access";
             public const string DynamicApi = "Dynamic_API";
         }
     }

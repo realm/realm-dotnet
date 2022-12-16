@@ -83,7 +83,7 @@ namespace RealmWeaver
             [Find] = 0,
             [WriteAsync] = 0,
             [ThreadSafeReference] = 0,
-            [FIXME_TWO] = 0,
+            [Add] = 0,
             [ShouldCompactOnLaunch] = 0,
             [MigrationCallback] = 0,
             [RealmChanged] = 0,
@@ -197,9 +197,9 @@ namespace RealmWeaver
                 }
             },
             {
-                nameof(FIXME_TWO),  (instruction, featureDict, references) =>
+                nameof(Add),  (instruction, featureDict, references) =>
                 {
-                    featureDict[FIXME_TWO] = 1;
+                    featureDict[Add] = 1;
                     return true;
                 }
             },

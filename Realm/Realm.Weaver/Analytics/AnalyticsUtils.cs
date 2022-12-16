@@ -17,7 +17,6 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
@@ -30,6 +29,8 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
+        // TODO andrea: https://github.com/realm/realm-dotnet/issues/2706#event-7877818404
+        // add a stable ID not reliant on MACAddress
         public static string AnonymizedUserID
         {
             get
@@ -95,23 +96,15 @@ namespace RealmWeaver
         public static string GetHostCpuArchitecture =>
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.ProcessArchitecture.ToString()));
 
+        // TODO andrea: module.Architecture reports "I386" which isn't a value I could find in the documentation of MS. Investigate
         public static string GetTargetCpuArchitecture(ModuleDefinition module) =>
-
-            // TODO andrea: module.Architecture reports "I386" which isn't a value I could find in the documentation of MS. Investigate
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(module.Architecture.ToString()));
 
         public static byte[] GenerateComputerIdentifier =>
-
-            // Assume OS X if not Windows.
             NetworkInterface.GetAllNetworkInterfaces()
                 .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
                 .Select(n => n.GetPhysicalAddress().GetAddressBytes())
                 .FirstOrDefault();
-
-        // TODO andrea: add here check on timestamp file, maybe
-        public static bool ShouldRunAnalytics =>
-            Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
-                Environment.GetEnvironmentVariable("CI") == null;
 
         private static string ConvertOsNameToMetricsVersion(string osName) =>
             WrapInTryCatch(() =>
