@@ -177,13 +177,13 @@ namespace Realms
             return CreateCollection(frozenRealm, frozenHandle);
         }
 
-        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             Argument.NotNull(callback, nameof(callback));
 
             if (_callbacks.Count == 0)
             {
-                SubscribeForNotifications();
+                SubscribeForNotifications(shallow);
             }
             else if (_deliveredInitialNotification)
             {
@@ -261,14 +261,14 @@ namespace Realms
             }
         }
 
-        private void SubscribeForNotifications()
+        private void SubscribeForNotifications(bool shallow)
         {
             Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
             Realm.ExecuteOutsideTransaction(() =>
             {
                 var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
+                _notificationToken = shallow ? Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), Array.Empty<IntPtr>()) : Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
             });
         }
 
@@ -408,7 +408,7 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotifications(OnChange);
+                    SubscribeForNotifications(OnChange, true);
                 }
                 else
                 {

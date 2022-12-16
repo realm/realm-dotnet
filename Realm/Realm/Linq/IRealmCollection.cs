@@ -154,6 +154,6 @@ namespace Realms
         /// </returns>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(System.Linq.IQueryable{T}, NotificationCallbackDelegate{T})"/>
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, bool shallow);
     }
 }

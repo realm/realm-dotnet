@@ -504,6 +504,7 @@ namespace Realms.Tests.Database
                 testObject3.StringProperty = "foo3";
             });
             _realm.Refresh();
+            // This is a false positive, in reality modifications are fired from core, they're simple not lifted here. have to be dealt with in core.
             Assert.That(eventArgsForFilter, Is.Empty);
 
             // Deletion

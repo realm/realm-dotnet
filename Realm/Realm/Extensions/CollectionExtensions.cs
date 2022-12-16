@@ -62,7 +62,7 @@ namespace Realms
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
             where T : IRealmObjectBase
         {
-            return results.AsRealmCollection().SubscribeForNotifications(callback);
+            return results.AsRealmCollection().SubscribeForNotifications(callback, false);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback);
+        public static IDisposable SubscribeForNotifications<T>(this ISet<T> set, NotificationCallbackDelegate<T> callback) => set.AsRealmCollection().SubscribeForNotifications(callback, false);
 
         /// <summary>
         /// A convenience method that casts <see cref="IList{T}"/> to <see cref="IRealmCollection{T}"/> which implements
@@ -191,7 +191,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
-        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback);
+        public static IDisposable SubscribeForNotifications<T>(this IList<T> list, NotificationCallbackDelegate<T> callback) => list.AsRealmCollection().SubscribeForNotifications(callback, false);
 
         /// <summary>
         /// Move the specified item to a new position within the list.
@@ -315,7 +315,7 @@ namespace Realms
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IDictionary<string, T> dictionary, NotificationCallbackDelegate<KeyValuePair<string, T>> callback)
         {
-            return dictionary.AsRealmCollection().SubscribeForNotifications(callback);
+            return dictionary.AsRealmCollection().SubscribeForNotifications(callback, false);
         }
 
         /// <summary>
