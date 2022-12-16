@@ -30,13 +30,9 @@ If you downloaded a zip of the source, you need to go back to github to identify
 Building iOS wrappers on macOS
 ------------------------------------------
 
-Prerequisites:
-1. Install cmake and zlib: `brew install cmake zlib`.
+Building for iOS required cmake and zlib installed. In case you do not have them installed, you can do it with `brew install cmake zlib`.
 
-These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded Realm Core as above.
-
-1. `cd wrappers`
-1. `build-ios.sh` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator.
+You can use `build-ios.ps1` to build for iOS, specifying one or more the available platforms, `Device`, `Simulator` or `Catalayst`, and either `Debug` or `Release` configuration.
 
 Building Android wrappers
 -------------
