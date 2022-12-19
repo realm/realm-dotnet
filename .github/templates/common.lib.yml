@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 
-#@ configuration = "Release"
+#@ configuration = "Debug"
 #@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver', 'Realm.SourceGenerator' ]
 #@ actionCheckout = "actions/checkout@v3"
 #@ actionCache = "nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8"

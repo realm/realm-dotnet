@@ -129,15 +129,15 @@ jobs:
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm.Fody
-      run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Debug -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm
-      run: msbuild Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm -t:Pack -p:Configuration=Debug -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Debug -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Debug -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.SourceGenerator
-      run: msbuild Realm/Realm.SourceGenerator -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+      run: msbuild Realm/Realm.SourceGenerator -t:Pack -p:Configuration=Debug -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
       run: |

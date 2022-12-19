@@ -20,10 +20,10 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r win-x64 --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Debug -f netcoreapp3.1 -r win-x64 --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/win-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Debug/netcoreapp3.1/win-x64' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After

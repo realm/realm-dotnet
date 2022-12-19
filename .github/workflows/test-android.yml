@@ -75,7 +75,7 @@ jobs:
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.Android
-      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=armeabi-v7a -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
+      run: msbuild Tests/Tests.Android -t:SignAndroidPackage -p:Configuration=Debug -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AndroidSupportedAbis=armeabi-v7a -p:AndroidUseSharedRuntime=False -p:EmbedAssembliesIntoApk=True
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1-node16
       with:

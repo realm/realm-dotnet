@@ -39,14 +39,14 @@ jobs:
       with:
         dotnet-version: 6.0.202
     - name: Build Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm
-      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm.UnityUtils
-      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm.UnityWeaver
-      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Build Realm.SourceGenerator
-      run: msbuild Realm/Realm.SourceGenerator -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      run: msbuild Realm/Realm.SourceGenerator -p:UseSharedCompilation=false -restore -p:Configuration=Debug
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31

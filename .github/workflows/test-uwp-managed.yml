@@ -78,7 +78,7 @@ jobs:
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword="${{ secrets.Pfx_Password }}" -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+      run: msbuild Tests/Tests.UWP -p:Configuration=Debug -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword="${{ secrets.Pfx_Password }}" -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
     - name: Run the tests
       run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=uwp-managed'
       shell: powershell

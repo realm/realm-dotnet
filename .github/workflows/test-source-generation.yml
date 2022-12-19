@@ -20,10 +20,10 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
-      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
+      run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Debug -f net6.0 -r win-x64 --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Release/net6.0/win-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/SourceGenerators/Realm.SourceGenerator.Tests/bin/Debug/net6.0/win-x64' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml
