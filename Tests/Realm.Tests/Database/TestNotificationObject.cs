@@ -27,6 +27,10 @@ using TestRealmObject = Realms.IRealmObject;
 #endif
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Realms.Schema;
+using Realms.Weaving;
 
 namespace Realms.Tests.Database
 {
@@ -49,5 +53,8 @@ namespace Realms.Tests.Database
         public IDictionary<string, Person> DictionaryDifferentType { get; }
 
         public Person LinkDifferentType { get; set; }
+
+        [Backlink(nameof(TestNotificationObject.LinkSameType))]
+        public IQueryable<TestNotificationObject> Backlink { get; }
     }
 }

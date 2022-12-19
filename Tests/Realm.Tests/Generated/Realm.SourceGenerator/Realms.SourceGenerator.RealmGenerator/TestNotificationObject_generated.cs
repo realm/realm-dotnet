@@ -30,6 +30,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.ObjectSet("SetDifferentType", "Person", managedName: "SetDifferentType"),
             Realms.Schema.Property.ObjectDictionary("DictionaryDifferentType", "Person", managedName: "DictionaryDifferentType"),
             Realms.Schema.Property.Object("LinkDifferentType", "Person", managedName: "LinkDifferentType"),
+            Realms.Schema.Property.Backlinks("Backlink", "TestNotificationObject", "LinkSameType", managedName: "Backlink"),
         }.Build();
 
         #region IRealmObject implementation
@@ -270,6 +271,8 @@ namespace Realms.Tests.Database.Generated
         System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType { get; }
 
         Realms.Tests.Database.Person LinkDifferentType { get; set; }
+
+        System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -376,6 +379,20 @@ namespace Realms.Tests.Database.Generated
             get => (Realms.Tests.Database.Person)GetValue("LinkDifferentType");
             set => SetValue("LinkDifferentType", value);
         }
+
+        private System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> _backlink;
+        public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink
+        {
+            get
+            {
+                if (_backlink == null)
+                {
+                    _backlink = GetBacklinks<Realms.Tests.Database.TestNotificationObject>("Backlink");
+                }
+
+                return _backlink;
+            }
+        }
     }
 
     internal class TestNotificationObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITestNotificationObjectAccessor
@@ -427,6 +444,8 @@ namespace Realms.Tests.Database.Generated
             }
         }
 
+        public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+
         public TestNotificationObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
         }
@@ -438,6 +457,7 @@ namespace Realms.Tests.Database.Generated
                 "StringProperty" => _stringProperty,
                 "LinkSameType" => _linkSameType,
                 "LinkDifferentType" => _linkDifferentType,
+                "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }

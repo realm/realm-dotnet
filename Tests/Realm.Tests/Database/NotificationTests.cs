@@ -214,6 +214,38 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void BackLinkInObjectShouldFireNotificationOnChange()
+        {
+            var testObject1 = new TestNotificationObject();
+            var testObject2 = new TestNotificationObject();
+            _realm.Write(() =>
+            {
+                _realm.Add(testObject1);
+                _realm.Add(testObject2);
+            });
+            var notificationCount = 0;
+            testObject1.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            Assert.That(testObject1.BacklinksCount, Is.EqualTo(0));
+            _realm.Write(() =>
+            {
+                testObject2.LinkSameType = testObject1;
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(0));
+            Assert.That(testObject1.BacklinksCount, Is.EqualTo(1));
+            _realm.Write(() =>
+            {
+                testObject2.StringProperty = "foo";
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(0));
+            Assert.That(testObject1.BacklinksCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void CollectionPropertiesOfDifferentTypeShouldNotFireNotificationsOnChange()
         {
             var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
@@ -504,7 +536,6 @@ namespace Realms.Tests.Database
                 testObject3.StringProperty = "foo3";
             });
             _realm.Refresh();
-            // This is a false positive, in reality modifications are fired from core, they're simple not lifted here. have to be dealt with in core.
             Assert.That(eventArgsForFilter, Is.Empty);
 
             // Deletion
