@@ -43,7 +43,7 @@ namespace Realms
 
         private Action<string> _onNotifyPropertyChanged;
 
-        private IntPtr[] _propertyIndices;
+        private Lazy<IntPtr[]> _nonCollectionPropertyIndices;
 
         internal ObjectHandle ObjectHandle { get; private set; }
 
@@ -84,6 +84,7 @@ namespace Realms
             ObjectHandle = objectHandle;
             Metadata = metadata;
             _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
+            _nonCollectionPropertyIndices = new Lazy<IntPtr[]>(GetNonCollectionPropertyIndices);
         }
 
         /// <summary>
@@ -171,16 +172,9 @@ namespace Realms
             return Realm.MakeObject(parentMetadata, parentHandle);
         }
 
-        private IntPtr[] GetPropertyIndices()
+        private IntPtr[] GetNonCollectionPropertyIndices()
         {
-            if (_propertyIndices != null)
-            {
-                return _propertyIndices;
-            }
-
-            const PropertyType collectionFlag = PropertyType.Array | PropertyType.Dictionary | PropertyType.Set;
-            _propertyIndices = (from p in ObjectSchema where (p.Type & collectionFlag) == 0 select Metadata.GetPropertyIndex(p.Name)).ToArray();
-            return _propertyIndices;
+             return (from p in ObjectSchema where !p.Type.IsCollection(out var _) select Metadata.GetPropertyIndex(p.Name)).ToArray();
         }
 
         /// <inheritdoc/>
@@ -200,7 +194,7 @@ namespace Realms
                 if (ObjectHandle.IsValid)
                 {
                     var managedObjectHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), GetPropertyIndices());
+                    _notificationToken = ObjectHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedObjectHandle), _nonCollectionPropertyIndices.Value);
                 }
             });
         }
