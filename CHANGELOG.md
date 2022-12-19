@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* PropertyChanged will no longer fire notifications for changes to collection-properties. CollectionChanged will no longer fire notifications for modifications to objects within the collection itself. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
 * Removed redundant serialization/deserialization of arguments in CallAsync. (Issue [#3079](https://github.com/realm/realm-dotnet/issues/3079))
 * Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
 * Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
