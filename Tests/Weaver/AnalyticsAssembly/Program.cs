@@ -142,6 +142,13 @@ public class Program
     }
 #endif
 
+#if ADD_UPDATE
+    public static void AddUpdateMethod()
+    {
+        Realm.GetInstance().Add(new RootRealmClass(), update: true);
+    }
+#endif
+
 #if RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER
     public static void RecoverOrDiscardUnsyncedChangesHandlerMethod()
     {
@@ -299,7 +306,7 @@ public class Program
 
     public partial class JustForObjectReference : TestRealmObject
     {
-
+        public int UseAsBacklink { get; set; }
     }
 
     public partial class RootRealmClass : TestRealmObject
@@ -341,10 +348,15 @@ public class Program
 #if REALM_VALUE
         RealmValue RealmValue { get; set; }
 #endif
-    }
+
+#if BACKLINK
+        [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
+        IQueryable<int> JustBackLink { get; }
+#endif
+}
 
 #if ASYMMETRIC_OBJECT
-    public partial class AsymmetricTestClass : TestAsymmetricObject
+public partial class AsymmetricTestClass : TestAsymmetricObject
     {
         public int Int32Property { get; set; }
     }

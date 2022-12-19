@@ -62,9 +62,9 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
 
-        #region FeatureDiciontaries
+        #region FeatureDictionaries
 
-        private readonly Dictionary<string, byte> _realmFeaturesToAnalyse = new Dictionary<string, byte>()
+        private readonly Dictionary<string, byte> _realmFeaturesToAnalyze = new Dictionary<string, byte>()
         {
             [IEmbeddedObject] = 0,
             [IAsymmetricObject] = 0,
@@ -199,8 +199,19 @@ namespace RealmWeaver
             {
                 nameof(Add),  (instruction, featureDict, references) =>
                 {
-                    featureDict[Add] = 1;
-                    return true;
+                    // check if it's the right signature, that is 2 params in total of which
+                    // the second a bool and that it's set to true.
+                    if (IsInRealmNamespace(instruction.Operand) &&
+                        instruction.Operand is MethodSpecification methodSpecification &&
+                        methodSpecification.Parameters.Count == 2 &&
+                        methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
+                        instruction.Previous.OpCode == OpCodes.Ldc_I4_1)
+                    {
+                        featureDict[Add] = 1;
+                        return true;
+                    }
+
+                    return false;
                 }
             },
             {
@@ -560,6 +571,13 @@ namespace RealmWeaver
                     return true;
                 }
             },
+            {
+                nameof(BacklinkAttribute), (member, featureDict, references) =>
+                {
+                    featureDict[BacklinkAttribute] = 1;
+                    return true;
+                }
+            }
         };
 
         #endregion
@@ -579,13 +597,13 @@ namespace RealmWeaver
 
             if (_classAnalysisSetters.TryGetValue(nameof(IAsymmetricObject), out featureFunc) &&
                 (type.IsIAsymmetricObjectImplementor(_references) || type.IsAsymmetricObjectDescendant(_references)) &&
-                featureFunc.Invoke(type, _realmFeaturesToAnalyse, _references))
+                featureFunc.Invoke(type, _realmFeaturesToAnalyze, _references))
             {
                 _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
             }
             else if (_classAnalysisSetters.TryGetValue(nameof(IEmbeddedObject), out featureFunc) &&
                 (type.IsIEmbeddedObjectImplementor(_references) || type.IsEmbeddedObjectDescendant(_references)) &&
-                featureFunc.Invoke(type, _realmFeaturesToAnalyse, _references))
+                featureFunc.Invoke(type, _realmFeaturesToAnalyze, _references))
             {
                 _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
             }
@@ -600,10 +618,19 @@ namespace RealmWeaver
                 }
 
                 if (_classAnalysisSetters.TryGetValue(key, out featureFunc) &&
-                    featureFunc.Invoke(property, _realmFeaturesToAnalyse, _references))
+                    featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
                 {
                     // if the byte is set, remove the entry from the dict to avoid future unnecessary work
                     _classAnalysisSetters.Remove(key);
+                }
+
+                foreach (var attribute in property.CustomAttributes)
+                {
+                    if (_classAnalysisSetters.TryGetValue(attribute.AttributeType.Name, out featureFunc) &&
+                        featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
+                    {
+                        _classAnalysisSetters.Remove(key);
+                    }
                 }
             }
         }
@@ -672,8 +699,10 @@ namespace RealmWeaver
                 var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
                 pretty = true;
-                sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
 #endif
+
+                // TODO andrea: find a general address that the whole team can use to do test, a.k.a. check the json is well formed when wired
+                // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
                 var payload = GetJsonPayload(pretty);
 
                 if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
@@ -706,7 +735,7 @@ namespace RealmWeaver
                 AppendKeyValue(entry);
             }
 
-            foreach (var entry in _realmFeaturesToAnalyse)
+            foreach (var entry in _realmFeaturesToAnalyze)
             {
                 AppendKeyValue(entry);
             }
@@ -791,7 +820,7 @@ namespace RealmWeaver
                     }
 
                     if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
-                        featureFunc.Invoke(cil, _realmFeaturesToAnalyse, _references))
+                        featureFunc.Invoke(cil, _realmFeaturesToAnalyze, _references))
                     {
                         _apiAnalysisSetters.Remove(key);
                     }

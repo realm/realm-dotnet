@@ -83,6 +83,7 @@ namespace RealmWeaver
             public const string RealmInteger = "Realm_Integer";
             public const string RealmObjectReference = "Reference_Link";
             public const string RealmValue = "Mixed";
+            public const string BacklinkAttribute = "Backlink";
 
             public const string GetInstanceAsync = "Asynchronous_Realm_Open";
             public const string GetInstance = "Synchronous_Realm_Open";
