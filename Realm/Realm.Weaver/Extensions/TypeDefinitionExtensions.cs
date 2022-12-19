@@ -27,6 +27,9 @@ using RealmWeaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeDefinitionExtensions
 {
+    public static bool IsValidRealmType(this TypeDefinition type, ImportedReferences references) =>
+            type.IsRealmObjectDescendant(references) || type.IsIRealmObjectBaseImplementor(references);
+
     public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
        type.BaseType.IsSameAs(references.EmbeddedObject);
 
@@ -37,8 +40,8 @@ internal static class TypeDefinitionExtensions
         type.BaseType.IsSameAs(references.AsymmetricObject);
 
     public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.IsEmbeddedObjectInheritor(references) ||
         type.IsRealmObjectInheritor(references) ||
+        type.IsEmbeddedObjectInheritor(references) ||
         type.IsAsymmetricObjectInheritor(references);
 
     public static bool IsIEmbeddedObjectImplementor(this TypeDefinition type, ImportedReferences references) =>

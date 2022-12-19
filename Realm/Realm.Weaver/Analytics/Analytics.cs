@@ -591,6 +591,42 @@ namespace RealmWeaver
             _logger = logger;
         }
 
+        internal void AnalyzeUserAssembly(ModuleDefinition module)
+        {
+            try
+            {
+                // collect environment details
+                ComputeHostOSNameAndVersion(out var osType, out var osVersion);
+
+                _realmEnvMetrics[UserId] = AnonymizedUserID;
+                _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
+                _realmEnvMetrics[HostOsType] = osType;
+                _realmEnvMetrics[HostOsVersion] = osVersion;
+                _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
+                _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
+
+                // _realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
+                _realmEnvMetrics[TargetOsVersion] = _config.TargetOSVersion;
+                _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
+
+                // TODO andrea: need to find msbuild properties and not custom attributes
+                // _realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
+                //    .Where(a => a.ToString() == "LangVersion").SingleOrDefault().ToString();
+
+                // _realmEnvMetrics[Framework] = ;
+                _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
+
+                foreach (var type in module.Types)
+                {
+                    InternalAnalyzeSdkApi(type);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.Error($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
+            }
+        }
+
         private void AnalyzeRealmClass(TypeDefinition type)
         {
             Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
@@ -635,42 +671,6 @@ namespace RealmWeaver
             }
         }
 
-        internal void AnalyzeUserAssembly(ModuleDefinition module)
-        {
-            try
-            {
-                // collect environment details
-                ComputeHostOSNameAndVersion(out var osType, out var osVersion);
-
-                _realmEnvMetrics[UserId] = AnonymizedUserID;
-                _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
-                _realmEnvMetrics[HostOsType] = osType;
-                _realmEnvMetrics[HostOsVersion] = osVersion;
-                _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
-                _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
-
-                // _realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
-                _realmEnvMetrics[TargetOsVersion] = _config.TargetOSVersion;
-                _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
-
-                // TODO andrea: need to find msbuild properties and not custom attributes
-                // _realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
-                //    .Where(a => a.ToString() == "LangVersion").SingleOrDefault().ToString();
-
-                // _realmEnvMetrics[Framework] = ;
-                _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
-
-                foreach (var type in module.Types)
-                {
-                    InternalAnalyzeSdkApi(type);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.Error($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
-            }
-        }
-
         private void InternalAnalyzeSdkApi(TypeDefinition type)
         {
             if (!type.IsClass)
@@ -678,7 +678,7 @@ namespace RealmWeaver
                 return;
             }
 
-            if (IsValidRealmType(type, _references))
+            if (type.IsValidRealmType(_references))
             {
                 AnalyzeRealmClass(type);
             }
@@ -688,6 +688,62 @@ namespace RealmWeaver
             foreach (var innerType in type.NestedTypes)
             {
                 InternalAnalyzeSdkApi(innerType);
+            }
+        }
+
+        private void AnalyzeTypeMethods(TypeDefinition type)
+        {
+            foreach (var method in type.Methods)
+            {
+                if (!method.HasBody)
+                {
+                    continue;
+                }
+
+                foreach (var cil in method.Body.Instructions)
+                {
+                    var key = (cil.Operand as MemberReference)?.Name;
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        continue;
+                    }
+
+                    var index = new int[]
+                    {
+                        key.IndexOf("get_", StringComparison.Ordinal),
+                        key.IndexOf("set_", StringComparison.Ordinal),
+                        key.IndexOf("add_", StringComparison.Ordinal)
+                    }.Max();
+
+                    if (index > -1)
+                    {
+                        // when dealing with:
+                        // set_ShouldCompactOnLaunch
+                        // add_RealmChanged
+                        // add_PropertyChanged
+                        // get_DynamicApi
+                        key = key.Substring(index + 4);
+                    }
+
+                    if (!_apiAnalysisSetters.ContainsKey(key) && cil.Operand is MethodReference methodReference &&
+                        methodReference.ReturnType.DeclaringType != null)
+                    {
+                        // when dealing with ThreadSafeReference
+                        key = methodReference.ReturnType.DeclaringType.ToString();
+                        key = key.Replace("Realms.", string.Empty);
+                    }
+
+                    if (!_apiAnalysisSetters.ContainsKey(key) && key == ".ctor")
+                    {
+                        key = ((MemberReference)cil.Operand).DeclaringType.Name;
+                    }
+
+                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
+                        featureFunc.Invoke(cil, _realmFeaturesToAnalyze, _references))
+                    {
+                        _apiAnalysisSetters.Remove(key);
+                    }
+                }
             }
         }
 
@@ -771,65 +827,6 @@ namespace RealmWeaver
                 await httpClient.GetAsync(new Uri(prefixAddr + payload + suffixAddr));
             }
         }
-
-        private void AnalyzeTypeMethods(TypeDefinition type)
-        {
-            foreach (var method in type.Methods)
-            {
-                if (!method.HasBody)
-                {
-                    continue;
-                }
-
-                foreach (var cil in method.Body.Instructions)
-                {
-                    var key = (cil.Operand as MemberReference)?.Name;
-                    if (string.IsNullOrEmpty(key))
-                    {
-                        continue;
-                    }
-
-                    var index = new int[]
-                    {
-                        key.IndexOf("get_", StringComparison.Ordinal),
-                        key.IndexOf("set_", StringComparison.Ordinal),
-                        key.IndexOf("add_", StringComparison.Ordinal)
-                    }.Max();
-
-                    if (index > -1)
-                    {
-                        // when dealing with:
-                        // set_ShouldCompactOnLaunch
-                        // add_RealmChanged
-                        // add_PropertyChanged
-                        // get_DynamicApi
-                        key = key.Substring(index + 4);
-                    }
-
-                    if (!_apiAnalysisSetters.ContainsKey(key) && cil.Operand is MethodReference methodReference &&
-                        methodReference.ReturnType.DeclaringType != null)
-                    {
-                        // when dealing with ThreadSafeReference
-                        key = methodReference.ReturnType.DeclaringType.ToString();
-                        key = key.Replace("Realms.", string.Empty);
-                    }
-
-                    if (!_apiAnalysisSetters.ContainsKey(key) && key == ".ctor")
-                    {
-                        key = ((MemberReference)cil.Operand).DeclaringType.Name;
-                    }
-
-                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
-                        featureFunc.Invoke(cil, _realmFeaturesToAnalyze, _references))
-                    {
-                        _apiAnalysisSetters.Remove(key);
-                    }
-                }
-            }
-        }
-
-        private static bool IsValidRealmType(TypeDefinition type, ImportedReferences references) =>
-            type.IsRealmObjectDescendant(references) || type.IsIRealmObjectBaseImplementor(references);
 
         private static bool IsFromNamespace(object operand, string targetNamespace)
         {
