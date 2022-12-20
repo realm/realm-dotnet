@@ -61,7 +61,7 @@ namespace Realms.SourceGenerator
 
                     if (parentNode != null && !parentNode.IsKind(SyntaxKind.NamespaceDeclaration) && !parentNode.IsKind(SyntaxKind.CompilationUnit))
                     {
-                        classInfo.Diagnostics.Add(Diagnostics.NestedClass(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
+                        classInfo.Diagnostics.Add(Diagnostics.NestedClass(classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
                     if (!firstClassDeclarationSyntax.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
