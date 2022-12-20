@@ -162,7 +162,7 @@ extern "C" {
                 if (!property_indices) {
                     return dictionary->add_notification_callback(callback);
                 } else {
-                    auto keyPathArray = construct_key_path_array(dictionary->get_object_schema(), property_indices, property_count);
+                    auto keyPathArray = dictionary->get_type() == PropertyType::Object ? construct_key_path_array(dictionary->get_object_schema(), property_indices, property_count) : KeyPathArray();
                     return dictionary->add_notification_callback(callback, keyPathArray);
                 }
             });

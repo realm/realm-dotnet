@@ -163,7 +163,7 @@ REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callbac
             if (!property_indices) {
                 return set->add_notification_callback(callback);
             } else {
-                auto keyPathArray = construct_key_path_array(set->get_object_schema(), property_indices, property_count);
+                auto keyPathArray = set->get_type() == PropertyType::Object ? construct_key_path_array(set->get_object_schema(), property_indices, property_count) : KeyPathArray();
                 return set->add_notification_callback(callback, keyPathArray);
             }
         });
