@@ -101,6 +101,7 @@ namespace Realms.SourceGenerator
                         var semanticModel = _context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
                         var propertiesSyntax = classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>();
 
+                        classInfo.Usings.AddRange(GetUsings(classDeclarationSyntax));
                         classInfo.Properties.AddRange(GetProperties(classInfo, propertiesSyntax, semanticModel));
                     }
 
@@ -124,6 +125,21 @@ namespace Realms.SourceGenerator
             }
 
             return result;
+        }
+
+        private static IEnumerable<string> GetUsings(ClassDeclarationSyntax classDeclarationSyntax)
+        {
+            var usings = new List<string>();
+
+            var compilationUnitSyntax = classDeclarationSyntax.FirstAncestorOrSelf<CompilationUnitSyntax>();
+
+            if (compilationUnitSyntax != null)
+            {
+                var usingDirectives = compilationUnitSyntax.ChildNodes().Where(c => c.IsKind(SyntaxKind.UsingDirective));
+                usings.AddRange(usingDirectives.Select(u => (u as UsingDirectiveSyntax).Name.ToString()));
+            }
+
+            return usings;
         }
 
         private static IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
