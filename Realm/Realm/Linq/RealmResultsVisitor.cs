@@ -58,7 +58,10 @@ namespace Realms
             {
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
+#if !NETCOREAPP2_1_OR_GREATER
+                // This should indicate StringExtensions.Contains method in Realm, defined only if .NET Core 2.0 or earlier is targeted.
                 internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+#endif
 
                 internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
 
@@ -313,10 +316,15 @@ namespace Realms
                 {
                     queryMethod = (q, r, p, v) => q.StringContains(r, p, v, caseSensitive: true);
                 }
-                else if (IsStringContainsWithComparison(node.Method, out var index))
+                else if (IsStringContainsWithComparison(node.Method, out var isExtensionMethod))
                 {
-                    member = node.Arguments[0] as MemberExpression;
-                    stringArgumentIndex = index;
+                    if (isExtensionMethod)
+                    {
+                        // This is an extension method, so the string to compare against is at position 1.
+                        member = node.Arguments[0] as MemberExpression;
+                        stringArgumentIndex = 1;
+                    }
+
                     queryMethod = (q, r, p, v) => q.StringContains(r, p, v, GetComparisonCaseSensitive(node));
                 }
                 else if (AreMethodsSame(node.Method, Methods.String.StartsWith.Value))
@@ -432,20 +440,19 @@ namespace Realms
             return true;
         }
 
-        private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
+        private static bool IsStringContainsWithComparison(MethodInfo method, out bool isExtensionMethod)
         {
 #if !NETCOREAPP2_1_OR_GREATER
             if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
             {
-                // This is an extension method, so the string to compare against is at position 1.
-                stringArgumentIndex = 1;
+                isExtensionMethod = true;
                 return true;
             }
 #endif
 
             // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
             // string.Contains overload that accepts comparison.
-            stringArgumentIndex = 0;
+            isExtensionMethod = false;
             var parameters = method.GetParameters();
             return method.DeclaringType == typeof(string) &&
                 method.Name == nameof(string.Contains) &&
