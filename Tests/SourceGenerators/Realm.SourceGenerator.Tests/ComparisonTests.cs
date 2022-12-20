@@ -42,6 +42,7 @@ namespace SourceGeneratorTests
         [TestCase("UnsupportedIndexableTypes")]
         [TestCase("UnsupportedPrimaryKeyTypes")]
         [TestCase("UnsupportedRequiredTypes")]
+        [TestCase("NestedClass")]
         [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
         public async Task ErrorComparisonTest(string filename, params string[] classNames)
         {
