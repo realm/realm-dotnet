@@ -16,6 +16,7 @@
 * The realm file will be shrunk if the larger file size is no longer needed. (Core upgrade)
 * Most of the file growth caused by version pinning is eliminated. (Core upgrade)
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
+* Added diagnostic error for nested classes used with the source generator syntax, as they are not yet supported (Issue [#3130](https://github.com/realm/realm-dotnet/issues/3130))
 
 ### Fixed
 * Fixed issue where Realm parameters' initialization would get run twice, resulting in unexpected behavior.
