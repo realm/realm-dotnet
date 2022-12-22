@@ -32,19 +32,23 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: flavour
+    id: services
     attributes:
-      label: What SDK flavour are you using?
+      label: What Services are you using?
       options:
-        - MongoDB Atlas (i.e. Sync, auth, functions)
+        - -- select --
         - Local Database only
+        - Atlas Device Sync
+        - 'Atlas App Services: Auth or Functions etc'
+        - Both Atlas Device Sync and Atlas App Services
     validations:
       required: true
   - type: dropdown
     id: app-type
     attributes:
-      label: What type of application is this?
+      label: "What type of application is this?"
       options:
+        - -- select --
         - Unity
         - Xamarin
         - WPF
