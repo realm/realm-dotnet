@@ -77,6 +77,7 @@ namespace RealmWeaver
             [RealmInteger] = 0,
             [RealmObjectReference] = 0,
             [RealmValue] = 0,
+            [BacklinkAttribute] = 0,
             [GetInstanceAsync] = 0,
             [GetInstance] = 0,
             [NOT_SUPPORTED_YET] = 0,
@@ -435,7 +436,7 @@ namespace RealmWeaver
             {
                 nameof(CallAsync), (instruction, featureDict, references) =>
                 {
-                    if (IsFromNamespace(instruction.Operand, "Realms.Sync.FunctionsClient"))
+                    if (IsFromNamespace(instruction.Operand, "Realms.Sync.User/FunctionsClient"))
                     {
                         featureDict[CallAsync] = 1;
                         return true;
@@ -627,8 +628,54 @@ namespace RealmWeaver
             }
         }
 
-        private void AnalyzeRealmClass(TypeDefinition type)
+        internal void AnalyzePropertisOfRealmClasses(WeaveTypeResult[] types)
         {
+            foreach (var type in types)
+            {
+                if (type.Properties == null)
+                {
+                    continue;
+                }
+
+                Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
+
+                foreach (var propertyResult in type.Properties)
+                {
+                    var property = propertyResult.Property;
+
+                    var key = property.PropertyType.Name;
+                    if (!_classAnalysisSetters.ContainsKey(key))
+                    {
+                        // when looking for "Class" type
+                        key = property.PropertyType.MetadataType.ToString();
+                    }
+
+                    if (_classAnalysisSetters.TryGetValue(key, out featureFunc) &&
+                        featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
+                    {
+                        // if the byte is set, remove the entry from the dict to avoid future unnecessary work
+                        _classAnalysisSetters.Remove(key);
+                    }
+
+                    foreach (var attribute in property.CustomAttributes)
+                    {
+                        if (_classAnalysisSetters.TryGetValue(attribute.AttributeType.Name, out featureFunc) &&
+                            featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
+                        {
+                            _classAnalysisSetters.Remove(key);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void InternalAnalyzeSdkApi(TypeDefinition type)
+        {
+            if (!type.IsClass)
+            {
+                return;
+            }
+
             Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
 
             if (_classAnalysisSetters.TryGetValue(nameof(IAsymmetricObject), out featureFunc) &&
@@ -642,45 +689,6 @@ namespace RealmWeaver
                 featureFunc.Invoke(type, _realmFeaturesToAnalyze, _references))
             {
                 _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
-            }
-
-            foreach (var property in type.Properties)
-            {
-                var key = property.PropertyType.Name;
-                if (!_classAnalysisSetters.ContainsKey(key))
-                {
-                    // when looking for "Class" type
-                    key = property.PropertyType.MetadataType.ToString();
-                }
-
-                if (_classAnalysisSetters.TryGetValue(key, out featureFunc) &&
-                    featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
-                {
-                    // if the byte is set, remove the entry from the dict to avoid future unnecessary work
-                    _classAnalysisSetters.Remove(key);
-                }
-
-                foreach (var attribute in property.CustomAttributes)
-                {
-                    if (_classAnalysisSetters.TryGetValue(attribute.AttributeType.Name, out featureFunc) &&
-                        featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
-                    {
-                        _classAnalysisSetters.Remove(key);
-                    }
-                }
-            }
-        }
-
-        private void InternalAnalyzeSdkApi(TypeDefinition type)
-        {
-            if (!type.IsClass)
-            {
-                return;
-            }
-
-            if (type.IsValidRealmType(_references))
-            {
-                AnalyzeRealmClass(type);
             }
 
             AnalyzeTypeMethods(type);

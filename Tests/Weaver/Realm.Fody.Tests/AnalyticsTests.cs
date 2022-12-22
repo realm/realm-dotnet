@@ -103,6 +103,8 @@ namespace Analytics
             return Path.Combine(folder, "Tests", "Weaver", "AnalyticsAssembly");
         });
 
+        // TODO andrea: see if possible to add test for env vars on different platforms
+
         [Test]
         public void ValidateFeatureUsage()
         {
@@ -174,20 +176,19 @@ namespace Analytics
             process.StartInfo.FileName = command;
             process.StartInfo.Arguments = arguments;
             process.StartInfo.UseShellExecute = false;
-            
-            // this is only for debugging
-            /*
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            
 
-            var output = process.StandardOutput.ReadToEnd();
-            Console.WriteLine(output);
-            var err = process.StandardError.ReadToEnd();
-            Console.WriteLine(err);
-            */
-
+            // this, together with b) is only for debugging
+            //process.StartInfo.RedirectStandardOutput = true;
+            //process.StartInfo.RedirectStandardError = true;
+            
             process.Start();
+
+            // *** b)
+            //var output = process.StandardOutput.ReadToEnd();
+            //Console.WriteLine(output);
+            //var err = process.StandardError.ReadToEnd();
+            //Console.WriteLine(err);m
+
             process.WaitForExit();
         }
     }

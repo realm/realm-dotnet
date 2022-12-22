@@ -43,18 +43,14 @@ namespace Realms
     {
     }
 
-    public interface IRealmObject: IRealmObjectBase
+    public interface IRealmObject : IRealmObjectBase
     {
     }
 
-    public interface IEmbeddedObject: IRealmObjectBase
+    public interface IEmbeddedObject : IRealmObjectBase
     {
     }
 
-    public interface IAsymmetricObject : IRealmObjectBase
-    {
-    }
-    
     public abstract class RealmObjectBase : IRealmObjectBase, INotifyPropertyChanged
     {
         public List<string> LogList = new List<string>();

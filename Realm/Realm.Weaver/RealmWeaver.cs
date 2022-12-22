@@ -192,20 +192,19 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-            var matchingTypes = GetMatchingTypes().ToArray();
-
             Task analyzeAPITask = null;
-            var metricsResult = "Analytics disabled";
+            Analytics analytics = null;
 
             if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
             {
-                analyzeAPITask = Task.Run(async () =>
+                analyzeAPITask = Task.Run(() =>
                 {
-                    var analytics = new Analytics(analyticsConfig, _references, _logger);
+                    analytics = new Analytics(analyticsConfig, _references, _logger);
                     analytics.AnalyzeUserAssembly(_moduleDefinition);
-                    metricsResult = await analytics.SubmitAnalytics();
                 });
             }
+
+            var matchingTypes = GetMatchingTypes().ToArray();
 
             var weaveResults = matchingTypes.Select(matchingType =>
             {
@@ -228,7 +227,14 @@ namespace RealmWeaver
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
-            analyzeAPITask?.Wait();
+            var metricsResult = "Analytics disabled";
+            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
+            {
+                analyzeAPITask.Wait();
+                analytics.AnalyzePropertisOfRealmClasses(weaveResults);
+                metricsResult = analytics.SubmitAnalytics().Result;
+            }
+
             if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
             {
                 File.WriteAllText(analyticsConfig.AnalyticsLogPath, metricsResult);

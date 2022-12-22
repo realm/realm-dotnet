@@ -27,9 +27,6 @@ using RealmWeaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeDefinitionExtensions
 {
-    public static bool IsValidRealmType(this TypeDefinition type, ImportedReferences references) =>
-            type.IsRealmObjectDescendant(references) || type.IsIRealmObjectBaseImplementor(references);
-
     public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
        type.BaseType.IsSameAs(references.EmbeddedObject);
 

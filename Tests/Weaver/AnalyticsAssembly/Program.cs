@@ -16,9 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Realms;
@@ -152,7 +150,7 @@ public class Program
 #if RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER
     public static void RecoverOrDiscardUnsyncedChangesHandlerMethod()
     {
-        _ = new FlexibleSyncConfiguration(new User())
+        _ = new FlexibleSyncConfiguration(user: null)
         {
             ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler()
         };
@@ -162,7 +160,7 @@ public class Program
 #if RECOVER_UNSYNCED_CHANGES_HANDLER
     public static void RecoverUnsyncedChangesHandlerMethod()
     {
-        _ = new FlexibleSyncConfiguration(new User())
+        _ = new FlexibleSyncConfiguration(user: null)
         {
             ClientResetHandler = new RecoverUnsyncedChangesHandler()
         };
@@ -172,7 +170,7 @@ public class Program
 #if DISCARD_UNSYNCED_CHANGES_HANDLER
     public static void DiscardUnsyncedChangesHandlerMethod()
     {
-        _ = new FlexibleSyncConfiguration(new User())
+        _ = new FlexibleSyncConfiguration(user: null)
         {
             ClientResetHandler = new DiscardUnsyncedChangesHandler()
         };
@@ -182,9 +180,9 @@ public class Program
 #if MANUAL_RECOVERY_HANDLER
     public static void ManualRecoveryHandlerMethod()
     {
-        _ = new FlexibleSyncConfiguration(new User())
+        _ = new FlexibleSyncConfiguration(user: null)
         {
-            ClientResetHandler = new ManualRecoveryHandler()
+            ClientResetHandler = new ManualRecoveryHandler((clientResetException) => { })
         };
     }
 #endif
@@ -192,21 +190,21 @@ public class Program
 #if GET_PROGRESS_OBSERVABLE
     public static void GetProgressObservableMethod()
     {
-        _ = new Session().GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
+        _ = ((Session)new object()).GetProgressObservable(ProgressDirection.Upload, ProgressMode.ReportIndefinitely);
     }
 #endif
 
 #if PARTITION_SYNC_CONFIGURATION
     public static void PartitionSyncConfigurationMethod()
     {
-        _ = new PartitionSyncConfiguration("aPartition", new User());
+        _ = new PartitionSyncConfiguration("aPartition", user: null);
     }
 #endif
 
 #if FLEXIBLE_SYNC_CONFIGURATION
     public static void FlexibleSyncConfigurationMethod()
     {
-        _ = new FlexibleSyncConfiguration(new User());
+        _ = new FlexibleSyncConfiguration(user: null);
     }
 #endif
 
@@ -276,14 +274,14 @@ public class Program
 #if CALL_ASYNC
     public static void CallAsyncMethod()
     {
-        _ = new User().Functions.CallAsync("functionName");
+        _ = ((User)new object()).Functions.CallAsync("functionName");
     }
 #endif
 
 #if GET_MONGO_CLIENT
     public static void GetMongoClientMethod()
     {
-        _ = new User().GetMongoClient("serviceName");
+        _ = ((User)new object()).GetMongoClient("serviceName");
     }
 #endif
 
@@ -306,12 +304,11 @@ public class Program
 
     public partial class JustForObjectReference : TestRealmObject
     {
-        public int UseAsBacklink { get; set; }
+        public RootRealmClass UseAsBacklink { get; set; }
     }
 
     public partial class RootRealmClass : TestRealmObject
     {
-        public event PropertyChangedEventHandler PropertyChanged;
 
 #if REALM_OBJECT_REFERENCE
         JustForObjectReference JustForRef { get; set; }
@@ -351,7 +348,7 @@ public class Program
 
 #if BACKLINK
         [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
-        IQueryable<int> JustBackLink { get; }
+        IQueryable<JustForObjectReference> JustBackLink { get; }
 #endif
 }
 
