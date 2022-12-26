@@ -1,7 +1,7 @@
 name: Bug Report
 description: File a bug report
 title: "[Bug]: "
-labels: [Bug]
+labels: [T-Bug]
 body:
   - type: markdown
     attributes:
@@ -34,12 +34,12 @@ body:
   - type: dropdown
     id: services
     attributes:
-      label: What Services are you using?
+      label: What Atlas Services are you using?
       options:
         - -- select --
         - Local Database only
         - Atlas Device Sync
-        - 'Atlas App Services: Auth or Functions etc'
+        - 'Atlas App Services: Functions or GraphQL or DataAPI etc'
         - Both Atlas Device Sync and Atlas App Services
     validations:
       required: true
