@@ -3,14 +3,11 @@ About Wrappers
 
 Wrappers contains all our native code and its interfaces to C#.
 
-It usually involves a download phase which pulls prebuilt [Core](https://github.com/realm/realm-core) libraries from a server.
+It has a reference to the [Realm Core](https://github.com/realm/realm-core) repository as a **git submodule**.
 
-We have a second C++ layer called [ObjectStore](https://github.com/realm/realm-object-store/)
-which contains many of our cross-platform abstractions and is pulled into Wrappers as a **git submodule**.
+Wrappers also contains a small amount of C++ code which provides the mapping from C# to the Core logic.
 
-Wrappers also contains a small amount of C++ code which provides the mapping from C# to the ObjectStore and Core logic.
-
-Downloading ObjectStore
+Downloading Realm Core
 -----------------------
 
 ### Cloning
@@ -33,13 +30,9 @@ If you downloaded a zip of the source, you need to go back to github to identify
 Building iOS wrappers on macOS
 ------------------------------------------
 
-Prerequisites:
-1. Install cmake and zlib: `brew install cmake zlib`.
+Building for iOS required cmake and zlib installed. In case you do not have them installed, you can do it with `brew install cmake zlib`.
 
-These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
-
-1. `cd wrappers`
-1. `build-ios.sh` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator.
+You can use `build-ios.ps1` to build for iOS, specifying one or more the available platforms, `Device`, `Simulator` or `Catalayst`, and either `Debug` or `Release` configuration.
 
 Building Android wrappers
 -------------
@@ -52,10 +45,7 @@ Building Windows wrappers
 -------------
 
 You need Visual Studio 2017 (or later) with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
-You also need [Vcpkg](https://github.com/Microsoft/vcpkg) installed in `C:\src\vcpkg`, with the OpenSSL and Zlib ports built:
-```
-c:\src\vcpkg\vcpkg.exe install zlib:x64-windows-static openssl:x64-windows-static
-```
+
 Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can specify all or a subset to save time when building.
 
 * To build for regular Windows run `.\build.ps1 Windows -Configuration Debug/Release -Platforms Win32, x64`
