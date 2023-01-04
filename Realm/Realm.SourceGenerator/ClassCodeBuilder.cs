@@ -89,13 +89,18 @@ namespace {_generatedNamespaceName}
 
         private string GetUsings()
         {
-            var namespaces = new HashSet<string>(_defaultNamespaces);
-            namespaces.UnionWith(_classInfo.Usings);
-            namespaces.Add(_generatedNamespaceName);
-
+            var namespaces = new HashSet<string>() { _generatedNamespaceName };
             if (!_classInfo.NamespaceInfo.IsGlobal)
             {
                 namespaces.Add(_classInfo.NamespaceInfo.OriginalName);
+            }
+
+            namespaces.UnionWith(_defaultNamespaces);
+
+            foreach (var property in _classInfo.Properties)
+            {
+                namespaces.Add(property.TypeInfo.Namespace);
+                namespaces.Add(property.TypeInfo.InternalType?.Namespace);
             }
 
             return string.Join(Environment.NewLine, namespaces.Where(n => !string.IsNullOrWhiteSpace(n)).OrderBy(s => s).Select(s => $"using {s};"));
