@@ -33,6 +33,7 @@
 * Fixed a crash that would occur if you close a synchronized Realm while waiting for `SubscriptionSet.WaitForSynchronizationAsync`. (Issue [#2952](https://github.com/realm/realm-dotnet/issues/2952))
 * Avoid calling the setter on UI-bound properties in case the new value of the property is the same as the current one. This avoids some issue with MAUI, that seems to be calling the setter of bound properties unnecessarily when CollectionView/ListView are shown on screen. This is problematic if the object does not belong to the current user's permissions, as it will cause a compensanting write. In some limited cases this could cause an error loop (verified on iOS) when recycling of cells is involved. (Issue [#3128](https://github.com/realm/realm-dotnet/issues/3128))
 * Fixes an issue with where the source generator will not add the namespace for types used in properties' initializers. (Issue [#3135](https://github.com/realm/realm-dotnet/issues/3135))
+* Fixed an issue that would prevent Realm from working correctly in Unity applications that have [Domain Reloading](https://docs.unity3d.com/Manual/DomainReloading.html) turned off. (Issue [#2898](https://github.com/realm/realm-dotnet/issues/2898))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
