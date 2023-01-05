@@ -88,7 +88,7 @@ namespace Realms
 
         #region implementing IList members
 
-        public override void Add(T value)
+        public void Add(T value)
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
@@ -119,7 +119,7 @@ namespace Realms
             return _listHandle.Find(realmValue);
         }
 
-        public override void Insert(int index, T value)
+        public void Insert(int index, T value)
         {
             if (index < 0)
             {
@@ -143,7 +143,7 @@ namespace Realms
             _listHandle.Insert(index, realmValue);
         }
 
-        public override bool Remove(T item)
+        public bool Remove(T item)
         {
             var index = IndexOf(item);
             if (index < 0)

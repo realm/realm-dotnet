@@ -35,11 +35,11 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
           IList,
-          IList<T>,
           IThreadConfined,
           IMetadataObject
     {
@@ -460,8 +460,6 @@ namespace Realms
 
         public object SyncRoot => null;
 
-        T IList<T>.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
-
         object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
 
         public void Clear() => Handle.Value.Clear();
@@ -562,12 +560,6 @@ namespace Realms
                 array.SetValue(obj, index++);
             }
         }
-
-        public virtual void Insert(int index, T item) => throw new NotSupportedException();
-
-        public virtual void Add(T item) => throw new NotSupportedException();
-
-        public virtual bool Remove(T item) => throw new NotSupportedException();
 
         #endregion IList
 
