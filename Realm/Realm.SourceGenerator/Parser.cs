@@ -82,7 +82,7 @@ namespace Realms.SourceGenerator
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.ObjectType = implementingObjectTypes.First();
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
-                    classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
+                    classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classInfo, classSymbol, firstClassDeclarationSyntax));
                     classInfo.HasPropertyChangedEvent = classSymbol.HasPropertyChangedEvent();
                     classInfo.OverridesEquals = classSymbol.OverridesEquals();
                     classInfo.OverridesGetHashCode = classSymbol.OverridesGetHashCode();
@@ -449,13 +449,20 @@ namespace Realms.SourceGenerator
             return !constructors.Any() || constructors.Any(c => !c.ParameterList.Parameters.Any());
         }
 
-        private static IList<EnclosingClassInfo> GetEnclosingClassList(ITypeSymbol classSymbol)
+        private static IList<EnclosingClassInfo> GetEnclosingClassList(ClassInfo classInfo, ITypeSymbol classSymbol, ClassDeclarationSyntax classDeclarationSyntax)
         {
             var enclosingClassList = new List<EnclosingClassInfo>();
             var currentSymbol = classSymbol;
+            var currentClassDeclaration = classDeclarationSyntax;
 
-            while (currentSymbol.ContainingSymbol is ITypeSymbol ts)
+            while (currentSymbol.ContainingSymbol is ITypeSymbol ts && currentClassDeclaration.Parent is ClassDeclarationSyntax cs)
             {
+                if (!cs.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat),
+                        ts.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), cs.GetIdentifierLocation()));
+                }
+
                 var enclosingClassinfo = new EnclosingClassInfo
                 {
                     Name = ts.Name,
@@ -464,6 +471,7 @@ namespace Realms.SourceGenerator
                 enclosingClassList.Add(enclosingClassinfo);
 
                 currentSymbol = ts;
+                currentClassDeclaration = cs;
             }
 
             return enclosingClassList;
