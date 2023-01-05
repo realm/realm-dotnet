@@ -3,11 +3,9 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
-using Realms.IAsymmetricObject;
-using Realms.IEmbeddedObject;
-using Realms.IRealmObject;
 using Realms.Schema;
 using Realms.Tests.Database;
+using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -19,6 +17,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
 {
@@ -236,174 +237,176 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
+    }
+}
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal interface ISerializedObjectAccessor : Realms.IRealmAccessor
+namespace Realms.Tests.Database.Generated
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal interface ISerializedObjectAccessor : Realms.IRealmAccessor
+    {
+        int IntValue { get; set; }
+
+        string Name { get; set; }
+
+        System.Collections.Generic.IDictionary<string, int> Dict { get; }
+
+        System.Collections.Generic.IList<string> List { get; }
+
+        System.Collections.Generic.ISet<string> Set { get; }
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class SerializedObjectManagedAccessor : Realms.ManagedAccessor, ISerializedObjectAccessor
+    {
+        public int IntValue
         {
-            int IntValue { get; set; }
-
-            string Name { get; set; }
-
-            System.Collections.Generic.IDictionary<string, int> Dict { get; }
-
-            System.Collections.Generic.IList<string> List { get; }
-
-            System.Collections.Generic.ISet<string> Set { get; }
+            get => (int)GetValue("IntValue");
+            set => SetValue("IntValue", value);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class SerializedObjectManagedAccessor : Realms.ManagedAccessor, ISerializedObjectAccessor
+        public string Name
         {
-            public int IntValue
-            {
-                get => (int)GetValue("IntValue");
-                set => SetValue("IntValue", value);
-            }
+            get => (string)GetValue("Name");
+            set => SetValue("Name", value);
+        }
 
-            public string Name
+        private System.Collections.Generic.IDictionary<string, int> _dict;
+        public System.Collections.Generic.IDictionary<string, int> Dict
+        {
+            get
             {
-                get => (string)GetValue("Name");
-                set => SetValue("Name", value);
-            }
-
-            private System.Collections.Generic.IDictionary<string, int> _dict;
-            public System.Collections.Generic.IDictionary<string, int> Dict
-            {
-                get
+                if (_dict == null)
                 {
-                    if (_dict == null)
-                    {
-                        _dict = GetDictionaryValue<int>("Dict");
-                    }
-
-                    return _dict;
+                    _dict = GetDictionaryValue<int>("Dict");
                 }
-            }
 
-            private System.Collections.Generic.IList<string> _list;
-            public System.Collections.Generic.IList<string> List
-            {
-                get
-                {
-                    if (_list == null)
-                    {
-                        _list = GetListValue<string>("List");
-                    }
-
-                    return _list;
-                }
-            }
-
-            private System.Collections.Generic.ISet<string> _set;
-            public System.Collections.Generic.ISet<string> Set
-            {
-                get
-                {
-                    if (_set == null)
-                    {
-                        _set = GetSetValue<string>("Set");
-                    }
-
-                    return _set;
-                }
+                return _dict;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class SerializedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISerializedObjectAccessor
+        private System.Collections.Generic.IList<string> _list;
+        public System.Collections.Generic.IList<string> List
         {
-            public override ObjectSchema ObjectSchema => SerializedObject.RealmSchema;
-
-            private int _intValue;
-            public int IntValue
+            get
             {
-                get => _intValue;
-                set
+                if (_list == null)
                 {
-                    _intValue = value;
-                    RaisePropertyChanged("IntValue");
+                    _list = GetListValue<string>("List");
                 }
-            }
 
-            private string _name;
-            public string Name
+                return _list;
+            }
+        }
+
+        private System.Collections.Generic.ISet<string> _set;
+        public System.Collections.Generic.ISet<string> Set
+        {
+            get
             {
-                get => _name;
-                set
+                if (_set == null)
                 {
-                    _name = value;
-                    RaisePropertyChanged("Name");
+                    _set = GetSetValue<string>("Set");
                 }
+
+                return _set;
             }
+        }
+    }
 
-            public System.Collections.Generic.IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
+    internal class SerializedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISerializedObjectAccessor
+    {
+        public override ObjectSchema ObjectSchema => SerializedObject.RealmSchema;
 
-            public System.Collections.Generic.IList<string> List { get; } = new List<string>();
-
-            public System.Collections.Generic.ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
-
-            public SerializedObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        private int _intValue;
+        public int IntValue
+        {
+            get => _intValue;
+            set
             {
+                _intValue = value;
+                RaisePropertyChanged("IntValue");
             }
+        }
 
-            public override Realms.RealmValue GetValue(string propertyName)
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
             {
-                return propertyName switch
-                {
-                    "IntValue" => _intValue,
-                    "Name" => _name,
-                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-                };
+                _name = value;
+                RaisePropertyChanged("Name");
             }
+        }
 
-            public override void SetValue(string propertyName, Realms.RealmValue val)
+        public System.Collections.Generic.IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
+
+        public System.Collections.Generic.IList<string> List { get; } = new List<string>();
+
+        public System.Collections.Generic.ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+
+        public SerializedObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        {
+        }
+
+        public override Realms.RealmValue GetValue(string propertyName)
+        {
+            return propertyName switch
             {
-                switch (propertyName)
-                {
-                    case "IntValue":
-                        IntValue = (int)val;
-                        return;
-                    case "Name":
-                        Name = (string)val;
-                        return;
-                    default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-                }
-            }
+                "IntValue" => _intValue,
+                "Name" => _name,
+                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+            };
+        }
 
-            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+        public override void SetValue(string propertyName, Realms.RealmValue val)
+        {
+            switch (propertyName)
             {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+                case "IntValue":
+                    IntValue = (int)val;
+                    return;
+                case "Name":
+                    Name = (string)val;
+                    return;
+                default:
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
+        }
 
-            public override IList<T> GetListValue<T>(string propertyName)
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+        {
+            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+        }
+
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            return propertyName switch
+                        {
+            "List" => (IList<T>)List,
+
+                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                        };
+        }
+
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            return propertyName switch
+                        {
+            "Set" => (ISet<T>)Set,
+
+                            _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                        };
+        }
+
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            return propertyName switch
             {
-                return propertyName switch
-                            {
-                "List" => (IList<T>)List,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
-            }
-
-            public override ISet<T> GetSetValue<T>(string propertyName)
-            {
-                return propertyName switch
-                            {
-                "Set" => (ISet<T>)Set,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
-            }
-
-            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-            {
-                return propertyName switch
-                {
-                    "Dict" => (IDictionary<string, TValue>)Dict,
-                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
-                };
-            }
+                "Dict" => (IDictionary<string, TValue>)Dict,
+                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+            };
         }
     }
 }

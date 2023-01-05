@@ -5,13 +5,11 @@ using NUnit.Framework.Internal;
 using Realms;
 using Realms.Dynamic;
 using Realms.Exceptions;
-using Realms.IAsymmetricObject;
-using Realms.IEmbeddedObject;
-using Realms.IRealmObject;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using Realms.Tests.Sync;
+using Realms.Tests.Sync.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -22,6 +20,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
 {
@@ -225,110 +226,112 @@ namespace Realms.Tests.Sync
                 return true;
             }
         }
+    }
+}
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal interface IAsymmetricObjectWithEmbeddedListObjectAccessor : Realms.IRealmAccessor
+namespace Realms.Tests.Sync.Generated
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal interface IAsymmetricObjectWithEmbeddedListObjectAccessor : Realms.IRealmAccessor
+    {
+        MongoDB.Bson.ObjectId Id { get; set; }
+
+        System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject { get; }
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class AsymmetricObjectWithEmbeddedListObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
+    {
+        public MongoDB.Bson.ObjectId Id
         {
-            MongoDB.Bson.ObjectId Id { get; set; }
-
-            System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject { get; }
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
+            set => SetValueUnique("_id", value);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class AsymmetricObjectWithEmbeddedListObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
+        private System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> _embeddedListObject;
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject
         {
-            public MongoDB.Bson.ObjectId Id
+            get
             {
-                get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value);
-            }
-
-            private System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> _embeddedListObject;
-            public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject
-            {
-                get
+                if (_embeddedListObject == null)
                 {
-                    if (_embeddedListObject == null)
-                    {
-                        _embeddedListObject = GetListValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedListObject");
-                    }
-
-                    return _embeddedListObject;
+                    _embeddedListObject = GetListValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedListObject");
                 }
+
+                return _embeddedListObject;
+            }
+        }
+    }
+
+    internal class AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
+    {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedListObject.RealmSchema;
+
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
+        {
+            get => _id;
+            set
+            {
+                _id = value;
+                RaisePropertyChanged("Id");
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
+        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject { get; } = new List<Realms.Tests.EmbeddedIntPropertyObject>();
+
+        public AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor(Type objectType) : base(objectType)
         {
-            public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedListObject.RealmSchema;
+        }
 
-            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-            public MongoDB.Bson.ObjectId Id
+        public override Realms.RealmValue GetValue(string propertyName)
+        {
+            return propertyName switch
             {
-                get => _id;
-                set
-                {
-                    _id = value;
-                    RaisePropertyChanged("Id");
-                }
+                "_id" => _id,
+                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+            };
+        }
+
+        public override void SetValue(string propertyName, Realms.RealmValue val)
+        {
+            switch (propertyName)
+            {
+                case "_id":
+                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                default:
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+            }
+        }
+
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+        {
+            if (propertyName != "_id")
+            {
+                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject { get; } = new List<Realms.Tests.EmbeddedIntPropertyObject>();
+            Id = (MongoDB.Bson.ObjectId)val;
+        }
 
-            public AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor(Type objectType) : base(objectType)
-            {
-            }
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            return propertyName switch
+                        {
+            "EmbeddedListObject" => (IList<T>)EmbeddedListObject,
 
-            public override Realms.RealmValue GetValue(string propertyName)
-            {
-                return propertyName switch
-                {
-                    "_id" => _id,
-                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-                };
-            }
+                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                        };
+        }
 
-            public override void SetValue(string propertyName, Realms.RealmValue val)
-            {
-                switch (propertyName)
-                {
-                    case "_id":
-                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                    default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-                }
-            }
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+        }
 
-            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-            {
-                if (propertyName != "_id")
-                {
-                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-                }
-
-                Id = (MongoDB.Bson.ObjectId)val;
-            }
-
-            public override IList<T> GetListValue<T>(string propertyName)
-            {
-                return propertyName switch
-                            {
-                "EmbeddedListObject" => (IList<T>)EmbeddedListObject,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
-            }
-
-            public override ISet<T> GetSetValue<T>(string propertyName)
-            {
-                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-            }
-
-            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-            {
-                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
-            }
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }

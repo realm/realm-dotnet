@@ -13,8 +13,6 @@
 * Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
-* The realm file will be shrunk if the larger file size is no longer needed. (Core upgrade)
-* Most of the file growth caused by version pinning is eliminated. (Core upgrade)
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
 * Added diagnostic error for nested classes used with the source generator syntax, as they are not yet supported. (Issue [#3130](https://github.com/realm/realm-dotnet/issues/3130))
 
@@ -32,17 +30,15 @@
 * Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
 * Fixed an issue where fetching a user's profile while the user logs out would result in an assertion failure. (Core upgrade)
 * Removed the ".tmp_compaction_space" file being left over after compacting a Realm on Windows. (Core upgrade)
-* Fixed an issue where sets would consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core upgrade)
-* Fixed wrong assertion on query error that could result in a crash. (Core upgrade)
 * Fixed a crash that would occur if you close a synchronized Realm while waiting for `SubscriptionSet.WaitForSynchronizationAsync`. (Issue [#2952](https://github.com/realm/realm-dotnet/issues/2952))
 * Avoid calling the setter on UI-bound properties in case the new value of the property is the same as the current one. This avoids some issue with MAUI, that seems to be calling the setter of bound properties unnecessarily when CollectionView/ListView are shown on screen. This is problematic if the object does not belong to the current user's permissions, as it will cause a compensanting write. In some limited cases this could cause an error loop (verified on iOS) when recycling of cells is involved. (Issue [#3128](https://github.com/realm/realm-dotnet/issues/3128))
-* Fixes an issue with where the source generator will not add the namespace for types used in properties' initializers. (Issue [#3135](https://github.com/realm/realm-dotnet/issues/3135))   
+* Fixes an issue with where the source generator will not add the namespace for types used in properties' initializers. (Issue [#3135](https://github.com/realm/realm-dotnet/issues/3135))
 
 ### Compatibility
-* Realm Studio: 13.1.0 or later.
+* Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core 13.1.0.
+* Using Core 12.13.0.
 * Replaced `Realm.RefreshAsync` with a native implementation. (PR [#2995](https://github.com/realm/realm-dotnet/pull/2995))
 
 ## 10.18.0 (2022-11-02)

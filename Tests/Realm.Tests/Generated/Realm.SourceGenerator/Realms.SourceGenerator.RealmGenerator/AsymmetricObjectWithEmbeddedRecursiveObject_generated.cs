@@ -5,13 +5,11 @@ using NUnit.Framework.Internal;
 using Realms;
 using Realms.Dynamic;
 using Realms.Exceptions;
-using Realms.IAsymmetricObject;
-using Realms.IEmbeddedObject;
-using Realms.IRealmObject;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using Realms.Tests.Sync;
+using Realms.Tests.Sync.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -22,6 +20,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
 {
@@ -220,110 +221,112 @@ namespace Realms.Tests.Sync
                 return true;
             }
         }
+    }
+}
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal interface IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor : Realms.IRealmAccessor
+namespace Realms.Tests.Sync.Generated
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal interface IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor : Realms.IRealmAccessor
+    {
+        MongoDB.Bson.ObjectId Id { get; set; }
+
+        Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
+    }
+
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+    {
+        public MongoDB.Bson.ObjectId Id
         {
-            MongoDB.Bson.ObjectId Id { get; set; }
-
-            Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
+            get => (MongoDB.Bson.ObjectId)GetValue("_id");
+            set => SetValueUnique("_id", value);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class AsymmetricObjectWithEmbeddedRecursiveObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
-            public MongoDB.Bson.ObjectId Id
-            {
-                get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value);
-            }
+            get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
+            set => SetValue("RecursiveObject", value);
+        }
+    }
 
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
+    internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+    {
+        public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
+
+        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+        public MongoDB.Bson.ObjectId Id
+        {
+            get => _id;
+            set
             {
-                get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
-                set => SetValue("RecursiveObject", value);
+                _id = value;
+                RaisePropertyChanged("Id");
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor
+        private Realms.Tests.EmbeddedLevel1 _recursiveObject;
+        public Realms.Tests.EmbeddedLevel1 RecursiveObject
         {
-            public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedRecursiveObject.RealmSchema;
-
-            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-            public MongoDB.Bson.ObjectId Id
+            get => _recursiveObject;
+            set
             {
-                get => _id;
-                set
-                {
-                    _id = value;
-                    RaisePropertyChanged("Id");
-                }
+                _recursiveObject = value;
+                RaisePropertyChanged("RecursiveObject");
+            }
+        }
+
+        public AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        {
+        }
+
+        public override Realms.RealmValue GetValue(string propertyName)
+        {
+            return propertyName switch
+            {
+                "_id" => _id,
+                "RecursiveObject" => _recursiveObject,
+                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+            };
+        }
+
+        public override void SetValue(string propertyName, Realms.RealmValue val)
+        {
+            switch (propertyName)
+            {
+                case "_id":
+                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                case "RecursiveObject":
+                    RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
+                    return;
+                default:
+                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+            }
+        }
+
+        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+        {
+            if (propertyName != "_id")
+            {
+                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
             }
 
-            private Realms.Tests.EmbeddedLevel1 _recursiveObject;
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
-            {
-                get => _recursiveObject;
-                set
-                {
-                    _recursiveObject = value;
-                    RaisePropertyChanged("RecursiveObject");
-                }
-            }
+            Id = (MongoDB.Bson.ObjectId)val;
+        }
 
-            public AsymmetricObjectWithEmbeddedRecursiveObjectUnmanagedAccessor(Type objectType) : base(objectType)
-            {
-            }
+        public override IList<T> GetListValue<T>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+        }
 
-            public override Realms.RealmValue GetValue(string propertyName)
-            {
-                return propertyName switch
-                {
-                    "_id" => _id,
-                    "RecursiveObject" => _recursiveObject,
-                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-                };
-            }
+        public override ISet<T> GetSetValue<T>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+        }
 
-            public override void SetValue(string propertyName, Realms.RealmValue val)
-            {
-                switch (propertyName)
-                {
-                    case "_id":
-                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                    case "RecursiveObject":
-                        RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
-                        return;
-                    default:
-                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-                }
-            }
-
-            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-            {
-                if (propertyName != "_id")
-                {
-                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-                }
-
-                Id = (MongoDB.Bson.ObjectId)val;
-            }
-
-            public override IList<T> GetListValue<T>(string propertyName)
-            {
-                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-            }
-
-            public override ISet<T> GetSetValue<T>(string propertyName)
-            {
-                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-            }
-
-            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-            {
-                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
-            }
+        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+        {
+            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
         }
     }
 }
