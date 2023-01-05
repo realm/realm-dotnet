@@ -50,7 +50,6 @@ namespace Realms.SourceGenerator
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
             NotPersistedPropertyWithRealmAttributes = 26,
-            NestedClass = 27,
         }
 
         #region Errors
@@ -269,15 +268,6 @@ namespace Realms.SourceGenerator
                 Id.TypeNotSupported,
                 "Type not supported",
                 $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported.",
-                location);
-        }
-
-        public static Diagnostic NestedClass(string className, Location location)
-        {
-            return CreateDiagnosticError(
-                Id.NestedClass,
-                "Nested classes are not supported yet.",
-                $"{className} is a nested class, which is not yet supported.",
                 location);
         }
 

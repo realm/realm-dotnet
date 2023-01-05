@@ -684,7 +684,8 @@ return;".Indent());
 }};";
             }
 
-            return $@"internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
+            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
 {{
     public override ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
 
