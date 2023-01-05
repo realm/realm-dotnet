@@ -4,7 +4,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -219,112 +218,110 @@ namespace Realms.Tests
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IHugeSyncObjectAccessor : Realms.IRealmAccessor
-    {
-        MongoDB.Bson.ObjectId Id { get; set; }
-
-        byte[] Data { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class HugeSyncObjectManagedAccessor : Realms.ManagedAccessor, IHugeSyncObjectAccessor
-    {
-        public MongoDB.Bson.ObjectId Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IHugeSyncObjectAccessor : Realms.IRealmAccessor
         {
-            get => (MongoDB.Bson.ObjectId)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            MongoDB.Bson.ObjectId Id { get; set; }
+
+            byte[] Data { get; set; }
         }
 
-        public byte[] Data
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class HugeSyncObjectManagedAccessor : Realms.ManagedAccessor, IHugeSyncObjectAccessor
         {
-            get => (byte[])GetValue("Data");
-            set => SetValue("Data", value);
-        }
-    }
-
-    internal class HugeSyncObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IHugeSyncObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => HugeSyncObject.RealmSchema;
-
-        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-        public MongoDB.Bson.ObjectId Id
-        {
-            get => _id;
-            set
+            public MongoDB.Bson.ObjectId Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                set => SetValueUnique("_id", value);
+            }
+
+            public byte[] Data
+            {
+                get => (byte[])GetValue("Data");
+                set => SetValue("Data", value);
             }
         }
 
-        private byte[] _data;
-        public byte[] Data
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class HugeSyncObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IHugeSyncObjectAccessor
         {
-            get => _data;
-            set
-            {
-                _data = value;
-                RaisePropertyChanged("Data");
-            }
-        }
+            public override ObjectSchema ObjectSchema => HugeSyncObject.RealmSchema;
 
-        public HugeSyncObjectUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+            public MongoDB.Bson.ObjectId Id
             {
-                "_id" => _id,
-                "Data" => _data,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Data":
-                    Data = (byte[])val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
 
-            Id = (MongoDB.Bson.ObjectId)val;
-        }
+            private byte[] _data;
+            public byte[] Data
+            {
+                get => _data;
+                set
+                {
+                    _data = value;
+                    RaisePropertyChanged("Data");
+                }
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public HugeSyncObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    "Data" => _data,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Data":
+                        Data = (byte[])val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (MongoDB.Bson.ObjectId)val;
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

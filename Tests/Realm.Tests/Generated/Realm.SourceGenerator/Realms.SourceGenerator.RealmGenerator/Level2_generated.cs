@@ -2,9 +2,6 @@
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms;
-using Realms.IAsymmetricObject;
-using Realms.IEmbeddedObject;
-using Realms.IRealmObject;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
