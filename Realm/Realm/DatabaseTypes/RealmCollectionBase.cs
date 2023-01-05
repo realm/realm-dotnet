@@ -38,6 +38,8 @@ namespace Realms
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
+          IList,
+          IList<T>,
           IThreadConfined,
           IMetadataObject
     {
@@ -452,11 +454,21 @@ namespace Realms
 
         public virtual bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
+        public bool IsFixedSize => false;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => null;
+
+        T IList<T>.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+
+        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+
         public void Clear() => Handle.Value.Clear();
 
         public int IndexOf(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -466,7 +478,7 @@ namespace Realms
 
         public bool Contains(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -497,6 +509,65 @@ namespace Realms
                 array[arrayIndex++] = obj;
             }
         }
+
+        public virtual int Add(object value)
+        {
+            if (value is T tValue)
+            {
+                Add(tValue);
+                return Count - 1;
+            }
+
+            throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+        }
+
+        public virtual void Insert(int index, object value)
+        {
+            if (value is T tValue)
+            {
+                Insert(index, tValue);
+            }
+            else
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+        }
+
+        public void Remove(object value)
+        {
+            if (value is T tValue)
+            {
+                Remove(tValue);
+            }
+        }
+
+        public virtual void RemoveAt(int index) => throw new NotSupportedException();
+
+        public void CopyTo(Array array, int index)
+        {
+            Argument.NotNull(array, nameof(array));
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (index + Count > array.Length)
+            {
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
+            }
+
+            foreach (var obj in this)
+            {
+                array.SetValue(obj, index++);
+            }
+        }
+
+        public virtual void Insert(int index, T item) => throw new NotSupportedException();
+
+        public virtual void Add(T item) => throw new NotSupportedException();
+
+        public virtual bool Remove(T item) => throw new NotSupportedException();
 
         #endregion IList
 
