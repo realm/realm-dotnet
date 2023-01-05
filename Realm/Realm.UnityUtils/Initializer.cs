@@ -19,6 +19,7 @@
 using System.Threading;
 using Realms;
 using Realms.Logging;
+using UnityEngine;
 
 namespace UnityUtils
 {
@@ -32,12 +33,19 @@ namespace UnityUtils
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
-                Logger.Console = new UnityLogger();
+                Realms.Logging.Logger.Console = new UnityLogger();
                 UnityEngine.Application.quitting += () =>
                 {
                     NativeCommon.CleanupNativeResources("Application is exiting");
                 };
             }
+        }
+
+        [Preserve]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void OnSubsystemRegistration()
+        {
+            NativeCommon.Initialize();
         }
     }
 }
