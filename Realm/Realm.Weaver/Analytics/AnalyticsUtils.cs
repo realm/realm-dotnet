@@ -75,28 +75,9 @@ namespace RealmWeaver
             }
         }
 
-        public static void ComputeHostOSNameAndVersion(out string osType, out string osVersion)
-        {
-            var platformRegex = new Regex("^(?<platform>[^0-9]*) (?<version>[^ ]*)", RegexOptions.Compiled);
-            var osDescription = platformRegex.Match(RuntimeInformation.OSDescription);
-            if (osDescription.Success)
-            {
-                osType = osDescription.Groups["platform"].Value;
-                osVersion = osDescription.Groups["version"].Value;
-            }
-            else
-            {
-                osType = Environment.OSVersion.Platform.ToString();
-                osVersion = Environment.OSVersion.VersionString;
-            }
-
-            osType = ConvertOsNameToMetricsVersion(osType);
-        }
-
         public static string GetHostCpuArchitecture =>
-            WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.ProcessArchitecture.ToString()));
+            WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString()));
 
-        // TODO andrea: module.Architecture reports "I386" which isn't a value I could find in the documentation of MS. Investigate
         public static string GetTargetCpuArchitecture(ModuleDefinition module) =>
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(module.Architecture.ToString()));
 
@@ -106,19 +87,19 @@ namespace RealmWeaver
                 .Select(n => n.GetPhysicalAddress().GetAddressBytes())
                 .FirstOrDefault();
 
-        private static string ConvertOsNameToMetricsVersion(string osName) =>
+        public static string ConvertOsNameToMetricsVersion(PlatformID platformID) =>
             WrapInTryCatch(() =>
             {
-                switch (osName)
+                switch (platformID)
                 {
-                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Windows):
+                    case PlatformID.Win32NT:
                         return Metric.OperatingSystem.Windows;
-                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.MacOS):
+                    case PlatformID.MacOSX:
                         return Metric.OperatingSystem.MacOS;
-                    case string s when s.ContainsIgnoreCase(Metric.OperatingSystem.Linux):
+                    case PlatformID.Unix:
                         return Metric.OperatingSystem.Linux;
                     default:
-                        return $"{osName} is an unknown operating system.";
+                        return $"{platformID} is an unsupported operating system.";
                 }
             });
 

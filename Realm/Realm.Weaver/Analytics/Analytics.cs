@@ -30,7 +30,6 @@ using static RealmWeaver.Metric.SdkFeature;
 
 namespace RealmWeaver
 {
-    // TODO andrea: review and update this comment
     // Asynchronously submits build information to Realm when the assembly weaver
     // is running
     //
@@ -41,7 +40,7 @@ namespace RealmWeaver
     // None of the data personally identifies you, your employer or your app, but it
     // *will* help us understand what Realm version you use, what host OS you use,
     // etc. Having this info will help with prioritizing our time, adding new
-    // features and deprecating old features. Collecting an anonymized assembly name &
+    // features and deprecating old ones. Collecting an anonymized assembly name &
     // anonymized MAC is the only way for us to count actual usage of the other
     // metrics accurately. If we don't have a way to deduplicate the info reported,
     // it will be useless, as a single developer building their app on Windows ten
@@ -53,9 +52,13 @@ namespace RealmWeaver
     // better product for you.
     //
     // Currently the following information is reported:
-    // - What version of Realm is being used
-    // - What OS you are running on
-    // - What OS you are building for
+    // - What OS and CPU architecture you are running on
+    // - What OS and CPU architecture you are building for
+    // - What version of the Realm SDK you're using
+    // - What framework and what framework version Realm is being used in (e.g. Xamarin, MAUI, etc.)
+    // - How the Realm SDK was installed (e.g. Nuget, manual, etc.)
+    // - What IDE and what IDE version you're using
+    // - What APIs of the Realm SDK you're using
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
@@ -597,12 +600,10 @@ namespace RealmWeaver
             try
             {
                 // collect environment details
-                ComputeHostOSNameAndVersion(out var osType, out var osVersion);
-
                 _realmEnvMetrics[UserId] = AnonymizedUserID;
                 _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
-                _realmEnvMetrics[HostOsType] = osType;
-                _realmEnvMetrics[HostOsVersion] = osVersion;
+                _realmEnvMetrics[HostOsType] = ConvertOsNameToMetricsVersion(Environment.OSVersion.Platform);
+                _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.VersionString;
                 _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
 
@@ -765,7 +766,7 @@ namespace RealmWeaver
                 pretty = true;
 #endif
 
-                // TODO andrea: find a general address that the whole team can use to do test, a.k.a. check the json is well formed when wired
+                // TODO andrea: find a general address that the whole team can use to do tests
                 // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
                 var payload = GetJsonPayload(pretty);
 

@@ -30,6 +30,7 @@ using RealmWeaver;
 namespace Analytics
 {
     extern alias realm;
+    using Metric = realm::RealmWeaver.Metric;
     using SdkFeature = realm::RealmWeaver.Metric.SdkFeature;
 
     [TestFixture]
@@ -103,7 +104,31 @@ namespace Analytics
             return Path.Combine(folder, "Tests", "Weaver", "AnalyticsAssembly");
         });
 
-        // TODO andrea: see if possible to add test for env vars on different platforms
+        [Test]
+        public void ValidateCorrectPlatform()
+        {
+            try
+            {
+                CompileAnalyticsProject(_featureMap.FirstOrDefault().Value);
+
+                var osType = Environment.OSVersion.Platform switch
+                {
+                    PlatformID.Win32NT =>
+                        Metric.OperatingSystem.Windows,
+                    PlatformID.MacOSX =>
+                        Metric.OperatingSystem.MacOS,
+                    PlatformID.Unix =>
+                        Metric.OperatingSystem.Linux,
+                    PlatformID id => $"{id} is an unsupported OS."
+                };
+
+                ValidateAnalyticsPayload(SdkFeature.HostOsType, osType);
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"Exception: {e.Message}");
+            }
+        }
 
         [Test]
         public void ValidateFeatureUsage()
@@ -113,7 +138,7 @@ namespace Analytics
                 try
                 {
                     CompileAnalyticsProject(kvp.Value);
-                    ValidateAnalyticsPayload(kvp.Key);
+                    ValidateSdkApiAnalyticsPayload(kvp.Key);
                 }
                 catch (Exception e)
                 {
@@ -135,7 +160,7 @@ namespace Analytics
             }
         }
 
-        private void ValidateAnalyticsPayload(string featureName, byte expectedUsed = 1)
+        private void ValidateAnalyticsPayload<T>(string featureName, T expectedResult)
         {
             foreach (var framework in _frameworks.Value)
             {
@@ -143,8 +168,13 @@ namespace Analytics
 
                 var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
 
-                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedUsed.ToString()), $"Feature {featureName} was not reported as used: {expectedUsed} in {framework}");
+                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
             }
+        }
+
+        private void ValidateSdkApiAnalyticsPayload(string featureName, byte expectedUsed = 1)
+        {
+            ValidateAnalyticsPayload(featureName, expectedUsed);
         }
 
         private string WeaveRealm(string framework, string collectionType)
