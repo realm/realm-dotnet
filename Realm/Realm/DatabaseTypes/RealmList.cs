@@ -155,7 +155,7 @@ namespace Realms
             return true;
         }
 
-        public void RemoveAt(int index)
+        public override void RemoveAt(int index)
         {
             if (index < 0)
             {
