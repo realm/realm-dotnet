@@ -108,6 +108,11 @@ namespace Realms.Sync.Exceptions
         BadClientFile = 217,
 
         /// <summary>
+        /// Client file has expired likely due to history compaction on the server.
+        /// </summary>
+        ClientFileExpired = 222,
+
+        /// <summary>
         /// The user for this session doesn't match the user who originally created the file. This can happen
         /// if you explicitly specify the Realm file path in the configuration and you open the Realm first with
         /// user A, then with user B without changing the on-disk path.
