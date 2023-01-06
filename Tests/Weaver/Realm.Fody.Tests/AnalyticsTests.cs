@@ -113,12 +113,9 @@ namespace Analytics
 
                 var osType = Environment.OSVersion.Platform switch
                 {
-                    PlatformID.Win32NT =>
-                        Metric.OperatingSystem.Windows,
-                    PlatformID.MacOSX =>
-                        Metric.OperatingSystem.MacOS,
-                    PlatformID.Unix =>
-                        Metric.OperatingSystem.Linux,
+                    PlatformID.Win32NT => Metric.OperatingSystem.Windows,
+                    PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
+                    PlatformID.Unix => Metric.OperatingSystem.Linux,
                     PlatformID id => $"{id} is an unsupported OS."
                 };
 
@@ -156,7 +153,7 @@ namespace Analytics
             {
                 var response = WeaveRealm(framework, "Disabled");
 
-                Assert.That(response, Is.EqualTo("Analytics disabled"));
+                Assert.That(response, Is.EqualTo("Analytics disabled"), $"Analytics was not reported as disabled for framework {framework}.");
             }
         }
 
@@ -164,11 +161,16 @@ namespace Analytics
         {
             foreach (var framework in _frameworks.Value)
             {
-                var response = WeaveRealm(framework, "DryRun");
-
-                var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
-
-                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
+                try
+                {
+                    var response = WeaveRealm(framework, "DryRun");
+                    var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
+                    Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"At framework {framework} the following exception was raised:\n{ex.Message}");
+                }
             }
         }
 

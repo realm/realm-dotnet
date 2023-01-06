@@ -21,7 +21,6 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using static RealmWeaver.Metric;
 
