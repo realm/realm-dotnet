@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.19.0 (2023-01-06)
 
 ### Enhancements
 * Removed redundant serialization/deserialization of arguments in CallAsync. (Issue [#3079](https://github.com/realm/realm-dotnet/issues/3079))
