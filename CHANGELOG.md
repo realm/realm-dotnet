@@ -36,6 +36,7 @@
 * Fixes an issue with where the source generator will not add the namespace for types used in properties' initializers. (Issue [#3135](https://github.com/realm/realm-dotnet/issues/3135))
 * Fixed an issue that would prevent Realm from working correctly in Unity applications that have [Domain Reloading](https://docs.unity3d.com/Manual/DomainReloading.html) turned off. (Issue [#2898](https://github.com/realm/realm-dotnet/issues/2898))
 * Fixed a bug when using `string.Contains` in .NET 2.1 or later where the search string is not a literal. (Issue [#3134](https://github.com/realm/realm-dotnet/issues/3134))
+* Added `[Obsolete]` notice for a few `ErrorCode` enum members that are no longer in use. (Issue [#3155](https://github.com/realm/realm-dotnet/issues/3155)
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
