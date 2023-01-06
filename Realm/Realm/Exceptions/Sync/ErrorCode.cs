@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
@@ -97,6 +99,7 @@ namespace Realms.Sync.Exceptions
         /// <summary>
         /// The session has been disabled.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         DisabledSession = 213,
 
         /// <summary>
@@ -159,56 +162,67 @@ namespace Realms.Sync.Exceptions
         /// <summary>
         /// Your request parameters did not validate.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         InvalidParameters = 601,
 
         /// <summary>
         /// Your request did not validate because of missing parameters.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         MissingParameters = 602,
 
         /// <summary>
         /// The provided credentials are invalid.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         InvalidCredentials = 611,
 
         /// <summary>
         /// The account does not exist.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         UnknownAccount = 612,
 
         /// <summary>
         /// The account cannot be registered as it exists already.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         ExistingAccount = 613,
 
         /// <summary>
         /// The path is invalid or current user has no access.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         AccessDenied = 614,
 
         /// <summary>
         /// The refresh token is expired.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         ExpiredRefreshToken = 615,
 
         /// <summary>
         /// The server is not authoritative for this URL.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         InvalidHost = 616,
 
         /// <summary>
         /// The permission offer is expired.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         ExpiredPermissionOffer = 701,
 
         /// <summary>
         /// The token used on the permission request does match more than a single permission offer.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         AmbiguousPermissionOfferToken = 702,
 
         /// <summary>
         /// The Realm file at the specified path is not available for shared access.
         /// </summary>
+        [Obsolete("This error can no longer happen")]
         FileMayNotBeShared = 703,
     }
 }
