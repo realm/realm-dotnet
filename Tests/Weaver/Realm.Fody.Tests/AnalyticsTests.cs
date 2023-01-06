@@ -186,7 +186,6 @@ namespace Analytics
 
                 var payloadPath = Path.GetTempFileName();
                 WeaveRealm(assemblyPath, XElement.Parse($"<Realm AnalyticsCollection=\"{collectionType}\" AnalyticsLogPath=\"{payloadPath}\"/>"));
-                Console.WriteLine($"PayloadPath: {payloadPath}\nPayload: {File.ReadAllText(payloadPath)}");
 
                 return File.ReadAllText(payloadPath);
             }
