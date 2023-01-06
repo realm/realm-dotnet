@@ -152,7 +152,6 @@ namespace Analytics
             foreach (var framework in _frameworks.Value)
             {
                 var response = WeaveRealm(framework, "Disabled");
-
                 Assert.That(response, Is.EqualTo("Analytics disabled"), $"Analytics was not reported as disabled for framework {framework}.");
             }
         }
@@ -169,7 +168,7 @@ namespace Analytics
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"At framework {framework} the following exception was raised:\n{ex.Message}");
+                    Assert.Fail($"For framework {framework} an exception was raised:\n{ex.Message}");
                 }
             }
         }
@@ -181,12 +180,21 @@ namespace Analytics
 
         private string WeaveRealm(string framework, string collectionType)
         {
-            var assemblyPath = Path.Combine(_analyticsAssemblyLocation.Value, "bin", "Release", framework, "AnalyticsAssembly.dll");
+            try
+            {
+                var assemblyPath = Path.Combine(_analyticsAssemblyLocation.Value, "bin", "Release", framework, "AnalyticsAssembly.dll");
 
-            var payloadPath = Path.GetTempFileName();
-            WeaveRealm(assemblyPath, XElement.Parse($"<Realm AnalyticsCollection=\"{collectionType}\" AnalyticsLogPath=\"{payloadPath}\"/>"));
+                var payloadPath = Path.GetTempFileName();
+                WeaveRealm(assemblyPath, XElement.Parse($"<Realm AnalyticsCollection=\"{collectionType}\" AnalyticsLogPath=\"{payloadPath}\"/>"));
 
-            return File.ReadAllText(payloadPath);
+                return File.ReadAllText(payloadPath);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Exception while weaving: {ex.Message}");
+            }
+
+            return string.Empty;
         }
 
         private static void CompileAnalyticsProject(params string[] constants)
