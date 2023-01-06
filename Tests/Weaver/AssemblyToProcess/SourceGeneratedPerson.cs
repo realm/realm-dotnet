@@ -18,7 +18,6 @@
 
 using System.Collections.Generic;
 using Realms;
-using AssemblyToProcess.Generated;
 
 namespace AssemblyToProcess
 {
@@ -40,55 +39,52 @@ namespace AssemblyToProcess
         internal ISourceGeneratedPersonAccessor Accessor => _accessor = _accessor ?? new SourceGeneratedPersonAccessor();
 
         public List<string> LogList => (Accessor as SourceGeneratedPersonAccessor).LogList;
-    }
-}
 
-namespace AssemblyToProcess.Generated
-{
-    internal interface ISourceGeneratedPersonAccessor
-    {
-        string Name { get; set; }
-
-        int Id { get; set; }
-    }
-
-    internal class SourceGeneratedPersonAccessor : ISourceGeneratedPersonAccessor
-    {
-        private string _name;
-        public string Name
+        internal interface ISourceGeneratedPersonAccessor
         {
-            get
-            {
-                LogString($"Get {nameof(Name)}");
-                return _name;
-            }
-            set
-            {
-                LogString($"Set {nameof(Name)}");
-                _name = value;
-            }
+            string Name { get; set; }
+
+            int Id { get; set; }
         }
 
-        private int _id;
-        public int Id
+        internal class SourceGeneratedPersonAccessor : ISourceGeneratedPersonAccessor
         {
-            get
+            private string _name;
+            public string Name
             {
-                LogString($"Get {nameof(Id)}");
-                return _id;
+                get
+                {
+                    LogString($"Get {nameof(Name)}");
+                    return _name;
+                }
+                set
+                {
+                    LogString($"Set {nameof(Name)}");
+                    _name = value;
+                }
             }
-            set
+
+            private int _id;
+            public int Id
             {
-                LogString($"Set {nameof(Id)}");
-                _id = value;
+                get
+                {
+                    LogString($"Get {nameof(Id)}");
+                    return _id;
+                }
+                set
+                {
+                    LogString($"Set {nameof(Id)}");
+                    _id = value;
+                }
             }
-        }
 
-        public List<string> LogList = new List<string>();
+            public List<string> LogList = new List<string>();
 
-        private void LogString(string s)
-        {
-            LogList.Add(s);
+            private void LogString(string s)
+            {
+                LogList.Add(s);
+            }
         }
     }
 }

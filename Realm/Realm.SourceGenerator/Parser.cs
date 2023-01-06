@@ -462,8 +462,7 @@ namespace Realms.SourceGenerator
             {
                 if (!cs.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
                 {
-                    classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat),
-                        ts.ToDisplayString(SymbolDisplayFormat.CSharpShortErrorMessageFormat), cs.GetIdentifierLocation()));
+                    classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.Name, ts.Name, cs.GetIdentifierLocation()));
                 }
 
                 var enclosingClassinfo = new EnclosingClassInfo
