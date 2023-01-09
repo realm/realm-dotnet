@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using QuickJournal.Messages;
 using QuickJournal.Models;
 
 namespace QuickJournal.ViewModels
@@ -16,13 +17,6 @@ namespace QuickJournal.ViewModels
         public void OnPageClosed()
         {
             WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(entry));
-        }
-    }
-
-    public class EntryModifiedMessage : ValueChangedMessage<JournalEntry>
-    {
-        public EntryModifiedMessage(JournalEntry entry) : base(entry)
-        {
         }
     }
 }

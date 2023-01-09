@@ -60,15 +60,15 @@
 	  <None Remove="CommunityToolkit.Maui" />
 	  <None Remove="CommunityToolkit.Mvvm" />
 	  <None Remove="Views\" />
-	  <None Remove="Services\" />
 	  <None Remove="ViewModels\" />
 	  <None Remove="Models\" />
+	  <None Remove="Messages\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Views\" />
-	  <Folder Include="Services\" />
 	  <Folder Include="ViewModels\" />
 	  <Folder Include="Models\" />
+	  <Folder Include="Messages\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <MauiXaml Update="Views\JournalEntriesPage.xaml">
