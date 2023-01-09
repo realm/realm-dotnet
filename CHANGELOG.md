@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
