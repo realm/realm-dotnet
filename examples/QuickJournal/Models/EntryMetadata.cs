@@ -10,4 +10,3 @@ namespace QuickJournal.Models
         public DateTimeOffset LastModifiedDate { get; set; }
     }
 }
-

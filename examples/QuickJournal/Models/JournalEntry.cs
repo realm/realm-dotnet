@@ -12,4 +12,3 @@ namespace QuickJournal.Models
         public EntryMetadata Metadata { get; set; }
     }
 }
-
