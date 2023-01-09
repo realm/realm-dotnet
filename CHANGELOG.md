@@ -11,6 +11,7 @@
 
 ### Internal
 * Using Core x.y.z.
+* Overhauled and extended the metrics collection of the SDK to better drive future development effort. (PR [#3080](https://github.com/realm/realm-dotnet/pull/3080))
 
 ## 10.19.0 (2023-01-06)
 
