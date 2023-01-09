@@ -426,7 +426,7 @@ namespace Realms.Helpers
         /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
         /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
-        public static TResult Convert<TResult>(object value)
+        public static TResult Convert<TResult>(object? value)
         {
             if (value is TResult result)
             {

@@ -35,7 +35,7 @@ namespace Realms
     {
         private readonly Type _objectType;
 
-        private Action<string> _onNotifyPropertyChanged;
+        private Action<string>? _onNotifyPropertyChanged;
 
         /// <inheritdoc/>
         public bool IsManaged => false;
@@ -47,10 +47,10 @@ namespace Realms
         public bool IsFrozen => false;
 
         /// <inheritdoc/>
-        public Realm Realm => null;
+        public Realm? Realm => null;
 
         /// <inheritdoc/>
-        public virtual ObjectSchema ObjectSchema => null;
+        public virtual ObjectSchema? ObjectSchema => null;
 
         /// <inheritdoc/>
         public int BacklinksCount => 0;
@@ -59,7 +59,7 @@ namespace Realms
         public DynamicObjectApi DynamicApi => throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
 
         /// <inheritdoc/>
-        public IRealmObjectBase GetParent() => null;
+        public IRealmObjectBase? GetParent() => null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
@@ -115,12 +115,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
-        {
-#pragma warning disable CA1062 // Validate arguments of public methods
-            return TypeInfoHelper.GetInfo(obj);
-#pragma warning restore CA1062 // Validate arguments of public methods
-        }
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj) => TypeInfoHelper.GetInfo(obj);
 
         /// <inheritdoc/>
         public override string ToString()
@@ -129,10 +124,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
-        {
-            return ReferenceEquals(this, obj);
-        }
+        public override bool Equals(object? obj) => ReferenceEquals(this, obj);
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Better code organisation")]

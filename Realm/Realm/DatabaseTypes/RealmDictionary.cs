@@ -42,11 +42,11 @@ namespace Realms
           IRealmCollectionBase<DictionaryHandle>,
           INotifiable<DictionaryHandle.DictionaryChangeSet>
     {
-        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
+        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new();
         private readonly DictionaryHandle _dictionaryHandle;
 
         private bool _deliveredInitialKeyNotification;
-        private NotificationTokenHandle _keyNotificationToken;
+        private NotificationTokenHandle? _keyNotificationToken;
 
         public TValue this[string key]
         {
@@ -113,7 +113,7 @@ namespace Realms
 
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata? metadata)
             : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;
@@ -166,7 +166,9 @@ namespace Realms
             return _dictionaryHandle.Remove(item.Key, realmValue);
         }
 
-        public bool TryGetValue(string key, out TValue value)
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value)
+#pragma warning restore CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
         {
             if (key != null && _dictionaryHandle.TryGet(key, Realm, out var realmValue))
             {
@@ -251,7 +253,7 @@ namespace Realms
 
         void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes)
         {
-            DictionaryChangeSet changeset = null;
+            DictionaryChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;

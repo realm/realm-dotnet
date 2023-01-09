@@ -389,7 +389,7 @@ namespace Realms
             }
         }
 
-        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[]? encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
@@ -398,7 +398,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[]? encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
@@ -408,7 +408,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, IntPtr tcsHandle)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[]? encryptionKey, IntPtr tcsHandle)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
             var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, tcsHandle, out var nativeException);
@@ -628,7 +628,7 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
+        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object? primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
         {
             if (primaryKey == null && !pkProperty.Type.IsNullable())
             {
@@ -637,7 +637,7 @@ namespace Realms
 
             RealmValue pkValue = pkProperty.Type.ToRealmValueType() switch
             {
-                RealmValueType.String => (string)primaryKey,
+                RealmValueType.String => (string?)primaryKey,
                 RealmValueType.Int => primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey),
                 RealmValueType.ObjectId => (ObjectId?)primaryKey,
                 RealmValueType.Guid => (Guid?)primaryKey,
@@ -801,7 +801,7 @@ namespace Realms
                 using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
                 var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-                using var newRealm = new Realm(newRealmHandle, config, config.GetSchema(), isInMigration: true);
+                using var newRealm = new Realm(newRealmHandle, config, config.Schema, isInMigration: true);
                 migration = new Migration(oldRealm, newRealm, migrationSchema);
 
                 config.MigrationCallback.Invoke(migration, schemaVersion);

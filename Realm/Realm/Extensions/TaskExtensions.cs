@@ -30,7 +30,7 @@ internal static class TaskExtensions
             {
                 if (task.IsFaulted)
                 {
-                    throw task.Exception.InnerException;
+                    throw task.Exception?.InnerException ?? task.Exception ?? new Exception("Task is faulted");
                 }
 
                 return task.Result;
@@ -40,7 +40,7 @@ internal static class TaskExtensions
         });
     }
 
-    public static async Task Timeout(this Task task, int millisecondTimeout, Task errorTask = null)
+    public static async Task Timeout(this Task task, int millisecondTimeout, Task? errorTask = null)
     {
         var tasks = new List<Task> { task, Task.Delay(millisecondTimeout) };
         if (errorTask != null)

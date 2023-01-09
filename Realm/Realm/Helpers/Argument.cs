@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Logging;
 
 namespace Realms.Helpers
@@ -57,7 +58,7 @@ namespace Realms.Helpers
             return tObj;
         }
 
-        public static void Ensure(bool condition, string message, string paramName)
+        public static void Ensure([DoesNotReturnIf(false)] bool condition, string message, string paramName)
         {
             if (!condition)
             {
@@ -65,7 +66,7 @@ namespace Realms.Helpers
             }
         }
 
-        public static void NotNull(object value, string paramName)
+        public static void NotNull([NotNull] object? value, string paramName)
         {
             if (value == null)
             {

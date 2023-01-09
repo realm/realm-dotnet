@@ -58,18 +58,18 @@ namespace Realms.Dynamic
                 _ => throw new NotSupportedException($"{_schemaType} type not supported, yet."),
             };
 
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object? value)
         {
-            if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
+            if (!instance.IsManaged || instance.ObjectSchema.PrimaryKeyProperty == null)
             {
                 value = null;
                 return false;
             }
 
-            value = instance.GetType().GetProperty(instance.ObjectSchema.PrimaryKeyProperty.Value.ManagedName).GetValue(instance, null);
+            value = instance.GetType().GetProperty(instance.ObjectSchema.PrimaryKeyProperty.Value.ManagedName)!.GetValue(instance, null);
             return true;
         }
 
-        public ManagedAccessor CreateAccessor() => null;
+        public ManagedAccessor? CreateAccessor() => null;
     }
 }

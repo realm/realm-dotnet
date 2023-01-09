@@ -39,7 +39,7 @@ namespace Realms
         /// <inheritdoc/>
         [Obsolete("Encryption is not supported for in-memory realms. This property will be removed in a future version.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-        public override byte[] EncryptionKey
+        public override byte[]? EncryptionKey
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
         {
             get => base.EncryptionKey;

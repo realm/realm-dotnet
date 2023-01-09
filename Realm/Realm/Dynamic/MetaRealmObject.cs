@@ -25,6 +25,7 @@ using System.Reflection;
 using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Extensions;
+using Realms.Helpers;
 using Realms.Schema;
 
 namespace Realms.Dynamic
@@ -36,30 +37,32 @@ namespace Realms.Dynamic
         private readonly Realm _realm;
         private readonly Metadata _metadata;
 
-        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(IRealmObjectBase).GetProperty(nameof(IRealmObjectBase.Realm), PrivateBindingFlags);
-        private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags);
-        private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags).GetMethod;
+        private static readonly PropertyInfo RealmObjectRealmProperty = typeof(IRealmObjectBase).GetProperty(nameof(IRealmObjectBase.Realm), PrivateBindingFlags)!;
+        private static readonly FieldInfo ObjectMetadataSchemaField = typeof(Metadata).GetField(nameof(Metadata.Schema), PrivateBindingFlags)!;
+        private static readonly MethodInfo SchemaGetNameProperty = typeof(ObjectSchema).GetProperty(nameof(ObjectSchema.Name), PrivateBindingFlags)!.GetMethod!;
 
         private static readonly MethodInfo RealmObjectGetBacklinksForHandle_RealmObject = typeof(RealmObjectExtensions)
-            .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(DynamicRealmObject));
+            .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(typeof(DynamicRealmObject));
 
         private static readonly MethodInfo RealmObjectGetBacklinksForHandle_EmbeddedObject = typeof(RealmObjectExtensions)
-           .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(typeof(DynamicEmbeddedObject));
+           .GetMethod(nameof(RealmObjectExtensions.GetBacklinksForHandle), BindingFlags.Public | BindingFlags.Static)!.MakeGenericMethod(typeof(DynamicEmbeddedObject));
 
-        private static readonly MethodInfo RealmValueGetMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.As), BindingFlags.Public | BindingFlags.Instance);
-        private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create), BindingFlags.NonPublic | BindingFlags.Static);
+        private static readonly MethodInfo RealmValueGetMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.As), BindingFlags.Public | BindingFlags.Instance)!;
+        private static readonly MethodInfo CreateRealmValueMethod = typeof(RealmValue).GetMethod(nameof(RealmValue.Create)!, BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private static readonly MethodInfo RealmObjectGetObjectHandleMethod = typeof(RealmObjectExtensions)
-            .GetMethod(nameof(RealmObjectExtensions.GetObjectHandle), BindingFlags.Public | BindingFlags.Static);
+            .GetMethod(nameof(RealmObjectExtensions.GetObjectHandle), BindingFlags.Public | BindingFlags.Static)!;
 
         private static readonly MethodInfo RealmObjectGetMetadataMethod = typeof(RealmObjectExtensions)
-            .GetMethod(nameof(RealmObjectExtensions.GetObjectMetadata), BindingFlags.Public | BindingFlags.Static);
+            .GetMethod(nameof(RealmObjectExtensions.GetObjectMetadata), BindingFlags.Public | BindingFlags.Static)!;
 
-        private static readonly ObjectHandle DummyHandle = new ObjectHandle(null, IntPtr.Zero);
+        private static readonly ObjectHandle DummyHandle = new(null!, IntPtr.Zero);
 
         public MetaRealmObject(Expression expression, IRealmObjectBase value)
             : base(expression, BindingRestrictions.Empty, value)
         {
+            Argument.Ensure(value.IsManaged, "MetaRealmObject should only be created for managed objects", nameof(value));
+
             _realm = value.Realm;
             _metadata = value.GetObjectMetadata();
         }
@@ -73,7 +76,7 @@ namespace Realms.Dynamic
 
             var self = GetLimitedSelf();
             var arguments = new List<Expression>();
-            MethodInfo getter = null;
+            MethodInfo? getter = null;
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
                 arguments.Add(Expression.Constant(property.Name));
@@ -299,7 +302,7 @@ namespace Realms.Dynamic
                 _ => throw new NotSupportedException($"{metadata.Schema.BaseType} not supported yet."),
             };
 
-            MethodInfo GetCollectionGetter<T>(CollectionType collectionType)
+            static MethodInfo GetCollectionGetter<T>(CollectionType collectionType)
                 where T : IDynamicMetaObjectProvider =>
                 collectionType switch
                 {

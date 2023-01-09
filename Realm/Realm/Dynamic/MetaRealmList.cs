@@ -37,8 +37,8 @@ namespace Realms.Dynamic
                 limitedSelf = Expression.Convert(limitedSelf, LimitType);
             }
 
-            var indexer = LimitType.GetProperty("Item");
-            Expression expression = Expression.Call(limitedSelf, indexer.GetGetMethod(), indexes.Select(i => i.Expression));
+            var indexer = LimitType.GetProperty("Item")?.GetGetMethod() ?? throw new NotSupportedException("Couldn't find indexer for list");
+            Expression expression = Expression.Call(limitedSelf, indexer, indexes.Select(i => i.Expression));
             if (binder.ReturnType != expression.Type)
             {
                 expression = Expression.Convert(expression, binder.ReturnType);

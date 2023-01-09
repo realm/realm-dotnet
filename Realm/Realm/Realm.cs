@@ -97,7 +97,7 @@ namespace Realms
         /// <exception cref="RealmFileAccessErrorException">
         /// Thrown if the file system returns an error preventing file creation.
         /// </exception>
-        public static Realm GetInstance(RealmConfigurationBase config = null)
+        public static Realm GetInstance(RealmConfigurationBase? config = null)
         {
             config ??= RealmConfiguration.DefaultConfiguration;
 
@@ -119,12 +119,9 @@ namespace Realms
         /// </returns>
         /// <param name="config">A configuration object that describes the realm.</param>
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
-        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken cancellationToken = default)
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase? config = null, CancellationToken cancellationToken = default)
         {
-            if (config == null)
-            {
-                config = RealmConfiguration.DefaultConfiguration;
-            }
+            config ??= RealmConfiguration.DefaultConfiguration;
 
             return config.CreateRealmAsync(cancellationToken);
         }
@@ -140,7 +137,7 @@ namespace Realms
         /// </remarks>
         /// <param name="config">Optional configuration.</param>
         /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
-        public static bool Compact(RealmConfigurationBase config = null)
+        public static bool Compact(RealmConfigurationBase? config = null)
         {
             using var realm = GetInstance(config);
             if (config is SyncConfigurationBase)
@@ -171,10 +168,10 @@ namespace Realms
 
         #endregion static
 
-        private WeakReference<SubscriptionSet> _subscriptionRef;
+        private WeakReference<SubscriptionSet>? _subscriptionRef;
 
-        private State _state;
-        private WeakReference<Session> _sessionRef;
+        private State? _state;
+        private WeakReference<Session>? _sessionRef;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
@@ -233,10 +230,11 @@ namespace Realms
         /// if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
         /// otherwise.
         /// </value>
-        public Session SyncSession
+        public Session? SyncSession
         {
             get
             {
+                // TODO nullability: should this be nullable or not?
                 ThrowIfDisposed();
 
                 if (Config is SyncConfigurationBase)
@@ -271,7 +269,7 @@ namespace Realms
         /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
         /// this will always be <c>null</c>.
         /// </value>
-        public SubscriptionSet Subscriptions
+        public SubscriptionSet? Subscriptions
         {
             get
             {
@@ -300,7 +298,7 @@ namespace Realms
             }
         }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null, bool isInMigration = false)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata? metadata = null, bool isInMigration = false)
         {
             Config = config;
             IsInMigration = isInMigration;
@@ -342,7 +340,7 @@ namespace Realms
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObjectBase but has not been woven.");
                 }
 
-                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
+                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType)!;
             }
             else
             {
@@ -372,12 +370,12 @@ namespace Realms
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event RealmChangedEventHandler _realmChanged;
+        private event RealmChangedEventHandler? _realmChanged;
 
         /// <summary>
         /// Triggered when a Realm has changed (i.e. a <see cref="Transaction"/> was committed).
         /// </summary>
-        public event RealmChangedEventHandler RealmChanged
+        public event RealmChangedEventHandler? RealmChanged
         {
             add
             {
@@ -400,7 +398,7 @@ namespace Realms
         /// <summary>
         /// Triggered when a Realm-level exception has occurred.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
+        public event EventHandler<ErrorEventArgs>? Error;
 
         internal void NotifyError(Exception ex)
         {
@@ -429,7 +427,7 @@ namespace Realms
             {
                 if (SharedRealmHandle.OwnsNativeRealm)
                 {
-                    _state.RemoveRealm(this);
+                    _state!.RemoveRealm(this);
                 }
 
                 _state = null;
@@ -480,9 +478,9 @@ namespace Realms
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as Realm);
+        public override bool Equals(object? obj) => Equals(obj as Realm);
 
-        private bool Equals(Realm other)
+        private bool Equals(Realm? other)
         {
             if (other == null)
             {
@@ -715,7 +713,7 @@ namespace Realms
             bool isNew;
             if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
-                var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
+                var pkProperty = metadata.Schema.PrimaryKeyProperty!.Value;
                 objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.TableKey, objectName, update, out isNew);
             }
             else
@@ -1000,7 +998,7 @@ namespace Realms
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
         [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
-        public async Task<T> WriteAsync<T>(Func<Realm, T> function)
+        public async Task<T?> WriteAsync<T>(Func<Realm, T> function)
         {
             ThrowIfDisposed();
 
@@ -1029,10 +1027,10 @@ namespace Realms
 
             if (result is ThreadSafeReference.Object<IRealmObjectBase> tsr)
             {
-                return (T)(object)ResolveReference(tsr);
+                return (T?)(object?)ResolveReference(tsr);
             }
 
-            return (T)result;
+            return (T?)result;
         }
 
         /// <summary>
@@ -1191,7 +1189,7 @@ namespace Realms
         /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
         /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
         [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
-        public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
+        public async Task<IList<T>?> WriteAsync<T>(Func<Realm, IList<T>> function)
         {
             ThrowIfDisposed();
 
@@ -1310,7 +1308,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(long? primaryKey)
+        public T? Find<T>(long? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1322,7 +1320,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(string primaryKey)
+        public T? Find<T>(string? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1334,7 +1332,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(ObjectId? primaryKey)
+        public T? Find<T>(ObjectId? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1346,11 +1344,11 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(Guid? primaryKey)
+        public T? Find<T>(Guid? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        internal T FindCore<T>(RealmValue primaryKey)
+        internal T? FindCore<T>(RealmValue primaryKey)
             where T : IRealmObject
         {
             ThrowIfDisposed();
@@ -1361,7 +1359,7 @@ namespace Realms
                 return (T)MakeObject(metadata, objectHandle);
             }
 
-            return default(T);
+            return default;
         }
 
         #endregion Quick Find using primary key
@@ -1378,7 +1376,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
-        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
+        public T? ResolveReference<T>(ThreadSafeReference.Object<T> reference)
             where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
@@ -1389,7 +1387,7 @@ namespace Realms
             if (!objectHandle.IsValid)
             {
                 objectHandle.Dispose();
-                return default(T);
+                return default;
             }
 
             if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
@@ -1410,7 +1408,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
         /// if the list's parent object has been deleted after the reference was created.
         /// </returns>
-        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
+        public IList<T>? ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1435,7 +1433,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="ISet{T}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
-        public ISet<T> ResolveReference<T>(ThreadSafeReference.Set<T> reference)
+        public ISet<T>? ResolveReference<T>(ThreadSafeReference.Set<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1460,7 +1458,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IDictionary{String, TValue}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
-        public IDictionary<string, TValue> ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
+        public IDictionary<string, TValue>? ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1595,7 +1593,7 @@ namespace Realms
 
         internal void DrainTransactionQueue()
         {
-            _state.DrainTransactionQueue();
+            _state!.DrainTransactionQueue();
         }
 
         internal void ExecuteOutsideTransaction(Action action)
@@ -1607,7 +1605,7 @@ namespace Realms
 
             if (IsInTransaction)
             {
-                _state.AfterTransactionQueue.Enqueue(action);
+                _state!.AfterTransactionQueue.Enqueue(action);
             }
             else
             {
@@ -1632,10 +1630,10 @@ namespace Realms
                 Add(objectsMetadata);
             }
 
-            public bool TryGetValue(string objectType, out Metadata metadata) =>
+            public bool TryGetValue(string objectType, [MaybeNullWhen(false)] out Metadata metadata) =>
                 stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
 
-            public bool TryGetValue(TableKey tablekey, out Metadata metadata) =>
+            public bool TryGetValue(TableKey tablekey, [MaybeNullWhen(false)] out Metadata metadata) =>
                 tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
 
             public Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
@@ -1669,9 +1667,9 @@ namespace Realms
 
         internal class State
         {
-            private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
+            private readonly List<WeakReference<Realm>> _weakRealms = new();
 
-            public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
+            public readonly Queue<Action> AfterTransactionQueue = new();
 
             internal void NotifyChanged(EventArgs e)
             {
@@ -1847,7 +1845,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public dynamic AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
@@ -1866,7 +1863,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public dynamic InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
@@ -1893,7 +1889,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public dynamic SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
@@ -1916,7 +1911,6 @@ namespace Realms
             /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public dynamic AddEmbeddedObjectToDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
@@ -1936,7 +1930,6 @@ namespace Realms
             /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public dynamic SetEmbeddedObjectInDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
@@ -1991,7 +1984,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, long? primaryKey) => FindCore(className, primaryKey);
+            public dynamic? Find(string className, long? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2002,7 +1995,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, string primaryKey) => FindCore(className, primaryKey);
+            public dynamic? Find(string className, string primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2015,7 +2008,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
+            public dynamic? Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2028,10 +2021,10 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
+            public dynamic? Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            internal IRealmObject FindCore(string className, RealmValue primaryKey)
+            internal IRealmObject? FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
@@ -2050,12 +2043,12 @@ namespace Realms
 
                 Argument.NotNull(list, nameof(list));
 
-                if (!(list is IRealmCollectionBase<ListHandle> realmList))
+                if (list is not IRealmCollectionBase<ListHandle> realmList)
                 {
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
-                var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmList.Metadata!.Helper.CreateInstance();
 
                 obj.CreateAndSetAccessor(getHandle(realmList.NativeHandle), _realm, realmList.Metadata);
 
@@ -2068,12 +2061,12 @@ namespace Realms
 
                 Argument.NotNull(dictionary, nameof(dictionary));
 
-                if (!(dictionary is IRealmCollectionBase<DictionaryHandle> realmDict))
+                if (dictionary is not IRealmCollectionBase<DictionaryHandle> realmDict)
                 {
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
 
-                var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)realmDict.Metadata!.Helper.CreateInstance();
 
                 obj.CreateAndSetAccessor(getHandle(realmDict.NativeHandle), _realm, realmDict.Metadata);
 

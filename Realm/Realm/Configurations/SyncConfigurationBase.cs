@@ -79,7 +79,7 @@ namespace Realms.Sync
         /// <remarks>
         /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
         /// </remarks>
-        public SessionErrorCallback OnSessionError { get; set; }
+        public SessionErrorCallback? OnSessionError { get; set; }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
@@ -131,7 +131,7 @@ namespace Realms.Sync
             }
         }
 
-        internal virtual IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
+        internal virtual IDisposable? OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
@@ -139,7 +139,7 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
-                schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                schema_mode = _schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
             };
         }

@@ -36,9 +36,9 @@ namespace Realms.Dynamic
 
         public bool IsFrozen => Accessor.IsFrozen;
 
-        public Realm Realm => Accessor.Realm;
+        public Realm? Realm => Accessor.Realm;
 
-        public ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public ObjectSchema? ObjectSchema => Accessor.ObjectSchema;
 
         public DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
@@ -46,7 +46,7 @@ namespace Realms.Dynamic
 
         public IRealmAccessor Accessor => _accessor;
 
-        public void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
+        public void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
         {
             _accessor = accessor;
         }
@@ -55,10 +55,10 @@ namespace Realms.Dynamic
         [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
         public IQueryable<dynamic> GetBacklinks(string objectType, string property)
         {
-            return (_accessor as ManagedAccessor).GetBacklinks(objectType, property);
+            return ((ManagedAccessor)_accessor).GetBacklinks(objectType, property);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null)
             {
@@ -85,6 +85,6 @@ namespace Realms.Dynamic
 
         public override int GetHashCode() => _accessor.GetHashCode();
 
-        public override string ToString() => _accessor.ToString();
+        public override string? ToString() => _accessor.ToString();
     }
 }

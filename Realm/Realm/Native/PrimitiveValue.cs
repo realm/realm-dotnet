@@ -192,7 +192,7 @@ namespace Realms.Native
             };
         }
 
-        public static PrimitiveValue Object(ObjectHandle handle)
+        public static PrimitiveValue Object(ObjectHandle? handle)
         {
             return new PrimitiveValue
             {

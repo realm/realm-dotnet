@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Realms.Helpers;
 
 namespace Realms
 {
@@ -38,14 +37,11 @@ namespace Realms
 
     internal class NotificationToken<TCallback> : IDisposable
     {
-        private TCallback _callback;
-        private Action<TCallback> _unsubscribe;
+        private TCallback? _callback;
+        private Action<TCallback>? _unsubscribe;
 
         internal NotificationToken(TCallback callback, Action<TCallback> unsubscribe)
         {
-            Argument.NotNull(callback, nameof(callback));
-            Argument.NotNull(unsubscribe, nameof(unsubscribe));
-
             _callback = callback;
             _unsubscribe = unsubscribe;
         }
@@ -67,6 +63,6 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is just a helper for the generic token")]
     internal static class NotificationToken
     {
-        public static NotificationToken<T> Create<T>(T callback, Action<T> unsubscribe) => new NotificationToken<T>(callback, unsubscribe);
+        public static NotificationToken<T> Create<T>(T callback, Action<T> unsubscribe) => new(callback, unsubscribe);
     }
 }

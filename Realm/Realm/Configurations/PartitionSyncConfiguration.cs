@@ -36,7 +36,7 @@ namespace Realms.Sync
         /// <see cref="Realm.GetInstance(RealmConfigurationBase)"/>.
         /// </summary>
         /// <value>A callback that will be periodically invoked as the Realm is downloaded.</value>
-        public Action<SyncProgress> OnProgress { get; set; }
+        public Action<SyncProgress>? OnProgress { get; set; }
 
         /// <summary>
         /// Gets the partition identifying the Realm this configuration is describing.
@@ -57,7 +57,7 @@ namespace Realms.Sync
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public PartitionSyncConfiguration(string partition, User user, string optionalPath = null)
+        public PartitionSyncConfiguration(string? partition, User user, string? optionalPath = null)
             : this(user, partition, optionalPath)
         {
         }
@@ -75,7 +75,7 @@ namespace Realms.Sync
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public PartitionSyncConfiguration(long? partition, User user, string optionalPath = null)
+        public PartitionSyncConfiguration(long? partition, User user, string? optionalPath = null)
             : this(user, partition, optionalPath)
         {
         }
@@ -93,7 +93,7 @@ namespace Realms.Sync
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public PartitionSyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
+        public PartitionSyncConfiguration(ObjectId? partition, User user, string? optionalPath = null)
             : this(user, partition, optionalPath)
         {
         }
@@ -111,19 +111,19 @@ namespace Realms.Sync
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
         [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the private ctor.")]
-        public PartitionSyncConfiguration(Guid? partition, User user, string optionalPath = null)
+        public PartitionSyncConfiguration(Guid? partition, User user, string? optionalPath = null)
             : this(user, partition, optionalPath)
         {
         }
 
-        private PartitionSyncConfiguration(User user, RealmValue partition, string path)
+        private PartitionSyncConfiguration(User user, RealmValue partition, string? path)
             : base(user)
         {
             Partition = partition;
             DatabasePath = GetPathToRealm(path ?? user.App.Handle.GetRealmPath(User, Partition.ToNativeJson()));
         }
 
-        internal override IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle)
+        internal override IDisposable? OnBeforeRealmOpen(AsyncOpenTaskHandle handle)
         {
             var onProgress = OnProgress;
             if (onProgress == null)

@@ -38,7 +38,7 @@ namespace Realms
     /// <see cref="short"/>, <see cref="int"/>, and <see cref="long"/>.
     /// </typeparam>
     [SuppressMessage("Design", "CA1066:Implement IEquatable when overriding Object.Equals", Justification = "We already implement IEquatable<T> and RealmInteger<T> implicitly converts to T.")]
-    public struct RealmInteger<T> :
+    public readonly struct RealmInteger<T> :
         IEquatable<T>,
         IComparable<RealmInteger<T>>,
         IComparable<T>,
@@ -47,9 +47,10 @@ namespace Realms
         where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
     {
         private readonly T _value;
-        private readonly ObjectHandle _objectHandle;
+        private readonly ObjectHandle? _objectHandle;
         private readonly IntPtr _propertyIndex;
 
+        [MemberNotNullWhen(returnValue: true, nameof(_objectHandle))]
         private bool IsManaged => _objectHandle != null;
 
         internal RealmInteger(T value)
@@ -59,7 +60,7 @@ namespace Realms
             _propertyIndex = default;
         }
 
-        internal RealmInteger(T value, ObjectHandle objectHandle, IntPtr propertyIndex)
+        internal RealmInteger(T value, ObjectHandle? objectHandle, IntPtr propertyIndex)
         {
             _value = value;
             _objectHandle = objectHandle;
@@ -103,7 +104,7 @@ namespace Realms
         #region Equals
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is RealmInteger<T> realmInteger)
             {
@@ -132,7 +133,7 @@ namespace Realms
         /// Returns the string representation of the underlying numeric value.
         /// </summary>
         /// <returns>The string representation of the numeric value.</returns>
-        public override string ToString() => _value.ToString();
+        public override string? ToString() => _value.ToString();
 
         #endregion
 
@@ -168,7 +169,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A Boolean value equivalent to the value of this instance.</returns>
-        bool IConvertible.ToBoolean(IFormatProvider provider) => _value.ToBoolean(provider);
+        bool IConvertible.ToBoolean(IFormatProvider? provider) => _value.ToBoolean(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 8-bit unsigned integer using the
@@ -176,7 +177,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>An 8-bit unsigned integer value equivalent to the value of this instance.</returns>
-        byte IConvertible.ToByte(IFormatProvider provider) => _value.ToByte(provider);
+        byte IConvertible.ToByte(IFormatProvider? provider) => _value.ToByte(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent Unicode character using the
@@ -184,7 +185,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A Unicode character value equivalent to the value of this instance.</returns>
-        char IConvertible.ToChar(IFormatProvider provider) => _value.ToChar(provider);
+        char IConvertible.ToChar(IFormatProvider? provider) => _value.ToChar(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent <see cref="DateTime"/> value using the
@@ -192,7 +193,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A <see cref="DateTime"/> value equivalent to the value of this instance.</returns>
-        DateTime IConvertible.ToDateTime(IFormatProvider provider) => _value.ToDateTime(provider);
+        DateTime IConvertible.ToDateTime(IFormatProvider? provider) => _value.ToDateTime(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent <see cref="decimal"/> value using the
@@ -200,7 +201,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A <see cref="decimal"/> value equivalent to the value of this instance.</returns>
-        decimal IConvertible.ToDecimal(IFormatProvider provider) => _value.ToDecimal(provider);
+        decimal IConvertible.ToDecimal(IFormatProvider? provider) => _value.ToDecimal(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent double-precision floating-point number using the
@@ -208,7 +209,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A double-precision floating-point number equivalent to the value of this instance.</returns>
-        double IConvertible.ToDouble(IFormatProvider provider) => _value.ToDouble(provider);
+        double IConvertible.ToDouble(IFormatProvider? provider) => _value.ToDouble(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 16-bit signed integer using the
@@ -216,7 +217,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 16-bit signed integer equivalent to the value of this instance.</returns>
-        short IConvertible.ToInt16(IFormatProvider provider) => _value.ToInt16(provider);
+        short IConvertible.ToInt16(IFormatProvider? provider) => _value.ToInt16(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 32-bit signed integer using the
@@ -224,7 +225,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 32-bit signed integer equivalent to the value of this instance.</returns>
-        int IConvertible.ToInt32(IFormatProvider provider) => _value.ToInt32(provider);
+        int IConvertible.ToInt32(IFormatProvider? provider) => _value.ToInt32(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 64-bit signed integer using the
@@ -232,7 +233,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 64-bit signed integer equivalent to the value of this instance.</returns>
-        long IConvertible.ToInt64(IFormatProvider provider) => _value.ToInt64(provider);
+        long IConvertible.ToInt64(IFormatProvider? provider) => _value.ToInt64(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 8-bit signed integer using the
@@ -240,7 +241,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>An 8-bit signed integer equivalent to the value of this instance.</returns>
-        sbyte IConvertible.ToSByte(IFormatProvider provider) => _value.ToSByte(provider);
+        sbyte IConvertible.ToSByte(IFormatProvider? provider) => _value.ToSByte(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent single-precision floating-point number using the
@@ -248,7 +249,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A single-precision floating-point number equivalent to the value of this instance.</returns>
-        float IConvertible.ToSingle(IFormatProvider provider) => _value.ToSingle(provider);
+        float IConvertible.ToSingle(IFormatProvider? provider) => _value.ToSingle(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent <see cref="string"/> value using the
@@ -256,7 +257,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A <see cref="string"/> value equivalent to the value of this instance.</returns>
-        string IConvertible.ToString(IFormatProvider provider) => _value.ToString(provider);
+        string IConvertible.ToString(IFormatProvider? provider) => _value.ToString(provider);
 
         /// <summary>
         /// Converts the value of this instance to an <see cref="object"/> of the specified <see cref="Type"/>
@@ -265,7 +266,7 @@ namespace Realms
         /// <param name="conversionType">The <see cref="Type"/> to which the value of this instance is converted.</param>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>An <see cref="object"/> instance of type <paramref name="conversionType"/> whose value equivalent to the value of this instance.</returns>
-        object IConvertible.ToType(Type conversionType, IFormatProvider provider) => _value.ToType(conversionType, provider);
+        object IConvertible.ToType(Type conversionType, IFormatProvider? provider) => _value.ToType(conversionType, provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 16-bit unsigned integer using the
@@ -273,7 +274,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 16-bit unsigned integer equivalent to the value of this instance.</returns>
-        ushort IConvertible.ToUInt16(IFormatProvider provider) => _value.ToUInt16(provider);
+        ushort IConvertible.ToUInt16(IFormatProvider? provider) => _value.ToUInt16(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 32-bit unsigned integer using the
@@ -281,7 +282,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 32-bit unsigned integer equivalent to the value of this instance.</returns>
-        uint IConvertible.ToUInt32(IFormatProvider provider) => _value.ToUInt32(provider);
+        uint IConvertible.ToUInt32(IFormatProvider? provider) => _value.ToUInt32(provider);
 
         /// <summary>
         /// Converts the value of this instance to an equivalent 64-bit unsigned integer using the
@@ -289,7 +290,7 @@ namespace Realms
         /// </summary>
         /// <param name="provider">An <see cref="IFormatProvider "/>interface implementation that supplies culture-specific formatting information.</param>
         /// <returns>A 64-bit unsigned integer equivalent to the value of this instance.</returns>
-        ulong IConvertible.ToUInt64(IFormatProvider provider) => _value.ToUInt64(provider);
+        ulong IConvertible.ToUInt64(IFormatProvider? provider) => _value.ToUInt64(provider);
 
         #endregion
 
@@ -305,7 +306,7 @@ namespace Realms
         /// The provider to use to format the value. -or- A null reference to obtain the numeric format
         /// information from the current locale setting of the operating system.</param>
         /// <returns>The value of the current instance in the specified format.</returns>
-        public string ToString(string format, IFormatProvider formatProvider) => _value.ToString(format, formatProvider);
+        public string ToString(string? format, IFormatProvider? formatProvider) => _value.ToString(format, formatProvider);
 
         #endregion
 
@@ -319,7 +320,7 @@ namespace Realms
 
         public static implicit operator T(RealmInteger<T> i) => i._value;
 
-        public static implicit operator RealmInteger<T>(T i) => new RealmInteger<T>(i);
+        public static implicit operator RealmInteger<T>(T i) => new(i);
 
         public static bool operator ==(RealmInteger<T> first, RealmInteger<T> second) => first.Equals(second);
 

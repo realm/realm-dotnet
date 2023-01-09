@@ -33,7 +33,7 @@ namespace Realms
     /// <param name="error">An exception that might have occurred while asynchronously monitoring a
     /// <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors have occurred.</param>
     /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
-    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
+    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet? changes, Exception? error);
 
     /// <summary>
     /// A callback that will be invoked each time the contents of a <see cref="IDictionary{String, TValue}"/> have changed.
@@ -44,7 +44,7 @@ namespace Realms
     /// <param name="error">An exception that might have occurred while asynchronously monitoring a
     /// <see cref="IDictionary{String, TValue}"/> for changes, or <c>null</c> if no errors have occurred.</param>
     /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive contained in the dictionary.</typeparam>
-    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet changes, Exception error);
+    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet? changes, Exception? error);
 
     /// <summary>
     /// Iterable, sortable collection of one kind of RealmObjectBase resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.
@@ -93,7 +93,7 @@ namespace Realms
         /// primitive values, <c>ObjectSchema</c> will be <c>null</c>.
         /// </summary>
         /// <value>The ObjectSchema of the object or contained objects.</value>
-        ObjectSchema ObjectSchema { get; }
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed

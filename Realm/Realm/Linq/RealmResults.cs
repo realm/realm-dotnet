@@ -40,13 +40,13 @@ namespace Realms
 
         public override bool IsReadOnly => true;
 
-        internal RealmResults(Realm realm, Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
+        internal RealmResults(Realm realm, Metadata? metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
         {
             Provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
         }
 
-        internal RealmResults(Realm realm, ResultsHandle handle, Metadata metadata)
+        internal RealmResults(Realm realm, ResultsHandle handle, Metadata? metadata)
             : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
         {
             _handle = handle;

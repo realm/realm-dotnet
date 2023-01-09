@@ -44,7 +44,7 @@ namespace Realms
     {
         private readonly ListHandle _listHandle;
 
-        internal RealmList(Realm realm, ListHandle adoptedList, Metadata metadata) : base(realm, metadata)
+        internal RealmList(Realm realm, ListHandle adoptedList, Metadata? metadata) : base(realm, metadata)
         {
             _listHandle = adoptedList;
         }
@@ -107,9 +107,9 @@ namespace Realms
             _listHandle.Add(realmValue);
         }
 
-        public override int IndexOf(T value)
+        public override int IndexOf(T? value)
         {
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = Operator.Convert<T?, RealmValue>(value);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {

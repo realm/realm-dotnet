@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Diagnostics.CodeAnalysis;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -37,6 +38,7 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
+        [MemberNotNullWhen(true, nameof(Realm), nameof(ObjectSchema))]
         bool IsManaged { get; }
 
         /// <summary>
@@ -61,13 +63,13 @@ namespace Realms
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
-        Realm Realm { get; }
+        Realm? Realm { get; }
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        ObjectSchema ObjectSchema { get; }
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm object instance.
@@ -113,7 +115,7 @@ namespace Realms
         /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
         /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
         /// </summary>
-        public IRealmObjectBase Parent { get; }
+        public IRealmObjectBase? Parent { get; }
     }
 
     /// <summary>
@@ -132,6 +134,6 @@ namespace Realms
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
+        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false);
     }
 }

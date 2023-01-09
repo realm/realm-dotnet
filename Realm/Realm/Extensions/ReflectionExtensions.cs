@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Realms.Schema;
@@ -25,7 +26,7 @@ namespace Realms
 {
     internal static class ReflectionExtensions
     {
-        public static bool IsClosedGeneric(this Type type, Type genericType, out Type[] arguments)
+        public static bool IsClosedGeneric(this Type type, Type genericType, [MaybeNullWhen(returnValue: false)] out Type[] arguments)
         {
             arguments = null;
 
@@ -44,7 +45,8 @@ namespace Realms
             where T : Attribute
             => member.CustomAttributes.Any(a => a.AttributeType == typeof(T));
 
-        public static string GetMappedOrOriginalName(this MemberInfo member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
+        [return: NotNullIfNotNull(nameof(member))]
+        public static string? GetMappedOrOriginalName(this MemberInfo? member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
 
         public static bool IsEmbeddedObject(this Type type) => typeof(IEmbeddedObject).IsAssignableFrom(type);
 

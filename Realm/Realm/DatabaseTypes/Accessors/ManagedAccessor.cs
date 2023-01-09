@@ -39,9 +39,9 @@ namespace Realms
     {
         private Lazy<int> _hashCode;
 
-        private NotificationTokenHandle _notificationToken;
+        private NotificationTokenHandle? _notificationToken;
 
-        private Action<string> _onNotifyPropertyChanged;
+        private Action<string>? _onNotifyPropertyChanged;
 
         internal ObjectHandle ObjectHandle { get; private set; }
 
@@ -52,13 +52,13 @@ namespace Realms
         public bool IsValid => ObjectHandle?.IsValid != false;
 
         /// <inheritdoc/>
-        public bool IsFrozen => Realm?.IsFrozen == true;
+        public bool IsFrozen => Realm.IsFrozen;
 
         /// <inheritdoc/>
         public Realm Realm { get; private set; }
 
         /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema ObjectSchema => Metadata.Schema;
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
@@ -74,6 +74,7 @@ namespace Realms
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
 
+        [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata), nameof(_hashCode))]
         internal void Initialize(Realm realm,
             ObjectHandle objectHandle,
             Metadata metadata)
@@ -203,7 +204,7 @@ namespace Realms
         {
             if (changes.HasValue)
             {
-                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
+                foreach (var propertyIndex in changes.Value.Properties.AsEnumerable().Select(i => (int)i))
                 {
                     // Due to a yet another Mono compiler bug, using LINQ fails here :/
                     var i = 0;
@@ -238,9 +239,9 @@ namespace Realms
             }
         }
 
-        private void RaisePropertyChanged(string propertyName = null)
+        private void RaisePropertyChanged(string propertyName)
         {
-            _onNotifyPropertyChanged(propertyName);
+            _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
         /// <summary>
@@ -253,12 +254,7 @@ namespace Realms
         public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
 
         /// <inheritdoc/>
-        public TypeInfo GetTypeInfo(IRealmObjectBase obj)
-        {
-#pragma warning disable CA1062 // Validate arguments of public methods
-            return TypeInfoHelper.GetInfo(obj);
-#pragma warning restore CA1062 // Validate arguments of public methods
-        }
+        public TypeInfo GetTypeInfo(IRealmObjectBase obj) => TypeInfoHelper.GetInfo(obj);
 
         /// <inheritdoc/>
         public override int GetHashCode()
@@ -287,7 +283,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not ManagedAccessor ma)
             {

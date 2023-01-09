@@ -488,18 +488,16 @@ namespace Realms
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
-        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object?> valueGetter)
         {
             Argument.NotNull(target, nameof(target));
 

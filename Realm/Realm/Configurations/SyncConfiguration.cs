@@ -32,7 +32,7 @@ namespace Realms.Sync
         /// Gets the partition identifying the Realm this configuration is describing.
         /// </summary>
         /// <value>The partition value for the Realm.</value>
-        public new object Partition => base.Partition.AsAny();
+        public new object? Partition => base.Partition.AsAny();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
@@ -46,7 +46,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(string partition, User user, string optionalPath = null)
+        public SyncConfiguration(string? partition, User user, string? optionalPath = null)
             : base(partition, user, optionalPath)
         {
         }
@@ -63,7 +63,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(long? partition, User user, string optionalPath = null)
+        public SyncConfiguration(long? partition, User user, string? optionalPath = null)
             : base(partition, user, optionalPath)
         {
         }
@@ -80,7 +80,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(ObjectId? partition, User user, string optionalPath = null)
+        public SyncConfiguration(ObjectId? partition, User user, string? optionalPath = null)
             : base(partition, user, optionalPath)
         {
         }
@@ -97,7 +97,7 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        public SyncConfiguration(Guid? partition, User user, string optionalPath = null)
+        public SyncConfiguration(Guid? partition, User user, string? optionalPath = null)
             : base(partition, user, optionalPath)
         {
         }

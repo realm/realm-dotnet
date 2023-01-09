@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using Realms.Weaving;
+using System.Diagnostics;
 
 namespace Realms.Extensions
 {
@@ -25,18 +24,21 @@ namespace Realms.Extensions
     {
         public static ObjectHandle GetObjectHandle(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as ManagedAccessor)?.ObjectHandle;
+            Debug.Assert(iro.IsManaged, "GetObjectHandle should only be called on managed objects");
+            return ((ManagedAccessor)iro.Accessor).ObjectHandle;
         }
 
         public static Metadata GetObjectMetadata(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as IMetadataObject)?.Metadata;
+            Debug.Assert(iro.IsManaged, "GetObjectHandle should only be called on managed objects");
+            return ((ManagedAccessor)iro.Accessor).Metadata;
         }
 
         public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObjectBase iro, string propertyName, ResultsHandle resultsHandle)
             where T : IRealmObjectBase
         {
-            return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
+            Debug.Assert(iro.IsManaged, "GetObjectHandle should only be called on managed objects");
+            return ((ManagedAccessor)iro.Accessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
         public static void CreateAndSetAccessor(this ISettableManagedAccessor iro,

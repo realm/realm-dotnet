@@ -27,7 +27,7 @@ namespace Realms.Exceptions
     /// </summary>
     public class RealmException : Exception
     {
-        private static readonly IDictionary<RealmExceptionCodes, Func<string, string, Exception>> _overriders = new Dictionary<RealmExceptionCodes, Func<string, string, Exception>>();
+        private static readonly Dictionary<RealmExceptionCodes, Func<string, string, Exception>> _overriders = new();
 
         internal static void AddOverrider(RealmExceptionCodes code, Func<string, string, Exception> handler)
         {
@@ -114,7 +114,7 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.AppJsonError:
                 case RealmExceptionCodes.AppServiceError:
                 case RealmExceptionCodes.AppUnknownError:
-                    return new AppException(message, helpLink: null, httpStatusCode: 0);
+                    return new AppException(message, helpLink: string.Empty, httpStatusCode: 0);
 
                 case RealmExceptionCodes.StdArgumentOutOfRange:
                 case RealmExceptionCodes.StdIndexOutOfRange:
