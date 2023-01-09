@@ -4,6 +4,9 @@
              x:Class="QuickJournal.Views.JournalEntryDetailPage"
              xmlns:vm="clr-namespace:QuickJournal.ViewModels"
              Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
+    <Shell.BackButtonBehavior>
+        <BackButtonBehavior Command="{Binding GoBackCommand}"/>
+    </Shell.BackButtonBehavior>
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
     </ContentPage.ToolbarItems>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using QuickJournal.Models;
 
 namespace QuickJournal.ViewModels
@@ -11,8 +12,14 @@ namespace QuickJournal.ViewModels
         [ObservableProperty]
         private JournalEntry entry;
 
-        public JournalEntryDetailViewModel()
+        [RelayCommand]
+        public async Task GoBack()
         {
+            var navigationParameter = new Dictionary<string, object>
+            {
+                { "NewEntry", entry }
+            };
+            await Shell.Current.GoToAsync($"..", navigationParameter);
         }
     }
 }

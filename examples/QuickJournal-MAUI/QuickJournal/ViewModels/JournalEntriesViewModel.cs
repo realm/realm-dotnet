@@ -1,23 +1,29 @@
-﻿using System;
-using Realms;
-using QuickJournal.Models;
+﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using QuickJournal.Models;
+using Realms;
 
 namespace QuickJournal.ViewModels
 {
+    [QueryProperty(nameof(NewEntry), nameof(NewEntry))]
     public partial class JournalEntriesViewModel : ObservableObject
     {
         private readonly Realm realm;
+        private IDisposable token;
 
         [ObservableProperty]
         private IQueryable<JournalEntry> entries;
+
+        [ObservableProperty]
+        private JournalEntry newEntry;
 
         public JournalEntriesViewModel()
         {
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
 
+            //TODO For testing, need to remove this
             if (!realm.All<JournalEntry>().Any())
             {
                 realm.Write(() =>
@@ -78,6 +84,18 @@ namespace QuickJournal.ViewModels
                 { "Entry", entry }
             };
             await Shell.Current.GoToAsync($"entryDetail", navigationParameter);
+        }
+
+        async partial void OnNewEntryChanged(JournalEntry value)
+        {
+            if (string.IsNullOrEmpty(newEntry.Body + newEntry.Title)) ;
+            {
+                //DeleteEntry(newEntry);
+
+                ////var toast = Toast.Make("Entry removed");
+
+                ////await toast.Show();
+            }
         }
     }
 }
