@@ -709,7 +709,7 @@ Analytics payload
             }
             else
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.");
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);

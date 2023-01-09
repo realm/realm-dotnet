@@ -4,13 +4,13 @@
 * None
 
 ### Fixed
-* None
+* Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.13.0.
 
 ## 10.19.0 (2023-01-06)
 
