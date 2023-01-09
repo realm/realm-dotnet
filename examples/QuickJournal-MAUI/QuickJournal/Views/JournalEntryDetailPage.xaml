@@ -3,13 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="QuickJournal.Views.JournalEntryDetailPage"
              xmlns:vm="clr-namespace:QuickJournal.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
-    <Shell.BackButtonBehavior>
-        <BackButtonBehavior Command="{Binding GoBackCommand}"/>
-    </Shell.BackButtonBehavior>
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
-    </ContentPage.ToolbarItems>
+    <ContentPage.Behaviors>
+            <toolkit:EventToCommandBehavior
+                EventName="Unloaded"
+                Command="{Binding PageClosedCommand}" />
+    </ContentPage.Behaviors>
     <ContentPage.BindingContext>
         <vm:JournalEntryDetailViewModel/>
     </ContentPage.BindingContext>

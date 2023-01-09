@@ -1,7 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using QuickJournal.Models;
 
 namespace QuickJournal.ViewModels
@@ -13,13 +13,16 @@ namespace QuickJournal.ViewModels
         private JournalEntry entry;
 
         [RelayCommand]
-        public async Task GoBack()
+        public void OnPageClosed()
         {
-            var navigationParameter = new Dictionary<string, object>
-            {
-                { "NewEntry", entry }
-            };
-            await Shell.Current.GoToAsync($"..", navigationParameter);
+            WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(entry));
+        }
+    }
+
+    public class EntryModifiedMessage : ValueChangedMessage<JournalEntry>
+    {
+        public EntryModifiedMessage(JournalEntry entry) : base(entry)
+        {
         }
     }
 }

@@ -1,46 +1,25 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using QuickJournal.Models;
 using Realms;
 
 namespace QuickJournal.ViewModels
 {
-    [QueryProperty(nameof(NewEntry), nameof(NewEntry))]
     public partial class JournalEntriesViewModel : ObservableObject
     {
         private readonly Realm realm;
-        private IDisposable token;
 
         [ObservableProperty]
         private IQueryable<JournalEntry> entries;
-
-        [ObservableProperty]
-        private JournalEntry newEntry;
 
         public JournalEntriesViewModel()
         {
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
 
-            //TODO For testing, need to remove this
-            if (!realm.All<JournalEntry>().Any())
-            {
-                realm.Write(() =>
-                {
-                    var entry = new JournalEntry
-                    {
-                        Title = "Test title",
-                        Body = "Haha",
-                        Metadata = new EntryMetadata
-                        {
-                            CreatedDate = DateTimeOffset.Now,
-                        }
-                    };
-                    realm.Add(entry);
-
-                });
-            }
+            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);
         }
 
         [RelayCommand]
@@ -81,20 +60,18 @@ namespace QuickJournal.ViewModels
         {
             var navigationParameter = new Dictionary<string, object>
             {
-                { "Entry", entry }
+                { "Entry", entry },
             };
             await Shell.Current.GoToAsync($"entryDetail", navigationParameter);
         }
 
-        async partial void OnNewEntryChanged(JournalEntry value)
+        private async void EntryModifiedHandler(object recipient, EntryModifiedMessage message)
         {
-            if (string.IsNullOrEmpty(newEntry.Body + newEntry.Title)) ;
+            var newEntry = message.Value;
+            if (string.IsNullOrEmpty(newEntry.Body + newEntry.Title))
             {
-                //DeleteEntry(newEntry);
-
-                ////var toast = Toast.Make("Entry removed");
-
-                ////await toast.Show();
+                DeleteEntry(newEntry);
+                await Toast.Make("Empty note discarded").Show();
             }
         }
     }
