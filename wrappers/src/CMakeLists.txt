@@ -14,7 +14,6 @@ set(SOURCES
     shared_realm_cs.cpp
     app_cs.cpp
     async_open_task_cs.cpp
-    mongo_collection_cs.cpp
     subscription_set_cs.cpp
     sync_session_cs.cpp
     sync_user_cs.cpp
@@ -60,7 +59,7 @@ if(BUILD_APPLE_FRAMEWORK)
     )
 endif()
 
-if (ANDROID)
+if(ANDROID)
     target_link_options(realm-wrappers PRIVATE LINKER:-gc-sections)
 endif()
 
@@ -79,6 +78,7 @@ install(TARGETS realm-wrappers
     LIBRARY DESTINATION ${runtime_target}
     FRAMEWORK DESTINATION ${runtime_target}
 )
+
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:realm-wrappers> DESTINATION ${runtime_target} OPTIONAL)
 endif()
