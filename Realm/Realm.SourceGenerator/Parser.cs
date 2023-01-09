@@ -142,8 +142,11 @@ namespace Realms.SourceGenerator
 
             if (compilationUnitSyntax != null)
             {
-                var usingDirectives = compilationUnitSyntax.ChildNodes().Where(c => c.IsKind(SyntaxKind.UsingDirective));
-                usings.AddRange(usingDirectives.Select(u => (u as UsingDirectiveSyntax).Name.ToString()));
+                var usingDirectives = compilationUnitSyntax.ChildNodes()
+                    .Where(c => c.IsKind(SyntaxKind.UsingDirective))
+                    .OfType<UsingDirectiveSyntax>()
+                    .Select(RemoveUsingKeyword);
+                usings.AddRange(usingDirectives);
             }
 
             return usings;
@@ -484,6 +487,14 @@ namespace Realms.SourceGenerator
             }
 
             return new NamespaceInfo { OriginalName = classSymbol.ContainingNamespace.ToDisplayString() };
+        }
+
+        private static string RemoveUsingKeyword(UsingDirectiveSyntax syntax)
+        {
+            var components = new object[] { syntax.StaticKeyword, syntax.Alias, syntax.Name }
+                .Select(o => o?.ToString())
+                .Where(o => !string.IsNullOrEmpty(o));
+            return string.Join(" ", components);
         }
     }
 
