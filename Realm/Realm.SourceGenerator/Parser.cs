@@ -82,7 +82,7 @@ namespace Realms.SourceGenerator
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.ObjectType = implementingObjectTypes.First();
                     classInfo.HasParameterlessConstructor = HasParameterlessConstructor(classDeclarations);
-                    classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classSymbol));
+                    classInfo.EnclosingClasses.AddRange(GetEnclosingClassList(classInfo, classSymbol, firstClassDeclarationSyntax));
                     classInfo.HasPropertyChangedEvent = classSymbol.HasPropertyChangedEvent();
                     classInfo.OverridesEquals = classSymbol.OverridesEquals();
                     classInfo.OverridesGetHashCode = classSymbol.OverridesGetHashCode();
@@ -101,6 +101,7 @@ namespace Realms.SourceGenerator
                         var semanticModel = _context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
                         var propertiesSyntax = classDeclarationSyntax.ChildNodes().OfType<PropertyDeclarationSyntax>();
 
+                        classInfo.Usings.AddRange(GetUsings(classDeclarationSyntax));
                         classInfo.Properties.AddRange(GetProperties(classInfo, propertiesSyntax, semanticModel));
                     }
 
@@ -124,6 +125,24 @@ namespace Realms.SourceGenerator
             }
 
             return result;
+        }
+
+        private static IEnumerable<string> GetUsings(ClassDeclarationSyntax classDeclarationSyntax)
+        {
+            var usings = new List<string>();
+
+            var compilationUnitSyntax = classDeclarationSyntax.FirstAncestorOrSelf<CompilationUnitSyntax>();
+
+            if (compilationUnitSyntax != null)
+            {
+                var usingDirectives = compilationUnitSyntax.ChildNodes()
+                    .Where(c => c.IsKind(SyntaxKind.UsingDirective))
+                    .OfType<UsingDirectiveSyntax>()
+                    .Select(RemoveUsingKeyword);
+                usings.AddRange(usingDirectives);
+            }
+
+            return usings;
         }
 
         private static IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
@@ -433,13 +452,19 @@ namespace Realms.SourceGenerator
             return !constructors.Any() || constructors.Any(c => !c.ParameterList.Parameters.Any());
         }
 
-        private static IList<EnclosingClassInfo> GetEnclosingClassList(ITypeSymbol classSymbol)
+        private static IList<EnclosingClassInfo> GetEnclosingClassList(ClassInfo classInfo, ITypeSymbol classSymbol, ClassDeclarationSyntax classDeclarationSyntax)
         {
             var enclosingClassList = new List<EnclosingClassInfo>();
             var currentSymbol = classSymbol;
+            var currentClassDeclaration = classDeclarationSyntax;
 
-            while (currentSymbol.ContainingSymbol is ITypeSymbol ts)
+            while (currentSymbol.ContainingSymbol is ITypeSymbol ts && currentClassDeclaration.Parent is ClassDeclarationSyntax cs)
             {
+                if (!cs.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.Name, ts.Name, cs.GetIdentifierLocation()));
+                }
+
                 var enclosingClassinfo = new EnclosingClassInfo
                 {
                     Name = ts.Name,
@@ -448,6 +473,7 @@ namespace Realms.SourceGenerator
                 enclosingClassList.Add(enclosingClassinfo);
 
                 currentSymbol = ts;
+                currentClassDeclaration = cs;
             }
 
             return enclosingClassList;
@@ -461,6 +487,14 @@ namespace Realms.SourceGenerator
             }
 
             return new NamespaceInfo { OriginalName = classSymbol.ContainingNamespace.ToDisplayString() };
+        }
+
+        private static string RemoveUsingKeyword(UsingDirectiveSyntax syntax)
+        {
+            var components = new object[] { syntax.StaticKeyword, syntax.Alias, syntax.Name }
+                .Select(o => o?.ToString())
+                .Where(o => !string.IsNullOrEmpty(o));
+            return string.Join(" ", components);
         }
     }
 

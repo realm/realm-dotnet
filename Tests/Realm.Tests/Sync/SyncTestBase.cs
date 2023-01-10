@@ -22,18 +22,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
-using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly ConcurrentQueue<Session> _sessions = new();
-        private readonly ConcurrentQueue<App> _apps = new();
-        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
+        private readonly ConcurrentQueue<StrongBox<Session>> _sessions = new();
+        private readonly ConcurrentQueue<StrongBox<App>> _apps = new();
+        private readonly ConcurrentQueue<StrongBox<string>> _clientResetAppsToRestore = new();
 
         protected App DefaultApp => CreateApp();
 
@@ -49,11 +49,11 @@ namespace Realms.Tests.Sync
 
         protected override void CustomTearDown()
         {
-            _sessions.DrainQueueAsync(session => session?.CloseHandle());
+            _sessions.DrainQueue(session => session?.CloseHandle());
 
             base.CustomTearDown();
 
-            _apps.DrainQueueAsync(app => app.Handle.ResetForTesting());
+            _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
             _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }

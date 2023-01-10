@@ -33,6 +33,7 @@ using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
+using static Realms.Tests.TestHelpers;
 #if TEST_WEAVER
 using TestRealmObject = Realms.RealmObject;
 #else
@@ -44,7 +45,7 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class SessionTests : SyncTestBase
     {
-        private readonly ConcurrentQueue<EventHandler<ErrorEventArgs>> _sessionErrorHandlers = new();
+        private readonly ConcurrentQueue<StrongBox<EventHandler<ErrorEventArgs>>> _sessionErrorHandlers = new();
 
         public static readonly object[] AllClientResetHandlers = new object[]
         {
@@ -1513,7 +1514,6 @@ namespace Realms.Tests.Sync
 #pragma warning disable CS0618 // Type or member is obsolete
             _sessionErrorHandlers.DrainQueue(handler => Session.Error -= handler);
 #pragma warning restore CS0618 // Type or member is obsolete
-
         }
 
         private static ClientResetHandlerBase GetClientResetHandler(

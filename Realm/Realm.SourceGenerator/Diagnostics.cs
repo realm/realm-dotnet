@@ -50,6 +50,7 @@ namespace Realms.SourceGenerator
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
             NotPersistedPropertyWithRealmAttributes = 26,
+            ParentOfNestedClassIsNotPartial = 27
         }
 
         #region Errors
@@ -268,6 +269,15 @@ namespace Realms.SourceGenerator
                 Id.TypeNotSupported,
                 "Type not supported",
                 $"{className}.{propertyName} is of type '{propertyType}' which is not yet supported.",
+                location);
+        }
+
+        public static Diagnostic ParentOfNestedClassIsNotPartial(string className, string parentClassName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.ParentOfNestedClassIsNotPartial,
+                "Containing class of nested Realm class is not declared as partial",
+                $"Class {parentClassName} contains nested Realm class {className} and needs to be declared as partial.",
                 location);
         }
 

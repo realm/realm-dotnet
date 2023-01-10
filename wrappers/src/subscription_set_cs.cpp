@@ -70,14 +70,14 @@ namespace binding {
         handle_errors(ex, [&] {
             auto sub = lambda();
             if (sub) {
-                auto sub_value = *sub;
+                auto& sub_value = *sub;
                 auto csharp_sub = CSharpSubscription{
-                    to_capi_value(sub_value.id()),
-                    to_capi_value(sub_value.name()),
-                    to_capi_value(sub_value.object_class_name()),
-                    to_capi_value(sub_value.query_string()),
-                    to_capi_value(sub_value.created_at()),
-                    to_capi_value(sub_value.updated_at()),
+                    to_capi_value(sub_value.id),
+                    to_capi_value(sub_value.name),
+                    to_capi_value(sub_value.object_class_name),
+                    to_capi_value(sub_value.query_string),
+                    to_capi_value(sub_value.created_at),
+                    to_capi_value(sub_value.updated_at),
                     true
                 };
                 s_get_subscription_callback(callback, csharp_sub);
@@ -154,24 +154,22 @@ REALM_EXPORT void realm_subscriptionset_find_by_name(SharedSubscriptionSet& subs
 {
     get_subscription(callback, ex, [&]() -> util::Optional<Subscription> {
         Utf16StringAccessor name(name_buf, name_len);
-        auto it = subs->find(name);
-        if (it == subs->end()) {
-            return util::none;
+        if (auto sub = subs->find(name)) {
+            return *sub;
         }
 
-        return *it;
+        return util::none;
     });
 }
 
 REALM_EXPORT void realm_subscriptionset_find_by_query(SharedSubscriptionSet& subs, Results& results, void* callback, NativeException::Marshallable& ex)
 {
     get_subscription(callback, ex, [&]() -> util::Optional<Subscription> {
-        auto it = subs->find(results.get_query());
-        if (it == subs->end()) {
-            return util::none;
+        if (auto sub = subs->find(results.get_query())) {
+            return *sub;
         }
 
-        return *it;
+        return util::none;
     });
 }
 
@@ -186,12 +184,12 @@ REALM_EXPORT void realm_subscriptionset_add_results(SharedMutableSubscriptionSet
 
         if (name_buf) {
             Utf16StringAccessor name(name_buf, name_len);
-            auto it = subs->find(name);
-            if (it == subs->end() || update_existing || (it->object_class_name() == object_type && it->query_string() == query_str)) {
+            auto sub = subs->find(name);
+            if (sub == nullptr || update_existing || (sub->object_class_name == object_type && sub->query_string == query_str)) {
                 return *subs->insert_or_assign(name.to_string(), results.get_query()).first;
             }
             else {
-                throw DuplicateSubscriptionException(name.to_string(), std::string(it->query_string()), query_str);
+                throw DuplicateSubscriptionException(name.to_string(), sub->query_string, query_str);
             }
         }
         else {
@@ -204,12 +202,7 @@ REALM_EXPORT bool realm_subscriptionset_remove(SharedMutableSubscriptionSet& sub
 {
     return handle_errors(ex, [&] {
         Utf16StringAccessor name(name_buf, name_len);
-        if (auto it = subs->find(name); it != subs->end()) {
-            subs->erase(it);
-            return true;
-        }
-        
-        return false;
+        return subs->erase(name);
     });
 }
 
@@ -218,7 +211,7 @@ REALM_EXPORT bool realm_subscriptionset_remove_by_id(SharedMutableSubscriptionSe
     return handle_errors(ex, [&] {
         auto subId = from_capi(id.object_id);
         for (auto it = subs->begin(); it != subs->end(); it++) {
-            if (it->id() == subId) {
+            if (it->id == subId) {
                 subs->erase(it);
                 return true;
             }
@@ -237,7 +230,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_query(SharedMutableSubscript
         const auto class_name = results.get_object_type();
         
         for (auto it = subs->begin(); it != subs->end();) {
-            if (it->object_class_name() == class_name && it->query_string() == query_desc && (remove_named || it->name().empty())) {
+            if (it->object_class_name == class_name && it->query_string == query_desc && (remove_named || !it->name)) {
                 it = subs->erase(it);
                 removed++;
             }
@@ -257,7 +250,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_by_type(SharedMutableSubscripti
         Utf16StringAccessor type(type_buf, type_len);
 
         for (auto it = subs->begin(); it != subs->end();) {
-            if (it->object_class_name() == type && (remove_named || it->name().empty())) {
+            if (it->object_class_name == type && (remove_named || !it->name)) {
                 it = subs->erase(it);
                 removed++;
             }
@@ -281,7 +274,7 @@ REALM_EXPORT size_t realm_subscriptionset_remove_all(SharedMutableSubscriptionSe
 
         size_t removed = 0;
         for (auto it = subs->begin(); it != subs->end();) {
-            if (it->name().empty()) {
+            if (!it->name) {
                 it = subs->erase(it);
                 removed++;
             }

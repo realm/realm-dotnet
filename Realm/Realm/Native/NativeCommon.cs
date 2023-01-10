@@ -88,16 +88,19 @@ namespace Realms
         {
             try
             {
-                Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
+                if (Interlocked.CompareExchange(ref _isInitialized, 0, 1) == 1)
+                {
+                    Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
 
-                var sw = new Stopwatch();
-                sw.Start();
+                    var sw = new Stopwatch();
+                    sw.Start();
 
-                AppHandle.ForceCloseHandles();
-                SharedRealmHandle.ForceCloseNativeRealms();
+                    AppHandle.ForceCloseHandles();
+                    SharedRealmHandle.ForceCloseNativeRealms();
 
-                sw.Stop();
-                Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                    sw.Stop();
+                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                }
             }
             catch (Exception ex)
             {

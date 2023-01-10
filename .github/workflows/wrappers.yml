@@ -486,21 +486,6 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
-    - name: Get vcpkg submodule commit sha
-      id: vcpkg_cache_key
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-      shell: bash
-      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - name: Setup Vcpkg
-      id: setup-vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg3-windows-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-    - name: Refetch vcpkg
-      run: git fetch --unshallow
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -537,21 +522,6 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-windows-uwp-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
-    - name: Get vcpkg submodule commit sha
-      id: vcpkg_cache_key
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-      shell: bash
-      run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-    - name: Setup Vcpkg
-      id: setup-vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg3-uwp-${{ matrix.arch }}-${{ steps.vcpkg_cache_key.outputs.commit }}
-    - name: Refetch vcpkg
-      run: git fetch --unshallow
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'

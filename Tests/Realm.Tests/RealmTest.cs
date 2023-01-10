@@ -25,12 +25,14 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
 
+using static Realms.Tests.TestHelpers;
+
 namespace Realms.Tests
 {
     [Preserve(AllMembers = true)]
     public abstract class RealmTest
     {
-        private readonly ConcurrentQueue<Realm> _realms = new();
+        private readonly ConcurrentQueue<StrongBox<Realm>> _realms = new();
         private Logger _originalLogger;
         private LogLevel _originalLogLevel;
 
@@ -104,7 +106,7 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
-                realm.Dispose();
+                realm.Value.Dispose();
             }
 
             _realms.DrainQueueAsync(async realm =>

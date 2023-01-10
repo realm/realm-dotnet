@@ -336,15 +336,16 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static void DrainQueue<T>(this ConcurrentQueue<T> queue, Action<T> action)
+        public static void DrainQueue<T>(this ConcurrentQueue<StrongBox<T>> queue, Action<T> action)
         {
             while (queue.TryDequeue(out var result))
             {
-                action(result);
+                action(result.Value);
+                result.Value = default;
             }
         }
 
-        public static void DrainQueueAsync<T>(this ConcurrentQueue<T> queue, Func<T, Task> action)
+        public static void DrainQueueAsync<T>(this ConcurrentQueue<StrongBox<T>> queue, Func<T, Task> action)
         {
             AsyncContext.Run(async () =>
             {
@@ -352,18 +353,10 @@ namespace Realms.Tests
                 {
                     while (queue.TryDequeue(out var result))
                     {
-                        await action(result);
+                        await action(result.Value);
+                        result.Value = default;
                     }
                 }).Timeout(20_000, detail: $"Failed to drain queue: {queue.GetType().Name}");
-            });
-        }
-
-        public static void DrainQueueAsync<T>(this ConcurrentQueue<T> queue, Action<T> action)
-        {
-            DrainQueueAsync(queue, o =>
-            {
-                action(o);
-                return Task.CompletedTask;
             });
         }
 
@@ -431,6 +424,13 @@ namespace Realms.Tests
             {
                 _onNext?.Invoke(value);
             }
+        }
+
+        public class StrongBox<T>
+        {
+            public T Value { get; set; }
+
+            public static implicit operator StrongBox<T>(T value) => new() { Value = value };
         }
     }
 }
