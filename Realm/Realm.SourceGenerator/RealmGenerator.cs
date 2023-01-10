@@ -35,7 +35,8 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            var parser = new Parser(context);
+            var generatorConfig = GeneratorConfig.ParseConfig(context.AnalyzerConfigOptions.GlobalOptions);
+            var parser = new Parser(context, generatorConfig);
             var parsingResults = parser.Parse(scr.RealmClasses);
 
             var diagnosticsEmitter = new DiagnosticsEmitter(context);

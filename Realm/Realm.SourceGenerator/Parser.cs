@@ -28,12 +28,12 @@ namespace Realms.SourceGenerator
     internal class Parser
     {
         private GeneratorExecutionContext _context;
-        private bool _ignoreObjectsNullability;
+        private GeneratorConfig _generatorConfig;
 
-        public Parser(GeneratorExecutionContext context, bool ignoreObjectsNullability = false)
+        public Parser(GeneratorExecutionContext context, GeneratorConfig generatorConfig)
         {
             _context = context;
-            _ignoreObjectsNullability = ignoreObjectsNullability;
+            _generatorConfig = generatorConfig;
         }
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
@@ -147,7 +147,6 @@ namespace Realms.SourceGenerator
             return usings;
         }
 
-        //TODO Instead of making this classes non-static I could pass a config file or similar
         private IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
@@ -292,7 +291,7 @@ namespace Realms.SourceGenerator
                 return propertyTypeInfo;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_ignoreObjectsNullability))
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_generatorConfig.IgnoreObjectsNullability))
             {
                 classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
