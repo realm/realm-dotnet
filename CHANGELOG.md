@@ -8,6 +8,7 @@
 * Improve performance of acquiring read locks when a read lock for that version is already held. This speeds up many operations related to change notifications, and particularly refreshing a Realm which has change notifiers registered. (Core 13.2.0)
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
+* Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 
 ### Fixed
 * Set<Mixed> consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
@@ -38,7 +39,6 @@
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
-* Added diagnostic error for nested classes used with the source generator syntax, as they are not yet supported. (Issue [#3130](https://github.com/realm/realm-dotnet/issues/3130))
 * Added `IList` implementation to all Realm collections to allow for UWP ListView databinding. (Issue [#1759](https://github.com/realm/realm-dotnet/issues/1759))
 
 ### Fixed

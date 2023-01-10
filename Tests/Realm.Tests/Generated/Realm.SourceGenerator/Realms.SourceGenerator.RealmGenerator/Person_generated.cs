@@ -2,7 +2,6 @@
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -268,361 +267,359 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPersonAccessor : Realms.IRealmAccessor
-    {
-        string FirstName { get; set; }
-
-        string LastName { get; set; }
-
-        float Score { get; set; }
-
-        double Latitude { get; set; }
-
-        double Longitude { get; set; }
-
-        long Salary { get; set; }
-
-        bool? IsAmbivalent { get; set; }
-
-        System.DateTimeOffset Birthday { get; set; }
-
-        byte[] PublicCertificateBytes { get; set; }
-
-        string OptionalAddress { get; set; }
-
-        string Email_ { get; set; }
-
-        bool IsInteresting { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
-    {
-        public string FirstName
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IPersonAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("FirstName");
-            set => SetValue("FirstName", value);
+            string FirstName { get; set; }
+
+            string LastName { get; set; }
+
+            float Score { get; set; }
+
+            double Latitude { get; set; }
+
+            double Longitude { get; set; }
+
+            long Salary { get; set; }
+
+            bool? IsAmbivalent { get; set; }
+
+            System.DateTimeOffset Birthday { get; set; }
+
+            byte[] PublicCertificateBytes { get; set; }
+
+            string OptionalAddress { get; set; }
+
+            string Email_ { get; set; }
+
+            bool IsInteresting { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
         }
 
-        public string LastName
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
-            get => (string)GetValue("LastName");
-            set => SetValue("LastName", value);
-        }
-
-        public float Score
-        {
-            get => (float)GetValue("Score");
-            set => SetValue("Score", value);
-        }
-
-        public double Latitude
-        {
-            get => (double)GetValue("Latitude");
-            set => SetValue("Latitude", value);
-        }
-
-        public double Longitude
-        {
-            get => (double)GetValue("Longitude");
-            set => SetValue("Longitude", value);
-        }
-
-        public long Salary
-        {
-            get => (long)GetValue("Salary");
-            set => SetValue("Salary", value);
-        }
-
-        public bool? IsAmbivalent
-        {
-            get => (bool?)GetValue("IsAmbivalent");
-            set => SetValue("IsAmbivalent", value);
-        }
-
-        public System.DateTimeOffset Birthday
-        {
-            get => (System.DateTimeOffset)GetValue("Birthday");
-            set => SetValue("Birthday", value);
-        }
-
-        public byte[] PublicCertificateBytes
-        {
-            get => (byte[])GetValue("PublicCertificateBytes");
-            set => SetValue("PublicCertificateBytes", value);
-        }
-
-        public string OptionalAddress
-        {
-            get => (string)GetValue("OptionalAddress");
-            set => SetValue("OptionalAddress", value);
-        }
-
-        public string Email_
-        {
-            get => (string)GetValue("Email");
-            set => SetValue("Email", value);
-        }
-
-        public bool IsInteresting
-        {
-            get => (bool)GetValue("IsInteresting");
-            set => SetValue("IsInteresting", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
-        {
-            get
+            public string FirstName
             {
-                if (_friends == null)
+                get => (string)GetValue("FirstName");
+                set => SetValue("FirstName", value);
+            }
+
+            public string LastName
+            {
+                get => (string)GetValue("LastName");
+                set => SetValue("LastName", value);
+            }
+
+            public float Score
+            {
+                get => (float)GetValue("Score");
+                set => SetValue("Score", value);
+            }
+
+            public double Latitude
+            {
+                get => (double)GetValue("Latitude");
+                set => SetValue("Latitude", value);
+            }
+
+            public double Longitude
+            {
+                get => (double)GetValue("Longitude");
+                set => SetValue("Longitude", value);
+            }
+
+            public long Salary
+            {
+                get => (long)GetValue("Salary");
+                set => SetValue("Salary", value);
+            }
+
+            public bool? IsAmbivalent
+            {
+                get => (bool?)GetValue("IsAmbivalent");
+                set => SetValue("IsAmbivalent", value);
+            }
+
+            public System.DateTimeOffset Birthday
+            {
+                get => (System.DateTimeOffset)GetValue("Birthday");
+                set => SetValue("Birthday", value);
+            }
+
+            public byte[] PublicCertificateBytes
+            {
+                get => (byte[])GetValue("PublicCertificateBytes");
+                set => SetValue("PublicCertificateBytes", value);
+            }
+
+            public string OptionalAddress
+            {
+                get => (string)GetValue("OptionalAddress");
+                set => SetValue("OptionalAddress", value);
+            }
+
+            public string Email_
+            {
+                get => (string)GetValue("Email");
+                set => SetValue("Email", value);
+            }
+
+            public bool IsInteresting
+            {
+                get => (bool)GetValue("IsInteresting");
+                set => SetValue("IsInteresting", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
+            {
+                get
                 {
-                    _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
+                    if (_friends == null)
+                    {
+                        _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
+                    }
+
+                    return _friends;
                 }
-
-                return _friends;
-            }
-        }
-    }
-
-    internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
-    {
-        public override ObjectSchema ObjectSchema => Person.RealmSchema;
-
-        private string _firstName;
-        public string FirstName
-        {
-            get => _firstName;
-            set
-            {
-                _firstName = value;
-                RaisePropertyChanged("FirstName");
             }
         }
 
-        private string _lastName;
-        public string LastName
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
         {
-            get => _lastName;
-            set
+            public override ObjectSchema ObjectSchema => Person.RealmSchema;
+
+            private string _firstName;
+            public string FirstName
             {
-                _lastName = value;
-                RaisePropertyChanged("LastName");
+                get => _firstName;
+                set
+                {
+                    _firstName = value;
+                    RaisePropertyChanged("FirstName");
+                }
             }
-        }
 
-        private float _score;
-        public float Score
-        {
-            get => _score;
-            set
+            private string _lastName;
+            public string LastName
             {
-                _score = value;
-                RaisePropertyChanged("Score");
+                get => _lastName;
+                set
+                {
+                    _lastName = value;
+                    RaisePropertyChanged("LastName");
+                }
             }
-        }
 
-        private double _latitude;
-        public double Latitude
-        {
-            get => _latitude;
-            set
+            private float _score;
+            public float Score
             {
-                _latitude = value;
-                RaisePropertyChanged("Latitude");
+                get => _score;
+                set
+                {
+                    _score = value;
+                    RaisePropertyChanged("Score");
+                }
             }
-        }
 
-        private double _longitude;
-        public double Longitude
-        {
-            get => _longitude;
-            set
+            private double _latitude;
+            public double Latitude
             {
-                _longitude = value;
-                RaisePropertyChanged("Longitude");
+                get => _latitude;
+                set
+                {
+                    _latitude = value;
+                    RaisePropertyChanged("Latitude");
+                }
             }
-        }
 
-        private long _salary;
-        public long Salary
-        {
-            get => _salary;
-            set
+            private double _longitude;
+            public double Longitude
             {
-                _salary = value;
-                RaisePropertyChanged("Salary");
+                get => _longitude;
+                set
+                {
+                    _longitude = value;
+                    RaisePropertyChanged("Longitude");
+                }
             }
-        }
 
-        private bool? _isAmbivalent;
-        public bool? IsAmbivalent
-        {
-            get => _isAmbivalent;
-            set
+            private long _salary;
+            public long Salary
             {
-                _isAmbivalent = value;
-                RaisePropertyChanged("IsAmbivalent");
+                get => _salary;
+                set
+                {
+                    _salary = value;
+                    RaisePropertyChanged("Salary");
+                }
             }
-        }
 
-        private System.DateTimeOffset _birthday;
-        public System.DateTimeOffset Birthday
-        {
-            get => _birthday;
-            set
+            private bool? _isAmbivalent;
+            public bool? IsAmbivalent
             {
-                _birthday = value;
-                RaisePropertyChanged("Birthday");
+                get => _isAmbivalent;
+                set
+                {
+                    _isAmbivalent = value;
+                    RaisePropertyChanged("IsAmbivalent");
+                }
             }
-        }
 
-        private byte[] _publicCertificateBytes;
-        public byte[] PublicCertificateBytes
-        {
-            get => _publicCertificateBytes;
-            set
+            private System.DateTimeOffset _birthday;
+            public System.DateTimeOffset Birthday
             {
-                _publicCertificateBytes = value;
-                RaisePropertyChanged("PublicCertificateBytes");
+                get => _birthday;
+                set
+                {
+                    _birthday = value;
+                    RaisePropertyChanged("Birthday");
+                }
             }
-        }
 
-        private string _optionalAddress;
-        public string OptionalAddress
-        {
-            get => _optionalAddress;
-            set
+            private byte[] _publicCertificateBytes;
+            public byte[] PublicCertificateBytes
             {
-                _optionalAddress = value;
-                RaisePropertyChanged("OptionalAddress");
+                get => _publicCertificateBytes;
+                set
+                {
+                    _publicCertificateBytes = value;
+                    RaisePropertyChanged("PublicCertificateBytes");
+                }
             }
-        }
 
-        private string _email_;
-        public string Email_
-        {
-            get => _email_;
-            set
+            private string _optionalAddress;
+            public string OptionalAddress
             {
-                _email_ = value;
-                RaisePropertyChanged("Email_");
+                get => _optionalAddress;
+                set
+                {
+                    _optionalAddress = value;
+                    RaisePropertyChanged("OptionalAddress");
+                }
             }
-        }
 
-        private bool _isInteresting;
-        public bool IsInteresting
-        {
-            get => _isInteresting;
-            set
+            private string _email_;
+            public string Email_
             {
-                _isInteresting = value;
-                RaisePropertyChanged("IsInteresting");
+                get => _email_;
+                set
+                {
+                    _email_ = value;
+                    RaisePropertyChanged("Email_");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
-
-        public PersonUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private bool _isInteresting;
+            public bool IsInteresting
             {
-                "FirstName" => _firstName,
-                "LastName" => _lastName,
-                "Score" => _score,
-                "Latitude" => _latitude,
-                "Longitude" => _longitude,
-                "Salary" => _salary,
-                "IsAmbivalent" => _isAmbivalent,
-                "Birthday" => _birthday,
-                "PublicCertificateBytes" => _publicCertificateBytes,
-                "OptionalAddress" => _optionalAddress,
-                "Email" => _email_,
-                "IsInteresting" => _isInteresting,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "FirstName":
-                    FirstName = (string)val;
-                    return;
-                case "LastName":
-                    LastName = (string)val;
-                    return;
-                case "Score":
-                    Score = (float)val;
-                    return;
-                case "Latitude":
-                    Latitude = (double)val;
-                    return;
-                case "Longitude":
-                    Longitude = (double)val;
-                    return;
-                case "Salary":
-                    Salary = (long)val;
-                    return;
-                case "IsAmbivalent":
-                    IsAmbivalent = (bool?)val;
-                    return;
-                case "Birthday":
-                    Birthday = (System.DateTimeOffset)val;
-                    return;
-                case "PublicCertificateBytes":
-                    PublicCertificateBytes = (byte[])val;
-                    return;
-                case "OptionalAddress":
-                    OptionalAddress = (string)val;
-                    return;
-                case "Email":
-                    Email_ = (string)val;
-                    return;
-                case "IsInteresting":
-                    IsInteresting = (bool)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _isInteresting;
+                set
+                {
+                    _isInteresting = value;
+                    RaisePropertyChanged("IsInteresting");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "Friends" => (IList<T>)Friends,
+            public PersonUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "FirstName" => _firstName,
+                    "LastName" => _lastName,
+                    "Score" => _score,
+                    "Latitude" => _latitude,
+                    "Longitude" => _longitude,
+                    "Salary" => _salary,
+                    "IsAmbivalent" => _isAmbivalent,
+                    "Birthday" => _birthday,
+                    "PublicCertificateBytes" => _publicCertificateBytes,
+                    "OptionalAddress" => _optionalAddress,
+                    "Email" => _email_,
+                    "IsInteresting" => _isInteresting,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "FirstName":
+                        FirstName = (string)val;
+                        return;
+                    case "LastName":
+                        LastName = (string)val;
+                        return;
+                    case "Score":
+                        Score = (float)val;
+                        return;
+                    case "Latitude":
+                        Latitude = (double)val;
+                        return;
+                    case "Longitude":
+                        Longitude = (double)val;
+                        return;
+                    case "Salary":
+                        Salary = (long)val;
+                        return;
+                    case "IsAmbivalent":
+                        IsAmbivalent = (bool?)val;
+                        return;
+                    case "Birthday":
+                        Birthday = (System.DateTimeOffset)val;
+                        return;
+                    case "PublicCertificateBytes":
+                        PublicCertificateBytes = (byte[])val;
+                        return;
+                    case "OptionalAddress":
+                        OptionalAddress = (string)val;
+                        return;
+                    case "Email":
+                        Email_ = (string)val;
+                        return;
+                    case "IsInteresting":
+                        IsInteresting = (bool)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "Friends" => (IList<T>)Friends,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

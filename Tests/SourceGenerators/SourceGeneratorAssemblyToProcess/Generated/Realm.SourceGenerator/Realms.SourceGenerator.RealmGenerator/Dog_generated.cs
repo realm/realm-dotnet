@@ -3,7 +3,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorPlayground;
-using SourceGeneratorPlayground.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -217,108 +216,106 @@ namespace SourceGeneratorPlayground
                 return false;
             }
         }
-    }
-}
 
-namespace SourceGeneratorPlayground.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDogAccessor : Realms.IRealmAccessor
-    {
-        string Name { get; set; }
-
-        SourceGeneratorPlayground.Person Owner { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
-    {
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IDogAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            string Name { get; set; }
+
+            SourceGeneratorPlayground.Person Owner { get; set; }
         }
 
-        public SourceGeneratorPlayground.Person Owner
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
-            get => (SourceGeneratorPlayground.Person)GetValue("Owner");
-            set => SetValue("Owner", value);
-        }
-    }
-
-    internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
-    {
-        public override ObjectSchema ObjectSchema => Dog.RealmSchema;
-
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
+            public string Name
             {
-                _name = value;
-                RaisePropertyChanged("Name");
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
+            }
+
+            public SourceGeneratorPlayground.Person Owner
+            {
+                get => (SourceGeneratorPlayground.Person)GetValue("Owner");
+                set => SetValue("Owner", value);
             }
         }
 
-        private SourceGeneratorPlayground.Person _owner;
-        public SourceGeneratorPlayground.Person Owner
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
-            get => _owner;
-            set
+            public override ObjectSchema ObjectSchema => Dog.RealmSchema;
+
+            private string _name;
+            public string Name
             {
-                _owner = value;
-                RaisePropertyChanged("Owner");
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        public DogUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private SourceGeneratorPlayground.Person _owner;
+            public SourceGeneratorPlayground.Person Owner
             {
-                "Name" => _name,
-                "Owner" => _owner,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Name":
-                    Name = (string)val;
-                    return;
-                case "Owner":
-                    Owner = (SourceGeneratorPlayground.Person)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _owner;
+                set
+                {
+                    _owner = value;
+                    RaisePropertyChanged("Owner");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public DogUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Name" => _name,
+                    "Owner" => _owner,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    case "Owner":
+                        Owner = (SourceGeneratorPlayground.Person)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }
