@@ -1929,8 +1929,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        // TODO: reenable when https://github.com/realm/realm-core/issues/6053 is fixed
-        [Test, NUnit.Framework.Explicit("Seems to crash due to https://github.com/realm/realm-core/issues/6053")]
+        [Test]
         public void Integration_InitialSubscriptions_RunsOnlyOnce([Values(true, false)] bool openAsync)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

@@ -17,8 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Realms.Sync;
 
 namespace Realms.Logging
@@ -225,5 +228,64 @@ namespace Realms.Logging
 
             public void Clear() => _builder.Clear();
         }
+
+        internal class AsyncFileLogger : Logger, IDisposable
+        {
+            private readonly ConcurrentQueue<string> _queue = new();
+            private readonly string _filePath;
+            private readonly Encoding _encoding;
+            private readonly AutoResetEvent _hasNewItems = new(false);
+            private readonly AutoResetEvent _flush = new(false);
+            private readonly Task _runner;
+            private volatile bool _isFlushing;
+
+            public AsyncFileLogger(string filePath, Encoding encoding = null)
+            {
+                _filePath = filePath;
+                _encoding = encoding ?? Encoding.UTF8;
+                _runner = Task.Run(Run);
+            }
+
+            public void Dispose()
+            {
+                _isFlushing = true;
+                _flush.Set();
+                _runner.Wait();
+
+                _hasNewItems.Dispose();
+                _flush.Dispose();
+            }
+
+            protected override void LogImpl(LogLevel level, string message)
+            {
+                if (!_isFlushing)
+                {
+                    _queue.Enqueue(FormatLog(level, message));
+                    _hasNewItems.Set();
+                }
+            }
+
+            private void Run()
+            {
+                while (true)
+                {
+                    WaitHandle.WaitAny(new[] { _hasNewItems, _flush });
+
+                    var sb = new StringBuilder();
+                    while (_queue.TryDequeue(out var item))
+                    {
+                        sb.AppendLine(item);
+                    }
+
+                    System.IO.File.AppendAllText(_filePath, sb.ToString(), _encoding);
+
+                    if (_isFlushing)
+                    {
+                        return;
+                    }
+                }
+            }
+        }
+
     }
 }

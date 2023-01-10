@@ -16,7 +16,6 @@ using static Realms.Tests.TestHelpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -285,16 +284,16 @@ namespace Realms.Tests.Sync
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
 
-        private string _id = Guid.NewGuid().ToString();
-        public string Id
-        {
-            get => _id;
-            set
+            private string _id = Guid.NewGuid().ToString();
+            public string Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
-        }
 
             private string _value;
             public string Value
