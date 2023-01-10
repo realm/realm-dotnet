@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -287,503 +286,501 @@ namespace Realms.Tests
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ISyncAllTypesObjectAccessor : Realms.IRealmAccessor
-    {
-        MongoDB.Bson.ObjectId Id { get; set; }
-
-        char CharProperty { get; set; }
-
-        byte ByteProperty { get; set; }
-
-        short Int16Property { get; set; }
-
-        int Int32Property { get; set; }
-
-        long Int64Property { get; set; }
-
-        float FloatProperty { get; set; }
-
-        double DoubleProperty { get; set; }
-
-        bool BooleanProperty { get; set; }
-
-        System.DateTimeOffset DateTimeOffsetProperty { get; set; }
-
-        decimal DecimalProperty { get; set; }
-
-        MongoDB.Bson.Decimal128 Decimal128Property { get; set; }
-
-        MongoDB.Bson.ObjectId ObjectIdProperty { get; set; }
-
-        System.Guid GuidProperty { get; set; }
-
-        string StringProperty { get; set; }
-
-        byte[] ByteArrayProperty { get; set; }
-
-        Realms.RealmValue RealmValueProperty { get; set; }
-
-        Realms.Tests.IntPropertyObject ObjectProperty { get; set; }
-
-        Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class SyncAllTypesObjectManagedAccessor : Realms.ManagedAccessor, ISyncAllTypesObjectAccessor
-    {
-        public MongoDB.Bson.ObjectId Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface ISyncAllTypesObjectAccessor : Realms.IRealmAccessor
         {
-            get => (MongoDB.Bson.ObjectId)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            MongoDB.Bson.ObjectId Id { get; set; }
+
+            char CharProperty { get; set; }
+
+            byte ByteProperty { get; set; }
+
+            short Int16Property { get; set; }
+
+            int Int32Property { get; set; }
+
+            long Int64Property { get; set; }
+
+            float FloatProperty { get; set; }
+
+            double DoubleProperty { get; set; }
+
+            bool BooleanProperty { get; set; }
+
+            System.DateTimeOffset DateTimeOffsetProperty { get; set; }
+
+            decimal DecimalProperty { get; set; }
+
+            MongoDB.Bson.Decimal128 Decimal128Property { get; set; }
+
+            MongoDB.Bson.ObjectId ObjectIdProperty { get; set; }
+
+            System.Guid GuidProperty { get; set; }
+
+            string StringProperty { get; set; }
+
+            byte[] ByteArrayProperty { get; set; }
+
+            Realms.RealmValue RealmValueProperty { get; set; }
+
+            Realms.Tests.IntPropertyObject ObjectProperty { get; set; }
+
+            Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
         }
 
-        public char CharProperty
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class SyncAllTypesObjectManagedAccessor : Realms.ManagedAccessor, ISyncAllTypesObjectAccessor
         {
-            get => (char)GetValue("CharProperty");
-            set => SetValue("CharProperty", value);
-        }
-
-        public byte ByteProperty
-        {
-            get => (byte)GetValue("ByteProperty");
-            set => SetValue("ByteProperty", value);
-        }
-
-        public short Int16Property
-        {
-            get => (short)GetValue("Int16Property");
-            set => SetValue("Int16Property", value);
-        }
-
-        public int Int32Property
-        {
-            get => (int)GetValue("Int32Property");
-            set => SetValue("Int32Property", value);
-        }
-
-        public long Int64Property
-        {
-            get => (long)GetValue("Int64Property");
-            set => SetValue("Int64Property", value);
-        }
-
-        public float FloatProperty
-        {
-            get => (float)GetValue("FloatProperty");
-            set => SetValue("FloatProperty", value);
-        }
-
-        public double DoubleProperty
-        {
-            get => (double)GetValue("DoubleProperty");
-            set => SetValue("DoubleProperty", value);
-        }
-
-        public bool BooleanProperty
-        {
-            get => (bool)GetValue("BooleanProperty");
-            set => SetValue("BooleanProperty", value);
-        }
-
-        public System.DateTimeOffset DateTimeOffsetProperty
-        {
-            get => (System.DateTimeOffset)GetValue("DateTimeOffsetProperty");
-            set => SetValue("DateTimeOffsetProperty", value);
-        }
-
-        public decimal DecimalProperty
-        {
-            get => (decimal)GetValue("DecimalProperty");
-            set => SetValue("DecimalProperty", value);
-        }
-
-        public MongoDB.Bson.Decimal128 Decimal128Property
-        {
-            get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Property");
-            set => SetValue("Decimal128Property", value);
-        }
-
-        public MongoDB.Bson.ObjectId ObjectIdProperty
-        {
-            get => (MongoDB.Bson.ObjectId)GetValue("ObjectIdProperty");
-            set => SetValue("ObjectIdProperty", value);
-        }
-
-        public System.Guid GuidProperty
-        {
-            get => (System.Guid)GetValue("GuidProperty");
-            set => SetValue("GuidProperty", value);
-        }
-
-        public string StringProperty
-        {
-            get => (string)GetValue("StringProperty");
-            set => SetValue("StringProperty", value);
-        }
-
-        public byte[] ByteArrayProperty
-        {
-            get => (byte[])GetValue("ByteArrayProperty");
-            set => SetValue("ByteArrayProperty", value);
-        }
-
-        public Realms.RealmValue RealmValueProperty
-        {
-            get => (Realms.RealmValue)GetValue("RealmValueProperty");
-            set => SetValue("RealmValueProperty", value);
-        }
-
-        public Realms.Tests.IntPropertyObject ObjectProperty
-        {
-            get => (Realms.Tests.IntPropertyObject)GetValue("ObjectProperty");
-            set => SetValue("ObjectProperty", value);
-        }
-
-        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
-        {
-            get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObjectProperty");
-            set => SetValue("EmbeddedObjectProperty", value);
-        }
-    }
-
-    internal class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;
-
-        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-        public MongoDB.Bson.ObjectId Id
-        {
-            get => _id;
-            set
+            public MongoDB.Bson.ObjectId Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                set => SetValueUnique("_id", value);
+            }
+
+            public char CharProperty
+            {
+                get => (char)GetValue("CharProperty");
+                set => SetValue("CharProperty", value);
+            }
+
+            public byte ByteProperty
+            {
+                get => (byte)GetValue("ByteProperty");
+                set => SetValue("ByteProperty", value);
+            }
+
+            public short Int16Property
+            {
+                get => (short)GetValue("Int16Property");
+                set => SetValue("Int16Property", value);
+            }
+
+            public int Int32Property
+            {
+                get => (int)GetValue("Int32Property");
+                set => SetValue("Int32Property", value);
+            }
+
+            public long Int64Property
+            {
+                get => (long)GetValue("Int64Property");
+                set => SetValue("Int64Property", value);
+            }
+
+            public float FloatProperty
+            {
+                get => (float)GetValue("FloatProperty");
+                set => SetValue("FloatProperty", value);
+            }
+
+            public double DoubleProperty
+            {
+                get => (double)GetValue("DoubleProperty");
+                set => SetValue("DoubleProperty", value);
+            }
+
+            public bool BooleanProperty
+            {
+                get => (bool)GetValue("BooleanProperty");
+                set => SetValue("BooleanProperty", value);
+            }
+
+            public System.DateTimeOffset DateTimeOffsetProperty
+            {
+                get => (System.DateTimeOffset)GetValue("DateTimeOffsetProperty");
+                set => SetValue("DateTimeOffsetProperty", value);
+            }
+
+            public decimal DecimalProperty
+            {
+                get => (decimal)GetValue("DecimalProperty");
+                set => SetValue("DecimalProperty", value);
+            }
+
+            public MongoDB.Bson.Decimal128 Decimal128Property
+            {
+                get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Property");
+                set => SetValue("Decimal128Property", value);
+            }
+
+            public MongoDB.Bson.ObjectId ObjectIdProperty
+            {
+                get => (MongoDB.Bson.ObjectId)GetValue("ObjectIdProperty");
+                set => SetValue("ObjectIdProperty", value);
+            }
+
+            public System.Guid GuidProperty
+            {
+                get => (System.Guid)GetValue("GuidProperty");
+                set => SetValue("GuidProperty", value);
+            }
+
+            public string StringProperty
+            {
+                get => (string)GetValue("StringProperty");
+                set => SetValue("StringProperty", value);
+            }
+
+            public byte[] ByteArrayProperty
+            {
+                get => (byte[])GetValue("ByteArrayProperty");
+                set => SetValue("ByteArrayProperty", value);
+            }
+
+            public Realms.RealmValue RealmValueProperty
+            {
+                get => (Realms.RealmValue)GetValue("RealmValueProperty");
+                set => SetValue("RealmValueProperty", value);
+            }
+
+            public Realms.Tests.IntPropertyObject ObjectProperty
+            {
+                get => (Realms.Tests.IntPropertyObject)GetValue("ObjectProperty");
+                set => SetValue("ObjectProperty", value);
+            }
+
+            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
+            {
+                get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObjectProperty");
+                set => SetValue("EmbeddedObjectProperty", value);
             }
         }
 
-        private char _charProperty;
-        public char CharProperty
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
         {
-            get => _charProperty;
-            set
-            {
-                _charProperty = value;
-                RaisePropertyChanged("CharProperty");
-            }
-        }
+            public override ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;
 
-        private byte _byteProperty;
-        public byte ByteProperty
-        {
-            get => _byteProperty;
-            set
+            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+            public MongoDB.Bson.ObjectId Id
             {
-                _byteProperty = value;
-                RaisePropertyChanged("ByteProperty");
-            }
-        }
-
-        private short _int16Property;
-        public short Int16Property
-        {
-            get => _int16Property;
-            set
-            {
-                _int16Property = value;
-                RaisePropertyChanged("Int16Property");
-            }
-        }
-
-        private int _int32Property;
-        public int Int32Property
-        {
-            get => _int32Property;
-            set
-            {
-                _int32Property = value;
-                RaisePropertyChanged("Int32Property");
-            }
-        }
-
-        private long _int64Property;
-        public long Int64Property
-        {
-            get => _int64Property;
-            set
-            {
-                _int64Property = value;
-                RaisePropertyChanged("Int64Property");
-            }
-        }
-
-        private float _floatProperty;
-        public float FloatProperty
-        {
-            get => _floatProperty;
-            set
-            {
-                _floatProperty = value;
-                RaisePropertyChanged("FloatProperty");
-            }
-        }
-
-        private double _doubleProperty;
-        public double DoubleProperty
-        {
-            get => _doubleProperty;
-            set
-            {
-                _doubleProperty = value;
-                RaisePropertyChanged("DoubleProperty");
-            }
-        }
-
-        private bool _booleanProperty;
-        public bool BooleanProperty
-        {
-            get => _booleanProperty;
-            set
-            {
-                _booleanProperty = value;
-                RaisePropertyChanged("BooleanProperty");
-            }
-        }
-
-        private System.DateTimeOffset _dateTimeOffsetProperty;
-        public System.DateTimeOffset DateTimeOffsetProperty
-        {
-            get => _dateTimeOffsetProperty;
-            set
-            {
-                _dateTimeOffsetProperty = value;
-                RaisePropertyChanged("DateTimeOffsetProperty");
-            }
-        }
-
-        private decimal _decimalProperty;
-        public decimal DecimalProperty
-        {
-            get => _decimalProperty;
-            set
-            {
-                _decimalProperty = value;
-                RaisePropertyChanged("DecimalProperty");
-            }
-        }
-
-        private MongoDB.Bson.Decimal128 _decimal128Property;
-        public MongoDB.Bson.Decimal128 Decimal128Property
-        {
-            get => _decimal128Property;
-            set
-            {
-                _decimal128Property = value;
-                RaisePropertyChanged("Decimal128Property");
-            }
-        }
-
-        private MongoDB.Bson.ObjectId _objectIdProperty;
-        public MongoDB.Bson.ObjectId ObjectIdProperty
-        {
-            get => _objectIdProperty;
-            set
-            {
-                _objectIdProperty = value;
-                RaisePropertyChanged("ObjectIdProperty");
-            }
-        }
-
-        private System.Guid _guidProperty;
-        public System.Guid GuidProperty
-        {
-            get => _guidProperty;
-            set
-            {
-                _guidProperty = value;
-                RaisePropertyChanged("GuidProperty");
-            }
-        }
-
-        private string _stringProperty;
-        public string StringProperty
-        {
-            get => _stringProperty;
-            set
-            {
-                _stringProperty = value;
-                RaisePropertyChanged("StringProperty");
-            }
-        }
-
-        private byte[] _byteArrayProperty;
-        public byte[] ByteArrayProperty
-        {
-            get => _byteArrayProperty;
-            set
-            {
-                _byteArrayProperty = value;
-                RaisePropertyChanged("ByteArrayProperty");
-            }
-        }
-
-        private Realms.RealmValue _realmValueProperty;
-        public Realms.RealmValue RealmValueProperty
-        {
-            get => _realmValueProperty;
-            set
-            {
-                _realmValueProperty = value;
-                RaisePropertyChanged("RealmValueProperty");
-            }
-        }
-
-        private Realms.Tests.IntPropertyObject _objectProperty;
-        public Realms.Tests.IntPropertyObject ObjectProperty
-        {
-            get => _objectProperty;
-            set
-            {
-                _objectProperty = value;
-                RaisePropertyChanged("ObjectProperty");
-            }
-        }
-
-        private Realms.Tests.EmbeddedIntPropertyObject _embeddedObjectProperty;
-        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
-        {
-            get => _embeddedObjectProperty;
-            set
-            {
-                _embeddedObjectProperty = value;
-                RaisePropertyChanged("EmbeddedObjectProperty");
-            }
-        }
-
-        public SyncAllTypesObjectUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "_id" => _id,
-                "CharProperty" => _charProperty,
-                "ByteProperty" => _byteProperty,
-                "Int16Property" => _int16Property,
-                "Int32Property" => _int32Property,
-                "Int64Property" => _int64Property,
-                "FloatProperty" => _floatProperty,
-                "DoubleProperty" => _doubleProperty,
-                "BooleanProperty" => _booleanProperty,
-                "DateTimeOffsetProperty" => _dateTimeOffsetProperty,
-                "DecimalProperty" => _decimalProperty,
-                "Decimal128Property" => _decimal128Property,
-                "ObjectIdProperty" => _objectIdProperty,
-                "GuidProperty" => _guidProperty,
-                "StringProperty" => _stringProperty,
-                "ByteArrayProperty" => _byteArrayProperty,
-                "RealmValueProperty" => _realmValueProperty,
-                "ObjectProperty" => _objectProperty,
-                "EmbeddedObjectProperty" => _embeddedObjectProperty,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "CharProperty":
-                    CharProperty = (char)val;
-                    return;
-                case "ByteProperty":
-                    ByteProperty = (byte)val;
-                    return;
-                case "Int16Property":
-                    Int16Property = (short)val;
-                    return;
-                case "Int32Property":
-                    Int32Property = (int)val;
-                    return;
-                case "Int64Property":
-                    Int64Property = (long)val;
-                    return;
-                case "FloatProperty":
-                    FloatProperty = (float)val;
-                    return;
-                case "DoubleProperty":
-                    DoubleProperty = (double)val;
-                    return;
-                case "BooleanProperty":
-                    BooleanProperty = (bool)val;
-                    return;
-                case "DateTimeOffsetProperty":
-                    DateTimeOffsetProperty = (System.DateTimeOffset)val;
-                    return;
-                case "DecimalProperty":
-                    DecimalProperty = (decimal)val;
-                    return;
-                case "Decimal128Property":
-                    Decimal128Property = (MongoDB.Bson.Decimal128)val;
-                    return;
-                case "ObjectIdProperty":
-                    ObjectIdProperty = (MongoDB.Bson.ObjectId)val;
-                    return;
-                case "GuidProperty":
-                    GuidProperty = (System.Guid)val;
-                    return;
-                case "StringProperty":
-                    StringProperty = (string)val;
-                    return;
-                case "ByteArrayProperty":
-                    ByteArrayProperty = (byte[])val;
-                    return;
-                case "RealmValueProperty":
-                    RealmValueProperty = (Realms.RealmValue)val;
-                    return;
-                case "ObjectProperty":
-                    ObjectProperty = (Realms.Tests.IntPropertyObject)val;
-                    return;
-                case "EmbeddedObjectProperty":
-                    EmbeddedObjectProperty = (Realms.Tests.EmbeddedIntPropertyObject)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
 
-            Id = (MongoDB.Bson.ObjectId)val;
-        }
+            private char _charProperty;
+            public char CharProperty
+            {
+                get => _charProperty;
+                set
+                {
+                    _charProperty = value;
+                    RaisePropertyChanged("CharProperty");
+                }
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            private byte _byteProperty;
+            public byte ByteProperty
+            {
+                get => _byteProperty;
+                set
+                {
+                    _byteProperty = value;
+                    RaisePropertyChanged("ByteProperty");
+                }
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            private short _int16Property;
+            public short Int16Property
+            {
+                get => _int16Property;
+                set
+                {
+                    _int16Property = value;
+                    RaisePropertyChanged("Int16Property");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            private int _int32Property;
+            public int Int32Property
+            {
+                get => _int32Property;
+                set
+                {
+                    _int32Property = value;
+                    RaisePropertyChanged("Int32Property");
+                }
+            }
+
+            private long _int64Property;
+            public long Int64Property
+            {
+                get => _int64Property;
+                set
+                {
+                    _int64Property = value;
+                    RaisePropertyChanged("Int64Property");
+                }
+            }
+
+            private float _floatProperty;
+            public float FloatProperty
+            {
+                get => _floatProperty;
+                set
+                {
+                    _floatProperty = value;
+                    RaisePropertyChanged("FloatProperty");
+                }
+            }
+
+            private double _doubleProperty;
+            public double DoubleProperty
+            {
+                get => _doubleProperty;
+                set
+                {
+                    _doubleProperty = value;
+                    RaisePropertyChanged("DoubleProperty");
+                }
+            }
+
+            private bool _booleanProperty;
+            public bool BooleanProperty
+            {
+                get => _booleanProperty;
+                set
+                {
+                    _booleanProperty = value;
+                    RaisePropertyChanged("BooleanProperty");
+                }
+            }
+
+            private System.DateTimeOffset _dateTimeOffsetProperty;
+            public System.DateTimeOffset DateTimeOffsetProperty
+            {
+                get => _dateTimeOffsetProperty;
+                set
+                {
+                    _dateTimeOffsetProperty = value;
+                    RaisePropertyChanged("DateTimeOffsetProperty");
+                }
+            }
+
+            private decimal _decimalProperty;
+            public decimal DecimalProperty
+            {
+                get => _decimalProperty;
+                set
+                {
+                    _decimalProperty = value;
+                    RaisePropertyChanged("DecimalProperty");
+                }
+            }
+
+            private MongoDB.Bson.Decimal128 _decimal128Property;
+            public MongoDB.Bson.Decimal128 Decimal128Property
+            {
+                get => _decimal128Property;
+                set
+                {
+                    _decimal128Property = value;
+                    RaisePropertyChanged("Decimal128Property");
+                }
+            }
+
+            private MongoDB.Bson.ObjectId _objectIdProperty;
+            public MongoDB.Bson.ObjectId ObjectIdProperty
+            {
+                get => _objectIdProperty;
+                set
+                {
+                    _objectIdProperty = value;
+                    RaisePropertyChanged("ObjectIdProperty");
+                }
+            }
+
+            private System.Guid _guidProperty;
+            public System.Guid GuidProperty
+            {
+                get => _guidProperty;
+                set
+                {
+                    _guidProperty = value;
+                    RaisePropertyChanged("GuidProperty");
+                }
+            }
+
+            private string _stringProperty;
+            public string StringProperty
+            {
+                get => _stringProperty;
+                set
+                {
+                    _stringProperty = value;
+                    RaisePropertyChanged("StringProperty");
+                }
+            }
+
+            private byte[] _byteArrayProperty;
+            public byte[] ByteArrayProperty
+            {
+                get => _byteArrayProperty;
+                set
+                {
+                    _byteArrayProperty = value;
+                    RaisePropertyChanged("ByteArrayProperty");
+                }
+            }
+
+            private Realms.RealmValue _realmValueProperty;
+            public Realms.RealmValue RealmValueProperty
+            {
+                get => _realmValueProperty;
+                set
+                {
+                    _realmValueProperty = value;
+                    RaisePropertyChanged("RealmValueProperty");
+                }
+            }
+
+            private Realms.Tests.IntPropertyObject _objectProperty;
+            public Realms.Tests.IntPropertyObject ObjectProperty
+            {
+                get => _objectProperty;
+                set
+                {
+                    _objectProperty = value;
+                    RaisePropertyChanged("ObjectProperty");
+                }
+            }
+
+            private Realms.Tests.EmbeddedIntPropertyObject _embeddedObjectProperty;
+            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
+            {
+                get => _embeddedObjectProperty;
+                set
+                {
+                    _embeddedObjectProperty = value;
+                    RaisePropertyChanged("EmbeddedObjectProperty");
+                }
+            }
+
+            public SyncAllTypesObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    "CharProperty" => _charProperty,
+                    "ByteProperty" => _byteProperty,
+                    "Int16Property" => _int16Property,
+                    "Int32Property" => _int32Property,
+                    "Int64Property" => _int64Property,
+                    "FloatProperty" => _floatProperty,
+                    "DoubleProperty" => _doubleProperty,
+                    "BooleanProperty" => _booleanProperty,
+                    "DateTimeOffsetProperty" => _dateTimeOffsetProperty,
+                    "DecimalProperty" => _decimalProperty,
+                    "Decimal128Property" => _decimal128Property,
+                    "ObjectIdProperty" => _objectIdProperty,
+                    "GuidProperty" => _guidProperty,
+                    "StringProperty" => _stringProperty,
+                    "ByteArrayProperty" => _byteArrayProperty,
+                    "RealmValueProperty" => _realmValueProperty,
+                    "ObjectProperty" => _objectProperty,
+                    "EmbeddedObjectProperty" => _embeddedObjectProperty,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "CharProperty":
+                        CharProperty = (char)val;
+                        return;
+                    case "ByteProperty":
+                        ByteProperty = (byte)val;
+                        return;
+                    case "Int16Property":
+                        Int16Property = (short)val;
+                        return;
+                    case "Int32Property":
+                        Int32Property = (int)val;
+                        return;
+                    case "Int64Property":
+                        Int64Property = (long)val;
+                        return;
+                    case "FloatProperty":
+                        FloatProperty = (float)val;
+                        return;
+                    case "DoubleProperty":
+                        DoubleProperty = (double)val;
+                        return;
+                    case "BooleanProperty":
+                        BooleanProperty = (bool)val;
+                        return;
+                    case "DateTimeOffsetProperty":
+                        DateTimeOffsetProperty = (System.DateTimeOffset)val;
+                        return;
+                    case "DecimalProperty":
+                        DecimalProperty = (decimal)val;
+                        return;
+                    case "Decimal128Property":
+                        Decimal128Property = (MongoDB.Bson.Decimal128)val;
+                        return;
+                    case "ObjectIdProperty":
+                        ObjectIdProperty = (MongoDB.Bson.ObjectId)val;
+                        return;
+                    case "GuidProperty":
+                        GuidProperty = (System.Guid)val;
+                        return;
+                    case "StringProperty":
+                        StringProperty = (string)val;
+                        return;
+                    case "ByteArrayProperty":
+                        ByteArrayProperty = (byte[])val;
+                        return;
+                    case "RealmValueProperty":
+                        RealmValueProperty = (Realms.RealmValue)val;
+                        return;
+                    case "ObjectProperty":
+                        ObjectProperty = (Realms.Tests.IntPropertyObject)val;
+                        return;
+                    case "EmbeddedObjectProperty":
+                        EmbeddedObjectProperty = (Realms.Tests.EmbeddedIntPropertyObject)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (MongoDB.Bson.ObjectId)val;
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

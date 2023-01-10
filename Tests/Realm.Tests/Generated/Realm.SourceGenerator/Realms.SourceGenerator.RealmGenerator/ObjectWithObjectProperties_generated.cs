@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -223,108 +222,106 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
-    {
-        Realms.Tests.IntPropertyObject StandaloneObject { get; set; }
-
-        Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
-    {
-        public Realms.Tests.IntPropertyObject StandaloneObject
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
         {
-            get => (Realms.Tests.IntPropertyObject)GetValue("StandaloneObject");
-            set => SetValue("StandaloneObject", value);
+            Realms.Tests.IntPropertyObject StandaloneObject { get; set; }
+
+            Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject { get; set; }
         }
 
-        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
         {
-            get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
-            set => SetValue("EmbeddedObject", value);
-        }
-    }
-
-    internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
-    {
-        public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
-
-        private Realms.Tests.IntPropertyObject _standaloneObject;
-        public Realms.Tests.IntPropertyObject StandaloneObject
-        {
-            get => _standaloneObject;
-            set
+            public Realms.Tests.IntPropertyObject StandaloneObject
             {
-                _standaloneObject = value;
-                RaisePropertyChanged("StandaloneObject");
+                get => (Realms.Tests.IntPropertyObject)GetValue("StandaloneObject");
+                set => SetValue("StandaloneObject", value);
+            }
+
+            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
+            {
+                get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
+                set => SetValue("EmbeddedObject", value);
             }
         }
 
-        private Realms.Tests.EmbeddedIntPropertyObject _embeddedObject;
-        public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
         {
-            get => _embeddedObject;
-            set
+            public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
+
+            private Realms.Tests.IntPropertyObject _standaloneObject;
+            public Realms.Tests.IntPropertyObject StandaloneObject
             {
-                _embeddedObject = value;
-                RaisePropertyChanged("EmbeddedObject");
+                get => _standaloneObject;
+                set
+                {
+                    _standaloneObject = value;
+                    RaisePropertyChanged("StandaloneObject");
+                }
             }
-        }
 
-        public ObjectWithObjectPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.EmbeddedIntPropertyObject _embeddedObject;
+            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
             {
-                "StandaloneObject" => _standaloneObject,
-                "EmbeddedObject" => _embeddedObject,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "StandaloneObject":
-                    StandaloneObject = (Realms.Tests.IntPropertyObject)val;
-                    return;
-                case "EmbeddedObject":
-                    EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _embeddedObject;
+                set
+                {
+                    _embeddedObject = value;
+                    RaisePropertyChanged("EmbeddedObject");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public ObjectWithObjectPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "StandaloneObject" => _standaloneObject,
+                    "EmbeddedObject" => _embeddedObject,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "StandaloneObject":
+                        StandaloneObject = (Realms.Tests.IntPropertyObject)val;
+                        return;
+                    case "EmbeddedObject":
+                        EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

@@ -2,12 +2,10 @@
 #nullable enable annotations
 #nullable disable warnings
 
-using NUnit.Framework;
 using Realms;
-using Realms.Exceptions;
 using Realms.Schema;
-using Realms.Tests.Database;
 using Realms.Weaving;
+using SourceGeneratorPlayground;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,31 +14,28 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
 
-namespace Realms.Tests.Database
+namespace SourceGeneratorPlayground
 {
-    public partial class AddOrUpdateTests
+    public partial class OuterClass
     {
         [Generated]
-        [Woven(typeof(NullablePrimaryKeyObjectObjectHelper))]
-        public partial class NullablePrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
+        [Woven(typeof(NestedClassObjectHelper))]
+        private partial class NestedClass : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
-            public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullablePrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
+            public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NestedClass", ObjectSchema.ObjectType.RealmObject)
             {
-                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
-                Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+                Realms.Schema.Property.Object("Link", "NestedClass", managedName: "Link"),
             }.Build();
 
             #region IRealmObject implementation
 
-            private INullablePrimaryKeyObjectAccessor _accessor;
+            private INestedClassAccessor _accessor;
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal INullablePrimaryKeyObjectAccessor Accessor => _accessor ?? (_accessor = new NullablePrimaryKeyObjectUnmanagedAccessor(typeof(NullablePrimaryKeyObject)));
+            internal INestedClassAccessor Accessor => _accessor ?? (_accessor = new NestedClassUnmanagedAccessor(typeof(NestedClass)));
 
             [IgnoreDataMember, XmlIgnore]
             public bool IsManaged => Accessor.IsManaged;
@@ -65,17 +60,21 @@ namespace Realms.Tests.Database
 
             public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
             {
-                var newAccessor = (INullablePrimaryKeyObjectAccessor)managedAccessor;
-                var oldAccessor = (INullablePrimaryKeyObjectAccessor)_accessor;
+                var newAccessor = (INestedClassAccessor)managedAccessor;
+                var oldAccessor = (INestedClassAccessor)_accessor;
                 _accessor = newAccessor;
 
                 if (helper != null)
                 {
-                    newAccessor.Id = oldAccessor.Id;
-                    if(!skipDefaults || oldAccessor.StringValue != default(string))
+                    if(!skipDefaults || oldAccessor.Id != default(int))
                     {
-                        newAccessor.StringValue = oldAccessor.StringValue;
+                        newAccessor.Id = oldAccessor.Id;
                     }
+                    if(oldAccessor.Link != null)
+                    {
+                        newAccessor.Realm.Add(oldAccessor.Link, update);
+                    }
+                    newAccessor.Link = oldAccessor.Link;
                 }
 
                 if (_propertyChanged != null)
@@ -168,9 +167,9 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator NullablePrimaryKeyObject(Realms.RealmValue val) => val.AsRealmObject<NullablePrimaryKeyObject>();
+            public static explicit operator NestedClass(Realms.RealmValue val) => val.AsRealmObject<NestedClass>();
 
-            public static implicit operator Realms.RealmValue(NullablePrimaryKeyObject val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NestedClass val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -205,55 +204,55 @@ namespace Realms.Tests.Database
             public override string ToString() => Accessor.ToString();
 
             [EditorBrowsable(EditorBrowsableState.Never)]
-            private class NullablePrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+            private class NestedClassObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
                 {
                     throw new InvalidOperationException("This method should not be called for source generated classes.");
                 }
 
-                public Realms.ManagedAccessor CreateAccessor() => new NullablePrimaryKeyObjectManagedAccessor();
+                public Realms.ManagedAccessor CreateAccessor() => new NestedClassManagedAccessor();
 
-                public Realms.IRealmObjectBase CreateInstance() => new NullablePrimaryKeyObject();
+                public Realms.IRealmObjectBase CreateInstance() => new NestedClass();
 
                 public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
                 {
-                    value = ((INullablePrimaryKeyObjectAccessor)instance.Accessor).Id;
-                    return true;
+                    value = null;
+                    return false;
                 }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
-            internal interface INullablePrimaryKeyObjectAccessor : Realms.IRealmAccessor
+            internal interface INestedClassAccessor : Realms.IRealmAccessor
             {
-                long? Id { get; set; }
+                int Id { get; set; }
 
-                string StringValue { get; set; }
+                SourceGeneratorPlayground.OuterClass.NestedClass Link { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
-            internal class NullablePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, INullablePrimaryKeyObjectAccessor
+            internal class NestedClassManagedAccessor : Realms.ManagedAccessor, INestedClassAccessor
             {
-                public long? Id
+                public int Id
                 {
-                    get => (long?)GetValue("Id");
-                    set => SetValueUnique("Id", value);
+                    get => (int)GetValue("Id");
+                    set => SetValue("Id", value);
                 }
 
-                public string StringValue
+                public SourceGeneratorPlayground.OuterClass.NestedClass Link
                 {
-                    get => (string)GetValue("StringValue");
-                    set => SetValue("StringValue", value);
+                    get => (SourceGeneratorPlayground.OuterClass.NestedClass)GetValue("Link");
+                    set => SetValue("Link", value);
                 }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
-            internal class NullablePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, INullablePrimaryKeyObjectAccessor
+            internal class NestedClassUnmanagedAccessor : Realms.UnmanagedAccessor, INestedClassAccessor
             {
-                public override ObjectSchema ObjectSchema => NullablePrimaryKeyObject.RealmSchema;
+                public override ObjectSchema ObjectSchema => NestedClass.RealmSchema;
 
-                private long? _id;
-                public long? Id
+                private int _id;
+                public int Id
                 {
                     get => _id;
                     set
@@ -263,18 +262,18 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private string _stringValue;
-                public string StringValue
+                private SourceGeneratorPlayground.OuterClass.NestedClass _link;
+                public SourceGeneratorPlayground.OuterClass.NestedClass Link
                 {
-                    get => _stringValue;
+                    get => _link;
                     set
                     {
-                        _stringValue = value;
-                        RaisePropertyChanged("StringValue");
+                        _link = value;
+                        RaisePropertyChanged("Link");
                     }
                 }
 
-                public NullablePrimaryKeyObjectUnmanagedAccessor(Type objectType) : base(objectType)
+                public NestedClassUnmanagedAccessor(Type objectType) : base(objectType)
                 {
                 }
 
@@ -283,7 +282,7 @@ namespace Realms.Tests.Database
                     return propertyName switch
                     {
                         "Id" => _id,
-                        "StringValue" => _stringValue,
+                        "Link" => _link,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }
@@ -293,9 +292,10 @@ namespace Realms.Tests.Database
                     switch (propertyName)
                     {
                         case "Id":
-                            throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                        case "StringValue":
-                            StringValue = (string)val;
+                            Id = (int)val;
+                            return;
+                        case "Link":
+                            Link = (SourceGeneratorPlayground.OuterClass.NestedClass)val;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -304,12 +304,7 @@ namespace Realms.Tests.Database
 
                 public override void SetValueUnique(string propertyName, Realms.RealmValue val)
                 {
-                    if (propertyName != "Id")
-                    {
-                        throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-                    }
-
-                    Id = (long?)val;
+                    throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
                 }
 
                 public override IList<T> GetListValue<T>(string propertyName)

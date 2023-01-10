@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -222,78 +221,76 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IContainerObjectAccessor : Realms.IRealmAccessor
-    {
-        System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
-    {
-        private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _items;
-        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IContainerObjectAccessor : Realms.IRealmAccessor
         {
-            get
-            {
-                if (_items == null)
-                {
-                    _items = GetListValue<Realms.Tests.IntPropertyObject>("Items");
-                }
+            System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; }
+        }
 
-                return _items;
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
+        {
+            private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _items;
+            public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items
+            {
+                get
+                {
+                    if (_items == null)
+                    {
+                        _items = GetListValue<Realms.Tests.IntPropertyObject>("Items");
+                    }
+
+                    return _items;
+                }
             }
         }
-    }
 
-    internal class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => ContainerObject.RealmSchema;
-
-        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; } = new List<Realms.Tests.IntPropertyObject>();
-
-        public ContainerObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => ContainerObject.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
-        }
+            public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; } = new List<Realms.Tests.IntPropertyObject>();
 
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-        }
+            public ContainerObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "Items" => (IList<T>)Items,
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "Items" => (IList<T>)Items,
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

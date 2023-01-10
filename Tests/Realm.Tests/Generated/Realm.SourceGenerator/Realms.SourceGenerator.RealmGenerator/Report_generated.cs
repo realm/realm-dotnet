@@ -6,7 +6,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -234,154 +233,152 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IReportAccessor : Realms.IRealmAccessor
-    {
-        int Id { get; set; }
-
-        string Ref { get; set; }
-
-        string Date { get; set; }
-
-        Realms.Tests.Database.Product Parent { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ReportManagedAccessor : Realms.ManagedAccessor, IReportAccessor
-    {
-        public int Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IReportAccessor : Realms.IRealmAccessor
         {
-            get => (int)GetValue("Id");
-            set => SetValue("Id", value);
+            int Id { get; set; }
+
+            string Ref { get; set; }
+
+            string Date { get; set; }
+
+            Realms.Tests.Database.Product Parent { get; set; }
         }
 
-        public string Ref
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ReportManagedAccessor : Realms.ManagedAccessor, IReportAccessor
         {
-            get => (string)GetValue("Ref");
-            set => SetValue("Ref", value);
-        }
-
-        public string Date
-        {
-            get => (string)GetValue("Date");
-            set => SetValue("Date", value);
-        }
-
-        public Realms.Tests.Database.Product Parent
-        {
-            get => (Realms.Tests.Database.Product)GetValue("Parent");
-            set => SetValue("Parent", value);
-        }
-    }
-
-    internal class ReportUnmanagedAccessor : Realms.UnmanagedAccessor, IReportAccessor
-    {
-        public override ObjectSchema ObjectSchema => Report.RealmSchema;
-
-        private int _id;
-        public int Id
-        {
-            get => _id;
-            set
+            public int Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (int)GetValue("Id");
+                set => SetValue("Id", value);
+            }
+
+            public string Ref
+            {
+                get => (string)GetValue("Ref");
+                set => SetValue("Ref", value);
+            }
+
+            public string Date
+            {
+                get => (string)GetValue("Date");
+                set => SetValue("Date", value);
+            }
+
+            public Realms.Tests.Database.Product Parent
+            {
+                get => (Realms.Tests.Database.Product)GetValue("Parent");
+                set => SetValue("Parent", value);
             }
         }
 
-        private string _ref;
-        public string Ref
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ReportUnmanagedAccessor : Realms.UnmanagedAccessor, IReportAccessor
         {
-            get => _ref;
-            set
+            public override ObjectSchema ObjectSchema => Report.RealmSchema;
+
+            private int _id;
+            public int Id
             {
-                _ref = value;
-                RaisePropertyChanged("Ref");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
-        }
 
-        private string _date;
-        public string Date
-        {
-            get => _date;
-            set
+            private string _ref;
+            public string Ref
             {
-                _date = value;
-                RaisePropertyChanged("Date");
+                get => _ref;
+                set
+                {
+                    _ref = value;
+                    RaisePropertyChanged("Ref");
+                }
             }
-        }
 
-        private Realms.Tests.Database.Product _parent;
-        public Realms.Tests.Database.Product Parent
-        {
-            get => _parent;
-            set
+            private string _date;
+            public string Date
             {
-                _parent = value;
-                RaisePropertyChanged("Parent");
+                get => _date;
+                set
+                {
+                    _date = value;
+                    RaisePropertyChanged("Date");
+                }
             }
-        }
 
-        public ReportUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.Database.Product _parent;
+            public Realms.Tests.Database.Product Parent
             {
-                "Id" => _id,
-                "Ref" => _ref,
-                "Date" => _date,
-                "Parent" => _parent,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    Id = (int)val;
-                    return;
-                case "Ref":
-                    Ref = (string)val;
-                    return;
-                case "Date":
-                    Date = (string)val;
-                    return;
-                case "Parent":
-                    Parent = (Realms.Tests.Database.Product)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _parent;
+                set
+                {
+                    _parent = value;
+                    RaisePropertyChanged("Parent");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public ReportUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    "Ref" => _ref,
+                    "Date" => _date,
+                    "Parent" => _parent,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        Id = (int)val;
+                        return;
+                    case "Ref":
+                        Ref = (string)val;
+                        return;
+                    case "Date":
+                        Date = (string)val;
+                        return;
+                    case "Parent":
+                        Parent = (Realms.Tests.Database.Product)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

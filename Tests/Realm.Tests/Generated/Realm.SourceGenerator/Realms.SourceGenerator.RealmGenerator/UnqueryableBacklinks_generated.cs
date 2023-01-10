@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -221,85 +220,83 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IUnqueryableBacklinksAccessor : Realms.IRealmAccessor
-    {
-        Realms.Tests.ClassWithUnqueryableMembers Parent { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
-    {
-        public Realms.Tests.ClassWithUnqueryableMembers Parent
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IUnqueryableBacklinksAccessor : Realms.IRealmAccessor
         {
-            get => (Realms.Tests.ClassWithUnqueryableMembers)GetValue("Parent");
-            set => SetValue("Parent", value);
+            Realms.Tests.ClassWithUnqueryableMembers Parent { get; set; }
         }
-    }
 
-    internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
-    {
-        public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
-
-        private Realms.Tests.ClassWithUnqueryableMembers _parent;
-        public Realms.Tests.ClassWithUnqueryableMembers Parent
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
         {
-            get => _parent;
-            set
+            public Realms.Tests.ClassWithUnqueryableMembers Parent
             {
-                _parent = value;
-                RaisePropertyChanged("Parent");
+                get => (Realms.Tests.ClassWithUnqueryableMembers)GetValue("Parent");
+                set => SetValue("Parent", value);
             }
         }
 
-        public UnqueryableBacklinksUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.ClassWithUnqueryableMembers _parent;
+            public Realms.Tests.ClassWithUnqueryableMembers Parent
             {
-                "Parent" => _parent,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Parent":
-                    Parent = (Realms.Tests.ClassWithUnqueryableMembers)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _parent;
+                set
+                {
+                    _parent = value;
+                    RaisePropertyChanged("Parent");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public UnqueryableBacklinksUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Parent" => _parent,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Parent":
+                        Parent = (Realms.Tests.ClassWithUnqueryableMembers)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

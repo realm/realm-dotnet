@@ -7,7 +7,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -216,85 +215,83 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IRequiredPropertyClassAccessor : Realms.IRealmAccessor
-    {
-        string FooRequired { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
-    {
-        public string FooRequired
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IRequiredPropertyClassAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("FooRequired");
-            set => SetValue("FooRequired", value);
+            string FooRequired { get; set; }
         }
-    }
 
-    internal class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
-    {
-        public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
-
-        private string _fooRequired;
-        public string FooRequired
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
         {
-            get => _fooRequired;
-            set
+            public string FooRequired
             {
-                _fooRequired = value;
-                RaisePropertyChanged("FooRequired");
+                get => (string)GetValue("FooRequired");
+                set => SetValue("FooRequired", value);
             }
         }
 
-        public RequiredPropertyClassUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private string _fooRequired;
+            public string FooRequired
             {
-                "FooRequired" => _fooRequired,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "FooRequired":
-                    FooRequired = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _fooRequired;
+                set
+                {
+                    _fooRequired = value;
+                    RaisePropertyChanged("FooRequired");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public RequiredPropertyClassUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "FooRequired" => _fooRequired,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "FooRequired":
+                        FooRequired = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

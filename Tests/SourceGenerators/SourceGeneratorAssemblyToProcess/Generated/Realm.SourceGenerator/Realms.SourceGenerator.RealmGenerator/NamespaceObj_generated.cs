@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorAssemblyToProcess;
-using SourceGeneratorAssemblyToProcess.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -221,108 +220,106 @@ namespace SourceGeneratorAssemblyToProcess
                 return false;
             }
         }
-    }
-}
 
-namespace SourceGeneratorAssemblyToProcess.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface INamespaceObjAccessor : Realms.IRealmAccessor
-    {
-        int Id { get; set; }
-
-        OtherNamespace.OtherNamespaceObj OtherNamespaceObj { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class NamespaceObjManagedAccessor : Realms.ManagedAccessor, INamespaceObjAccessor
-    {
-        public int Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface INamespaceObjAccessor : Realms.IRealmAccessor
         {
-            get => (int)GetValue("Id");
-            set => SetValue("Id", value);
+            int Id { get; set; }
+
+            OtherNamespace.OtherNamespaceObj OtherNamespaceObj { get; set; }
         }
 
-        public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class NamespaceObjManagedAccessor : Realms.ManagedAccessor, INamespaceObjAccessor
         {
-            get => (OtherNamespace.OtherNamespaceObj)GetValue("OtherNamespaceObj");
-            set => SetValue("OtherNamespaceObj", value);
-        }
-    }
-
-    internal class NamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, INamespaceObjAccessor
-    {
-        public override ObjectSchema ObjectSchema => NamespaceObj.RealmSchema;
-
-        private int _id;
-        public int Id
-        {
-            get => _id;
-            set
+            public int Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (int)GetValue("Id");
+                set => SetValue("Id", value);
+            }
+
+            public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
+            {
+                get => (OtherNamespace.OtherNamespaceObj)GetValue("OtherNamespaceObj");
+                set => SetValue("OtherNamespaceObj", value);
             }
         }
 
-        private OtherNamespace.OtherNamespaceObj _otherNamespaceObj;
-        public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class NamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, INamespaceObjAccessor
         {
-            get => _otherNamespaceObj;
-            set
+            public override ObjectSchema ObjectSchema => NamespaceObj.RealmSchema;
+
+            private int _id;
+            public int Id
             {
-                _otherNamespaceObj = value;
-                RaisePropertyChanged("OtherNamespaceObj");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
-        }
 
-        public NamespaceObjUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private OtherNamespace.OtherNamespaceObj _otherNamespaceObj;
+            public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
             {
-                "Id" => _id,
-                "OtherNamespaceObj" => _otherNamespaceObj,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    Id = (int)val;
-                    return;
-                case "OtherNamespaceObj":
-                    OtherNamespaceObj = (OtherNamespace.OtherNamespaceObj)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _otherNamespaceObj;
+                set
+                {
+                    _otherNamespaceObj = value;
+                    RaisePropertyChanged("OtherNamespaceObj");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public NamespaceObjUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    "OtherNamespaceObj" => _otherNamespaceObj,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        Id = (int)val;
+                        return;
+                    case "OtherNamespaceObj":
+                        OtherNamespaceObj = (OtherNamespace.OtherNamespaceObj)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

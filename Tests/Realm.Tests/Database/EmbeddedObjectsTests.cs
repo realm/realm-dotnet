@@ -107,7 +107,7 @@ namespace Realms.Tests.Database
 #else
             var properties = typeof(EmbeddedAllTypesObject).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .Where(p => !p.HasCustomAttribute<BacklinkAttribute>())
-                .Intersect(typeof(Tests.Generated.IEmbeddedAllTypesObjectAccessor)
+                .Intersect(typeof(EmbeddedAllTypesObject.IEmbeddedAllTypesObjectAccessor)
                 .GetProperties());
 #endif
 

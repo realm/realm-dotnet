@@ -2,7 +2,6 @@
 #nullable enable annotations
 #nullable disable warnings
 
-using Global.Generated;
 using Realms;
 using Realms.Schema;
 using Realms.Weaving;
@@ -211,10 +210,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
             return false;
         }
     }
-}
 
-namespace Global.Generated
-{
     [EditorBrowsable(EditorBrowsableState.Never)]
     internal interface INoNamespaceClassAccessor : Realms.IRealmAccessor
     {
@@ -231,6 +227,7 @@ namespace Global.Generated
         }
     }
 
+    [EditorBrowsable(EditorBrowsableState.Never)]
     internal class NoNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, INoNamespaceClassAccessor
     {
         public override ObjectSchema ObjectSchema => NoNamespaceClass.RealmSchema;

@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -239,173 +238,171 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IClassWithUnqueryableMembersAccessor : Realms.IRealmAccessor
-    {
-        string RealPropertyToSatisfyWeaver { get; set; }
-
-        Realms.Tests.Database.Person RealmObjectProperty { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; }
-
-        string FirstName { get; set; }
-
-        System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
-    {
-        public string RealPropertyToSatisfyWeaver
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IClassWithUnqueryableMembersAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("RealPropertyToSatisfyWeaver");
-            set => SetValue("RealPropertyToSatisfyWeaver", value);
+            string RealPropertyToSatisfyWeaver { get; set; }
+
+            Realms.Tests.Database.Person RealmObjectProperty { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; }
+
+            string FirstName { get; set; }
+
+            System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty { get; }
         }
 
-        public Realms.Tests.Database.Person RealmObjectProperty
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
         {
-            get => (Realms.Tests.Database.Person)GetValue("RealmObjectProperty");
-            set => SetValue("RealmObjectProperty", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _realmListProperty;
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty
-        {
-            get
+            public string RealPropertyToSatisfyWeaver
             {
-                if (_realmListProperty == null)
+                get => (string)GetValue("RealPropertyToSatisfyWeaver");
+                set => SetValue("RealPropertyToSatisfyWeaver", value);
+            }
+
+            public Realms.Tests.Database.Person RealmObjectProperty
+            {
+                get => (Realms.Tests.Database.Person)GetValue("RealmObjectProperty");
+                set => SetValue("RealmObjectProperty", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.Person> _realmListProperty;
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty
+            {
+                get
                 {
-                    _realmListProperty = GetListValue<Realms.Tests.Database.Person>("RealmListProperty");
+                    if (_realmListProperty == null)
+                    {
+                        _realmListProperty = GetListValue<Realms.Tests.Database.Person>("RealmListProperty");
+                    }
+
+                    return _realmListProperty;
                 }
-
-                return _realmListProperty;
             }
-        }
 
-        public string FirstName
-        {
-            get => (string)GetValue("FirstName");
-            set => SetValue("FirstName", value);
-        }
-
-        private System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> _backlinkProperty;
-        public System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty
-        {
-            get
+            public string FirstName
             {
-                if (_backlinkProperty == null)
+                get => (string)GetValue("FirstName");
+                set => SetValue("FirstName", value);
+            }
+
+            private System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> _backlinkProperty;
+            public System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty
+            {
+                get
                 {
-                    _backlinkProperty = GetBacklinks<Realms.Tests.UnqueryableBacklinks>("BacklinkProperty");
+                    if (_backlinkProperty == null)
+                    {
+                        _backlinkProperty = GetBacklinks<Realms.Tests.UnqueryableBacklinks>("BacklinkProperty");
+                    }
+
+                    return _backlinkProperty;
                 }
-
-                return _backlinkProperty;
-            }
-        }
-    }
-
-    internal class ClassWithUnqueryableMembersUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
-    {
-        public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
-
-        private string _realPropertyToSatisfyWeaver;
-        public string RealPropertyToSatisfyWeaver
-        {
-            get => _realPropertyToSatisfyWeaver;
-            set
-            {
-                _realPropertyToSatisfyWeaver = value;
-                RaisePropertyChanged("RealPropertyToSatisfyWeaver");
             }
         }
 
-        private Realms.Tests.Database.Person _realmObjectProperty;
-        public Realms.Tests.Database.Person RealmObjectProperty
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ClassWithUnqueryableMembersUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
         {
-            get => _realmObjectProperty;
-            set
+            public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
+
+            private string _realPropertyToSatisfyWeaver;
+            public string RealPropertyToSatisfyWeaver
             {
-                _realmObjectProperty = value;
-                RaisePropertyChanged("RealmObjectProperty");
+                get => _realPropertyToSatisfyWeaver;
+                set
+                {
+                    _realPropertyToSatisfyWeaver = value;
+                    RaisePropertyChanged("RealPropertyToSatisfyWeaver");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; } = new List<Realms.Tests.Database.Person>();
-
-        private string _firstName;
-        public string FirstName
-        {
-            get => _firstName;
-            set
+            private Realms.Tests.Database.Person _realmObjectProperty;
+            public Realms.Tests.Database.Person RealmObjectProperty
             {
-                _firstName = value;
-                RaisePropertyChanged("FirstName");
+                get => _realmObjectProperty;
+                set
+                {
+                    _realmObjectProperty = value;
+                    RaisePropertyChanged("RealmObjectProperty");
+                }
             }
-        }
 
-        public System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; } = new List<Realms.Tests.Database.Person>();
 
-        public ClassWithUnqueryableMembersUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private string _firstName;
+            public string FirstName
             {
-                "RealPropertyToSatisfyWeaver" => _realPropertyToSatisfyWeaver,
-                "RealmObjectProperty" => _realmObjectProperty,
-                "FirstName" => _firstName,
-                "BacklinkProperty" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "RealPropertyToSatisfyWeaver":
-                    RealPropertyToSatisfyWeaver = (string)val;
-                    return;
-                case "RealmObjectProperty":
-                    RealmObjectProperty = (Realms.Tests.Database.Person)val;
-                    return;
-                case "FirstName":
-                    FirstName = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _firstName;
+                set
+                {
+                    _firstName = value;
+                    RaisePropertyChanged("FirstName");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "RealmListProperty" => (IList<T>)RealmListProperty,
+            public ClassWithUnqueryableMembersUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "RealPropertyToSatisfyWeaver" => _realPropertyToSatisfyWeaver,
+                    "RealmObjectProperty" => _realmObjectProperty,
+                    "FirstName" => _firstName,
+                    "BacklinkProperty" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "RealPropertyToSatisfyWeaver":
+                        RealPropertyToSatisfyWeaver = (string)val;
+                        return;
+                    case "RealmObjectProperty":
+                        RealmObjectProperty = (Realms.Tests.Database.Person)val;
+                        return;
+                    case "FirstName":
+                        FirstName = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "RealmListProperty" => (IList<T>)RealmListProperty,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

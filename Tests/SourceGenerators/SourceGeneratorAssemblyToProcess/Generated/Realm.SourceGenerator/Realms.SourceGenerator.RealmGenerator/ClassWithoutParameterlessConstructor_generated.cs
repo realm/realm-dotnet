@@ -6,7 +6,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorAssemblyToProcess;
-using SourceGeneratorAssemblyToProcess.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -216,85 +215,83 @@ namespace SourceGeneratorAssemblyToProcess
                 return false;
             }
         }
-    }
-}
 
-namespace SourceGeneratorAssemblyToProcess.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IClassWithoutParameterlessConstructorAccessor : Realms.IRealmAccessor
-    {
-        string Name { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ClassWithoutParameterlessConstructorManagedAccessor : Realms.ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
-    {
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IClassWithoutParameterlessConstructorAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            string Name { get; set; }
         }
-    }
 
-    internal class ClassWithoutParameterlessConstructorUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithoutParameterlessConstructorAccessor
-    {
-        public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
-
-        private string _name;
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ClassWithoutParameterlessConstructorManagedAccessor : Realms.ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
-            get => _name;
-            set
+            public string Name
             {
-                _name = value;
-                RaisePropertyChanged("Name");
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
             }
         }
 
-        public ClassWithoutParameterlessConstructorUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ClassWithoutParameterlessConstructorUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private string _name;
+            public string Name
             {
-                "Name" => _name,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Name":
-                    Name = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public ClassWithoutParameterlessConstructorUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Name" => _name,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorAssemblyToProcess;
-using SourceGeneratorAssemblyToProcess.Generated;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -246,288 +245,286 @@ namespace SourceGeneratorAssemblyToProcess
                 return false;
             }
         }
-    }
-}
 
-namespace SourceGeneratorAssemblyToProcess.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface INullableClassAccessor : Realms.IRealmAccessor
-    {
-        int NonNullableInt { get; set; }
-
-        int? NullableInt { get; set; }
-
-        string NonNullableString { get; set; }
-
-        string? NullableString { get; set; }
-
-        byte[] NonNullableData { get; set; }
-
-        byte[]? NullableData { get; set; }
-
-        System.Collections.Generic.IList<int?> CollectionOfNullableInt { get; }
-
-        System.Collections.Generic.IList<int> CollectionOfNonNullableInt { get; }
-
-        Realms.RealmInteger<int> NonNullableRealmInt { get; set; }
-
-        Realms.RealmInteger<int>? NullableRealmInt { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class NullableClassManagedAccessor : Realms.ManagedAccessor, INullableClassAccessor
-    {
-        public int NonNullableInt
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface INullableClassAccessor : Realms.IRealmAccessor
         {
-            get => (int)GetValue("NonNullableInt");
-            set => SetValue("NonNullableInt", value);
+            int NonNullableInt { get; set; }
+
+            int? NullableInt { get; set; }
+
+            string NonNullableString { get; set; }
+
+            string? NullableString { get; set; }
+
+            byte[] NonNullableData { get; set; }
+
+            byte[]? NullableData { get; set; }
+
+            System.Collections.Generic.IList<int?> CollectionOfNullableInt { get; }
+
+            System.Collections.Generic.IList<int> CollectionOfNonNullableInt { get; }
+
+            Realms.RealmInteger<int> NonNullableRealmInt { get; set; }
+
+            Realms.RealmInteger<int>? NullableRealmInt { get; set; }
         }
 
-        public int? NullableInt
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class NullableClassManagedAccessor : Realms.ManagedAccessor, INullableClassAccessor
         {
-            get => (int?)GetValue("NullableInt");
-            set => SetValue("NullableInt", value);
-        }
-
-        public string NonNullableString
-        {
-            get => (string)GetValue("NonNullableString");
-            set => SetValue("NonNullableString", value);
-        }
-
-        public string? NullableString
-        {
-            get => (string?)GetValue("NullableString");
-            set => SetValue("NullableString", value);
-        }
-
-        public byte[] NonNullableData
-        {
-            get => (byte[])GetValue("NonNullableData");
-            set => SetValue("NonNullableData", value);
-        }
-
-        public byte[]? NullableData
-        {
-            get => (byte[]?)GetValue("NullableData");
-            set => SetValue("NullableData", value);
-        }
-
-        private System.Collections.Generic.IList<int?> _collectionOfNullableInt;
-        public System.Collections.Generic.IList<int?> CollectionOfNullableInt
-        {
-            get
+            public int NonNullableInt
             {
-                if (_collectionOfNullableInt == null)
+                get => (int)GetValue("NonNullableInt");
+                set => SetValue("NonNullableInt", value);
+            }
+
+            public int? NullableInt
+            {
+                get => (int?)GetValue("NullableInt");
+                set => SetValue("NullableInt", value);
+            }
+
+            public string NonNullableString
+            {
+                get => (string)GetValue("NonNullableString");
+                set => SetValue("NonNullableString", value);
+            }
+
+            public string? NullableString
+            {
+                get => (string?)GetValue("NullableString");
+                set => SetValue("NullableString", value);
+            }
+
+            public byte[] NonNullableData
+            {
+                get => (byte[])GetValue("NonNullableData");
+                set => SetValue("NonNullableData", value);
+            }
+
+            public byte[]? NullableData
+            {
+                get => (byte[]?)GetValue("NullableData");
+                set => SetValue("NullableData", value);
+            }
+
+            private System.Collections.Generic.IList<int?> _collectionOfNullableInt;
+            public System.Collections.Generic.IList<int?> CollectionOfNullableInt
+            {
+                get
                 {
-                    _collectionOfNullableInt = GetListValue<int?>("CollectionOfNullableInt");
+                    if (_collectionOfNullableInt == null)
+                    {
+                        _collectionOfNullableInt = GetListValue<int?>("CollectionOfNullableInt");
+                    }
+
+                    return _collectionOfNullableInt;
                 }
-
-                return _collectionOfNullableInt;
             }
-        }
 
-        private System.Collections.Generic.IList<int> _collectionOfNonNullableInt;
-        public System.Collections.Generic.IList<int> CollectionOfNonNullableInt
-        {
-            get
+            private System.Collections.Generic.IList<int> _collectionOfNonNullableInt;
+            public System.Collections.Generic.IList<int> CollectionOfNonNullableInt
             {
-                if (_collectionOfNonNullableInt == null)
+                get
                 {
-                    _collectionOfNonNullableInt = GetListValue<int>("CollectionOfNonNullableInt");
+                    if (_collectionOfNonNullableInt == null)
+                    {
+                        _collectionOfNonNullableInt = GetListValue<int>("CollectionOfNonNullableInt");
+                    }
+
+                    return _collectionOfNonNullableInt;
                 }
+            }
 
-                return _collectionOfNonNullableInt;
+            public Realms.RealmInteger<int> NonNullableRealmInt
+            {
+                get => (Realms.RealmInteger<int>)GetValue("NonNullableRealmInt");
+                set => SetValue("NonNullableRealmInt", value);
+            }
+
+            public Realms.RealmInteger<int>? NullableRealmInt
+            {
+                get => (Realms.RealmInteger<int>?)GetValue("NullableRealmInt");
+                set => SetValue("NullableRealmInt", value);
             }
         }
 
-        public Realms.RealmInteger<int> NonNullableRealmInt
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class NullableClassUnmanagedAccessor : Realms.UnmanagedAccessor, INullableClassAccessor
         {
-            get => (Realms.RealmInteger<int>)GetValue("NonNullableRealmInt");
-            set => SetValue("NonNullableRealmInt", value);
-        }
+            public override ObjectSchema ObjectSchema => NullableClass.RealmSchema;
 
-        public Realms.RealmInteger<int>? NullableRealmInt
-        {
-            get => (Realms.RealmInteger<int>?)GetValue("NullableRealmInt");
-            set => SetValue("NullableRealmInt", value);
-        }
-    }
-
-    internal class NullableClassUnmanagedAccessor : Realms.UnmanagedAccessor, INullableClassAccessor
-    {
-        public override ObjectSchema ObjectSchema => NullableClass.RealmSchema;
-
-        private int _nonNullableInt;
-        public int NonNullableInt
-        {
-            get => _nonNullableInt;
-            set
+            private int _nonNullableInt;
+            public int NonNullableInt
             {
-                _nonNullableInt = value;
-                RaisePropertyChanged("NonNullableInt");
+                get => _nonNullableInt;
+                set
+                {
+                    _nonNullableInt = value;
+                    RaisePropertyChanged("NonNullableInt");
+                }
             }
-        }
 
-        private int? _nullableInt;
-        public int? NullableInt
-        {
-            get => _nullableInt;
-            set
+            private int? _nullableInt;
+            public int? NullableInt
             {
-                _nullableInt = value;
-                RaisePropertyChanged("NullableInt");
+                get => _nullableInt;
+                set
+                {
+                    _nullableInt = value;
+                    RaisePropertyChanged("NullableInt");
+                }
             }
-        }
 
-        private string _nonNullableString = null!;
-        public string NonNullableString
-        {
-            get => _nonNullableString;
-            set
+            private string _nonNullableString = null!;
+            public string NonNullableString
             {
-                _nonNullableString = value;
-                RaisePropertyChanged("NonNullableString");
+                get => _nonNullableString;
+                set
+                {
+                    _nonNullableString = value;
+                    RaisePropertyChanged("NonNullableString");
+                }
             }
-        }
 
-        private string? _nullableString;
-        public string? NullableString
-        {
-            get => _nullableString;
-            set
+            private string? _nullableString;
+            public string? NullableString
             {
-                _nullableString = value;
-                RaisePropertyChanged("NullableString");
+                get => _nullableString;
+                set
+                {
+                    _nullableString = value;
+                    RaisePropertyChanged("NullableString");
+                }
             }
-        }
 
-        private byte[] _nonNullableData = null!;
-        public byte[] NonNullableData
-        {
-            get => _nonNullableData;
-            set
+            private byte[] _nonNullableData = null!;
+            public byte[] NonNullableData
             {
-                _nonNullableData = value;
-                RaisePropertyChanged("NonNullableData");
+                get => _nonNullableData;
+                set
+                {
+                    _nonNullableData = value;
+                    RaisePropertyChanged("NonNullableData");
+                }
             }
-        }
 
-        private byte[]? _nullableData;
-        public byte[]? NullableData
-        {
-            get => _nullableData;
-            set
+            private byte[]? _nullableData;
+            public byte[]? NullableData
             {
-                _nullableData = value;
-                RaisePropertyChanged("NullableData");
+                get => _nullableData;
+                set
+                {
+                    _nullableData = value;
+                    RaisePropertyChanged("NullableData");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<int?> CollectionOfNullableInt { get; } = new List<int?>();
+            public System.Collections.Generic.IList<int?> CollectionOfNullableInt { get; } = new List<int?>();
 
-        public System.Collections.Generic.IList<int> CollectionOfNonNullableInt { get; } = new List<int>();
+            public System.Collections.Generic.IList<int> CollectionOfNonNullableInt { get; } = new List<int>();
 
-        private Realms.RealmInteger<int> _nonNullableRealmInt;
-        public Realms.RealmInteger<int> NonNullableRealmInt
-        {
-            get => _nonNullableRealmInt;
-            set
+            private Realms.RealmInteger<int> _nonNullableRealmInt;
+            public Realms.RealmInteger<int> NonNullableRealmInt
             {
-                _nonNullableRealmInt = value;
-                RaisePropertyChanged("NonNullableRealmInt");
+                get => _nonNullableRealmInt;
+                set
+                {
+                    _nonNullableRealmInt = value;
+                    RaisePropertyChanged("NonNullableRealmInt");
+                }
             }
-        }
 
-        private Realms.RealmInteger<int>? _nullableRealmInt;
-        public Realms.RealmInteger<int>? NullableRealmInt
-        {
-            get => _nullableRealmInt;
-            set
+            private Realms.RealmInteger<int>? _nullableRealmInt;
+            public Realms.RealmInteger<int>? NullableRealmInt
             {
-                _nullableRealmInt = value;
-                RaisePropertyChanged("NullableRealmInt");
+                get => _nullableRealmInt;
+                set
+                {
+                    _nullableRealmInt = value;
+                    RaisePropertyChanged("NullableRealmInt");
+                }
             }
-        }
 
-        public NullableClassUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            public NullableClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
-                "NonNullableInt" => _nonNullableInt,
-                "NullableInt" => _nullableInt,
-                "NonNullableString" => _nonNullableString,
-                "NullableString" => _nullableString,
-                "NonNullableData" => _nonNullableData,
-                "NullableData" => _nullableData,
-                "NonNullableRealmInt" => _nonNullableRealmInt,
-                "NullableRealmInt" => _nullableRealmInt,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "NonNullableInt":
-                    NonNullableInt = (int)val;
-                    return;
-                case "NullableInt":
-                    NullableInt = (int?)val;
-                    return;
-                case "NonNullableString":
-                    NonNullableString = (string)val;
-                    return;
-                case "NullableString":
-                    NullableString = (string?)val;
-                    return;
-                case "NonNullableData":
-                    NonNullableData = (byte[])val;
-                    return;
-                case "NullableData":
-                    NullableData = (byte[]?)val;
-                    return;
-                case "NonNullableRealmInt":
-                    NonNullableRealmInt = (Realms.RealmInteger<int>)val;
-                    return;
-                case "NullableRealmInt":
-                    NullableRealmInt = (Realms.RealmInteger<int>?)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "NonNullableInt" => _nonNullableInt,
+                    "NullableInt" => _nullableInt,
+                    "NonNullableString" => _nonNullableString,
+                    "NullableString" => _nullableString,
+                    "NonNullableData" => _nonNullableData,
+                    "NullableData" => _nullableData,
+                    "NonNullableRealmInt" => _nonNullableRealmInt,
+                    "NullableRealmInt" => _nullableRealmInt,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "CollectionOfNullableInt" => (IList<T>)CollectionOfNullableInt,
-            "CollectionOfNonNullableInt" => (IList<T>)CollectionOfNonNullableInt,
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "NonNullableInt":
+                        NonNullableInt = (int)val;
+                        return;
+                    case "NullableInt":
+                        NullableInt = (int?)val;
+                        return;
+                    case "NonNullableString":
+                        NonNullableString = (string)val;
+                        return;
+                    case "NullableString":
+                        NullableString = (string?)val;
+                        return;
+                    case "NonNullableData":
+                        NonNullableData = (byte[])val;
+                        return;
+                    case "NullableData":
+                        NullableData = (byte[]?)val;
+                        return;
+                    case "NonNullableRealmInt":
+                        NonNullableRealmInt = (Realms.RealmInteger<int>)val;
+                        return;
+                    case "NullableRealmInt":
+                        NullableRealmInt = (Realms.RealmInteger<int>?)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "CollectionOfNullableInt" => (IList<T>)CollectionOfNullableInt,
+                "CollectionOfNonNullableInt" => (IList<T>)CollectionOfNonNullableInt,
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

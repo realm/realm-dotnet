@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorAssemblyToProcess;
-using SourceGeneratorAssemblyToProcess.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -215,85 +214,83 @@ namespace SourceGeneratorAssemblyToProcess
                 return false;
             }
         }
-    }
-}
 
-namespace SourceGeneratorAssemblyToProcess.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IInitializerNamespaceClassAccessor : Realms.IRealmAccessor
-    {
-        string Id { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
-    {
-        public string Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IInitializerNamespaceClassAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Id");
-            set => SetValue("Id", value);
+            string Id { get; set; }
         }
-    }
 
-    internal class InitializerNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializerNamespaceClassAccessor
-    {
-        public override ObjectSchema ObjectSchema => InitializerNamespaceClass.RealmSchema;
-
-        private string _id = ObjectId.GenerateNewId().ToString();
-        public string Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
         {
-            get => _id;
-            set
+            public string Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (string)GetValue("Id");
+                set => SetValue("Id", value);
             }
         }
 
-        public InitializerNamespaceClassUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class InitializerNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializerNamespaceClassAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => InitializerNamespaceClass.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private string _id = ObjectId.GenerateNewId().ToString();
+            public string Id
             {
-                "Id" => _id,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    Id = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public InitializerNamespaceClassUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        Id = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

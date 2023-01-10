@@ -7,7 +7,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -217,89 +216,87 @@ namespace Realms.Tests
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPrimaryKeyNullableInt32ObjectAccessor : Realms.IRealmAccessor
-    {
-        int? Id { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PrimaryKeyNullableInt32ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
-    {
-        public int? Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IPrimaryKeyNullableInt32ObjectAccessor : Realms.IRealmAccessor
         {
-            get => (int?)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            int? Id { get; set; }
         }
-    }
 
-    internal class PrimaryKeyNullableInt32ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => PrimaryKeyNullableInt32Object.RealmSchema;
-
-        private int? _id;
-        public int? Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PrimaryKeyNullableInt32ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
         {
-            get => _id;
-            set
+            public int? Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (int?)GetValue("_id");
+                set => SetValueUnique("_id", value);
             }
         }
 
-        public PrimaryKeyNullableInt32ObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PrimaryKeyNullableInt32ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => PrimaryKeyNullableInt32Object.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private int? _id;
+            public int? Id
             {
-                "_id" => _id,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
 
-            Id = (int?)val;
-        }
+            public PrimaryKeyNullableInt32ObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (int?)val;
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

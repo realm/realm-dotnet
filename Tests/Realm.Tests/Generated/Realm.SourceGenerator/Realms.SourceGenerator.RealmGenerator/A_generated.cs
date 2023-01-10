@@ -8,7 +8,6 @@ using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -226,108 +225,106 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IAAccessor : Realms.IRealmAccessor
-    {
-        bool Value { get; set; }
-
-        Realms.Tests.Database.B B { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class AManagedAccessor : Realms.ManagedAccessor, IAAccessor
-    {
-        public bool Value
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IAAccessor : Realms.IRealmAccessor
         {
-            get => (bool)GetValue("Value");
-            set => SetValue("Value", value);
+            bool Value { get; set; }
+
+            Realms.Tests.Database.B B { get; set; }
         }
 
-        public Realms.Tests.Database.B B
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class AManagedAccessor : Realms.ManagedAccessor, IAAccessor
         {
-            get => (Realms.Tests.Database.B)GetValue("B");
-            set => SetValue("B", value);
-        }
-    }
-
-    internal class AUnmanagedAccessor : Realms.UnmanagedAccessor, IAAccessor
-    {
-        public override ObjectSchema ObjectSchema => A.RealmSchema;
-
-        private bool _value;
-        public bool Value
-        {
-            get => _value;
-            set
+            public bool Value
             {
-                _value = value;
-                RaisePropertyChanged("Value");
+                get => (bool)GetValue("Value");
+                set => SetValue("Value", value);
+            }
+
+            public Realms.Tests.Database.B B
+            {
+                get => (Realms.Tests.Database.B)GetValue("B");
+                set => SetValue("B", value);
             }
         }
 
-        private Realms.Tests.Database.B _b;
-        public Realms.Tests.Database.B B
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class AUnmanagedAccessor : Realms.UnmanagedAccessor, IAAccessor
         {
-            get => _b;
-            set
+            public override ObjectSchema ObjectSchema => A.RealmSchema;
+
+            private bool _value;
+            public bool Value
             {
-                _b = value;
-                RaisePropertyChanged("B");
+                get => _value;
+                set
+                {
+                    _value = value;
+                    RaisePropertyChanged("Value");
+                }
             }
-        }
 
-        public AUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.Database.B _b;
+            public Realms.Tests.Database.B B
             {
-                "Value" => _value,
-                "B" => _b,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Value":
-                    Value = (bool)val;
-                    return;
-                case "B":
-                    B = (Realms.Tests.Database.B)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _b;
+                set
+                {
+                    _b = value;
+                    RaisePropertyChanged("B");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public AUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Value" => _value,
+                    "B" => _b,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Value":
+                        Value = (bool)val;
+                        return;
+                    case "B":
+                        B = (Realms.Tests.Database.B)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

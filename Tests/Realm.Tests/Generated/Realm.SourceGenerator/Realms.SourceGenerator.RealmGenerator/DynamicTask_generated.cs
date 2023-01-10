@@ -6,7 +6,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -238,199 +237,197 @@ namespace Realms.Tests.Database
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDynamicTaskAccessor : Realms.IRealmAccessor
-    {
-        string Id { get; set; }
-
-        string Summary { get; set; }
-
-        Realms.Tests.Database.CompletionReport CompletionReport { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks { get; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; }
-
-        System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DynamicTaskManagedAccessor : Realms.ManagedAccessor, IDynamicTaskAccessor
-    {
-        public string Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IDynamicTaskAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Id");
-            set => SetValueUnique("Id", value);
+            string Id { get; set; }
+
+            string Summary { get; set; }
+
+            Realms.Tests.Database.CompletionReport CompletionReport { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks { get; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; }
         }
 
-        public string Summary
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicTaskManagedAccessor : Realms.ManagedAccessor, IDynamicTaskAccessor
         {
-            get => (string)GetValue("Summary");
-            set => SetValue("Summary", value);
-        }
-
-        public Realms.Tests.Database.CompletionReport CompletionReport
-        {
-            get => (Realms.Tests.Database.CompletionReport)GetValue("CompletionReport");
-            set => SetValue("CompletionReport", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> _subTasks;
-        public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks
-        {
-            get
+            public string Id
             {
-                if (_subTasks == null)
+                get => (string)GetValue("Id");
+                set => SetValueUnique("Id", value);
+            }
+
+            public string Summary
+            {
+                get => (string)GetValue("Summary");
+                set => SetValue("Summary", value);
+            }
+
+            public Realms.Tests.Database.CompletionReport CompletionReport
+            {
+                get => (Realms.Tests.Database.CompletionReport)GetValue("CompletionReport");
+                set => SetValue("CompletionReport", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> _subTasks;
+            public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks
+            {
+                get
                 {
-                    _subTasks = GetListValue<Realms.Tests.Database.DynamicSubTask>("SubTasks");
+                    if (_subTasks == null)
+                    {
+                        _subTasks = GetListValue<Realms.Tests.Database.DynamicSubTask>("SubTasks");
+                    }
+
+                    return _subTasks;
+                }
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> _subSubTasks;
+            public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks
+            {
+                get
+                {
+                    if (_subSubTasks == null)
+                    {
+                        _subSubTasks = GetListValue<Realms.Tests.Database.DynamicSubSubTask>("SubSubTasks");
+                    }
+
+                    return _subSubTasks;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> _subTasksDictionary;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary
+            {
+                get
+                {
+                    if (_subTasksDictionary == null)
+                    {
+                        _subTasksDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicSubTask>("SubTasksDictionary");
+                    }
+
+                    return _subTasksDictionary;
+                }
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicTaskAccessor
+        {
+            public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;
+
+            private string _id;
+            public string Id
+            {
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
+            }
+
+            private string _summary;
+            public string Summary
+            {
+                get => _summary;
+                set
+                {
+                    _summary = value;
+                    RaisePropertyChanged("Summary");
+                }
+            }
+
+            private Realms.Tests.Database.CompletionReport _completionReport;
+            public Realms.Tests.Database.CompletionReport CompletionReport
+            {
+                get => _completionReport;
+                set
+                {
+                    _completionReport = value;
+                    RaisePropertyChanged("CompletionReport");
+                }
+            }
+
+            public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks { get; } = new List<Realms.Tests.Database.DynamicSubTask>();
+
+            public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; } = new List<Realms.Tests.Database.DynamicSubSubTask>();
+
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicSubTask>();
+
+            public DynamicTaskUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    "Summary" => _summary,
+                    "CompletionReport" => _completionReport,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Summary":
+                        Summary = (string)val;
+                        return;
+                    case "CompletionReport":
+                        CompletionReport = (Realms.Tests.Database.CompletionReport)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "Id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                return _subTasks;
+                Id = (string)val;
             }
-        }
 
-        private System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> _subSubTasks;
-        public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks
-        {
-            get
+            public override IList<T> GetListValue<T>(string propertyName)
             {
-                if (_subSubTasks == null)
+                return propertyName switch
+                            {
+                "SubTasks" => (IList<T>)SubTasks,
+                "SubSubTasks" => (IList<T>)SubSubTasks,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                return propertyName switch
                 {
-                    _subSubTasks = GetListValue<Realms.Tests.Database.DynamicSubSubTask>("SubSubTasks");
-                }
-
-                return _subSubTasks;
+                    "SubTasksDictionary" => (IDictionary<string, TValue>)SubTasksDictionary,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
             }
-        }
-
-        private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> _subTasksDictionary;
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary
-        {
-            get
-            {
-                if (_subTasksDictionary == null)
-                {
-                    _subTasksDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicSubTask>("SubTasksDictionary");
-                }
-
-                return _subTasksDictionary;
-            }
-        }
-    }
-
-    internal class DynamicTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicTaskAccessor
-    {
-        public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;
-
-        private string _id;
-        public string Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-
-        private string _summary;
-        public string Summary
-        {
-            get => _summary;
-            set
-            {
-                _summary = value;
-                RaisePropertyChanged("Summary");
-            }
-        }
-
-        private Realms.Tests.Database.CompletionReport _completionReport;
-        public Realms.Tests.Database.CompletionReport CompletionReport
-        {
-            get => _completionReport;
-            set
-            {
-                _completionReport = value;
-                RaisePropertyChanged("CompletionReport");
-            }
-        }
-
-        public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks { get; } = new List<Realms.Tests.Database.DynamicSubTask>();
-
-        public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; } = new List<Realms.Tests.Database.DynamicSubSubTask>();
-
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicSubTask>();
-
-        public DynamicTaskUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "Id" => _id,
-                "Summary" => _summary,
-                "CompletionReport" => _completionReport,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Summary":
-                    Summary = (string)val;
-                    return;
-                case "CompletionReport":
-                    CompletionReport = (Realms.Tests.Database.CompletionReport)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-            }
-
-            Id = (string)val;
-        }
-
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "SubTasks" => (IList<T>)SubTasks,
-            "SubSubTasks" => (IList<T>)SubSubTasks,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
-
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            return propertyName switch
-            {
-                "SubTasksDictionary" => (IDictionary<string, TValue>)SubTasksDictionary,
-                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
-            };
         }
     }
 }

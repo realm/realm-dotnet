@@ -8,7 +8,6 @@ using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -235,135 +234,133 @@ namespace Realms.Tests.Database
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOnManagedTestClassAccessor : Realms.IRealmAccessor
-    {
-        int Id { get; set; }
-
-        Realms.Tests.Database.OnManagedTestClass RelatedObject { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
-    {
-        public int Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IOnManagedTestClassAccessor : Realms.IRealmAccessor
         {
-            get => (int)GetValue("Id");
-            set => SetValueUnique("Id", value);
+            int Id { get; set; }
+
+            Realms.Tests.Database.OnManagedTestClass RelatedObject { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; }
         }
 
-        public Realms.Tests.Database.OnManagedTestClass RelatedObject
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
         {
-            get => (Realms.Tests.Database.OnManagedTestClass)GetValue("RelatedObject");
-            set => SetValue("RelatedObject", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> _relatedCollection;
-        public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection
-        {
-            get
+            public int Id
             {
-                if (_relatedCollection == null)
+                get => (int)GetValue("Id");
+                set => SetValueUnique("Id", value);
+            }
+
+            public Realms.Tests.Database.OnManagedTestClass RelatedObject
+            {
+                get => (Realms.Tests.Database.OnManagedTestClass)GetValue("RelatedObject");
+                set => SetValue("RelatedObject", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> _relatedCollection;
+            public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection
+            {
+                get
                 {
-                    _relatedCollection = GetListValue<Realms.Tests.Database.OnManagedTestClass>("RelatedCollection");
+                    if (_relatedCollection == null)
+                    {
+                        _relatedCollection = GetListValue<Realms.Tests.Database.OnManagedTestClass>("RelatedCollection");
+                    }
+
+                    return _relatedCollection;
+                }
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
+        {
+            public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;
+
+            private int _id;
+            public int Id
+            {
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
+            }
+
+            private Realms.Tests.Database.OnManagedTestClass _relatedObject;
+            public Realms.Tests.Database.OnManagedTestClass RelatedObject
+            {
+                get => _relatedObject;
+                set
+                {
+                    _relatedObject = value;
+                    RaisePropertyChanged("RelatedObject");
+                }
+            }
+
+            public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; } = new List<Realms.Tests.Database.OnManagedTestClass>();
+
+            public OnManagedTestClassUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    "RelatedObject" => _relatedObject,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "RelatedObject":
+                        RelatedObject = (Realms.Tests.Database.OnManagedTestClass)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "Id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                return _relatedCollection;
-            }
-        }
-    }
-
-    internal class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
-    {
-        public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;
-
-        private int _id;
-        public int Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-
-        private Realms.Tests.Database.OnManagedTestClass _relatedObject;
-        public Realms.Tests.Database.OnManagedTestClass RelatedObject
-        {
-            get => _relatedObject;
-            set
-            {
-                _relatedObject = value;
-                RaisePropertyChanged("RelatedObject");
-            }
-        }
-
-        public System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; } = new List<Realms.Tests.Database.OnManagedTestClass>();
-
-        public OnManagedTestClassUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "Id" => _id,
-                "RelatedObject" => _relatedObject,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "RelatedObject":
-                    RelatedObject = (Realms.Tests.Database.OnManagedTestClass)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                Id = (int)val;
             }
 
-            Id = (int)val;
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "RelatedCollection" => (IList<T>)RelatedCollection,
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "RelatedCollection" => (IList<T>)RelatedCollection,
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }
