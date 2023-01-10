@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 
 ### Fixed
 * None
@@ -28,7 +28,6 @@
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
-* Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 * Added `IList` implementation to all Realm collections to allow for UWP ListView databinding. (Issue [#1759](https://github.com/realm/realm-dotnet/issues/1759))
 
 ### Fixed
