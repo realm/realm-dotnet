@@ -3,7 +3,6 @@ using Baas;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions.Sync;
-using Realms.Logging;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
@@ -13,6 +12,7 @@ using Realms.Sync.Testing;
 using Realms.Tests.Sync;
 using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
+using static Realms.Tests.TestHelpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,8 +25,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
