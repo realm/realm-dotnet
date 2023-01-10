@@ -159,7 +159,6 @@ extern "C" {
             App::Config config;
             config.app_id = Utf16StringAccessor(app_config.app_id, app_config.app_id_len);
 
-            // TODO: fix
             config.device_info.framework_name = s_framework;
             config.device_info.framework_version = s_framework_version;
             config.device_info.sdk_version = s_sdk_version;

@@ -200,6 +200,7 @@ namespace Realms.Sync
 
             var cpuArch = RuntimeInformation.ProcessArchitecture.ToString();
 
+            // TODO: try and infer device information as part of RNET-849
             var deviceName = "unknown";
             var deviceVersion = "unknown";
 
