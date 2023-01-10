@@ -3,7 +3,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Weaving;
 using SourceGeneratorPlayground;
-using SourceGeneratorPlayground.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -214,131 +213,129 @@ namespace SourceGeneratorPlayground
                 return true;
             }
         }
-    }
-}
 
-namespace SourceGeneratorPlayground.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IPersonAccessor : Realms.IRealmAccessor
-    {
-        System.Guid Id { get; set; }
-
-        string Name { get; set; }
-
-        System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
-    {
-        public System.Guid Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IPersonAccessor : Realms.IRealmAccessor
         {
-            get => (System.Guid)GetValue("Id");
-            set => SetValueUnique("Id", value);
+            System.Guid Id { get; set; }
+
+            string Name { get; set; }
+
+            System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs { get; }
         }
 
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
-        }
-
-        private System.Linq.IQueryable<SourceGeneratorPlayground.Dog> _dogs;
-        public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs
-        {
-            get
+            public System.Guid Id
             {
-                if (_dogs == null)
+                get => (System.Guid)GetValue("Id");
+                set => SetValueUnique("Id", value);
+            }
+
+            public string Name
+            {
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
+            }
+
+            private System.Linq.IQueryable<SourceGeneratorPlayground.Dog> _dogs;
+            public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs
+            {
+                get
                 {
-                    _dogs = GetBacklinks<SourceGeneratorPlayground.Dog>("Dogs");
+                    if (_dogs == null)
+                    {
+                        _dogs = GetBacklinks<SourceGeneratorPlayground.Dog>("Dogs");
+                    }
+
+                    return _dogs;
+                }
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
+        {
+            public override ObjectSchema ObjectSchema => Person.RealmSchema;
+
+            private System.Guid _id = Guid.NewGuid();
+            public System.Guid Id
+            {
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
+            }
+
+            private string _name;
+            public string Name
+            {
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
+            }
+
+            public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+
+            public PersonUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Id" => _id,
+                    "Name" => _name,
+                    "Dogs" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "Id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                return _dogs;
-            }
-        }
-    }
-
-    internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
-    {
-        public override ObjectSchema ObjectSchema => Person.RealmSchema;
-
-        private System.Guid _id = Guid.NewGuid();
-        public System.Guid Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
-            }
-        }
-
-        public System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-        public PersonUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "Id" => _id,
-                "Name" => _name,
-                "Dogs" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Name":
-                    Name = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "Id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                Id = (System.Guid)val;
             }
 
-            Id = (System.Guid)val;
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

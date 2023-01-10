@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -212,85 +211,83 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IIndexedDateTimeOffsetObjectAccessor : Realms.IRealmAccessor
-    {
-        System.DateTimeOffset DateTimeOffset { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class IndexedDateTimeOffsetObjectManagedAccessor : Realms.ManagedAccessor, IIndexedDateTimeOffsetObjectAccessor
-    {
-        public System.DateTimeOffset DateTimeOffset
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IIndexedDateTimeOffsetObjectAccessor : Realms.IRealmAccessor
         {
-            get => (System.DateTimeOffset)GetValue("DateTimeOffset");
-            set => SetValue("DateTimeOffset", value);
+            System.DateTimeOffset DateTimeOffset { get; set; }
         }
-    }
 
-    internal class IndexedDateTimeOffsetObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedDateTimeOffsetObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => IndexedDateTimeOffsetObject.RealmSchema;
-
-        private System.DateTimeOffset _dateTimeOffset;
-        public System.DateTimeOffset DateTimeOffset
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class IndexedDateTimeOffsetObjectManagedAccessor : Realms.ManagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
-            get => _dateTimeOffset;
-            set
+            public System.DateTimeOffset DateTimeOffset
             {
-                _dateTimeOffset = value;
-                RaisePropertyChanged("DateTimeOffset");
+                get => (System.DateTimeOffset)GetValue("DateTimeOffset");
+                set => SetValue("DateTimeOffset", value);
             }
         }
 
-        public IndexedDateTimeOffsetObjectUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class IndexedDateTimeOffsetObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => IndexedDateTimeOffsetObject.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private System.DateTimeOffset _dateTimeOffset;
+            public System.DateTimeOffset DateTimeOffset
             {
-                "DateTimeOffset" => _dateTimeOffset,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "DateTimeOffset":
-                    DateTimeOffset = (System.DateTimeOffset)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _dateTimeOffset;
+                set
+                {
+                    _dateTimeOffset = value;
+                    RaisePropertyChanged("DateTimeOffset");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public IndexedDateTimeOffsetObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "DateTimeOffset" => _dateTimeOffset,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "DateTimeOffset":
+                        DateTimeOffset = (System.DateTimeOffset)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

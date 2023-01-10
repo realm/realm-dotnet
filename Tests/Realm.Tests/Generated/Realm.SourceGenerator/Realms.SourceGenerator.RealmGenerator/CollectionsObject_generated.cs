@@ -4,7 +4,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -489,1795 +488,1793 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ICollectionsObjectAccessor : Realms.IRealmAccessor
-    {
-        System.Collections.Generic.ISet<char> CharSet { get; }
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface ICollectionsObjectAccessor : Realms.IRealmAccessor
+        {
+            System.Collections.Generic.ISet<char> CharSet { get; }
 
-        System.Collections.Generic.ISet<byte> ByteSet { get; }
+            System.Collections.Generic.ISet<byte> ByteSet { get; }
 
-        System.Collections.Generic.ISet<short> Int16Set { get; }
+            System.Collections.Generic.ISet<short> Int16Set { get; }
 
-        System.Collections.Generic.ISet<int> Int32Set { get; }
+            System.Collections.Generic.ISet<int> Int32Set { get; }
 
-        System.Collections.Generic.ISet<long> Int64Set { get; }
+            System.Collections.Generic.ISet<long> Int64Set { get; }
 
-        System.Collections.Generic.ISet<float> SingleSet { get; }
+            System.Collections.Generic.ISet<float> SingleSet { get; }
 
-        System.Collections.Generic.ISet<double> DoubleSet { get; }
+            System.Collections.Generic.ISet<double> DoubleSet { get; }
 
-        System.Collections.Generic.ISet<bool> BooleanSet { get; }
+            System.Collections.Generic.ISet<bool> BooleanSet { get; }
 
-        System.Collections.Generic.ISet<decimal> DecimalSet { get; }
+            System.Collections.Generic.ISet<decimal> DecimalSet { get; }
 
-        System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; }
+            System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; }
 
-        System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; }
+            System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; }
 
-        System.Collections.Generic.ISet<string> StringSet { get; }
+            System.Collections.Generic.ISet<string> StringSet { get; }
 
-        System.Collections.Generic.ISet<string> NullableStringSet { get; }
+            System.Collections.Generic.ISet<string> NullableStringSet { get; }
 
-        System.Collections.Generic.ISet<byte[]> ByteArraySet { get; }
+            System.Collections.Generic.ISet<byte[]> ByteArraySet { get; }
 
-        System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; }
+            System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; }
 
-        System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; }
+            System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; }
 
-        System.Collections.Generic.ISet<char?> NullableCharSet { get; }
+            System.Collections.Generic.ISet<char?> NullableCharSet { get; }
 
-        System.Collections.Generic.ISet<byte?> NullableByteSet { get; }
+            System.Collections.Generic.ISet<byte?> NullableByteSet { get; }
 
-        System.Collections.Generic.ISet<short?> NullableInt16Set { get; }
+            System.Collections.Generic.ISet<short?> NullableInt16Set { get; }
 
-        System.Collections.Generic.ISet<int?> NullableInt32Set { get; }
+            System.Collections.Generic.ISet<int?> NullableInt32Set { get; }
 
-        System.Collections.Generic.ISet<long?> NullableInt64Set { get; }
+            System.Collections.Generic.ISet<long?> NullableInt64Set { get; }
 
-        System.Collections.Generic.ISet<float?> NullableSingleSet { get; }
+            System.Collections.Generic.ISet<float?> NullableSingleSet { get; }
 
-        System.Collections.Generic.ISet<double?> NullableDoubleSet { get; }
+            System.Collections.Generic.ISet<double?> NullableDoubleSet { get; }
 
-        System.Collections.Generic.ISet<bool?> NullableBooleanSet { get; }
+            System.Collections.Generic.ISet<bool?> NullableBooleanSet { get; }
 
-        System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet { get; }
+            System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet { get; }
 
-        System.Collections.Generic.ISet<decimal?> NullableDecimalSet { get; }
+            System.Collections.Generic.ISet<decimal?> NullableDecimalSet { get; }
 
-        System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set { get; }
+            System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set { get; }
 
-        System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet { get; }
+            System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet { get; }
 
-        System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; }
+            System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; }
 
-        System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; }
+            System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; }
 
-        System.Collections.Generic.IList<char> CharList { get; }
+            System.Collections.Generic.IList<char> CharList { get; }
 
-        System.Collections.Generic.IList<byte> ByteList { get; }
+            System.Collections.Generic.IList<byte> ByteList { get; }
 
-        System.Collections.Generic.IList<short> Int16List { get; }
+            System.Collections.Generic.IList<short> Int16List { get; }
 
-        System.Collections.Generic.IList<int> Int32List { get; }
+            System.Collections.Generic.IList<int> Int32List { get; }
 
-        System.Collections.Generic.IList<long> Int64List { get; }
+            System.Collections.Generic.IList<long> Int64List { get; }
 
-        System.Collections.Generic.IList<float> SingleList { get; }
+            System.Collections.Generic.IList<float> SingleList { get; }
 
-        System.Collections.Generic.IList<double> DoubleList { get; }
+            System.Collections.Generic.IList<double> DoubleList { get; }
 
-        System.Collections.Generic.IList<bool> BooleanList { get; }
+            System.Collections.Generic.IList<bool> BooleanList { get; }
 
-        System.Collections.Generic.IList<decimal> DecimalList { get; }
+            System.Collections.Generic.IList<decimal> DecimalList { get; }
 
-        System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; }
+            System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; }
 
-        System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; }
+            System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; }
 
-        System.Collections.Generic.IList<string> StringList { get; }
+            System.Collections.Generic.IList<string> StringList { get; }
 
-        System.Collections.Generic.IList<string> NullableStringList { get; }
+            System.Collections.Generic.IList<string> NullableStringList { get; }
 
-        System.Collections.Generic.IList<byte[]> ByteArrayList { get; }
+            System.Collections.Generic.IList<byte[]> ByteArrayList { get; }
 
-        System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; }
+            System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; }
 
-        System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; }
+            System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; }
 
-        System.Collections.Generic.IList<char?> NullableCharList { get; }
+            System.Collections.Generic.IList<char?> NullableCharList { get; }
 
-        System.Collections.Generic.IList<byte?> NullableByteList { get; }
+            System.Collections.Generic.IList<byte?> NullableByteList { get; }
 
-        System.Collections.Generic.IList<short?> NullableInt16List { get; }
+            System.Collections.Generic.IList<short?> NullableInt16List { get; }
 
-        System.Collections.Generic.IList<int?> NullableInt32List { get; }
+            System.Collections.Generic.IList<int?> NullableInt32List { get; }
 
-        System.Collections.Generic.IList<long?> NullableInt64List { get; }
+            System.Collections.Generic.IList<long?> NullableInt64List { get; }
 
-        System.Collections.Generic.IList<float?> NullableSingleList { get; }
+            System.Collections.Generic.IList<float?> NullableSingleList { get; }
 
-        System.Collections.Generic.IList<double?> NullableDoubleList { get; }
+            System.Collections.Generic.IList<double?> NullableDoubleList { get; }
 
-        System.Collections.Generic.IList<bool?> NullableBooleanList { get; }
+            System.Collections.Generic.IList<bool?> NullableBooleanList { get; }
 
-        System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList { get; }
+            System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList { get; }
 
-        System.Collections.Generic.IList<decimal?> NullableDecimalList { get; }
+            System.Collections.Generic.IList<decimal?> NullableDecimalList { get; }
 
-        System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List { get; }
+            System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List { get; }
 
-        System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList { get; }
+            System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList { get; }
 
-        System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; }
+            System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; }
 
-        System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+            System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
 
-        System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
+            System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
 
-        System.Collections.Generic.IDictionary<string, char> CharDict { get; }
+            System.Collections.Generic.IDictionary<string, char> CharDict { get; }
 
-        System.Collections.Generic.IDictionary<string, byte> ByteDict { get; }
+            System.Collections.Generic.IDictionary<string, byte> ByteDict { get; }
 
-        System.Collections.Generic.IDictionary<string, short> Int16Dict { get; }
+            System.Collections.Generic.IDictionary<string, short> Int16Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, int> Int32Dict { get; }
+            System.Collections.Generic.IDictionary<string, int> Int32Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, long> Int64Dict { get; }
+            System.Collections.Generic.IDictionary<string, long> Int64Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, float> SingleDict { get; }
+            System.Collections.Generic.IDictionary<string, float> SingleDict { get; }
 
-        System.Collections.Generic.IDictionary<string, double> DoubleDict { get; }
+            System.Collections.Generic.IDictionary<string, double> DoubleDict { get; }
 
-        System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; }
+            System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; }
 
-        System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; }
+            System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; }
 
-        System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; }
+            System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; }
+            System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; }
 
-        System.Collections.Generic.IDictionary<string, string> StringDict { get; }
+            System.Collections.Generic.IDictionary<string, string> StringDict { get; }
 
-        System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; }
+            System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; }
 
-        System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; }
+            System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; }
 
-        System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; }
+            System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; }
 
-        System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; }
+            System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; }
 
-        System.Collections.Generic.IDictionary<string, char?> NullableCharDict { get; }
+            System.Collections.Generic.IDictionary<string, char?> NullableCharDict { get; }
 
-        System.Collections.Generic.IDictionary<string, byte?> NullableByteDict { get; }
+            System.Collections.Generic.IDictionary<string, byte?> NullableByteDict { get; }
 
-        System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict { get; }
+            System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict { get; }
+            System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict { get; }
+            System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, float?> NullableSingleDict { get; }
+            System.Collections.Generic.IDictionary<string, float?> NullableSingleDict { get; }
 
-        System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict { get; }
+            System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict { get; }
 
-        System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict { get; }
+            System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict { get; }
 
-        System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict { get; }
+            System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict { get; }
 
-        System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict { get; }
+            System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict { get; }
 
-        System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict { get; }
+            System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict { get; }
 
-        System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; }
+            System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; }
 
-        System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; }
 
-        System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
-    }
+            System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
+        }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class CollectionsObjectManagedAccessor : Realms.ManagedAccessor, ICollectionsObjectAccessor
-    {
-        private System.Collections.Generic.ISet<char> _charSet;
-        public System.Collections.Generic.ISet<char> CharSet
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class CollectionsObjectManagedAccessor : Realms.ManagedAccessor, ICollectionsObjectAccessor
         {
-            get
+            private System.Collections.Generic.ISet<char> _charSet;
+            public System.Collections.Generic.ISet<char> CharSet
             {
-                if (_charSet == null)
+                get
                 {
-                    _charSet = GetSetValue<char>("CharSet");
-                }
+                    if (_charSet == null)
+                    {
+                        _charSet = GetSetValue<char>("CharSet");
+                    }
 
-                return _charSet;
+                    return _charSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<byte> _byteSet;
-        public System.Collections.Generic.ISet<byte> ByteSet
-        {
-            get
+            private System.Collections.Generic.ISet<byte> _byteSet;
+            public System.Collections.Generic.ISet<byte> ByteSet
             {
-                if (_byteSet == null)
+                get
                 {
-                    _byteSet = GetSetValue<byte>("ByteSet");
-                }
+                    if (_byteSet == null)
+                    {
+                        _byteSet = GetSetValue<byte>("ByteSet");
+                    }
 
-                return _byteSet;
+                    return _byteSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<short> _int16Set;
-        public System.Collections.Generic.ISet<short> Int16Set
-        {
-            get
+            private System.Collections.Generic.ISet<short> _int16Set;
+            public System.Collections.Generic.ISet<short> Int16Set
             {
-                if (_int16Set == null)
+                get
                 {
-                    _int16Set = GetSetValue<short>("Int16Set");
-                }
+                    if (_int16Set == null)
+                    {
+                        _int16Set = GetSetValue<short>("Int16Set");
+                    }
 
-                return _int16Set;
+                    return _int16Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<int> _int32Set;
-        public System.Collections.Generic.ISet<int> Int32Set
-        {
-            get
+            private System.Collections.Generic.ISet<int> _int32Set;
+            public System.Collections.Generic.ISet<int> Int32Set
             {
-                if (_int32Set == null)
+                get
                 {
-                    _int32Set = GetSetValue<int>("Int32Set");
-                }
+                    if (_int32Set == null)
+                    {
+                        _int32Set = GetSetValue<int>("Int32Set");
+                    }
 
-                return _int32Set;
+                    return _int32Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<long> _int64Set;
-        public System.Collections.Generic.ISet<long> Int64Set
-        {
-            get
+            private System.Collections.Generic.ISet<long> _int64Set;
+            public System.Collections.Generic.ISet<long> Int64Set
             {
-                if (_int64Set == null)
+                get
                 {
-                    _int64Set = GetSetValue<long>("Int64Set");
-                }
+                    if (_int64Set == null)
+                    {
+                        _int64Set = GetSetValue<long>("Int64Set");
+                    }
 
-                return _int64Set;
+                    return _int64Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<float> _singleSet;
-        public System.Collections.Generic.ISet<float> SingleSet
-        {
-            get
+            private System.Collections.Generic.ISet<float> _singleSet;
+            public System.Collections.Generic.ISet<float> SingleSet
             {
-                if (_singleSet == null)
+                get
                 {
-                    _singleSet = GetSetValue<float>("SingleSet");
-                }
+                    if (_singleSet == null)
+                    {
+                        _singleSet = GetSetValue<float>("SingleSet");
+                    }
 
-                return _singleSet;
+                    return _singleSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<double> _doubleSet;
-        public System.Collections.Generic.ISet<double> DoubleSet
-        {
-            get
+            private System.Collections.Generic.ISet<double> _doubleSet;
+            public System.Collections.Generic.ISet<double> DoubleSet
             {
-                if (_doubleSet == null)
+                get
                 {
-                    _doubleSet = GetSetValue<double>("DoubleSet");
-                }
+                    if (_doubleSet == null)
+                    {
+                        _doubleSet = GetSetValue<double>("DoubleSet");
+                    }
 
-                return _doubleSet;
+                    return _doubleSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<bool> _booleanSet;
-        public System.Collections.Generic.ISet<bool> BooleanSet
-        {
-            get
+            private System.Collections.Generic.ISet<bool> _booleanSet;
+            public System.Collections.Generic.ISet<bool> BooleanSet
             {
-                if (_booleanSet == null)
+                get
                 {
-                    _booleanSet = GetSetValue<bool>("BooleanSet");
-                }
+                    if (_booleanSet == null)
+                    {
+                        _booleanSet = GetSetValue<bool>("BooleanSet");
+                    }
 
-                return _booleanSet;
+                    return _booleanSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<decimal> _decimalSet;
-        public System.Collections.Generic.ISet<decimal> DecimalSet
-        {
-            get
+            private System.Collections.Generic.ISet<decimal> _decimalSet;
+            public System.Collections.Generic.ISet<decimal> DecimalSet
             {
-                if (_decimalSet == null)
+                get
                 {
-                    _decimalSet = GetSetValue<decimal>("DecimalSet");
-                }
+                    if (_decimalSet == null)
+                    {
+                        _decimalSet = GetSetValue<decimal>("DecimalSet");
+                    }
 
-                return _decimalSet;
+                    return _decimalSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> _decimal128Set;
-        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set
-        {
-            get
+            private System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> _decimal128Set;
+            public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set
             {
-                if (_decimal128Set == null)
+                get
                 {
-                    _decimal128Set = GetSetValue<MongoDB.Bson.Decimal128>("Decimal128Set");
-                }
+                    if (_decimal128Set == null)
+                    {
+                        _decimal128Set = GetSetValue<MongoDB.Bson.Decimal128>("Decimal128Set");
+                    }
 
-                return _decimal128Set;
+                    return _decimal128Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> _objectIdSet;
-        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet
-        {
-            get
+            private System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> _objectIdSet;
+            public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet
             {
-                if (_objectIdSet == null)
+                get
                 {
-                    _objectIdSet = GetSetValue<MongoDB.Bson.ObjectId>("ObjectIdSet");
-                }
+                    if (_objectIdSet == null)
+                    {
+                        _objectIdSet = GetSetValue<MongoDB.Bson.ObjectId>("ObjectIdSet");
+                    }
 
-                return _objectIdSet;
+                    return _objectIdSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<string> _stringSet;
-        public System.Collections.Generic.ISet<string> StringSet
-        {
-            get
+            private System.Collections.Generic.ISet<string> _stringSet;
+            public System.Collections.Generic.ISet<string> StringSet
             {
-                if (_stringSet == null)
+                get
                 {
-                    _stringSet = GetSetValue<string>("StringSet");
-                }
+                    if (_stringSet == null)
+                    {
+                        _stringSet = GetSetValue<string>("StringSet");
+                    }
 
-                return _stringSet;
+                    return _stringSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<string> _nullableStringSet;
-        public System.Collections.Generic.ISet<string> NullableStringSet
-        {
-            get
+            private System.Collections.Generic.ISet<string> _nullableStringSet;
+            public System.Collections.Generic.ISet<string> NullableStringSet
             {
-                if (_nullableStringSet == null)
+                get
                 {
-                    _nullableStringSet = GetSetValue<string>("NullableStringSet");
-                }
+                    if (_nullableStringSet == null)
+                    {
+                        _nullableStringSet = GetSetValue<string>("NullableStringSet");
+                    }
 
-                return _nullableStringSet;
+                    return _nullableStringSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<byte[]> _byteArraySet;
-        public System.Collections.Generic.ISet<byte[]> ByteArraySet
-        {
-            get
+            private System.Collections.Generic.ISet<byte[]> _byteArraySet;
+            public System.Collections.Generic.ISet<byte[]> ByteArraySet
             {
-                if (_byteArraySet == null)
+                get
                 {
-                    _byteArraySet = GetSetValue<byte[]>("ByteArraySet");
-                }
+                    if (_byteArraySet == null)
+                    {
+                        _byteArraySet = GetSetValue<byte[]>("ByteArraySet");
+                    }
 
-                return _byteArraySet;
+                    return _byteArraySet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<byte[]> _nullableByteArraySet;
-        public System.Collections.Generic.ISet<byte[]> NullableByteArraySet
-        {
-            get
+            private System.Collections.Generic.ISet<byte[]> _nullableByteArraySet;
+            public System.Collections.Generic.ISet<byte[]> NullableByteArraySet
             {
-                if (_nullableByteArraySet == null)
+                get
                 {
-                    _nullableByteArraySet = GetSetValue<byte[]>("NullableByteArraySet");
-                }
+                    if (_nullableByteArraySet == null)
+                    {
+                        _nullableByteArraySet = GetSetValue<byte[]>("NullableByteArraySet");
+                    }
 
-                return _nullableByteArraySet;
+                    return _nullableByteArraySet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<System.DateTimeOffset> _dateTimeOffsetSet;
-        public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet
-        {
-            get
+            private System.Collections.Generic.ISet<System.DateTimeOffset> _dateTimeOffsetSet;
+            public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet
             {
-                if (_dateTimeOffsetSet == null)
+                get
                 {
-                    _dateTimeOffsetSet = GetSetValue<System.DateTimeOffset>("DateTimeOffsetSet");
-                }
+                    if (_dateTimeOffsetSet == null)
+                    {
+                        _dateTimeOffsetSet = GetSetValue<System.DateTimeOffset>("DateTimeOffsetSet");
+                    }
 
-                return _dateTimeOffsetSet;
+                    return _dateTimeOffsetSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<char?> _nullableCharSet;
-        public System.Collections.Generic.ISet<char?> NullableCharSet
-        {
-            get
+            private System.Collections.Generic.ISet<char?> _nullableCharSet;
+            public System.Collections.Generic.ISet<char?> NullableCharSet
             {
-                if (_nullableCharSet == null)
+                get
                 {
-                    _nullableCharSet = GetSetValue<char?>("NullableCharSet");
-                }
+                    if (_nullableCharSet == null)
+                    {
+                        _nullableCharSet = GetSetValue<char?>("NullableCharSet");
+                    }
 
-                return _nullableCharSet;
+                    return _nullableCharSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<byte?> _nullableByteSet;
-        public System.Collections.Generic.ISet<byte?> NullableByteSet
-        {
-            get
+            private System.Collections.Generic.ISet<byte?> _nullableByteSet;
+            public System.Collections.Generic.ISet<byte?> NullableByteSet
             {
-                if (_nullableByteSet == null)
+                get
                 {
-                    _nullableByteSet = GetSetValue<byte?>("NullableByteSet");
-                }
+                    if (_nullableByteSet == null)
+                    {
+                        _nullableByteSet = GetSetValue<byte?>("NullableByteSet");
+                    }
 
-                return _nullableByteSet;
+                    return _nullableByteSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<short?> _nullableInt16Set;
-        public System.Collections.Generic.ISet<short?> NullableInt16Set
-        {
-            get
+            private System.Collections.Generic.ISet<short?> _nullableInt16Set;
+            public System.Collections.Generic.ISet<short?> NullableInt16Set
             {
-                if (_nullableInt16Set == null)
+                get
                 {
-                    _nullableInt16Set = GetSetValue<short?>("NullableInt16Set");
-                }
+                    if (_nullableInt16Set == null)
+                    {
+                        _nullableInt16Set = GetSetValue<short?>("NullableInt16Set");
+                    }
 
-                return _nullableInt16Set;
+                    return _nullableInt16Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<int?> _nullableInt32Set;
-        public System.Collections.Generic.ISet<int?> NullableInt32Set
-        {
-            get
+            private System.Collections.Generic.ISet<int?> _nullableInt32Set;
+            public System.Collections.Generic.ISet<int?> NullableInt32Set
             {
-                if (_nullableInt32Set == null)
+                get
                 {
-                    _nullableInt32Set = GetSetValue<int?>("NullableInt32Set");
-                }
+                    if (_nullableInt32Set == null)
+                    {
+                        _nullableInt32Set = GetSetValue<int?>("NullableInt32Set");
+                    }
 
-                return _nullableInt32Set;
+                    return _nullableInt32Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<long?> _nullableInt64Set;
-        public System.Collections.Generic.ISet<long?> NullableInt64Set
-        {
-            get
+            private System.Collections.Generic.ISet<long?> _nullableInt64Set;
+            public System.Collections.Generic.ISet<long?> NullableInt64Set
             {
-                if (_nullableInt64Set == null)
+                get
                 {
-                    _nullableInt64Set = GetSetValue<long?>("NullableInt64Set");
-                }
+                    if (_nullableInt64Set == null)
+                    {
+                        _nullableInt64Set = GetSetValue<long?>("NullableInt64Set");
+                    }
 
-                return _nullableInt64Set;
+                    return _nullableInt64Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<float?> _nullableSingleSet;
-        public System.Collections.Generic.ISet<float?> NullableSingleSet
-        {
-            get
+            private System.Collections.Generic.ISet<float?> _nullableSingleSet;
+            public System.Collections.Generic.ISet<float?> NullableSingleSet
             {
-                if (_nullableSingleSet == null)
+                get
                 {
-                    _nullableSingleSet = GetSetValue<float?>("NullableSingleSet");
-                }
+                    if (_nullableSingleSet == null)
+                    {
+                        _nullableSingleSet = GetSetValue<float?>("NullableSingleSet");
+                    }
 
-                return _nullableSingleSet;
+                    return _nullableSingleSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<double?> _nullableDoubleSet;
-        public System.Collections.Generic.ISet<double?> NullableDoubleSet
-        {
-            get
+            private System.Collections.Generic.ISet<double?> _nullableDoubleSet;
+            public System.Collections.Generic.ISet<double?> NullableDoubleSet
             {
-                if (_nullableDoubleSet == null)
+                get
                 {
-                    _nullableDoubleSet = GetSetValue<double?>("NullableDoubleSet");
-                }
+                    if (_nullableDoubleSet == null)
+                    {
+                        _nullableDoubleSet = GetSetValue<double?>("NullableDoubleSet");
+                    }
 
-                return _nullableDoubleSet;
+                    return _nullableDoubleSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<bool?> _nullableBooleanSet;
-        public System.Collections.Generic.ISet<bool?> NullableBooleanSet
-        {
-            get
+            private System.Collections.Generic.ISet<bool?> _nullableBooleanSet;
+            public System.Collections.Generic.ISet<bool?> NullableBooleanSet
             {
-                if (_nullableBooleanSet == null)
+                get
                 {
-                    _nullableBooleanSet = GetSetValue<bool?>("NullableBooleanSet");
-                }
+                    if (_nullableBooleanSet == null)
+                    {
+                        _nullableBooleanSet = GetSetValue<bool?>("NullableBooleanSet");
+                    }
 
-                return _nullableBooleanSet;
+                    return _nullableBooleanSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<System.DateTimeOffset?> _nullableDateTimeOffsetSet;
-        public System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet
-        {
-            get
+            private System.Collections.Generic.ISet<System.DateTimeOffset?> _nullableDateTimeOffsetSet;
+            public System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet
             {
-                if (_nullableDateTimeOffsetSet == null)
+                get
                 {
-                    _nullableDateTimeOffsetSet = GetSetValue<System.DateTimeOffset?>("NullableDateTimeOffsetSet");
-                }
+                    if (_nullableDateTimeOffsetSet == null)
+                    {
+                        _nullableDateTimeOffsetSet = GetSetValue<System.DateTimeOffset?>("NullableDateTimeOffsetSet");
+                    }
 
-                return _nullableDateTimeOffsetSet;
+                    return _nullableDateTimeOffsetSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<decimal?> _nullableDecimalSet;
-        public System.Collections.Generic.ISet<decimal?> NullableDecimalSet
-        {
-            get
+            private System.Collections.Generic.ISet<decimal?> _nullableDecimalSet;
+            public System.Collections.Generic.ISet<decimal?> NullableDecimalSet
             {
-                if (_nullableDecimalSet == null)
+                get
                 {
-                    _nullableDecimalSet = GetSetValue<decimal?>("NullableDecimalSet");
-                }
+                    if (_nullableDecimalSet == null)
+                    {
+                        _nullableDecimalSet = GetSetValue<decimal?>("NullableDecimalSet");
+                    }
 
-                return _nullableDecimalSet;
+                    return _nullableDecimalSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> _nullableDecimal128Set;
-        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set
-        {
-            get
+            private System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> _nullableDecimal128Set;
+            public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set
             {
-                if (_nullableDecimal128Set == null)
+                get
                 {
-                    _nullableDecimal128Set = GetSetValue<MongoDB.Bson.Decimal128?>("NullableDecimal128Set");
-                }
+                    if (_nullableDecimal128Set == null)
+                    {
+                        _nullableDecimal128Set = GetSetValue<MongoDB.Bson.Decimal128?>("NullableDecimal128Set");
+                    }
 
-                return _nullableDecimal128Set;
+                    return _nullableDecimal128Set;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> _nullableObjectIdSet;
-        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet
-        {
-            get
+            private System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> _nullableObjectIdSet;
+            public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet
             {
-                if (_nullableObjectIdSet == null)
+                get
                 {
-                    _nullableObjectIdSet = GetSetValue<MongoDB.Bson.ObjectId?>("NullableObjectIdSet");
-                }
+                    if (_nullableObjectIdSet == null)
+                    {
+                        _nullableObjectIdSet = GetSetValue<MongoDB.Bson.ObjectId?>("NullableObjectIdSet");
+                    }
 
-                return _nullableObjectIdSet;
+                    return _nullableObjectIdSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> _objectSet;
-        public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet
-        {
-            get
+            private System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> _objectSet;
+            public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet
             {
-                if (_objectSet == null)
+                get
                 {
-                    _objectSet = GetSetValue<Realms.Tests.IntPropertyObject>("ObjectSet");
-                }
+                    if (_objectSet == null)
+                    {
+                        _objectSet = GetSetValue<Realms.Tests.IntPropertyObject>("ObjectSet");
+                    }
 
-                return _objectSet;
+                    return _objectSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.ISet<Realms.RealmValue> _realmValueSet;
-        public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet
-        {
-            get
+            private System.Collections.Generic.ISet<Realms.RealmValue> _realmValueSet;
+            public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet
             {
-                if (_realmValueSet == null)
+                get
                 {
-                    _realmValueSet = GetSetValue<Realms.RealmValue>("RealmValueSet");
-                }
+                    if (_realmValueSet == null)
+                    {
+                        _realmValueSet = GetSetValue<Realms.RealmValue>("RealmValueSet");
+                    }
 
-                return _realmValueSet;
+                    return _realmValueSet;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<char> _charList;
-        public System.Collections.Generic.IList<char> CharList
-        {
-            get
+            private System.Collections.Generic.IList<char> _charList;
+            public System.Collections.Generic.IList<char> CharList
             {
-                if (_charList == null)
+                get
                 {
-                    _charList = GetListValue<char>("CharList");
-                }
+                    if (_charList == null)
+                    {
+                        _charList = GetListValue<char>("CharList");
+                    }
 
-                return _charList;
+                    return _charList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<byte> _byteList;
-        public System.Collections.Generic.IList<byte> ByteList
-        {
-            get
+            private System.Collections.Generic.IList<byte> _byteList;
+            public System.Collections.Generic.IList<byte> ByteList
             {
-                if (_byteList == null)
+                get
                 {
-                    _byteList = GetListValue<byte>("ByteList");
-                }
+                    if (_byteList == null)
+                    {
+                        _byteList = GetListValue<byte>("ByteList");
+                    }
 
-                return _byteList;
+                    return _byteList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<short> _int16List;
-        public System.Collections.Generic.IList<short> Int16List
-        {
-            get
+            private System.Collections.Generic.IList<short> _int16List;
+            public System.Collections.Generic.IList<short> Int16List
             {
-                if (_int16List == null)
+                get
                 {
-                    _int16List = GetListValue<short>("Int16List");
-                }
+                    if (_int16List == null)
+                    {
+                        _int16List = GetListValue<short>("Int16List");
+                    }
 
-                return _int16List;
+                    return _int16List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<int> _int32List;
-        public System.Collections.Generic.IList<int> Int32List
-        {
-            get
+            private System.Collections.Generic.IList<int> _int32List;
+            public System.Collections.Generic.IList<int> Int32List
             {
-                if (_int32List == null)
+                get
                 {
-                    _int32List = GetListValue<int>("Int32List");
-                }
+                    if (_int32List == null)
+                    {
+                        _int32List = GetListValue<int>("Int32List");
+                    }
 
-                return _int32List;
+                    return _int32List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<long> _int64List;
-        public System.Collections.Generic.IList<long> Int64List
-        {
-            get
+            private System.Collections.Generic.IList<long> _int64List;
+            public System.Collections.Generic.IList<long> Int64List
             {
-                if (_int64List == null)
+                get
                 {
-                    _int64List = GetListValue<long>("Int64List");
-                }
+                    if (_int64List == null)
+                    {
+                        _int64List = GetListValue<long>("Int64List");
+                    }
 
-                return _int64List;
+                    return _int64List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<float> _singleList;
-        public System.Collections.Generic.IList<float> SingleList
-        {
-            get
+            private System.Collections.Generic.IList<float> _singleList;
+            public System.Collections.Generic.IList<float> SingleList
             {
-                if (_singleList == null)
+                get
                 {
-                    _singleList = GetListValue<float>("SingleList");
-                }
+                    if (_singleList == null)
+                    {
+                        _singleList = GetListValue<float>("SingleList");
+                    }
 
-                return _singleList;
+                    return _singleList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<double> _doubleList;
-        public System.Collections.Generic.IList<double> DoubleList
-        {
-            get
+            private System.Collections.Generic.IList<double> _doubleList;
+            public System.Collections.Generic.IList<double> DoubleList
             {
-                if (_doubleList == null)
+                get
                 {
-                    _doubleList = GetListValue<double>("DoubleList");
-                }
+                    if (_doubleList == null)
+                    {
+                        _doubleList = GetListValue<double>("DoubleList");
+                    }
 
-                return _doubleList;
+                    return _doubleList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<bool> _booleanList;
-        public System.Collections.Generic.IList<bool> BooleanList
-        {
-            get
+            private System.Collections.Generic.IList<bool> _booleanList;
+            public System.Collections.Generic.IList<bool> BooleanList
             {
-                if (_booleanList == null)
+                get
                 {
-                    _booleanList = GetListValue<bool>("BooleanList");
-                }
+                    if (_booleanList == null)
+                    {
+                        _booleanList = GetListValue<bool>("BooleanList");
+                    }
 
-                return _booleanList;
+                    return _booleanList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<decimal> _decimalList;
-        public System.Collections.Generic.IList<decimal> DecimalList
-        {
-            get
+            private System.Collections.Generic.IList<decimal> _decimalList;
+            public System.Collections.Generic.IList<decimal> DecimalList
             {
-                if (_decimalList == null)
+                get
                 {
-                    _decimalList = GetListValue<decimal>("DecimalList");
-                }
+                    if (_decimalList == null)
+                    {
+                        _decimalList = GetListValue<decimal>("DecimalList");
+                    }
 
-                return _decimalList;
+                    return _decimalList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<MongoDB.Bson.Decimal128> _decimal128List;
-        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List
-        {
-            get
+            private System.Collections.Generic.IList<MongoDB.Bson.Decimal128> _decimal128List;
+            public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List
             {
-                if (_decimal128List == null)
+                get
                 {
-                    _decimal128List = GetListValue<MongoDB.Bson.Decimal128>("Decimal128List");
-                }
+                    if (_decimal128List == null)
+                    {
+                        _decimal128List = GetListValue<MongoDB.Bson.Decimal128>("Decimal128List");
+                    }
 
-                return _decimal128List;
+                    return _decimal128List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<MongoDB.Bson.ObjectId> _objectIdList;
-        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList
-        {
-            get
+            private System.Collections.Generic.IList<MongoDB.Bson.ObjectId> _objectIdList;
+            public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList
             {
-                if (_objectIdList == null)
+                get
                 {
-                    _objectIdList = GetListValue<MongoDB.Bson.ObjectId>("ObjectIdList");
-                }
+                    if (_objectIdList == null)
+                    {
+                        _objectIdList = GetListValue<MongoDB.Bson.ObjectId>("ObjectIdList");
+                    }
 
-                return _objectIdList;
+                    return _objectIdList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<string> _stringList;
-        public System.Collections.Generic.IList<string> StringList
-        {
-            get
+            private System.Collections.Generic.IList<string> _stringList;
+            public System.Collections.Generic.IList<string> StringList
             {
-                if (_stringList == null)
+                get
                 {
-                    _stringList = GetListValue<string>("StringList");
-                }
+                    if (_stringList == null)
+                    {
+                        _stringList = GetListValue<string>("StringList");
+                    }
 
-                return _stringList;
+                    return _stringList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<string> _nullableStringList;
-        public System.Collections.Generic.IList<string> NullableStringList
-        {
-            get
+            private System.Collections.Generic.IList<string> _nullableStringList;
+            public System.Collections.Generic.IList<string> NullableStringList
             {
-                if (_nullableStringList == null)
+                get
                 {
-                    _nullableStringList = GetListValue<string>("NullableStringList");
-                }
+                    if (_nullableStringList == null)
+                    {
+                        _nullableStringList = GetListValue<string>("NullableStringList");
+                    }
 
-                return _nullableStringList;
+                    return _nullableStringList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<byte[]> _byteArrayList;
-        public System.Collections.Generic.IList<byte[]> ByteArrayList
-        {
-            get
+            private System.Collections.Generic.IList<byte[]> _byteArrayList;
+            public System.Collections.Generic.IList<byte[]> ByteArrayList
             {
-                if (_byteArrayList == null)
+                get
                 {
-                    _byteArrayList = GetListValue<byte[]>("ByteArrayList");
-                }
+                    if (_byteArrayList == null)
+                    {
+                        _byteArrayList = GetListValue<byte[]>("ByteArrayList");
+                    }
 
-                return _byteArrayList;
+                    return _byteArrayList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<byte[]> _nullableByteArrayList;
-        public System.Collections.Generic.IList<byte[]> NullableByteArrayList
-        {
-            get
+            private System.Collections.Generic.IList<byte[]> _nullableByteArrayList;
+            public System.Collections.Generic.IList<byte[]> NullableByteArrayList
             {
-                if (_nullableByteArrayList == null)
+                get
                 {
-                    _nullableByteArrayList = GetListValue<byte[]>("NullableByteArrayList");
-                }
+                    if (_nullableByteArrayList == null)
+                    {
+                        _nullableByteArrayList = GetListValue<byte[]>("NullableByteArrayList");
+                    }
 
-                return _nullableByteArrayList;
+                    return _nullableByteArrayList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<System.DateTimeOffset> _dateTimeOffsetList;
-        public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList
-        {
-            get
+            private System.Collections.Generic.IList<System.DateTimeOffset> _dateTimeOffsetList;
+            public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList
             {
-                if (_dateTimeOffsetList == null)
+                get
                 {
-                    _dateTimeOffsetList = GetListValue<System.DateTimeOffset>("DateTimeOffsetList");
-                }
+                    if (_dateTimeOffsetList == null)
+                    {
+                        _dateTimeOffsetList = GetListValue<System.DateTimeOffset>("DateTimeOffsetList");
+                    }
 
-                return _dateTimeOffsetList;
+                    return _dateTimeOffsetList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<char?> _nullableCharList;
-        public System.Collections.Generic.IList<char?> NullableCharList
-        {
-            get
+            private System.Collections.Generic.IList<char?> _nullableCharList;
+            public System.Collections.Generic.IList<char?> NullableCharList
             {
-                if (_nullableCharList == null)
+                get
                 {
-                    _nullableCharList = GetListValue<char?>("NullableCharList");
-                }
+                    if (_nullableCharList == null)
+                    {
+                        _nullableCharList = GetListValue<char?>("NullableCharList");
+                    }
 
-                return _nullableCharList;
+                    return _nullableCharList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<byte?> _nullableByteList;
-        public System.Collections.Generic.IList<byte?> NullableByteList
-        {
-            get
+            private System.Collections.Generic.IList<byte?> _nullableByteList;
+            public System.Collections.Generic.IList<byte?> NullableByteList
             {
-                if (_nullableByteList == null)
+                get
                 {
-                    _nullableByteList = GetListValue<byte?>("NullableByteList");
-                }
+                    if (_nullableByteList == null)
+                    {
+                        _nullableByteList = GetListValue<byte?>("NullableByteList");
+                    }
 
-                return _nullableByteList;
+                    return _nullableByteList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<short?> _nullableInt16List;
-        public System.Collections.Generic.IList<short?> NullableInt16List
-        {
-            get
+            private System.Collections.Generic.IList<short?> _nullableInt16List;
+            public System.Collections.Generic.IList<short?> NullableInt16List
             {
-                if (_nullableInt16List == null)
+                get
                 {
-                    _nullableInt16List = GetListValue<short?>("NullableInt16List");
-                }
+                    if (_nullableInt16List == null)
+                    {
+                        _nullableInt16List = GetListValue<short?>("NullableInt16List");
+                    }
 
-                return _nullableInt16List;
+                    return _nullableInt16List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<int?> _nullableInt32List;
-        public System.Collections.Generic.IList<int?> NullableInt32List
-        {
-            get
+            private System.Collections.Generic.IList<int?> _nullableInt32List;
+            public System.Collections.Generic.IList<int?> NullableInt32List
             {
-                if (_nullableInt32List == null)
+                get
                 {
-                    _nullableInt32List = GetListValue<int?>("NullableInt32List");
-                }
+                    if (_nullableInt32List == null)
+                    {
+                        _nullableInt32List = GetListValue<int?>("NullableInt32List");
+                    }
 
-                return _nullableInt32List;
+                    return _nullableInt32List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<long?> _nullableInt64List;
-        public System.Collections.Generic.IList<long?> NullableInt64List
-        {
-            get
+            private System.Collections.Generic.IList<long?> _nullableInt64List;
+            public System.Collections.Generic.IList<long?> NullableInt64List
             {
-                if (_nullableInt64List == null)
+                get
                 {
-                    _nullableInt64List = GetListValue<long?>("NullableInt64List");
-                }
+                    if (_nullableInt64List == null)
+                    {
+                        _nullableInt64List = GetListValue<long?>("NullableInt64List");
+                    }
 
-                return _nullableInt64List;
+                    return _nullableInt64List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<float?> _nullableSingleList;
-        public System.Collections.Generic.IList<float?> NullableSingleList
-        {
-            get
+            private System.Collections.Generic.IList<float?> _nullableSingleList;
+            public System.Collections.Generic.IList<float?> NullableSingleList
             {
-                if (_nullableSingleList == null)
+                get
                 {
-                    _nullableSingleList = GetListValue<float?>("NullableSingleList");
-                }
+                    if (_nullableSingleList == null)
+                    {
+                        _nullableSingleList = GetListValue<float?>("NullableSingleList");
+                    }
 
-                return _nullableSingleList;
+                    return _nullableSingleList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<double?> _nullableDoubleList;
-        public System.Collections.Generic.IList<double?> NullableDoubleList
-        {
-            get
+            private System.Collections.Generic.IList<double?> _nullableDoubleList;
+            public System.Collections.Generic.IList<double?> NullableDoubleList
             {
-                if (_nullableDoubleList == null)
+                get
                 {
-                    _nullableDoubleList = GetListValue<double?>("NullableDoubleList");
-                }
+                    if (_nullableDoubleList == null)
+                    {
+                        _nullableDoubleList = GetListValue<double?>("NullableDoubleList");
+                    }
 
-                return _nullableDoubleList;
+                    return _nullableDoubleList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<bool?> _nullableBooleanList;
-        public System.Collections.Generic.IList<bool?> NullableBooleanList
-        {
-            get
+            private System.Collections.Generic.IList<bool?> _nullableBooleanList;
+            public System.Collections.Generic.IList<bool?> NullableBooleanList
             {
-                if (_nullableBooleanList == null)
+                get
                 {
-                    _nullableBooleanList = GetListValue<bool?>("NullableBooleanList");
-                }
+                    if (_nullableBooleanList == null)
+                    {
+                        _nullableBooleanList = GetListValue<bool?>("NullableBooleanList");
+                    }
 
-                return _nullableBooleanList;
+                    return _nullableBooleanList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<System.DateTimeOffset?> _nullableDateTimeOffsetList;
-        public System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList
-        {
-            get
+            private System.Collections.Generic.IList<System.DateTimeOffset?> _nullableDateTimeOffsetList;
+            public System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList
             {
-                if (_nullableDateTimeOffsetList == null)
+                get
                 {
-                    _nullableDateTimeOffsetList = GetListValue<System.DateTimeOffset?>("NullableDateTimeOffsetList");
-                }
+                    if (_nullableDateTimeOffsetList == null)
+                    {
+                        _nullableDateTimeOffsetList = GetListValue<System.DateTimeOffset?>("NullableDateTimeOffsetList");
+                    }
 
-                return _nullableDateTimeOffsetList;
+                    return _nullableDateTimeOffsetList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<decimal?> _nullableDecimalList;
-        public System.Collections.Generic.IList<decimal?> NullableDecimalList
-        {
-            get
+            private System.Collections.Generic.IList<decimal?> _nullableDecimalList;
+            public System.Collections.Generic.IList<decimal?> NullableDecimalList
             {
-                if (_nullableDecimalList == null)
+                get
                 {
-                    _nullableDecimalList = GetListValue<decimal?>("NullableDecimalList");
-                }
+                    if (_nullableDecimalList == null)
+                    {
+                        _nullableDecimalList = GetListValue<decimal?>("NullableDecimalList");
+                    }
 
-                return _nullableDecimalList;
+                    return _nullableDecimalList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> _nullableDecimal128List;
-        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List
-        {
-            get
+            private System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> _nullableDecimal128List;
+            public System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List
             {
-                if (_nullableDecimal128List == null)
+                get
                 {
-                    _nullableDecimal128List = GetListValue<MongoDB.Bson.Decimal128?>("NullableDecimal128List");
-                }
+                    if (_nullableDecimal128List == null)
+                    {
+                        _nullableDecimal128List = GetListValue<MongoDB.Bson.Decimal128?>("NullableDecimal128List");
+                    }
 
-                return _nullableDecimal128List;
+                    return _nullableDecimal128List;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> _nullableObjectIdList;
-        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList
-        {
-            get
+            private System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> _nullableObjectIdList;
+            public System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList
             {
-                if (_nullableObjectIdList == null)
+                get
                 {
-                    _nullableObjectIdList = GetListValue<MongoDB.Bson.ObjectId?>("NullableObjectIdList");
-                }
+                    if (_nullableObjectIdList == null)
+                    {
+                        _nullableObjectIdList = GetListValue<MongoDB.Bson.ObjectId?>("NullableObjectIdList");
+                    }
 
-                return _nullableObjectIdList;
+                    return _nullableObjectIdList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _objectList;
-        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList
-        {
-            get
+            private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _objectList;
+            public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList
             {
-                if (_objectList == null)
+                get
                 {
-                    _objectList = GetListValue<Realms.Tests.IntPropertyObject>("ObjectList");
-                }
+                    if (_objectList == null)
+                    {
+                        _objectList = GetListValue<Realms.Tests.IntPropertyObject>("ObjectList");
+                    }
 
-                return _objectList;
+                    return _objectList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectList;
-        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList
-        {
-            get
+            private System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectList;
+            public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList
             {
-                if (_embeddedObjectList == null)
+                get
                 {
-                    _embeddedObjectList = GetListValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectList");
-                }
+                    if (_embeddedObjectList == null)
+                    {
+                        _embeddedObjectList = GetListValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectList");
+                    }
 
-                return _embeddedObjectList;
+                    return _embeddedObjectList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IList<Realms.RealmValue> _realmValueList;
-        public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList
-        {
-            get
+            private System.Collections.Generic.IList<Realms.RealmValue> _realmValueList;
+            public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList
             {
-                if (_realmValueList == null)
+                get
                 {
-                    _realmValueList = GetListValue<Realms.RealmValue>("RealmValueList");
-                }
+                    if (_realmValueList == null)
+                    {
+                        _realmValueList = GetListValue<Realms.RealmValue>("RealmValueList");
+                    }
 
-                return _realmValueList;
+                    return _realmValueList;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, char> _charDict;
-        public System.Collections.Generic.IDictionary<string, char> CharDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, char> _charDict;
+            public System.Collections.Generic.IDictionary<string, char> CharDict
             {
-                if (_charDict == null)
+                get
                 {
-                    _charDict = GetDictionaryValue<char>("CharDict");
-                }
+                    if (_charDict == null)
+                    {
+                        _charDict = GetDictionaryValue<char>("CharDict");
+                    }
 
-                return _charDict;
+                    return _charDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, byte> _byteDict;
-        public System.Collections.Generic.IDictionary<string, byte> ByteDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, byte> _byteDict;
+            public System.Collections.Generic.IDictionary<string, byte> ByteDict
             {
-                if (_byteDict == null)
+                get
                 {
-                    _byteDict = GetDictionaryValue<byte>("ByteDict");
-                }
+                    if (_byteDict == null)
+                    {
+                        _byteDict = GetDictionaryValue<byte>("ByteDict");
+                    }
 
-                return _byteDict;
+                    return _byteDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, short> _int16Dict;
-        public System.Collections.Generic.IDictionary<string, short> Int16Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, short> _int16Dict;
+            public System.Collections.Generic.IDictionary<string, short> Int16Dict
             {
-                if (_int16Dict == null)
+                get
                 {
-                    _int16Dict = GetDictionaryValue<short>("Int16Dict");
-                }
+                    if (_int16Dict == null)
+                    {
+                        _int16Dict = GetDictionaryValue<short>("Int16Dict");
+                    }
 
-                return _int16Dict;
+                    return _int16Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, int> _int32Dict;
-        public System.Collections.Generic.IDictionary<string, int> Int32Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, int> _int32Dict;
+            public System.Collections.Generic.IDictionary<string, int> Int32Dict
             {
-                if (_int32Dict == null)
+                get
                 {
-                    _int32Dict = GetDictionaryValue<int>("Int32Dict");
-                }
+                    if (_int32Dict == null)
+                    {
+                        _int32Dict = GetDictionaryValue<int>("Int32Dict");
+                    }
 
-                return _int32Dict;
+                    return _int32Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, long> _int64Dict;
-        public System.Collections.Generic.IDictionary<string, long> Int64Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, long> _int64Dict;
+            public System.Collections.Generic.IDictionary<string, long> Int64Dict
             {
-                if (_int64Dict == null)
+                get
                 {
-                    _int64Dict = GetDictionaryValue<long>("Int64Dict");
-                }
+                    if (_int64Dict == null)
+                    {
+                        _int64Dict = GetDictionaryValue<long>("Int64Dict");
+                    }
 
-                return _int64Dict;
+                    return _int64Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, float> _singleDict;
-        public System.Collections.Generic.IDictionary<string, float> SingleDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, float> _singleDict;
+            public System.Collections.Generic.IDictionary<string, float> SingleDict
             {
-                if (_singleDict == null)
+                get
                 {
-                    _singleDict = GetDictionaryValue<float>("SingleDict");
-                }
+                    if (_singleDict == null)
+                    {
+                        _singleDict = GetDictionaryValue<float>("SingleDict");
+                    }
 
-                return _singleDict;
+                    return _singleDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, double> _doubleDict;
-        public System.Collections.Generic.IDictionary<string, double> DoubleDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, double> _doubleDict;
+            public System.Collections.Generic.IDictionary<string, double> DoubleDict
             {
-                if (_doubleDict == null)
+                get
                 {
-                    _doubleDict = GetDictionaryValue<double>("DoubleDict");
-                }
+                    if (_doubleDict == null)
+                    {
+                        _doubleDict = GetDictionaryValue<double>("DoubleDict");
+                    }
 
-                return _doubleDict;
+                    return _doubleDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, bool> _booleanDict;
-        public System.Collections.Generic.IDictionary<string, bool> BooleanDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, bool> _booleanDict;
+            public System.Collections.Generic.IDictionary<string, bool> BooleanDict
             {
-                if (_booleanDict == null)
+                get
                 {
-                    _booleanDict = GetDictionaryValue<bool>("BooleanDict");
-                }
+                    if (_booleanDict == null)
+                    {
+                        _booleanDict = GetDictionaryValue<bool>("BooleanDict");
+                    }
 
-                return _booleanDict;
+                    return _booleanDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, decimal> _decimalDict;
-        public System.Collections.Generic.IDictionary<string, decimal> DecimalDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, decimal> _decimalDict;
+            public System.Collections.Generic.IDictionary<string, decimal> DecimalDict
             {
-                if (_decimalDict == null)
+                get
                 {
-                    _decimalDict = GetDictionaryValue<decimal>("DecimalDict");
-                }
+                    if (_decimalDict == null)
+                    {
+                        _decimalDict = GetDictionaryValue<decimal>("DecimalDict");
+                    }
 
-                return _decimalDict;
+                    return _decimalDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> _decimal128Dict;
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> _decimal128Dict;
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict
             {
-                if (_decimal128Dict == null)
+                get
                 {
-                    _decimal128Dict = GetDictionaryValue<MongoDB.Bson.Decimal128>("Decimal128Dict");
-                }
+                    if (_decimal128Dict == null)
+                    {
+                        _decimal128Dict = GetDictionaryValue<MongoDB.Bson.Decimal128>("Decimal128Dict");
+                    }
 
-                return _decimal128Dict;
+                    return _decimal128Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> _objectIdDict;
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> _objectIdDict;
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict
             {
-                if (_objectIdDict == null)
+                get
                 {
-                    _objectIdDict = GetDictionaryValue<MongoDB.Bson.ObjectId>("ObjectIdDict");
-                }
+                    if (_objectIdDict == null)
+                    {
+                        _objectIdDict = GetDictionaryValue<MongoDB.Bson.ObjectId>("ObjectIdDict");
+                    }
 
-                return _objectIdDict;
+                    return _objectIdDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, string> _stringDict;
-        public System.Collections.Generic.IDictionary<string, string> StringDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, string> _stringDict;
+            public System.Collections.Generic.IDictionary<string, string> StringDict
             {
-                if (_stringDict == null)
+                get
                 {
-                    _stringDict = GetDictionaryValue<string>("StringDict");
-                }
+                    if (_stringDict == null)
+                    {
+                        _stringDict = GetDictionaryValue<string>("StringDict");
+                    }
 
-                return _stringDict;
+                    return _stringDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, string> _nullableStringDict;
-        public System.Collections.Generic.IDictionary<string, string> NullableStringDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, string> _nullableStringDict;
+            public System.Collections.Generic.IDictionary<string, string> NullableStringDict
             {
-                if (_nullableStringDict == null)
+                get
                 {
-                    _nullableStringDict = GetDictionaryValue<string>("NullableStringDict");
-                }
+                    if (_nullableStringDict == null)
+                    {
+                        _nullableStringDict = GetDictionaryValue<string>("NullableStringDict");
+                    }
 
-                return _nullableStringDict;
+                    return _nullableStringDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDict;
-        public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDict;
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict
             {
-                if (_byteArrayDict == null)
+                get
                 {
-                    _byteArrayDict = GetDictionaryValue<byte[]>("ByteArrayDict");
-                }
+                    if (_byteArrayDict == null)
+                    {
+                        _byteArrayDict = GetDictionaryValue<byte[]>("ByteArrayDict");
+                    }
 
-                return _byteArrayDict;
+                    return _byteArrayDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, byte[]> _nullableByteArrayDict;
-        public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, byte[]> _nullableByteArrayDict;
+            public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict
             {
-                if (_nullableByteArrayDict == null)
+                get
                 {
-                    _nullableByteArrayDict = GetDictionaryValue<byte[]>("NullableByteArrayDict");
-                }
+                    if (_nullableByteArrayDict == null)
+                    {
+                        _nullableByteArrayDict = GetDictionaryValue<byte[]>("NullableByteArrayDict");
+                    }
 
-                return _nullableByteArrayDict;
+                    return _nullableByteArrayDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, System.DateTimeOffset> _dateTimeOffsetDict;
-        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, System.DateTimeOffset> _dateTimeOffsetDict;
+            public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict
             {
-                if (_dateTimeOffsetDict == null)
+                get
                 {
-                    _dateTimeOffsetDict = GetDictionaryValue<System.DateTimeOffset>("DateTimeOffsetDict");
-                }
+                    if (_dateTimeOffsetDict == null)
+                    {
+                        _dateTimeOffsetDict = GetDictionaryValue<System.DateTimeOffset>("DateTimeOffsetDict");
+                    }
 
-                return _dateTimeOffsetDict;
+                    return _dateTimeOffsetDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, char?> _nullableCharDict;
-        public System.Collections.Generic.IDictionary<string, char?> NullableCharDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, char?> _nullableCharDict;
+            public System.Collections.Generic.IDictionary<string, char?> NullableCharDict
             {
-                if (_nullableCharDict == null)
+                get
                 {
-                    _nullableCharDict = GetDictionaryValue<char?>("NullableCharDict");
-                }
+                    if (_nullableCharDict == null)
+                    {
+                        _nullableCharDict = GetDictionaryValue<char?>("NullableCharDict");
+                    }
 
-                return _nullableCharDict;
+                    return _nullableCharDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, byte?> _nullableByteDict;
-        public System.Collections.Generic.IDictionary<string, byte?> NullableByteDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, byte?> _nullableByteDict;
+            public System.Collections.Generic.IDictionary<string, byte?> NullableByteDict
             {
-                if (_nullableByteDict == null)
+                get
                 {
-                    _nullableByteDict = GetDictionaryValue<byte?>("NullableByteDict");
-                }
+                    if (_nullableByteDict == null)
+                    {
+                        _nullableByteDict = GetDictionaryValue<byte?>("NullableByteDict");
+                    }
 
-                return _nullableByteDict;
+                    return _nullableByteDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, short?> _nullableInt16Dict;
-        public System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, short?> _nullableInt16Dict;
+            public System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict
             {
-                if (_nullableInt16Dict == null)
+                get
                 {
-                    _nullableInt16Dict = GetDictionaryValue<short?>("NullableInt16Dict");
-                }
+                    if (_nullableInt16Dict == null)
+                    {
+                        _nullableInt16Dict = GetDictionaryValue<short?>("NullableInt16Dict");
+                    }
 
-                return _nullableInt16Dict;
+                    return _nullableInt16Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, int?> _nullableInt32Dict;
-        public System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, int?> _nullableInt32Dict;
+            public System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict
             {
-                if (_nullableInt32Dict == null)
+                get
                 {
-                    _nullableInt32Dict = GetDictionaryValue<int?>("NullableInt32Dict");
-                }
+                    if (_nullableInt32Dict == null)
+                    {
+                        _nullableInt32Dict = GetDictionaryValue<int?>("NullableInt32Dict");
+                    }
 
-                return _nullableInt32Dict;
+                    return _nullableInt32Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, long?> _nullableInt64Dict;
-        public System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, long?> _nullableInt64Dict;
+            public System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict
             {
-                if (_nullableInt64Dict == null)
+                get
                 {
-                    _nullableInt64Dict = GetDictionaryValue<long?>("NullableInt64Dict");
-                }
+                    if (_nullableInt64Dict == null)
+                    {
+                        _nullableInt64Dict = GetDictionaryValue<long?>("NullableInt64Dict");
+                    }
 
-                return _nullableInt64Dict;
+                    return _nullableInt64Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, float?> _nullableSingleDict;
-        public System.Collections.Generic.IDictionary<string, float?> NullableSingleDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, float?> _nullableSingleDict;
+            public System.Collections.Generic.IDictionary<string, float?> NullableSingleDict
             {
-                if (_nullableSingleDict == null)
+                get
                 {
-                    _nullableSingleDict = GetDictionaryValue<float?>("NullableSingleDict");
-                }
+                    if (_nullableSingleDict == null)
+                    {
+                        _nullableSingleDict = GetDictionaryValue<float?>("NullableSingleDict");
+                    }
 
-                return _nullableSingleDict;
+                    return _nullableSingleDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, double?> _nullableDoubleDict;
-        public System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, double?> _nullableDoubleDict;
+            public System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict
             {
-                if (_nullableDoubleDict == null)
+                get
                 {
-                    _nullableDoubleDict = GetDictionaryValue<double?>("NullableDoubleDict");
-                }
+                    if (_nullableDoubleDict == null)
+                    {
+                        _nullableDoubleDict = GetDictionaryValue<double?>("NullableDoubleDict");
+                    }
 
-                return _nullableDoubleDict;
+                    return _nullableDoubleDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, bool?> _nullableBooleanDict;
-        public System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, bool?> _nullableBooleanDict;
+            public System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict
             {
-                if (_nullableBooleanDict == null)
+                get
                 {
-                    _nullableBooleanDict = GetDictionaryValue<bool?>("NullableBooleanDict");
-                }
+                    if (_nullableBooleanDict == null)
+                    {
+                        _nullableBooleanDict = GetDictionaryValue<bool?>("NullableBooleanDict");
+                    }
 
-                return _nullableBooleanDict;
+                    return _nullableBooleanDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> _nullableDateTimeOffsetDict;
-        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> _nullableDateTimeOffsetDict;
+            public System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict
             {
-                if (_nullableDateTimeOffsetDict == null)
+                get
                 {
-                    _nullableDateTimeOffsetDict = GetDictionaryValue<System.DateTimeOffset?>("NullableDateTimeOffsetDict");
-                }
+                    if (_nullableDateTimeOffsetDict == null)
+                    {
+                        _nullableDateTimeOffsetDict = GetDictionaryValue<System.DateTimeOffset?>("NullableDateTimeOffsetDict");
+                    }
 
-                return _nullableDateTimeOffsetDict;
+                    return _nullableDateTimeOffsetDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, decimal?> _nullableDecimalDict;
-        public System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, decimal?> _nullableDecimalDict;
+            public System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict
             {
-                if (_nullableDecimalDict == null)
+                get
                 {
-                    _nullableDecimalDict = GetDictionaryValue<decimal?>("NullableDecimalDict");
-                }
+                    if (_nullableDecimalDict == null)
+                    {
+                        _nullableDecimalDict = GetDictionaryValue<decimal?>("NullableDecimalDict");
+                    }
 
-                return _nullableDecimalDict;
+                    return _nullableDecimalDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> _nullableDecimal128Dict;
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> _nullableDecimal128Dict;
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict
             {
-                if (_nullableDecimal128Dict == null)
+                get
                 {
-                    _nullableDecimal128Dict = GetDictionaryValue<MongoDB.Bson.Decimal128?>("NullableDecimal128Dict");
-                }
+                    if (_nullableDecimal128Dict == null)
+                    {
+                        _nullableDecimal128Dict = GetDictionaryValue<MongoDB.Bson.Decimal128?>("NullableDecimal128Dict");
+                    }
 
-                return _nullableDecimal128Dict;
+                    return _nullableDecimal128Dict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> _nullableObjectIdDict;
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> _nullableObjectIdDict;
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict
             {
-                if (_nullableObjectIdDict == null)
+                get
                 {
-                    _nullableObjectIdDict = GetDictionaryValue<MongoDB.Bson.ObjectId?>("NullableObjectIdDict");
-                }
+                    if (_nullableObjectIdDict == null)
+                    {
+                        _nullableObjectIdDict = GetDictionaryValue<MongoDB.Bson.ObjectId?>("NullableObjectIdDict");
+                    }
 
-                return _nullableObjectIdDict;
+                    return _nullableObjectIdDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDict;
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDict;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict
             {
-                if (_objectDict == null)
+                get
                 {
-                    _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDict");
-                }
+                    if (_objectDict == null)
+                    {
+                        _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDict");
+                    }
 
-                return _objectDict;
+                    return _objectDict;
+                }
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, Realms.RealmValue> _realmValueDict;
-        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, Realms.RealmValue> _realmValueDict;
+            public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict
             {
-                if (_realmValueDict == null)
+                get
                 {
-                    _realmValueDict = GetDictionaryValue<Realms.RealmValue>("RealmValueDict");
-                }
+                    if (_realmValueDict == null)
+                    {
+                        _realmValueDict = GetDictionaryValue<Realms.RealmValue>("RealmValueDict");
+                    }
 
-                return _realmValueDict;
+                    return _realmValueDict;
+                }
             }
         }
-    }
 
-    internal class CollectionsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICollectionsObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => CollectionsObject.RealmSchema;
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class CollectionsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICollectionsObjectAccessor
+        {
+            public override ObjectSchema ObjectSchema => CollectionsObject.RealmSchema;
 
-        public System.Collections.Generic.ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
+            public System.Collections.Generic.ISet<char> CharSet { get; } = new HashSet<char>(RealmSet<char>.Comparer);
 
-        public System.Collections.Generic.ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
+            public System.Collections.Generic.ISet<byte> ByteSet { get; } = new HashSet<byte>(RealmSet<byte>.Comparer);
 
-        public System.Collections.Generic.ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
+            public System.Collections.Generic.ISet<short> Int16Set { get; } = new HashSet<short>(RealmSet<short>.Comparer);
 
-        public System.Collections.Generic.ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
+            public System.Collections.Generic.ISet<int> Int32Set { get; } = new HashSet<int>(RealmSet<int>.Comparer);
 
-        public System.Collections.Generic.ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
+            public System.Collections.Generic.ISet<long> Int64Set { get; } = new HashSet<long>(RealmSet<long>.Comparer);
 
-        public System.Collections.Generic.ISet<float> SingleSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
+            public System.Collections.Generic.ISet<float> SingleSet { get; } = new HashSet<float>(RealmSet<float>.Comparer);
 
-        public System.Collections.Generic.ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
+            public System.Collections.Generic.ISet<double> DoubleSet { get; } = new HashSet<double>(RealmSet<double>.Comparer);
 
-        public System.Collections.Generic.ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
+            public System.Collections.Generic.ISet<bool> BooleanSet { get; } = new HashSet<bool>(RealmSet<bool>.Comparer);
 
-        public System.Collections.Generic.ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
+            public System.Collections.Generic.ISet<decimal> DecimalSet { get; } = new HashSet<decimal>(RealmSet<decimal>.Comparer);
 
-        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; } = new HashSet<MongoDB.Bson.Decimal128>(RealmSet<MongoDB.Bson.Decimal128>.Comparer);
+            public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128> Decimal128Set { get; } = new HashSet<MongoDB.Bson.Decimal128>(RealmSet<MongoDB.Bson.Decimal128>.Comparer);
 
-        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; } = new HashSet<MongoDB.Bson.ObjectId>(RealmSet<MongoDB.Bson.ObjectId>.Comparer);
+            public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId> ObjectIdSet { get; } = new HashSet<MongoDB.Bson.ObjectId>(RealmSet<MongoDB.Bson.ObjectId>.Comparer);
 
-        public System.Collections.Generic.ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
 
-        public System.Collections.Generic.ISet<string> NullableStringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<string> NullableStringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
 
-        public System.Collections.Generic.ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
+            public System.Collections.Generic.ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
 
-        public System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
+            public System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
 
-        public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset>(RealmSet<System.DateTimeOffset>.Comparer);
+            public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset>(RealmSet<System.DateTimeOffset>.Comparer);
 
-        public System.Collections.Generic.ISet<char?> NullableCharSet { get; } = new HashSet<char?>(RealmSet<char?>.Comparer);
+            public System.Collections.Generic.ISet<char?> NullableCharSet { get; } = new HashSet<char?>(RealmSet<char?>.Comparer);
 
-        public System.Collections.Generic.ISet<byte?> NullableByteSet { get; } = new HashSet<byte?>(RealmSet<byte?>.Comparer);
+            public System.Collections.Generic.ISet<byte?> NullableByteSet { get; } = new HashSet<byte?>(RealmSet<byte?>.Comparer);
 
-        public System.Collections.Generic.ISet<short?> NullableInt16Set { get; } = new HashSet<short?>(RealmSet<short?>.Comparer);
+            public System.Collections.Generic.ISet<short?> NullableInt16Set { get; } = new HashSet<short?>(RealmSet<short?>.Comparer);
 
-        public System.Collections.Generic.ISet<int?> NullableInt32Set { get; } = new HashSet<int?>(RealmSet<int?>.Comparer);
+            public System.Collections.Generic.ISet<int?> NullableInt32Set { get; } = new HashSet<int?>(RealmSet<int?>.Comparer);
 
-        public System.Collections.Generic.ISet<long?> NullableInt64Set { get; } = new HashSet<long?>(RealmSet<long?>.Comparer);
+            public System.Collections.Generic.ISet<long?> NullableInt64Set { get; } = new HashSet<long?>(RealmSet<long?>.Comparer);
 
-        public System.Collections.Generic.ISet<float?> NullableSingleSet { get; } = new HashSet<float?>(RealmSet<float?>.Comparer);
+            public System.Collections.Generic.ISet<float?> NullableSingleSet { get; } = new HashSet<float?>(RealmSet<float?>.Comparer);
 
-        public System.Collections.Generic.ISet<double?> NullableDoubleSet { get; } = new HashSet<double?>(RealmSet<double?>.Comparer);
+            public System.Collections.Generic.ISet<double?> NullableDoubleSet { get; } = new HashSet<double?>(RealmSet<double?>.Comparer);
 
-        public System.Collections.Generic.ISet<bool?> NullableBooleanSet { get; } = new HashSet<bool?>(RealmSet<bool?>.Comparer);
+            public System.Collections.Generic.ISet<bool?> NullableBooleanSet { get; } = new HashSet<bool?>(RealmSet<bool?>.Comparer);
 
-        public System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset?>(RealmSet<System.DateTimeOffset?>.Comparer);
+            public System.Collections.Generic.ISet<System.DateTimeOffset?> NullableDateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset?>(RealmSet<System.DateTimeOffset?>.Comparer);
 
-        public System.Collections.Generic.ISet<decimal?> NullableDecimalSet { get; } = new HashSet<decimal?>(RealmSet<decimal?>.Comparer);
+            public System.Collections.Generic.ISet<decimal?> NullableDecimalSet { get; } = new HashSet<decimal?>(RealmSet<decimal?>.Comparer);
 
-        public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set { get; } = new HashSet<MongoDB.Bson.Decimal128?>(RealmSet<MongoDB.Bson.Decimal128?>.Comparer);
+            public System.Collections.Generic.ISet<MongoDB.Bson.Decimal128?> NullableDecimal128Set { get; } = new HashSet<MongoDB.Bson.Decimal128?>(RealmSet<MongoDB.Bson.Decimal128?>.Comparer);
 
-        public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet { get; } = new HashSet<MongoDB.Bson.ObjectId?>(RealmSet<MongoDB.Bson.ObjectId?>.Comparer);
+            public System.Collections.Generic.ISet<MongoDB.Bson.ObjectId?> NullableObjectIdSet { get; } = new HashSet<MongoDB.Bson.ObjectId?>(RealmSet<MongoDB.Bson.ObjectId?>.Comparer);
 
-        public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; } = new HashSet<Realms.Tests.IntPropertyObject>(RealmSet<Realms.Tests.IntPropertyObject>.Comparer);
+            public System.Collections.Generic.ISet<Realms.Tests.IntPropertyObject> ObjectSet { get; } = new HashSet<Realms.Tests.IntPropertyObject>(RealmSet<Realms.Tests.IntPropertyObject>.Comparer);
 
-        public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; } = new HashSet<Realms.RealmValue>(RealmSet<Realms.RealmValue>.Comparer);
+            public System.Collections.Generic.ISet<Realms.RealmValue> RealmValueSet { get; } = new HashSet<Realms.RealmValue>(RealmSet<Realms.RealmValue>.Comparer);
 
-        public System.Collections.Generic.IList<char> CharList { get; } = new List<char>();
+            public System.Collections.Generic.IList<char> CharList { get; } = new List<char>();
 
-        public System.Collections.Generic.IList<byte> ByteList { get; } = new List<byte>();
+            public System.Collections.Generic.IList<byte> ByteList { get; } = new List<byte>();
 
-        public System.Collections.Generic.IList<short> Int16List { get; } = new List<short>();
+            public System.Collections.Generic.IList<short> Int16List { get; } = new List<short>();
 
-        public System.Collections.Generic.IList<int> Int32List { get; } = new List<int>();
+            public System.Collections.Generic.IList<int> Int32List { get; } = new List<int>();
 
-        public System.Collections.Generic.IList<long> Int64List { get; } = new List<long>();
+            public System.Collections.Generic.IList<long> Int64List { get; } = new List<long>();
 
-        public System.Collections.Generic.IList<float> SingleList { get; } = new List<float>();
+            public System.Collections.Generic.IList<float> SingleList { get; } = new List<float>();
 
-        public System.Collections.Generic.IList<double> DoubleList { get; } = new List<double>();
+            public System.Collections.Generic.IList<double> DoubleList { get; } = new List<double>();
 
-        public System.Collections.Generic.IList<bool> BooleanList { get; } = new List<bool>();
+            public System.Collections.Generic.IList<bool> BooleanList { get; } = new List<bool>();
 
-        public System.Collections.Generic.IList<decimal> DecimalList { get; } = new List<decimal>();
+            public System.Collections.Generic.IList<decimal> DecimalList { get; } = new List<decimal>();
 
-        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; } = new List<MongoDB.Bson.Decimal128>();
+            public System.Collections.Generic.IList<MongoDB.Bson.Decimal128> Decimal128List { get; } = new List<MongoDB.Bson.Decimal128>();
 
-        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; } = new List<MongoDB.Bson.ObjectId>();
+            public System.Collections.Generic.IList<MongoDB.Bson.ObjectId> ObjectIdList { get; } = new List<MongoDB.Bson.ObjectId>();
 
-        public System.Collections.Generic.IList<string> StringList { get; } = new List<string>();
+            public System.Collections.Generic.IList<string> StringList { get; } = new List<string>();
 
-        public System.Collections.Generic.IList<string> NullableStringList { get; } = new List<string>();
+            public System.Collections.Generic.IList<string> NullableStringList { get; } = new List<string>();
 
-        public System.Collections.Generic.IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
+            public System.Collections.Generic.IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
 
-        public System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; } = new List<byte[]>();
+            public System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; } = new List<byte[]>();
 
-        public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; } = new List<System.DateTimeOffset>();
+            public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; } = new List<System.DateTimeOffset>();
 
-        public System.Collections.Generic.IList<char?> NullableCharList { get; } = new List<char?>();
+            public System.Collections.Generic.IList<char?> NullableCharList { get; } = new List<char?>();
 
-        public System.Collections.Generic.IList<byte?> NullableByteList { get; } = new List<byte?>();
+            public System.Collections.Generic.IList<byte?> NullableByteList { get; } = new List<byte?>();
 
-        public System.Collections.Generic.IList<short?> NullableInt16List { get; } = new List<short?>();
+            public System.Collections.Generic.IList<short?> NullableInt16List { get; } = new List<short?>();
 
-        public System.Collections.Generic.IList<int?> NullableInt32List { get; } = new List<int?>();
+            public System.Collections.Generic.IList<int?> NullableInt32List { get; } = new List<int?>();
 
-        public System.Collections.Generic.IList<long?> NullableInt64List { get; } = new List<long?>();
+            public System.Collections.Generic.IList<long?> NullableInt64List { get; } = new List<long?>();
 
-        public System.Collections.Generic.IList<float?> NullableSingleList { get; } = new List<float?>();
+            public System.Collections.Generic.IList<float?> NullableSingleList { get; } = new List<float?>();
 
-        public System.Collections.Generic.IList<double?> NullableDoubleList { get; } = new List<double?>();
+            public System.Collections.Generic.IList<double?> NullableDoubleList { get; } = new List<double?>();
 
-        public System.Collections.Generic.IList<bool?> NullableBooleanList { get; } = new List<bool?>();
+            public System.Collections.Generic.IList<bool?> NullableBooleanList { get; } = new List<bool?>();
 
-        public System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList { get; } = new List<System.DateTimeOffset?>();
+            public System.Collections.Generic.IList<System.DateTimeOffset?> NullableDateTimeOffsetList { get; } = new List<System.DateTimeOffset?>();
 
-        public System.Collections.Generic.IList<decimal?> NullableDecimalList { get; } = new List<decimal?>();
+            public System.Collections.Generic.IList<decimal?> NullableDecimalList { get; } = new List<decimal?>();
 
-        public System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List { get; } = new List<MongoDB.Bson.Decimal128?>();
+            public System.Collections.Generic.IList<MongoDB.Bson.Decimal128?> NullableDecimal128List { get; } = new List<MongoDB.Bson.Decimal128?>();
 
-        public System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList { get; } = new List<MongoDB.Bson.ObjectId?>();
+            public System.Collections.Generic.IList<MongoDB.Bson.ObjectId?> NullableObjectIdList { get; } = new List<MongoDB.Bson.ObjectId?>();
 
-        public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; } = new List<Realms.Tests.IntPropertyObject>();
+            public System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> ObjectList { get; } = new List<Realms.Tests.IntPropertyObject>();
 
-        public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<Realms.Tests.EmbeddedIntPropertyObject>();
+            public System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = new List<Realms.Tests.EmbeddedIntPropertyObject>();
 
-        public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; } = new List<Realms.RealmValue>();
+            public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; } = new List<Realms.RealmValue>();
 
-        public System.Collections.Generic.IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
+            public System.Collections.Generic.IDictionary<string, char> CharDict { get; } = new Dictionary<string, char>();
 
-        public System.Collections.Generic.IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
+            public System.Collections.Generic.IDictionary<string, byte> ByteDict { get; } = new Dictionary<string, byte>();
 
-        public System.Collections.Generic.IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
+            public System.Collections.Generic.IDictionary<string, short> Int16Dict { get; } = new Dictionary<string, short>();
 
-        public System.Collections.Generic.IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
+            public System.Collections.Generic.IDictionary<string, int> Int32Dict { get; } = new Dictionary<string, int>();
 
-        public System.Collections.Generic.IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
+            public System.Collections.Generic.IDictionary<string, long> Int64Dict { get; } = new Dictionary<string, long>();
 
-        public System.Collections.Generic.IDictionary<string, float> SingleDict { get; } = new Dictionary<string, float>();
+            public System.Collections.Generic.IDictionary<string, float> SingleDict { get; } = new Dictionary<string, float>();
 
-        public System.Collections.Generic.IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
+            public System.Collections.Generic.IDictionary<string, double> DoubleDict { get; } = new Dictionary<string, double>();
 
-        public System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
+            public System.Collections.Generic.IDictionary<string, bool> BooleanDict { get; } = new Dictionary<string, bool>();
 
-        public System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
+            public System.Collections.Generic.IDictionary<string, decimal> DecimalDict { get; } = new Dictionary<string, decimal>();
 
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; } = new Dictionary<string, MongoDB.Bson.Decimal128>();
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128> Decimal128Dict { get; } = new Dictionary<string, MongoDB.Bson.Decimal128>();
 
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId>();
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId> ObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId>();
 
-        public System.Collections.Generic.IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
+            public System.Collections.Generic.IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
 
-        public System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; } = new Dictionary<string, string>();
+            public System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; } = new Dictionary<string, string>();
 
-        public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
 
-        public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; } = new Dictionary<string, byte[]>();
+            public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; } = new Dictionary<string, byte[]>();
 
-        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset>();
+            public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset>();
 
-        public System.Collections.Generic.IDictionary<string, char?> NullableCharDict { get; } = new Dictionary<string, char?>();
+            public System.Collections.Generic.IDictionary<string, char?> NullableCharDict { get; } = new Dictionary<string, char?>();
 
-        public System.Collections.Generic.IDictionary<string, byte?> NullableByteDict { get; } = new Dictionary<string, byte?>();
+            public System.Collections.Generic.IDictionary<string, byte?> NullableByteDict { get; } = new Dictionary<string, byte?>();
 
-        public System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict { get; } = new Dictionary<string, short?>();
+            public System.Collections.Generic.IDictionary<string, short?> NullableInt16Dict { get; } = new Dictionary<string, short?>();
 
-        public System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict { get; } = new Dictionary<string, int?>();
+            public System.Collections.Generic.IDictionary<string, int?> NullableInt32Dict { get; } = new Dictionary<string, int?>();
 
-        public System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict { get; } = new Dictionary<string, long?>();
+            public System.Collections.Generic.IDictionary<string, long?> NullableInt64Dict { get; } = new Dictionary<string, long?>();
 
-        public System.Collections.Generic.IDictionary<string, float?> NullableSingleDict { get; } = new Dictionary<string, float?>();
+            public System.Collections.Generic.IDictionary<string, float?> NullableSingleDict { get; } = new Dictionary<string, float?>();
 
-        public System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict { get; } = new Dictionary<string, double?>();
+            public System.Collections.Generic.IDictionary<string, double?> NullableDoubleDict { get; } = new Dictionary<string, double?>();
 
-        public System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict { get; } = new Dictionary<string, bool?>();
+            public System.Collections.Generic.IDictionary<string, bool?> NullableBooleanDict { get; } = new Dictionary<string, bool?>();
 
-        public System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset?>();
+            public System.Collections.Generic.IDictionary<string, System.DateTimeOffset?> NullableDateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset?>();
 
-        public System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict { get; } = new Dictionary<string, decimal?>();
+            public System.Collections.Generic.IDictionary<string, decimal?> NullableDecimalDict { get; } = new Dictionary<string, decimal?>();
 
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict { get; } = new Dictionary<string, MongoDB.Bson.Decimal128?>();
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.Decimal128?> NullableDecimal128Dict { get; } = new Dictionary<string, MongoDB.Bson.Decimal128?>();
 
-        public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId?>();
+            public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId?>();
 
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
 
-        public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; } = new Dictionary<string, Realms.RealmValue>();
+            public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; } = new Dictionary<string, Realms.RealmValue>();
 
-        public CollectionsObjectUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
+            public CollectionsObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
+            }
 
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+            }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "CharList" => (IList<T>)CharList,
-            "ByteList" => (IList<T>)ByteList,
-            "Int16List" => (IList<T>)Int16List,
-            "Int32List" => (IList<T>)Int32List,
-            "Int64List" => (IList<T>)Int64List,
-            "SingleList" => (IList<T>)SingleList,
-            "DoubleList" => (IList<T>)DoubleList,
-            "BooleanList" => (IList<T>)BooleanList,
-            "DecimalList" => (IList<T>)DecimalList,
-            "Decimal128List" => (IList<T>)Decimal128List,
-            "ObjectIdList" => (IList<T>)ObjectIdList,
-            "StringList" => (IList<T>)StringList,
-            "NullableStringList" => (IList<T>)NullableStringList,
-            "ByteArrayList" => (IList<T>)ByteArrayList,
-            "NullableByteArrayList" => (IList<T>)NullableByteArrayList,
-            "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
-            "NullableCharList" => (IList<T>)NullableCharList,
-            "NullableByteList" => (IList<T>)NullableByteList,
-            "NullableInt16List" => (IList<T>)NullableInt16List,
-            "NullableInt32List" => (IList<T>)NullableInt32List,
-            "NullableInt64List" => (IList<T>)NullableInt64List,
-            "NullableSingleList" => (IList<T>)NullableSingleList,
-            "NullableDoubleList" => (IList<T>)NullableDoubleList,
-            "NullableBooleanList" => (IList<T>)NullableBooleanList,
-            "NullableDateTimeOffsetList" => (IList<T>)NullableDateTimeOffsetList,
-            "NullableDecimalList" => (IList<T>)NullableDecimalList,
-            "NullableDecimal128List" => (IList<T>)NullableDecimal128List,
-            "NullableObjectIdList" => (IList<T>)NullableObjectIdList,
-            "ObjectList" => (IList<T>)ObjectList,
-            "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
-            "RealmValueList" => (IList<T>)RealmValueList,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "CharList" => (IList<T>)CharList,
+                "ByteList" => (IList<T>)ByteList,
+                "Int16List" => (IList<T>)Int16List,
+                "Int32List" => (IList<T>)Int32List,
+                "Int64List" => (IList<T>)Int64List,
+                "SingleList" => (IList<T>)SingleList,
+                "DoubleList" => (IList<T>)DoubleList,
+                "BooleanList" => (IList<T>)BooleanList,
+                "DecimalList" => (IList<T>)DecimalList,
+                "Decimal128List" => (IList<T>)Decimal128List,
+                "ObjectIdList" => (IList<T>)ObjectIdList,
+                "StringList" => (IList<T>)StringList,
+                "NullableStringList" => (IList<T>)NullableStringList,
+                "ByteArrayList" => (IList<T>)ByteArrayList,
+                "NullableByteArrayList" => (IList<T>)NullableByteArrayList,
+                "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
+                "NullableCharList" => (IList<T>)NullableCharList,
+                "NullableByteList" => (IList<T>)NullableByteList,
+                "NullableInt16List" => (IList<T>)NullableInt16List,
+                "NullableInt32List" => (IList<T>)NullableInt32List,
+                "NullableInt64List" => (IList<T>)NullableInt64List,
+                "NullableSingleList" => (IList<T>)NullableSingleList,
+                "NullableDoubleList" => (IList<T>)NullableDoubleList,
+                "NullableBooleanList" => (IList<T>)NullableBooleanList,
+                "NullableDateTimeOffsetList" => (IList<T>)NullableDateTimeOffsetList,
+                "NullableDecimalList" => (IList<T>)NullableDecimalList,
+                "NullableDecimal128List" => (IList<T>)NullableDecimal128List,
+                "NullableObjectIdList" => (IList<T>)NullableObjectIdList,
+                "ObjectList" => (IList<T>)ObjectList,
+                "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
+                "RealmValueList" => (IList<T>)RealmValueList,
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "CharSet" => (ISet<T>)CharSet,
-            "ByteSet" => (ISet<T>)ByteSet,
-            "Int16Set" => (ISet<T>)Int16Set,
-            "Int32Set" => (ISet<T>)Int32Set,
-            "Int64Set" => (ISet<T>)Int64Set,
-            "SingleSet" => (ISet<T>)SingleSet,
-            "DoubleSet" => (ISet<T>)DoubleSet,
-            "BooleanSet" => (ISet<T>)BooleanSet,
-            "DecimalSet" => (ISet<T>)DecimalSet,
-            "Decimal128Set" => (ISet<T>)Decimal128Set,
-            "ObjectIdSet" => (ISet<T>)ObjectIdSet,
-            "StringSet" => (ISet<T>)StringSet,
-            "NullableStringSet" => (ISet<T>)NullableStringSet,
-            "ByteArraySet" => (ISet<T>)ByteArraySet,
-            "NullableByteArraySet" => (ISet<T>)NullableByteArraySet,
-            "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
-            "NullableCharSet" => (ISet<T>)NullableCharSet,
-            "NullableByteSet" => (ISet<T>)NullableByteSet,
-            "NullableInt16Set" => (ISet<T>)NullableInt16Set,
-            "NullableInt32Set" => (ISet<T>)NullableInt32Set,
-            "NullableInt64Set" => (ISet<T>)NullableInt64Set,
-            "NullableSingleSet" => (ISet<T>)NullableSingleSet,
-            "NullableDoubleSet" => (ISet<T>)NullableDoubleSet,
-            "NullableBooleanSet" => (ISet<T>)NullableBooleanSet,
-            "NullableDateTimeOffsetSet" => (ISet<T>)NullableDateTimeOffsetSet,
-            "NullableDecimalSet" => (ISet<T>)NullableDecimalSet,
-            "NullableDecimal128Set" => (ISet<T>)NullableDecimal128Set,
-            "NullableObjectIdSet" => (ISet<T>)NullableObjectIdSet,
-            "ObjectSet" => (ISet<T>)ObjectSet,
-            "RealmValueSet" => (ISet<T>)RealmValueSet,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                        };
-        }
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            return propertyName switch
-            {
-                "CharDict" => (IDictionary<string, TValue>)CharDict,
-                "ByteDict" => (IDictionary<string, TValue>)ByteDict,
-                "Int16Dict" => (IDictionary<string, TValue>)Int16Dict,
-                "Int32Dict" => (IDictionary<string, TValue>)Int32Dict,
-                "Int64Dict" => (IDictionary<string, TValue>)Int64Dict,
-                "SingleDict" => (IDictionary<string, TValue>)SingleDict,
-                "DoubleDict" => (IDictionary<string, TValue>)DoubleDict,
-                "BooleanDict" => (IDictionary<string, TValue>)BooleanDict,
-                "DecimalDict" => (IDictionary<string, TValue>)DecimalDict,
-                "Decimal128Dict" => (IDictionary<string, TValue>)Decimal128Dict,
-                "ObjectIdDict" => (IDictionary<string, TValue>)ObjectIdDict,
-                "StringDict" => (IDictionary<string, TValue>)StringDict,
-                "NullableStringDict" => (IDictionary<string, TValue>)NullableStringDict,
-                "ByteArrayDict" => (IDictionary<string, TValue>)ByteArrayDict,
-                "NullableByteArrayDict" => (IDictionary<string, TValue>)NullableByteArrayDict,
-                "DateTimeOffsetDict" => (IDictionary<string, TValue>)DateTimeOffsetDict,
-                "NullableCharDict" => (IDictionary<string, TValue>)NullableCharDict,
-                "NullableByteDict" => (IDictionary<string, TValue>)NullableByteDict,
-                "NullableInt16Dict" => (IDictionary<string, TValue>)NullableInt16Dict,
-                "NullableInt32Dict" => (IDictionary<string, TValue>)NullableInt32Dict,
-                "NullableInt64Dict" => (IDictionary<string, TValue>)NullableInt64Dict,
-                "NullableSingleDict" => (IDictionary<string, TValue>)NullableSingleDict,
-                "NullableDoubleDict" => (IDictionary<string, TValue>)NullableDoubleDict,
-                "NullableBooleanDict" => (IDictionary<string, TValue>)NullableBooleanDict,
-                "NullableDateTimeOffsetDict" => (IDictionary<string, TValue>)NullableDateTimeOffsetDict,
-                "NullableDecimalDict" => (IDictionary<string, TValue>)NullableDecimalDict,
-                "NullableDecimal128Dict" => (IDictionary<string, TValue>)NullableDecimal128Dict,
-                "NullableObjectIdDict" => (IDictionary<string, TValue>)NullableObjectIdDict,
-                "ObjectDict" => (IDictionary<string, TValue>)ObjectDict,
-                "RealmValueDict" => (IDictionary<string, TValue>)RealmValueDict,
-                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
-            };
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "CharSet" => (ISet<T>)CharSet,
+                "ByteSet" => (ISet<T>)ByteSet,
+                "Int16Set" => (ISet<T>)Int16Set,
+                "Int32Set" => (ISet<T>)Int32Set,
+                "Int64Set" => (ISet<T>)Int64Set,
+                "SingleSet" => (ISet<T>)SingleSet,
+                "DoubleSet" => (ISet<T>)DoubleSet,
+                "BooleanSet" => (ISet<T>)BooleanSet,
+                "DecimalSet" => (ISet<T>)DecimalSet,
+                "Decimal128Set" => (ISet<T>)Decimal128Set,
+                "ObjectIdSet" => (ISet<T>)ObjectIdSet,
+                "StringSet" => (ISet<T>)StringSet,
+                "NullableStringSet" => (ISet<T>)NullableStringSet,
+                "ByteArraySet" => (ISet<T>)ByteArraySet,
+                "NullableByteArraySet" => (ISet<T>)NullableByteArraySet,
+                "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
+                "NullableCharSet" => (ISet<T>)NullableCharSet,
+                "NullableByteSet" => (ISet<T>)NullableByteSet,
+                "NullableInt16Set" => (ISet<T>)NullableInt16Set,
+                "NullableInt32Set" => (ISet<T>)NullableInt32Set,
+                "NullableInt64Set" => (ISet<T>)NullableInt64Set,
+                "NullableSingleSet" => (ISet<T>)NullableSingleSet,
+                "NullableDoubleSet" => (ISet<T>)NullableDoubleSet,
+                "NullableBooleanSet" => (ISet<T>)NullableBooleanSet,
+                "NullableDateTimeOffsetSet" => (ISet<T>)NullableDateTimeOffsetSet,
+                "NullableDecimalSet" => (ISet<T>)NullableDecimalSet,
+                "NullableDecimal128Set" => (ISet<T>)NullableDecimal128Set,
+                "NullableObjectIdSet" => (ISet<T>)NullableObjectIdSet,
+                "ObjectSet" => (ISet<T>)ObjectSet,
+                "RealmValueSet" => (ISet<T>)RealmValueSet,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "CharDict" => (IDictionary<string, TValue>)CharDict,
+                    "ByteDict" => (IDictionary<string, TValue>)ByteDict,
+                    "Int16Dict" => (IDictionary<string, TValue>)Int16Dict,
+                    "Int32Dict" => (IDictionary<string, TValue>)Int32Dict,
+                    "Int64Dict" => (IDictionary<string, TValue>)Int64Dict,
+                    "SingleDict" => (IDictionary<string, TValue>)SingleDict,
+                    "DoubleDict" => (IDictionary<string, TValue>)DoubleDict,
+                    "BooleanDict" => (IDictionary<string, TValue>)BooleanDict,
+                    "DecimalDict" => (IDictionary<string, TValue>)DecimalDict,
+                    "Decimal128Dict" => (IDictionary<string, TValue>)Decimal128Dict,
+                    "ObjectIdDict" => (IDictionary<string, TValue>)ObjectIdDict,
+                    "StringDict" => (IDictionary<string, TValue>)StringDict,
+                    "NullableStringDict" => (IDictionary<string, TValue>)NullableStringDict,
+                    "ByteArrayDict" => (IDictionary<string, TValue>)ByteArrayDict,
+                    "NullableByteArrayDict" => (IDictionary<string, TValue>)NullableByteArrayDict,
+                    "DateTimeOffsetDict" => (IDictionary<string, TValue>)DateTimeOffsetDict,
+                    "NullableCharDict" => (IDictionary<string, TValue>)NullableCharDict,
+                    "NullableByteDict" => (IDictionary<string, TValue>)NullableByteDict,
+                    "NullableInt16Dict" => (IDictionary<string, TValue>)NullableInt16Dict,
+                    "NullableInt32Dict" => (IDictionary<string, TValue>)NullableInt32Dict,
+                    "NullableInt64Dict" => (IDictionary<string, TValue>)NullableInt64Dict,
+                    "NullableSingleDict" => (IDictionary<string, TValue>)NullableSingleDict,
+                    "NullableDoubleDict" => (IDictionary<string, TValue>)NullableDoubleDict,
+                    "NullableBooleanDict" => (IDictionary<string, TValue>)NullableBooleanDict,
+                    "NullableDateTimeOffsetDict" => (IDictionary<string, TValue>)NullableDateTimeOffsetDict,
+                    "NullableDecimalDict" => (IDictionary<string, TValue>)NullableDecimalDict,
+                    "NullableDecimal128Dict" => (IDictionary<string, TValue>)NullableDecimal128Dict,
+                    "NullableObjectIdDict" => (IDictionary<string, TValue>)NullableObjectIdDict,
+                    "ObjectDict" => (IDictionary<string, TValue>)ObjectDict,
+                    "RealmValueDict" => (IDictionary<string, TValue>)RealmValueDict,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
+            }
         }
     }
 }

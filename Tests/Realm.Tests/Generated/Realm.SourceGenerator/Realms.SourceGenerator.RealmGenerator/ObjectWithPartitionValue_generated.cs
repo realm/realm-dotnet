@@ -11,7 +11,6 @@ using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
 using Realms.Tests.Sync;
-using Realms.Tests.Sync.Generated;
 using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 using System;
@@ -240,158 +239,156 @@ namespace Realms.Tests.Sync
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Sync.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
-    {
-        string Id { get; set; }
-
-        string Value { get; set; }
-
-        string Partition { get; set; }
-
-        System.Guid Guid { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
-    {
-        public string Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            string Id { get; set; }
+
+            string Value { get; set; }
+
+            string Partition { get; set; }
+
+            System.Guid Guid { get; set; }
         }
 
-        public string Value
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
-            get => (string)GetValue("Value");
-            set => SetValue("Value", value);
-        }
-
-        public string Partition
-        {
-            get => (string)GetValue("realm_id");
-            set => SetValue("realm_id", value);
-        }
-
-        public System.Guid Guid
-        {
-            get => (System.Guid)GetValue("Guid");
-            set => SetValue("Guid", value);
-        }
-    }
-
-    internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
-    {
-        public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
-
-        private string _id;
-        public string Id
-        {
-            get => _id;
-            set
+            public string Id
             {
-                _id = value;
-                RaisePropertyChanged("Id");
+                get => (string)GetValue("_id");
+                set => SetValueUnique("_id", value);
+            }
+
+            public string Value
+            {
+                get => (string)GetValue("Value");
+                set => SetValue("Value", value);
+            }
+
+            public string Partition
+            {
+                get => (string)GetValue("realm_id");
+                set => SetValue("realm_id", value);
+            }
+
+            public System.Guid Guid
+            {
+                get => (System.Guid)GetValue("Guid");
+                set => SetValue("Guid", value);
             }
         }
 
-        private string _value;
-        public string Value
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
         {
-            get => _value;
-            set
-            {
-                _value = value;
-                RaisePropertyChanged("Value");
-            }
-        }
+            public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
 
-        private string _partition;
-        public string Partition
-        {
-            get => _partition;
-            set
+            private string _id;
+            public string Id
             {
-                _partition = value;
-                RaisePropertyChanged("Partition");
-            }
-        }
-
-        private System.Guid _guid;
-        public System.Guid Guid
-        {
-            get => _guid;
-            set
-            {
-                _guid = value;
-                RaisePropertyChanged("Guid");
-            }
-        }
-
-        public ObjectWithPartitionValueUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "_id" => _id,
-                "Value" => _value,
-                "realm_id" => _partition,
-                "Guid" => _guid,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Value":
-                    Value = (string)val;
-                    return;
-                case "realm_id":
-                    Partition = (string)val;
-                    return;
-                case "Guid":
-                    Guid = (System.Guid)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
             }
 
-            Id = (string)val;
-        }
+            private string _value;
+            public string Value
+            {
+                get => _value;
+                set
+                {
+                    _value = value;
+                    RaisePropertyChanged("Value");
+                }
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            private string _partition;
+            public string Partition
+            {
+                get => _partition;
+                set
+                {
+                    _partition = value;
+                    RaisePropertyChanged("Partition");
+                }
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            private System.Guid _guid;
+            public System.Guid Guid
+            {
+                get => _guid;
+                set
+                {
+                    _guid = value;
+                    RaisePropertyChanged("Guid");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public ObjectWithPartitionValueUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    "Value" => _value,
+                    "realm_id" => _partition,
+                    "Guid" => _guid,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Value":
+                        Value = (string)val;
+                        return;
+                    case "realm_id":
+                        Partition = (string)val;
+                        return;
+                    case "Guid":
+                        Guid = (System.Guid)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (string)val;
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }
