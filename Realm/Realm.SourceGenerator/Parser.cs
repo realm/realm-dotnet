@@ -28,10 +28,12 @@ namespace Realms.SourceGenerator
     internal class Parser
     {
         private GeneratorExecutionContext _context;
+        private bool _ignoreObjectsNullability;
 
-        public Parser(GeneratorExecutionContext context)
+        public Parser(GeneratorExecutionContext context, bool ignoreObjectsNullability = false)
         {
             _context = context;
+            _ignoreObjectsNullability = ignoreObjectsNullability;
         }
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
@@ -152,7 +154,8 @@ namespace Realms.SourceGenerator
             return usings;
         }
 
-        private static IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        //TODO Instead of making this classes non-static I could pass a config file or similar
+        private IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -265,7 +268,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -296,7 +299,7 @@ namespace Realms.SourceGenerator
                 return propertyTypeInfo;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation())
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_ignoreObjectsNullability))
             {
                 classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }

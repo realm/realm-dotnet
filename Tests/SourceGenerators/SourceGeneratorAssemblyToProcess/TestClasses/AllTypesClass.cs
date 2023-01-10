@@ -55,6 +55,9 @@ namespace SourceGeneratorAssemblyToProcess
 
         public string StringProperty { get; set; }
 
+        [Required]
+        public byte[] RequiredByteArrayProperty { get; set; }
+
         public byte[] ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }

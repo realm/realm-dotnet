@@ -240,7 +240,7 @@ namespace Realms.SourceGenerator
             return _requiredTypes.Contains(ScalarType);
         }
 
-        public bool HasCorrectNullabilityAnnotation()
+        public bool HasCorrectNullabilityAnnotation(bool ignoreObjectsNullability)
         {
             if (NullableAnnotation == NullableAnnotation.Annotated &&
                 (IsCollection || ScalarType == ScalarType.RealmValue))
@@ -248,7 +248,7 @@ namespace Realms.SourceGenerator
                 return false;
             }
 
-            if (!IsNullable &&
+            if (!ignoreObjectsNullability && !IsNullable &&
                 (ScalarType == ScalarType.Object))
             {
                 return false;
