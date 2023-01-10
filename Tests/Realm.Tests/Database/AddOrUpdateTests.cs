@@ -1219,6 +1219,5 @@ namespace Realms.Tests.Database
 
             public NonPrimaryKeyObject OtherObject { get; set; }
         }
-
     }
 }
