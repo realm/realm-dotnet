@@ -52,9 +52,13 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
-                [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string framework, IntPtr framework_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string framework_version, IntPtr framework_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string cpu_arch, IntPtr cpu_arch_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string device_name, IntPtr device_name_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string device_version, IntPtr device_version_len,
                 UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
@@ -181,16 +185,33 @@ namespace Realms.Sync
             ////     platformVersion = Environment.OSVersion.VersionString;
             //// }
 
-            var platform = InteropConfig.Platform;
-            var platformVersion = RuntimeInformation.OSDescription;
+            var frameworkName = InteropConfig.FrameworkName;
+            var frameworkVersion = Environment.Version.ToString();
 
             // TODO: https://github.com/realm/realm-dotnet/issues/2218 this doesn't handle prerelease versions.
             var sdkVersion = InteropConfig.SDKVersion.ToString(3);
 
+            var platformVersion = Environment.OSVersion.Version.ToString();
+
+            if (!string.IsNullOrEmpty(Environment.OSVersion.ServicePack))
+            {
+                platformVersion += $" {Environment.OSVersion.ServicePack}";
+            }
+
+            var cpuArch = RuntimeInformation.ProcessArchitecture.ToString();
+
+            // TODO: try and infer device information as part of RNET-849
+            var deviceName = "unknown";
+            var deviceVersion = "unknown";
+
             NativeMethods.initialize(
-                platform, platform.IntPtrLength(),
-                platformVersion, platformVersion.IntPtrLength(),
+                frameworkName, frameworkName.IntPtrLength(),
+                frameworkVersion, frameworkVersion.IntPtrLength(),
                 sdkVersion, sdkVersion.IntPtrLength(),
+                platformVersion, platformVersion.IntPtrLength(),
+                cpuArch, cpuArch.IntPtrLength(),
+                deviceName, deviceName.IntPtrLength(),
+                deviceVersion, deviceVersion.IntPtrLength(),
                 userLogin, taskCallback, stringCallback, logMessage, apiKeysCallback);
         }
 

@@ -25,15 +25,16 @@ using MongoDB.Bson;
 using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly ConcurrentQueue<Session> _sessions = new();
-        private readonly ConcurrentQueue<App> _apps = new();
-        private readonly ConcurrentQueue<string> _clientResetAppsToRestore = new();
+        private readonly ConcurrentQueue<StrongBox<Session>> _sessions = new();
+        private readonly ConcurrentQueue<StrongBox<App>> _apps = new();
+        private readonly ConcurrentQueue<StrongBox<string>> _clientResetAppsToRestore = new();
 
         private App _defaultApp;
 
@@ -74,7 +75,8 @@ namespace Realms.Tests.Sync
             {
                 while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
                 {
-                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true);
+                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType.Value, enabled: true);
+                    appConfigType.Value = null;
                 }
             });
         }

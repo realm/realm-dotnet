@@ -1,16 +1,29 @@
 ## vNext (TBD)
 
+**File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
+
 ### Enhancements
-* None
+* The realm file will be shrunk if the larger file size is no longer needed. (Core 13.0.0)
+* Most of the file growth caused by version pinning is eliminated. (Core 13.0.0)
+* Improve performance of acquiring read locks when a read lock for that version is already held. This speeds up many operations related to change notifications, and particularly refreshing a Realm which has change notifiers registered. (Core 13.2.0)
+* Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
+* Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
+* Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 
 ### Fixed
+* Set<Mixed> consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
+* Fixed wrong assertion on query error that could result in a crash. (Core 13.1.0)
+* Fixed an issue preventing opening an encrypted file on a device with a page size bigger than the one on which the file was produced. (Core 13.1.1)
+* Fixed possible segfault in sync client where async callback was using object after being deallocated (Core 13.2.0)
+* Fixed crash when using client reset with recovery and flexible sync with a single subscription (Core 13.2.0)
+* Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
 * Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
 
 ### Compatibility
-* Realm Studio: 12.0.0 or later.
+* Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.2.0.
 
 ## 10.19.0 (2023-01-06)
 
@@ -28,7 +41,6 @@
 * Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
 * Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
 * Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
-* Added diagnostic error for nested classes used with the source generator syntax, as they are not yet supported. (Issue [#3130](https://github.com/realm/realm-dotnet/issues/3130))
 * Added `IList` implementation to all Realm collections to allow for UWP ListView databinding. (Issue [#1759](https://github.com/realm/realm-dotnet/issues/1759))
 
 ### Fixed

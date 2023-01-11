@@ -3,7 +3,6 @@ using Baas;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions.Sync;
-using Realms.Logging;
 using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
@@ -11,9 +10,9 @@ using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 using Realms.Sync.Testing;
 using Realms.Tests.Sync;
-using Realms.Tests.Sync.Generated;
 using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
+using static Realms.Tests.TestHelpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -26,8 +25,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
@@ -235,112 +232,110 @@ namespace Realms.Tests.Sync
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Sync.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
-    {
-        string Id { get; set; }
-
-        System.Collections.Generic.IList<string> Strings { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
-    {
-        public string Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            string Id { get; set; }
+
+            System.Collections.Generic.IList<string> Strings { get; }
         }
 
-        private System.Collections.Generic.IList<string> _strings;
-        public System.Collections.Generic.IList<string> Strings
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
-            get
+            public string Id
             {
-                if (_strings == null)
+                get => (string)GetValue("_id");
+                set => SetValueUnique("_id", value);
+            }
+
+            private System.Collections.Generic.IList<string> _strings;
+            public System.Collections.Generic.IList<string> Strings
+            {
+                get
                 {
-                    _strings = GetListValue<string>("Strings");
+                    if (_strings == null)
+                    {
+                        _strings = GetListValue<string>("Strings");
+                    }
+
+                    return _strings;
+                }
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
+        {
+            public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
+
+            private string _id;
+            public string Id
+            {
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
+            }
+
+            public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
+
+            public SyncObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                return _strings;
-            }
-        }
-    }
-
-    internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
-    {
-        public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
-
-        private string _id;
-        public string Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-
-        public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
-
-        public SyncObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "_id" => _id,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                Id = (string)val;
             }
 
-            Id = (string)val;
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "Strings" => (IList<T>)Strings,
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "Strings" => (IList<T>)Strings,
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

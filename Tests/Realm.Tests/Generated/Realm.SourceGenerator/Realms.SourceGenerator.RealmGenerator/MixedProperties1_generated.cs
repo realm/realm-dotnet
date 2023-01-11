@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -230,150 +229,148 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IMixedProperties1Accessor : Realms.IRealmAccessor
-    {
-        string Name { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
-
-        int Age { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class MixedProperties1ManagedAccessor : Realms.ManagedAccessor, IMixedProperties1Accessor
-    {
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IMixedProperties1Accessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            string Name { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
+
+            int Age { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; }
         }
 
-        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class MixedProperties1ManagedAccessor : Realms.ManagedAccessor, IMixedProperties1Accessor
         {
-            get
+            public string Name
             {
-                if (_friends == null)
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends;
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends
+            {
+                get
                 {
-                    _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
+                    if (_friends == null)
+                    {
+                        _friends = GetListValue<Realms.Tests.Database.Person>("Friends");
+                    }
+
+                    return _friends;
                 }
-
-                return _friends;
             }
-        }
 
-        public int Age
-        {
-            get => (int)GetValue("Age");
-            set => SetValue("Age", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _enemies;
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies
-        {
-            get
+            public int Age
             {
-                if (_enemies == null)
+                get => (int)GetValue("Age");
+                set => SetValue("Age", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.Person> _enemies;
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies
+            {
+                get
                 {
-                    _enemies = GetListValue<Realms.Tests.Database.Person>("Enemies");
+                    if (_enemies == null)
+                    {
+                        _enemies = GetListValue<Realms.Tests.Database.Person>("Enemies");
+                    }
+
+                    return _enemies;
                 }
-
-                return _enemies;
-            }
-        }
-    }
-
-    internal class MixedProperties1UnmanagedAccessor : Realms.UnmanagedAccessor, IMixedProperties1Accessor
-    {
-        public override ObjectSchema ObjectSchema => MixedProperties1.RealmSchema;
-
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
             }
         }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
-
-        private int _age;
-        public int Age
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class MixedProperties1UnmanagedAccessor : Realms.UnmanagedAccessor, IMixedProperties1Accessor
         {
-            get => _age;
-            set
+            public override ObjectSchema ObjectSchema => MixedProperties1.RealmSchema;
+
+            private string _name;
+            public string Name
             {
-                _age = value;
-                RaisePropertyChanged("Age");
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; } = new List<Realms.Tests.Database.Person>();
 
-        public MixedProperties1UnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private int _age;
+            public int Age
             {
-                "Name" => _name,
-                "Age" => _age,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Name":
-                    Name = (string)val;
-                    return;
-                case "Age":
-                    Age = (int)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _age;
+                set
+                {
+                    _age = value;
+                    RaisePropertyChanged("Age");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "Friends" => (IList<T>)Friends,
-            "Enemies" => (IList<T>)Enemies,
+            public MixedProperties1UnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Name" => _name,
+                    "Age" => _age,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    case "Age":
+                        Age = (int)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "Friends" => (IList<T>)Friends,
+                "Enemies" => (IList<T>)Enemies,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

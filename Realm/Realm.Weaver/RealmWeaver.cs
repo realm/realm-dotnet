@@ -295,9 +295,8 @@ Analytics payload
         {
             _logger.Debug("Weaving generated " + type.Name);
 
-            var interfaceName = $"I{type.Name}Accessor";
-            var @namespace = string.IsNullOrEmpty(type.Namespace) ? "Global" : type.Namespace;
-            var interfaceType = _moduleDefinition.GetType($"{@namespace}.Generated", interfaceName);
+            // The forward slash is used to indicate a nested class
+            var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
 
             var persistedProperties = new List<WeavePropertyResult>();
             var backingFields = new HashSet<MetadataToken>();
@@ -709,7 +708,7 @@ Analytics payload
             }
             else
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.");
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);
