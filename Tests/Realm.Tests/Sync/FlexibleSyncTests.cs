@@ -940,7 +940,7 @@ namespace Realms.Tests.Sync
 
             realm.Dispose();
 
-            Assert.That(DeleteRealmWithRetries(realm.Config).Result, Is.True);
+            Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
 
             Assert.Throws<RealmClosedException>(() => _ = subs.Count);
         }
@@ -973,7 +973,7 @@ namespace Realms.Tests.Sync
                 Assert.That(subsHandle.IsClosed);
                 Assert.That(updatedSubsHandle.IsClosed);
 
-                Assert.That(await DeleteRealmWithRetries(realm.Config), Is.True);
+                Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
 
                 Assert.Throws<RealmClosedException>(() => _ = subs.Count);
                 Assert.Throws<RealmClosedException>(() => _ = updatedSubs.Count);

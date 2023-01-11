@@ -286,6 +286,5 @@ namespace Realms.Logging
                 }
             }
         }
-
     }
 }

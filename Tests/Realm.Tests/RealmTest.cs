@@ -94,7 +94,7 @@ namespace Realms.Tests
                 _isSetup = false;
                 try
                 {
-                    Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                    DeleteRealmWithRetries(RealmConfiguration.DefaultConfiguration);
                 }
                 catch
                 {
@@ -109,15 +109,15 @@ namespace Realms.Tests
                 realm.Value.Dispose();
             }
 
-            _realms.DrainQueueAsync(async realm =>
+            _realms.DrainQueue(realm =>
             {
                 // TODO: this should be an assertion but fails on our migration tests due to https://github.com/realm/realm-core/issues/4605.
                 // Assert.That(DeleteRealmWithRetries(realm.Config), Is.True, "Couldn't delete a Realm on teardown.");
-                await DeleteRealmWithRetries(realm.Config);
+                DeleteRealmWithRetries(realm.Config);
             });
         }
 
-        protected static async Task<bool> DeleteRealmWithRetries(RealmConfigurationBase config)
+        protected static bool DeleteRealmWithRetries(RealmConfigurationBase config)
         {
             for (var i = 0; i < 100; i++)
             {
@@ -128,7 +128,7 @@ namespace Realms.Tests
                 }
                 catch
                 {
-                    await Task.Delay(50);
+                    Task.Delay(50).Wait();
                 }
             }
 
