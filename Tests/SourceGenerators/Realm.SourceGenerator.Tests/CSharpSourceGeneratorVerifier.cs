@@ -39,7 +39,7 @@ namespace SourceGeneratorTests
                 TestState.AdditionalReferences.Add(typeof(Realms.Realm).Assembly.Location);
 
                 // Removes the emission of the usual compiler diagnostics
-                CompilerDiagnostics = Microsoft.CodeAnalysis.Testing.CompilerDiagnostics.None;
+                CompilerDiagnostics = CompilerDiagnostics.None;
             }
 
             protected override CompilationOptions CreateCompilationOptions()

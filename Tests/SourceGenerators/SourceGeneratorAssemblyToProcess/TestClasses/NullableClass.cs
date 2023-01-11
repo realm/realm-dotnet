@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using MongoDB.Bson;
+using System.Linq;
 using Realms;
 
 namespace SourceGeneratorAssemblyToProcess
@@ -28,6 +26,7 @@ namespace SourceGeneratorAssemblyToProcess
     public partial class NullableClass : IRealmObject
     {
         public int NonNullableInt { get; set; }
+
         public int? NullableInt { get; set; }
 
         public string NonNullableString { get; set; } = null!;
@@ -42,11 +41,20 @@ namespace SourceGeneratorAssemblyToProcess
 
         public IList<int> CollectionOfNonNullableInt { get; } = null!;
 
+        public IList<string?> CollectionOfNullableString { get; } = null!;
+
+        public IList<string> CollectionOfNonNullableString { get; } = null!;
+
         public RealmInteger<int> NonNullableRealmInt { get; set; }
 
         public RealmInteger<int>?  NullableRealmInt { get; set; }
 
-        //Error: RealmValue - Object - Collection? 
+        public NullableClass? NullableObject { get; set; }
+
+        public RealmValue NonNullableRealmValue { get; set; }
+
+        [Realms.Backlink(nameof(NullableObject))]
+        public IQueryable<NullableClass> Backlink { get; } = null!;
     }
 #nullable disable
 }

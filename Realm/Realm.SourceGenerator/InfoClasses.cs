@@ -256,6 +256,21 @@ namespace Realms.SourceGenerator
 
             return true;
         }
+
+        public bool NeedsNullForgiving()
+        {
+            if (NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return false;
+            }
+
+            if (ScalarType == ScalarType.Data || ScalarType == ScalarType.String || ScalarType == ScalarType.Object || IsCollection)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 
     internal sealed record UnsupportedTypeInfo : PropertyTypeInfo
