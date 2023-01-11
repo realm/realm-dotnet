@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.SourceGenerator;
+using RealmGeneratorVerifier = SourceGeneratorTests.CSharpSourceGeneratorVerifier<Realms.SourceGenerator.RealmGenerator>;
+
 namespace SourceGeneratorTests
 {
     [TestFixture]
@@ -47,10 +50,33 @@ namespace SourceGeneratorTests
         [TestCase("UnsupportedRequiredTypes")]
         [TestCase("NestedClassWithoutPartialParent")]
         [TestCase("NullableErrorClass")]
+        [TestCase("IgnoreObjectNullabilityClass")]
         [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
         public async Task ErrorComparisonTest(string filename, params string[] classNames)
         {
             await RunErrorTest(filename, classNames);
+        }
+
+        [Test]
+        public async Task IgnoreObjectNullabilityTest()
+        {
+            var options = new Dictionary<string, string>
+            {
+                ["realm.ignore_objects_nullability"] = "true"
+            };
+
+            var className = "IgnoreObjectNullabilityClass";
+            var generated = GetGeneratedForClass(className);
+            var generatedFileName = GetGeneratedFileNameForClass(className);
+
+            var source = GetSource(className, ClassFolder.Error);
+
+            var test = new RealmGeneratorVerifier.Test();
+            test.TestState.Sources.Add(source);
+            test.TestState.GeneratedSources.Add((typeof(RealmGenerator), generatedFileName, generated));
+            test.TestState.AnalyzerConfigFiles.Add(("/.globalConfig", BuildGlobalOptions(options)));
+
+            await test.RunAsync();
         }
     }
 }
