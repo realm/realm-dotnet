@@ -4,7 +4,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -219,78 +218,76 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
-    {
-        System.Collections.Generic.IList<string> Strings { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class ObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, IObjectWithRequiredStringListAccessor
-    {
-        private System.Collections.Generic.IList<string> _strings;
-        public System.Collections.Generic.IList<string> Strings
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
-            get
-            {
-                if (_strings == null)
-                {
-                    _strings = GetListValue<string>("Strings");
-                }
+            System.Collections.Generic.IList<string> Strings { get; }
+        }
 
-                return _strings;
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, IObjectWithRequiredStringListAccessor
+        {
+            private System.Collections.Generic.IList<string> _strings;
+            public System.Collections.Generic.IList<string> Strings
+            {
+                get
+                {
+                    if (_strings == null)
+                    {
+                        _strings = GetListValue<string>("Strings");
+                    }
+
+                    return _strings;
+                }
             }
         }
-    }
 
-    internal class ObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithRequiredStringListAccessor
-    {
-        public override ObjectSchema ObjectSchema => ObjectWithRequiredStringList.RealmSchema;
-
-        public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
-
-        public ObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class ObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithRequiredStringListAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => ObjectWithRequiredStringList.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
-        }
+            public System.Collections.Generic.IList<string> Strings { get; } = new List<string>();
 
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-        }
+            public ObjectWithRequiredStringListUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}");
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "Strings" => (IList<T>)Strings,
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+            }
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "Strings" => (IList<T>)Strings,
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

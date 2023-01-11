@@ -295,9 +295,8 @@ Analytics payload
         {
             _logger.Debug("Weaving generated " + type.Name);
 
-            var interfaceName = $"I{type.Name}Accessor";
-            var @namespace = string.IsNullOrEmpty(type.Namespace) ? "Global" : type.Namespace;
-            var interfaceType = _moduleDefinition.GetType($"{@namespace}.Generated", interfaceName);
+            // The forward slash is used to indicate a nested class
+            var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
 
             var persistedProperties = new List<WeavePropertyResult>();
             var backingFields = new HashSet<MetadataToken>();

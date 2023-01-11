@@ -18,18 +18,18 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using NUnit.Framework;
+using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class FunctionsTests : SyncTestBase
     {
-        private readonly ConcurrentQueue<string> _conventionsToRemove = new();
+        private readonly ConcurrentQueue<StrongBox<string>> _conventionsToRemove = new();
 
         [Test]
         public void CallFunction_ReturnsResult()

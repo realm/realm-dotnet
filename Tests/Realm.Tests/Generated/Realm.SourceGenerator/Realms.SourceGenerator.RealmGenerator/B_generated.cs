@@ -5,7 +5,6 @@ using Realms;
 using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -218,85 +217,83 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IBAccessor : Realms.IRealmAccessor
-    {
-        Realms.Tests.IntPropertyObject C { get; set; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class BManagedAccessor : Realms.ManagedAccessor, IBAccessor
-    {
-        public Realms.Tests.IntPropertyObject C
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IBAccessor : Realms.IRealmAccessor
         {
-            get => (Realms.Tests.IntPropertyObject)GetValue("C");
-            set => SetValue("C", value);
+            Realms.Tests.IntPropertyObject C { get; set; }
         }
-    }
 
-    internal class BUnmanagedAccessor : Realms.UnmanagedAccessor, IBAccessor
-    {
-        public override ObjectSchema ObjectSchema => B.RealmSchema;
-
-        private Realms.Tests.IntPropertyObject _c;
-        public Realms.Tests.IntPropertyObject C
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class BManagedAccessor : Realms.ManagedAccessor, IBAccessor
         {
-            get => _c;
-            set
+            public Realms.Tests.IntPropertyObject C
             {
-                _c = value;
-                RaisePropertyChanged("C");
+                get => (Realms.Tests.IntPropertyObject)GetValue("C");
+                set => SetValue("C", value);
             }
         }
 
-        public BUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class BUnmanagedAccessor : Realms.UnmanagedAccessor, IBAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => B.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.IntPropertyObject _c;
+            public Realms.Tests.IntPropertyObject C
             {
-                "C" => _c,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "C":
-                    C = (Realms.Tests.IntPropertyObject)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _c;
+                set
+                {
+                    _c = value;
+                    RaisePropertyChanged("C");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public BUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "C" => _c,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "C":
+                        C = (Realms.Tests.IntPropertyObject)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }
