@@ -590,7 +590,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     propertiesString.AppendLine();
 
                     // GetValue
-                    getValueLines.AppendLine(@$"""{stringName}"" => {backingFieldName},");
+                    getValueLines.AppendLine(@$"""{stringName}"" => {backingFieldName}!,");
 
                     // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"case ""{stringName}"":");
@@ -797,7 +797,7 @@ public {type} {name}
                     var getterString = $@"get => ({type})GetValue(""{stringName}"");";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
-                    var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
+                    var setterString = $@"set => {setterMethod}(""{stringName}"", value!);";
 
                     propertiesBuilder.AppendLine(@$"public {type} {name}
 {{

@@ -225,7 +225,7 @@ namespace OtherNamespace
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value);
+                set => SetValue("Id", value!);
             }
         }
 
@@ -253,7 +253,7 @@ namespace OtherNamespace
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
+                    "Id" => _id!,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

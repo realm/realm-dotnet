@@ -234,13 +234,13 @@ namespace SourceGeneratorAssemblyToProcess
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value);
+                set => SetValue("Id", value!);
             }
 
             public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
             {
                 get => (OtherNamespace.OtherNamespaceObj)GetValue("OtherNamespaceObj");
-                set => SetValue("OtherNamespaceObj", value);
+                set => SetValue("OtherNamespaceObj", value!);
             }
         }
 
@@ -279,8 +279,8 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
-                    "OtherNamespaceObj" => _otherNamespaceObj,
+                    "Id" => _id!,
+                    "OtherNamespaceObj" => _otherNamespaceObj!,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

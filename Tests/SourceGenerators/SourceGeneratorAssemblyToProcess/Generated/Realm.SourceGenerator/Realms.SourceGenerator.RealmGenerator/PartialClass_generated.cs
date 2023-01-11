@@ -232,13 +232,13 @@ namespace SourceGeneratorAssemblyToProcess
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value);
+                set => SetValue("Id", value!);
             }
 
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value);
+                set => SetValue("Name", value!);
             }
         }
 
@@ -277,8 +277,8 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
-                    "Name" => _name,
+                    "Id" => _id!,
+                    "Name" => _name!,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

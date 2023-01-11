@@ -222,7 +222,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         public string Name
         {
             get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            set => SetValue("Name", value!);
         }
     }
 
@@ -250,7 +250,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         {
             return propertyName switch
             {
-                "Name" => _name,
+                "Name" => _name!,
                 _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
             };
         }
