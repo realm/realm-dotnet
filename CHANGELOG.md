@@ -17,6 +17,7 @@
 * Fixed possible segfault in sync client where async callback was using object after being deallocated (Core 13.2.0)
 * Fixed crash when using client reset with recovery and flexible sync with a single subscription (Core 13.2.0)
 * Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
+* Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
