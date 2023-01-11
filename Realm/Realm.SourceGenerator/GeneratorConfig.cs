@@ -27,8 +27,7 @@ namespace Realms.SourceGenerator
         public static GeneratorConfig ParseConfig(AnalyzerConfigOptions analyzerConfigOptions)
         {
             analyzerConfigOptions.TryGetValue("realm.ignore_objects_nullability", out var ignoreObjectsNullabilityString);
-            var ignoreObjectsNullability =
-                (string.IsNullOrEmpty(ignoreObjectsNullabilityString) || ignoreObjectsNullabilityString == "false") ? false : true;
+            var ignoreObjectsNullability = ignoreObjectsNullabilityString == "true";
 
             return new GeneratorConfig
             {
