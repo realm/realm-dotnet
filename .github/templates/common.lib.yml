@@ -19,7 +19,7 @@
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
-#@ iOSArchs = [ 'Simulator', 'Device', 'Catalyst' ]
+#@ applePlatforms = [ 'iOS', 'tvOS'  ]
 
 #@ actionDockerLayerCaching = "satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97" #! 0.0.11
 #@ actionDockerBuild = "docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7" #! 2.7.0
@@ -145,9 +145,10 @@ with:
 #@ end
 
 #@ def getWrapperBinaryNames():
-#@ wrapperPlatforms = [ 'macos', 'linux' ]
-#@ for iOSArch in iOSArchs:
-#@   wrapperPlatforms.append("ios-" + iOSArch)
+#@ wrapperPlatforms = [ 'macos', 'catalyst', 'linux' ]
+#@ for platform in applePlatforms:
+#@   wrapperPlatforms.append("apple-" + platform + "-Device")
+#@   wrapperPlatforms.append("apple-" + platform + "-Simulator")
 #@ end
 #@ for androidABI in androidABIs:
 #@   wrapperPlatforms.append("android-" + androidABI)

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "iOSArchs", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode")
 
 #@ wrappersTimeout = 90
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -86,15 +86,20 @@ jobs:
     runs-on: macos-12
     name: macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  ios:
+  catalyst:
     runs-on: macos-12
-    name: iOS
+    name: Catalyst
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 Catalyst", "wrappers-catalyst"))
+  apple-platforms:
+    runs-on: macos-12
+    name: Apple Platform
     strategy:
       matrix:
-        arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False, intermediateSteps = [setupXcode()]))
+        platform: #@ applePlatforms
+        target: [ 'Device', 'Simulator' ]
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}", "wrappers-apple-${{ matrix.platform }}-${{ matrix.target }}", enableLto = False, intermediateSteps = [setupXcode()]))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-ios-" + x + " != 'true'" for x in iOSArchs ])
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-apple-" + x + "-Device != 'true'" for x in applePlatforms ])
   linux:
     runs-on: ubuntu-latest
     name: Linux
