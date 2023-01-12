@@ -35,6 +35,16 @@ namespace SourceGeneratorAssemblyToProcess
 
         [Realms.Backlink(nameof(NullableObject))]
         public IQueryable<NullableErrorClass>? NullableBacklink { get; }
+
+        public IList<NullableErrorClass?> ListNullableObject { get; } = null!;
+
+        public IList<NullableErrorClass?> SetNullableObject { get; } = null!;
+
+        public IDictionary<string, NullableErrorClass> DictionaryNonNullableObject { get; } = null!;
+
+        [Realms.Backlink(nameof(NullableObject))]
+        public IQueryable<NullableErrorClass?> BacklinkOfNullableObject { get; } = null!;
+
     }
 #nullable disable
 }

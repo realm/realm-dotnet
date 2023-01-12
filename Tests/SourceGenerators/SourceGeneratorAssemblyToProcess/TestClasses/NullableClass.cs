@@ -51,6 +51,12 @@ namespace SourceGeneratorAssemblyToProcess
 
         public NullableClass? NullableObject { get; set; }
 
+        public IList<NullableClass> ListNonNullabeObject { get; } = null!;
+
+        public ISet<NullableClass> SetNonNullableObject { get; } = null!;
+
+        public IDictionary<string, NullableClass?> DictionaryNullableObject { get; } = null!;
+
         public RealmValue NonNullableRealmValue { get; set; }
 
         [Realms.Backlink(nameof(NullableObject))]

@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
+using System.Linq;
 using Realms;
 
 namespace SourceGeneratorAssemblyToProcess
@@ -23,7 +25,27 @@ namespace SourceGeneratorAssemblyToProcess
 #nullable enable
     public partial class IgnoreObjectNullabilityClass : IRealmObject
     {
-        public IgnoreObjectNullabilityClass NullableObject { get; set; } = null!;
+        public IgnoreObjectNullabilityClass? NullableObject { get; set; } = null!;
+
+        public IgnoreObjectNullabilityClass NonNullableObject { get; set; } = null!;
+
+        public IList<IgnoreObjectNullabilityClass> ListNonNullableObject { get; } = null!;
+
+        public IList<IgnoreObjectNullabilityClass?> ListNullableObject { get; } = null!;
+
+        public ISet<IgnoreObjectNullabilityClass> SetNonNullableObject { get; } = null!;
+
+        public ISet<IgnoreObjectNullabilityClass?> SetNonNullableObject { get; } = null!;
+
+        public IDictionary<string, IgnoreObjectNullabilityClass> DictionaryNonNullableObject { get; } = null!;
+
+        public IDictionary<string, IgnoreObjectNullabilityClass> DictionaryNullableObject { get; } = null!;
+
+        [Realms.Backlink(nameof(NullableObject))]
+        public IQueryable<IgnoreObjectNullabilityClass?> BacklinkNullableObject { get; } = null!;
+
+        [Realms.Backlink(nameof(NullableObject))]
+        public IQueryable<IgnoreObjectNullabilityClass> BacklinkNonNullableObject { get; } = null!;
     }
 #nullable disable
 }

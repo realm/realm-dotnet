@@ -291,11 +291,6 @@ namespace Realms.SourceGenerator
                 return propertyTypeInfo;  // We are sure we can't produce more diagnostics
             }
 
-            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_generatorConfig.IgnoreObjectsNullability))
-            {
-                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
-            }
-
             if (propertyTypeInfo.IsRealmInteger)
             {
                 var argument = propertyTypeInfo.TypeSymbol.AsNamed().TypeArguments.Single();
@@ -390,6 +385,11 @@ namespace Realms.SourceGenerator
                 {
                     return PropertyTypeInfo.Unsupported;
                 }
+            }
+
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_generatorConfig.IgnoreObjectsNullability))
+            {
+                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             return propertyTypeInfo;

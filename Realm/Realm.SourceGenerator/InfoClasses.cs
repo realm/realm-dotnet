@@ -248,10 +248,25 @@ namespace Realms.SourceGenerator
                 return false;
             }
 
-            if (!ignoreObjectsNullability && !IsNullable &&
-                (ScalarType == ScalarType.Object))
+            if (!ignoreObjectsNullability)
             {
-                return false;
+                if (!IsNullable && ScalarType == ScalarType.Object)
+                {
+                    return false;
+                }
+
+                if (IsCollection && InternalType.ScalarType == ScalarType.Object)
+                {
+                    if (IsDictionary && InternalType.NullableAnnotation == NullableAnnotation.NotAnnotated)
+                    {
+                        return false;
+                    }
+
+                    if ((IsList || IsSet || IsBacklink) && InternalType.NullableAnnotation == NullableAnnotation.Annotated)
+                    {
+                        return false;
+                    }
+                }
             }
 
             return true;

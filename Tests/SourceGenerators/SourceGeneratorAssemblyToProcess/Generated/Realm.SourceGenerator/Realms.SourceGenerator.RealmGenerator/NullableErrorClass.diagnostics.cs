@@ -46,5 +46,77 @@
       "EndLine": 37,
       "EndColumn": 73
     }
+  },
+  {
+    "Id": "RLM014",
+    "Severity": 3,
+    "Message": "The property 'NullableErrorClass.NullableErrorClass' does not constitute a link to 'NullableErrorClass' as described by 'NullableErrorClass.NullableBacklink'.",
+    "Location": {
+      "Path": null,
+      "StartLine": 36,
+      "StartColumn": 9,
+      "EndLine": 37,
+      "EndColumn": 73
+    }
+  },
+  {
+    "Id": "RLM010",
+    "Severity": 3,
+    "Message": "NullableErrorClass.ListNullableObject has type IList<NullableErrorClass?>, that does not support the assigned nullability annotation.",
+    "Location": {
+      "Path": null,
+      "StartLine": 39,
+      "StartColumn": 9,
+      "EndLine": 39,
+      "EndColumn": 79
+    }
+  },
+  {
+    "Id": "RLM010",
+    "Severity": 3,
+    "Message": "NullableErrorClass.SetNullableObject has type IList<NullableErrorClass?>, that does not support the assigned nullability annotation.",
+    "Location": {
+      "Path": null,
+      "StartLine": 41,
+      "StartColumn": 9,
+      "EndLine": 41,
+      "EndColumn": 78
+    }
+  },
+  {
+    "Id": "RLM010",
+    "Severity": 3,
+    "Message": "NullableErrorClass.DictionaryNonNullableObject has type IDictionary<string, NullableErrorClass>, that does not support the assigned nullability annotation.",
+    "Location": {
+      "Path": null,
+      "StartLine": 43,
+      "StartColumn": 9,
+      "EndLine": 43,
+      "EndColumn": 101
+    }
+  },
+  {
+    "Id": "RLM010",
+    "Severity": 3,
+    "Message": "NullableErrorClass.BacklinkOfNullableObject has type IQueryable<NullableErrorClass?>, that does not support the assigned nullability annotation.",
+    "Location": {
+      "Path": null,
+      "StartLine": 45,
+      "StartColumn": 9,
+      "EndLine": 46,
+      "EndColumn": 90
+    }
+  },
+  {
+    "Id": "RLM014",
+    "Severity": 3,
+    "Message": "The property 'NullableErrorClass.NullableErrorClass' does not constitute a link to 'NullableErrorClass' as described by 'NullableErrorClass.BacklinkOfNullableObject'.",
+    "Location": {
+      "Path": null,
+      "StartLine": 45,
+      "StartColumn": 9,
+      "EndLine": 46,
+      "EndColumn": 90
+    }
   }
 ]

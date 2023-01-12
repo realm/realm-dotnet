@@ -23,6 +23,9 @@ namespace SourceGeneratorAssemblyToProcess
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IgnoreObjectNullabilityClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Object("NullableObject", "IgnoreObjectNullabilityClass", managedName: "NullableObject"),
+            Realms.Schema.Property.Object("NonNullableObject", "IgnoreObjectNullabilityClass", managedName: "NonNullableObject"),
+            Realms.Schema.Property.ObjectList("NullableListObject", "IgnoreObjectNullabilityClass", managedName: "NullableListObject"),
+            Realms.Schema.Property.ObjectList("NonNullabeListObject", "IgnoreObjectNullabilityClass", managedName: "NonNullabeListObject"),
         }.Build();
 
         #region IRealmObject implementation
@@ -62,11 +65,24 @@ namespace SourceGeneratorAssemblyToProcess
 
             if (helper != null)
             {
+                if (!skipDefaults)
+                {
+                    newAccessor.NullableListObject.Clear();
+                    newAccessor.NonNullabeListObject.Clear();
+                }
+
                 if(oldAccessor.NullableObject != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
                 }
                 newAccessor.NullableObject = oldAccessor.NullableObject!;
+                if(oldAccessor.NonNullableObject != null)
+                {
+                    newAccessor.Realm.Add(oldAccessor.NonNullableObject, update);
+                }
+                newAccessor.NonNullableObject = oldAccessor.NonNullableObject!;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableListObject, newAccessor.NullableListObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NonNullabeListObject, newAccessor.NonNullabeListObject, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -217,16 +233,56 @@ namespace SourceGeneratorAssemblyToProcess
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IIgnoreObjectNullabilityClassAccessor : Realms.IRealmAccessor
         {
-            SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NullableObject { get; set; }
+            SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject { get; set; }
+
+            SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NonNullableObject { get; set; }
+
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject { get; }
+
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class IgnoreObjectNullabilityClassManagedAccessor : Realms.ManagedAccessor, IIgnoreObjectNullabilityClassAccessor
         {
-            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NullableObject
+            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject
             {
-                get => (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass)GetValue("NullableObject");
+                get => (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?)GetValue("NullableObject");
                 set => SetValue("NullableObject", value);
+            }
+
+            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NonNullableObject
+            {
+                get => (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass)GetValue("NonNullableObject");
+                set => SetValue("NonNullableObject", value);
+            }
+
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> _nullableListObject = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject
+            {
+                get
+                {
+                    if (_nullableListObject == null)
+                    {
+                        _nullableListObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>("NullableListObject");
+                    }
+
+                    return _nullableListObject;
+                }
+            }
+
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _nonNullabeListObject = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject
+            {
+                get
+                {
+                    if (_nonNullabeListObject == null)
+                    {
+                        _nonNullabeListObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("NonNullabeListObject");
+                    }
+
+                    return _nonNullabeListObject;
+                }
             }
         }
 
@@ -235,8 +291,8 @@ namespace SourceGeneratorAssemblyToProcess
         {
             public override ObjectSchema ObjectSchema => IgnoreObjectNullabilityClass.RealmSchema;
 
-            private SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass _nullableObject = null!;
-            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NullableObject
+            private SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? _nullableObject = null!;
+            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject
             {
                 get => _nullableObject;
                 set
@@ -245,6 +301,21 @@ namespace SourceGeneratorAssemblyToProcess
                     RaisePropertyChanged("NullableObject");
                 }
             }
+
+            private SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass _nonNullableObject = null!;
+            public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NonNullableObject
+            {
+                get => _nonNullableObject;
+                set
+                {
+                    _nonNullableObject = value;
+                    RaisePropertyChanged("NonNullableObject");
+                }
+            }
+
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>();
+
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>();
 
             public IgnoreObjectNullabilityClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -255,6 +326,7 @@ namespace SourceGeneratorAssemblyToProcess
                 return propertyName switch
                 {
                     "NullableObject" => _nullableObject,
+                    "NonNullableObject" => _nonNullableObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -264,7 +336,10 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (propertyName)
                 {
                     case "NullableObject":
-                        NullableObject = (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass)val;
+                        NullableObject = (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?)val;
+                        return;
+                    case "NonNullableObject":
+                        NonNullableObject = (SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -278,7 +353,13 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override IList<T> GetListValue<T>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+                return propertyName switch
+                            {
+                "NullableListObject" => (IList<T>)NullableListObject,
+                "NonNullabeListObject" => (IList<T>)NonNullabeListObject,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)

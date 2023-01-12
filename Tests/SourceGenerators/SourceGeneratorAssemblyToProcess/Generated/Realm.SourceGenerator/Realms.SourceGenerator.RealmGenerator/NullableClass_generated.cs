@@ -35,6 +35,9 @@ namespace SourceGeneratorAssemblyToProcess
             Realms.Schema.Property.Primitive("NonNullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableRealmInt"),
             Realms.Schema.Property.Primitive("NullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableRealmInt"),
             Realms.Schema.Property.Object("NullableObject", "NullableClass", managedName: "NullableObject"),
+            Realms.Schema.Property.ObjectList("ListNonNullabeObject", "NullableClass", managedName: "ListNonNullabeObject"),
+            Realms.Schema.Property.ObjectSet("SetNonNullableObject", "NullableClass", managedName: "SetNonNullableObject"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryNullableObject", "NullableClass", managedName: "DictionaryNullableObject"),
             Realms.Schema.Property.RealmValue("NonNullableRealmValue", managedName: "NonNullableRealmValue"),
             Realms.Schema.Property.Backlinks("Backlink", "NullableClass", "NullableObject", managedName: "Backlink"),
         }.Build();
@@ -82,6 +85,9 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.CollectionOfNonNullableInt.Clear();
                     newAccessor.CollectionOfNullableString.Clear();
                     newAccessor.CollectionOfNonNullableString.Clear();
+                    newAccessor.ListNonNullabeObject.Clear();
+                    newAccessor.SetNonNullableObject.Clear();
+                    newAccessor.DictionaryNullableObject.Clear();
                 }
 
                 if(!skipDefaults || oldAccessor.NonNullableInt != default(int))
@@ -110,6 +116,9 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
                 }
                 newAccessor.NullableObject = oldAccessor.NullableObject!;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListNonNullabeObject, newAccessor.ListNonNullabeObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetNonNullableObject, newAccessor.SetNonNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryNullableObject, newAccessor.DictionaryNullableObject, update, skipDefaults);
                 newAccessor.NonNullableRealmValue = oldAccessor.NonNullableRealmValue;
             }
 
@@ -287,6 +296,12 @@ namespace SourceGeneratorAssemblyToProcess
 
             SourceGeneratorAssemblyToProcess.NullableClass? NullableObject { get; set; }
 
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.NullableClass> ListNonNullabeObject { get; }
+
+            System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.NullableClass> SetNonNullableObject { get; }
+
+            System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.NullableClass?> DictionaryNullableObject { get; }
+
             Realms.RealmValue NonNullableRealmValue { get; set; }
 
             System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.NullableClass> Backlink { get; }
@@ -403,6 +418,48 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 get => (SourceGeneratorAssemblyToProcess.NullableClass?)GetValue("NullableObject");
                 set => SetValue("NullableObject", value);
+            }
+
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.NullableClass> _listNonNullabeObject = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.NullableClass> ListNonNullabeObject
+            {
+                get
+                {
+                    if (_listNonNullabeObject == null)
+                    {
+                        _listNonNullabeObject = GetListValue<SourceGeneratorAssemblyToProcess.NullableClass>("ListNonNullabeObject");
+                    }
+
+                    return _listNonNullabeObject;
+                }
+            }
+
+            private System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.NullableClass> _setNonNullableObject = null!;
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.NullableClass> SetNonNullableObject
+            {
+                get
+                {
+                    if (_setNonNullableObject == null)
+                    {
+                        _setNonNullableObject = GetSetValue<SourceGeneratorAssemblyToProcess.NullableClass>("SetNonNullableObject");
+                    }
+
+                    return _setNonNullableObject;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.NullableClass?> _dictionaryNullableObject = null!;
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.NullableClass?> DictionaryNullableObject
+            {
+                get
+                {
+                    if (_dictionaryNullableObject == null)
+                    {
+                        _dictionaryNullableObject = GetDictionaryValue<SourceGeneratorAssemblyToProcess.NullableClass?>("DictionaryNullableObject");
+                    }
+
+                    return _dictionaryNullableObject;
+                }
             }
 
             public Realms.RealmValue NonNullableRealmValue
@@ -538,6 +595,12 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.NullableClass> ListNonNullabeObject { get; } = new List<SourceGeneratorAssemblyToProcess.NullableClass>();
+
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.NullableClass> SetNonNullableObject { get; } = new HashSet<SourceGeneratorAssemblyToProcess.NullableClass>(RealmSet<SourceGeneratorAssemblyToProcess.NullableClass>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.NullableClass?> DictionaryNullableObject { get; } = new Dictionary<string, SourceGeneratorAssemblyToProcess.NullableClass?>();
+
             private Realms.RealmValue _nonNullableRealmValue;
             public Realms.RealmValue NonNullableRealmValue
             {
@@ -626,6 +689,7 @@ namespace SourceGeneratorAssemblyToProcess
                 "CollectionOfNonNullableInt" => (IList<T>)CollectionOfNonNullableInt,
                 "CollectionOfNullableString" => (IList<T>)CollectionOfNullableString,
                 "CollectionOfNonNullableString" => (IList<T>)CollectionOfNonNullableString,
+                "ListNonNullabeObject" => (IList<T>)ListNonNullabeObject,
 
                                 _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                             };
@@ -633,12 +697,21 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+                return propertyName switch
+                            {
+                "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                return propertyName switch
+                {
+                    "DictionaryNullableObject" => (IDictionary<string, TValue>)DictionaryNullableObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
             }
         }
     }
