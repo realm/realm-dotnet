@@ -2,6 +2,8 @@
 using Global.Generated;
 using Realms;
 using Realms.Schema;
+using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -10,7 +12,11 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 [Generated]
 [Woven(typeof(AsymmetricTestClassObjectHelper))]
