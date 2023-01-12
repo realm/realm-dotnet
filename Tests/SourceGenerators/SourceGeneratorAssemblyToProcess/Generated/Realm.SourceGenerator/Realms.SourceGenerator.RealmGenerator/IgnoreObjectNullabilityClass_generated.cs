@@ -24,8 +24,14 @@ namespace SourceGeneratorAssemblyToProcess
         {
             Realms.Schema.Property.Object("NullableObject", "IgnoreObjectNullabilityClass", managedName: "NullableObject"),
             Realms.Schema.Property.Object("NonNullableObject", "IgnoreObjectNullabilityClass", managedName: "NonNullableObject"),
-            Realms.Schema.Property.ObjectList("NullableListObject", "IgnoreObjectNullabilityClass", managedName: "NullableListObject"),
-            Realms.Schema.Property.ObjectList("NonNullabeListObject", "IgnoreObjectNullabilityClass", managedName: "NonNullabeListObject"),
+            Realms.Schema.Property.ObjectList("ListNonNullableObject", "IgnoreObjectNullabilityClass", managedName: "ListNonNullableObject"),
+            Realms.Schema.Property.ObjectList("ListNullableObject", "IgnoreObjectNullabilityClass", managedName: "ListNullableObject"),
+            Realms.Schema.Property.ObjectSet("SetNonNullableObject", "IgnoreObjectNullabilityClass", managedName: "SetNonNullableObject"),
+            Realms.Schema.Property.ObjectSet("SetNullableObject", "IgnoreObjectNullabilityClass", managedName: "SetNullableObject"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryNonNullableObject", "IgnoreObjectNullabilityClass", managedName: "DictionaryNonNullableObject"),
+            Realms.Schema.Property.ObjectDictionary("DictionaryNullableObject", "IgnoreObjectNullabilityClass", managedName: "DictionaryNullableObject"),
+            Realms.Schema.Property.Backlinks("BacklinkNullableObject", "IgnoreObjectNullabilityClass", "NullableObject", managedName: "BacklinkNullableObject"),
+            Realms.Schema.Property.Backlinks("BacklinkNonNullableObject", "IgnoreObjectNullabilityClass", "NullableObject", managedName: "BacklinkNonNullableObject"),
         }.Build();
 
         #region IRealmObject implementation
@@ -67,8 +73,12 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 if (!skipDefaults)
                 {
-                    newAccessor.NullableListObject.Clear();
-                    newAccessor.NonNullabeListObject.Clear();
+                    newAccessor.ListNonNullableObject.Clear();
+                    newAccessor.ListNullableObject.Clear();
+                    newAccessor.SetNonNullableObject.Clear();
+                    newAccessor.SetNullableObject.Clear();
+                    newAccessor.DictionaryNonNullableObject.Clear();
+                    newAccessor.DictionaryNullableObject.Clear();
                 }
 
                 if(oldAccessor.NullableObject != null)
@@ -81,8 +91,12 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.Realm.Add(oldAccessor.NonNullableObject, update);
                 }
                 newAccessor.NonNullableObject = oldAccessor.NonNullableObject!;
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableListObject, newAccessor.NullableListObject, update, skipDefaults);
-                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NonNullabeListObject, newAccessor.NonNullabeListObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListNonNullableObject, newAccessor.ListNonNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListNullableObject, newAccessor.ListNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetNonNullableObject, newAccessor.SetNonNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetNullableObject, newAccessor.SetNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryNonNullableObject, newAccessor.DictionaryNonNullableObject, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryNullableObject, newAccessor.DictionaryNullableObject, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -237,9 +251,21 @@ namespace SourceGeneratorAssemblyToProcess
 
             SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass NonNullableObject { get; set; }
 
-            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject { get; }
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> ListNonNullableObject { get; }
 
-            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject { get; }
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> ListNullableObject { get; }
+
+            System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> SetNonNullableObject { get; }
+
+            System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> SetNullableObject { get; }
+
+            System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNonNullableObject { get; }
+
+            System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNullableObject { get; }
+
+            System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> BacklinkNullableObject { get; }
+
+            System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> BacklinkNonNullableObject { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -257,31 +283,115 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("NonNullableObject", value);
             }
 
-            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> _nullableListObject = null!;
-            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _listNonNullableObject = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> ListNonNullableObject
             {
                 get
                 {
-                    if (_nullableListObject == null)
+                    if (_listNonNullableObject == null)
                     {
-                        _nullableListObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>("NullableListObject");
+                        _listNonNullableObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("ListNonNullableObject");
                     }
 
-                    return _nullableListObject;
+                    return _listNonNullableObject;
                 }
             }
 
-            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _nonNullabeListObject = null!;
-            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> _listNullableObject = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> ListNullableObject
             {
                 get
                 {
-                    if (_nonNullabeListObject == null)
+                    if (_listNullableObject == null)
                     {
-                        _nonNullabeListObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("NonNullabeListObject");
+                        _listNullableObject = GetListValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>("ListNullableObject");
                     }
 
-                    return _nonNullabeListObject;
+                    return _listNullableObject;
+                }
+            }
+
+            private System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _setNonNullableObject = null!;
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> SetNonNullableObject
+            {
+                get
+                {
+                    if (_setNonNullableObject == null)
+                    {
+                        _setNonNullableObject = GetSetValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("SetNonNullableObject");
+                    }
+
+                    return _setNonNullableObject;
+                }
+            }
+
+            private System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> _setNullableObject = null!;
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> SetNullableObject
+            {
+                get
+                {
+                    if (_setNullableObject == null)
+                    {
+                        _setNullableObject = GetSetValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>("SetNullableObject");
+                    }
+
+                    return _setNullableObject;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _dictionaryNonNullableObject = null!;
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNonNullableObject
+            {
+                get
+                {
+                    if (_dictionaryNonNullableObject == null)
+                    {
+                        _dictionaryNonNullableObject = GetDictionaryValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("DictionaryNonNullableObject");
+                    }
+
+                    return _dictionaryNonNullableObject;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _dictionaryNullableObject = null!;
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNullableObject
+            {
+                get
+                {
+                    if (_dictionaryNullableObject == null)
+                    {
+                        _dictionaryNullableObject = GetDictionaryValue<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("DictionaryNullableObject");
+                    }
+
+                    return _dictionaryNullableObject;
+                }
+            }
+
+            private System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> _backlinkNullableObject = null!;
+            public System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> BacklinkNullableObject
+            {
+                get
+                {
+                    if (_backlinkNullableObject == null)
+                    {
+                        _backlinkNullableObject = GetBacklinks<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>("BacklinkNullableObject");
+                    }
+
+                    return _backlinkNullableObject;
+                }
+            }
+
+            private System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> _backlinkNonNullableObject = null!;
+            public System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> BacklinkNonNullableObject
+            {
+                get
+                {
+                    if (_backlinkNonNullableObject == null)
+                    {
+                        _backlinkNonNullableObject = GetBacklinks<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>("BacklinkNonNullableObject");
+                    }
+
+                    return _backlinkNonNullableObject;
                 }
             }
         }
@@ -313,9 +423,21 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> NullableListObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>();
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> ListNonNullableObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>();
 
-            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> NonNullabeListObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>();
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> ListNullableObject { get; } = new List<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>();
+
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> SetNonNullableObject { get; } = new HashSet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>(RealmSet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>.Comparer);
+
+            public System.Collections.Generic.ISet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> SetNullableObject { get; } = new HashSet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>(RealmSet<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNonNullableObject { get; } = new Dictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>();
+
+            public System.Collections.Generic.IDictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> DictionaryNullableObject { get; } = new Dictionary<string, SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass>();
+
+            public System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass?> BacklinkNullableObject => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+
+            public System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> BacklinkNonNullableObject => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
             public IgnoreObjectNullabilityClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -327,6 +449,8 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     "NullableObject" => _nullableObject,
                     "NonNullableObject" => _nonNullableObject,
+                    "BacklinkNullableObject" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    "BacklinkNonNullableObject" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -355,8 +479,8 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                             {
-                "NullableListObject" => (IList<T>)NullableListObject,
-                "NonNullabeListObject" => (IList<T>)NonNullabeListObject,
+                "ListNonNullableObject" => (IList<T>)ListNonNullableObject,
+                "ListNullableObject" => (IList<T>)ListNullableObject,
 
                                 _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                             };
@@ -364,12 +488,23 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+                return propertyName switch
+                            {
+                "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
+                "SetNullableObject" => (ISet<T>)SetNullableObject,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                return propertyName switch
+                {
+                    "DictionaryNonNullableObject" => (IDictionary<string, TValue>)DictionaryNonNullableObject,
+                    "DictionaryNullableObject" => (IDictionary<string, TValue>)DictionaryNullableObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
             }
         }
     }
