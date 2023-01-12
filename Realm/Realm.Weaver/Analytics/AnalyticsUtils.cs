@@ -22,6 +22,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Mono.Cecil;
+using static RealmWeaver.Analytics;
 using static RealmWeaver.Metric;
 
 namespace RealmWeaver
@@ -101,6 +102,92 @@ namespace RealmWeaver
                         return $"{platformID} is an unsupported operating system.";
                 }
             });
+
+        public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
+        {
+            if (config.IsUnity)
+            {
+                // config.TargetFrameworkVersion is relevant here only for unity.
+                // For other platforms it has the version of the .net framework like "4.7.2" for .NetFramework etc.
+                return (Framework.Unity, config.TargetFrameworkVersion);
+            }
+            else
+            {
+                // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
+                var possibleFrameworks = new string[] { "Xamarin.Form", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
+                AssemblyNameReference frameworkUsedInConjunction = null;
+                foreach (var toSearch in possibleFrameworks)
+                {
+                    frameworkUsedInConjunction = module.FindReference(toSearch);
+                    if (frameworkUsedInConjunction != null)
+                    {
+                        break;
+                    }
+                }
+
+                var framework = frameworkUsedInConjunction?.Name switch
+                {
+                    string s when s.ContainsIgnoreCase("xamarin") => Framework.Xamarin,
+                    string s when s.ContainsIgnoreCase("maui") => Framework.Maui,
+                    _ => "unknown framework"
+                };
+
+                return (framework, frameworkUsedInConjunction?.Version?.ToString());
+            }
+        }
+
+        // 1. Unfortunately, `LangVersion` is never in the custom attributes.
+        // Even if I manage to find a way to read the msbuild properties,
+        // 2. this approach needs manaul intervention every time that a new version of C# and .NET are released
+        // 3. the weaver runs on each different target, which makes reporting not that useful as it'll just report the
+        //    default lanaguage for the target framework. Making this as good as looking at the target framework.
+        public static string GetLanguageVersion(ModuleDefinition module, string targetFramework)
+        {
+            var langVersion = string.Empty;
+            if (module.Assembly.HasCustomAttributes)
+            {
+                // TODO andrea: LangVersionAttribute would need to be created
+                //langVersion = module.Assembly.CustomAttributes.Where(a => a.AttributeType.FullName == typeof(LangVersionAttribute).FullName).SingleOrDefault().Value;
+            }
+
+            if (langVersion.Length > 0)
+            {
+                return langVersion;
+            }
+            else
+            {
+                // LCD for target framework
+                // order matters as the lowest common denomitor determines the maximum usable
+                // version of the language
+                // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
+                if (targetFramework.ContainsIgnoreCase("netcoreapp2") ||
+                    targetFramework.ContainsIgnoreCase("netframework"))
+                {
+                    return "7.3";
+                }
+                else if (targetFramework.ContainsIgnoreCase("netstandard2.1") ||
+                    targetFramework.ContainsIgnoreCase("netcoreapp3.1"))
+                {
+                    return "8";
+                }
+                else if (targetFramework.ContainsIgnoreCase("net5.0"))
+                {
+                    return "9";
+                }
+                else if (targetFramework.ContainsIgnoreCase("net6.0"))
+                {
+                    return "10";
+                }
+                else if (targetFramework.ContainsIgnoreCase("net7.0"))
+                {
+                    return "11";
+                }
+                else
+                {
+                    return "unknown version";
+                }
+            }
+        }
 
         private static string ConvertArchitectureToMetricsVersion(string arch) =>
             WrapInTryCatch(() =>

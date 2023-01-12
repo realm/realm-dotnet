@@ -217,8 +217,8 @@ namespace RealmWeaver
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
-                        FrameworkVersion = Application.unityVersion,
-                        Framework = framework,
+                        TargetFrameworkVersion = Application.unityVersion,
+                        IsUnity = true,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
                     };
 

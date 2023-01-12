@@ -68,8 +68,8 @@ namespace RealmWeaver
             public const string TargetCpuArch = "Target_CPU_Arch";
             public const string RealmSdkVersion = "Realm_SDK_Version";
             public const string CoreVersion = "Core_Version";
-            public const string Framework = "Framework";
-            public const string FrameworkVersion = "Framework_Version";
+            public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
+            public const string FrameworkUsedInConjunctionVersion = "Framework_Version";
 
             public const string IEmbeddedObject = "Embedded_Object";
             public const string IAsymmetricObject = "Asymmetric_Object";

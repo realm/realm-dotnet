@@ -132,8 +132,8 @@ namespace RealmWeaver
             { TargetCpuArch, string.Empty },
             { RealmSdkVersion, string.Empty },
             { CoreVersion, string.Empty },
-            { Framework, string.Empty },
-            { FrameworkVersion, string.Empty },
+            { FrameworkUsedInConjunction, string.Empty },
+            { FrameworkUsedInConjunctionVersion, string.Empty },
         };
 
         private readonly Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
@@ -608,14 +608,17 @@ namespace RealmWeaver
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
 
                 // _realmEnvMetrics[TargetOsMinimumVersion] = TODO: WHAT TO WRITE HERE?;
-                _realmEnvMetrics[TargetOsVersion] = _config.TargetOSVersion;
+
+                // TODO andrea: TargetOSVersion as coming from config is just the version of the framework used (.net6, .net472 etc)
+                // not really the version of the target os.
+                // _realmEnvMetrics[TargetOsVersion] = _config.TargetFrameworkVersion;
                 _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
 
-                // TODO andrea: need to find msbuild properties and not custom attributes
-                // _realmEnvMetrics[LanguageVersion] = module.Assembly.CustomAttributes
-                //    .Where(a => a.ToString() == "LangVersion").SingleOrDefault().ToString();
+                var frameworkInfo = GetFrameworkAndVersion(module, _config);
+                _realmEnvMetrics[FrameworkUsedInConjunction] = frameworkInfo.Name;
+                _realmEnvMetrics[FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
+                _realmEnvMetrics[LanguageVersion] = GetLanguageVersion(module, _config.TargetFramework);
 
-                // _realmEnvMetrics[Framework] = ;
                 _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
 
                 foreach (var type in module.Types)
@@ -761,6 +764,8 @@ namespace RealmWeaver
             try
             {
                 var pretty = false;
+
+                // TODO andrea: see what the correct address for production should be
                 var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
                 pretty = true;
@@ -859,15 +864,11 @@ namespace RealmWeaver
 
             public string TargetOSName { get; set; }
 
-            public string TargetOSVersion { get; set; }
+            public string TargetFramework { get; set; }
 
-            public string Framework { get; set; }
+            public string TargetFrameworkVersion { get; set; }
 
-            public bool IsUsingSync { get; set; }
-
-            public string ModuleName { get; set; }
-
-            public string FrameworkVersion { get; set; }
+            public bool IsUnity { get; set; }
         }
 
         public enum AnalyticsCollection

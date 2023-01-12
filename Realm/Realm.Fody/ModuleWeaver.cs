@@ -82,17 +82,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 
         var config = new Config
         {
-            Framework = "xamarin", // This is for backwards compatibility
             AnalyticsCollection = analyticsCollection,
             AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
         };
 
-        config.FrameworkVersion = frameworkName.Version.ToString();
+        config.TargetFramework = frameworkName.FullName;
+        config.TargetFrameworkVersion = frameworkName.Version.ToString();
         config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
-
-        // For backward compatibility
-        config.TargetOSVersion = frameworkName.Version.ToString();
-
         return config;
     }
 
