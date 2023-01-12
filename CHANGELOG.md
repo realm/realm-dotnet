@@ -9,6 +9,15 @@
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
+* Enhanced support for nullable reference types in the model definition. This allows to use realm models as usual when nullable context is active, and removes the need to use of the `Required` attribute to indicate required properties, as this information will be inferred directly from the nullability status. Please note that because properties linking to realm objects are inherently nullable, those properties need to be defined as such. For instance:
+  ```cs
+  public partial class Person: IRealmObject
+  {
+      public Dog FirstDog { get; set; } //This will raise a diagnostic error because the property type is non-nullable.
+      public Dog? SecondDog { get; set; } //This is correct definition of the property.
+  }
+  ```
+  We realise that some developers would still prefer to keep such properties definitions as non-nullable, and it is possible to do so by setting  `realm.ignore_objects_nullability = true` in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). If this is enabled, the previous example will compile as it is, and the nullability for properties linking to objects will be ignored.
 
 ### Fixed
 * Set<Mixed> consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
