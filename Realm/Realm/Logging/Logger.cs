@@ -267,11 +267,11 @@ namespace Realms.Logging
 
             private void Run()
             {
+                var sb = new StringBuilder();
                 while (true)
                 {
+                    sb.Clear();
                     WaitHandle.WaitAny(new[] { _hasNewItems, _flush });
-
-                    var sb = new StringBuilder();
                     while (_queue.TryDequeue(out var item))
                     {
                         sb.AppendLine(item);
