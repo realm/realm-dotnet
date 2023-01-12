@@ -70,6 +70,10 @@ namespace RealmWeaver
             public const string CoreVersion = "Core_Version";
             public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
             public const string FrameworkUsedInConjunctionVersion = "Framework_Version";
+            public const string SdkInstallationMethod = "Installation_Method";
+            public const string SdkInstallationMethodVersion = "Installation_Method_Version";
+            public const string IdeUsed = "IDE";
+            public const string IdeUsedVersion = "IDE_Version";
 
             public const string IEmbeddedObject = "Embedded_Object";
             public const string IAsymmetricObject = "Asymmetric_Object";
