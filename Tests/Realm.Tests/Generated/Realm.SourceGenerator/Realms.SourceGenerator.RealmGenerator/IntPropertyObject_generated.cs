@@ -171,7 +171,7 @@ namespace Realms.Tests
 
         public static explicit operator IntPropertyObject(Realms.RealmValue val) => val.AsRealmObject<IntPropertyObject>();
 
-        public static implicit operator Realms.RealmValue(IntPropertyObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IntPropertyObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -240,19 +240,19 @@ namespace Realms.Tests
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public int Int
             {
                 get => (int)GetValue("Int");
-                set => SetValue("Int", value!);
+                set => SetValue("Int", value);
             }
 
             public System.Guid GuidProperty
             {
                 get => (System.Guid)GetValue("GuidProperty");
-                set => SetValue("GuidProperty", value!);
+                set => SetValue("GuidProperty", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> _containingCollections = null!;
@@ -318,9 +318,9 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "Int" => _int!,
-                    "GuidProperty" => _guidProperty!,
+                    "_id" => _id,
+                    "Int" => _int,
+                    "GuidProperty" => _guidProperty,
                     "ContainingCollections" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

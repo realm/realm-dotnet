@@ -162,7 +162,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator AgedObject(Realms.RealmValue val) => val.AsRealmObject<AgedObject>();
 
-        public static implicit operator Realms.RealmValue(AgedObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AgedObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -227,7 +227,7 @@ namespace Realms.Tests.Database
             public System.DateTimeOffset Birthday
             {
                 get => (System.DateTimeOffset)GetValue("Birthday");
-                set => SetValue("Birthday", value!);
+                set => SetValue("Birthday", value);
             }
         }
 
@@ -255,7 +255,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Birthday" => _birthday!,
+                    "Birthday" => _birthday,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

@@ -173,7 +173,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator BasicAsymmetricObject(Realms.RealmValue val) => val.AsRealmObject<BasicAsymmetricObject>();
 
-        public static implicit operator Realms.RealmValue(BasicAsymmetricObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BasicAsymmetricObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -240,13 +240,13 @@ namespace Realms.Tests.Sync
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public string PartitionLike
             {
                 get => (string)GetValue("PartitionLike");
-                set => SetValue("PartitionLike", value!);
+                set => SetValue("PartitionLike", value);
             }
         }
 
@@ -285,8 +285,8 @@ namespace Realms.Tests.Sync
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "PartitionLike" => _partitionLike!,
+                    "_id" => _id,
+                    "PartitionLike" => _partitionLike,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

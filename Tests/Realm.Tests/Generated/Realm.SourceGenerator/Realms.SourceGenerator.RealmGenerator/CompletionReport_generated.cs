@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator CompletionReport(Realms.RealmValue val) => val.AsRealmObject<CompletionReport>();
 
-        public static implicit operator Realms.RealmValue(CompletionReport val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(CompletionReport? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -236,13 +236,13 @@ namespace Realms.Tests.Database
             public System.DateTimeOffset CompletionDate
             {
                 get => (System.DateTimeOffset)GetValue("CompletionDate");
-                set => SetValue("CompletionDate", value!);
+                set => SetValue("CompletionDate", value);
             }
 
             public string Remarks
             {
                 get => (string)GetValue("Remarks");
-                set => SetValue("Remarks", value!);
+                set => SetValue("Remarks", value);
             }
         }
 
@@ -281,8 +281,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "CompletionDate" => _completionDate!,
-                    "Remarks" => _remarks!,
+                    "CompletionDate" => _completionDate,
+                    "Remarks" => _remarks,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

@@ -402,7 +402,7 @@ private void UnsubscribeFromNotifications()
 
 public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 
-public static implicit operator Realms.RealmValue({_classInfo.Name} val) => Realms.RealmValue.Object(val);
+public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => Realms.RealmValue.Object(val);
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -590,7 +590,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     propertiesString.AppendLine();
 
                     // GetValue
-                    getValueLines.AppendLine(@$"""{stringName}"" => {backingFieldName}!,");
+                    getValueLines.AppendLine(@$"""{stringName}"" => {backingFieldName},");
 
                     // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"case ""{stringName}"":");
@@ -797,7 +797,7 @@ public {type} {name}
                     var getterString = $@"get => ({type})GetValue(""{stringName}"");";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
-                    var setterString = $@"set => {setterMethod}(""{stringName}"", value!);";
+                    var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
 
                     propertiesBuilder.AppendLine(@$"public {type} {name}
 {{

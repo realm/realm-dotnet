@@ -180,7 +180,7 @@ namespace Realms.Tests
 
         public static explicit operator ObjectWithEmbeddedProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithEmbeddedProperties>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithEmbeddedProperties val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithEmbeddedProperties? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -253,13 +253,13 @@ namespace Realms.Tests
             public int PrimaryKey
             {
                 get => (int)GetValue("PrimaryKey");
-                set => SetValueUnique("PrimaryKey", value!);
+                set => SetValueUnique("PrimaryKey", value);
             }
 
             public Realms.Tests.EmbeddedAllTypesObject AllTypesObject
             {
                 get => (Realms.Tests.EmbeddedAllTypesObject)GetValue("AllTypesObject");
-                set => SetValue("AllTypesObject", value!);
+                set => SetValue("AllTypesObject", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> _listOfAllTypesObjects = null!;
@@ -279,7 +279,7 @@ namespace Realms.Tests
             public Realms.Tests.EmbeddedLevel1 RecursiveObject
             {
                 get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
-                set => SetValue("RecursiveObject", value!);
+                set => SetValue("RecursiveObject", value);
             }
 
             private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> _dictionaryOfAllTypesObjects = null!;
@@ -347,9 +347,9 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "PrimaryKey" => _primaryKey!,
-                    "AllTypesObject" => _allTypesObject!,
-                    "RecursiveObject" => _recursiveObject!,
+                    "PrimaryKey" => _primaryKey,
+                    "AllTypesObject" => _allTypesObject,
+                    "RecursiveObject" => _recursiveObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

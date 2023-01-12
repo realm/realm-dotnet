@@ -181,7 +181,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator OnManagedTestClass(Realms.RealmValue val) => val.AsRealmObject<OnManagedTestClass>();
 
-        public static implicit operator Realms.RealmValue(OnManagedTestClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OnManagedTestClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -250,13 +250,13 @@ namespace Realms.Tests.Database
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValueUnique("Id", value!);
+                set => SetValueUnique("Id", value);
             }
 
             public Realms.Tests.Database.OnManagedTestClass RelatedObject
             {
                 get => (Realms.Tests.Database.OnManagedTestClass)GetValue("RelatedObject");
-                set => SetValue("RelatedObject", value!);
+                set => SetValue("RelatedObject", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> _relatedCollection = null!;
@@ -311,8 +311,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
-                    "RelatedObject" => _relatedObject!,
+                    "Id" => _id,
+                    "RelatedObject" => _relatedObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

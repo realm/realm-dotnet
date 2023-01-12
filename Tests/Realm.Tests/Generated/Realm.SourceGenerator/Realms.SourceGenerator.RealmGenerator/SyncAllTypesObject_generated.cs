@@ -233,7 +233,7 @@ namespace Realms.Tests
 
         public static explicit operator SyncAllTypesObject(Realms.RealmValue val) => val.AsRealmObject<SyncAllTypesObject>();
 
-        public static implicit operator Realms.RealmValue(SyncAllTypesObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncAllTypesObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -334,115 +334,115 @@ namespace Realms.Tests
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public char CharProperty
             {
                 get => (char)GetValue("CharProperty");
-                set => SetValue("CharProperty", value!);
+                set => SetValue("CharProperty", value);
             }
 
             public byte ByteProperty
             {
                 get => (byte)GetValue("ByteProperty");
-                set => SetValue("ByteProperty", value!);
+                set => SetValue("ByteProperty", value);
             }
 
             public short Int16Property
             {
                 get => (short)GetValue("Int16Property");
-                set => SetValue("Int16Property", value!);
+                set => SetValue("Int16Property", value);
             }
 
             public int Int32Property
             {
                 get => (int)GetValue("Int32Property");
-                set => SetValue("Int32Property", value!);
+                set => SetValue("Int32Property", value);
             }
 
             public long Int64Property
             {
                 get => (long)GetValue("Int64Property");
-                set => SetValue("Int64Property", value!);
+                set => SetValue("Int64Property", value);
             }
 
             public float FloatProperty
             {
                 get => (float)GetValue("FloatProperty");
-                set => SetValue("FloatProperty", value!);
+                set => SetValue("FloatProperty", value);
             }
 
             public double DoubleProperty
             {
                 get => (double)GetValue("DoubleProperty");
-                set => SetValue("DoubleProperty", value!);
+                set => SetValue("DoubleProperty", value);
             }
 
             public bool BooleanProperty
             {
                 get => (bool)GetValue("BooleanProperty");
-                set => SetValue("BooleanProperty", value!);
+                set => SetValue("BooleanProperty", value);
             }
 
             public System.DateTimeOffset DateTimeOffsetProperty
             {
                 get => (System.DateTimeOffset)GetValue("DateTimeOffsetProperty");
-                set => SetValue("DateTimeOffsetProperty", value!);
+                set => SetValue("DateTimeOffsetProperty", value);
             }
 
             public decimal DecimalProperty
             {
                 get => (decimal)GetValue("DecimalProperty");
-                set => SetValue("DecimalProperty", value!);
+                set => SetValue("DecimalProperty", value);
             }
 
             public MongoDB.Bson.Decimal128 Decimal128Property
             {
                 get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Property");
-                set => SetValue("Decimal128Property", value!);
+                set => SetValue("Decimal128Property", value);
             }
 
             public MongoDB.Bson.ObjectId ObjectIdProperty
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("ObjectIdProperty");
-                set => SetValue("ObjectIdProperty", value!);
+                set => SetValue("ObjectIdProperty", value);
             }
 
             public System.Guid GuidProperty
             {
                 get => (System.Guid)GetValue("GuidProperty");
-                set => SetValue("GuidProperty", value!);
+                set => SetValue("GuidProperty", value);
             }
 
             public string StringProperty
             {
                 get => (string)GetValue("StringProperty");
-                set => SetValue("StringProperty", value!);
+                set => SetValue("StringProperty", value);
             }
 
             public byte[] ByteArrayProperty
             {
                 get => (byte[])GetValue("ByteArrayProperty");
-                set => SetValue("ByteArrayProperty", value!);
+                set => SetValue("ByteArrayProperty", value);
             }
 
             public Realms.RealmValue RealmValueProperty
             {
                 get => (Realms.RealmValue)GetValue("RealmValueProperty");
-                set => SetValue("RealmValueProperty", value!);
+                set => SetValue("RealmValueProperty", value);
             }
 
             public Realms.Tests.IntPropertyObject ObjectProperty
             {
                 get => (Realms.Tests.IntPropertyObject)GetValue("ObjectProperty");
-                set => SetValue("ObjectProperty", value!);
+                set => SetValue("ObjectProperty", value);
             }
 
             public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
             {
                 get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObjectProperty");
-                set => SetValue("EmbeddedObjectProperty", value!);
+                set => SetValue("EmbeddedObjectProperty", value);
             }
         }
 
@@ -668,25 +668,25 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "CharProperty" => _charProperty!,
-                    "ByteProperty" => _byteProperty!,
-                    "Int16Property" => _int16Property!,
-                    "Int32Property" => _int32Property!,
-                    "Int64Property" => _int64Property!,
-                    "FloatProperty" => _floatProperty!,
-                    "DoubleProperty" => _doubleProperty!,
-                    "BooleanProperty" => _booleanProperty!,
-                    "DateTimeOffsetProperty" => _dateTimeOffsetProperty!,
-                    "DecimalProperty" => _decimalProperty!,
-                    "Decimal128Property" => _decimal128Property!,
-                    "ObjectIdProperty" => _objectIdProperty!,
-                    "GuidProperty" => _guidProperty!,
-                    "StringProperty" => _stringProperty!,
-                    "ByteArrayProperty" => _byteArrayProperty!,
-                    "RealmValueProperty" => _realmValueProperty!,
-                    "ObjectProperty" => _objectProperty!,
-                    "EmbeddedObjectProperty" => _embeddedObjectProperty!,
+                    "_id" => _id,
+                    "CharProperty" => _charProperty,
+                    "ByteProperty" => _byteProperty,
+                    "Int16Property" => _int16Property,
+                    "Int32Property" => _int32Property,
+                    "Int64Property" => _int64Property,
+                    "FloatProperty" => _floatProperty,
+                    "DoubleProperty" => _doubleProperty,
+                    "BooleanProperty" => _booleanProperty,
+                    "DateTimeOffsetProperty" => _dateTimeOffsetProperty,
+                    "DecimalProperty" => _decimalProperty,
+                    "Decimal128Property" => _decimal128Property,
+                    "ObjectIdProperty" => _objectIdProperty,
+                    "GuidProperty" => _guidProperty,
+                    "StringProperty" => _stringProperty,
+                    "ByteArrayProperty" => _byteArrayProperty,
+                    "RealmValueProperty" => _realmValueProperty,
+                    "ObjectProperty" => _objectProperty,
+                    "EmbeddedObjectProperty" => _embeddedObjectProperty,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

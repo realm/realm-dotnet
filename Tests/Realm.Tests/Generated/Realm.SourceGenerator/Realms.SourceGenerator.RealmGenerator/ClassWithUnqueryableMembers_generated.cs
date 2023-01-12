@@ -185,7 +185,7 @@ namespace Realms.Tests
 
         public static explicit operator ClassWithUnqueryableMembers(Realms.RealmValue val) => val.AsRealmObject<ClassWithUnqueryableMembers>();
 
-        public static implicit operator Realms.RealmValue(ClassWithUnqueryableMembers val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ClassWithUnqueryableMembers? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -258,13 +258,13 @@ namespace Realms.Tests
             public string RealPropertyToSatisfyWeaver
             {
                 get => (string)GetValue("RealPropertyToSatisfyWeaver");
-                set => SetValue("RealPropertyToSatisfyWeaver", value!);
+                set => SetValue("RealPropertyToSatisfyWeaver", value);
             }
 
             public Realms.Tests.Database.Person RealmObjectProperty
             {
                 get => (Realms.Tests.Database.Person)GetValue("RealmObjectProperty");
-                set => SetValue("RealmObjectProperty", value!);
+                set => SetValue("RealmObjectProperty", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.Person> _realmListProperty = null!;
@@ -284,7 +284,7 @@ namespace Realms.Tests
             public string FirstName
             {
                 get => (string)GetValue("FirstName");
-                set => SetValue("FirstName", value!);
+                set => SetValue("FirstName", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> _backlinkProperty = null!;
@@ -352,9 +352,9 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "RealPropertyToSatisfyWeaver" => _realPropertyToSatisfyWeaver!,
-                    "RealmObjectProperty" => _realmObjectProperty!,
-                    "FirstName" => _firstName!,
+                    "RealPropertyToSatisfyWeaver" => _realPropertyToSatisfyWeaver,
+                    "RealmObjectProperty" => _realmObjectProperty,
+                    "FirstName" => _firstName,
                     "BacklinkProperty" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

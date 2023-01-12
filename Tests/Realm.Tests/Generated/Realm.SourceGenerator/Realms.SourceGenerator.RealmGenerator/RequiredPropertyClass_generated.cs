@@ -162,7 +162,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator RequiredPropertyClass(Realms.RealmValue val) => val.AsRealmObject<RequiredPropertyClass>();
 
-        public static implicit operator Realms.RealmValue(RequiredPropertyClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RequiredPropertyClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -227,7 +227,7 @@ namespace Realms.Tests.Database
             public string FooRequired
             {
                 get => (string)GetValue("FooRequired");
-                set => SetValue("FooRequired", value!);
+                set => SetValue("FooRequired", value);
             }
         }
 
@@ -255,7 +255,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "FooRequired" => _fooRequired!,
+                    "FooRequired" => _fooRequired,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

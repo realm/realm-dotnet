@@ -182,7 +182,7 @@ namespace Realms.Tests
 
         public static explicit operator CounterObject(Realms.RealmValue val) => val.AsRealmObject<CounterObject>();
 
-        public static implicit operator Realms.RealmValue(CounterObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(CounterObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -261,55 +261,55 @@ namespace Realms.Tests
             public int Id
             {
                 get => (int)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public Realms.RealmInteger<byte> ByteProperty
             {
                 get => (Realms.RealmInteger<byte>)GetValue("ByteProperty");
-                set => SetValue("ByteProperty", value!);
+                set => SetValue("ByteProperty", value);
             }
 
             public Realms.RealmInteger<short> Int16Property
             {
                 get => (Realms.RealmInteger<short>)GetValue("Int16Property");
-                set => SetValue("Int16Property", value!);
+                set => SetValue("Int16Property", value);
             }
 
             public Realms.RealmInteger<int> Int32Property
             {
                 get => (Realms.RealmInteger<int>)GetValue("Int32Property");
-                set => SetValue("Int32Property", value!);
+                set => SetValue("Int32Property", value);
             }
 
             public Realms.RealmInteger<long> Int64Property
             {
                 get => (Realms.RealmInteger<long>)GetValue("Int64Property");
-                set => SetValue("Int64Property", value!);
+                set => SetValue("Int64Property", value);
             }
 
             public Realms.RealmInteger<byte>? NullableByteProperty
             {
                 get => (Realms.RealmInteger<byte>?)GetValue("NullableByteProperty");
-                set => SetValue("NullableByteProperty", value!);
+                set => SetValue("NullableByteProperty", value);
             }
 
             public Realms.RealmInteger<short>? NullableInt16Property
             {
                 get => (Realms.RealmInteger<short>?)GetValue("NullableInt16Property");
-                set => SetValue("NullableInt16Property", value!);
+                set => SetValue("NullableInt16Property", value);
             }
 
             public Realms.RealmInteger<int>? NullableInt32Property
             {
                 get => (Realms.RealmInteger<int>?)GetValue("NullableInt32Property");
-                set => SetValue("NullableInt32Property", value!);
+                set => SetValue("NullableInt32Property", value);
             }
 
             public Realms.RealmInteger<long>? NullableInt64Property
             {
                 get => (Realms.RealmInteger<long>?)GetValue("NullableInt64Property");
-                set => SetValue("NullableInt64Property", value!);
+                set => SetValue("NullableInt64Property", value);
             }
         }
 
@@ -425,15 +425,15 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "ByteProperty" => _byteProperty!,
-                    "Int16Property" => _int16Property!,
-                    "Int32Property" => _int32Property!,
-                    "Int64Property" => _int64Property!,
-                    "NullableByteProperty" => _nullableByteProperty!,
-                    "NullableInt16Property" => _nullableInt16Property!,
-                    "NullableInt32Property" => _nullableInt32Property!,
-                    "NullableInt64Property" => _nullableInt64Property!,
+                    "_id" => _id,
+                    "ByteProperty" => _byteProperty,
+                    "Int16Property" => _int16Property,
+                    "Int32Property" => _int32Property,
+                    "Int64Property" => _int64Property,
+                    "NullableByteProperty" => _nullableByteProperty,
+                    "NullableInt16Property" => _nullableInt16Property,
+                    "NullableInt32Property" => _nullableInt32Property,
+                    "NullableInt64Property" => _nullableInt64Property,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

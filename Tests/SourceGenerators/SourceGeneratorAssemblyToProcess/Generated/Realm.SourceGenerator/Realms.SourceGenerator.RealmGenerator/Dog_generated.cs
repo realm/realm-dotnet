@@ -166,7 +166,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator Realms.RealmValue(Dog val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dog? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -233,13 +233,13 @@ namespace SourceGeneratorPlayground
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             public SourceGeneratorPlayground.Person Owner
             {
                 get => (SourceGeneratorPlayground.Person)GetValue("Owner");
-                set => SetValue("Owner", value!);
+                set => SetValue("Owner", value);
             }
         }
 
@@ -278,8 +278,8 @@ namespace SourceGeneratorPlayground
             {
                 return propertyName switch
                 {
-                    "Name" => _name!,
-                    "Owner" => _owner!,
+                    "Name" => _name,
+                    "Owner" => _owner,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

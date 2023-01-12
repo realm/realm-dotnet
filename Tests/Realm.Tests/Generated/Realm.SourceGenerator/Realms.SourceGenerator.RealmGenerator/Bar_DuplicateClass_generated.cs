@@ -167,7 +167,7 @@ namespace Bar
 
         public static explicit operator DuplicateClass(Realms.RealmValue val) => val.AsRealmObject<DuplicateClass>();
 
-        public static implicit operator Realms.RealmValue(DuplicateClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DuplicateClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,7 +232,7 @@ namespace Bar
             public string StringValue
             {
                 get => (string)GetValue("StringValue");
-                set => SetValue("StringValue", value!);
+                set => SetValue("StringValue", value);
             }
         }
 
@@ -260,7 +260,7 @@ namespace Bar
             {
                 return propertyName switch
                 {
-                    "StringValue" => _stringValue!,
+                    "StringValue" => _stringValue,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

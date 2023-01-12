@@ -165,7 +165,7 @@ namespace Realms.Tests
 
         public static explicit operator DecimalsObject(Realms.RealmValue val) => val.AsRealmObject<DecimalsObject>();
 
-        public static implicit operator Realms.RealmValue(DecimalsObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DecimalsObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,13 +232,13 @@ namespace Realms.Tests
             public decimal DecimalValue
             {
                 get => (decimal)GetValue("DecimalValue");
-                set => SetValue("DecimalValue", value!);
+                set => SetValue("DecimalValue", value);
             }
 
             public MongoDB.Bson.Decimal128 Decimal128Value
             {
                 get => (MongoDB.Bson.Decimal128)GetValue("Decimal128Value");
-                set => SetValue("Decimal128Value", value!);
+                set => SetValue("Decimal128Value", value);
             }
         }
 
@@ -277,8 +277,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "DecimalValue" => _decimalValue!,
-                    "Decimal128Value" => _decimal128Value!,
+                    "DecimalValue" => _decimalValue,
+                    "Decimal128Value" => _decimal128Value,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

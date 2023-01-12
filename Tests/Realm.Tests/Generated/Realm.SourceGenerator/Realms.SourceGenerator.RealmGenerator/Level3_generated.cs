@@ -162,7 +162,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator Level3(Realms.RealmValue val) => val.AsRealmObject<Level3>();
 
-        public static implicit operator Realms.RealmValue(Level3 val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Level3? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -227,7 +227,7 @@ namespace Realms.Tests.Database
             public System.DateTimeOffset DateValue
             {
                 get => (System.DateTimeOffset)GetValue("DateValue");
-                set => SetValue("DateValue", value!);
+                set => SetValue("DateValue", value);
             }
         }
 
@@ -255,7 +255,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "DateValue" => _dateValue!,
+                    "DateValue" => _dateValue,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

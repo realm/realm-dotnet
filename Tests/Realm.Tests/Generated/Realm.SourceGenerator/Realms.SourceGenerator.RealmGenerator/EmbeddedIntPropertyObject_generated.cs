@@ -169,7 +169,7 @@ namespace Realms.Tests
 
         public static explicit operator EmbeddedIntPropertyObject(Realms.RealmValue val) => val.AsRealmObject<EmbeddedIntPropertyObject>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedIntPropertyObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedIntPropertyObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,7 +232,7 @@ namespace Realms.Tests
             public int Int
             {
                 get => (int)GetValue("Int");
-                set => SetValue("Int", value!);
+                set => SetValue("Int", value);
             }
         }
 
@@ -260,7 +260,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Int" => _int!,
+                    "Int" => _int,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

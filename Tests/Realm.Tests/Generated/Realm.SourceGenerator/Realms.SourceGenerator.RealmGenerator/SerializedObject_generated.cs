@@ -186,7 +186,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator SerializedObject(Realms.RealmValue val) => val.AsRealmObject<SerializedObject>();
 
-        public static implicit operator Realms.RealmValue(SerializedObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SerializedObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -259,13 +259,13 @@ namespace Realms.Tests.Database
             public int IntValue
             {
                 get => (int)GetValue("IntValue");
-                set => SetValue("IntValue", value!);
+                set => SetValue("IntValue", value);
             }
 
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             private System.Collections.Generic.IDictionary<string, int> _dict = null!;
@@ -352,8 +352,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "IntValue" => _intValue!,
-                    "Name" => _name!,
+                    "IntValue" => _intValue,
+                    "Name" => _name,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

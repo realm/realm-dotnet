@@ -185,7 +185,7 @@ namespace Realms.Tests
 
         public static explicit operator Owner(Realms.RealmValue val) => val.AsRealmObject<Owner>();
 
-        public static implicit operator Realms.RealmValue(Owner val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Owner? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -258,13 +258,13 @@ namespace Realms.Tests
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             public Realms.Tests.Dog TopDog
             {
                 get => (Realms.Tests.Dog)GetValue("TopDog");
-                set => SetValue("TopDog", value!);
+                set => SetValue("TopDog", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Dog> _listOfDogs = null!;
@@ -351,8 +351,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Name" => _name!,
-                    "TopDog" => _topDog!,
+                    "Name" => _name,
+                    "TopDog" => _topDog,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

@@ -192,7 +192,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator DynamicOwner(Realms.RealmValue val) => val.AsRealmObject<DynamicOwner>();
 
-        public static implicit operator Realms.RealmValue(DynamicOwner val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicOwner? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -271,13 +271,13 @@ namespace Realms.Tests.Database
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             public Realms.Tests.Database.DynamicDog TopDog
             {
                 get => (Realms.Tests.Database.DynamicDog)GetValue("TopDog");
-                set => SetValue("TopDog", value!);
+                set => SetValue("TopDog", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> _dogs = null!;
@@ -412,8 +412,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Name" => _name!,
-                    "TopDog" => _topDog!,
+                    "Name" => _name,
+                    "TopDog" => _topDog,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

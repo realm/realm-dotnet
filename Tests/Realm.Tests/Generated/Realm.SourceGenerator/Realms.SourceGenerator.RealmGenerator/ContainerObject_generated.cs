@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator ContainerObject(Realms.RealmValue val) => val.AsRealmObject<ContainerObject>();
 
-        public static implicit operator Realms.RealmValue(ContainerObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ContainerObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

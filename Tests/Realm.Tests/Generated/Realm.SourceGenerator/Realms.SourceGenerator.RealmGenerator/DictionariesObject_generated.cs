@@ -261,7 +261,7 @@ namespace Realms.Tests
 
         public static explicit operator DictionariesObject(Realms.RealmValue val) => val.AsRealmObject<DictionariesObject>();
 
-        public static implicit operator Realms.RealmValue(DictionariesObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DictionariesObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

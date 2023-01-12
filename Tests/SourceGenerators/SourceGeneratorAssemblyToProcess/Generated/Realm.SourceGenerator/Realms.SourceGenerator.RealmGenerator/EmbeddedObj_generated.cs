@@ -163,7 +163,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator EmbeddedObj(Realms.RealmValue val) => val.AsRealmObject<EmbeddedObj>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedObj val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedObj? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -228,7 +228,7 @@ namespace SourceGeneratorPlayground
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value!);
+                set => SetValue("Id", value);
             }
         }
 
@@ -256,7 +256,7 @@ namespace SourceGeneratorPlayground
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
+                    "Id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

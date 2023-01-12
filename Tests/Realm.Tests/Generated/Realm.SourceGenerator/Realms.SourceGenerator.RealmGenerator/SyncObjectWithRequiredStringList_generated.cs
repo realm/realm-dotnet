@@ -182,7 +182,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator SyncObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<SyncObjectWithRequiredStringList>();
 
-        public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -249,7 +249,7 @@ namespace Realms.Tests.Sync
             public string Id
             {
                 get => (string)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             private System.Collections.Generic.IList<string> _strings = null!;
@@ -293,7 +293,7 @@ namespace Realms.Tests.Sync
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
+                    "_id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

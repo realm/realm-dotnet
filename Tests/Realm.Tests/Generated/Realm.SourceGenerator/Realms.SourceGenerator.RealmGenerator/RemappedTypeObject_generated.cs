@@ -195,7 +195,7 @@ namespace Realms.Tests
 
         public static explicit operator RemappedTypeObject(Realms.RealmValue val) => val.AsRealmObject<RemappedTypeObject>();
 
-        public static implicit operator Realms.RealmValue(RemappedTypeObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RemappedTypeObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -274,25 +274,25 @@ namespace Realms.Tests
             public int Id
             {
                 get => (int)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public string StringValue
             {
                 get => (string)GetValue("StringValue");
-                set => SetValue("StringValue", value!);
+                set => SetValue("StringValue", value);
             }
 
             public Realms.Tests.RemappedTypeObject NormalLink
             {
                 get => (Realms.Tests.RemappedTypeObject)GetValue("NormalLink");
-                set => SetValue("NormalLink", value!);
+                set => SetValue("NormalLink", value);
             }
 
             public Realms.Tests.RemappedTypeObject MappedLink
             {
                 get => (Realms.Tests.RemappedTypeObject)GetValue("__mappedLink");
-                set => SetValue("__mappedLink", value!);
+                set => SetValue("__mappedLink", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.RemappedTypeObject> _normalList = null!;
@@ -417,10 +417,10 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "StringValue" => _stringValue!,
-                    "NormalLink" => _normalLink!,
-                    "__mappedLink" => _mappedLink!,
+                    "_id" => _id,
+                    "StringValue" => _stringValue,
+                    "NormalLink" => _normalLink,
+                    "__mappedLink" => _mappedLink,
                     "NormalBacklink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     "__mappedBacklink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),

@@ -182,7 +182,7 @@ namespace Realms.Tests
 
         public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator Realms.RealmValue(Dog val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dog? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -255,25 +255,25 @@ namespace Realms.Tests
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             public string Color
             {
                 get => (string)GetValue("Color");
-                set => SetValue("Color", value!);
+                set => SetValue("Color", value);
             }
 
             public bool Vaccinated
             {
                 get => (bool)GetValue("Vaccinated");
-                set => SetValue("Vaccinated", value!);
+                set => SetValue("Vaccinated", value);
             }
 
             public int Age
             {
                 get => (int)GetValue("Age");
-                set => SetValue("Age", value!);
+                set => SetValue("Age", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.Owner> _owners = null!;
@@ -350,10 +350,10 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Name" => _name!,
-                    "Color" => _color!,
-                    "Vaccinated" => _vaccinated!,
-                    "Age" => _age!,
+                    "Name" => _name,
+                    "Color" => _color,
+                    "Vaccinated" => _vaccinated,
+                    "Age" => _age,
                     "Owners" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

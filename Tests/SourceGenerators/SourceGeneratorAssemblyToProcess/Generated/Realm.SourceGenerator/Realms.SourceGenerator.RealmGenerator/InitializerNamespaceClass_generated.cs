@@ -161,7 +161,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator InitializerNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<InitializerNamespaceClass>();
 
-        public static implicit operator Realms.RealmValue(InitializerNamespaceClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(InitializerNamespaceClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -226,7 +226,7 @@ namespace SourceGeneratorAssemblyToProcess
             public string Id
             {
                 get => (string)GetValue("Id");
-                set => SetValue("Id", value!);
+                set => SetValue("Id", value);
             }
         }
 
@@ -254,7 +254,7 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
+                    "Id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

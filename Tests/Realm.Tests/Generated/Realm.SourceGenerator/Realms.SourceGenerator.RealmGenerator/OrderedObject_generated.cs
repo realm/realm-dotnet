@@ -173,7 +173,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator OrderedObject(Realms.RealmValue val) => val.AsRealmObject<OrderedObject>();
 
-        public static implicit operator Realms.RealmValue(OrderedObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OrderedObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -238,13 +238,13 @@ namespace Realms.Tests.Database
             public int Order
             {
                 get => (int)GetValue("Order");
-                set => SetValue("Order", value!);
+                set => SetValue("Order", value);
             }
 
             public bool IsPartOfResults
             {
                 get => (bool)GetValue("IsPartOfResults");
-                set => SetValue("IsPartOfResults", value!);
+                set => SetValue("IsPartOfResults", value);
             }
         }
 
@@ -283,8 +283,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Order" => _order!,
-                    "IsPartOfResults" => _isPartOfResults!,
+                    "Order" => _order,
+                    "IsPartOfResults" => _isPartOfResults,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

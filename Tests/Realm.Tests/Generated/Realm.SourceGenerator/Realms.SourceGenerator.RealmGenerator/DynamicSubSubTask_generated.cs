@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator DynamicSubSubTask(Realms.RealmValue val) => val.AsRealmObject<DynamicSubSubTask>();
 
-        public static implicit operator Realms.RealmValue(DynamicSubSubTask val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicSubSubTask? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -238,7 +238,7 @@ namespace Realms.Tests.Database
             public string Summary
             {
                 get => (string)GetValue("Summary");
-                set => SetValue("Summary", value!);
+                set => SetValue("Summary", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> _parentSubTask = null!;
@@ -298,7 +298,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Summary" => _summary!,
+                    "Summary" => _summary,
                     "ParentSubTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     "ParentTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),

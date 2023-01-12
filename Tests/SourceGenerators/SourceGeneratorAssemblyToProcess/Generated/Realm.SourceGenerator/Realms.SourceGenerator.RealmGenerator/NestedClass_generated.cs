@@ -168,7 +168,7 @@ namespace SourceGeneratorPlayground
 
             public static explicit operator NestedClass(Realms.RealmValue val) => val.AsRealmObject<NestedClass>();
 
-            public static implicit operator Realms.RealmValue(NestedClass val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NestedClass? val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -235,13 +235,13 @@ namespace SourceGeneratorPlayground
                 public int Id
                 {
                     get => (int)GetValue("Id");
-                    set => SetValue("Id", value!);
+                    set => SetValue("Id", value);
                 }
 
                 public SourceGeneratorPlayground.OuterClass.NestedClass Link
                 {
                     get => (SourceGeneratorPlayground.OuterClass.NestedClass)GetValue("Link");
-                    set => SetValue("Link", value!);
+                    set => SetValue("Link", value);
                 }
             }
 
@@ -280,8 +280,8 @@ namespace SourceGeneratorPlayground
                 {
                     return propertyName switch
                     {
-                        "Id" => _id!,
-                        "Link" => _link!,
+                        "Id" => _id,
+                        "Link" => _link,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }

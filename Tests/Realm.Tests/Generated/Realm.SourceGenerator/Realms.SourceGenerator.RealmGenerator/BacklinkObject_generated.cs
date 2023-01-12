@@ -171,7 +171,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator BacklinkObject(Realms.RealmValue val) => val.AsRealmObject<BacklinkObject>();
 
-        public static implicit operator Realms.RealmValue(BacklinkObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BacklinkObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -240,7 +240,7 @@ namespace Realms.Tests.Database
             public string BeforeBacklinks
             {
                 get => (string)GetValue("BeforeBacklinks");
-                set => SetValue("BeforeBacklinks", value!);
+                set => SetValue("BeforeBacklinks", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.Database.SomeClass> _links = null!;
@@ -260,7 +260,7 @@ namespace Realms.Tests.Database
             public string AfterBacklinks
             {
                 get => (string)GetValue("AfterBacklinks");
-                set => SetValue("AfterBacklinks", value!);
+                set => SetValue("AfterBacklinks", value);
             }
         }
 
@@ -301,9 +301,9 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "BeforeBacklinks" => _beforeBacklinks!,
+                    "BeforeBacklinks" => _beforeBacklinks,
                     "Links" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                    "AfterBacklinks" => _afterBacklinks!,
+                    "AfterBacklinks" => _afterBacklinks,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

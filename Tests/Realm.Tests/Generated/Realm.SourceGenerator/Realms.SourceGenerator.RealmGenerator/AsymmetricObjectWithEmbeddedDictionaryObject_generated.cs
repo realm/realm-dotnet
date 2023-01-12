@@ -175,7 +175,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
 
-        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -242,7 +242,7 @@ namespace Realms.Tests.Sync
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> _embeddedDictionaryObject = null!;
@@ -286,7 +286,7 @@ namespace Realms.Tests.Sync
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
+                    "_id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

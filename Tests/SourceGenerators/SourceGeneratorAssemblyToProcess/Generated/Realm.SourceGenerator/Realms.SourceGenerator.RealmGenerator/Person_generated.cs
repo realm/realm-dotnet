@@ -163,7 +163,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
 
-        public static implicit operator Realms.RealmValue(Person val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Person? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,13 +232,13 @@ namespace SourceGeneratorPlayground
             public System.Guid Id
             {
                 get => (System.Guid)GetValue("Id");
-                set => SetValueUnique("Id", value!);
+                set => SetValueUnique("Id", value);
             }
 
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             private System.Linq.IQueryable<SourceGeneratorPlayground.Dog> _dogs = null!;
@@ -293,8 +293,8 @@ namespace SourceGeneratorPlayground
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
-                    "Name" => _name!,
+                    "Id" => _id,
+                    "Name" => _name,
                     "Dogs" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

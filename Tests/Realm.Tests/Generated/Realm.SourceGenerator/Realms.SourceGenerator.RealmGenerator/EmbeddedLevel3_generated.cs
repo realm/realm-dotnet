@@ -169,7 +169,7 @@ namespace Realms.Tests
 
         public static explicit operator EmbeddedLevel3(Realms.RealmValue val) => val.AsRealmObject<EmbeddedLevel3>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedLevel3 val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedLevel3? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -234,7 +234,7 @@ namespace Realms.Tests
             public string String
             {
                 get => (string)GetValue("String");
-                set => SetValue("String", value!);
+                set => SetValue("String", value);
             }
         }
 
@@ -262,7 +262,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "String" => _string!,
+                    "String" => _string,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

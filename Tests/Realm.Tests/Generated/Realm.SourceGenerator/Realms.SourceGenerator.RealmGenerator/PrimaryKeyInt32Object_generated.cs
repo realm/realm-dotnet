@@ -166,7 +166,7 @@ namespace Realms.Tests
 
         public static explicit operator PrimaryKeyInt32Object(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyInt32Object>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyInt32Object val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyInt32Object? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -231,7 +231,7 @@ namespace Realms.Tests
             public int Id
             {
                 get => (int)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
         }
 
@@ -259,7 +259,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
+                    "_id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

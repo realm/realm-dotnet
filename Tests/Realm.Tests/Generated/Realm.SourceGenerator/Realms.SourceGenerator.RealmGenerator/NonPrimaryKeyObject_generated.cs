@@ -167,7 +167,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator NonPrimaryKeyObject(Realms.RealmValue val) => val.AsRealmObject<NonPrimaryKeyObject>();
 
-            public static implicit operator Realms.RealmValue(NonPrimaryKeyObject val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NonPrimaryKeyObject? val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,7 +232,7 @@ namespace Realms.Tests.Database
                 public string StringValue
                 {
                     get => (string)GetValue("StringValue");
-                    set => SetValue("StringValue", value!);
+                    set => SetValue("StringValue", value);
                 }
             }
 
@@ -260,7 +260,7 @@ namespace Realms.Tests.Database
                 {
                     return propertyName switch
                     {
-                        "StringValue" => _stringValue!,
+                        "StringValue" => _stringValue,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }

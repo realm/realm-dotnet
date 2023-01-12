@@ -179,7 +179,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator MixedProperties2(Realms.RealmValue val) => val.AsRealmObject<MixedProperties2>();
 
-        public static implicit operator Realms.RealmValue(MixedProperties2 val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(MixedProperties2? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
             public int Age
             {
                 get => (int)GetValue("Age");
-                set => SetValue("Age", value!);
+                set => SetValue("Age", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.Person> _enemies = null!;
@@ -284,7 +284,7 @@ namespace Realms.Tests.Database
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
         }
 
@@ -327,8 +327,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Age" => _age!,
-                    "Name" => _name!,
+                    "Age" => _age,
+                    "Name" => _name,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

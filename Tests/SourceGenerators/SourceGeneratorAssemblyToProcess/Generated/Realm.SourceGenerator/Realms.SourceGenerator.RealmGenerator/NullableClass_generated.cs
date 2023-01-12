@@ -205,7 +205,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator NullableClass(Realms.RealmValue val) => val.AsRealmObject<NullableClass>();
 
-        public static implicit operator Realms.RealmValue(NullableClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(NullableClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -298,37 +298,37 @@ namespace SourceGeneratorAssemblyToProcess
             public int NonNullableInt
             {
                 get => (int)GetValue("NonNullableInt");
-                set => SetValue("NonNullableInt", value!);
+                set => SetValue("NonNullableInt", value);
             }
 
             public int? NullableInt
             {
                 get => (int?)GetValue("NullableInt");
-                set => SetValue("NullableInt", value!);
+                set => SetValue("NullableInt", value);
             }
 
             public string NonNullableString
             {
                 get => (string)GetValue("NonNullableString");
-                set => SetValue("NonNullableString", value!);
+                set => SetValue("NonNullableString", value);
             }
 
             public string? NullableString
             {
                 get => (string?)GetValue("NullableString");
-                set => SetValue("NullableString", value!);
+                set => SetValue("NullableString", value);
             }
 
             public byte[] NonNullableData
             {
                 get => (byte[])GetValue("NonNullableData");
-                set => SetValue("NonNullableData", value!);
+                set => SetValue("NonNullableData", value);
             }
 
             public byte[]? NullableData
             {
                 get => (byte[]?)GetValue("NullableData");
-                set => SetValue("NullableData", value!);
+                set => SetValue("NullableData", value);
             }
 
             private System.Collections.Generic.IList<int?> _collectionOfNullableInt = null!;
@@ -390,25 +390,25 @@ namespace SourceGeneratorAssemblyToProcess
             public Realms.RealmInteger<int> NonNullableRealmInt
             {
                 get => (Realms.RealmInteger<int>)GetValue("NonNullableRealmInt");
-                set => SetValue("NonNullableRealmInt", value!);
+                set => SetValue("NonNullableRealmInt", value);
             }
 
             public Realms.RealmInteger<int>? NullableRealmInt
             {
                 get => (Realms.RealmInteger<int>?)GetValue("NullableRealmInt");
-                set => SetValue("NullableRealmInt", value!);
+                set => SetValue("NullableRealmInt", value);
             }
 
             public SourceGeneratorAssemblyToProcess.NullableClass? NullableObject
             {
                 get => (SourceGeneratorAssemblyToProcess.NullableClass?)GetValue("NullableObject");
-                set => SetValue("NullableObject", value!);
+                set => SetValue("NullableObject", value);
             }
 
             public Realms.RealmValue NonNullableRealmValue
             {
                 get => (Realms.RealmValue)GetValue("NonNullableRealmValue");
-                set => SetValue("NonNullableRealmValue", value!);
+                set => SetValue("NonNullableRealmValue", value);
             }
 
             private System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.NullableClass> _backlink = null!;
@@ -559,16 +559,16 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                 {
-                    "NonNullableInt" => _nonNullableInt!,
-                    "NullableInt" => _nullableInt!,
-                    "NonNullableString" => _nonNullableString!,
-                    "NullableString" => _nullableString!,
-                    "NonNullableData" => _nonNullableData!,
-                    "NullableData" => _nullableData!,
-                    "NonNullableRealmInt" => _nonNullableRealmInt!,
-                    "NullableRealmInt" => _nullableRealmInt!,
-                    "NullableObject" => _nullableObject!,
-                    "NonNullableRealmValue" => _nonNullableRealmValue!,
+                    "NonNullableInt" => _nonNullableInt,
+                    "NullableInt" => _nullableInt,
+                    "NonNullableString" => _nonNullableString,
+                    "NullableString" => _nullableString,
+                    "NonNullableData" => _nonNullableData,
+                    "NullableData" => _nullableData,
+                    "NonNullableRealmInt" => _nonNullableRealmInt,
+                    "NullableRealmInt" => _nullableRealmInt,
+                    "NullableObject" => _nullableObject,
+                    "NonNullableRealmValue" => _nonNullableRealmValue,
                     "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

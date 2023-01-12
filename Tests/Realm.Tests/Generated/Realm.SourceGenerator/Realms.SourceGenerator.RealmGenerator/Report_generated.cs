@@ -180,7 +180,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator Report(Realms.RealmValue val) => val.AsRealmObject<Report>();
 
-        public static implicit operator Realms.RealmValue(Report val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Report? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -251,25 +251,25 @@ namespace Realms.Tests.Database
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value!);
+                set => SetValue("Id", value);
             }
 
             public string Ref
             {
                 get => (string)GetValue("Ref");
-                set => SetValue("Ref", value!);
+                set => SetValue("Ref", value);
             }
 
             public string Date
             {
                 get => (string)GetValue("Date");
-                set => SetValue("Date", value!);
+                set => SetValue("Date", value);
             }
 
             public Realms.Tests.Database.Product Parent
             {
                 get => (Realms.Tests.Database.Product)GetValue("Parent");
-                set => SetValue("Parent", value!);
+                set => SetValue("Parent", value);
             }
         }
 
@@ -330,10 +330,10 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
-                    "Ref" => _ref!,
-                    "Date" => _date!,
-                    "Parent" => _parent!,
+                    "Id" => _id,
+                    "Ref" => _ref,
+                    "Date" => _date,
+                    "Parent" => _parent,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

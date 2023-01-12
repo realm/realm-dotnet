@@ -208,7 +208,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator EmbeddedGuidType(Realms.RealmValue val) => val.AsRealmObject<EmbeddedGuidType>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedGuidType val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedGuidType? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -297,7 +297,7 @@ namespace Realms.Tests.Database
             public System.Guid RegularProperty
             {
                 get => (System.Guid)GetValue("RegularProperty");
-                set => SetValue("RegularProperty", value!);
+                set => SetValue("RegularProperty", value);
             }
 
             private System.Collections.Generic.IList<System.Guid> _guidList = null!;
@@ -345,7 +345,7 @@ namespace Realms.Tests.Database
             public System.Guid? OptionalProperty
             {
                 get => (System.Guid?)GetValue("OptionalProperty");
-                set => SetValue("OptionalProperty", value!);
+                set => SetValue("OptionalProperty", value);
             }
 
             private System.Collections.Generic.IList<System.Guid?> _optionalList = null!;
@@ -393,13 +393,13 @@ namespace Realms.Tests.Database
             public Realms.Tests.Database.GuidType LinkProperty
             {
                 get => (Realms.Tests.Database.GuidType)GetValue("LinkProperty");
-                set => SetValue("LinkProperty", value!);
+                set => SetValue("LinkProperty", value);
             }
 
             public Realms.RealmValue MixedProperty
             {
                 get => (Realms.RealmValue)GetValue("MixedProperty");
-                set => SetValue("MixedProperty", value!);
+                set => SetValue("MixedProperty", value);
             }
 
             private System.Collections.Generic.IList<Realms.RealmValue> _mixedList = null!;
@@ -520,10 +520,10 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "RegularProperty" => _regularProperty!,
-                    "OptionalProperty" => _optionalProperty!,
-                    "LinkProperty" => _linkProperty!,
-                    "MixedProperty" => _mixedProperty!,
+                    "RegularProperty" => _regularProperty,
+                    "OptionalProperty" => _optionalProperty,
+                    "LinkProperty" => _linkProperty,
+                    "MixedProperty" => _mixedProperty,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

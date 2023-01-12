@@ -319,7 +319,7 @@ namespace Realms.Tests
 
         public static explicit operator SyncCollectionsObject(Realms.RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
 
-        public static implicit operator Realms.RealmValue(SyncCollectionsObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncCollectionsObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -486,13 +486,13 @@ namespace Realms.Tests
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public System.Guid GuidProperty
             {
                 get => (System.Guid)GetValue("GuidProperty");
-                set => SetValue("GuidProperty", value!);
+                set => SetValue("GuidProperty", value);
             }
 
             private System.Collections.Generic.IList<char> _charList = null!;
@@ -1331,8 +1331,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "GuidProperty" => _guidProperty!,
+                    "_id" => _id,
+                    "GuidProperty" => _guidProperty,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

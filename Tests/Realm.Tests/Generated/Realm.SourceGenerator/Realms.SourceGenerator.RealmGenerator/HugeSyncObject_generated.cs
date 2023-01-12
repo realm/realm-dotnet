@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator HugeSyncObject(Realms.RealmValue val) => val.AsRealmObject<HugeSyncObject>();
 
-        public static implicit operator Realms.RealmValue(HugeSyncObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(HugeSyncObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -235,13 +235,13 @@ namespace Realms.Tests
             public MongoDB.Bson.ObjectId Id
             {
                 get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public byte[] Data
             {
                 get => (byte[])GetValue("Data");
-                set => SetValue("Data", value!);
+                set => SetValue("Data", value);
             }
         }
 
@@ -280,8 +280,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "Data" => _data!,
+                    "_id" => _id,
+                    "Data" => _data,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

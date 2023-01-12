@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator NullablePrimaryKeyObject(Realms.RealmValue val) => val.AsRealmObject<NullablePrimaryKeyObject>();
 
-            public static implicit operator Realms.RealmValue(NullablePrimaryKeyObject val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NullablePrimaryKeyObject? val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -236,13 +236,13 @@ namespace Realms.Tests.Database
                 public long? Id
                 {
                     get => (long?)GetValue("Id");
-                    set => SetValueUnique("Id", value!);
+                    set => SetValueUnique("Id", value);
                 }
 
                 public string StringValue
                 {
                     get => (string)GetValue("StringValue");
-                    set => SetValue("StringValue", value!);
+                    set => SetValue("StringValue", value);
                 }
             }
 
@@ -281,8 +281,8 @@ namespace Realms.Tests.Database
                 {
                     return propertyName switch
                     {
-                        "Id" => _id!,
-                        "StringValue" => _stringValue!,
+                        "Id" => _id,
+                        "StringValue" => _stringValue,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }

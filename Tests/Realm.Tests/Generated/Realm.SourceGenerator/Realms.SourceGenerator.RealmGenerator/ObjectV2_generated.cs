@@ -171,7 +171,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator ObjectV2(Realms.RealmValue val) => val.AsRealmObject<ObjectV2>();
 
-        public static implicit operator Realms.RealmValue(ObjectV2 val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectV2? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -238,13 +238,13 @@ namespace Realms.Tests.Database
             public string Id
             {
                 get => (string)GetValue("Id");
-                set => SetValueUnique("Id", value!);
+                set => SetValueUnique("Id", value);
             }
 
             public string Value
             {
                 get => (string)GetValue("Value");
-                set => SetValue("Value", value!);
+                set => SetValue("Value", value);
             }
         }
 
@@ -283,8 +283,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
-                    "Value" => _value!,
+                    "Id" => _id,
+                    "Value" => _value,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

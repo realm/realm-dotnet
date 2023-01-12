@@ -167,7 +167,7 @@ namespace Realms.Tests
 
         public static explicit operator UnqueryableBacklinks(Realms.RealmValue val) => val.AsRealmObject<UnqueryableBacklinks>();
 
-        public static implicit operator Realms.RealmValue(UnqueryableBacklinks val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(UnqueryableBacklinks? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,7 +232,7 @@ namespace Realms.Tests
             public Realms.Tests.ClassWithUnqueryableMembers Parent
             {
                 get => (Realms.Tests.ClassWithUnqueryableMembers)GetValue("Parent");
-                set => SetValue("Parent", value!);
+                set => SetValue("Parent", value);
             }
         }
 
@@ -260,7 +260,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Parent" => _parent!,
+                    "Parent" => _parent,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

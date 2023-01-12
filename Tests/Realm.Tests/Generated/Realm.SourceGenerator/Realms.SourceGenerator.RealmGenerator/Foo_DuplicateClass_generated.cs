@@ -167,7 +167,7 @@ namespace Foo
 
         public static explicit operator DuplicateClass(Realms.RealmValue val) => val.AsRealmObject<DuplicateClass>();
 
-        public static implicit operator Realms.RealmValue(DuplicateClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DuplicateClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -232,7 +232,7 @@ namespace Foo
             public int IntValue
             {
                 get => (int)GetValue("IntValue");
-                set => SetValue("IntValue", value!);
+                set => SetValue("IntValue", value);
             }
         }
 
@@ -260,7 +260,7 @@ namespace Foo
             {
                 return propertyName switch
                 {
-                    "IntValue" => _intValue!,
+                    "IntValue" => _intValue,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

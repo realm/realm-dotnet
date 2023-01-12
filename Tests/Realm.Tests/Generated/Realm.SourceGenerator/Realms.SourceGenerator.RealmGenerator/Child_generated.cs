@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator Child(Realms.RealmValue val) => val.AsRealmObject<Child>();
 
-            public static implicit operator Realms.RealmValue(Child val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(Child? val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -247,19 +247,19 @@ namespace Realms.Tests.Database
                 public long Id
                 {
                     get => (long)GetValue("Id");
-                    set => SetValueUnique("Id", value!);
+                    set => SetValueUnique("Id", value);
                 }
 
                 public string Name
                 {
                     get => (string)GetValue("Name");
-                    set => SetValue("Name", value!);
+                    set => SetValue("Name", value);
                 }
 
                 public Realms.Tests.Database.AddOrUpdateTests.Parent Parent
                 {
                     get => (Realms.Tests.Database.AddOrUpdateTests.Parent)GetValue("Parent");
-                    set => SetValue("Parent", value!);
+                    set => SetValue("Parent", value);
                 }
             }
 
@@ -309,9 +309,9 @@ namespace Realms.Tests.Database
                 {
                     return propertyName switch
                     {
-                        "Id" => _id!,
-                        "Name" => _name!,
-                        "Parent" => _parent!,
+                        "Id" => _id,
+                        "Name" => _name,
+                        "Parent" => _parent,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }

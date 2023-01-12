@@ -27,8 +27,8 @@ namespace Realms.SourceGenerator
 {
     internal class Parser
     {
-        private GeneratorExecutionContext _context;
-        private GeneratorConfig _generatorConfig;
+        private readonly GeneratorExecutionContext _context;
+        private readonly GeneratorConfig _generatorConfig;
 
         public Parser(GeneratorExecutionContext context, GeneratorConfig generatorConfig)
         {

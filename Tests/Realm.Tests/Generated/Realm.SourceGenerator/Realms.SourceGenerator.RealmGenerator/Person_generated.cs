@@ -219,7 +219,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
 
-        public static implicit operator Realms.RealmValue(Person val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Person? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -306,73 +306,73 @@ namespace Realms.Tests.Database
             public string FirstName
             {
                 get => (string)GetValue("FirstName");
-                set => SetValue("FirstName", value!);
+                set => SetValue("FirstName", value);
             }
 
             public string LastName
             {
                 get => (string)GetValue("LastName");
-                set => SetValue("LastName", value!);
+                set => SetValue("LastName", value);
             }
 
             public float Score
             {
                 get => (float)GetValue("Score");
-                set => SetValue("Score", value!);
+                set => SetValue("Score", value);
             }
 
             public double Latitude
             {
                 get => (double)GetValue("Latitude");
-                set => SetValue("Latitude", value!);
+                set => SetValue("Latitude", value);
             }
 
             public double Longitude
             {
                 get => (double)GetValue("Longitude");
-                set => SetValue("Longitude", value!);
+                set => SetValue("Longitude", value);
             }
 
             public long Salary
             {
                 get => (long)GetValue("Salary");
-                set => SetValue("Salary", value!);
+                set => SetValue("Salary", value);
             }
 
             public bool? IsAmbivalent
             {
                 get => (bool?)GetValue("IsAmbivalent");
-                set => SetValue("IsAmbivalent", value!);
+                set => SetValue("IsAmbivalent", value);
             }
 
             public System.DateTimeOffset Birthday
             {
                 get => (System.DateTimeOffset)GetValue("Birthday");
-                set => SetValue("Birthday", value!);
+                set => SetValue("Birthday", value);
             }
 
             public byte[] PublicCertificateBytes
             {
                 get => (byte[])GetValue("PublicCertificateBytes");
-                set => SetValue("PublicCertificateBytes", value!);
+                set => SetValue("PublicCertificateBytes", value);
             }
 
             public string OptionalAddress
             {
                 get => (string)GetValue("OptionalAddress");
-                set => SetValue("OptionalAddress", value!);
+                set => SetValue("OptionalAddress", value);
             }
 
             public string Email_
             {
                 get => (string)GetValue("Email");
-                set => SetValue("Email", value!);
+                set => SetValue("Email", value);
             }
 
             public bool IsInteresting
             {
                 get => (bool)GetValue("IsInteresting");
-                set => SetValue("IsInteresting", value!);
+                set => SetValue("IsInteresting", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends = null!;
@@ -537,18 +537,18 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "FirstName" => _firstName!,
-                    "LastName" => _lastName!,
-                    "Score" => _score!,
-                    "Latitude" => _latitude!,
-                    "Longitude" => _longitude!,
-                    "Salary" => _salary!,
-                    "IsAmbivalent" => _isAmbivalent!,
-                    "Birthday" => _birthday!,
-                    "PublicCertificateBytes" => _publicCertificateBytes!,
-                    "OptionalAddress" => _optionalAddress!,
-                    "Email" => _email_!,
-                    "IsInteresting" => _isInteresting!,
+                    "FirstName" => _firstName,
+                    "LastName" => _lastName,
+                    "Score" => _score,
+                    "Latitude" => _latitude,
+                    "Longitude" => _longitude,
+                    "Salary" => _salary,
+                    "IsAmbivalent" => _isAmbivalent,
+                    "Birthday" => _birthday,
+                    "PublicCertificateBytes" => _publicCertificateBytes,
+                    "OptionalAddress" => _optionalAddress,
+                    "Email" => _email_,
+                    "IsInteresting" => _isInteresting,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

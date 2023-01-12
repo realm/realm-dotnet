@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator ObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<ObjectWithRequiredStringList>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithRequiredStringList val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithRequiredStringList? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

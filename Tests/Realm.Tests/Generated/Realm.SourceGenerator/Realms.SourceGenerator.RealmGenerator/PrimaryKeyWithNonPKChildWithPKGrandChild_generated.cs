@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator PrimaryKeyWithNonPKChildWithPKGrandChild(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithNonPKChildWithPKGrandChild>();
 
-            public static implicit operator Realms.RealmValue(PrimaryKeyWithNonPKChildWithPKGrandChild val) => Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(PrimaryKeyWithNonPKChildWithPKGrandChild? val) => Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -247,19 +247,19 @@ namespace Realms.Tests.Database
                 public long Id
                 {
                     get => (long)GetValue("Id");
-                    set => SetValueUnique("Id", value!);
+                    set => SetValueUnique("Id", value);
                 }
 
                 public string StringValue
                 {
                     get => (string)GetValue("StringValue");
-                    set => SetValue("StringValue", value!);
+                    set => SetValue("StringValue", value);
                 }
 
                 public Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation NonPKChild
                 {
                     get => (Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation)GetValue("NonPKChild");
-                    set => SetValue("NonPKChild", value!);
+                    set => SetValue("NonPKChild", value);
                 }
             }
 
@@ -309,9 +309,9 @@ namespace Realms.Tests.Database
                 {
                     return propertyName switch
                     {
-                        "Id" => _id!,
-                        "StringValue" => _stringValue!,
-                        "NonPKChild" => _nonPKChild!,
+                        "Id" => _id,
+                        "StringValue" => _stringValue,
+                        "NonPKChild" => _nonPKChild,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }

@@ -176,7 +176,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator DynamicSubTask(Realms.RealmValue val) => val.AsRealmObject<DynamicSubTask>();
 
-        public static implicit operator Realms.RealmValue(DynamicSubTask val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicSubTask? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -245,13 +245,13 @@ namespace Realms.Tests.Database
             public string Summary
             {
                 get => (string)GetValue("Summary");
-                set => SetValue("Summary", value!);
+                set => SetValue("Summary", value);
             }
 
             public Realms.Tests.Database.CompletionReport CompletionReport
             {
                 get => (Realms.Tests.Database.CompletionReport)GetValue("CompletionReport");
-                set => SetValue("CompletionReport", value!);
+                set => SetValue("CompletionReport", value);
             }
 
             private System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> _subSubTasks = null!;
@@ -306,8 +306,8 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Summary" => _summary!,
-                    "CompletionReport" => _completionReport!,
+                    "Summary" => _summary,
+                    "CompletionReport" => _completionReport,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

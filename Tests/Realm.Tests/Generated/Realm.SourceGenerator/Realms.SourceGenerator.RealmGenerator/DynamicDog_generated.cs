@@ -175,7 +175,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator DynamicDog(Realms.RealmValue val) => val.AsRealmObject<DynamicDog>();
 
-        public static implicit operator Realms.RealmValue(DynamicDog val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicDog? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -246,19 +246,19 @@ namespace Realms.Tests.Database
             public string Name
             {
                 get => (string)GetValue("Name");
-                set => SetValue("Name", value!);
+                set => SetValue("Name", value);
             }
 
             public string Color
             {
                 get => (string)GetValue("Color");
-                set => SetValue("Color", value!);
+                set => SetValue("Color", value);
             }
 
             public bool Vaccinated
             {
                 get => (bool)GetValue("Vaccinated");
-                set => SetValue("Vaccinated", value!);
+                set => SetValue("Vaccinated", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> _owners = null!;
@@ -324,9 +324,9 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Name" => _name!,
-                    "Color" => _color!,
-                    "Vaccinated" => _vaccinated!,
+                    "Name" => _name,
+                    "Color" => _color,
+                    "Vaccinated" => _vaccinated,
                     "Owners" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

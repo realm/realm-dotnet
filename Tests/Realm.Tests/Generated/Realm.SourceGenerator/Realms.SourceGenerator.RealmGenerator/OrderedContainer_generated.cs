@@ -173,7 +173,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator OrderedContainer(Realms.RealmValue val) => val.AsRealmObject<OrderedContainer>();
 
-        public static implicit operator Realms.RealmValue(OrderedContainer val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OrderedContainer? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

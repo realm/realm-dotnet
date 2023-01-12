@@ -173,7 +173,7 @@ namespace Realms.Tests
 
         public static explicit operator RecursiveBacklinksObject(Realms.RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
 
-        public static implicit operator Realms.RealmValue(RecursiveBacklinksObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RecursiveBacklinksObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -242,13 +242,13 @@ namespace Realms.Tests
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value!);
+                set => SetValue("Id", value);
             }
 
             public Realms.Tests.RecursiveBacklinksObject Parent
             {
                 get => (Realms.Tests.RecursiveBacklinksObject)GetValue("Parent");
-                set => SetValue("Parent", value!);
+                set => SetValue("Parent", value);
             }
 
             private System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> _children = null!;
@@ -303,8 +303,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "Id" => _id!,
-                    "Parent" => _parent!,
+                    "Id" => _id,
+                    "Parent" => _parent,
                     "Children" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };

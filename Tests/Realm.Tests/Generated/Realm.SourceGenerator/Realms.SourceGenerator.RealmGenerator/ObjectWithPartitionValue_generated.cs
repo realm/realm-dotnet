@@ -187,7 +187,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -258,25 +258,25 @@ namespace Realms.Tests.Sync
             public string Id
             {
                 get => (string)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
 
             public string Value
             {
                 get => (string)GetValue("Value");
-                set => SetValue("Value", value!);
+                set => SetValue("Value", value);
             }
 
             public string Partition
             {
                 get => (string)GetValue("realm_id");
-                set => SetValue("realm_id", value!);
+                set => SetValue("realm_id", value);
             }
 
             public System.Guid Guid
             {
                 get => (System.Guid)GetValue("Guid");
-                set => SetValue("Guid", value!);
+                set => SetValue("Guid", value);
             }
         }
 
@@ -337,10 +337,10 @@ namespace Realms.Tests.Sync
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
-                    "Value" => _value!,
-                    "realm_id" => _partition!,
-                    "Guid" => _guid!,
+                    "_id" => _id,
+                    "Value" => _value,
+                    "realm_id" => _partition,
+                    "Guid" => _guid,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

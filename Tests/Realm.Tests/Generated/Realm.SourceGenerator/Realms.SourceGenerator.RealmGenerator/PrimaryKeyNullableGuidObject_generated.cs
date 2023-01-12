@@ -163,7 +163,7 @@ namespace Realms.Tests
 
         public static explicit operator PrimaryKeyNullableGuidObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyNullableGuidObject>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyNullableGuidObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyNullableGuidObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -228,7 +228,7 @@ namespace Realms.Tests
             public System.Guid? Id
             {
                 get => (System.Guid?)GetValue("_id");
-                set => SetValueUnique("_id", value!);
+                set => SetValueUnique("_id", value);
             }
         }
 
@@ -256,7 +256,7 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "_id" => _id!,
+                    "_id" => _id,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

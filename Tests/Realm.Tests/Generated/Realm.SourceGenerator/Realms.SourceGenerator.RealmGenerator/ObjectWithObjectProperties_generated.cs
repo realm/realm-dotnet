@@ -169,7 +169,7 @@ namespace Realms.Tests
 
         public static explicit operator ObjectWithObjectProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithObjectProperties>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithObjectProperties val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithObjectProperties? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -236,13 +236,13 @@ namespace Realms.Tests
             public Realms.Tests.IntPropertyObject StandaloneObject
             {
                 get => (Realms.Tests.IntPropertyObject)GetValue("StandaloneObject");
-                set => SetValue("StandaloneObject", value!);
+                set => SetValue("StandaloneObject", value);
             }
 
             public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
             {
                 get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
-                set => SetValue("EmbeddedObject", value!);
+                set => SetValue("EmbeddedObject", value);
             }
         }
 
@@ -281,8 +281,8 @@ namespace Realms.Tests
             {
                 return propertyName switch
                 {
-                    "StandaloneObject" => _standaloneObject!,
-                    "EmbeddedObject" => _embeddedObject!,
+                    "StandaloneObject" => _standaloneObject,
+                    "EmbeddedObject" => _embeddedObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

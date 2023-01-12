@@ -166,7 +166,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator SomeClass(Realms.RealmValue val) => val.AsRealmObject<SomeClass>();
 
-        public static implicit operator Realms.RealmValue(SomeClass val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SomeClass? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             public Realms.Tests.Database.BacklinkObject BacklinkObject
             {
                 get => (Realms.Tests.Database.BacklinkObject)GetValue("BacklinkObject");
-                set => SetValue("BacklinkObject", value!);
+                set => SetValue("BacklinkObject", value);
             }
         }
 
@@ -259,7 +259,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "BacklinkObject" => _backlinkObject!,
+                    "BacklinkObject" => _backlinkObject,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }

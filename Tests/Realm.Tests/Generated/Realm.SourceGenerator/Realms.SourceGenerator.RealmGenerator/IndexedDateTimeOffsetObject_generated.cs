@@ -161,7 +161,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator IndexedDateTimeOffsetObject(Realms.RealmValue val) => val.AsRealmObject<IndexedDateTimeOffsetObject>();
 
-        public static implicit operator Realms.RealmValue(IndexedDateTimeOffsetObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IndexedDateTimeOffsetObject? val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -226,7 +226,7 @@ namespace Realms.Tests.Database
             public System.DateTimeOffset DateTimeOffset
             {
                 get => (System.DateTimeOffset)GetValue("DateTimeOffset");
-                set => SetValue("DateTimeOffset", value!);
+                set => SetValue("DateTimeOffset", value);
             }
         }
 
@@ -254,7 +254,7 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "DateTimeOffset" => _dateTimeOffset!,
+                    "DateTimeOffset" => _dateTimeOffset,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
