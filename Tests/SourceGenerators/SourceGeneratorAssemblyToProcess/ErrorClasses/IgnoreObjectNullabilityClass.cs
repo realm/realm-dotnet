@@ -35,7 +35,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public ISet<IgnoreObjectNullabilityClass> SetNonNullableObject { get; } = null!;
 
-        public ISet<IgnoreObjectNullabilityClass?> SetNonNullableObject { get; } = null!;
+        public ISet<IgnoreObjectNullabilityClass?> SetNullableObject { get; } = null!;
 
         public IDictionary<string, IgnoreObjectNullabilityClass> DictionaryNonNullableObject { get; } = null!;
 
