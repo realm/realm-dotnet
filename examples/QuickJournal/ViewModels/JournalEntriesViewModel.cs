@@ -23,6 +23,10 @@ namespace QuickJournal.ViewModels
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
 
+            // We are using a WeakReferenceManager here to get notified when JournalEntriesDetailPage is closed.
+            // This could have been implemeted hooking up on the back button behaviour
+            // (with Shell.BackButtonBehaviour), but there is a current bug in MAUI
+            // that would make the application crash (https://github.com/dotnet/maui/pull/11438)
             WeakReferenceMessenger.Default.Register< EntryModifiedMessage>(this, EntryModifiedHandler);
         }
 
