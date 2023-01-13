@@ -607,7 +607,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserId] = AnonymizedUserID;
                 _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[HostOsType] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
-                _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.VersionString;
+                _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.Version.ToString();
                 _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[TargetOsVersion] = "FILL ME";

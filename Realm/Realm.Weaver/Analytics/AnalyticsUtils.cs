@@ -146,8 +146,9 @@ namespace RealmWeaver
             }
         }
 
-        // 1. Unfortunately, `LangVersion` is never in the custom attributes.
-        // Even if I manage to find a way to read the msbuild properties,
+        // Unfortunately,
+        // 1. `LangVersion` is never in the custom attributes.
+        //    Even if I manage to find a way to read the msbuild properties,
         // 2. this approach needs manaul intervention every time that a new version of C# and .NET are released
         // 3. the weaver runs on each different target, which makes reporting not that useful as it'll just report the
         //    default lanaguage for the target framework. Making this as good as looking at the target framework.
