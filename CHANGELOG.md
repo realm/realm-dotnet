@@ -28,6 +28,7 @@
 ### Internal
 * Using Core 13.2.0.
 * Updated `DynamicRealmObjectHelper.TryGetPrimaryKeyValue` not to use reflection. (Issue [#3166](https://github.com/realm/realm-dotnet/issues/3166))
+* Fixed UWP tests workflow when running a debug build. (Issue [#3030](https://github.com/realm/realm-dotnet/issues/3030))
 
 ## 10.19.0 (2023-01-06)
 
