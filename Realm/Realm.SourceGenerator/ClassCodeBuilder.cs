@@ -259,7 +259,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     helperContent.Append(copyToRealm);
                 }
 
-                helperString = @$"if (helper != null)
+                helperString = @$"if (helper != null && oldAccessor != null)
 {{
 {helperContent.Indent()}}}";
             }
@@ -270,7 +270,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
 #region {baseInterface} implementation
 
-private {_accessorInterfaceName} _accessor = null!;
+private {_accessorInterfaceName}? _accessor;
 
 Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -384,7 +384,7 @@ public event PropertyChangedEventHandler? PropertyChanged
 /// </example>
 partial void OnPropertyChanged(string? propertyName);
 
-private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+private void RaisePropertyChanged([CallerMemberName] string propertyName = """")
 {{
     _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     OnPropertyChanged(propertyName);
@@ -402,7 +402,7 @@ private void UnsubscribeFromNotifications()
 
 public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
 
-public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => Realms.RealmValue.Object(val);
+public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -562,7 +562,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                 else
                 {
                     // Properties
-                    string initializerString = string.Empty;
+                    var initializerString = string.Empty;
 
                     if (!string.IsNullOrEmpty(property.Initializer))
                     {

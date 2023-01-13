@@ -9,7 +9,7 @@
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
-* Enhanced support for nullable reference types in the model definition. This allows to use realm models as usual when nullable context is active, and removes the need to use of the `Required` attribute to indicate required properties, as this information will be inferred directly from the nullability status. There are some considerations regarding the nullability of properties that link to realm object:
+* Enhanced support for nullable reference types in the model definition for source generated classes. This allows to use realm models as usual when nullable context is active, and removes the need to use of the `Required` attribute to indicate required properties, as this information will be inferred directly from the nullability status. There are some considerations regarding the nullability of properties that link to realm object:
   - Properties that link to a single realm object are inherently nullable, and thus the type must be defined as nullable. 
   - List, Sets and Backlinks cannot contain null objects, and thus the type parameter must be non-nullable.
   - Dictionaries can contain null values, and thus the type parameter must be nullable.
@@ -36,7 +36,7 @@
       //Dictionary
       public IDictionary<string, Dog?> MyDogs { get; } //Correct
 
-      public ISet<string, Dog> MyDogs { get; } //Error
+      public IDictionary<string, Dog> MyDogs { get; } //Error
 
       //Backlink
       [Realms.Backlink("...")]
