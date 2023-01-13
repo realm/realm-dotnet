@@ -4,7 +4,6 @@ using Realms;
 using Realms.Schema;
 using Realms.Tests;
 using Realms.Tests.Database;
-using Realms.Tests.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -236,176 +235,174 @@ namespace Realms.Tests
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IOwnerAccessor : Realms.IRealmAccessor
-    {
-        string Name { get; set; }
-
-        Realms.Tests.Dog TopDog { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; }
-
-        System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; }
-
-        System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
-    {
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IOwnerAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            string Name { get; set; }
+
+            Realms.Tests.Dog TopDog { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; }
+
+            System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; }
         }
 
-        public Realms.Tests.Dog TopDog
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
         {
-            get => (Realms.Tests.Dog)GetValue("TopDog");
-            set => SetValue("TopDog", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Dog> _listOfDogs;
-        public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs
-        {
-            get
+            public string Name
             {
-                if (_listOfDogs == null)
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
+            }
+
+            public Realms.Tests.Dog TopDog
+            {
+                get => (Realms.Tests.Dog)GetValue("TopDog");
+                set => SetValue("TopDog", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Dog> _listOfDogs;
+            public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs
+            {
+                get
                 {
-                    _listOfDogs = GetListValue<Realms.Tests.Dog>("ListOfDogs");
+                    if (_listOfDogs == null)
+                    {
+                        _listOfDogs = GetListValue<Realms.Tests.Dog>("ListOfDogs");
+                    }
+
+                    return _listOfDogs;
                 }
-
-                return _listOfDogs;
             }
-        }
 
-        private System.Collections.Generic.ISet<Realms.Tests.Dog> _setOfDogs;
-        public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs
-        {
-            get
+            private System.Collections.Generic.ISet<Realms.Tests.Dog> _setOfDogs;
+            public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs
             {
-                if (_setOfDogs == null)
+                get
                 {
-                    _setOfDogs = GetSetValue<Realms.Tests.Dog>("SetOfDogs");
+                    if (_setOfDogs == null)
+                    {
+                        _setOfDogs = GetSetValue<Realms.Tests.Dog>("SetOfDogs");
+                    }
+
+                    return _setOfDogs;
                 }
-
-                return _setOfDogs;
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> _dictOfDogs;
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> _dictOfDogs;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs
             {
-                if (_dictOfDogs == null)
+                get
                 {
-                    _dictOfDogs = GetDictionaryValue<Realms.Tests.Dog>("DictOfDogs");
+                    if (_dictOfDogs == null)
+                    {
+                        _dictOfDogs = GetDictionaryValue<Realms.Tests.Dog>("DictOfDogs");
+                    }
+
+                    return _dictOfDogs;
                 }
-
-                return _dictOfDogs;
-            }
-        }
-    }
-
-    internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
-    {
-        public override ObjectSchema ObjectSchema => Owner.RealmSchema;
-
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
             }
         }
 
-        private Realms.Tests.Dog _topDog;
-        public Realms.Tests.Dog TopDog
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
         {
-            get => _topDog;
-            set
+            public override ObjectSchema ObjectSchema => Owner.RealmSchema;
+
+            private string _name;
+            public string Name
             {
-                _topDog = value;
-                RaisePropertyChanged("TopDog");
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; } = new List<Realms.Tests.Dog>();
-
-        public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; } = new HashSet<Realms.Tests.Dog>(RealmSet<Realms.Tests.Dog>.Comparer);
-
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; } = new Dictionary<string, Realms.Tests.Dog>();
-
-        public OwnerUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private Realms.Tests.Dog _topDog;
+            public Realms.Tests.Dog TopDog
             {
-                "Name" => _name,
-                "TopDog" => _topDog,
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Name":
-                    Name = (string)val;
-                    return;
-                case "TopDog":
-                    TopDog = (Realms.Tests.Dog)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _topDog;
+                set
+                {
+                    _topDog = value;
+                    RaisePropertyChanged("TopDog");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; } = new List<Realms.Tests.Dog>();
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "ListOfDogs" => (IList<T>)ListOfDogs,
+            public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; } = new HashSet<Realms.Tests.Dog>(RealmSet<Realms.Tests.Dog>.Comparer);
 
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; } = new Dictionary<string, Realms.Tests.Dog>();
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "SetOfDogs" => (ISet<T>)SetOfDogs,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                        };
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            return propertyName switch
+            public OwnerUnmanagedAccessor(Type objectType) : base(objectType)
             {
-                "DictOfDogs" => (IDictionary<string, TValue>)DictOfDogs,
-                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
-            };
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Name" => _name,
+                    "TopDog" => _topDog,
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    case "TopDog":
+                        TopDog = (Realms.Tests.Dog)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "ListOfDogs" => (IList<T>)ListOfDogs,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "SetOfDogs" => (ISet<T>)SetOfDogs,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "DictOfDogs" => (IDictionary<string, TValue>)DictOfDogs,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
+            }
         }
     }
 }

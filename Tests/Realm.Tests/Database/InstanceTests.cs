@@ -1332,6 +1332,28 @@ namespace Realms.Tests.Database
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
         }
 
+        [Test]
+        public void BeginWrite_CalledMultipleTimes_Throws()
+        {
+            using var realm = GetRealm();
+            var ts = realm.BeginWrite();
+
+            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void RealmDispose_DisposesActiveTransaction()
+        {
+            var realm = GetRealm();
+            var ts = realm.BeginWrite();
+
+            Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
+
+            realm.Dispose();
+
+            Assert.That(ts.State, Is.EqualTo(TransactionState.RolledBack));
+        }
+
         private const int DummyDataSize = 200;
 
         private static void AddDummyData(Realm realm)

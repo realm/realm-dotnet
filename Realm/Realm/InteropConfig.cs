@@ -30,15 +30,11 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
-        public const string UnityPlatform = "Realm Unity";
-
-        public const string DotNetPlatform = "Realm .NET";
-
-        public static readonly string Platform;
+        public static readonly string FrameworkName;
 
         public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
 
-        private static readonly List<string> _potentialStorageFolders = new List<string>
+        private static readonly List<string> _potentialStorageFolders = new()
         {
             Environment.GetFolderPath(Environment.SpecialFolder.Personal),
             Path.Combine(Directory.GetCurrentDirectory(), "Documents")
@@ -88,7 +84,7 @@ namespace Realms
 
         static InteropConfig()
         {
-            Platform = TryInitializeUnity() ? "Realm Unity" : "Realm .NET";
+            FrameworkName = TryInitializeUnity() ? "Unity" : ".NET";
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {

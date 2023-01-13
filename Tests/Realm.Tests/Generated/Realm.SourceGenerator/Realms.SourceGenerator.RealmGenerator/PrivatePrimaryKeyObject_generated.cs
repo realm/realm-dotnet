@@ -21,10 +21,10 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyStringObjectObjectHelper))]
-    public partial class PrimaryKeyStringObject : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(PrivatePrimaryKeyObjectObjectHelper))]
+    public partial class PrivatePrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyStringObject", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrivatePrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
@@ -32,11 +32,11 @@ namespace Realms.Tests
 
         #region IRealmObject implementation
 
-        private IPrimaryKeyStringObjectAccessor _accessor;
+        private IPrivatePrimaryKeyObjectAccessor _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IPrimaryKeyStringObjectAccessor Accessor => _accessor ?? (_accessor = new PrimaryKeyStringObjectUnmanagedAccessor(typeof(PrimaryKeyStringObject)));
+        internal IPrivatePrimaryKeyObjectAccessor Accessor => _accessor ?? (_accessor = new PrivatePrimaryKeyObjectUnmanagedAccessor(typeof(PrivatePrimaryKeyObject)));
 
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
@@ -61,8 +61,8 @@ namespace Realms.Tests
 
         public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false)
         {
-            var newAccessor = (IPrimaryKeyStringObjectAccessor)managedAccessor;
-            var oldAccessor = (IPrimaryKeyStringObjectAccessor)_accessor;
+            var newAccessor = (IPrivatePrimaryKeyObjectAccessor)managedAccessor;
+            var oldAccessor = (IPrivatePrimaryKeyObjectAccessor)_accessor;
             _accessor = newAccessor;
 
             if (helper != null)
@@ -167,9 +167,9 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyStringObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyStringObject>();
+        public static explicit operator PrivatePrimaryKeyObject(Realms.RealmValue val) => val.AsRealmObject<PrivatePrimaryKeyObject>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyStringObject val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrivatePrimaryKeyObject val) => Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
@@ -204,26 +204,26 @@ namespace Realms.Tests
         public override string ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private class PrimaryKeyStringObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class PrivatePrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new PrimaryKeyStringObjectManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new PrivatePrimaryKeyObjectManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyStringObject();
+            public Realms.IRealmObjectBase CreateInstance() => new PrivatePrimaryKeyObject();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object value)
             {
-                value = ((IPrimaryKeyStringObjectAccessor)instance.Accessor).Id;
+                value = ((IPrivatePrimaryKeyObjectAccessor)instance.Accessor).Id;
                 return true;
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        internal interface IPrimaryKeyStringObjectAccessor : Realms.IRealmAccessor
+        internal interface IPrivatePrimaryKeyObjectAccessor : Realms.IRealmAccessor
         {
             string Id { get; set; }
 
@@ -231,7 +231,7 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class PrimaryKeyStringObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyStringObjectAccessor
+        internal class PrivatePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
             public string Id
             {
@@ -247,11 +247,11 @@ namespace Realms.Tests
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        internal class PrimaryKeyStringObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyStringObjectAccessor
+        internal class PrivatePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
-            public override ObjectSchema ObjectSchema => PrimaryKeyStringObject.RealmSchema;
+            public override ObjectSchema ObjectSchema => PrivatePrimaryKeyObject.RealmSchema;
 
-            private string _id;
+            private string _id = ObjectId.GenerateNewId().ToString();
             public string Id
             {
                 get => _id;
@@ -273,7 +273,7 @@ namespace Realms.Tests
                 }
             }
 
-            public PrimaryKeyStringObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            public PrivatePrimaryKeyObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 

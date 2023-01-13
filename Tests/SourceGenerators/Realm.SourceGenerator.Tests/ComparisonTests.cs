@@ -29,6 +29,7 @@ namespace SourceGeneratorTests
         [TestCase("AutomaticPropertiesClass")]
         [TestCase("ConfusingNamespaceClass")]
         [TestCase("InitializerNamespaceClass")]
+        [TestCase("NestedClass")]
         [TestCase("PersonWithDog", "Person", "Dog")]
         public async Task ComparisonTest(string filename, params string[] classNames)
         {
@@ -43,7 +44,7 @@ namespace SourceGeneratorTests
         [TestCase("UnsupportedIndexableTypes")]
         [TestCase("UnsupportedPrimaryKeyTypes")]
         [TestCase("UnsupportedRequiredTypes")]
-        [TestCase("NestedClass")]
+        [TestCase("NestedClassWithoutPartialParent")]
         [TestCase("UnsupportedBacklink", "UnsupportedBacklink", "BacklinkObj")]
         public async Task ErrorComparisonTest(string filename, params string[] classNames)
         {

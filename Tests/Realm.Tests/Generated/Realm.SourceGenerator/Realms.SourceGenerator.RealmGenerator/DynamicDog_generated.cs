@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -226,150 +225,148 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDynamicDogAccessor : Realms.IRealmAccessor
-    {
-        string Name { get; set; }
-
-        string Color { get; set; }
-
-        bool Vaccinated { get; set; }
-
-        System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DynamicDogManagedAccessor : Realms.ManagedAccessor, IDynamicDogAccessor
-    {
-        public string Name
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IDynamicDogAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Name");
-            set => SetValue("Name", value);
+            string Name { get; set; }
+
+            string Color { get; set; }
+
+            bool Vaccinated { get; set; }
+
+            System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners { get; }
         }
 
-        public string Color
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicDogManagedAccessor : Realms.ManagedAccessor, IDynamicDogAccessor
         {
-            get => (string)GetValue("Color");
-            set => SetValue("Color", value);
-        }
-
-        public bool Vaccinated
-        {
-            get => (bool)GetValue("Vaccinated");
-            set => SetValue("Vaccinated", value);
-        }
-
-        private System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> _owners;
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners
-        {
-            get
+            public string Name
             {
-                if (_owners == null)
+                get => (string)GetValue("Name");
+                set => SetValue("Name", value);
+            }
+
+            public string Color
+            {
+                get => (string)GetValue("Color");
+                set => SetValue("Color", value);
+            }
+
+            public bool Vaccinated
+            {
+                get => (bool)GetValue("Vaccinated");
+                set => SetValue("Vaccinated", value);
+            }
+
+            private System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> _owners;
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners
+            {
+                get
                 {
-                    _owners = GetBacklinks<Realms.Tests.Database.DynamicOwner>("Owners");
+                    if (_owners == null)
+                    {
+                        _owners = GetBacklinks<Realms.Tests.Database.DynamicOwner>("Owners");
+                    }
+
+                    return _owners;
                 }
-
-                return _owners;
-            }
-        }
-    }
-
-    internal class DynamicDogUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicDogAccessor
-    {
-        public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;
-
-        private string _name;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                RaisePropertyChanged("Name");
             }
         }
 
-        private string _color;
-        public string Color
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicDogUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicDogAccessor
         {
-            get => _color;
-            set
+            public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;
+
+            private string _name;
+            public string Name
             {
-                _color = value;
-                RaisePropertyChanged("Color");
+                get => _name;
+                set
+                {
+                    _name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        private bool _vaccinated;
-        public bool Vaccinated
-        {
-            get => _vaccinated;
-            set
+            private string _color;
+            public string Color
             {
-                _vaccinated = value;
-                RaisePropertyChanged("Vaccinated");
+                get => _color;
+                set
+                {
+                    _color = value;
+                    RaisePropertyChanged("Color");
+                }
             }
-        }
 
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-        public DynamicDogUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private bool _vaccinated;
+            public bool Vaccinated
             {
-                "Name" => _name,
-                "Color" => _color,
-                "Vaccinated" => _vaccinated,
-                "Owners" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Name":
-                    Name = (string)val;
-                    return;
-                case "Color":
-                    Color = (string)val;
-                    return;
-                case "Vaccinated":
-                    Vaccinated = (bool)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _vaccinated;
+                set
+                {
+                    _vaccinated = value;
+                    RaisePropertyChanged("Vaccinated");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public DynamicDogUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Name" => _name,
+                    "Color" => _color,
+                    "Vaccinated" => _vaccinated,
+                    "Owners" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Name":
+                        Name = (string)val;
+                        return;
+                    case "Color":
+                        Color = (string)val;
+                        return;
+                    case "Vaccinated":
+                        Vaccinated = (bool)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "setupVcpkg", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild", "setupDotnet")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild", "setupDotnet")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL

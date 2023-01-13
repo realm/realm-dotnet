@@ -1114,110 +1114,110 @@ namespace Realms.Tests.Database
                 _realm.Write(() => _realm.Add(new[] { first }));
             }, Throws.TypeOf<ArgumentException>());
         }
-    }
 
-    public partial class Parent : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class Parent : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string Name { get; set; }
+            public string Name { get; set; }
 
-        public Child Child { get; set; }
-    }
+            public Child Child { get; set; }
+        }
 
-    public partial class Child : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class Child : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string Name { get; set; }
+            public string Name { get; set; }
 
-        public Parent Parent { get; set; }
-    }
+            public Parent Parent { get; set; }
+        }
 
-    public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
+            public string StringValue { get; set; }
 
-        public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
-    }
+            public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
+        }
 
-    public partial class NonPrimaryKeyObject : TestRealmObject
-    {
-        public string StringValue { get; set; }
-    }
+        public partial class NonPrimaryKeyObject : TestRealmObject
+        {
+            public string StringValue { get; set; }
+        }
 
-    public partial class PrimaryKeyObject : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyObject : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
-    }
+            public string StringValue { get; set; }
+        }
 
-    public partial class NullablePrimaryKeyObject : TestRealmObject
-    {
-        [PrimaryKey]
-        public long? Id { get; set; }
+        public partial class NullablePrimaryKeyObject : TestRealmObject
+        {
+            [PrimaryKey]
+            public long? Id { get; set; }
 
-        public string StringValue { get; set; }
-    }
+            public string StringValue { get; set; }
+        }
 
-    public partial class PrimaryKeyWithPKRelation : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyWithPKRelation : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
+            public string StringValue { get; set; }
 
-        public PrimaryKeyObject OtherObject { get; set; }
-    }
+            public PrimaryKeyObject OtherObject { get; set; }
+        }
 
-    public partial class PrimaryKeyWithNonPKRelation : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyWithNonPKRelation : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
+            public string StringValue { get; set; }
 
-        public NonPrimaryKeyObject OtherObject { get; set; }
-    }
+            public NonPrimaryKeyObject OtherObject { get; set; }
+        }
 
-    public partial class PrimaryKeyWithPKList : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyWithPKList : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
+            public string StringValue { get; set; }
 
-        public IList<PrimaryKeyObject> ListValue { get; }
-    }
+            public IList<PrimaryKeyObject> ListValue { get; }
+        }
 
-    public partial class PrimaryKeyWithNoPKList : TestRealmObject
-    {
-        [PrimaryKey]
-        public long Id { get; set; }
+        public partial class PrimaryKeyWithNoPKList : TestRealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
 
-        public string StringValue { get; set; }
+            public string StringValue { get; set; }
 
-        public IList<NonPrimaryKeyObject> ListValue { get; }
-    }
+            public IList<NonPrimaryKeyObject> ListValue { get; }
+        }
 
-    public partial class NonPrimaryKeyWithPKRelation : TestRealmObject
-    {
-        public string StringValue { get; set; }
+        public partial class NonPrimaryKeyWithPKRelation : TestRealmObject
+        {
+            public string StringValue { get; set; }
 
-        public PrimaryKeyObject OtherObject { get; set; }
-    }
+            public PrimaryKeyObject OtherObject { get; set; }
+        }
 
-    public partial class NonPrimaryKeyWithNonPKRelation : TestRealmObject
-    {
-        public string StringValue { get; set; }
+        public partial class NonPrimaryKeyWithNonPKRelation : TestRealmObject
+        {
+            public string StringValue { get; set; }
 
-        public NonPrimaryKeyObject OtherObject { get; set; }
+            public NonPrimaryKeyObject OtherObject { get; set; }
+        }
     }
 }

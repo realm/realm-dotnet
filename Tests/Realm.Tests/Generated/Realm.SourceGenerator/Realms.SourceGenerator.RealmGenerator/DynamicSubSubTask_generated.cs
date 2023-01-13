@@ -3,7 +3,6 @@ using NUnit.Framework;
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
@@ -220,123 +219,121 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IDynamicSubSubTaskAccessor : Realms.IRealmAccessor
-    {
-        string Summary { get; set; }
-
-        System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask { get; }
-
-        System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class DynamicSubSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubSubTaskAccessor
-    {
-        public string Summary
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IDynamicSubSubTaskAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("Summary");
-            set => SetValue("Summary", value);
+            string Summary { get; set; }
+
+            System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask { get; }
+
+            System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask { get; }
         }
 
-        private System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> _parentSubTask;
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicSubSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubSubTaskAccessor
         {
-            get
+            public string Summary
             {
-                if (_parentSubTask == null)
+                get => (string)GetValue("Summary");
+                set => SetValue("Summary", value);
+            }
+
+            private System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> _parentSubTask;
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask
+            {
+                get
                 {
-                    _parentSubTask = GetBacklinks<Realms.Tests.Database.DynamicSubTask>("ParentSubTask");
+                    if (_parentSubTask == null)
+                    {
+                        _parentSubTask = GetBacklinks<Realms.Tests.Database.DynamicSubTask>("ParentSubTask");
+                    }
+
+                    return _parentSubTask;
                 }
-
-                return _parentSubTask;
             }
-        }
 
-        private System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> _parentTask;
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask
-        {
-            get
+            private System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> _parentTask;
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask
             {
-                if (_parentTask == null)
+                get
                 {
-                    _parentTask = GetBacklinks<Realms.Tests.Database.DynamicTask>("ParentTask");
+                    if (_parentTask == null)
+                    {
+                        _parentTask = GetBacklinks<Realms.Tests.Database.DynamicTask>("ParentTask");
+                    }
+
+                    return _parentTask;
                 }
-
-                return _parentTask;
-            }
-        }
-    }
-
-    internal class DynamicSubSubTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicSubSubTaskAccessor
-    {
-        public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
-
-        private string _summary;
-        public string Summary
-        {
-            get => _summary;
-            set
-            {
-                _summary = value;
-                RaisePropertyChanged("Summary");
             }
         }
 
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-        public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-        public DynamicSubSubTaskUnmanagedAccessor(Type objectType) : base(objectType)
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class DynamicSubSubTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicSubSubTaskAccessor
         {
-        }
+            public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            private string _summary;
+            public string Summary
             {
-                "Summary" => _summary,
-                "ParentSubTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                "ParentTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "Summary":
-                    Summary = (string)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _summary;
+                set
+                {
+                    _summary = value;
+                    RaisePropertyChanged("Summary");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
+            public DynamicSubSubTaskUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
 
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "Summary" => _summary,
+                    "ParentSubTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    "ParentTask" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "Summary":
+                        Summary = (string)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }
