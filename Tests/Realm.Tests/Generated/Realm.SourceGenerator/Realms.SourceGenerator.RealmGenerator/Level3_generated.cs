@@ -32,7 +32,7 @@ namespace Realms.Tests.Database
 
         #region IRealmObject implementation
 
-        private ILevel3Accessor _accessor = null!;
+        private ILevel3Accessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -65,7 +65,7 @@ namespace Realms.Tests.Database
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 newAccessor.DateValue = oldAccessor.DateValue;
             }
@@ -144,7 +144,7 @@ namespace Realms.Tests.Database
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -162,7 +162,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator Level3(Realms.RealmValue val) => val.AsRealmObject<Level3>();
 
-        public static implicit operator Realms.RealmValue(Level3? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Level3? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -28,7 +28,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         #region IRealmObject implementation
 
-        private IPartialClassAccessor _accessor = null!;
+        private IPartialClassAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -61,7 +61,7 @@ namespace SourceGeneratorAssemblyToProcess
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
@@ -147,7 +147,7 @@ namespace SourceGeneratorAssemblyToProcess
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -165,7 +165,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator PartialClass(Realms.RealmValue val) => val.AsRealmObject<PartialClass>();
 
-        public static implicit operator Realms.RealmValue(PartialClass? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PartialClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

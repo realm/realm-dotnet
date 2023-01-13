@@ -34,7 +34,7 @@ namespace Realms.Tests
 
         #region IRealmObject implementation
 
-        private IObjectIdPrimaryKeyWithValueObjectAccessor _accessor = null!;
+        private IObjectIdPrimaryKeyWithValueObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -67,7 +67,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.StringValue != default(string))
@@ -150,7 +150,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator ObjectIdPrimaryKeyWithValueObject(Realms.RealmValue val) => val.AsRealmObject<ObjectIdPrimaryKeyWithValueObject>();
 
-        public static implicit operator Realms.RealmValue(ObjectIdPrimaryKeyWithValueObject? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectIdPrimaryKeyWithValueObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

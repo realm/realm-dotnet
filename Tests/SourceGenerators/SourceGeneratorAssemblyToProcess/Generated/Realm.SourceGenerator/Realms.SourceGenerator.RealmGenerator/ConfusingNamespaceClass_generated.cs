@@ -27,7 +27,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         #region IRealmObject implementation
 
-        private IConfusingNamespaceClassAccessor _accessor = null!;
+        private IConfusingNamespaceClassAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -60,7 +60,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
@@ -142,7 +142,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -160,7 +160,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         public static explicit operator ConfusingNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<ConfusingNamespaceClass>();
 
-        public static implicit operator Realms.RealmValue(ConfusingNamespaceClass? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ConfusingNamespaceClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

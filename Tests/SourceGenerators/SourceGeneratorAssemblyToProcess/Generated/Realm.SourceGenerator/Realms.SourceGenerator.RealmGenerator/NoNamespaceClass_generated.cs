@@ -24,7 +24,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     #region IRealmObject implementation
 
-    private INoNamespaceClassAccessor _accessor = null!;
+    private INoNamespaceClassAccessor? _accessor;
 
     Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -57,7 +57,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         var oldAccessor = _accessor;
         _accessor = newAccessor;
 
-        if (helper != null)
+        if (helper != null && oldAccessor != null)
         {
             if(!skipDefaults || oldAccessor.Name != default(string))
             {
@@ -139,7 +139,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     /// </example>
     partial void OnPropertyChanged(string? propertyName);
 
-    private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+    private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
     {
         _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         OnPropertyChanged(propertyName);
@@ -157,7 +157,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     public static explicit operator NoNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<NoNamespaceClass>();
 
-    public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => Realms.RealmValue.Object(val);
+    public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

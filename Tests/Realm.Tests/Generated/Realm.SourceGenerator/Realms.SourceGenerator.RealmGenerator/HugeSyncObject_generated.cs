@@ -34,7 +34,7 @@ namespace Realms.Tests
 
         #region IRealmObject implementation
 
-        private IHugeSyncObjectAccessor _accessor = null!;
+        private IHugeSyncObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -67,7 +67,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
                 if(!skipDefaults || oldAccessor.Data != default(byte[]))
@@ -150,7 +150,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator HugeSyncObject(Realms.RealmValue val) => val.AsRealmObject<HugeSyncObject>();
 
-        public static implicit operator Realms.RealmValue(HugeSyncObject? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(HugeSyncObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

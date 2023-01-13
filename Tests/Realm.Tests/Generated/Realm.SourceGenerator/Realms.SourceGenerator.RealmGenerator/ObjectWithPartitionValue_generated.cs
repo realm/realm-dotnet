@@ -45,7 +45,7 @@ namespace Realms.Tests.Sync
 
         #region IRealmObject implementation
 
-        private IObjectWithPartitionValueAccessor _accessor = null!;
+        private IObjectWithPartitionValueAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -78,7 +78,7 @@ namespace Realms.Tests.Sync
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(string))
                 {
@@ -169,7 +169,7 @@ namespace Realms.Tests.Sync
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -187,7 +187,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -33,7 +33,7 @@ namespace Realms.Tests
 
         #region IRealmObject implementation
 
-        private IPrimaryKeyNullableInt64ObjectAccessor _accessor = null!;
+        private IPrimaryKeyNullableInt64ObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -66,7 +66,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
             }
@@ -145,7 +145,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -163,7 +163,7 @@ namespace Realms.Tests
 
         public static explicit operator PrimaryKeyNullableInt64Object(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyNullableInt64Object>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyNullableInt64Object? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyNullableInt64Object? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

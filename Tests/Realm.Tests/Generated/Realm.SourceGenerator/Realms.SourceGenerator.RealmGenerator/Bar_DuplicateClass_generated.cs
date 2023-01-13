@@ -34,7 +34,7 @@ namespace Bar
 
         #region IRealmObject implementation
 
-        private IDuplicateClassAccessor _accessor = null!;
+        private IDuplicateClassAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -67,7 +67,7 @@ namespace Bar
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.StringValue != default(string))
                 {
@@ -149,7 +149,7 @@ namespace Bar
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -167,7 +167,7 @@ namespace Bar
 
         public static explicit operator DuplicateClass(Realms.RealmValue val) => val.AsRealmObject<DuplicateClass>();
 
-        public static implicit operator Realms.RealmValue(DuplicateClass? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DuplicateClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

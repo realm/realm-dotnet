@@ -33,7 +33,7 @@ namespace Realms.Tests
 
         #region IEmbeddedObject implementation
 
-        private IEmbeddedIntPropertyObjectAccessor _accessor = null!;
+        private IEmbeddedIntPropertyObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -69,7 +69,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Int != default(int))
                 {
@@ -151,7 +151,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -169,7 +169,7 @@ namespace Realms.Tests
 
         public static explicit operator EmbeddedIntPropertyObject(Realms.RealmValue val) => val.AsRealmObject<EmbeddedIntPropertyObject>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedIntPropertyObject? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedIntPropertyObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -28,7 +28,7 @@ namespace SourceGeneratorPlayground
 
         #region IRealmObject implementation
 
-        private IDogAccessor _accessor = null!;
+        private IDogAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -61,7 +61,7 @@ namespace SourceGeneratorPlayground
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Name != default(string))
                 {
@@ -148,7 +148,7 @@ namespace SourceGeneratorPlayground
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -166,7 +166,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator Realms.RealmValue(Dog? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dog? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

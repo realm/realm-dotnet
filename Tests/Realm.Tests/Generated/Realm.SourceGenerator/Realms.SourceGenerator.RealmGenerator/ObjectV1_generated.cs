@@ -34,7 +34,7 @@ namespace Realms.Tests.Database
 
         #region IRealmObject implementation
 
-        private IObjectV1Accessor _accessor = null!;
+        private IObjectV1Accessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -67,7 +67,7 @@ namespace Realms.Tests.Database
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
@@ -153,7 +153,7 @@ namespace Realms.Tests.Database
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -171,7 +171,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator ObjectV1(Realms.RealmValue val) => val.AsRealmObject<ObjectV1>();
 
-        public static implicit operator Realms.RealmValue(ObjectV1? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectV1? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

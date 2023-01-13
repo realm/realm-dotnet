@@ -34,7 +34,7 @@ namespace Realms.Tests
 
         #region IRealmObject implementation
 
-        private IDecimalsObjectAccessor _accessor = null!;
+        private IDecimalsObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -67,7 +67,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 newAccessor.DecimalValue = oldAccessor.DecimalValue;
                 newAccessor.Decimal128Value = oldAccessor.Decimal128Value;
@@ -147,7 +147,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -165,7 +165,7 @@ namespace Realms.Tests
 
         public static explicit operator DecimalsObject(Realms.RealmValue val) => val.AsRealmObject<DecimalsObject>();
 
-        public static implicit operator Realms.RealmValue(DecimalsObject? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DecimalsObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

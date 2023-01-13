@@ -27,7 +27,7 @@ namespace OtherNamespace
 
         #region IRealmObject implementation
 
-        private IOtherNamespaceObjAccessor _accessor = null!;
+        private IOtherNamespaceObjAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -60,7 +60,7 @@ namespace OtherNamespace
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
@@ -142,7 +142,7 @@ namespace OtherNamespace
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -160,7 +160,7 @@ namespace OtherNamespace
 
         public static explicit operator OtherNamespaceObj(Realms.RealmValue val) => val.AsRealmObject<OtherNamespaceObj>();
 
-        public static implicit operator Realms.RealmValue(OtherNamespaceObj? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OtherNamespaceObj? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

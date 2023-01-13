@@ -39,7 +39,7 @@ namespace Realms.Tests.Sync
 
         #region IAsymmetricObject implementation
 
-        private IAsymmetricObjectWithEmbeddedListObjectAccessor _accessor = null!;
+        private IAsymmetricObjectWithEmbeddedListObjectAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -72,7 +72,7 @@ namespace Realms.Tests.Sync
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if (!skipDefaults)
                 {
@@ -157,7 +157,7 @@ namespace Realms.Tests.Sync
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -175,7 +175,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator AsymmetricObjectWithEmbeddedListObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedListObject>();
 
-        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedListObject? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedListObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

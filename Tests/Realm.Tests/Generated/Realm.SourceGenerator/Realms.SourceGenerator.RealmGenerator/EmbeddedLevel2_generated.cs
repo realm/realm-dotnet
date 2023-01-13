@@ -35,7 +35,7 @@ namespace Realms.Tests
 
         #region IEmbeddedObject implementation
 
-        private IEmbeddedLevel2Accessor _accessor = null!;
+        private IEmbeddedLevel2Accessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -71,7 +71,7 @@ namespace Realms.Tests
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if (!skipDefaults)
                 {
@@ -160,7 +160,7 @@ namespace Realms.Tests
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -178,7 +178,7 @@ namespace Realms.Tests
 
         public static explicit operator EmbeddedLevel2(Realms.RealmValue val) => val.AsRealmObject<EmbeddedLevel2>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedLevel2? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedLevel2? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

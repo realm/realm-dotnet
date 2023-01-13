@@ -27,7 +27,7 @@ namespace SourceGeneratorPlayground
 
         #region IRealmObject implementation
 
-        private IRealmObjAccessor _accessor = null!;
+        private IRealmObjAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -60,7 +60,7 @@ namespace SourceGeneratorPlayground
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if(!skipDefaults || oldAccessor.Id != default(int))
                 {
@@ -142,7 +142,7 @@ namespace SourceGeneratorPlayground
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -160,7 +160,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator RealmObj(Realms.RealmValue val) => val.AsRealmObject<RealmObj>();
 
-        public static implicit operator Realms.RealmValue(RealmObj? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RealmObj? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
