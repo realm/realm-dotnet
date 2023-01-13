@@ -64,7 +64,7 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] propjerty_indices, IntPtr property_count, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ListHandle listHandle, IntPtr managedListHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_move", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr move(ListHandle listHandle, IntPtr sourceIndex, IntPtr targetIndex, out NativeException ex);
@@ -214,12 +214,11 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            var propertyIndicesLength = propertyIndices == null ? (IntPtr)0 : (IntPtr)propertyIndices.Length;
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, propertyIndices, propertyIndicesLength, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root, result);
         }

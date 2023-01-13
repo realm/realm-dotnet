@@ -37,7 +37,7 @@ namespace Realms
             public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, [MarshalAs(UnmanagedType.LPArray), In] IntPtr[] propjerty_indices, IntPtr property_count, out NativeException ex);
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -134,12 +134,11 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            var propertyIndicesLength = propertyIndices == null ? (IntPtr)0 : (IntPtr)propertyIndices.Length;
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, propertyIndices, propertyIndicesLength, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root, result);
         }

@@ -155,16 +155,12 @@ extern "C" {
         delete dictionary;
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, bool shallow, NativeException::Marshallable& ex)
+    
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [&](CollectionChangeCallback callback) {
-                if (!property_indices) {
-                    return dictionary->add_notification_callback(callback);
-                } else {
-                    auto keyPathArray = dictionary->get_type() == PropertyType::Object ? construct_key_path_array(dictionary->get_object_schema(), property_indices, property_count) : KeyPathArray();
-                    return dictionary->add_notification_callback(callback, keyPathArray);
-                }
+            return subscribe_for_notifications(managed_dict, [dictionary, shallow](CollectionChangeCallback callback) {
+                return dictionary->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
             });
         });
     }
@@ -191,7 +187,7 @@ extern "C" {
 
                     s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
                 }
-            });
+            }, KeyPathArray());
 
             return context;
         });

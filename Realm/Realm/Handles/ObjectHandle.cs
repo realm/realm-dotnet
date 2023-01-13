@@ -354,7 +354,7 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, IntPtr[] propertyIndices = null)
+        public NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
             EnsureIsOpen();
             var propertyIndicesLength = propertyIndices == null ? (IntPtr)0 : (IntPtr)propertyIndices.Length;

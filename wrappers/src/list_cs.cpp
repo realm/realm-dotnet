@@ -212,16 +212,11 @@ REALM_EXPORT void list_destroy(List* list)
     delete list;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_list, [&](CollectionChangeCallback callback) {
-            if (!property_indices) {
-                return list->add_notification_callback(callback);
-            } else {
-                auto keyPathArray = list->get_type() == PropertyType::Object ? construct_key_path_array(list->get_object_schema(), property_indices, property_count) : KeyPathArray();
-                return list->add_notification_callback(callback, keyPathArray);
-            }
+        return subscribe_for_notifications(managed_list, [list, shallow](CollectionChangeCallback callback) {
+            return list->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
         });
     });
 }

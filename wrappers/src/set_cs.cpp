@@ -156,16 +156,11 @@ REALM_EXPORT void realm_set_destroy(object_store::Set* set)
     delete set;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, size_t* property_indices, size_t property_count, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, [&](CollectionChangeCallback callback) {
-            if (!property_indices) {
-                return set->add_notification_callback(callback);
-            } else {
-                auto keyPathArray = set->get_type() == PropertyType::Object ? construct_key_path_array(set->get_object_schema(), property_indices, property_count) : KeyPathArray();
-                return set->add_notification_callback(callback, keyPathArray);
-            }
+        return subscribe_for_notifications(managed_set, [set, shallow](CollectionChangeCallback callback) {
+            return set->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
         });
     });
 }

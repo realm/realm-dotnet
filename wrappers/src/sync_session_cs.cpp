@@ -209,14 +209,14 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
 REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        session->log_out();
+        session->pause();
     });
 }
 
 REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        session->revive_if_needed();
+        session->resume();
     });
 }
 
