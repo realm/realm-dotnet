@@ -138,7 +138,7 @@ namespace RealmWeaver
                         framework = Framework.Maui;
                         break;
                     default:
-                        framework = "Not a framework of interest";
+                        framework = "No framework of interest";
                         break;
                 }
 

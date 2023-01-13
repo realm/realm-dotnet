@@ -602,24 +602,20 @@ namespace RealmWeaver
             try
             {
                 // collect environment details
+                var frameworkInfo = GetFrameworkAndVersion(module, _config);
+
                 _realmEnvMetrics[UserId] = AnonymizedUserID;
                 _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[HostOsType] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
                 _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.VersionString;
                 _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
-
-                // TODO andrea: TargetOSVersion as coming from config is just the version of the framework used (.net6, .net472 etc)
-                // not really the version of the target os.
                 _realmEnvMetrics[TargetOsVersion] = "FILL ME";
                 _realmEnvMetrics[TargetOsMinimumVersion] = "FILL ME";
                 _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
-
-                var frameworkInfo = GetFrameworkAndVersion(module, _config);
                 _realmEnvMetrics[FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
                 _realmEnvMetrics[LanguageVersion] = GetLanguageVersion(module, _config.TargetFramework);
-
                 _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics[CoreVersion] = "FILL ME";
                 _realmEnvMetrics[SdkInstallationMethod] = "FILL ME";
