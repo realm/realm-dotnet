@@ -2,16 +2,20 @@
 using Realms;
 using Realms.Schema;
 using Realms.Tests.Database;
-using Realms.Tests.Database.Generated;
 using Realms.Weaving;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
 {
@@ -246,275 +250,273 @@ namespace Realms.Tests.Database
                 return false;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Database.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface ITestNotificationObjectAccessor : Realms.IRealmAccessor
-    {
-        string StringProperty { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; }
-
-        System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; }
-
-        System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType { get; }
-
-        Realms.Tests.Database.TestNotificationObject LinkSameType { get; set; }
-
-        System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType { get; }
-
-        System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType { get; }
-
-        System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType { get; }
-
-        Realms.Tests.Database.Person LinkDifferentType { get; set; }
-
-        System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class TestNotificationObjectManagedAccessor : Realms.ManagedAccessor, ITestNotificationObjectAccessor
-    {
-        public string StringProperty
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface ITestNotificationObjectAccessor : Realms.IRealmAccessor
         {
-            get => (string)GetValue("StringProperty");
-            set => SetValue("StringProperty", value);
+            string StringProperty { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; }
+
+            System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType { get; }
+
+            Realms.Tests.Database.TestNotificationObject LinkSameType { get; set; }
+
+            System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType { get; }
+
+            System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType { get; }
+
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType { get; }
+
+            Realms.Tests.Database.Person LinkDifferentType { get; set; }
+
+            System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
         }
 
-        private System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> _listSameType;
-        public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class TestNotificationObjectManagedAccessor : Realms.ManagedAccessor, ITestNotificationObjectAccessor
         {
-            get
+            public string StringProperty
             {
-                if (_listSameType == null)
+                get => (string)GetValue("StringProperty");
+                set => SetValue("StringProperty", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> _listSameType;
+            public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType
+            {
+                get
                 {
-                    _listSameType = GetListValue<Realms.Tests.Database.TestNotificationObject>("ListSameType");
+                    if (_listSameType == null)
+                    {
+                        _listSameType = GetListValue<Realms.Tests.Database.TestNotificationObject>("ListSameType");
+                    }
+
+                    return _listSameType;
                 }
-
-                return _listSameType;
             }
-        }
 
-        private System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> _setSameType;
-        public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType
-        {
-            get
+            private System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> _setSameType;
+            public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType
             {
-                if (_setSameType == null)
+                get
                 {
-                    _setSameType = GetSetValue<Realms.Tests.Database.TestNotificationObject>("SetSameType");
+                    if (_setSameType == null)
+                    {
+                        _setSameType = GetSetValue<Realms.Tests.Database.TestNotificationObject>("SetSameType");
+                    }
+
+                    return _setSameType;
                 }
-
-                return _setSameType;
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> _dictionarySameType;
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> _dictionarySameType;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType
             {
-                if (_dictionarySameType == null)
+                get
                 {
-                    _dictionarySameType = GetDictionaryValue<Realms.Tests.Database.TestNotificationObject>("DictionarySameType");
+                    if (_dictionarySameType == null)
+                    {
+                        _dictionarySameType = GetDictionaryValue<Realms.Tests.Database.TestNotificationObject>("DictionarySameType");
+                    }
+
+                    return _dictionarySameType;
                 }
-
-                return _dictionarySameType;
             }
-        }
 
-        public Realms.Tests.Database.TestNotificationObject LinkSameType
-        {
-            get => (Realms.Tests.Database.TestNotificationObject)GetValue("LinkSameType");
-            set => SetValue("LinkSameType", value);
-        }
-
-        private System.Collections.Generic.IList<Realms.Tests.Database.Person> _listDifferentType;
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType
-        {
-            get
+            public Realms.Tests.Database.TestNotificationObject LinkSameType
             {
-                if (_listDifferentType == null)
+                get => (Realms.Tests.Database.TestNotificationObject)GetValue("LinkSameType");
+                set => SetValue("LinkSameType", value);
+            }
+
+            private System.Collections.Generic.IList<Realms.Tests.Database.Person> _listDifferentType;
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType
+            {
+                get
                 {
-                    _listDifferentType = GetListValue<Realms.Tests.Database.Person>("ListDifferentType");
+                    if (_listDifferentType == null)
+                    {
+                        _listDifferentType = GetListValue<Realms.Tests.Database.Person>("ListDifferentType");
+                    }
+
+                    return _listDifferentType;
                 }
-
-                return _listDifferentType;
             }
-        }
 
-        private System.Collections.Generic.ISet<Realms.Tests.Database.Person> _setDifferentType;
-        public System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType
-        {
-            get
+            private System.Collections.Generic.ISet<Realms.Tests.Database.Person> _setDifferentType;
+            public System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType
             {
-                if (_setDifferentType == null)
+                get
                 {
-                    _setDifferentType = GetSetValue<Realms.Tests.Database.Person>("SetDifferentType");
+                    if (_setDifferentType == null)
+                    {
+                        _setDifferentType = GetSetValue<Realms.Tests.Database.Person>("SetDifferentType");
+                    }
+
+                    return _setDifferentType;
                 }
-
-                return _setDifferentType;
             }
-        }
 
-        private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> _dictionaryDifferentType;
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType
-        {
-            get
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> _dictionaryDifferentType;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType
             {
-                if (_dictionaryDifferentType == null)
+                get
                 {
-                    _dictionaryDifferentType = GetDictionaryValue<Realms.Tests.Database.Person>("DictionaryDifferentType");
+                    if (_dictionaryDifferentType == null)
+                    {
+                        _dictionaryDifferentType = GetDictionaryValue<Realms.Tests.Database.Person>("DictionaryDifferentType");
+                    }
+
+                    return _dictionaryDifferentType;
                 }
-
-                return _dictionaryDifferentType;
             }
-        }
 
-        public Realms.Tests.Database.Person LinkDifferentType
-        {
-            get => (Realms.Tests.Database.Person)GetValue("LinkDifferentType");
-            set => SetValue("LinkDifferentType", value);
-        }
-
-        private System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> _backlink;
-        public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink
-        {
-            get
+            public Realms.Tests.Database.Person LinkDifferentType
             {
-                if (_backlink == null)
+                get => (Realms.Tests.Database.Person)GetValue("LinkDifferentType");
+                set => SetValue("LinkDifferentType", value);
+            }
+
+            private System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> _backlink;
+            public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink
+            {
+                get
                 {
-                    _backlink = GetBacklinks<Realms.Tests.Database.TestNotificationObject>("Backlink");
+                    if (_backlink == null)
+                    {
+                        _backlink = GetBacklinks<Realms.Tests.Database.TestNotificationObject>("Backlink");
+                    }
+
+                    return _backlink;
                 }
-
-                return _backlink;
-            }
-        }
-    }
-
-    internal class TestNotificationObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITestNotificationObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => TestNotificationObject.RealmSchema;
-
-        private string _stringProperty;
-        public string StringProperty
-        {
-            get => _stringProperty;
-            set
-            {
-                _stringProperty = value;
-                RaisePropertyChanged("StringProperty");
             }
         }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; } = new List<Realms.Tests.Database.TestNotificationObject>();
-
-        public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; } = new HashSet<Realms.Tests.Database.TestNotificationObject>(RealmSet<Realms.Tests.Database.TestNotificationObject>.Comparer);
-
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType { get; } = new Dictionary<string, Realms.Tests.Database.TestNotificationObject>();
-
-        private Realms.Tests.Database.TestNotificationObject _linkSameType;
-        public Realms.Tests.Database.TestNotificationObject LinkSameType
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class TestNotificationObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITestNotificationObjectAccessor
         {
-            get => _linkSameType;
-            set
+            public override ObjectSchema ObjectSchema => TestNotificationObject.RealmSchema;
+
+            private string _stringProperty;
+            public string StringProperty
             {
-                _linkSameType = value;
-                RaisePropertyChanged("LinkSameType");
+                get => _stringProperty;
+                set
+                {
+                    _stringProperty = value;
+                    RaisePropertyChanged("StringProperty");
+                }
             }
-        }
 
-        public System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType { get; } = new List<Realms.Tests.Database.Person>();
+            public System.Collections.Generic.IList<Realms.Tests.Database.TestNotificationObject> ListSameType { get; } = new List<Realms.Tests.Database.TestNotificationObject>();
 
-        public System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType { get; } = new HashSet<Realms.Tests.Database.Person>(RealmSet<Realms.Tests.Database.Person>.Comparer);
+            public System.Collections.Generic.ISet<Realms.Tests.Database.TestNotificationObject> SetSameType { get; } = new HashSet<Realms.Tests.Database.TestNotificationObject>(RealmSet<Realms.Tests.Database.TestNotificationObject>.Comparer);
 
-        public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType { get; } = new Dictionary<string, Realms.Tests.Database.Person>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject> DictionarySameType { get; } = new Dictionary<string, Realms.Tests.Database.TestNotificationObject>();
 
-        private Realms.Tests.Database.Person _linkDifferentType;
-        public Realms.Tests.Database.Person LinkDifferentType
-        {
-            get => _linkDifferentType;
-            set
+            private Realms.Tests.Database.TestNotificationObject _linkSameType;
+            public Realms.Tests.Database.TestNotificationObject LinkSameType
             {
-                _linkDifferentType = value;
-                RaisePropertyChanged("LinkDifferentType");
+                get => _linkSameType;
+                set
+                {
+                    _linkSameType = value;
+                    RaisePropertyChanged("LinkSameType");
+                }
             }
-        }
 
-        public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+            public System.Collections.Generic.IList<Realms.Tests.Database.Person> ListDifferentType { get; } = new List<Realms.Tests.Database.Person>();
 
-        public TestNotificationObjectUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
+            public System.Collections.Generic.ISet<Realms.Tests.Database.Person> SetDifferentType { get; } = new HashSet<Realms.Tests.Database.Person>(RealmSet<Realms.Tests.Database.Person>.Comparer);
 
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person> DictionaryDifferentType { get; } = new Dictionary<string, Realms.Tests.Database.Person>();
+
+            private Realms.Tests.Database.Person _linkDifferentType;
+            public Realms.Tests.Database.Person LinkDifferentType
             {
-                "StringProperty" => _stringProperty,
-                "LinkSameType" => _linkSameType,
-                "LinkDifferentType" => _linkDifferentType,
-                "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "StringProperty":
-                    StringProperty = (string)val;
-                    return;
-                case "LinkSameType":
-                    LinkSameType = (Realms.Tests.Database.TestNotificationObject)val;
-                    return;
-                case "LinkDifferentType":
-                    LinkDifferentType = (Realms.Tests.Database.Person)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                get => _linkDifferentType;
+                set
+                {
+                    _linkDifferentType = value;
+                    RaisePropertyChanged("LinkDifferentType");
+                }
             }
-        }
 
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
-        }
+            public System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "ListSameType" => (IList<T>)ListSameType,
-            "ListDifferentType" => (IList<T>)ListDifferentType,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
-        }
-
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            return propertyName switch
-                        {
-            "SetSameType" => (ISet<T>)SetSameType,
-            "SetDifferentType" => (ISet<T>)SetDifferentType,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                        };
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            return propertyName switch
+            public TestNotificationObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
-                "DictionarySameType" => (IDictionary<string, TValue>)DictionarySameType,
-                "DictionaryDifferentType" => (IDictionary<string, TValue>)DictionaryDifferentType,
-                _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
-            };
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "StringProperty" => _stringProperty,
+                    "LinkSameType" => _linkSameType,
+                    "LinkDifferentType" => _linkDifferentType,
+                    "Backlink" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "StringProperty":
+                        StringProperty = (string)val;
+                        return;
+                    case "LinkSameType":
+                        LinkSameType = (Realms.Tests.Database.TestNotificationObject)val;
+                        return;
+                    case "LinkDifferentType":
+                        LinkDifferentType = (Realms.Tests.Database.Person)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+            }
+
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "ListSameType" => (IList<T>)ListSameType,
+                "ListDifferentType" => (IList<T>)ListDifferentType,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                            };
+            }
+
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                return propertyName switch
+                            {
+                "SetSameType" => (ISet<T>)SetSameType,
+                "SetDifferentType" => (ISet<T>)SetDifferentType,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
+            }
+
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "DictionarySameType" => (IDictionary<string, TValue>)DictionarySameType,
+                    "DictionaryDifferentType" => (IDictionary<string, TValue>)DictionaryDifferentType,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
+            }
         }
     }
 }

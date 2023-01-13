@@ -161,7 +161,7 @@ REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callbac
     return handle_errors(ex, [=]() {
         return subscribe_for_notifications(managed_set, [set, shallow](CollectionChangeCallback callback) {
             return set->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
-        });
+        }, shallow);
     });
 }
 

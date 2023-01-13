@@ -88,19 +88,4 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema&
     return ret;
 }
 
-REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object, const size_t* property_indices, size_t property_count) 
-{
-    TableKey tk = object.table_key;
-    ColKey ck;
-    KeyPathArray keyPathArray;
-    for (int i = 0; i < property_count; i++) {
-        KeyPath keyPath;
-        auto prop = object.persisted_properties[property_indices[i]];
-        ck = prop.column_key;
-        keyPath.push_back(std::make_pair(tk, ck));
-        keyPathArray.push_back(keyPath);
-    }
-    return keyPathArray;
-}
-
 util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);

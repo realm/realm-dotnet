@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -46,7 +45,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void NotificationCallback(IntPtr managedHandle, IntPtr changes);
+        public delegate void NotificationCallback(IntPtr managedHandle, IntPtr changes, bool shallow);
 
         protected NotifiableObjectHandleBase(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
@@ -55,11 +54,11 @@ namespace Realms
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 
         [MonoPInvokeCallback(typeof(NotificationCallback))]
-        public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes)
+        public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes, bool shallow)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<CollectionChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(new PtrTo<CollectionChangeSet>(changes).Value);
+                notifiable.NotifyCallbacks(new PtrTo<CollectionChangeSet>(changes).Value, shallow);
             }
         }
     }

@@ -26,12 +26,8 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -214,7 +210,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void BackLinkInObjectShouldFireNotificationOnChange()
+        public void BackLinkInObjectShouldNotFireNotificationOnChange()
         {
             var testObject1 = new TestNotificationObject();
             var testObject2 = new TestNotificationObject();
@@ -557,8 +553,7 @@ namespace Realms.Tests.Database
             var testObject = new TestNotificationObject();
             _realm.Write(() => _realm.Add(testObject));
             var eventArgs = new List<NotifyCollectionChangedEventArgs>();
-            var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
-            testObject.DictionarySameType.AsRealmCollection().CollectionChanged += handler;
+            testObject.DictionarySameType.AsRealmCollection().CollectionChanged += (sender, e) => eventArgs.Add(e);
 
             var testObject1 = new TestNotificationObject();
             var testObject2 = new TestNotificationObject();
