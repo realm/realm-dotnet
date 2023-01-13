@@ -2,6 +2,9 @@
 
 **File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
 
+### Breaking Changes
+* `User.GetPushClient` has been deprecated as it will be disabled soon on the server. (Issue [#3073](https://github.com/realm/realm-dotnet/issues/3073))
+
 ### Enhancements
 * The realm file will be shrunk if the larger file size is no longer needed. (Core 13.0.0)
 * Most of the file growth caused by version pinning is eliminated. (Core 13.0.0)
