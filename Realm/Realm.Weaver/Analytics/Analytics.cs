@@ -55,9 +55,8 @@ namespace RealmWeaver
     // - What OS and CPU architecture you are running on
     // - What OS and CPU architecture you are building for
     // - What version of the Realm SDK you're using
-    // - What framework and what framework version Realm is being used in (e.g. Xamarin, MAUI, etc.)
+    // - What framework and what framework version Realm is being used with (e.g. Xamarin, MAUI, etc.)
     // - How the Realm SDK was installed (e.g. Nuget, manual, etc.)
-    // - What IDE and what IDE version you're using
     // - What APIs of the Realm SDK you're using
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
@@ -134,6 +133,9 @@ namespace RealmWeaver
             { CoreVersion, string.Empty },
             { FrameworkUsedInConjunction, string.Empty },
             { FrameworkUsedInConjunctionVersion, string.Empty },
+            { SdkInstallationMethod, string.Empty },
+            { IdeUsed, string.Empty },
+            { IdeUsedVersion, string.Empty },
         };
 
         private readonly Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
@@ -602,7 +604,7 @@ namespace RealmWeaver
                 // collect environment details
                 _realmEnvMetrics[UserId] = AnonymizedUserID;
                 _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
-                _realmEnvMetrics[HostOsType] = ConvertOsNameToMetricsVersion(Environment.OSVersion.Platform);
+                _realmEnvMetrics[HostOsType] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
                 _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.VersionString;
                 _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
                 _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
@@ -621,7 +623,6 @@ namespace RealmWeaver
                 _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics[CoreVersion] = "FILL ME";
                 _realmEnvMetrics[SdkInstallationMethod] = "FILL ME";
-                _realmEnvMetrics[SdkInstallationMethodVersion] = "FILL ME";
                 _realmEnvMetrics[IdeUsed] = "FILL ME";
                 _realmEnvMetrics[IdeUsedVersion] = "FILL ME";
 
@@ -868,11 +869,13 @@ namespace RealmWeaver
 
             public string TargetOSName { get; set; }
 
+            // When in Unity this holds the Unity editor's or Unity player's name; otherwise it holds
+            // the .NET target name
             public string TargetFramework { get; set; }
 
+            // When in Unity this holds the Unity editor's or Unity player's version;
+            // otherwise it holds the .NET target version
             public string TargetFrameworkVersion { get; set; }
-
-            public bool IsUnity { get; set; }
         }
 
         public enum AnalyticsCollection

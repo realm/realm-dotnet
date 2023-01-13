@@ -218,7 +218,7 @@ namespace RealmWeaver
                     {
                         TargetOSName = targetOSName,
                         TargetFrameworkVersion = Application.unityVersion,
-                        IsUnity = true,
+                        TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
                     };
 
@@ -360,7 +360,7 @@ namespace RealmWeaver
             switch (target)
             {
                 case BuildTarget.StandaloneOSX:
-                    return "osx";
+                    return "macos";
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
                     return "windows";
@@ -384,7 +384,7 @@ namespace RealmWeaver
                 case RuntimePlatform.WindowsEditor:
                     return "windows";
                 case RuntimePlatform.OSXEditor:
-                    return "osx";
+                    return "macos";
                 case RuntimePlatform.LinuxEditor:
                     return "linux";
                 default:

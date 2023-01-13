@@ -62,6 +62,8 @@ namespace RealmWeaver
                         return Metric.OperatingSystem.MacOS;
                     case string s when s.ContainsIgnoreCase("tvos"):
                         return Metric.OperatingSystem.TvOs;
+                    case string s when s.ContainsIgnoreCase("linux"):
+                        return Metric.OperatingSystem.Linux;
                     default:
                         return Metric.OperatingSystem.Windows;
                 }
@@ -87,7 +89,7 @@ namespace RealmWeaver
                 .Select(n => n.GetPhysicalAddress().GetAddressBytes())
                 .FirstOrDefault();
 
-        public static string ConvertOsNameToMetricsVersion(PlatformID platformID) =>
+        public static string ConvertPlatformIdOsToMetricVersion(PlatformID platformID) =>
             WrapInTryCatch(() =>
             {
                 switch (platformID)
@@ -105,15 +107,16 @@ namespace RealmWeaver
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
-            if (config.IsUnity)
+            if (config.TargetFramework.ContainsIgnoreCase("unity"))
             {
-                // config.TargetFrameworkVersion is relevant here only for unity.
-                // For other platforms it has the version of the .net framework like "4.7.2" for .NetFramework etc.
-                return (Framework.Unity, config.TargetFrameworkVersion);
+                return config.TargetFramework.ContainsIgnoreCase("editor") ?
+                    (Framework.UnityEditor, config.TargetFrameworkVersion) :
+                    (Framework.Unity, config.TargetFrameworkVersion);
             }
             else
             {
                 // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
+                // I didn't have any handy one.
                 var possibleFrameworks = new string[] { "Xamarin.Form", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
@@ -125,12 +128,19 @@ namespace RealmWeaver
                     }
                 }
 
-                var framework = frameworkUsedInConjunction?.Name switch
+                var framework = string.Empty;
+                switch (frameworkUsedInConjunction?.Name)
                 {
-                    string s when s.ContainsIgnoreCase("xamarin") => Framework.Xamarin,
-                    string s when s.ContainsIgnoreCase("maui") => Framework.Maui,
-                    _ => "unknown framework"
-                };
+                    case string s when s.ContainsIgnoreCase("xamarin") || s.ContainsIgnoreCase("android"):
+                        framework = Framework.Xamarin;
+                        break;
+                    case string s when s.ContainsIgnoreCase("maui"):
+                        framework = Framework.Maui;
+                        break;
+                    default:
+                        framework = "Not a framework of interest";
+                        break;
+                }
 
                 return (framework, frameworkUsedInConjunction?.Version?.ToString());
             }
