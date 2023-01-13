@@ -410,7 +410,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests push client")]
         public void User_Push_RegisterDevice()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -420,7 +420,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests push client")]
         public void User_Push_RegisterDevice_WrongService()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -432,7 +432,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test]
+        [Test, Obsolete("Tests push client")]
         public void User_Push_DeregisterDevice()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
