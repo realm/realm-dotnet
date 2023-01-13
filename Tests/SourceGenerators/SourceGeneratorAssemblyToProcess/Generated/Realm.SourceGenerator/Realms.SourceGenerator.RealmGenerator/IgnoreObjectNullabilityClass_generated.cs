@@ -36,7 +36,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         #region IRealmObject implementation
 
-        private IIgnoreObjectNullabilityClassAccessor _accessor = null!;
+        private IIgnoreObjectNullabilityClassAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
@@ -69,7 +69,7 @@ namespace SourceGeneratorAssemblyToProcess
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
-            if (helper != null)
+            if (helper != null && oldAccessor != null)
             {
                 if (!skipDefaults)
                 {
@@ -173,7 +173,7 @@ namespace SourceGeneratorAssemblyToProcess
         /// </example>
         partial void OnPropertyChanged(string? propertyName);
 
-        private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);
@@ -191,7 +191,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator IgnoreObjectNullabilityClass(Realms.RealmValue val) => val.AsRealmObject<IgnoreObjectNullabilityClass>();
 
-        public static implicit operator Realms.RealmValue(IgnoreObjectNullabilityClass? val) => Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IgnoreObjectNullabilityClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
