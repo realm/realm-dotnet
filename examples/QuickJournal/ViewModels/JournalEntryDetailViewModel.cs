@@ -16,6 +16,11 @@ namespace QuickJournal.ViewModels
         [RelayCommand]
         public void OnPageClosed()
         {
+            // We are using a WeakReferenceManager here to notify the JournalEntriesViewModel
+            // when the JournalEntriesDetailPage is closed.
+            // This could have been implemeted hooking up on the back button behaviour
+            // (with Shell.BackButtonBehaviour), but there is a current bug in MAUI
+            // that would make the application crash (https://github.com/dotnet/maui/pull/11438)
             WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(entry));
         }
     }

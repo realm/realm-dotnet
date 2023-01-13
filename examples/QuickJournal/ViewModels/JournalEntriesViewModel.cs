@@ -13,30 +13,31 @@ namespace QuickJournal.ViewModels
         private readonly Realm realm;
 
         [ObservableProperty]
-        private IQueryable<JournalEntry> entries;
+        private IQueryable<JournalEntry>? entries;
+
+        [ObservableProperty]
+        private string test;
 
         public JournalEntriesViewModel()
         {
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
 
-            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);
+            WeakReferenceMessenger.Default.Register< EntryModifiedMessage>(this, EntryModifiedHandler);
         }
 
         [RelayCommand]
         public async Task AddEntry()
         {
-            var entry = new JournalEntry
+            var entry = await realm.WriteAsync(() =>
             {
-                Metadata = new EntryMetadata
+                return realm.Add(new JournalEntry
                 {
-                    CreatedDate = DateTimeOffset.Now,
-                }
-            };
-
-            realm.Write(() =>
-            {
-                realm.Add(entry);
+                    Metadata = new EntryMetadata
+                    {
+                        CreatedDate = DateTimeOffset.Now,
+                    }
+                });
             });
 
             await GoToEntry(entry);
@@ -49,9 +50,9 @@ namespace QuickJournal.ViewModels
         }
 
         [RelayCommand]
-        public void DeleteEntry(JournalEntry entry)
+        public async Task DeleteEntry(JournalEntry entry)
         {
-            realm.Write(() =>
+            await realm.WriteAsync(() =>
             {
                 realm.Remove(entry);
             });
@@ -71,7 +72,7 @@ namespace QuickJournal.ViewModels
             var newEntry = message.Value;
             if (string.IsNullOrEmpty(newEntry.Body + newEntry.Title))
             {
-                DeleteEntry(newEntry);
+                await DeleteEntry(newEntry);
                 await Toast.Make("Empty note discarded").Show();
             }
         }
