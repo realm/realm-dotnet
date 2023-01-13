@@ -26,9 +26,8 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
-* Overhauled and extended the metrics collection of the SDK to better drive future development effort. (PR [#3080](https://github.com/realm/realm-dotnet/pull/3080))
 * Using Core 13.2.0.
+* Overhauled and extended the metrics collection of the SDK to better drive future development effort. (PR [#3080](https://github.com/realm/realm-dotnet/pull/3080))
 * Updated `DynamicRealmObjectHelper.TryGetPrimaryKeyValue` not to use reflection. (Issue [#3166](https://github.com/realm/realm-dotnet/issues/3166))
 
 ## 10.19.0 (2023-01-06)
