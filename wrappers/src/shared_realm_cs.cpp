@@ -47,7 +47,7 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
-using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
+using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
@@ -80,6 +80,18 @@ namespace binding {
 
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
+        if (auto ptr = realm.lock()) {
+            util::Optional<VersionID> version_id = *ptr->current_transaction_version();
+            if (version_id) {
+                auto tcss = m_pending_refresh_callbacks.remove_for_version((*version_id).version);
+
+                NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
+                for (auto& tcs : tcss) {
+                    s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
+                }
+            }
+        }
+
         s_realm_changed(m_managed_state_handle.handle());
     }
 
@@ -88,16 +100,6 @@ namespace binding {
         s_log_message(to_capi(Mixed(message)), level);
     }
 }
-
-// the name of this class is an ugly hack to get around get_shared_group being private
-class TestHelper {
-public:
-    static bool has_changed(const SharedRealm& realm)
-    {
-        auto transaction = Realm::Internal::get_transaction_ref(*realm);
-        return Realm::Internal::get_db(*realm)->has_changed(transaction);
-    }
-};
 
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
 {
@@ -412,7 +414,6 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
     });
 }
 
-
 REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -448,7 +449,7 @@ REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, v
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
             NativeException::Marshallable nativeEx { RealmErrorType::NoError };
-            s_handle_task_completion(tcs_ptr, nativeEx);
+            s_handle_task_completion(tcs_ptr, /* invoke_async */ true, nativeEx);
         }, /* notify_only */ true);
     });
 }
@@ -461,7 +462,7 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
             if (err) {
                 nativeEx = convert_exception(err).for_marshalling();
             }
-            s_handle_task_completion(tcs_ptr, nativeEx);
+            s_handle_task_completion(tcs_ptr, /* invoke_async */ true, nativeEx);
         }, /* allow_grouping */ false);
     });
 }
@@ -630,7 +631,6 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
     });
 }
 
-
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -647,11 +647,6 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
             schema_properties.data()
         }, managed_callback);
     });
-}
-
-REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
-{
-    return TestHelper::has_changed(realm);
 }
 
 REALM_EXPORT bool shared_realm_get_is_frozen(const SharedRealm& realm, NativeException::Marshallable& ex)
@@ -790,6 +785,29 @@ REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, 
 {
     return handle_errors(ex, [&] {
         return realm->get_latest_subscription_set().version();
+    });
+}
+
+REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_tcs, NativeException::Marshallable& ex) {
+    return handle_errors(ex, [&]() {
+        if (realm->is_frozen()) {
+            return false;
+        }
+
+        const util::Optional<DB::version_type>& latest_snapshot_version = realm->latest_snapshot_version();
+        if (!latest_snapshot_version) {
+            return false;
+        }
+
+        const util::Optional<VersionID> current_version = realm->current_transaction_version();
+        if (!current_version || *latest_snapshot_version <= (*current_version).version) {
+            return false;
+        }
+
+        auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+        csharp_context->pending_refresh_callbacks().add(*latest_snapshot_version, managed_tcs);
+
+        return true;
     });
 }
 

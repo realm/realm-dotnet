@@ -500,7 +500,7 @@ namespace RealmWeaver
                 "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
                 "NotSupportedProperties.DateTimeProperty is a DateTime which is not supported - use DateTimeOffset instead.",
                 "NotSupportedProperties.NullableDateTimeProperty is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
+                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.",
                 "NotSupportedProperties.People is declared as List<Person> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<Person>, otherwise annotate the property with the [Ignored] attribute.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
                 "InvalidBacklinkRelationships.ParentRelationship has [Backlink] applied, but is not IQueryable.",

@@ -1087,4 +1087,16 @@ namespace Realms.Tests
 
         public IDictionary<string, int> TestDict { get; }
     }
+
+    [Explicit]
+    public partial class PrivatePrimaryKeyObject : TestRealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        private string Id { get; set; } = ObjectId.GenerateNewId().ToString();
+
+        public string Value { get; set; }
+
+        public string GetId() => Id;
+    }
 }

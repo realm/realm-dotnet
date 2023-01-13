@@ -1092,6 +1092,35 @@ namespace Realms.Tests.Database
 
         #endregion
 
+        [Test]
+        public void GetPrimaryKey_WhenPrivate_Works()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(PrivatePrimaryKeyObject) }
+            };
+
+            var newObj = new PrivatePrimaryKeyObject();
+            var id = newObj.GetId();
+            using (var realm = GetRealm(config))
+            {
+                realm.Write(() =>
+                {
+                    realm.Add(newObj);
+                });
+            }
+
+            config.IsDynamic = true;
+
+            using var dynamicRealm = GetRealm(config);
+            var dynamicObj = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(PrivatePrimaryKeyObject))).Single();
+
+            Assert.That(dynamicRealm.Metadata.TryGetValue(nameof(PrivatePrimaryKeyObject), out var meta), Is.True);
+            Assert.That(meta.Helper.TryGetPrimaryKeyValue(dynamicObj, out var foundPk), Is.True);
+
+            Assert.That(foundPk, Is.EqualTo(id));
+        }
+
         private static object InvokeGetter(object o, string propertyName, bool isDynamic)
         {
             if (isDynamic)

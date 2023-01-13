@@ -336,11 +336,12 @@ namespace Realms.Tests
             return $"<{byteArr[0]}>";
         }
 
-        public static void DrainQueue<T>(this ConcurrentQueue<T> queue, Action<T> action)
+        public static void DrainQueue<T>(this ConcurrentQueue<StrongBox<T>> queue, Action<T> action)
         {
             while (queue.TryDequeue(out var result))
             {
-                action(result);
+                action(result.Value);
+                result.Value = default;
             }
         }
 
@@ -408,6 +409,13 @@ namespace Realms.Tests
             {
                 _onNext?.Invoke(value);
             }
+        }
+
+        public class StrongBox<T>
+        {
+            public T Value { get; set; }
+
+            public static implicit operator StrongBox<T>(T value) => new() { Value = value };
         }
     }
 }

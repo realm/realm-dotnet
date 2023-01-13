@@ -175,6 +175,7 @@ namespace Realms
 
         private State _state;
         private WeakReference<Session> _sessionRef;
+        private Transaction _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
@@ -427,6 +428,8 @@ namespace Realms
         {
             if (!IsClosed)
             {
+                _activeTransaction?.Dispose();
+
                 if (SharedRealmHandle.OwnsNativeRealm)
                 {
                     _state.RemoveRealm(this);
@@ -767,7 +770,9 @@ namespace Realms
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
             SharedRealmHandle.BeginTransaction();
-            return new Transaction(this);
+
+            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            return _activeTransaction = new Transaction(this);
         }
 
         /// <summary>
@@ -885,7 +890,9 @@ namespace Realms
             }
 
             await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
-            return new Transaction(this);
+
+            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            return _activeTransaction = new Transaction(this);
         }
 
         /// <summary>
@@ -1254,26 +1261,14 @@ namespace Realms
         /// </returns>
         public Task<bool> RefreshAsync()
         {
-            if (!SharedRealmHandle.HasChanged())
-            {
-                return Task.FromResult(false);
-            }
+            ThrowIfDisposed();
 
             if (!AsyncHelper.TryGetValidContext(out _))
             {
                 return Task.FromResult(Refresh());
             }
 
-            var tcs = new TaskCompletionSource<bool>();
-
-            RealmChanged += Handler;
-            return tcs.Task;
-
-            void Handler(object sender, EventArgs e)
-            {
-                ((Realm)sender).RealmChanged -= Handler;
-                tcs.TrySetResult(true);
-            }
+            return SharedRealmHandle.RefreshAsync();
         }
 
         /// <summary>
@@ -1607,6 +1602,7 @@ namespace Realms
 
         internal void DrainTransactionQueue()
         {
+            _activeTransaction = null;
             _state.DrainTransactionQueue();
         }
 

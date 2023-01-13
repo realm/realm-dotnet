@@ -36,18 +36,18 @@ Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/cons
 
 ## Building Realm
 
-We highly recommend [using our pre-built binaries via NuGet](https://docs.mongodb.com/realm/dotnet/install/#open-the-nuget-package-manager) but you can also build from [source](https://github.com/realm/realm-dotnet).
+We highly recommend [using our pre-built binaries via NuGet](https://docs.mongodb.com/realm/dotnet/install/#open-the-nuget-package-manager) but you can also build from source.
 
 Prerequisites:
 
 * Visual Studio 2019 Community or above.
 * Building iOS/macOS apps also requires Xcode 8.1 or above.
 
-**Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
+Instructions:
 
 1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
 1. Open the `Realm.sln` in `Visual Studio`
-1. Build `Realm.Fody` and `Realm`
+1. Build 'Realm`, `Realm.Fody` and `Realm.SourceGenerator`
 1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.

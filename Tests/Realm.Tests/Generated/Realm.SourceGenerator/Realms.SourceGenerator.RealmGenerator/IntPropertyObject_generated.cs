@@ -3,16 +3,20 @@ using MongoDB.Bson;
 using Realms;
 using Realms.Schema;
 using Realms.Tests;
-using Realms.Tests.Generated;
+using Realms.Tests.Database;
 using Realms.Weaving;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests
 {
@@ -215,154 +219,152 @@ namespace Realms.Tests
                 return true;
             }
         }
-    }
-}
 
-namespace Realms.Tests.Generated
-{
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IIntPropertyObjectAccessor : Realms.IRealmAccessor
-    {
-        MongoDB.Bson.ObjectId Id { get; set; }
-
-        int Int { get; set; }
-
-        System.Guid GuidProperty { get; set; }
-
-        System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections { get; }
-    }
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    internal class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
-    {
-        public MongoDB.Bson.ObjectId Id
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal interface IIntPropertyObjectAccessor : Realms.IRealmAccessor
         {
-            get => (MongoDB.Bson.ObjectId)GetValue("_id");
-            set => SetValueUnique("_id", value);
+            MongoDB.Bson.ObjectId Id { get; set; }
+
+            int Int { get; set; }
+
+            System.Guid GuidProperty { get; set; }
+
+            System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections { get; }
         }
 
-        public int Int
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
         {
-            get => (int)GetValue("Int");
-            set => SetValue("Int", value);
-        }
-
-        public System.Guid GuidProperty
-        {
-            get => (System.Guid)GetValue("GuidProperty");
-            set => SetValue("GuidProperty", value);
-        }
-
-        private System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> _containingCollections;
-        public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections
-        {
-            get
+            public MongoDB.Bson.ObjectId Id
             {
-                if (_containingCollections == null)
+                get => (MongoDB.Bson.ObjectId)GetValue("_id");
+                set => SetValueUnique("_id", value);
+            }
+
+            public int Int
+            {
+                get => (int)GetValue("Int");
+                set => SetValue("Int", value);
+            }
+
+            public System.Guid GuidProperty
+            {
+                get => (System.Guid)GetValue("GuidProperty");
+                set => SetValue("GuidProperty", value);
+            }
+
+            private System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> _containingCollections;
+            public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections
+            {
+                get
                 {
-                    _containingCollections = GetBacklinks<Realms.Tests.SyncCollectionsObject>("ContainingCollections");
+                    if (_containingCollections == null)
+                    {
+                        _containingCollections = GetBacklinks<Realms.Tests.SyncCollectionsObject>("ContainingCollections");
+                    }
+
+                    return _containingCollections;
+                }
+            }
+        }
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
+        {
+            public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
+
+            private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
+            public MongoDB.Bson.ObjectId Id
+            {
+                get => _id;
+                set
+                {
+                    _id = value;
+                    RaisePropertyChanged("Id");
+                }
+            }
+
+            private int _int;
+            public int Int
+            {
+                get => _int;
+                set
+                {
+                    _int = value;
+                    RaisePropertyChanged("Int");
+                }
+            }
+
+            private System.Guid _guidProperty;
+            public System.Guid GuidProperty
+            {
+                get => _guidProperty;
+                set
+                {
+                    _guidProperty = value;
+                    RaisePropertyChanged("GuidProperty");
+                }
+            }
+
+            public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
+
+            public IntPropertyObjectUnmanagedAccessor(Type objectType) : base(objectType)
+            {
+            }
+
+            public override Realms.RealmValue GetValue(string propertyName)
+            {
+                return propertyName switch
+                {
+                    "_id" => _id,
+                    "Int" => _int,
+                    "GuidProperty" => _guidProperty,
+                    "ContainingCollections" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
+                    _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
+                };
+            }
+
+            public override void SetValue(string propertyName, Realms.RealmValue val)
+            {
+                switch (propertyName)
+                {
+                    case "_id":
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "Int":
+                        Int = (int)val;
+                        return;
+                    case "GuidProperty":
+                        GuidProperty = (System.Guid)val;
+                        return;
+                    default:
+                        throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
+                }
+            }
+
+            public override void SetValueUnique(string propertyName, Realms.RealmValue val)
+            {
+                if (propertyName != "_id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                return _containingCollections;
-            }
-        }
-    }
-
-    internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
-    {
-        public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;
-
-        private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-        public MongoDB.Bson.ObjectId Id
-        {
-            get => _id;
-            set
-            {
-                _id = value;
-                RaisePropertyChanged("Id");
-            }
-        }
-
-        private int _int;
-        public int Int
-        {
-            get => _int;
-            set
-            {
-                _int = value;
-                RaisePropertyChanged("Int");
-            }
-        }
-
-        private System.Guid _guidProperty;
-        public System.Guid GuidProperty
-        {
-            get => _guidProperty;
-            set
-            {
-                _guidProperty = value;
-                RaisePropertyChanged("GuidProperty");
-            }
-        }
-
-        public System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
-
-        public IntPropertyObjectUnmanagedAccessor(Type objectType) : base(objectType)
-        {
-        }
-
-        public override Realms.RealmValue GetValue(string propertyName)
-        {
-            return propertyName switch
-            {
-                "_id" => _id,
-                "Int" => _int,
-                "GuidProperty" => _guidProperty,
-                "ContainingCollections" => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects."),
-                _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
-            };
-        }
-
-        public override void SetValue(string propertyName, Realms.RealmValue val)
-        {
-            switch (propertyName)
-            {
-                case "_id":
-                    throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
-                case "Int":
-                    Int = (int)val;
-                    return;
-                case "GuidProperty":
-                    GuidProperty = (System.Guid)val;
-                    return;
-                default:
-                    throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
-            }
-        }
-
-        public override void SetValueUnique(string propertyName, Realms.RealmValue val)
-        {
-            if (propertyName != "_id")
-            {
-                throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                Id = (MongoDB.Bson.ObjectId)val;
             }
 
-            Id = (MongoDB.Bson.ObjectId)val;
-        }
+            public override IList<T> GetListValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
+            }
 
-        public override IList<T> GetListValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
-        }
+            public override ISet<T> GetSetValue<T>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+            }
 
-        public override ISet<T> GetSetValue<T>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
-        }
-
-        public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
-        {
-            throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
+            {
+                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+            }
         }
     }
 }

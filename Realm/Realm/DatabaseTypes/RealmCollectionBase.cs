@@ -35,9 +35,11 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
+          IList,
           IThreadConfined,
           IMetadataObject
     {
@@ -231,10 +233,10 @@ namespace Realms
                 // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
                 //   objects can't be linked to.
                 case IEmbeddedObject:
-                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
                     throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
                 case IAsymmetricObject:
-                    Debug.Assert(typeof(T) == typeof(RealmValue), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
                     throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
                 default:
                     throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
@@ -452,11 +454,19 @@ namespace Realms
 
         public virtual bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
+        public bool IsFixedSize => false;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => null;
+
+        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+
         public void Clear() => Handle.Value.Clear();
 
         public int IndexOf(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -466,7 +476,7 @@ namespace Realms
 
         public bool Contains(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -495,6 +505,59 @@ namespace Realms
             foreach (var obj in this)
             {
                 array[arrayIndex++] = obj;
+            }
+        }
+
+        public virtual int Add(object value)
+        {
+            if (value is T tValue)
+            {
+                Add(tValue);
+                return Count - 1;
+            }
+
+            throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+        }
+
+        public virtual void Insert(int index, object value)
+        {
+            if (value is T tValue)
+            {
+                Insert(index, tValue);
+            }
+            else
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+        }
+
+        public void Remove(object value)
+        {
+            if (value is T tValue)
+            {
+                Remove(tValue);
+            }
+        }
+
+        public virtual void RemoveAt(int index) => throw new NotSupportedException();
+
+        public void CopyTo(Array array, int index)
+        {
+            Argument.NotNull(array, nameof(array));
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (index + Count > array.Length)
+            {
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
+            }
+
+            foreach (var obj in this)
+            {
+                array.SetValue(obj, index++);
             }
         }
 

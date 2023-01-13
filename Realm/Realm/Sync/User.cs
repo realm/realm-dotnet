@@ -233,6 +233,7 @@ namespace Realms.Sync
         /// <param name="serviceName">The name of the service as configured in the App Services UI.</param>
         /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification">Send Mobile Push Notifications Docs</seealso>
+        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
         public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
 
         /// <summary>
@@ -447,11 +448,13 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function decoded as <typeparamref name="T"/>.
             /// </returns>
-            public async Task<T> CallAsync<T>(string name, params object[] args)
+            public Task<T> CallAsync<T>(string name, params object[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
+
+            internal async Task<T> CallSerializedAsync<T>(string name, string args, string serviceName = null)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
-                var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args.ToNativeJson());
+                var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args, serviceName);
 
                 return BsonSerializer.Deserialize<T>(response);
             }
@@ -460,6 +463,7 @@ namespace Realms.Sync
         /// <summary>
         /// The Push client exposes an API to register/deregister for push notifications from a client app.
         /// </summary>
+        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
         public class PushClient
         {
             private readonly User _user;

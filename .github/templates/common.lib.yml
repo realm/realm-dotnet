@@ -97,25 +97,6 @@ with:
 #@ end
 #@ end
 
-#@ def setupVcpkg(preset):
-  - name: Get vcpkg submodule commit sha
-    id: vcpkg_cache_key
-    working-directory: wrappers/realm-core/tools/vcpkg/ports
-    shell: bash
-    run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-  - name: Setup Vcpkg
-    id: setup-vcpkg
-    uses: friendlyanon/setup-vcpkg@v1
-    #@yaml/text-templated-strings
-    with:
-      path: wrappers/realm-core/tools/vcpkg/ports
-      cache-key: vcpkg3-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-      cache-restore-keys: vcpkg3-(@= preset @)-${{ steps.vcpkg_cache_key.outputs.commit }}
-  - name: Refetch vcpkg
-    run: git fetch --unshallow
-    working-directory: wrappers/realm-core/tools/vcpkg/ports
-#@ end
-
 #@ def downloadAllArtifacts(conclusion = "completed"):
   - name: Download all artifacts
     uses: #@ actionDownloadAllArtifacts
