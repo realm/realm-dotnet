@@ -175,13 +175,6 @@ namespace Realms.Tests.Sync
         [TestCaseSource(nameof(AppTypes))]
         public void Session_ClientReset_ManualRecovery_InitiateClientReset(string appType)
         {
-            if (appType == AppConfigType.FlexibleSync)
-            {
-                // TODO: remove when https://github.com/realm/realm-core/issues/6053 is fixed
-                Assert.Ignore("Crashes on flx with an assertion in Core.");
-                return;
-            }
-
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
