@@ -48,6 +48,11 @@ namespace Baas
     {
         public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
         {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
             var extracted = new Dictionary<string, string>();
             var remainingArgs = new List<string>();
             for (var i = 0; i < args.Length; i++)
