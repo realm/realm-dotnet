@@ -5,6 +5,7 @@ using Realms.Logging;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
+using static Realms.ChangeSet;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;

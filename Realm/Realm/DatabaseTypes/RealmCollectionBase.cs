@@ -179,7 +179,10 @@ namespace Realms
             return CreateCollection(frozenRealm, frozenHandle);
         }
 
-        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
+            => SubscribeForNotificationsImpl(callback, shallow: false);
+
+        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             Argument.NotNull(callback, nameof(callback));
             _notificationCallbacks.Value.Add(callback, shallow);
@@ -378,7 +381,7 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotifications(OnChange, shallow: true);
+                    SubscribeForNotificationsImpl(OnChange, shallow: true);
                 }
                 else
                 {

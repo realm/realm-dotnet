@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Realms.Schema;
 
 namespace Realms
@@ -148,13 +149,12 @@ namespace Realms
         /// </para>
         /// </remarks>
         /// <param name="callback">The callback to be invoked with the updated <see cref="IRealmCollection{T}" />.</param>
-        /// <param name="shallow">Whether modifications to objects in the collection should fire notifications.</param>
         /// <returns>
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(System.Linq.IQueryable{T}, NotificationCallbackDelegate{T})"/>
-        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback, bool shallow = false);
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
+        IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
     }
 }

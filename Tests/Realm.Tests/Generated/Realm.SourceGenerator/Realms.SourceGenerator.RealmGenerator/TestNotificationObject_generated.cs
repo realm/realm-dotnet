@@ -4,17 +4,13 @@ using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
