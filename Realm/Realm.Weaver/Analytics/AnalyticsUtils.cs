@@ -142,7 +142,7 @@ namespace RealmWeaver
                         break;
                 }
 
-                return (framework, frameworkUsedInConjunction?.Version?.ToString());
+                return (framework, frameworkUsedInConjunction?.Version.ToString());
             }
         }
 
@@ -155,11 +155,13 @@ namespace RealmWeaver
         public static string GetLanguageVersion(ModuleDefinition module, string targetFramework)
         {
             var langVersion = string.Empty;
+            /*
             if (module.Assembly.HasCustomAttributes)
             {
-                // TODO andrea: LangVersionAttribute would need to be created
-                //langVersion = module.Assembly.CustomAttributes.Where(a => a.AttributeType.FullName == typeof(LangVersionAttribute).FullName).SingleOrDefault().Value;
+                // LangVersionAttribute would need to be created
+                langVersion = module.Assembly.CustomAttributes.Where(a => a.AttributeType.FullName == typeof(LangVersionAttribute).FullName).SingleOrDefault().Value;
             }
+            */
 
             if (langVersion.Length > 0)
             {
@@ -167,9 +169,8 @@ namespace RealmWeaver
             }
             else
             {
-                // LCD for target framework
-                // order matters as the lowest common denomitor determines the maximum usable
-                // version of the language
+                // lowest common denomitor (LCD) for target framework
+                // order matters as the LCD determines the maximum usable version of the language
                 // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
                 if (targetFramework.ContainsIgnoreCase("netcoreapp2") ||
                     targetFramework.ContainsIgnoreCase("netframework"))

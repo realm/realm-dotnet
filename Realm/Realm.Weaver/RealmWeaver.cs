@@ -231,7 +231,7 @@ namespace RealmWeaver
             if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
             {
                 analyzeAPITask.Wait();
-                analytics.AnalyzePropertisOfRealmClasses(weaveResults);
+                analytics.AnalyzeRealmClassProperties(weaveResults);
                 metricsResult = analytics.SubmitAnalytics().Result;
             }
 

@@ -524,8 +524,8 @@ namespace RealmWeaver
                         featureDict[ReferenceList] = 1;
                     }
 
-                    return featureDict[PrimitiveList] == 1 &&
-                        featureDict[ReferenceList] == 1;
+                    return (featureDict[PrimitiveList] &
+                        featureDict[ReferenceList]) == 0x1;
                 }
             },
             {
@@ -545,8 +545,8 @@ namespace RealmWeaver
                         featureDict[ReferenceDictionary] = 1;
                     }
 
-                    return featureDict[PrimitiveDictionary] == 1 &&
-                        featureDict[ReferenceDictionary] == 1;
+                    return (featureDict[PrimitiveDictionary] &
+                        featureDict[ReferenceDictionary]) == 0x1;
                 }
             },
             {
@@ -566,8 +566,8 @@ namespace RealmWeaver
                         featureDict[ReferenceSet] = 1;
                     }
 
-                    return featureDict[PrimitiveSet] == 1 &&
-                        featureDict[ReferenceSet] == 1;
+                    return (featureDict[PrimitiveSet] &
+                        featureDict[ReferenceSet]) == 0x1;
                 }
             },
             {
@@ -633,7 +633,7 @@ namespace RealmWeaver
             }
         }
 
-        internal void AnalyzePropertisOfRealmClasses(WeaveTypeResult[] types)
+        internal void AnalyzeRealmClassProperties(WeaveTypeResult[] types)
         {
             foreach (var type in types)
             {
@@ -696,7 +696,7 @@ namespace RealmWeaver
                 _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
             }
 
-            AnalyzeTypeMethods(type);
+            AnalyzeClassMethods(type);
 
             foreach (var innerType in type.NestedTypes)
             {
@@ -704,7 +704,7 @@ namespace RealmWeaver
             }
         }
 
-        private void AnalyzeTypeMethods(TypeDefinition type)
+        private void AnalyzeClassMethods(TypeDefinition type)
         {
             foreach (var method in type.Methods)
             {

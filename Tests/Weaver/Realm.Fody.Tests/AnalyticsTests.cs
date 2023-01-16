@@ -104,39 +104,6 @@ namespace Analytics
             return Path.Combine(folder, "Tests", "Weaver", "AnalyticsAssembly");
         });
 
-        // TODO andrea: a bunch of issues with this test:
-        // 1. Unfortunately on CI we only run the weaver on Windows so other platforms aren't tested. So for this test
-        //    to makes sense, we'd need to run it on multiple platforms when in CI
-        // 2. If we want to keep this test, shouldn't we then have more tests around the environment?
-        // 3. All this test is trying to do is: grab a method we know works (Environment.OSVersion.Platform)
-        //    and keep comparing with the outcome of the collection. Currently the collection logic looks for the same
-        //    information. My assumption was that this may not hold true in the future anymore, but I'm not convinced
-        //    about this point: if we change the way in the collection, it may well be because this method is unreliable
-        //    in which case we'd need to update this test to use the same method. Effectively, just mirroring what the collection
-        //    does.
-        [Test]
-        public void ValidateCorrectPlatform()
-        {
-            try
-            {
-                CompileAnalyticsProject(_featureMap.FirstOrDefault().Value);
-
-                var osType = Environment.OSVersion.Platform switch
-                {
-                    PlatformID.Win32NT => Metric.OperatingSystem.Windows,
-                    PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
-                    PlatformID.Unix => Metric.OperatingSystem.Linux,
-                    PlatformID id => $"{id} is an unsupported OS."
-                };
-
-                ValidateAnalyticsPayload(SdkFeature.HostOsType, osType);
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"Exception: {e.Message}");
-            }
-        }
-
         [Test]
         public void ValidateFeatureUsage()
         {
