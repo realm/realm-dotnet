@@ -17,12 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -102,6 +107,9 @@ namespace Realms.Tests.Sync
             {
                 TestHelpers.RunAsyncTest(testFunc, timeout);
             }
+
+            // TODO: remove when https://github.com/realm/realm-core/issues/6052 is fixed
+            Task.Delay(1000).Wait();
         }
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
@@ -118,7 +126,14 @@ namespace Realms.Tests.Sync
             }
 
             var result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
-            Assert.That(result.status, Is.EqualTo(BaasClient.FunctionReturn.Result.success));
+            if (result.Deleted > 0)
+            {
+                // This is kind of a hack, but it appears like there's a race condition on the server, where the deletion might not be
+                // registered and the server will not respond with a client reset. Doing the request again gives the server some extra time
+                // to process the deletion.
+                result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
+                Assert.That(result.Deleted, Is.EqualTo(0));
+            }
         }
 
         public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
@@ -132,6 +147,39 @@ namespace Realms.Tests.Sync
             }
 
             return remainingArgs;
+        }
+
+        public static (string[] RemainingArgs, IDisposable Logger) SetLoggerFromArgs(string[] args)
+        {
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
+
+            if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
+            {
+                TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
+
+                Logger.LogLevel = logLevel;
+            }
+
+            Logger.AsyncFileLogger logger = null;
+            if (extracted.TryGetValue("realmlogfile", out var logFile))
+            {
+                if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
+                {
+                    TestHelpers.Output.WriteLine($"Setting sync logger to file: {logFile}");
+
+                    // We're running in a test runner, so we need to use the sync logger
+                    Logger.Default = Logger.File(logFile);
+                }
+                else
+                {
+                    TestHelpers.Output.WriteLine($"Setting async logger to file: {logFile}");
+
+                    // We're running standalone (likely on CI), so we use the async logger
+                    Logger.Default = logger = new Logger.AsyncFileLogger(logFile);
+                }
+            }
+
+            return (remaining, logger);
         }
 
         public static string[] ExtractBaasSettings(string[] args)
@@ -157,7 +205,7 @@ namespace Realms.Tests.Sync
                 var privateApiKey = System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
                 var groupId = System.Configuration.ConfigurationManager.AppSettings["GroupId"];
 
-                _baasClient = await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient ??= await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {

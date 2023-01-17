@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,7 +94,7 @@ namespace Realms.Tests
                 _isSetup = false;
                 try
                 {
-                    Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+                    DeleteRealmWithRetries(RealmConfiguration.DefaultConfiguration);
                 }
                 catch
                 {
@@ -111,18 +112,18 @@ namespace Realms.Tests
             _realms.DrainQueue(realm =>
             {
                 // TODO: this should be an assertion but fails on our migration tests due to https://github.com/realm/realm-core/issues/4605.
-                // Assert.That(DeleteRealmWithRetries(realm), Is.True, "Couldn't delete a Realm on teardown.");
-                DeleteRealmWithRetries(realm);
+                // Assert.That(DeleteRealmWithRetries(realm.Config), Is.True, "Couldn't delete a Realm on teardown.");
+                DeleteRealmWithRetries(realm.Config);
             });
         }
 
-        protected static bool DeleteRealmWithRetries(Realm realm)
+        protected static bool DeleteRealmWithRetries(RealmConfigurationBase config)
         {
             for (var i = 0; i < 100; i++)
             {
                 try
                 {
-                    Realm.DeleteRealm(realm.Config);
+                    Realm.DeleteRealm(config);
                     return true;
                 }
                 catch
@@ -148,11 +149,25 @@ namespace Realms.Tests
             return result;
         }
 
-        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, CancellationToken cancellationToken = default)
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "cts is disposed by the using - the compiler seems to be having a hard time due to the ternary")]
+        protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, int timeout = 10000, CancellationToken? cancellationToken = default)
         {
-            var result = await Realm.GetInstanceAsync(config, cancellationToken);
-            CleanupOnTearDown(result);
-            return result;
+            using var cts = cancellationToken != null ? null : new CancellationTokenSource(timeout);
+            try
+            {
+                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts.Token);
+                CleanupOnTearDown(result);
+                return result;
+            }
+            catch (TaskCanceledException)
+            {
+                if (cts?.IsCancellationRequested == true)
+                {
+                    throw new TimeoutException($"Timed out waiting for Realm to open after {timeout} ms");
+                }
+
+                throw;
+            }
         }
 
         protected Realm Freeze(Realm realm)
