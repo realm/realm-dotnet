@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls")
-#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "dotnetPublish", "actionCoveralls", "setupDotnet")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "prepareTest")
 
 ---
 name: test-code-coverage
@@ -9,16 +9,16 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     name: Code Coverage
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchWrapperBinaries())
+      - #@ setupDotnet()
+      - #@ template.replace(prepareTest(fetchWrappers=True))
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net5.0", "linux-x64", { "AdditionalFrameworks": "net5.0" }))
+      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net6.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
       - name: Run the tests
         run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs("code-coverage") + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
       - name: Publish Coverage

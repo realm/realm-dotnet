@@ -35,13 +35,15 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
+          IList,
           IThreadConfined,
           IMetadataObject
     {
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new List<NotificationCallbackDelegate<T>>();
+        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new();
 
         private NotificationTokenHandle _notificationToken;
 
@@ -146,7 +148,7 @@ namespace Realms
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
-            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
+            _isEmbedded = metadata?.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject;
         }
 
         ~RealmCollectionBase()
@@ -204,16 +206,40 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObject>();
+            var robj = value.AsIRealmObject();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
                 throw new RealmException("Can't add to the collection an object that is already in another realm.");
             }
 
-            if (!robj.IsManaged)
+            switch (robj)
             {
-                Realm.Add(robj);
+                case IRealmObject topLevel:
+                    if (!robj.IsManaged)
+                    {
+                        Realm.Add(topLevel);
+                    }
+
+                    break;
+
+                // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
+                // them to the collection as RealmValues (e.g. IList<RealmValue>).
+                // This is because:
+                // * Plain embedded objects (not contained within a RealmValue), beside RealmSet, are
+                //   added by each collection handle (e.g. _listHandle.AddEmbedded()) in the respective
+                //   method (e.g. in RealmList.Add(), RealmList.Insert(), RealmDictionary.Add(), etc.)
+                //   rather than reaching RealmCollectionBase.AddToRealmIfNecessary().
+                // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
+                //   objects can't be linked to.
+                case IEmbeddedObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
+                case IAsymmetricObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
+                default:
+                    throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }
         }
 
@@ -395,9 +421,8 @@ namespace Realms
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, NativeException? exception)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
         {
-            var managedException = exception?.Convert();
             ChangeSet changeset = null;
             if (changes != null)
             {
@@ -417,7 +442,7 @@ namespace Realms
 
             foreach (var callback in _callbacks.ToArray())
             {
-                callback(this, changeset, managedException);
+                callback(this, changeset, null);
             }
         }
 
@@ -429,11 +454,19 @@ namespace Realms
 
         public virtual bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
+        public bool IsFixedSize => false;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => null;
+
+        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+
         public void Clear() => Handle.Value.Clear();
 
         public int IndexOf(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -443,7 +476,7 @@ namespace Realms
 
         public bool Contains(object value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
@@ -475,6 +508,59 @@ namespace Realms
             }
         }
 
+        public virtual int Add(object value)
+        {
+            if (value is T tValue)
+            {
+                Add(tValue);
+                return Count - 1;
+            }
+
+            throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+        }
+
+        public virtual void Insert(int index, object value)
+        {
+            if (value is T tValue)
+            {
+                Insert(index, tValue);
+            }
+            else
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+        }
+
+        public void Remove(object value)
+        {
+            if (value is T tValue)
+            {
+                Remove(tValue);
+            }
+        }
+
+        public virtual void RemoveAt(int index) => throw new NotSupportedException();
+
+        public void CopyTo(Array array, int index)
+        {
+            Argument.NotNull(array, nameof(array));
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (index + Count > array.Length)
+            {
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
+            }
+
+            foreach (var obj in this)
+            {
+                array.SetValue(obj, index++);
+            }
+        }
+
         #endregion IList
 
         public class Enumerator : IEnumerator<T>
@@ -488,8 +574,9 @@ namespace Realms
                 _index = -1;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it. Only collections of objects support snapshotting.
-                _shouldDisposeHandle = parent.IsValid && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
+                // snapshot if the collection is frozen.
+                _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
                 _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
             }
 
@@ -542,17 +629,19 @@ namespace Realms
     /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
-    internal sealed class InvalidObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InvalidObject
     {
         private InvalidObject()
         {
         }
 
-        public static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new InvalidObject();
 
-        // The method is overriden to avoid the bug in WPF
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
+            // This is to resolve the WPF bug
             return true;
         }
     }

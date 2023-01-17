@@ -112,7 +112,7 @@ extern "C" {
             std::vector<SchemaProperty> schema_properties;
 
             auto& object_schema = object.get_object_schema();
-            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties, object_schema.table_type == ObjectSchema::ObjectType::Embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties));
 
             s_get_native_schema(SchemaForMarshaling{
                 schema_objects.data(),
@@ -202,6 +202,16 @@ extern "C" {
             verify_can_set(parent);
 
             return new Object(parent.realm(), parent.obj().create_and_set_linked_object(get_column_key(parent, property_ndx)));
+        });
+    }
+
+    REALM_EXPORT Object* object_get_parent(Object& child, TableKey& table_key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            Obj parent = child.obj().get_parent_object();
+            table_key = parent.get_table()->get_key();
+
+            return new Object(child.realm(), std::move(parent));
         });
     }
 

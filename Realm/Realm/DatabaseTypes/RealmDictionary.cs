@@ -33,6 +33,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     [DebuggerDisplay("Count = {Count}")]
     public class RealmDictionary<TValue>
         : RealmCollectionBase<KeyValuePair<string, TValue>>,
@@ -98,6 +99,18 @@ namespace Realms
             }
         }
 
+        internal RealmResults<TValue> ToResults()
+        {
+            return (RealmResults<TValue>)Values;
+        }
+
+        // Get filtered results from dictionary's values
+        internal RealmResults<TValue> GetFilteredValueResults(string query, RealmValue[] arguments)
+        {
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+        }
+
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
         internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
@@ -145,7 +158,7 @@ namespace Realms
 
             var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 return false;
             }
@@ -236,9 +249,8 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, NativeException? exception)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes)
         {
-            var managedException = exception?.Convert();
             DictionaryChangeSet changeset = null;
             if (changes != null)
             {
@@ -255,7 +267,7 @@ namespace Realms
 
             foreach (var callback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset, managedException);
+                callback(this, changeset, null);
             }
         }
     }

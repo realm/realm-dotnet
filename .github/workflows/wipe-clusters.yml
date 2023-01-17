@@ -1,0 +1,16 @@
+name: Wipe all clusters and apps
+
+on:
+  workflow_dispatch:
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    name: Wipe all clusters and apps
+    steps:
+    - uses: realm/ci-actions/mdb-realm/deleteAllClusters@e7b65d7d587e1abc358968d7ff816cc0163906d2
+      with:
+        realmUrl: https://realm-qa.mongodb.com
+        atlasUrl: https://cloud-qa.mongodb.com
+        projectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
+        apiKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
+        privateApiKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}

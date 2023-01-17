@@ -51,7 +51,8 @@
 	<Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
 	<ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
 		<PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
-	</ItemGroup>
+        <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+    </ItemGroup>
 	<ItemGroup>
 		<AdditionalFiles Include="..\..\stylecop.json" />
 	</ItemGroup>

@@ -248,7 +248,7 @@ namespace Realms.Tests.Sync
             Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var dynamicObj = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
+            var dynamicObj = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
             Assert.That(dynamicObj.DynamicApi.Get<string>(nameof(IntPrimaryKeyWithValueObject.StringValue)), Is.EqualTo("This is a string!"));
         }
 
@@ -351,7 +351,6 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
@@ -483,7 +482,6 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
-                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
@@ -523,6 +521,43 @@ namespace Realms.Tests.Sync
                 using var originalRealm = GetRealm(originalConfig);
 
                 Assert.Throws<NotSupportedException>(() => originalRealm.WriteCopy(copyConfig));
+            });
+        }
+
+        [Test]
+        public void RemoveAll_RemovesAllElements([Values(true, false)] bool originalEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realmConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (originalEncrypted)
+                {
+                    realmConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                using var realm = GetRealm(realmConfig);
+
+                AddDummyData(realm, true);
+
+                await WaitForUploadAsync(realm);
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+
+                realm.Write(() =>
+                {
+                    realm.RemoveAll();
+                });
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+
+                // Ensure that the Realm can be deleted from the filesystem. If the sync
+                // session was still using it, we would get a permission denied error.
+                Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
+
+                using var asyncRealm = await GetRealmAsync(realmConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
             });
         }
 
@@ -575,8 +610,8 @@ namespace Realms.Tests.Sync
             openRealm.Dispose();
             Assert.That(File.Exists(config.DatabasePath));
 
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config), Is.True);
         }
 
         [Test]
@@ -599,7 +634,7 @@ namespace Realms.Tests.Sync
 
                 // Ensure that the Realm can be deleted from the filesystem. If the sync
                 // session was still using it, we would get a permission denied error.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+                Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
                 Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
@@ -617,7 +652,7 @@ namespace Realms.Tests.Sync
             Assert.That(session.IsClosed);
 
             // Dispose should close the session and allow us to delete the Realm.
-            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+            Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
         }
 
         private const int DummyDataSize = 100;

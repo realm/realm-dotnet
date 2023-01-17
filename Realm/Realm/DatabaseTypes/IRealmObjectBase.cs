@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -69,6 +68,18 @@ namespace Realms
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         ObjectSchema ObjectSchema { get; }
+
+        /// <summary>
+        /// Gets an object encompassing the dynamic API for this Realm object instance.
+        /// </summary>
+        /// <value>A <see cref="Dynamic"/> instance that wraps this Realm object.</value>
+        public DynamicObjectApi DynamicApi { get; }
+
+        /// <summary>
+        /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
+        /// </summary>
+        /// <value>The number of objects referring to this one.</value>
+        public int BacklinksCount { get; }
     }
 
     /// <summary>
@@ -79,10 +90,30 @@ namespace Realms
     }
 
     /// <summary>
+    /// Base interface for any asymmetric object that can be persisted in a <see cref="Realm"/>.
+    /// </summary>
+    /// <remarks>
+    /// The benefit of using <see cref="AsymmetricObject"/> is that the performance of each sync operation is much higher.
+    /// The drawback is that an <see cref="AsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
+    /// You should use this base when you have a write-heavy use case.
+    /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
+    /// </remarks>
+    /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
+    public interface IAsymmetricObject : IRealmObjectBase
+    {
+    }
+
+    /// <summary>
     /// Base interface for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     public interface IEmbeddedObject : IRealmObjectBase
     {
+        /// <summary>
+        /// Gets the parent of the <see cref="IEmbeddedObject">embedded object</see>. It can be either another
+        /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
+        /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
+        /// </summary>
+        public IRealmObjectBase Parent { get; }
     }
 
     /// <summary>

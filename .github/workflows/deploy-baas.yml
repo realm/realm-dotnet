@@ -5,15 +5,17 @@ name: deploy-baas
       differentiators:
         required: true
         type: string
+      BaseUrl:
+        required: true
+        type: string
+      AtlasBaseUrl:
+        required: true
+        type: string
     outputs:
       clusterName:
         value: ${{ jobs.deploy-baas.outputs.clusterName }}
     secrets:
       AtlasProjectId:
-        required: true
-      BaseUrl:
-        required: true
-      AtlasBaseUrl:
         required: true
       AtlasPublicKey:
         required: true
@@ -27,23 +29,23 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Cluster
     outputs:
-      clusterName: ${{ steps.deploy-mdb-apps.outputs.clusterName }}
+      clusterName: ${{ steps.deploy-cluster.outputs.clusterName }}
     timeout-minutes: 20
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/deployApps@fac1d6958f03d71de743305ce3ab27594efbe7b7
-      id: deploy-mdb-apps
+    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+      id: deploy-cluster
       with:
         projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ secrets.BaseUrl }}
-        atlasUrl: ${{ secrets.AtlasBaseUrl}}
+        realmUrl: ${{ inputs.BaseUrl }}
+        atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: realm-dotnet
+        clusterSize: M20
   deploy-apps:
     name: Deploy Apps
     needs: deploy-baas
@@ -54,13 +56,13 @@ jobs:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: actions/setup-dotnet@v1
+    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Deploy Apps
-      run: dotnet run . --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
+      run: dotnet run . --baasurl=${{ inputs.BaseUrl }} --baascluster=${{ needs.deploy-baas.outputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey }} --baasprivateapikey=${{ secrets.AtlasPrivateKey }} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=${{ matrix.differentiator }}
       working-directory: Tools/DeployApps

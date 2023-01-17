@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2022 Realm Inc.
 //
@@ -21,14 +21,17 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using static Baas.BaasClient.FunctionReturn;
 
 namespace Baas
 {
@@ -41,8 +44,48 @@ namespace Baas
         public const string FlexibleSync = "flx";
     }
 
-    public class BaasClient : IDisposable
+    public static class ArgumentHelper
     {
+        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            var extracted = new Dictionary<string, string>();
+            var remainingArgs = new List<string>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!toExtract.Any(name => ExtractArg(i, name)))
+                {
+                    remainingArgs.Add(args[i]);
+                }
+            }
+
+            return (extracted, remainingArgs.ToArray());
+
+            bool ExtractArg(int index, string name)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+    }
+
+    public class BaasClient
+    {
+        public class FunctionReturn
+        {
+            public int Deleted { get; set; }
+        }
+
         private const string ConfirmFuncSource =
             @"exports = ({ token, tokenId, username }) => {
                   // process the confirm token, tokenId and username
@@ -63,7 +106,26 @@ namespace Baas
                   return { status: 'fail' };
                 };";
 
-        private readonly HttpClient _client = new HttpClient();
+        private const string TriggerClientResetOnSyncServerFuncSource =
+            @"exports = async function(userId, appId = '') {
+                const mongodb = context.services.get('BackingDB');
+                console.log('user.id: ' + context.user.id);
+                try {
+                  let dbName = '__realm_sync';
+                  if (appId !== '')
+                  {
+                    dbName += `_${appId}`;
+                  }
+                  const deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: userId });
+                  console.log('Deleted documents: ' + deletionResult.deletedCount);
+
+                  return { Deleted: deletionResult.deletedCount };
+                } catch(err) {
+                  throw 'Deletion failed: ' + err;
+                }
+            };";
+
+        private readonly HttpClient _client = new();
 
         private readonly string _clusterName;
 
@@ -71,6 +133,7 @@ namespace Baas
         private readonly TextWriter _output;
 
         private string _groupId;
+        private string _refreshToken;
 
         private string _shortDifferentiator
         {
@@ -145,31 +208,18 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var result = new List<string>();
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
-            string baasCluster = null;
-            string baasApiKey = null;
-            string baasPrivateApiKey = null;
-            string groupId = null;
-            string baseUrl = null;
-            string differentiator = null;
-
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!ExtractArg(i, "baasurl", ref baseUrl) &&
-                    !ExtractArg(i, "baascluster", ref baasCluster) &&
-                    !ExtractArg(i, "baasapikey", ref baasApiKey) &&
-                    !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
-                    !ExtractArg(i, "baasprojectid", ref groupId) &&
-                    !ExtractArg(i, "baasdifferentiator", ref differentiator))
-                {
-                    result.Add(args[i]);
-                }
-            }
+            extracted.TryGetValue("baasurl", out var baseUrl);
+            extracted.TryGetValue("baascluster", out var baasCluster);
+            extracted.TryGetValue("baasapikey", out var baasApiKey);
+            extracted.TryGetValue("baasprivateapikey", out var baasPrivateApiKey);
+            extracted.TryGetValue("baasprojectid", out var groupId);
+            extracted.TryGetValue("baasdifferentiator", out var differentiator);
 
             if (string.IsNullOrEmpty(baseUrl))
             {
-                return (null, null, result.ToArray());
+                return (null, null, remaining);
             }
 
             var baseUri = new Uri(baseUrl);
@@ -178,35 +228,24 @@ namespace Baas
                 ? await Docker(baseUri, differentiator, output)
                 : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
-            return (client, baseUri, result.ToArray());
-
-            bool ExtractArg(int index, string name, ref string value)
-            {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
-                {
-                    value = arg.Replace($"--{name}=", string.Empty);
-                    return true;
-                }
-
-                return false;
-            }
+            return (client, baseUri, remaining);
         }
 
         private async Task Authenticate(string provider, object credentials)
         {
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
 
-            _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
+            _refreshToken = authDoc["refresh_token"].AsString;
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
-        public async Task<IDictionary<string, string>> GetOrCreateApps()
+        public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
         {
             var apps = await GetApps();
 
             _output.WriteLine($"Found {apps.Length} apps.");
 
-            var result = new Dictionary<string, string>();
+            var result = new Dictionary<string, BaasApp>();
             await GetOrCreateApp(result, AppConfigType.Default, apps, CreateDefaultApp);
             await GetOrCreateApp(result, AppConfigType.FlexibleSync, apps, CreateFlxApp);
             await GetOrCreateApp(result, AppConfigType.IntPartitionKey, apps, name => CreatePbsApp(name, "long"));
@@ -216,7 +255,7 @@ namespace Baas
             return result;
         }
 
-        private async Task GetOrCreateApp(IDictionary<string, string> result, string name, BaasApp[] apps, Func<string, Task<BaasApp>> creator)
+        private async Task GetOrCreateApp(IDictionary<string, BaasApp> result, string name, BaasApp[] apps, Func<string, Task<BaasApp>> creator)
         {
             var app = apps.SingleOrDefault(a => a.Name.StartsWith(name));
             if (app == null)
@@ -228,7 +267,7 @@ namespace Baas
                 _output.WriteLine($"Found {app.Name} with id {app.ClientAppId}.");
             }
 
-            result[app.Name] = app.ClientAppId;
+            result[app.Name] = app;
         }
 
         private async Task<BaasApp> CreateDefaultApp(string name)
@@ -238,6 +277,8 @@ namespace Baas
             var authFuncId = await CreateFunction(app, "authFunc", @"exports = (loginPayload) => {
                       return loginPayload[""realmCustomAuthFuncUserId""];
                     };");
+
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
             await CreateFunction(app, "documentFunc", @"exports = function(first, second){
                 return {
@@ -359,7 +400,7 @@ namespace Baas
                 {
                     state = "enabled",
                     database_name = $"FLX_{Differentiator}",
-                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int" },
+                    queryable_fields_names = new[] { "Int64Property", "GuidProperty", "DoubleProperty", "Int", "Guid", "Id", "PartitionLike" },
                     permissions = new
                     {
                         rules = new { },
@@ -373,11 +414,31 @@ namespace Baas
                                 write = true,
                             }
                         }
-                    }
+                    },
                 }
             });
 
+            await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
+
             return app;
+        }
+
+        public async Task SetAutomaticRecoveryEnabled(BaasApp app, bool enabled)
+        {
+            var services = await GetAsync<BsonArray>($"groups/{_groupId}/apps/{app}/services");
+            var mongoServiceId = services.Single(s => s.AsBsonDocument["name"] == "BackingDB")["_id"].AsString;
+            var config = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config");
+
+            var syncType = config.Contains("flexible_sync") ? "flexible_sync" : "sync";
+            config[syncType]["is_recovery_mode_disabled"] = !enabled;
+
+            // An empty fragment with just the sync configuration is necessary,
+            // as the "conf" document that we retrieve has a bunch of extra fields that we are supposed
+            // to be use/return to the server when PATCH-ing
+            var fragment = new BsonDocument();
+            fragment[syncType] = config[syncType];
+
+            await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
 
         private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
@@ -444,13 +505,14 @@ namespace Baas
             }
         }
 
-        private async Task<string> CreateFunction(BaasApp app, string name, string source)
+        private async Task<string> CreateFunction(BaasApp app, string name, string source, bool runAsSystem = false)
         {
             _output.WriteLine($"Creating function {name} for {app.Name}...");
 
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
                 name = name,
+                run_as_system = runAsSystem,
                 can_evaluate = new { },
                 @private = false,
                 source = source
@@ -493,11 +555,6 @@ namespace Baas
             });
 
             return response["_id"].AsString;
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
         }
 
         private static HttpContent GetJsonContent(object obj)
@@ -557,6 +614,24 @@ namespace Baas
             return;
         }
 
+        private async Task RefreshAccessTokenAsync()
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, new Uri("auth/session", UriKind.Relative));
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _refreshToken);
+
+            var response = await _client.SendAsync(message);
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to refresh access token - {response.StatusCode}: {content}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = BsonSerializer.Deserialize<BsonDocument>(json);
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", doc["access_token"].AsString);
+        }
+
         private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
 
         private Task<T> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
@@ -576,8 +651,14 @@ namespace Baas
             var response = await _client.SendAsync(message);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Unauthorized && _refreshToken != null)
+                {
+                    await RefreshAccessTokenAsync();
+                    return await SendAsync<T>(method, relativePath, payload);
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
-                throw new Exception($"An error occurred while executing {method} {relativePath}: {content}");
+                throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
             }
 
             response.EnsureSuccessStatusCode();
@@ -640,6 +721,18 @@ namespace Baas
                 additional_fields = new { }
             };
 
+            private static object _flxDefaultRoles => new
+            {
+                name = "default",
+                apply_when = new { },
+                read = true,
+                write = false,
+                insert = true,
+                delete = true,
+                search = true,
+                additional_fields = new { }
+            };
+
             private static object Metadata(string differentiator, string collectionName) => new
             {
                 database = $"Schema_{differentiator}",
@@ -652,6 +745,13 @@ namespace Baas
                 collection = collectionName,
                 database = $"Schema_{differentiator}",
                 roles = new[] { _defaultRoles }
+            };
+
+            public static object GenericFlxBaasRule(string differentiator, string collectionName) => new
+            {
+                collection = collectionName,
+                database = $"FLX_{differentiator}",
+                roles = new[] { _flxDefaultRoles }
             };
 
             public static (object Schema, object Rules) Sales(string partitionKeyType, string differentiator) =>

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -223,7 +224,7 @@ namespace Realms.Tests.Sync
 
         #endregion
 
-        #region Byte
+        #region Binary
 
         [Test]
         public void List_Binary() => TestListCore(o => o.ByteArrayList, TestHelpers.GetBytes(5), TestHelpers.GetBytes(6), (a, b) => a.SequenceEqual(b));
@@ -269,7 +270,7 @@ namespace Realms.Tests.Sync
             new object[] { (RealmValue)"abc", (RealmValue)10 },
             new object[] { (RealmValue)new ObjectId("5f63e882536de46d71877979"), (RealmValue)new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}") },
             new object[] { (RealmValue)new byte[] { 0, 1, 2 }, (RealmValue)DateTimeOffset.FromUnixTimeSeconds(1616137641) },
-            new object[] { (RealmValue)true, (RealmValue)new IntPropertyObject { Int = 10 } },
+            new object[] { (RealmValue)true, RealmValue.Object(new IntPropertyObject { Int = 10 }) },
             new object[] { RealmValue.Null, (RealmValue)5m },
             new object[] { (RealmValue)12.5f, (RealmValue)15d },
         };
@@ -317,18 +318,14 @@ namespace Realms.Tests.Sync
                     list1.Add(item1);
                 });
 
-                await WaitForCollectionChangeAsync(list2.AsRealmCollection());
-
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Add from list1 should arrive at list2");
+                await WaitForCollectionAsync(list2, list1, equalsOverride, "add from 1 shows up in 2");
 
                 realm2.Write(() =>
                 {
                     list2.Add(item2);
                 });
 
-                await WaitForCollectionChangeAsync(list1.AsRealmCollection());
-
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Add from list2 should arrive at list1");
+                await WaitForCollectionAsync(list1, list2, equalsOverride, "add from 2 shows up in 1");
 
                 // Assert Remove works
                 realm2.Write(() =>
@@ -336,9 +333,7 @@ namespace Realms.Tests.Sync
                     list2.Remove(list2.First());
                 });
 
-                await WaitForCollectionChangeAsync(list1.AsRealmCollection());
-
-                Assert.That(list1, Is.EquivalentTo(list2).Using(equalsOverride), "Remove from list2 should arrive at list1");
+                await WaitForCollectionAsync(list1, list2, equalsOverride, "remove from 2 shows up in 1");
 
                 // Assert Clear works
                 realm1.Write(() =>
@@ -346,7 +341,7 @@ namespace Realms.Tests.Sync
                     list1.Clear();
                 });
 
-                await TestHelpers.WaitForConditionAsync(() => !list2.Any());
+                await TestHelpers.WaitForConditionAsync(() => !list2.Any(), errorMessage: "clear from 1 shows up in 2");
 
                 Assert.That(list1, Is.Empty);
                 Assert.That(list2, Is.Empty);
@@ -382,18 +377,14 @@ namespace Realms.Tests.Sync
                     set1.Add(item1);
                 });
 
-                await WaitForCollectionChangeAsync(set2.AsRealmCollection());
-
-                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
+                await WaitForCollectionAsync(set2, set1, equalsOverride, "add from 1 shows  up in 2");
 
                 realm2.Write(() =>
                 {
                     set2.Add(item2);
                 });
 
-                await WaitForCollectionChangeAsync(set1.AsRealmCollection());
-
-                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
+                await WaitForCollectionAsync(set1, set2, equalsOverride, "add from 2 shows up in 1");
 
                 // Assert Remove works
                 realm2.Write(() =>
@@ -401,9 +392,7 @@ namespace Realms.Tests.Sync
                     set2.Remove(set2.First());
                 });
 
-                await WaitForCollectionChangeAsync(set1.AsRealmCollection());
-
-                Assert.That(set1, Is.EquivalentTo(set2).Using(equalsOverride));
+                await WaitForCollectionAsync(set1, set2, equalsOverride, "remove from 2 shows up in 1");
 
                 // Assert Clear works
                 realm1.Write(() =>
@@ -411,7 +400,7 @@ namespace Realms.Tests.Sync
                     set1.Clear();
                 });
 
-                await TestHelpers.WaitForConditionAsync(() => !set2.Any());
+                await TestHelpers.WaitForConditionAsync(() => !set2.Any(), errorMessage: "clear from 1 shows up in 2");
 
                 Assert.That(set1, Is.Empty);
                 Assert.That(set2, Is.Empty);
@@ -436,7 +425,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectAsync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2, "initial obj from 1 shows up in 2");
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -450,18 +439,14 @@ namespace Realms.Tests.Sync
                     dict1.Add(key1, item1);
                 });
 
-                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
-
-                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+                await WaitForCollectionAsync(dict2, dict1, comparer, "add from 1 shows up in 2");
 
                 realm2.Write(() =>
                 {
                     dict2[key2] = item2;
                 });
 
-                await WaitForCollectionChangeAsync(dict1.AsRealmCollection());
-
-                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+                await WaitForCollectionAsync(dict1, dict2, comparer, "add from 2 shows up in 1");
 
                 // Assert Update works
                 // item2 might belong to realm2, so let's find the equivalent in realm1
@@ -472,9 +457,7 @@ namespace Realms.Tests.Sync
                     dict1[key1] = item2;
                 });
 
-                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
-
-                Assert.That(dict2, Is.EquivalentTo(dict1).Using(comparer));
+                await WaitForCollectionAsync(dict2, dict1, comparer, "set from 1 shows up in 2");
 
                 // Assert Remove works
                 realm2.Write(() =>
@@ -482,9 +465,7 @@ namespace Realms.Tests.Sync
                     dict2.Remove(key1);
                 });
 
-                await WaitForCollectionChangeAsync(dict1.AsRealmCollection());
-
-                Assert.That(dict1, Is.EquivalentTo(dict2).Using(comparer));
+                await WaitForCollectionAsync(dict1, dict2, comparer, "remove from 2 shows up in 1");
 
                 // Assert Clear works
                 realm1.Write(() =>
@@ -492,11 +473,11 @@ namespace Realms.Tests.Sync
                     dict1.Clear();
                 });
 
-                await WaitForCollectionChangeAsync(dict2.AsRealmCollection());
+                await TestHelpers.WaitForConditionAsync(() => !dict2.Any(), errorMessage: "clear from 1 shows up in 2");
 
                 Assert.That(dict1, Is.Empty);
                 Assert.That(dict2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            }, ensureNoSessionErrors: true, timeout: 60_000);
         }
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
@@ -554,8 +535,8 @@ namespace Realms.Tests.Sync
                 return original;
             }
 
-            var robj = original.AsRealmObject();
-            var clone = (RealmObjectBase)Activator.CreateInstance(robj.GetType());
+            var robj = original.AsIRealmObject();
+            var clone = (IRealmObjectBase)Activator.CreateInstance(robj.GetType());
             var properties = robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite && p.CanRead && !p.HasCustomAttribute<PrimaryKeyAttribute>());
 
@@ -564,19 +545,19 @@ namespace Realms.Tests.Sync
                 prop.SetValue(clone, prop.GetValue(robj));
             }
 
-            return clone;
+            return RealmValue.Object(clone);
         }
 
         private static T CloneOrLookup<T>(T value, Realm targetRealm)
         {
             // If embedded - we need to clone as it might already be assigned to a different property
-            if (value is EmbeddedObject eobj)
+            if (value is IEmbeddedObject eobj)
             {
-                return Operator.Convert<RealmObjectBase, T>(Clone(eobj).AsRealmObject());
+                return Operator.Convert<IRealmObjectBase, T>(Clone(RealmValue.Object(eobj)).AsIRealmObject());
             }
 
-            // If RealmObject - we need to look up the existing equivalent in the correct realm
-            if (value is RealmObject robj)
+            // If IRealmObject - we need to look up the existing equivalent in the correct realm
+            if (value is IRealmObject robj)
             {
                 // item2 belongs to realm2 - we want to look up the equivalent in realm1 to add it to dict1
                 Assert.That(robj.GetObjectMetadata().Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
@@ -587,8 +568,8 @@ namespace Realms.Tests.Sync
             // If RealmValue that is holding an object, call CloneOrLookup
             if (value is RealmValue rvalue && rvalue.Type == RealmValueType.Object)
             {
-                var cloned = CloneOrLookup(rvalue.AsRealmObject(), targetRealm);
-                return Operator.Convert<RealmObjectBase, T>(cloned);
+                var cloned = CloneOrLookup(rvalue.AsIRealmObject(), targetRealm);
+                return Operator.Convert<IRealmObjectBase, T>(cloned);
             }
 
             return value;
@@ -607,8 +588,8 @@ namespace Realms.Tests.Sync
                 return false;
             }
 
-            var objA = a.AsRealmObject();
-            var objB = b.AsRealmObject();
+            var objA = a.AsIRealmObject();
+            var objB = b.AsIRealmObject();
 
             if (objA.GetType() != objB.GetType())
             {
@@ -626,10 +607,10 @@ namespace Realms.Tests.Sync
             return true;
         }
 
-        private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
+        private static async Task WaitForPropertyChangedAsync(IRealmObject realmObject, int timeout = 10 * 1000)
         {
             var tcs = new TaskCompletionSource<object>();
-            realmObject.PropertyChanged += RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged).PropertyChanged += RealmObject_PropertyChanged;
 
             void RealmObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
             {
@@ -640,26 +621,43 @@ namespace Realms.Tests.Sync
             }
 
             await tcs.Task.Timeout(timeout);
-            realmObject.PropertyChanged -= RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged).PropertyChanged -= RealmObject_PropertyChanged;
         }
 
-        private static async Task WaitForCollectionChangeAsync<T>(IRealmCollection<T> collection, int timeout = 10 * 1000)
+        private static async Task WaitForCollectionAsync<T>(IEnumerable<T> first, IEnumerable<T> second, Func<T, T, bool> comparer, string message)
         {
-            var tcs = new TaskCompletionSource<object>();
-            using var token = collection.SubscribeForNotifications((collection, changes, error) =>
+            comparer ??= EqualityComparer<T>.Default.Equals;
+
+            await TestHelpers.WaitForConditionAsync(() => IsEquivalent(first, second, comparer), errorMessage: message);
+            Assert.That(first, Is.EquivalentTo(second).Using(comparer));
+        }
+
+        private static bool IsEquivalent<T>(IEnumerable<T> first, IEnumerable<T> second, Func<T, T, bool> comparer)
+        {
+            var copy1 = first.ToList();
+            var copy2 = second.ToList();
+
+            while (copy1.Count > 0)
             {
-                if (error != null)
+                var item = copy1[0];
+                copy1.RemoveAt(0);
+                var success = false;
+                for (var j = 0; j < copy2.Count; j++)
                 {
-                    tcs.TrySetException(error);
+                    if (comparer(copy2[j], item))
+                    {
+                        success = true;
+                        copy2.RemoveAt(j);
+                    }
                 }
 
-                if (changes != null)
+                if (!success)
                 {
-                    tcs.TrySetResult(null);
+                    return false;
                 }
-            });
+            }
 
-            await tcs.Task.Timeout(timeout);
+            return copy2.Count == 0;
         }
     }
 }

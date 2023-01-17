@@ -19,6 +19,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -118,51 +127,51 @@ namespace Realms.Tests.Database
                 realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
             }), $"{nameof(AllTypesObject)} add failed.");
         }
+    }
 
-        public class NoListProperties : RealmObject
-        {
-            public string Name { get; set; }
+    public partial class NoListProperties : TestRealmObject
+    {
+        public string Name { get; set; }
 
-            public int Age { get; set; }
-        }
+        public int Age { get; set; }
+    }
 
-        public class OnlyListProperties : RealmObject
-        {
-            public IList<Person> Friends { get; }
+    public partial class OnlyListProperties : TestRealmObject
+    {
+        public IList<Person> Friends { get; }
 
-            public IList<Person> Enemies { get; }
-        }
+        public IList<Person> Enemies { get; }
+    }
 
-        public class MixedProperties1 : RealmObject
-        {
-            public string Name { get; set; }
+    public partial class MixedProperties1 : TestRealmObject
+    {
+        public string Name { get; set; }
 
-            public IList<Person> Friends { get; }
+        public IList<Person> Friends { get; }
 
-            public int Age { get; set; }
+        public int Age { get; set; }
 
-            public IList<Person> Enemies { get; }
-        }
+        public IList<Person> Enemies { get; }
+    }
 
-        public class MixedProperties2 : RealmObject
-        {
-            public IList<Person> Friends { get; }
+    public partial class MixedProperties2 : TestRealmObject
+    {
+        public IList<Person> Friends { get; }
 
-            public int Age { get; set; }
+        public int Age { get; set; }
 
-            public IList<Person> Enemies { get; }
+        public IList<Person> Enemies { get; }
 
-            public string Name { get; set; }
-        }
+        public string Name { get; set; }
+    }
 
-        public class OneNonListProperty : RealmObject
-        {
-            public string Name { get; set; }
-        }
+    public partial class OneNonListProperty : TestRealmObject
+    {
+        public string Name { get; set; }
+    }
 
-        public class OneListProperty : RealmObject
-        {
-            public IList<Person> People { get; }
-        }
+    public partial class OneListProperty : TestRealmObject
+    {
+        public IList<Person> People { get; }
     }
 }

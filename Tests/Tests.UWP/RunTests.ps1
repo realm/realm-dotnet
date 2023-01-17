@@ -1,7 +1,12 @@
 param(
-    [string]$PackageLocation = "$PSScriptRoot/AppPackages/Tests.UWP_1.0.0.0_Test",
     [string]$ExtraAppArgs = ""
 )
+
+$PackageLocation = "$PSScriptRoot\AppPackages\Tests.UWP_1.0.0.0_Test"
+
+if (-not (Test-Path -Path $PackageLocation)) {
+    $PackageLocation = "$PSScriptRoot\AppPackages\Tests.UWP_1.0.0.0_Debug_Test"
+}
 
 if (-not (Test-Path -Path $PackageLocation)) {
     Write-Output "Tests package not found at $PackageLocation"
@@ -26,8 +31,7 @@ Write-Output "Launching shell:AppsFolder\$PackagePath!App with arguments: $AppAr
 Start-Process "shell:AppsFolder\$PackagePath!App" -ArgumentList "$AppArgs"
 Write-Output "The test application is launched, this step is monitoring it and it will terminate when the tests are fully run"
 
-do
-{
+do {
     Start-Sleep -s 3
 
     if (!$TestAppProcess) {
@@ -42,8 +46,7 @@ if (Test-Path -Path $RunOutputPath) {
     Get-Content $RunOutputPath
 }
 
-if (-not (Test-Path -Path $ResultsPath))
-{
+if (-not (Test-Path -Path $ResultsPath)) {
     Write-Output "Failed to find results file at: $ResultsPath, exiting."
     exit 3
 }

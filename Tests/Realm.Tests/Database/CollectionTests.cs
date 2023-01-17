@@ -23,6 +23,15 @@ using System.Reflection;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -244,6 +253,37 @@ namespace Realms.Tests.Database
             Assert.That(container.Items, Is.Empty);
 
             var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
+            Assert.That(items, Is.EquivalentTo(Enumerable.Range(0, 10)));
+        }
+
+        [Test]
+        public void ObjectList_WhenEnumeratingFrozenList_ShouldBeStable()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() =>
+            {
+                _realm.Add(container);
+            });
+
+            var j = 10;
+            var frozenList = container.Items.Freeze();
+
+            TestStableIteration(
+                i => container.Items.Add(new IntPropertyObject { Int = i }),
+                () => frozenList = container.Items.Freeze(),
+                item =>
+                {
+                    // Just remove last from container since item from
+                    // frozen version is not equivalent.
+                    j -= 1;
+                    container.Items.RemoveAt(j);
+                });
+
+            Assert.That(container.Items, Is.Empty);
+
+            var items = _realm.All<IntPropertyObject>().ToArray().Select(i => i.Int);
+            var frozenItems = frozenList.ToArray().Select(i => i.Int);
+            Assert.That(frozenItems, Is.EquivalentTo(Enumerable.Range(0, 10)));
             Assert.That(items, Is.EquivalentTo(Enumerable.Range(0, 10)));
         }
 
@@ -1412,7 +1452,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property: 'Foo'"));
+                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property 'Foo'"));
         }
 
         [Test]
@@ -1782,17 +1822,17 @@ namespace Realms.Tests.Database
 
             return container;
         }
+    }
 
-        private class A : RealmObject
-        {
-            public bool Value { get; set; }
+    public partial class A : TestRealmObject
+    {
+        public bool Value { get; set; }
 
-            public B B { get; set; }
-        }
+        public B B { get; set; }
+    }
 
-        private class B : RealmObject
-        {
-            public IntPropertyObject C { get; set; }
-        }
+    public partial class B : TestRealmObject
+    {
+        public IntPropertyObject C { get; set; }
     }
 }

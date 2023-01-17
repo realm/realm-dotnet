@@ -8,10 +8,14 @@ name: test-macos
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -27,7 +31,7 @@ jobs:
     timeout-minutes: 45
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -36,28 +40,38 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-      if: ${{ runner.os == 'Windows' }}
-    - uses: actions/cache@v2
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('Tests/Tests.XamarinMac/*.csproj') }}
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+      if: ${{ runner.os == 'Windows' }}
     - name: Build Tests/Tests.XamarinMac
       run: msbuild Tests/Tests.XamarinMac -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=xamarinmacos
+      run: Tests/Tests.XamarinMac/bin/Release/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=xamarinmacos
     - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Xamarin.macOS
@@ -73,7 +87,7 @@ jobs:
     timeout-minutes: 45
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -82,17 +96,22 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Setup workloads
@@ -101,9 +120,9 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      run: Tests/Tests.Maui/bin/Release/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=maccatalyst
+      run: Tests/Tests.Maui/bin/Release/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=maccatalyst
     - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Maui.MacCatalyst

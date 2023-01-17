@@ -27,6 +27,15 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestAsymmetricObject = Realms.IAsymmetricObject;
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -124,12 +133,15 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManagedAndUnmanaged()
         {
             var person = new Person();
 
+#if TEST_WEAVER
             Assert.That(person.ObjectSchema, Is.Null);
-
+#else
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+#endif
             _realm.Write(() =>
             {
                 _realm.Add(person);
@@ -324,7 +336,7 @@ namespace Realms.Tests.Database
 
             var text = serializationFunction(obj);
 
-            var realmTypes = new[] { typeof(RealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
+            var realmTypes = new[] { typeof(IRealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
 
             foreach (var field in realmTypes.SelectMany(t => t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)))
             {
@@ -509,6 +521,27 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(obj.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_InitializedFields_GetCorrectValues()
+        {
+            // This test ensures we only run the initialization instructions of Realm Object fields once.
+            // i.e. where we have a class that has an ID field that gets incremented every time a new class
+            // instance is created by incrementing an external variable and assigning it to the Id field.
+            //
+            // class FieldObject { Id: Generator.Id() } where Generator.Id = () => _currentId++;
+            //
+            // It could be that because of i.e. copying over initialization commands to the accessor
+            // but not removing from the original constructor, the initialization of the field
+            // would get repeated, thus leading to the _currentId being incremented twice.
+            var obj0 = new InitializedFieldObject();
+            var obj1 = new InitializedFieldObject();
+            var obj2 = new InitializedFieldObject();
+
+            Assert.That(obj0.Id, Is.EqualTo(0));
+            Assert.That(obj1.Id, Is.EqualTo(1));
+            Assert.That(obj2.Id, Is.EqualTo(2));
         }
 
         [Test]
@@ -716,35 +749,76 @@ namespace Realms.Tests.Database
             Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
 
-        [Serializable]
-        public class SerializedObject : RealmObject
+        [Test]
+        public void RealmObject_WhenThrowsBeforeInitializer_DoesNotCrash()
         {
-            public int IntValue { get; set; }
-
-            public string Name { get; set; }
-
-            public IDictionary<string, int> Dict { get; }
-
-            public IList<string> List { get; }
-
-            public ISet<string> Set { get; }
-        }
-
-        private class OnManagedTestClass : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public OnManagedTestClass RelatedObject { get; set; }
-
-            public IList<OnManagedTestClass> RelatedCollection { get; }
-
-            [Ignored]
-            public int OnManagedCalled { get; private set; }
-
-            protected internal override void OnManaged()
+            // This tests that a RealmObject without an accessor (due to an exception thrown
+            // before being initialized) does not cause a crash (NullReferenceException) once
+            // the object gets GCed. (Simulate a crash by adding a destructor in RealmObject
+            // that tries to access a member on "_accessor".)
+            for (var i = 0; i < 1000; i++)
             {
-                OnManagedCalled++;
+                try
+                {
+                    _ = new ThrowsBeforeInitializer();
+                }
+                catch
+                {
+                }
+
+                GC.Collect();
+            }
+        }
+    }
+
+    [Serializable]
+    public partial class SerializedObject : TestRealmObject
+    {
+        public int IntValue { get; set; }
+
+        public string Name { get; set; }
+
+        public IDictionary<string, int> Dict { get; }
+
+        public IList<string> List { get; }
+
+        public ISet<string> Set { get; }
+    }
+
+    public partial class OnManagedTestClass : TestRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public OnManagedTestClass RelatedObject { get; set; }
+
+        public IList<OnManagedTestClass> RelatedCollection { get; }
+
+        [Ignored]
+        public int OnManagedCalled { get; private set; }
+
+#if TEST_WEAVER
+        protected internal override void OnManaged()
+#else
+        partial void OnManaged()
+#endif
+        {
+            OnManagedCalled++;
+        }
+    }
+
+    public partial class ThrowsBeforeInitializer : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public object WillThrow = new Thrower();
+
+        internal class Thrower
+        {
+            public Thrower()
+            {
+                throw new Exception("Exception thrown before initializer.");
             }
         }
     }

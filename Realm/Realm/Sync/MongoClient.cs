@@ -17,12 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Realms.Helpers;
-using Realms.Native;
 
 namespace Realms.Sync
 {
@@ -120,8 +121,7 @@ namespace Realms.Sync
             {
                 Argument.Ensure(IsNameValid(name), "Collection names must be non-empty and not contain '.' or the null character.", nameof(name));
 
-                var handle = MongoCollectionHandle.Create(Client.User.Handle, Client.ServiceName, Name, name);
-                return new Collection<TDocument>(this, name, handle);
+                return new Collection<TDocument>(this, name);
             }
         }
 
@@ -132,8 +132,6 @@ namespace Realms.Sync
         public class Collection<TDocument>
             where TDocument : class
         {
-            private readonly MongoCollectionHandle _handle;
-
             /// <summary>
             /// Gets the <see cref="Database"/> this collection belongs to.
             /// </summary>
@@ -146,11 +144,10 @@ namespace Realms.Sync
             /// <value>The collection name.</value>
             public string Name { get; }
 
-            internal Collection(Database database, string name, MongoCollectionHandle handle)
+            internal Collection(Database database, string name)
             {
                 Database = database;
                 Name = name;
-                _handle = handle;
             }
 
             /// <summary>
@@ -166,7 +163,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(doc, nameof(doc));
 
-                return await _handle.InsertOne<InsertResult>(doc.ToNativeJson());
+                return await InvokeOperationAsync<InsertResult>("insertOne", "document", doc);
             }
 
             /// <summary>
@@ -183,7 +180,7 @@ namespace Realms.Sync
                 Argument.NotNull(docs, nameof(docs));
                 Argument.Ensure(docs.All(d => d != null), "Collection must not contain null elements.", nameof(docs));
 
-                return await _handle.InsertMany<InsertManyResult>(docs.ToNativeJson());
+                return await InvokeOperationAsync<InsertManyResult>("insertMany", "documents", docs);
             }
 
             /// <summary>
@@ -213,7 +210,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await _handle.UpdateOne<UpdateResult>(filter?.ToNativeJson(), updateDocument?.ToNativeJson(), upsert);
+                return await InvokeOperationAsync<UpdateResult>("updateOne", "query", filter, "update", updateDocument, "upsert", upsert);
             }
 
             /// <summary>
@@ -243,7 +240,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await _handle.UpdateMany<UpdateResult>(filter?.ToNativeJson(), updateDocument.ToNativeJson(), upsert);
+                return await InvokeOperationAsync<UpdateResult>("updateMany", "query", filter, "update", updateDocument, "upsert", upsert);
             }
 
             /// <summary>
@@ -258,7 +255,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
-            public Task<DeleteResult> DeleteOneAsync(object filter = null) => _handle.DeleteOne<DeleteResult>(filter?.ToNativeJson());
+            public Task<DeleteResult> DeleteOneAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteOne", "query", filter);
 
             /// <summary>
             /// Removes one or more documents from a collection. If no documents match the <paramref name="filter"/>, the collection is not modified.
@@ -272,7 +269,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
-            public Task<DeleteResult> DeleteManyAsync(object filter = null) => _handle.DeleteMany<DeleteResult>(filter?.ToNativeJson());
+            public Task<DeleteResult> DeleteManyAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteMany", "query", filter);
 
             /// <summary>
             /// Finds the all documents in the collection up to <paramref name="limit"/>.
@@ -291,7 +288,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
             public Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
-                => _handle.Find<TDocument[]>(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort, limit));
+                => InvokeOperationAsync<TDocument[]>("find", "query", filter, "project", projection, "sort", sort, "limit", limit);
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -309,7 +306,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
             public Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
-                => _handle.FindOne<TDocument>(filter?.ToNativeJson(), FindAndModifyOptions.Find(projection, sort));
+                => InvokeOperationAsync<TDocument>("findOne", "query", filter, "project", projection, "sort", sort);
 
             /// <summary>
             /// Finds the first document in the collection that satisfies the query criteria.
@@ -342,7 +339,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
-                return await _handle.FindOneAndUpdate<TDocument>(filter?.ToNativeJson(), updateDocument.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
+                return await InvokeOperationAsync<TDocument>("findOneAndUpdate", "filter", filter, "update", updateDocument, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
             }
 
             /// <summary>
@@ -380,7 +377,7 @@ namespace Realms.Sync
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 
-                return await _handle.FindOneAndReplace<TDocument>(filter?.ToNativeJson(), replacementDoc.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort, upsert, returnNewDocument));
+                return await InvokeOperationAsync<TDocument>("findOneAndReplace", "filter", filter, "update", replacementDoc, "projection", projection, "sort", sort, "upsert", upsert, "returnNewDocument", returnNewDocument);
             }
 
             /// <summary>
@@ -399,7 +396,7 @@ namespace Realms.Sync
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
             public Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
-                => _handle.FindOneAndDelete<TDocument>(filter?.ToNativeJson(), FindAndModifyOptions.FindAndModify(projection, sort));
+                => InvokeOperationAsync<TDocument>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <typeparamref name="TProjection"/> array.
@@ -413,7 +410,7 @@ namespace Realms.Sync
             /// by executing the aggregation <paramref name="pipeline"/>.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/aggregation/"/>
-            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline) => _handle.Aggregate<TProjection[]>(pipeline.ToNativeJson());
+            public Task<TProjection[]> AggregateAsync<TProjection>(params object[] pipeline) => InvokeOperationAsync<TProjection[]>("aggregate", "pipeline", pipeline);
 
             /// <summary>
             /// Executes an aggregation pipeline on the collection and returns the results as a <see cref="BsonDocument"/> array.
@@ -440,7 +437,27 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
-            public Task<long> CountAsync(object filter = null, long? limit = null) => _handle.Count(filter?.ToNativeJson(), limit);
+            public Task<long> CountAsync(object filter = null, long? limit = null) => InvokeOperationAsync<long>("count", "query", filter, "limit", limit);
+
+            private async Task<T> InvokeOperationAsync<T>(string functionName, params object[] args)
+            {
+                var jsonBuilder = new StringBuilder();
+                jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
+
+                Debug.Assert(args.Length % 2 == 0, "args should be provided as key-value pairs");
+
+                for (var i = 0; i < args.Length; i += 2)
+                {
+                    if (args[i + 1] != null)
+                    {
+                        jsonBuilder.Append($",\"{args[i]}\":{args[i + 1].ToNativeJson()}");
+                    }
+                }
+
+                jsonBuilder.Append("}]");
+
+                return await Database.Client.User.Functions.CallSerializedAsync<T>(functionName, jsonBuilder.ToString(), Database.Client.ServiceName);
+            }
         }
 
         /// <summary>

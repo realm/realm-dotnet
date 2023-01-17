@@ -1,12 +1,15 @@
 name: cleanup-baas
 "on":
   workflow_call:
-    secrets:
-      AtlasProjectId:
-        required: true
+    inputs:
       BaseUrl:
         required: true
+        type: string
       AtlasBaseUrl:
+        required: true
+        type: string
+    secrets:
+      AtlasProjectId:
         required: true
       AtlasPublicKey:
         required: true
@@ -22,15 +25,14 @@ jobs:
     timeout-minutes: 5
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@fac1d6958f03d71de743305ce3ab27594efbe7b7
+    - uses: realm/ci-actions/mdb-realm/cleanup@e7b65d7d587e1abc358968d7ff816cc0163906d2
       with:
         projectId: ${{ secrets.AtlasProjectId}}
-        realmUrl: ${{ secrets.BaseUrl }}
-        atlasUrl: ${{ secrets.AtlasBaseUrl}}
+        realmUrl: ${{ inputs.BaseUrl }}
+        atlasUrl: ${{ inputs.AtlasBaseUrl}}
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
-        differentiator: realm-dotnet

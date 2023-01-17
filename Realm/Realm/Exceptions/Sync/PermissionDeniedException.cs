@@ -39,6 +39,7 @@ namespace Realms.Sync.Exceptions
     /// should only be called with <c>true</c> if and when your app disposes of every
     /// instance of the offending Realm on all threads.
     /// </summary>
+    [Obsolete("This exception is no longer thrown by the server.")]
     public class PermissionDeniedException : SessionException
     {
         private readonly string _originalFilePath;

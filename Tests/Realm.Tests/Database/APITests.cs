@@ -18,9 +18,6 @@
 
 using System;
 using System.Linq;
-#if NETCOREAPP1_1 || WINDOWS_UWP
-using System.Reflection;
-#endif
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -35,7 +32,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RealmSet<Person>))]
         public void RealmCollectionContravariance(Type type)
         {
-            Assert.That(typeof(IRealmCollection<RealmObjectBase>).IsAssignableFrom(type));
+            Assert.That(typeof(IRealmCollection<IRealmObjectBase>).IsAssignableFrom(type));
         }
 
         [Test]

@@ -1,0 +1,137 @@
+name: test-unity
+"on":
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      platform:
+        type: string
+        required: true
+      settings:
+        type: string
+        required: true
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  build-tests:
+    runs-on:
+    - unity
+    - ${{ matrix.platform.os }}
+    name: Build Unity ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJson(inputs.platform) }}
+        settings: ${{ fromJson(inputs.settings) }}
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Cleanup Workspace
+      run: git clean -fdx
+    - name: Fetch Unity Package
+      uses: actions/download-artifact@v3
+      with:
+        name: io.realm.unity-${{ inputs.version }}.tgz
+        path: Realm/Realm.Unity
+    - name: Fetch Unity Tests
+      uses: actions/download-artifact@v3
+      with:
+        name: UnityTests
+        path: Tests/Tests.Unity
+    - name: Build Unity Tests
+      run: |
+        unity-editor -runTests -batchmode -projectPath ${{ github.workspace }}/Tests/Tests.Unity -testPlatform Standalone${{ matrix.platform.testPlatform }} -testSettingsFile ${{ github.workspace }}/Tests/Tests.Unity/.TestConfigs/${{ matrix.settings }}.json -logFile ${{ matrix.platform.os == 'windows' && 'build.log' || '-'}}
+    - name: Store artifacts for UnityTestsRunner.${{ matrix.platform.os }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: UnityTestsRunner.${{ matrix.platform.os }}
+        path: ${{ github.workspace }}/Tests/Tests.Unity/Player_Standalone${{ matrix.platform.testPlatform }}_${{ matrix.settings }}/
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+  run-tests-linux:
+    runs-on: ubuntu-latest
+    name: Unity Linux
+    timeout-minutes: 30
+    needs:
+    - build-tests
+    if: ${{ contains(inputs.platform, 'Linux') }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Download Test Runner
+      uses: actions/download-artifact@v3
+      with:
+        name: UnityTestsRunner.linux
+        path: TestRunner
+    - name: Install xvfb
+      run: sudo apt install -y xvfb libglu1 libxcursor1
+    - name: Run Tests
+      run: |
+        chmod +x ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64
+        xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' ${{ github.workspace }}/TestRunner/PlayerWithTests.x86_64 -logFile - --result=${{ github.workspace }}/TestResults.xml
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      if: always()
+      with:
+        name: Results Unity Linux Mono_Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
+  run-tests-windows:
+    runs-on: windows-latest
+    name: Unity Windows
+    if: ${{ contains(inputs.platform, 'Windows') }}
+    timeout-minutes: 30
+    needs:
+    - build-tests
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Download Test Runner
+      uses: actions/download-artifact@v3
+      with:
+        name: UnityTestsRunner.windows
+        path: TestRunner
+    - name: Run Tests
+      run: |
+        Start-Process ${{ github.workspace }}\TestRunner\PlayerWithTests.exe -Wait -ArgumentList "-logFile","${{ github.workspace }}\test.log","--result=${{ github.workspace }}\TestResults.xml"
+        cat ${{ github.workspace }}\test.log
+      shell: powershell
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      if: always()
+      with:
+        name: Results Unity Windows Mono_Net4
+        path: TestResults.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false

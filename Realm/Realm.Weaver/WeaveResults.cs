@@ -79,38 +79,43 @@ namespace RealmWeaver
 
     internal class WeaveTypeResult
     {
-        public static WeaveTypeResult Success(string type, IEnumerable<WeavePropertyResult> properties)
+        public static WeaveTypeResult Success(string type, IEnumerable<WeavePropertyResult> properties, bool isGenerated = false)
         {
-            return new WeaveTypeResult(type, properties.ToArray());
+            return new WeaveTypeResult(type, properties.ToArray(), isGenerated: isGenerated);
         }
 
-        public static WeaveTypeResult Error(string type)
+        public static WeaveTypeResult Error(string type, bool isGenerated = false)
         {
-            return new WeaveTypeResult(type, success: false);
+            return new WeaveTypeResult(type, success: false, isGenerated: isGenerated);
         }
 
         public string Type { get; }
 
         public bool IsSuccessful { get; }
 
+        public bool IsGenerated { get; }
+
         public WeavePropertyResult[] Properties { get; }
 
-        private WeaveTypeResult(string type, WeavePropertyResult[] properties = null, bool success = true)
+        private WeaveTypeResult(string type, WeavePropertyResult[] properties = null, bool success = true, bool isGenerated = false)
         {
             Properties = properties;
             Type = type;
             IsSuccessful = success;
+            IsGenerated = isGenerated;
         }
 
         public override string ToString()
         {
+            var typeString = IsGenerated ? $"{Type} (Generated)" : Type;
+
             if (!IsSuccessful)
             {
-                return $"An error occurred while weaving '{Type}'. Check the logs for more information.";
+                return $"An error occurred while weaving '{typeString}'. Check the logs for more information.";
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine($"<b>{Type}</b>");
+            sb.AppendLine($"<b>{typeString}</b>");
             foreach (var prop in Properties)
             {
                 sb.AppendLine($"  {prop}");
@@ -122,6 +127,11 @@ namespace RealmWeaver
 
     internal class WeavePropertyResult
     {
+        public static WeavePropertyResult Success(PropertyDefinition property)
+        {
+            return new WeavePropertyResult(property, null, false, false);
+        }
+
         public static WeavePropertyResult Success(PropertyDefinition property, FieldReference field, bool isPrimaryKey, bool isIndexed)
         {
             return new WeavePropertyResult(property, field, isPrimaryKey, isIndexed);

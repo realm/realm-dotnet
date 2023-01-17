@@ -19,10 +19,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Sync.ErrorHandling;
 
 namespace Realms.Tests.Sync
 {
@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            var path = Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString());
+            var path = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), Guid.NewGuid().ToString());
             var config = GetFakeConfig(optionalPath: path);
 
             Realm.DeleteRealm(config);
@@ -78,6 +78,14 @@ namespace Realms.Tests.Sync
 
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && TestHelpers.IsUnity)
+            {
+                // Unity on Windows has a peculiar behavior where Path.Combine will generate paths with
+                // forward slashes rather than backslashes.
+                path = path.Replace('/', '\\');
+            }
+
             Assert.That(config.DatabasePath, Is.EqualTo(path));
         }
 
@@ -87,14 +95,16 @@ namespace Realms.Tests.Sync
             WeakReference weakConfigRef = null;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
-                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
-                var session = GetSession(realm);
+                var config = await GetIntegrationConfigAsync();
+                weakConfigRef = new WeakReference(config);
+                using var realm = await Realm.GetInstanceAsync(config);
+                var session = realm.SyncSession;
                 Assert.That(weakConfigRef.Target, Is.Not.Null);
             });
+
             TearDown();
 
-            for (var i = 0; i < 10; i++)
+            for (var i = 0; i < 50; i++)
             {
                 GC.Collect();
                 if (!weakConfigRef.IsAlive)
@@ -106,13 +116,6 @@ namespace Realms.Tests.Sync
             }
 
             Assert.That(weakConfigRef.Target, Is.Null);
-        }
-
-        [Test]
-        public void FlexibleSyncConfiguration_Throws_When_Assigned_DiscardLocalResetHandler()
-        {
-            var conf = GetFakeFLXConfig();
-            Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

@@ -75,6 +75,7 @@ namespace Realms.Sync
             public static extern void call_function(SyncUserHandle handle, AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string function_name, IntPtr function_name_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string args, IntPtr args_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string service_name, IntPtr service_name_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_link_credentials", CallingConvention = CallingConvention.Cdecl)]
@@ -234,14 +235,14 @@ namespace Realms.Sync
             });
         }
 
-        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args)
+        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args, string service)
         {
             var tcs = new TaskCompletionSource<string>();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
             {
-                NativeMethods.call_function(this, app, name, (IntPtr)name.Length, args, (IntPtr)args.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                NativeMethods.call_function(this, app, name, name.IntPtrLength(), args, args.IntPtrLength(), service, service.IntPtrLength(), GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
 
                 return await tcs.Task;

@@ -18,29 +18,24 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
+using static Realms.Tests.TestHelpers;
 
 namespace Realms.Tests.Sync
 {
     [Preserve(AllMembers = true)]
     public abstract class SyncTestBase : RealmTest
     {
-        private readonly ConcurrentQueue<Session> _sessions = new();
-        private readonly ConcurrentQueue<App> _apps = new();
+        private readonly ConcurrentQueue<StrongBox<Session>> _sessions = new();
+        private readonly ConcurrentQueue<StrongBox<App>> _apps = new();
+        private readonly ConcurrentQueue<StrongBox<string>> _clientResetAppsToRestore = new();
 
-        private App _defaultApp;
-
-        protected App DefaultApp
-        {
-            get
-            {
-                return _defaultApp ?? CreateApp();
-            }
-        }
+        protected App DefaultApp => CreateApp();
 
         protected App CreateApp(AppConfiguration config = null)
         {
@@ -48,11 +43,6 @@ namespace Realms.Tests.Sync
 
             var app = App.Create(config);
             _apps.Enqueue(app);
-
-            if (_defaultApp == null)
-            {
-                _defaultApp = app;
-            }
 
             return app;
         }
@@ -65,7 +55,7 @@ namespace Realms.Tests.Sync
 
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
-            _defaultApp = null;
+            _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -101,15 +91,12 @@ namespace Realms.Tests.Sync
             await WaitForDownloadAsync(realm);
         }
 
-        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
-            where T : RealmObject
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2, string message = null)
+            where T : IRealmObject
         {
-            await WaitForUploadAsync(obj.Realm);
-            await WaitForDownloadAsync(realm2);
-
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
+            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message);
         }
 
         protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
@@ -117,14 +104,14 @@ namespace Realms.Tests.Sync
             app ??= DefaultApp;
             username ??= SyncTestHelpers.GetVerifiedUsername();
             password ??= SyncTestHelpers.DefaultPassword;
-            await app.EmailPasswordAuth.RegisterUserAsync(username, password);
+            await app.EmailPasswordAuth.RegisterUserAsync(username, password).Timeout(10_000, detail: "Failed to register user");
             var credentials = Credentials.EmailPassword(username, password);
 
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    return await app.LogInAsync(credentials);
+                    return await app.LogInAsync(credentials).Timeout(10_000, "Failed to login user");
                 }
                 catch (AppException ex) when (ex.Message.Contains("confirmation required"))
                 {
@@ -144,18 +131,18 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
-        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
+        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
-            return await GetRealmAsync(config);
+            return await GetRealmAsync(config, timeout);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
 
-            var user = await GetUserAsync(app);
+            user ??= await GetUserAsync(app);
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -164,6 +151,12 @@ namespace Realms.Tests.Sync
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
             var user = await GetUserAsync(app);
+            return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
+        }
+
+        protected static PartitionSyncConfiguration GetIntegrationConfig(User user, string partition = null, string optionalPath = null)
+        {
+            partition ??= Guid.NewGuid().ToString();
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
@@ -187,6 +180,11 @@ namespace Realms.Tests.Sync
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
             var user = await GetUserAsync(app);
+            return GetFLXIntegrationConfig(user, optionalPath);
+        }
+
+        protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)
+        {
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
@@ -194,6 +192,23 @@ namespace Realms.Tests.Sync
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
+        }
+
+        protected async Task DisableClientResetRecoveryOnServer(string appConfigType)
+        {
+            await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, false);
+            _clientResetAppsToRestore.Enqueue(appConfigType);
+        }
+
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, int timeout = 10000, CancellationToken cancellationToken = default)
+        {
+            var realm = await GetRealmAsync(config, timeout, cancellationToken);
+            if (waitForSync)
+            {
+                await WaitForUploadAsync(realm);
+            }
+
+            return realm;
         }
 
         private static T UpdateConfig<T>(T config)
@@ -205,16 +220,38 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        public PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        public FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
+        }
+
+        protected async Task TriggerClientReset(Realm realm, bool restartSession = true)
+        {
+            if (realm.Config is not SyncConfigurationBase syncConfig)
+            {
+                throw new Exception("This should only be invoked for sync realms.");
+            }
+
+            var session = GetSession(realm);
+
+            if (restartSession)
+            {
+                session.Stop();
+            }
+
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig).Timeout(10_000, detail: "Trigger client reset");
+
+            if (restartSession)
+            {
+                session.Start();
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "configuration")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-net-framework
@@ -11,9 +11,8 @@ jobs:
     name: .NET Framework
     timeout-minutes: 45
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(buildTests("Tests/Realm.Tests", TargetFramework="net461"))
+      - #@ template.replace(prepareTest())
+      - #@ template.replace(buildTests("Tests/Realm.Tests", TargetFramework="net461", RealmTestsStandaloneExe="true"))
       - name: Run the tests
         run: #@ "./Tests/Realm.Tests/bin/" + configuration + "/net461/Realm.Tests.exe --result=TestResults.Windows.xml --labels=After" + baasTestArgs("net-framework")
       - #@ publishTestsResults("TestResults.Windows.xml", ".NET Framework")

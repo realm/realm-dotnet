@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Android.App;
 using Android.OS;
@@ -43,6 +41,8 @@ namespace Realms.Tests.Android
 
             Forms.Init(this, savedInstanceState);
 
+            TestHelpers.TestHttpHandlerFactory = () => new Xamarin.Android.Net.AndroidClientHandler();
+
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions
@@ -50,8 +50,7 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            var arguments = TestHelpers.SplitArguments(Intent.GetStringExtra("args") ?? string.Empty);
-            arguments = SyncTestHelpers.ExtractBaasSettings(arguments);
+            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent.GetStringArrayExtra("args") ?? Array.Empty<string>());
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {

@@ -476,6 +476,7 @@ namespace RealmWeaver
             var expectedWarnings = new[]
             {
                 "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
+                "Sensor.FirstMeasurement is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.",
                 "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
                 "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
@@ -499,7 +500,7 @@ namespace RealmWeaver
                 "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
                 "NotSupportedProperties.DateTimeProperty is a DateTime which is not supported - use DateTimeOffset instead.",
                 "NotSupportedProperties.NullableDateTimeProperty is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
+                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.",
                 "NotSupportedProperties.People is declared as List<Person> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<Person>, otherwise annotate the property with the [Ignored] attribute.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
                 "InvalidBacklinkRelationships.ParentRelationship has [Backlink] applied, but is not IQueryable.",
@@ -507,21 +508,30 @@ namespace RealmWeaver
                 "InvalidBacklinkRelationships.WritableBacklinksProperty has a setter but also has [Backlink] applied, which only supports getters.",
                 "InvalidBacklinkRelationships.BacklinkNotAppliedProperty is IQueryable, but doesn't have [Backlink] applied.",
                 "The property 'Person.PhoneNumbers' does not constitute a link to 'InvalidBacklinkRelationships' as described by 'InvalidBacklinkRelationships.NoSuchRelationshipProperty'.",
-                "RequiredProperties.CharProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Char.",
-                "RequiredProperties.ByteProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Byte.",
-                "RequiredProperties.Int16Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int16.",
-                "RequiredProperties.Int32Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int32.",
-                "RequiredProperties.Int64Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int64.",
-                "RequiredProperties.SingleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Single.",
-                "RequiredProperties.DoubleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Double.",
-                "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Boolean.",
-                "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.DateTimeOffset.",
-                "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on AssemblyToProcess.Person.",
-                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
+                "RequiredProperties.CharProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Char.",
+                "RequiredProperties.ByteProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Byte.",
+                "RequiredProperties.Int16Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int16.",
+                "RequiredProperties.Int32Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int32.",
+                "RequiredProperties.Int64Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int64.",
+                "RequiredProperties.SingleProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Single.",
+                "RequiredProperties.DoubleProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Double.",
+                "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Boolean.",
+                "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.DateTimeOffset.",
+                "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on string or byte[] properties, not on AssemblyToProcess.Person.",
+                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
                 "RealmSetWithSetter.People has a setter but its type is a ISet which only supports getters.",
                 "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
                 "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm.",
-                "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics."
+                "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
+                "Measurement.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
+                "Coordinates.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
+                "Measurement.ListOfAsymmetrics is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Measurement.SetOfAsymmetrics is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Sensor.Measurements has [Backlink] applied which is not allowed on AsymmetricObject."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
@@ -659,6 +669,47 @@ namespace RealmWeaver
 
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
         }
+
+        #region Source Generator Weaver tests
+
+        [Test]
+        public void SourceGeneratorWeaverShouldWeavePropertiesInInterface()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Name = "Maria";
+            _ = o.Name;
+
+            o.Id = 20;
+            _ = o.Id;
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "Set Name",
+                "Get Name",
+                "Set Id",
+                "Get Id"
+            }));
+        }
+
+        [Test]
+        public void SourceGeneratorWeaverShouldIgnorePropertiesNotInInterface()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.SourceGeneratedPerson"));
+
+            // Act
+            o.Nickname = "Julius";
+            _ = o.Nickname;
+
+            // Assert
+            Assert.That(o.LogList, Is.Empty);
+        }
+
+        #endregion
 
         private static void CopyToRealm(Type objectType, dynamic instance)
         {

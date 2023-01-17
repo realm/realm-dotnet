@@ -111,7 +111,7 @@ namespace Realms
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
             }
@@ -155,7 +155,7 @@ namespace Realms
             return true;
         }
 
-        public void RemoveAt(int index)
+        public override void RemoveAt(int index)
         {
             if (index < 0)
             {

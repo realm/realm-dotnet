@@ -269,6 +269,10 @@ namespace Realms.Sync
 
                 return await tcs.Task;
             }
+            catch (Exception ex) when (ex.Message == "Active SubscriptionSet without a SubscriptionStore")
+            {
+                throw new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed.");
+            }
             finally
             {
                 tcsHandle.Free();
@@ -321,13 +325,17 @@ namespace Realms.Sync
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target;
 
-            if (message.Type == RealmValueType.Null)
+            switch (message.Type)
             {
-                tcs.TrySetResult(state);
-            }
-            else
-            {
-                tcs.TrySetException(new SubscriptionException(message.AsString()));
+                case RealmValueType.Null:
+                    tcs.TrySetResult(state);
+                    break;
+                case RealmValueType.Int when message.AsInt() == -1:
+                    tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
+                    break;
+                default:
+                    tcs.TrySetException(new SubscriptionException(message.AsString()));
+                    break;
             }
         }
     }

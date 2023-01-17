@@ -352,7 +352,7 @@ static inline realm_value_t to_capi(Obj obj, SharedRealm realm)
     {
         // These shenanigans are only necessary because realm->schema() doesn't automatically update.
         // TODO: remove this code when https://github.com/realm/realm-core/issues/4584 is resolved
-        CSharpBindingContext *cs_binding_context = dynamic_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+        CSharpBindingContext* cs_binding_context = dynamic_cast<CSharpBindingContext*>(realm->m_binding_context.get());
         schema = cs_binding_context->m_realm_schema.find(table_key);
         if (schema == cs_binding_context->m_realm_schema.end())
         {
@@ -524,13 +524,18 @@ public:
         return std::string(m_data.get(), m_size);
     }
 
-    operator std::string() const noexcept
+    operator std::string_view() const noexcept
     {
-        return std::string(m_data.get(), m_size);
+        return std::string_view(m_data.get(), m_size);
     }
 
-    const char* data() const { return m_data.get();  }
-    size_t size() const { return m_size;  }
+    operator std::string() const noexcept
+    {
+        return to_string();
+    }
+
+    const char* data() const { return m_data.get(); }
+    size_t size() const { return m_size; }
 
     bool error;
 private:
@@ -538,12 +543,12 @@ private:
     std::size_t m_size;
 };
 
-size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t* csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words
 
 extern std::atomic<bool> s_can_call_managed;
 
 template <typename TReturn, typename ...TArgs>
-inline auto wrap_managed_callback(TReturn (*func)(TArgs... args))
+inline auto wrap_managed_callback(TReturn(*func)(TArgs... args))
 {
     return [func](TArgs... args) -> TReturn {
         if constexpr (std::is_same_v<TReturn, void>) {

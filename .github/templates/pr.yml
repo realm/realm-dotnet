@@ -1,6 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "actionDownloadArtifact", "uploadPackagesToSleet", "cleanupWorkspace")
-#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "buildUnity")
+#@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "runWovenClassesTests", "runSourceGenerationTests", "buildUnity", "testUnity")
 ---
 name: PR Build
 "on":
@@ -18,6 +17,7 @@ name: PR Build
     - .github/workflows/*.yml
     - '!.github/workflows/main.yml'
     - '!.github/workflows/publish-*.yml'
+    - .github/actions/**
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
@@ -34,12 +34,15 @@ jobs:
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
   _: #@ template.replace(buildUnity())
+  _: #@ template.replace(testUnity('["Mono-Net4"]', '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'))
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
   _: #@ template.replace(runTests("UWP Managed", runSyncTests = False, additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runNetCoreTests("[\"net6.0\"]"))
+  _: #@ template.replace(runNetCoreTests('["net6.0"]'))
   _: #@ template.replace(runTests("macOS", runSyncTests = False))
   _: #@ template.replace(runTests("iOS", runSyncTests = False))
-  _: #@ template.replace(runTests("Xamarin.Android", runSyncTests = False, additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  _: #@ template.replace(runTests("Android", runSyncTests = False, additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
+  _: #@ template.replace(runWovenClassesTests())
+  _: #@ template.replace(runSourceGenerationTests())
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test

@@ -30,15 +30,11 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
-        public const string UnityPlatform = "Realm Unity";
-
-        public const string DotNetPlatform = "Realm .NET";
-
-        public static readonly string Platform;
+        public static readonly string FrameworkName;
 
         public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
 
-        private static readonly List<string> _potentialStorageFolders = new List<string>
+        private static readonly List<string> _potentialStorageFolders = new()
         {
             Environment.GetFolderPath(Environment.SpecialFolder.Personal),
             Path.Combine(Directory.GetCurrentDirectory(), "Documents")
@@ -59,15 +55,19 @@ namespace Realms
                 }
             }
 
-            throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
+            return null;
         });
 
         private static string _customStorageFolder;
 
-        public static string DefaultStorageFolder
+        public static string GetDefaultStorageFolder(string errorMessage) =>
+            _customStorageFolder ??
+            _defaultStorageFolder.Value ??
+            throw new InvalidOperationException(errorMessage);
+
+        public static void SetDefaultStorageFolder(string value)
         {
-            get => _customStorageFolder ?? _defaultStorageFolder.Value;
-            set => _customStorageFolder = value;
+            _customStorageFolder = value;
         }
 
         public static void AddPotentialStorageFolder(string folder)
@@ -84,7 +84,7 @@ namespace Realms
 
         static InteropConfig()
         {
-            Platform = TryInitializeUnity() ? "Realm Unity" : "Realm .NET";
+            FrameworkName = TryInitializeUnity() ? "Unity" : ".NET";
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {

@@ -36,6 +36,8 @@ namespace Realms.Tests.iOS
         {
             Forms.Init();
 
+            TestHelpers.IsAOTTarget = true;
+
             var nunit = new App();
             nunit.AddTestAssembly(typeof(TestHelpers).Assembly);
             var options = new TestOptions

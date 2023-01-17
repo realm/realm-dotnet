@@ -72,7 +72,7 @@
       * None
 
       ### Compatibility
-      * Realm Studio: 11.0.0 or later.
+      * Realm Studio: 12.0.0 or later.
 
       ### Internal
       * Using Core x.y.z.
@@ -105,6 +105,7 @@ jobs:
     - #@ template.replace(downloadAllArtifacts())
     - #@ template.replace(readVersionFromPackage())
     - #@ template.replace(uploadDocsToS3())
+    - #@ template.replace(uploadToNuget("Realm.SourceGenerator"))
     - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm("io.realm.unity"))

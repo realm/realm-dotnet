@@ -47,6 +47,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_parent", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_parent(ObjectHandle handle, out TableKey tableKey, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
@@ -185,12 +188,25 @@ namespace Realms
                     case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
-                            throw new RealmException("Can't link to an embedded object that is already managed.");
+                            throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        }
+
+                        if (GetProperty(propertyName, metadata).Type.IsRealmValue())
+                        {
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
+
+                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
+                    // a RealmValue property on the object.
+                    // This is because:
+                    // * For plain asymmetric objects (not contained within a RealmValue), the weaver
+                    //   raises a compilation error since asymmetric objects can't be linked to.
+                    case IAsymmetricObject:
+                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
 
@@ -284,6 +300,16 @@ namespace Realms
             return new ObjectHandle(Root, objPtr);
         }
 
+        public ObjectHandle GetParent(out TableKey tableKey)
+        {
+            EnsureIsOpen();
+
+            var parentObjPtr = NativeMethods.get_parent(this, out tableKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root, parentObjPtr);
+        }
+
         public ResultsHandle GetBacklinks(string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
@@ -346,6 +372,16 @@ namespace Realms
         private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
         {
             if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            {
+                return result;
+            }
+
+            throw new MissingMemberException(metadata.Schema.Name, propertyName);
+        }
+
+        private static Property GetProperty(string propertyName, Metadata metadata)
+        {
+            if (metadata.Schema.TryFindProperty(propertyName, out var result))
             {
                 return result;
             }

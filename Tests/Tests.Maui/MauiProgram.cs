@@ -24,12 +24,7 @@ public static class MauiProgram
 
     public static MauiApp CreateMauiApp(params string[] args)
     {
-        if (args.Length > 0)
-        {
-            // First argument is the assembly name and we don't need it
-            args = args.Skip(1).ToArray();
-        }
-        else
+        if (args.Length == 0)
         {
             args = new[] { "--labels=After" };
         }

@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-ios
@@ -9,10 +9,9 @@ jobs:
   test-xamarin:
     runs-on: macos-latest
     name: Xamarin.iOS
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ template.replace(buildTests("Tests/Tests.iOS", Platform="iPhoneSimulator"))
       - name: Run the tests
         uses: #@ actionRuniOSSimulator
@@ -31,6 +30,11 @@ jobs:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
       - #@ setupDotnet()
+      - name: Set XCode Version
+        shell: bash
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_14.1.app"
+          echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.1.app" >> $GITHUB_ENV
       - name: Setup workloads
         run: |
           dotnet workload install maui

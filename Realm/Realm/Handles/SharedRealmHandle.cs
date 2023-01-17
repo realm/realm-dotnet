@@ -68,7 +68,7 @@ namespace Realms
             public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex);
+            public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, [MarshalAs(UnmanagedType.U1)] bool invoke_async, NativeException ex);
 
             // migrationSchema is a special schema that is used only in the context of a migration block.
             // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
@@ -195,10 +195,6 @@ namespace Realms
                 HandleTaskCompletionCallback handle_task_completion,
                 InitializationCallback initialization_callback);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_changed", CallingConvention = CallingConvention.Cdecl)]
-            [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool has_changed(SharedRealmHandle sharedRealm);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_is_frozen", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool get_is_frozen(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -223,6 +219,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_type", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool remove_type(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)] string typeName, IntPtr typeLength, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_remove_all", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool remove_all(SharedRealmHandle sharedRealm, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_sync_session", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_session(SharedRealmHandle realm, out NativeException ex);
 
@@ -231,6 +230,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_subscriptions_version", CallingConvention = CallingConvention.Cdecl)]
             public static extern Int64 get_subscriptions_version(SharedRealmHandle realm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh_async", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
 
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
@@ -649,11 +651,6 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        public bool HasChanged()
-        {
-            return NativeMethods.has_changed(this);
-        }
-
         public SharedRealmHandle Freeze()
         {
             var result = NativeMethods.freeze(this, out var nativeException);
@@ -692,6 +689,13 @@ namespace Realms
             return result;
         }
 
+        public bool RemoveAll()
+        {
+            var result = NativeMethods.remove_all(this, out var nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
         public ResultsHandle CreateResults(TableKey tableKey)
         {
             var result = NativeMethods.create_results(this, tableKey.Value, out var nativeException);
@@ -718,6 +722,28 @@ namespace Realms
             var result = NativeMethods.get_subscriptions_version(this, out var ex);
             ex.ThrowIfNecessary();
             return result;
+        }
+
+        public async Task<bool> RefreshAsync()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var tcsHandle = GCHandle.Alloc(tcs);
+
+            try
+            {
+                var didRegister = NativeMethods.refresh_async(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                if (!didRegister)
+                {
+                    return false;
+                }
+
+                await tcs.Task;
+                return true;
+            }
+            finally
+            {
+                tcsHandle.Free();
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
@@ -811,13 +837,21 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]
-        private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, NativeException ex)
+        private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, bool invoke_async, NativeException ex)
         {
-            // The task awaiting on this tcs should only continue once the native method Realm::run_writes has finished to run.
-            SynchronizationContext.Current.Post(_ =>
+            if (invoke_async)
             {
-                HandleTaskCompletion(tcs_ptr, () => (object)true, ex);
-            }, null);
+                // There are situations where we want to let the native function exit before dispatching the continuation.
+                // One example is Realm::run_writes which needs to complete before we can start writing to the Realm.
+                SynchronizationContext.Current.Post(_ =>
+                {
+                    HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+                }, null);
+            }
+            else
+            {
+                HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+            }
         }
 
         private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
@@ -899,7 +933,7 @@ namespace Realms
                         name = @object.Name,
                         properties_start = start,
                         properties_end = properties.Count,
-                        is_embedded = @object.IsEmbedded,
+                        table_type = @object.BaseType,
                     };
                 }).ToArray();
                 Properties = properties.ToArray();

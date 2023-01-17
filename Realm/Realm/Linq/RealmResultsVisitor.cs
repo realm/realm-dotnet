@@ -315,7 +315,12 @@ namespace Realms
                 }
                 else if (IsStringContainsWithComparison(node.Method, out var index))
                 {
-                    member = node.Arguments[0] as MemberExpression;
+                    if (index > 0)
+                    {
+                        // If index is > 0, we're an extension method where the 0th argument is the property name
+                        member = node.Arguments[0] as MemberExpression;
+                    }
+
                     stringArgumentIndex = index;
                     queryMethod = (q, r, p, v) => q.StringContains(r, p, v, GetComparisonCaseSensitive(node));
                 }
@@ -629,7 +634,7 @@ namespace Realms
             try
             {
                 var val = rh.GetValueAtIndex(index, _realm);
-                return Expression.Constant(val.AsRealmObject());
+                return Expression.Constant(val.AsIRealmObject());
             }
             catch (ArgumentOutOfRangeException ex)
             {

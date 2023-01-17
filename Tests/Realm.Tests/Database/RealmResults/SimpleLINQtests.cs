@@ -686,16 +686,36 @@ namespace Realms.Tests.Database
             MakeThreePatricks();
 
             // case sensitive
-            var contains_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri")).Count();
-            Assert.That(contains_atri, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri")).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri")).ToArray().Length, Is.EqualTo(2));
 
             // case sensitive
-            var contains_ordinal_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).Count();
-            Assert.That(contains_ordinal_atri, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
 
             // ignore case
-            var contains_ignorecase_atri = _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count();
-            Assert.That(contains_ignorecase_atri, Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void StringSearch_Contains_NonLiteral_CaseSensitivityTests()
+        {
+            MakeThreePatricks();
+
+            var searchString = "atri";
+
+            // case sensitive
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString)).ToArray().Length, Is.EqualTo(2));
+
+            // case sensitive
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
+
+            // ignore case
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
         }
 
         [Test]
@@ -713,8 +733,6 @@ namespace Realms.Tests.Database
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
-#if !WINDOWS_UWP && !NETCOREAPP1_1
-
             Assert.That(() =>
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
@@ -724,8 +742,6 @@ namespace Realms.Tests.Database
             {
                 _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
-
-#endif
 
             Assert.That(() =>
             {

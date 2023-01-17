@@ -28,6 +28,13 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
     public override void Execute()
     {
         var targetFramework = ModuleDefinition.Assembly.CustomAttributes.SingleOrDefault(a => a.AttributeType.FullName == typeof(TargetFrameworkAttribute).FullName);
+        if (targetFramework == null)
+        {
+            WriteError($"Failed to determine the target framework of {ModuleDefinition.Assembly.Name}. This is likely because GenerateTargetFrameworkAttribute is " +
+                $"set to false in your MSBuild project. Either set it to true or manually add a [TargetFramework(...)] attribute to your assembly.");
+            return;
+        }
+
         var frameworkName = new FrameworkName((string)targetFramework.ConstructorArguments.Single().Value);
 
         var weaver = new Weaver(ModuleDefinition, this, frameworkName.Identifier);

@@ -17,7 +17,7 @@ it either in the Editor or as a standalone player.
 
 ## Local development
 
-To facilitate local development setups, the following files are ignored, but it might be a good idea to create them manually and add them to your local clone (both should be in the `Tests` folder, adjacent to this Readme):
+To facilitate local development setups, the following file is ignored, but it might be a good idea to create it manually and add it to your local clone in the `Tests` folder, adjacent to this Readme:
 - `App.Local.config`: this is a file that holds the config for your local Baas instance. Update `*your-local-ip*` with the local IP address of your docker image (note that `localhost` will not work):
   ```xml
   <?xml version="1.0" encoding="utf-8" ?>
@@ -25,16 +25,6 @@ To facilitate local development setups, the following files are ignored, but it 
     <add key="BaasUrl" value="http://*your-local-ip*:9090" />
   </appSettings>
   ```
-- `LocalDev.props`: this file sets `AdditionalFrameworks` to a specific value, which greatly speeds up msbuild compiles for the TestExplorer as it excludes all platforms except for the ones specified:
-  ```xml
-  <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-      <AdditionalFrameworks Condition="'$(AdditionalFrameworks)' == ''">net461</LocalDev>
-    </PropertyGroup>
-  </Project>
-  ```
-
-After adding them, restart VS (if running) to have it pick up the changes.
 
 ## Sync Tests
 

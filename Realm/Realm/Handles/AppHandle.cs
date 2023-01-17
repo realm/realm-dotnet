@@ -45,17 +45,21 @@ namespace Realms.Sync
             public delegate void VoidTaskCallback(IntPtr tcs_ptr, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void BsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
+            public delegate void StringCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void ApiKeysCallback(IntPtr tcs_ptr, /* UserApiKey[] */ IntPtr api_keys, IntPtr api_keys_len, AppError error);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_initialize", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr initialize(
-                [MarshalAs(UnmanagedType.LPWStr)] string platform, IntPtr platform_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string framework, IntPtr framework_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string framework_version, IntPtr framework_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
-                UserCallback user_callback, VoidTaskCallback void_callback, BsonCallback bson_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
+                [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string cpu_arch, IntPtr cpu_arch_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string device_name, IntPtr device_name_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string device_version, IntPtr device_version_len,
+                UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[] encryptionKey, out NativeException ex);
@@ -154,13 +158,13 @@ namespace Realms.Sync
             NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
             NativeMethods.UserCallback userLogin = HandleUserCallback;
             NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
-            NativeMethods.BsonCallback bsonCallback = HandleBsonCallback;
+            NativeMethods.StringCallback stringCallback = HandleStringCallback;
             NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
 
             GCHandle.Alloc(logMessage);
             GCHandle.Alloc(userLogin);
             GCHandle.Alloc(taskCallback);
-            GCHandle.Alloc(bsonCallback);
+            GCHandle.Alloc(stringCallback);
             GCHandle.Alloc(apiKeysCallback);
 
             //// This is a hack due to a mixup of what OS uses as platform/SDK and what is displayed in the UI.
@@ -181,17 +185,34 @@ namespace Realms.Sync
             ////     platformVersion = Environment.OSVersion.VersionString;
             //// }
 
-            var platform = InteropConfig.Platform;
-            var platformVersion = RuntimeInformation.OSDescription;
+            var frameworkName = InteropConfig.FrameworkName;
+            var frameworkVersion = Environment.Version.ToString();
 
             // TODO: https://github.com/realm/realm-dotnet/issues/2218 this doesn't handle prerelease versions.
             var sdkVersion = InteropConfig.SDKVersion.ToString(3);
 
+            var platformVersion = Environment.OSVersion.Version.ToString();
+
+            if (!string.IsNullOrEmpty(Environment.OSVersion.ServicePack))
+            {
+                platformVersion += $" {Environment.OSVersion.ServicePack}";
+            }
+
+            var cpuArch = RuntimeInformation.ProcessArchitecture.ToString();
+
+            // TODO: try and infer device information as part of RNET-849
+            var deviceName = "unknown";
+            var deviceVersion = "unknown";
+
             NativeMethods.initialize(
-                platform, platform.IntPtrLength(),
-                platformVersion, platformVersion.IntPtrLength(),
+                frameworkName, frameworkName.IntPtrLength(),
+                frameworkVersion, frameworkVersion.IntPtrLength(),
                 sdkVersion, sdkVersion.IntPtrLength(),
-                userLogin, taskCallback, bsonCallback, logMessage, apiKeysCallback);
+                platformVersion, platformVersion.IntPtrLength(),
+                cpuArch, cpuArch.IntPtrLength(),
+                deviceName, deviceName.IntPtrLength(),
+                deviceVersion, deviceVersion.IntPtrLength(),
+                userLogin, taskCallback, stringCallback, logMessage, apiKeysCallback);
         }
 
         internal AppHandle(IntPtr handle) : base(handle)
@@ -398,8 +419,8 @@ namespace Realms.Sync
             }
         }
 
-        [MonoPInvokeCallback(typeof(NativeMethods.BsonCallback))]
-        private static void HandleBsonCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
+        [MonoPInvokeCallback(typeof(NativeMethods.StringCallback))]
+        private static void HandleStringCallback(IntPtr tcs_ptr, PrimitiveValue response, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);
             var tcs = (TaskCompletionSource<string>)tcsHandle.Target;

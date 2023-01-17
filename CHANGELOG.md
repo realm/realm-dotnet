@@ -1,16 +1,243 @@
 ## vNext (TBD)
 
+**File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
+
+### Breaking Changes
+* `User.GetPushClient` has been deprecated as it will be disabled soon on the server. (Issue [#3073](https://github.com/realm/realm-dotnet/issues/3073))
+
 ### Enhancements
-* None
+* The realm file will be shrunk if the larger file size is no longer needed. (Core 13.0.0)
+* Most of the file growth caused by version pinning is eliminated. (Core 13.0.0)
+* Improve performance of acquiring read locks when a read lock for that version is already held. This speeds up many operations related to change notifications, and particularly refreshing a Realm which has change notifiers registered. (Core 13.2.0)
+* Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
+* Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
+* Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 
 ### Fixed
-* None
+* Set<Mixed> consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
+* Fixed wrong assertion on query error that could result in a crash. (Core 13.1.0)
+* Fixed an issue preventing opening an encrypted file on a device with a page size bigger than the one on which the file was produced. (Core 13.1.1)
+* Fixed possible segfault in sync client where async callback was using object after being deallocated (Core 13.2.0)
+* Fixed crash when using client reset with recovery and flexible sync with a single subscription (Core 13.2.0)
+* Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
+* Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.2.0.
+* Updated `DynamicRealmObjectHelper.TryGetPrimaryKeyValue` not to use reflection. (Issue [#3166](https://github.com/realm/realm-dotnet/issues/3166))
+* Fixed UWP tests workflow when running a debug build. (Issue [#3030](https://github.com/realm/realm-dotnet/issues/3030))
+
+## 10.19.0 (2023-01-06)
+
+### Enhancements
+* Removed redundant serialization/deserialization of arguments in CallAsync. (Issue [#3079](https://github.com/realm/realm-dotnet/issues/3079))
+* Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
+* Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
+* Removed backing fields of generated classes' properties which should provide minor improvements to memory used by Realm Objects (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2994))
+* Added two extension methods on `IDictionary` to get an `IQueryable` collection wrapping the dictionary's values:
+  * `dictionary.AsRealmQueryable()` allows you to get a `IQueryable<T>` from `IDictionary<string, T>` that can be then treated as a regular queryable collection and filtered/ordered with LINQ or `Filter(string)`.
+  * `dictionary.Filter(query, arguments)` will filter the list and return a filtered collection of dictionary's values. It is roughly equivalent to `dictionary.AsRealmQueryable().Filter(query, arguments)`.
+
+  The resulting queryable collection will behave identically to the results obtained by calling `realm.All<T>()`, i.e. it will emit notifications when it changes and automatically update itself. (Issue [#2647](https://github.com/realm/realm-dotnet/issues/2647))
+* Improve performance of client reset with automatic recovery and converting top-level tables into embedded tables. (Core upgrade)
+* Flexible sync will now wait for the server to have sent all pending history after a bootstrap before marking a subscription as Complete. (Core upgrade)
+* Slightly improve performance of `Realm.RemoveAll()` which removes all objects from an open Realm database. (Issue [#2233](https://github.com/realm/realm-dotnet/issues/2194))
+* Improve error messages when not setting a BaseFilePath for realm or app configuration. (Issue [2863](https://github.com/realm/realm-dotnet/issues/2863))
+* Added `IList` implementation to all Realm collections to allow for UWP ListView databinding. (Issue [#1759](https://github.com/realm/realm-dotnet/issues/1759))
+
+### Fixed
+* Fixed issue where Realm parameters' initialization would get run twice, resulting in unexpected behavior.
+* Prevented `IEmbeddedObject`s and `IAsymmetricObject`s from being used as `RealmValue`s when added to a realm, and displaying more meaningful error messages.
+* Fix a use-after-free if the last external reference to an encrypted Realm was closed between when a client reset error was received and when the download of the new Realm began. (Core upgrade)
+* Fixed an assertion failure during client reset with recovery when recovering a list operation on an embedded object that has a link column in the path prefix to the list from the top level object. (Core upgrade)
+* Opening an unencrypted file with an encryption key would sometimes report a misleading error message that indicated that the problem was something other than a decryption failure. (Core upgrade)
+* Fix a rare deadlock which could occur when closing a synchronized Realm immediately after committing a write transaction when the sync worker thread has also just finished processing a changeset from the server. (Core upgrade)
+* Fix a race condition which could result in "operation cancelled" errors being delivered to async open callbacks rather than the actual sync error which caused things to fail. (Core upgrade)
+* Bootstraps will not be applied in a single write transaction - they will be applied 1MB of changesets at a time, or as configured by the SDK. (Core upgrade)
+* Fix database corruption and encryption issues on apple platforms. (Core upgrade)
+* Added fully qualified names for source generated files, to avoid naming collisions. (Issue [#3099](https://github.com/realm/realm-dotnet/issues/3099)
+* Fixed an issue that would cause an exception when using unmanaged objects in bindings (Issue [#3094](https://github.com/realm/realm-dotnet/issues/3094))
+* Fixed an issue where fetching a user's profile while the user logs out would result in an assertion failure. (Core upgrade)
+* Removed the ".tmp_compaction_space" file being left over after compacting a Realm on Windows. (Core upgrade)
+* Fixed a crash that would occur if you close a synchronized Realm while waiting for `SubscriptionSet.WaitForSynchronizationAsync`. (Issue [#2952](https://github.com/realm/realm-dotnet/issues/2952))
+* Avoid calling the setter on UI-bound properties in case the new value of the property is the same as the current one. This avoids some issue with MAUI, that seems to be calling the setter of bound properties unnecessarily when CollectionView/ListView are shown on screen. This is problematic if the object does not belong to the current user's permissions, as it will cause a compensanting write. In some limited cases this could cause an error loop (verified on iOS) when recycling of cells is involved. (Issue [#3128](https://github.com/realm/realm-dotnet/issues/3128))
+* Fixes an issue with where the source generator will not add the namespace for types used in properties' initializers. (Issue [#3135](https://github.com/realm/realm-dotnet/issues/3135))
+* Fixed an issue that would prevent Realm from working correctly in Unity applications that have [Domain Reloading](https://docs.unity3d.com/Manual/DomainReloading.html) turned off. (Issue [#2898](https://github.com/realm/realm-dotnet/issues/2898))
+* Fixed a bug when using `string.Contains` in .NET 2.1 or later where the search string is not a literal. (Issue [#3134](https://github.com/realm/realm-dotnet/issues/3134))
+* Added `[Obsolete]` notice for a few `ErrorCode` enum members that are no longer in use. (Issue [#3155](https://github.com/realm/realm-dotnet/issues/3155)
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core 12.13.0.
+* Replaced `Realm.RefreshAsync` with a native implementation. (PR [#2995](https://github.com/realm/realm-dotnet/pull/2995))
+
+## 10.18.0 (2022-11-02)
+
+### Enhancements
+* Introduced `Realm.SourceGenerator`, a [Source Generator](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/source-generators-overview) that can generate Realm model classes. This is part of our ongoing effort to modernize the Realm library, and will allow to introduce certain language level features easier in the future.
+In order to use the source generation the model classes need to be declared implementing one of the base interfaces (`IRealmObject`, `IEmbeddedObject` or `IAsymmetricObject`) and be declared partial. For example:
+  ```cs
+  public partial class Person: IRealmObject
+  {
+      public int Age { get; set; }
+
+      public string Name { get; set; }
+
+      public PhoneNumber Phone { get; set; }
+  }
+
+  public partial class PhoneNumber: IEmbeddedObject
+  {
+      public string Number { get; set; }
+
+      public string Prefix { get; set; }
+  }
+  ```
+  The source generator will then take care of adding the full implementation for the interfaces.
+
+  Most of the time converting the "classic" Realm model classes (classes derived from `RealmObject`, `EmbeddedObject` or `AsymmetricObject`) to use the new source generation means just defining the class as partial and switching out the base class for the corresponding interface implementation.
+  The classic Realm model definition will still be supported, but will be phased out in the future.
+
+  Please note that the source generator is still in beta, so let us know if you experience any issue while using them.
+  Some additional notes:
+  * `OnManaged` and `OnPropertyChanged` are now partial methods.
+  * Inheritance is not supported, so the Realm models cannot derive from any other class.
+  * Nested classes are not supported.
+
+### Fixed
+* Fixed a NullReferenceException being thrown when subscribing to `PropertyChanged` notifications on a `Session` instance that is then garbage collected prior to unsubscribing. (PR [#3061](https://github.com/realm/realm-dotnet/pull/3061))
+* Removed bitcode support from the iOS binary as it's no longer accepted for App Store submissions. (Issue [#3059](https://github.com/realm/realm-dotnet/issues/3059))
+* Fixed returning the parent when accessing it on an `IEmbeddedObject`. (Issue [#2742](https://github.com/realm/realm-dotnet/issues/2742))
+* Slightly increased performance and reduced allocations when creating an enumerator for frozen collections (Issue [#2815](https://github.com/realm/realm-dotnet/issues/2815)).
 
 ### Compatibility
 * Realm Studio: 11.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.9.0.
+* Added workflow to automatically assign users to issues and PRs. (PR [#3069](https://github.com/realm/realm-dotnet/pull/3069))
+* Added workflow to validate changelog has been updated. (PR [#3069](https://github.com/realm/realm-dotnet/pull/3069))
+
+## 10.17.0 (2022-10-06)
+
+### Enhancements
+* Prioritize integration of local changes over remote changes - shorten the time users may have to wait when committing local changes. Stop storing downloaded changesets in history. (Core upgrade)
+* Greatly improve the performance of sorting or distincting a Dictionary's keys or values. The most expensive operation is now performed O(log N) rather than O(N log N) times, and large Dictionaries can see upwards of 99% reduction in time to sort. (Core upgrade)
+* Seamlessly handle migrating an App Services application deployment model. (Core upgrade)
+
+### Fixed
+* Fix a use-after-free when a sync session is closed and the app is destroyed at the same time. (Core upgrade)
+* Fixed a `NullReferenceException` occurring in `RealmObjectBase`'s finalizer whenever an exception is thrown before the object gets initialized. (Issue [#3045](https://github.com/realm/realm-dotnet/issues/3045))
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core 12.9.0
+
+## 10.16.0 (2022-10-03)
+
+### Enhancements
+* Introduced `AsymmetricObject` intended for write-heavy workloads, where high performance is generally important. This new object:
+  1. syncs data unidirectionaly, from the clients to the server
+  1. can't be queried, deleted, or modified once added to the Realm
+  1. is only usable with flexible sync
+  1. can't be the receiveing end of any type of relationship
+  1. can contain `EmbeddedObject`s but cannot link to `RealmObject` or `AsymmetricObject`.
+
+  In the same write transaction, it is legal to add `AsymmetricObject`s and `RealmObject`s
+  ```cs
+  class Measurement : AsymmetricObject
+  {
+      [PrimaryKey, MapTo("_id")]
+      public Guid Id { get; private set; } = Guid.NewGuid();
+
+      public double Value { get; set; }
+
+      public DataTimeOffset Timestamp { get; private set; } = DateTimeOffset.UtcNow;
+  }
+
+  class Person : RealmObject
+  {
+      //............
+  }
+
+  //.....
+
+  var measurement = new Measurement
+  {
+    Value = 9.876
+  };
+
+  realm.Write(() =>
+  {
+      realm.Add(measurement);
+
+      realm.Add(new Person());
+  });
+
+  _ = asymmetricObject.Value;   // runtime error
+  _ = realm.All<Measurement>(); // compile time error
+  ```
+* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard local strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. An example is as follows
+* Added two client reset handlers, `RecoverUnsyncedChangesHandler` and `RecoverOrDiscardUnsyncedChangesHandler`, that try to automatically merge the unsynced local changes with the remote ones in the event of a client reset. Specifically with `RecoverOrDiscardUnsyncedChangesHandler`, you can fallback to the discard unsynced strategy in case the automatic merge can't be performed as per your server's rules. These new two stragegies simplify even more the handling of client reset events when compared to `DiscardUnsyncedChangesHandler`.`RecoverOrDiscardUnsyncedChangesHandler` is going to be the default from now on. More info on the aforementioned strategies can be found in our [docs page](https://www.mongodb.com/docs/realm/sdk/dotnet/advanced-guides/client-reset/). An example usage of one of the new handler is as follows:
+  ```cs
+  var conf = new PartitionSyncConfiguration(partition, user)
+  {
+    ClientResetHandler = new RecoverOrDiscardUnsyncedChangesHandler
+    {
+      // As always, the following callbacks are optional
+
+      OnBeforeReset = (beforeFrozen) =>
+      {
+        // executed right before a client reset is about to happen
+      },
+      OnAfterRecovery = (beforeFrozen, after) =>
+      {
+        // executed right after an automatic recovery from a client reset has completed
+      },
+      OnAfterDiscard = (beforeFrozen, after) =>
+      {
+        // executed after an automatic recovery from a client reset has failed but the DiscardUnsyncedChanges fallback has completed
+      },
+      ManualResetFallback = (session, err) =>
+      {
+        // handle the reset manually
+      }
+    }
+  };
+  ```
+  (PR [#2745](https://github.com/realm/realm-dotnet/issues/2745))
+* Introducing string query support for constant list expressions such as `realm.All<Car>().Filter("Color IN {'blue', 'orange'}")`. This also includes general query support for list vs list matching such as `realm.All<Car>().Filter("NONE Features IN {'ABS', 'Seat Heating'}")`. (Core upgrade)
+* Improve performance when a new Realm file connects to the server for the first time, especially when significant amounts of data has been written while offline. (Core upgrade)
+* Shift more of the work done on the sync worker thread out of the write transaction used to apply server changes, reducing how long it blocks other threads from writing. (Core upgrade)
+* Improve the performance of the sync changeset parser, which speeds up applying changesets from the server. (Core upgrade)
+
+### Fixed
+* Added a more meaningful error message whenever a project doesn't have `[TargetFramework]` defined. (Issue [#2843](https://github.com/realm/realm-dotnet/issues/2843))
+* Opening a read-only Realm for the first time with a `SyncConfiguration` did not set the schema version, which could lead to `m_schema_version != ObjectStore::NotVersioned` assertion failures. (Core upgrade)
+* Upload completion callbacks (i.e. `Session.WaitForUploadAsync`) may have called before the download message that completed them was fully integrated. (Core upgrade)
+* Fixed an exception "fcntl() with F_BARRIERFSYNC failed: Inappropriate ioctl for device" when running with MacOS on an exFAT drive. (Core upgrade)
+* Syncing of a Decimal128 with big significand could result in a crash. (Core upgrade)
+* `Realm.Refresh()` did not actually advance to the latest version in some cases. If there was a version newer than the current version which did not require blocking it would advance to that instead, contrary to the documented behavior. (Core upgrade)
+* Several issues around notifications were fixed. (Core upgrade)
+  * Fix a data race on RealmCoordinator::m_sync_session which could occur if multiple threads performed the initial open of a Realm at once.
+  * If a SyncSession outlived the parent Realm and then was adopted by a new Realm for the same file, other processes would not get notified for sync writes on that file.
+  * Fix one cause of QoS inversion warnings when performing writes on the main thread on Apple platforms. Waiting for async notifications to be ready is now done in a QoS-aware ways.
+* If you set a subscription on a link in flexible sync, the server would not know how to handle it ([#5409](https://github.com/realm/realm-core/issues/5409), since v11.6.1)
+* If a case insensitive query searched for a string including an 4-byte UTF8 character, the program would crash. (Core upgrade)
+* Added validation to prevent adding a removed object using Realm.Add. (Issue [#3020](https://github.com/realm/realm-dotnet/issues/3020))
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core 12.7.0.
 
 ## 10.15.1 (2022-08-08)
 
@@ -23,7 +250,7 @@
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 12.4.0.
 
 ## 10.15.0 (2022-08-05)
 
@@ -90,7 +317,7 @@
 ### Enhancements
 * Added the functionality to convert Sync Realms into Local Realms and Local Realms into Sync Realms. (Issue [#2746](https://github.com/realm/realm-dotnet/issues/2746))
 * Added support for a new client reset strategy, called [Discard Unsynced Changes](https://docs.mongodb.com/realm/sync/error-handling/client-resets/#discard-unsynced-changes). This new stragegy greatly simplifies the handling of a client reset event on a synchronized Realm.
-This addition makes `Session.Error` **deprecated**. In order to temporarily contiue using the current `Session.Error` the following must be done:
+This addition makes `Session.Error` **deprecated**. In order to temporarily continue using the current `Session.Error` the following must be done:
   ```csharp
     var conf = new PartitionSyncConfiguration(partition, user)
     {

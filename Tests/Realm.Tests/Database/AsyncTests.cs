@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, NUnit.Framework.Explicit]
+        [Test]
         public void AsyncBeginWrite_CloseRealm_DoesNotPersistData()
         {
             TestHelpers.RunAsyncTest(async () =>

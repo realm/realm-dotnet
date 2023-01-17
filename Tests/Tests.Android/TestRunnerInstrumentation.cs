@@ -17,19 +17,23 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-
-using Environment = Android.OS.Environment;
 
 namespace Realms.Tests.Android
 {
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
     {
+        private List<string> _args = new List<string>()
+        {
+            "--headless",
+            "--result=/storage/emulated/0/Documents/TestResults.Android.xml"
+        };
+
         public TestRunnerInstrumentation(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
@@ -38,23 +42,20 @@ namespace Realms.Tests.Android
         {
             base.OnCreate(arguments);
 
+            var args = arguments.GetString("args");
+            if (args != null)
+            {
+                _args.AddRange(TestHelpers.SplitArguments(args));
+            }
+
             Start();
         }
 
         public override void OnStart()
         {
-            var resultPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "TestResults.Android.xml");
-            Console.WriteLine($"Test Result file: {resultPath}");
-
-            var args = $"--headless --result={resultPath}";
-            var additionalArgsPath = Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "RealmTests", "testargs.txt");
-            if (File.Exists(additionalArgsPath))
-            {
-                args = $"{args} {File.ReadAllText(additionalArgsPath)}";
-            }
 
             var intent = new Intent(Context, typeof(MainActivity));
-            intent.PutExtra("args", args);
+            intent.PutExtra("args", _args.ToArray());
             intent.SetFlags(ActivityFlags.NewTask);
             var activity = (MainActivity)StartActivitySync(intent);
             activity.OnFinished = result =>

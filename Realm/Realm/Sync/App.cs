@@ -158,7 +158,7 @@ namespace Realms.Sync
             var nativeConfig = new Native.AppConfiguration
             {
                 AppId = config.AppId,
-                BaseFilePath = config.BaseFilePath ?? InteropConfig.DefaultStorageFolder,
+                BaseFilePath = config.BaseFilePath ?? InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store app files (such as metadata and Realm files). When constructing the app, set AppConfiguration.BaseFilePath to an absolute path where the app is allowed to write."),
                 BaseUrl = config.BaseUri?.ToString().TrimEnd('/'),
                 LocalAppName = config.LocalAppName,
                 LocalAppVersion = config.LocalAppVersion,
@@ -427,6 +427,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
+                Argument.NotNull(functionArgs, nameof(functionArgs));
 
                 var tcs = new TaskCompletionSource<object>();
                 _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToNativeJson(), tcs);

@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
@@ -44,7 +45,7 @@ namespace Realms.Sync.Testing
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal);
+            session.ReportErrorForTesting((int)errorCode, SessionErrorCategory.SessionError, message, isFatal, ServerRequestsAction.ApplicationBug);
         }
 
         /// <summary>
@@ -55,12 +56,13 @@ namespace Realms.Sync.Testing
         /// <remarks>
         /// You still need to set up a Realm integration testing environment, namely a testing app to connect to.
         /// </remarks>
+        [Obsolete("This method will not work with the automatic client reset handlers.")]
         public static void SimulateClientReset(this Session session, string message)
         {
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false);
+            session.ReportErrorForTesting((int)ErrorCode.DivergingHistories, SessionErrorCategory.SessionError, message, false, ServerRequestsAction.ClientReset);
         }
 
         /// <summary>
@@ -68,12 +70,13 @@ namespace Realms.Sync.Testing
         /// </summary>
         /// <param name="session">The session where the simulated client reset will occur.</param>
         /// <param name="message">Error message.</param>
+        [Obsolete("This method will not work with the automatic client reset handlers.")]
         public static void SimulateAutomaticClientResetFailure(this Session session, string message)
         {
             Argument.NotNull(session, nameof(session));
             Argument.NotNull(message, nameof(message));
 
-            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false);
+            session.ReportErrorForTesting((int)ClientError.AutoClientResetFailed, SessionErrorCategory.ClientError, message, false, ServerRequestsAction.NoAction);
         }
     }
 }

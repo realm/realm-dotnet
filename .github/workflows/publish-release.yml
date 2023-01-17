@@ -6,12 +6,12 @@ jobs:
     environment: Production
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      uses: dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c
       with:
         workflow: pr.yml
         commit: ${{ github.sha }}
@@ -22,10 +22,10 @@ jobs:
       run: |
         cd Realm/packages
         pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-        echo "::set-output name=version::$pkgVersion"
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.DOCS_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.DOCS_S3_SECRET_KEY }}
@@ -38,11 +38,13 @@ jobs:
         {
           aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
         }
+    - name: NuGet Publish Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
+      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
       with:
         node-version: 12.x
         registry-url: https://registry.npmjs.org
@@ -51,18 +53,18 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
-      uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
+      uses: juliangruber/find-pull-request-action@afdd62ccd2d4c55f5bdb154b489b85fc4cbcb9c1
       id: find-pull-request
       with:
         branch: ${{ github.ref }}
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+      uses: juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.find-pull-request.outputs.number }}
         method: squash
     - name: Publish Github Release
-      uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
+      uses: ncipollo/release-action@3ac4132803a6419fa2a7f4e9dbd1d93fceb690b9
       with:
         artifacts: Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
         bodyFile: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
@@ -82,7 +84,7 @@ jobs:
         * None
 
         ### Compatibility
-        * Realm Studio: 11.0.0 or later.
+        * Realm Studio: 12.0.0 or later.
 
         ### Internal
         * Using Core x.y.z.
@@ -91,7 +93,7 @@ jobs:
       shell: bash
     - name: Create vNext PR
       id: vnext-pr
-      uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
+      uses: peter-evans/create-pull-request@6c704eb7a8ba1daa13da0dcea9bb93a4fe530275
       with:
         branch: prepare-vnext
         title: Prepare for vNext
@@ -100,13 +102,13 @@ jobs:
         base: main
         commit-message: Prepare for vNext
     - name: Merge Pull Request
-      uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
+      uses: juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@v3
+      uses: realm/ci-actions/release-to-slack@e7b65d7d587e1abc358968d7ff816cc0163906d2
       with:
         changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET

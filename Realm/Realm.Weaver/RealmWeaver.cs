@@ -136,21 +136,31 @@ namespace RealmWeaver
         private readonly ModuleDefinition _moduleDefinition;
         private readonly ILogger _logger;
 
-        private IEnumerable<TypeDefinition> GetMatchingTypes()
+        private IEnumerable<MatchingType> GetMatchingTypes()
         {
-            foreach (var type in _moduleDefinition.GetTypes().Where(t => t.IsRealmObjectDescendant(_references)))
+            foreach (var type in _moduleDefinition.GetTypes())
             {
                 if (type.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute"))
                 {
                     continue;
                 }
-                else if (type.IsValidRealmObjectBaseInheritor(_references))
+
+                if (type.IsRealmObjectDescendant(_references))
                 {
-                    yield return type;
+                    // Classic types
+                    if (type.IsValidRealmObjectBaseInheritor(_references))
+                    {
+                        yield return new MatchingType(type, false);
+                    }
+                    else
+                    {
+                        _logger.Error($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
+                    }
                 }
-                else
+                else if (type.CustomAttributes.Any(a => a.AttributeType.Name == "GeneratedAttribute"))
                 {
-                    _logger.Error($"The type {type.FullName} indirectly inherits from RealmObject which is not supported.", type.GetConstructors().FirstOrDefault()?.DebugInformation?.SequencePoints?.FirstOrDefault());
+                    // Generated types
+                    yield return new MatchingType(type, true);
                 }
             }
         }
@@ -205,11 +215,14 @@ Analytics payload
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            var weaveResults = matchingTypes.Select(type =>
+            var weaveResults = matchingTypes.Select(matchingType =>
             {
+                var type = matchingType.Type;
+                var isGenerated = matchingType.IsGenerated;
+
                 try
                 {
-                    return WeaveType(type);
+                    return isGenerated ? WeaveGeneratedType(type) : WeaveType(type);
                 }
                 catch (Exception e)
                 {
@@ -218,7 +231,7 @@ Analytics payload
                 }
             }).ToArray();
 
-            WeaveSchema(matchingTypes);
+            WeaveSchema(matchingTypes.Select(t => t.Type).ToArray());
 
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
@@ -232,6 +245,172 @@ Analytics payload
             }
 
             return WeaveModuleResult.Success(weaveResults);
+        }
+
+        private static void RemoveBackingFields(TypeDefinition type, HashSet<MetadataToken> backingFields)
+        {
+            for (var i = type.Fields.Count - 1; i >= 0; i--)
+            {
+                var field = type.Fields[i];
+                if (backingFields.Contains(field.MetadataToken))
+                {
+                    type.Fields.RemoveAt(i);
+                }
+            }
+
+            // Iterates through all constructors' instructions from the end to start.
+            foreach (var constructor in type.GetConstructors())
+            {
+                // Index of the most recent "Stfld <backing_field>" instruction
+                var backingFieldInstructionsEnd = -1;
+                for (var i = constructor.Body.Instructions.Count - 1; i >= 0; i--)
+                {
+                    var instruction = constructor.Body.Instructions[i];
+
+                    // If it comes across "Stfld <backing_field>"
+                    // it considers this the end index of backing field initializaion instructions.
+                    if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference field)
+                    {
+                        if (backingFields.Contains(field.MetadataToken))
+                        {
+                            backingFieldInstructionsEnd = i;
+                        }
+                    }
+
+                    // If it comes across "Ldarg 0",
+                    // it considers this the start index of backing field initializaion instructions
+                    // and removes all backing field instructions from end to start.
+                    else if (instruction.OpCode == OpCodes.Ldarg_0)
+                    {
+                        for (var j = backingFieldInstructionsEnd; j >= i; j--)
+                        {
+                            constructor.Body.Instructions.RemoveAt(j);
+                        }
+                    }
+                }
+            }
+        }
+
+        private WeaveTypeResult WeaveGeneratedType(TypeDefinition type)
+        {
+            _logger.Debug("Weaving generated " + type.Name);
+
+            // The forward slash is used to indicate a nested class
+            var interfaceType = _moduleDefinition.GetType($"{type.FullName}/I{type.Name}Accessor");
+
+            var persistedProperties = new List<WeavePropertyResult>();
+            var backingFields = new HashSet<MetadataToken>();
+
+            // We need to weave all (and only) the properties in the accessor interface
+            foreach (var interfaceProperty in interfaceType.Properties)
+            {
+                var prop = type.Properties.First(p => p.Name == interfaceProperty.Name);
+                try
+                {
+                    // Stash and remove the backing field before weaving as it depends on get method.
+                    var backingField = prop.GetBackingField();
+                    if (backingField != null)
+                    {
+                        backingFields.Add(backingField.MetadataToken);
+                    }
+
+                    var weaveResult = WeaveGeneratedClassProperty(type, prop, interfaceType);
+                    persistedProperties.Add(weaveResult);
+                }
+                catch (Exception e)
+                {
+                    var sequencePoint = prop.GetSequencePoint();
+                    _logger.Error(
+                        $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
+                        sequencePoint);
+
+                    return WeaveTypeResult.Error(type.Name, isGenerated: true);
+                }
+            }
+
+            RemoveBackingFields(type, backingFields);
+
+            return WeaveTypeResult.Success(type.Name, persistedProperties, isGenerated: true);
+        }
+
+        private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
+        {
+            var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
+
+            ReplaceGeneratedClassGetter(prop, interfaceType, accessorGetter);
+
+            if (prop.SetMethod != null)
+            {
+                ReplaceGeneratedClassSetter(prop, interfaceType, accessorGetter);
+            }
+
+            return WeavePropertyResult.Success(prop);
+        }
+
+        private static void ReplaceGeneratedClassGetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        {
+            //// A synthesized property getter looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld <backingField>
+            ////   2: ret
+            //// We want to change it so it looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld _accessor
+            ////   2: call property getter on accessor
+            ////   3: ret
+            ////
+            //// This is equivalent to:
+            ////   get => Accessor.Property;
+
+            var il = prop.GetMethod.Body.GetILProcessor();
+            prop.GetMethod.Body.Instructions.Clear();
+            prop.GetMethod.Body.Variables.Clear();
+
+            var propertyGetterOnAccessorReference = new MethodReference($"get_{prop.Name}", prop.PropertyType, interfaceType) { HasThis = true };
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Call, accessorGetter));
+            il.Append(il.Create(OpCodes.Callvirt, propertyGetterOnAccessorReference));
+            il.Append(il.Create(OpCodes.Ret));
+        }
+
+        private void ReplaceGeneratedClassSetter(PropertyDefinition prop, TypeDefinition interfaceType, MethodReference accessorGetter)
+        {
+            //// A synthesized property setter looks like this:
+            ////   0: ldarg.0
+            ////   1: ldarg.1
+            ////   2: stfld <backingField>
+            ////   3: ret
+            ////
+            //// We want to change it so it looks like this:
+            ////   0: ldarg.0
+            ////   1: ldfld _accessor
+            ////   2: ldarg.1
+            ////   4: call property setter on accessor
+            ////   5: ret
+            ////
+            //// This is equivalent to:
+            ////   set => Accessor.Property = value;
+
+            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
+            var il = prop.SetMethod.Body.GetILProcessor();
+            prop.SetMethod.Body.Instructions.Clear();
+            prop.SetMethod.Body.Variables.Clear();
+
+            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
+            // if they're the last one in. To combat this, we'll add our own version of [DoNotNotify] which
+            // PropertyChanged.Fody will respect.
+            prop.CustomAttributes.Add(new CustomAttribute(_propertyChanged_DoNotNotify_Ctor.Value));
+
+            var propertySetterOnAccessorReference = new MethodReference($"set_{prop.Name}", _references.Types.Void, interfaceType) { HasThis = true };
+            propertySetterOnAccessorReference.Parameters.Add(new ParameterDefinition(prop.PropertyType));
+
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Call, accessorGetter));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Callvirt, propertySetterOnAccessorReference));
+            il.Append(il.Create(OpCodes.Ret));
         }
 
         private WeaveTypeResult WeaveType(TypeDefinition type)
@@ -371,7 +550,7 @@ Analytics payload
                 prop.PropertyType.FullName != StringTypeName &&
                 prop.PropertyType.FullName != ByteArrayTypeName)
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on strings or nullable scalar types, not on {prop.PropertyType.FullName}.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Required] which is only allowed on string or byte[] properties, not on {prop.PropertyType.FullName}.");
             }
 
             if (!prop.IsAutomatic())
@@ -379,6 +558,11 @@ Analytics payload
                 if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
                 {
                     return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.");
+                }
+
+                if (prop.ContainsAsymmetricObject(_references))
+                {
+                    return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.");
                 }
 
                 return WeavePropertyResult.Skipped();
@@ -419,6 +603,10 @@ Analytics payload
                         return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType} but its generic type is {elementType.Name} which is not supported by Realm.");
                     }
                 }
+                else if (elementType.IsAsymmetricObjectDescendant(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is an {collectionType}<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.");
+                }
 
                 if (prop.SetMethod != null)
                 {
@@ -452,6 +640,10 @@ Analytics payload
                         break;
                 }
             }
+            else if (prop.ContainsAsymmetricObject(_references))
+            {
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.");
+            }
             else if (prop.ContainsRealmObject(_references) || prop.ContainsEmbeddedObject(_references))
             {
                 if (prop.SetMethod == null)
@@ -473,6 +665,11 @@ Analytics payload
                 if (prop.SetMethod != null)
                 {
                     return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has a setter but also has [Backlink] applied, which only supports getters.");
+                }
+
+                if (type.IsAsymmetricObjectDescendant(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied which is not allowed on AsymmetricObject.");
                 }
 
                 var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
@@ -511,7 +708,7 @@ Analytics payload
             }
             else
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is a '{prop.PropertyType}' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.");
             }
 
             var preserveAttribute = new CustomAttribute(_references.PreserveAttribute_Constructor);
@@ -706,7 +903,11 @@ Analytics payload
             ////   11: ret
             ////
             //// This is roughly equivalent to:
-            ////   if (!base.IsManaged) this.<backingField> = value;
+            ////   if (!base.IsManaged)
+            ////   {
+            ////        this.<backingField> = value;
+            ////        RaisePropertyChanged(propertyName);
+            ////    }
             ////   else base.SetValue<T>(<columnName>, value);
 
             if (setValueReference == null)
@@ -779,6 +980,15 @@ Analytics payload
             }
 
             helperType.Methods.Add(createInstance);
+
+            var createAccessor = new MethodDefinition("CreateAccessor", DefaultMethodAttributes, _references.ManagedAccessor);
+            {
+                var il = createAccessor.Body.GetILProcessor();
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Ret);
+            }
+
+            helperType.Methods.Add(createAccessor);
 
             var copyToRealm = new MethodDefinition("CopyToRealm", DefaultMethodAttributes, _moduleDefinition.TypeSystem.Void);
             {
@@ -1133,6 +1343,19 @@ Analytics payload
             _moduleDefinition.Types.Add(userAssembly_DoNotNotify);
 
             return userAssembly_DoNotNotify_Ctor;
+        }
+
+        private struct MatchingType
+        {
+            public bool IsGenerated { get; }
+
+            public TypeDefinition Type { get; }
+
+            public MatchingType(TypeDefinition type, bool isGenerated)
+            {
+                IsGenerated = isGenerated;
+                Type = type;
+            }
         }
     }
 }

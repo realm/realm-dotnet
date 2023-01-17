@@ -17,8 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Sync;
@@ -43,7 +47,7 @@ namespace Realms.Tests.Sync
                 LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.DefaultStorageFolder,
+                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
                 CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
@@ -160,23 +164,29 @@ namespace Realms.Tests.Sync
             });
         }
 
-#if !NETFRAMEWORK || NET471_OR_GREATER
+        private class TestHttpClientHandler : DelegatingHandler
+        {
+            public readonly List<(HttpMethod Method, string Url)> Requests = new();
+
+            public TestHttpClientHandler() : base(TestHelpers.TestHttpHandlerFactory())
+            {
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                Requests.Add((request.Method, request.RequestUri.AbsoluteUri));
+                return base.SendAsync(request, cancellationToken);
+            }
+        }
+
         [Test]
         public void RealmConfiguration_WithCustomHttpClientHandler_UsedWhenMakingCalls()
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var validationInvoked = false;
-                var handler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = (message, certificate, chain, policyErrors) =>
-                    {
-                        validationInvoked = true;
-                        return false;
-                    }
-                };
+                var handler = new TestHttpClientHandler();
 
-                var app = App.Create(new AppConfiguration("abc")
+                var app = CreateApp(new AppConfiguration("abc")
                 {
                     HttpClientHandler = handler
                 });
@@ -184,15 +194,18 @@ namespace Realms.Tests.Sync
                 var ex = await TestHelpers.AssertThrows<AppException>(() => app.LogInAsync(Credentials.Anonymous()));
 
                 // Http error
-                Assert.That(ex.Message, Does.Contain("code 998"));
+                Assert.That(ex.Message, Does.Contain("cannot find app"));
 
-                // We rejected the SSL connection, so there should be no response from the server
-                Assert.That(ex.StatusCode, Is.Null);
+                // The app doesn't exist, so we expect 404
+                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
 
-                Assert.That(validationInvoked, Is.True);
+                Assert.That(handler.Requests.Count, Is.EqualTo(1));
+
+                // https://realm.mongodb.com/api/client/v2.0/app/abc/location
+                Assert.That(handler.Requests[0].Method, Is.EqualTo(HttpMethod.Get));
+                Assert.That(handler.Requests[0].Url, Does.Contain("abc/location"));
             });
         }
-#endif
 
         [Test]
         public void RealmConfiguration_HttpClientHandler_IsNotSet()
