@@ -649,9 +649,8 @@ namespace RealmWeaver
                     var property = propertyResult.Property;
 
                     var key = property.PropertyType.Name;
-                    if (!_classAnalysisSetters.ContainsKey(key))
+                    if (!_classAnalysisSetters.ContainsKey(key) && property.PropertyType.MetadataType == MetadataType.Class)
                     {
-                        // when looking for "Class" type
                         key = property.PropertyType.MetadataType.ToString();
                     }
 
