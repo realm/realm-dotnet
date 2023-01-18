@@ -85,7 +85,7 @@ namespace binding {
             if (version_id) {
                 auto tcss = m_pending_refresh_callbacks.remove_for_version((*version_id).version);
 
-                NativeException::Marshallable nativeEx{ RealmErrorType::NoError };
+                NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
                 for (auto& tcs : tcss) {
                     s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
                 }
@@ -130,7 +130,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
         }
 
-        s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), configuration_handle->handle());
+        s_session_error_callback(new SharedSyncSession(session), error.code(), to_capi_value(error.reason()), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), configuration_handle->handle());
     };
 
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
@@ -141,15 +141,17 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         sync_configuration.client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
 
         config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
-            if (!s_notify_before_callback(before_frozen, configuration_handle->handle())) {
-                throw ManagedExceptionDuringClientReset();
+            auto error = s_notify_before_callback(before_frozen, configuration_handle->handle());
+            if (error) {
+                throw ManagedExceptionDuringCallback("Managed exception happened in a BeforeReset callback.", error);
             }
         };
 
         config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
             auto after = Realm::get_shared_realm(std::move(after_reference));
-            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover)) {
-                throw ManagedExceptionDuringClientReset();
+            auto error = s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover);
+            if (error) {
+                throw ManagedExceptionDuringCallback("Managed exception happened in an AfterReset callback.", error);
             }
         };
     }
@@ -347,7 +349,7 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
                 s_open_realm_callback(task_completion_source, nullptr, std::move(native_ex));
             }
             else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { RealmErrorType::NoError });
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { ErrorCodes::Error::OK});
             }
         });
 
@@ -448,7 +450,7 @@ REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, v
         return realm->async_begin_transaction([tcs_ptr]() {
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
-            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
             s_handle_task_completion(tcs_ptr, /* invoke_async */ true, nativeEx);
         }, /* notify_only */ true);
     });
@@ -458,7 +460,7 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
 {
     return handle_errors(ex, [&]() {
         return realm->async_commit_transaction([tcs_ptr](std::exception_ptr err) {
-            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
             if (err) {
                 nativeEx = convert_exception(err).for_marshalling();
             }
@@ -742,7 +744,7 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
         // User can always exclude it from schema in config, or remove it completely
         if (obj_schema != realm->schema().end())
         {
-            throw std::runtime_error(util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
+            throw LogicError(ErrorCodes::Error::InvalidSchemaChange, util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
         }
 
         realm->read_group().remove_table(table->get_key());

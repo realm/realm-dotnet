@@ -23,7 +23,6 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/binding_context.hpp>
 
-#include "wrapper_exceptions.hpp"
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
 #include "shared_realm_cs.hpp"

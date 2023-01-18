@@ -668,9 +668,9 @@ namespace Realms.Tests.Database
 
         #region DateTimeOffset
 
-        private static readonly DateTimeOffset Date0 = new DateTimeOffset(0, TimeSpan.Zero);
-        private static readonly DateTimeOffset Date1 = new DateTimeOffset(1999, 3, 4, 5, 30, 0, TimeSpan.Zero);
-        private static readonly DateTimeOffset Date2 = new DateTimeOffset(2030, 1, 3, 9, 25, 34, TimeSpan.FromHours(3));
+        private static readonly DateTimeOffset Date0 = new(0, TimeSpan.Zero);
+        private static readonly DateTimeOffset Date1 = new(1999, 3, 4, 5, 30, 0, TimeSpan.Zero);
+        private static readonly DateTimeOffset Date2 = new(2030, 1, 3, 9, 25, 34, TimeSpan.FromHours(3));
 
         public static IEnumerable<TestCaseData<DateTimeOffset>> DateTimeOffsetTestValues()
         {
@@ -1297,7 +1297,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.DictOfDogs.Filter(string.Empty),
-                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Invalid predicate"));
         }
 
         [Test]
@@ -2079,7 +2079,7 @@ namespace Realms.Tests.Database
                     index++;
                 }
 
-                result = (-1, null, default(T));
+                result = (-1, null, default);
                 return false;
             }
 

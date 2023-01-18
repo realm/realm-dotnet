@@ -25,7 +25,6 @@
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 #include "schema_cs.hpp"
 

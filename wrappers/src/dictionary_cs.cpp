@@ -24,17 +24,30 @@
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
+
+namespace {
+inline static void ensure_types(object_store::Dictionary& dict, realm_value_t value) {
+    if (value.is_null() && !is_nullable(dict.get_type())) {
+        throw NotNullableException();
+    }
+
+    if (!value.is_null() && dict.get_type() != PropertyType::Mixed && to_capi(dict.get_type()) != value.type) {
+        throw PropertyTypeMismatchException(to_string(dict.get_type()), to_string(value.type));
+    }
+}
+}
 
 extern "C" {
 
     REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
+            ensure_types(dictionary, value);
+
             auto dict_key = from_capi(key.string);
             if (dictionary.contains(dict_key))
             {
@@ -61,6 +74,8 @@ extern "C" {
     REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
+            ensure_types(dictionary, value);
+
             dictionary.insert(from_capi(key.string), from_capi(value));
         });
     }

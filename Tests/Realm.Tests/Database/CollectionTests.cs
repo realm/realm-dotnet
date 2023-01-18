@@ -28,8 +28,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -567,7 +565,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.ListOfDogs.Filter(string.Empty),
-                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Invalid predicate"));
         }
 
         [Test]
@@ -881,7 +879,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.SetOfDogs.Filter(string.Empty),
-                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Invalid predicate"));
         }
 
         [Test]

@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,16 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms.Exceptions
 {
     /// <summary>
-    /// An exception thrown when trying to lookup an object by primary key, when the object doesn't have <see cref="PrimaryKeyAttribute"/> specified.
+    /// Exception thrown when a migration fails to complete. Inspect the <see cref="Exception.Message"/> for more details
+    /// about the failure cause.
     /// </summary>
-    public class RealmClassLacksPrimaryKeyException : RealmException
+    public class RealmMigrationException : Exception
     {
-        internal RealmClassLacksPrimaryKeyException(string message) : base(message)
+        internal RealmMigrationException(string message) : base(message)
         {
-            HelpLink = "https://www.mongodb.com/docs/realm/sdk/dotnet/model-data/define-object-model/#primary-key";
         }
     }
 }
