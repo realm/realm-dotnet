@@ -49,6 +49,10 @@ name: build-packages
         type: boolean
         required: false
         default: false
+      set-core-version-wrapper:
+        type: boolean
+        required: false
+        default: false
     outputs:
       package_version:
         value: ${{ jobs.build-packages.outputs.package_version }}
@@ -81,6 +85,7 @@ jobs:
             $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
           }
           echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
+      - #@ template.replace(readCoreVersion())
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
       - #@ template.replace(readVersionFromPackage())
