@@ -63,7 +63,6 @@ public class Program
     }
 #endif
 
-
 #if WRITE_ASYNC
     public static async Task WriteAsyncMethod()
     {
@@ -296,65 +295,65 @@ public class Program
 }
 
 #if EMBEDDED_OBJECT
-    public partial class EmbeddedTestClass : TestEmbeddedObject
-    {
-        public int Int32Property { get; set; }
-    }
+public partial class EmbeddedTestClass : TestEmbeddedObject
+{
+    public int Int32Property { get; set; }
+}
 #endif
 
-    public partial class JustForObjectReference : TestRealmObject
-    {
-        public RootRealmClass UseAsBacklink { get; set; }
-    }
+public partial class JustForObjectReference : TestRealmObject
+{
+    public RootRealmClass UseAsBacklink { get; set; }
+}
 
-    public partial class RootRealmClass : TestRealmObject
-    {
+public partial class RootRealmClass : TestRealmObject
+{
 
 #if REALM_OBJECT_REFERENCE
-        JustForObjectReference JustForRef { get; set; }
+    JustForObjectReference JustForRef { get; set; }
 #endif
 
 #if REFERENCE_LIST
-        IList<JustForObjectReference> ReferenceList { get; }
+    IList<JustForObjectReference> ReferenceList { get; }
 #endif
 
 #if PRIMITIVE_LIST
-        IList<int> PrimitiveList { get; }
+    IList<int> PrimitiveList { get; }
 #endif
 
 #if REFERENCE_DICTIONARY
-        IDictionary<string, JustForObjectReference> ReferenceDictionary { get; }
+    IDictionary<string, JustForObjectReference> ReferenceDictionary { get; }
 #endif
 
 #if PRIMITIVE_DICTIONARY
-        IDictionary<string, int> PrimitiveDictionary { get; }
+    IDictionary<string, int> PrimitiveDictionary { get; }
 #endif
 
 #if REFERENCE_SET
-        ISet<JustForObjectReference> ReferenceSet { get; }
+    ISet<JustForObjectReference> ReferenceSet { get; }
 #endif
 
 #if PRIMITIVE_SET
-        ISet<int> PrimitiveSet { get; }
+    ISet<int> PrimitiveSet { get; }
 #endif
 
 #if REALM_INTEGER
-        RealmInteger<int> Counter { get; set; }
+    RealmInteger<int> Counter { get; set; }
 #endif
 
 #if REALM_VALUE
-        RealmValue RealmValue { get; set; }
+    RealmValue RealmValue { get; set; }
 #endif
 
 #if BACKLINK
-        [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
-        IQueryable<JustForObjectReference> JustBackLink { get; }
+    [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
+    IQueryable<JustForObjectReference> JustBackLink { get; }
 #endif
 }
 
 #if ASYMMETRIC_OBJECT
 public partial class AsymmetricTestClass : TestAsymmetricObject
-    {
-        public int Int32Property { get; set; }
-    }
+{
+    public int Int32Property { get; set; }
+}
 #endif
