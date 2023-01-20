@@ -32,6 +32,7 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include <realm/sync/subscriptions.hpp>
+#include <realm/exceptions.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -602,7 +603,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
         const Property& primary_key_property = *object_schema.primary_key_property();
 
         if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
-            throw NotNullableException(object_schema.name, primary_key_property.name);
+            throw NotNullable(object_schema.name, primary_key_property.name);
         }
 
         if (!primitive.is_null() && to_capi(primary_key_property.type) != primitive.type) {

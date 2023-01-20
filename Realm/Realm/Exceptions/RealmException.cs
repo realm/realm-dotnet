@@ -82,7 +82,6 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.RLM_ERR_SCHEMA_VALIDATION_FAILED:
                     return new RealmSchemaValidationException(message);
 
-                case RealmExceptionCodes.NotNullable:
                 case RealmExceptionCodes.PropertyTypeMismatch:
                     return new RealmException(message);
 

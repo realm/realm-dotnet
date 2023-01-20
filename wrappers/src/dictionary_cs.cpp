@@ -32,7 +32,7 @@ using namespace realm::binding;
 namespace {
 inline static void ensure_types(object_store::Dictionary& dict, realm_value_t value) {
     if (value.is_null() && !is_nullable(dict.get_type())) {
-        throw NotNullableException();
+        throw NotNullable("Attempted to add null to a dictionary of required values");
     }
 
     if (!value.is_null() && dict.get_type() != PropertyType::Mixed && to_capi(dict.get_type()) != value.type) {

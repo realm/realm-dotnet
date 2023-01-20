@@ -27,6 +27,7 @@
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/exceptions.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -148,7 +149,7 @@ extern "C" {
 
             if (value.is_null() && !is_nullable(prop.type)) {
                 auto& schema = object.get_object_schema();
-                throw NotNullableException(schema.name, prop.name);
+                throw NotNullable(schema.name, prop.name);
             }
 
             if (!value.is_null() && (prop.type & ~PropertyType::Flags) != PropertyType::Mixed &&

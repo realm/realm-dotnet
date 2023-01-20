@@ -31,7 +31,6 @@ enum CustomError : std::int32_t {
     DuplicatePrimaryKey = 1000004002,
     InvalidSchema = 1000004003,
     ObjectManagedByAnotherRealm = 1000004004,
-    NotNullable = 1000004005,
     PropertyTypeMismatch = 1000004006,
     KeyAlreadyExists = 1000004007,
     DuplicateSubscription = 1000004008,
@@ -121,14 +120,6 @@ public:
 class ObjectManagedByAnotherRealmException : public CustomException {
 public:
     ObjectManagedByAnotherRealmException(std::string message) : CustomException(CustomError::ObjectManagedByAnotherRealm, message) {}
-};
-
-class NotNullableException : public CustomException {
-public:
-    NotNullableException(std::string object_type, std::string property)
-        : CustomException(CustomError::NotNullable, util::format("Attempted to set %1.%2 to null, but it is defined as required.", object_type, property)) {}
-
-    NotNullableException() : CustomException(CustomError::NotNullable, "Attempted to add null to a list of required values") {}
 };
 
 class PropertyTypeMismatchException : public CustomException {

@@ -190,7 +190,6 @@ namespace Realms.Exceptions
         DuplicatePrimaryKey = 1000004002,
         InvalidSchema = 1000004003,
         ObjectManagedByAnotherRealm = 1000004004,
-        NotNullable = 1000004005,
         PropertyTypeMismatch = 1000004006,
         KeyAlreadyExists = 1000004007,
         DuplicateSubscription = 1000004008,
