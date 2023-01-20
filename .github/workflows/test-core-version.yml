@@ -27,12 +27,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        submodules: false
+        submodules: recursive
         ref: ${{ github.event.pull_request.head.sha }}
-    - name: Register csc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/csc.json"
-    - name: Register msvc problem matcher
-      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Read Core version
       id: get-core-version
       run: |
