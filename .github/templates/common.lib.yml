@@ -117,17 +117,6 @@ with:
     shell: bash
 #@ end
 
-#@ def readCoreVersion():
-  - name: Read Core version
-    id: get-core-version
-    run: |
-      cd wrappers/realm-core
-      pkgVersion=$(grep "\bVERSION" dependencies.list | cut -d= -f2)
-      echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
-      echo "core-version=$pkgVersion"
-    shell: bash
-#@ end
-
 #@ def configureAWSCredentials(accessKey, secretKey, region = "us-east-1"):
   - name: Configure AWS Credentials
     uses: #@ actionAWSConfigureCredentials

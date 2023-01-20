@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "readCoreVersion", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet")
 
 #@ def buildDocs():
   - name: Check Docfx cache
@@ -25,16 +25,6 @@
     if: inputs.build-docs
 #@ end
 
-#@ def setCoreVersionAnalytics():
-  - name: Set core version in analytics
-    id: set-core-version-analytics
-    run: |
-      cd Realm/Realm.Weaver/Analytics/
-      sed -i 's/_coreVersion \= "\w*"/_coreVersion \= "'"${{ steps.get-core-version.outputs.core-version }}"'"/' Analytics.cs
-      cat Analytics.cs
-    shell: bash
-#@ end
-
 #@ def uploadPackageArtifacts():
 #@ for pkgName in nugetPackages:
 #@  finalPkgName = pkgName + ".${{ steps.get-version.outputs.version }}"
@@ -56,10 +46,6 @@ name: build-packages
   workflow_call:
     inputs:
       build-docs:
-        type: boolean
-        required: false
-        default: false
-      set-core-version-analytics:
         type: boolean
         required: false
         default: false
@@ -95,7 +81,6 @@ jobs:
             $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
           }
           echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
-      - #@ template.replace(readCoreVersion())
       - #@ template.replace(fetchWrapperBinaries())
       - #@ template.replace(msBuildMultiple(mainPackagePaths(), target="Pack", PackageOutputPath="${{ github.workspace }}/Realm/packages", VersionSuffix="${{ steps.set-version-suffix.outputs.build_suffix }}"))
       - #@ template.replace(readVersionFromPackage())
