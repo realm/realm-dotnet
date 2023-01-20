@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.0.0 (2023-01-20)
 
 **File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
 
