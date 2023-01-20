@@ -171,7 +171,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator BacklinkObject(Realms.RealmValue val) => val.AsRealmObject<BacklinkObject>();
 
-        public static implicit operator Realms.RealmValue(BacklinkObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BacklinkObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

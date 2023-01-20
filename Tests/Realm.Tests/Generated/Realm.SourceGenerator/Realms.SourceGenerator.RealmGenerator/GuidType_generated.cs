@@ -209,7 +209,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator GuidType(Realms.RealmValue val) => val.AsRealmObject<GuidType>();
 
-        public static implicit operator Realms.RealmValue(GuidType? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(GuidType? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

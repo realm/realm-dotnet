@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator NullablePrimaryKeyObject(Realms.RealmValue val) => val.AsRealmObject<NullablePrimaryKeyObject>();
 
-            public static implicit operator Realms.RealmValue(NullablePrimaryKeyObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NullablePrimaryKeyObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -180,7 +180,7 @@ namespace Realms.Tests
 
         public static explicit operator ObjectWithEmbeddedProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithEmbeddedProperties>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithEmbeddedProperties? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithEmbeddedProperties? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

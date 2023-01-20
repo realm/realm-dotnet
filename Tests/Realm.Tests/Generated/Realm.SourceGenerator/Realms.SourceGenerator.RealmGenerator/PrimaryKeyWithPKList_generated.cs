@@ -179,7 +179,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator PrimaryKeyWithPKList(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
 
-            public static implicit operator Realms.RealmValue(PrimaryKeyWithPKList? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(PrimaryKeyWithPKList? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -173,7 +173,7 @@ namespace Realms.Tests
 
         public static explicit operator RecursiveBacklinksObject(Realms.RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
 
-        public static implicit operator Realms.RealmValue(RecursiveBacklinksObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RecursiveBacklinksObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

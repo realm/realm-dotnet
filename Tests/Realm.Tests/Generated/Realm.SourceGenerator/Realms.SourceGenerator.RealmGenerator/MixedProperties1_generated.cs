@@ -179,7 +179,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator MixedProperties1(Realms.RealmValue val) => val.AsRealmObject<MixedProperties1>();
 
-        public static implicit operator Realms.RealmValue(MixedProperties1? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(MixedProperties1? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

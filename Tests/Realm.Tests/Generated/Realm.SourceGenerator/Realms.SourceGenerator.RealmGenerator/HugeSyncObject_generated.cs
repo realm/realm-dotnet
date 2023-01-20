@@ -168,7 +168,7 @@ namespace Realms.Tests
 
         public static explicit operator HugeSyncObject(Realms.RealmValue val) => val.AsRealmObject<HugeSyncObject>();
 
-        public static implicit operator Realms.RealmValue(HugeSyncObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(HugeSyncObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

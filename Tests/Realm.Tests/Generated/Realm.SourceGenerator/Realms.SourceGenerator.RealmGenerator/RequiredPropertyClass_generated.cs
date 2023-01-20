@@ -162,7 +162,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator RequiredPropertyClass(Realms.RealmValue val) => val.AsRealmObject<RequiredPropertyClass>();
 
-        public static implicit operator Realms.RealmValue(RequiredPropertyClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RequiredPropertyClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

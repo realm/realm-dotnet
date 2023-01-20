@@ -173,7 +173,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator BasicAsymmetricObject(Realms.RealmValue val) => val.AsRealmObject<BasicAsymmetricObject>();
 
-        public static implicit operator Realms.RealmValue(BasicAsymmetricObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(BasicAsymmetricObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

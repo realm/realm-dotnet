@@ -178,7 +178,7 @@ namespace Realms.Tests
 
         public static explicit operator EmbeddedLevel1(Realms.RealmValue val) => val.AsRealmObject<EmbeddedLevel1>();
 
-        public static implicit operator Realms.RealmValue(EmbeddedLevel1? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(EmbeddedLevel1? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

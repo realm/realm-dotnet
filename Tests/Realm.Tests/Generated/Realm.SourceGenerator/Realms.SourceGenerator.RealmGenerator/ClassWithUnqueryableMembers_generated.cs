@@ -185,7 +185,7 @@ namespace Realms.Tests
 
         public static explicit operator ClassWithUnqueryableMembers(Realms.RealmValue val) => val.AsRealmObject<ClassWithUnqueryableMembers>();
 
-        public static implicit operator Realms.RealmValue(ClassWithUnqueryableMembers? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ClassWithUnqueryableMembers? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

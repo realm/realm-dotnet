@@ -187,7 +187,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
 
-        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

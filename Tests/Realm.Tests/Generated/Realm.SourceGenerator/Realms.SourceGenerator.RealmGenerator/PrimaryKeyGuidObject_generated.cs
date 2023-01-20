@@ -163,7 +163,7 @@ namespace Realms.Tests
 
         public static explicit operator PrimaryKeyGuidObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyGuidObject>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyGuidObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyGuidObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

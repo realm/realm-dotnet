@@ -184,7 +184,7 @@ namespace Realms.Tests
 
         public static explicit operator RealmValueObject(Realms.RealmValue val) => val.AsRealmObject<RealmValueObject>();
 
-        public static implicit operator Realms.RealmValue(RealmValueObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(RealmValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

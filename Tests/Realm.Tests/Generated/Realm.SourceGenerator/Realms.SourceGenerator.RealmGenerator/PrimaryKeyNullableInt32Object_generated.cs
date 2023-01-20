@@ -163,7 +163,7 @@ namespace Realms.Tests
 
         public static explicit operator PrimaryKeyNullableInt32Object(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyNullableInt32Object>();
 
-        public static implicit operator Realms.RealmValue(PrimaryKeyNullableInt32Object? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PrimaryKeyNullableInt32Object? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

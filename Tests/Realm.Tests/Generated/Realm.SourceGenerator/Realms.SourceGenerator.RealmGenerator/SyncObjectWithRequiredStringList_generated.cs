@@ -182,7 +182,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator SyncObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<SyncObjectWithRequiredStringList>();
 
-        public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

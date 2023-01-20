@@ -164,7 +164,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator OneNonListProperty(Realms.RealmValue val) => val.AsRealmObject<OneNonListProperty>();
 
-        public static implicit operator Realms.RealmValue(OneNonListProperty? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(OneNonListProperty? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

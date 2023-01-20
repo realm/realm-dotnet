@@ -182,7 +182,7 @@ namespace Realms.Tests
 
         public static explicit operator CounterObject(Realms.RealmValue val) => val.AsRealmObject<CounterObject>();
 
-        public static implicit operator Realms.RealmValue(CounterObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(CounterObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

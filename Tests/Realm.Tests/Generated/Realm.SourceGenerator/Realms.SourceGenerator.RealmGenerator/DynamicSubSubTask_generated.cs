@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator DynamicSubSubTask(Realms.RealmValue val) => val.AsRealmObject<DynamicSubSubTask>();
 
-        public static implicit operator Realms.RealmValue(DynamicSubSubTask? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(DynamicSubSubTask? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

@@ -170,7 +170,7 @@ namespace Realms.Tests.Database
 
         public static explicit operator InternalObject(Realms.RealmValue val) => val.AsRealmObject<InternalObject>();
 
-        public static implicit operator Realms.RealmValue(InternalObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(InternalObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

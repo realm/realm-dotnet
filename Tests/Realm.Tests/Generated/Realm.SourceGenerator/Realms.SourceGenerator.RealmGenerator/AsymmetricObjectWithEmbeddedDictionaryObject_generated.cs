@@ -175,7 +175,7 @@ namespace Realms.Tests.Sync
 
         public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
 
-        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

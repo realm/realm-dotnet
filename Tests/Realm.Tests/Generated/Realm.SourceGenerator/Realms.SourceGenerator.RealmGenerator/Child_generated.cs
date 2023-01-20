@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
 
             public static explicit operator Child(Realms.RealmValue val) => val.AsRealmObject<Child>();
 
-            public static implicit operator Realms.RealmValue(Child? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(Child? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
