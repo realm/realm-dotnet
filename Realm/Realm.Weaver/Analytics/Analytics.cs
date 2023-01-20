@@ -132,7 +132,7 @@ namespace RealmWeaver
             { TargetOsVersion, string.Empty },
             { TargetCpuArch, string.Empty },
             { RealmSdkVersion, string.Empty },
-            { CoreVersion, string.Empty },
+            { CoreVersion, _coreVersion },
             { FrameworkUsedInConjunction, string.Empty },
             { FrameworkUsedInConjunctionVersion, string.Empty },
             { SdkInstallationMethod, string.Empty },
@@ -619,7 +619,6 @@ namespace RealmWeaver
                 _realmEnvMetrics[FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
                 _realmEnvMetrics[LanguageVersion] = GetLanguageVersion(module, _config.TargetFramework);
                 _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
-                _realmEnvMetrics[CoreVersion] = "FILL ME";
                 _realmEnvMetrics[SdkInstallationMethod] = "FILL ME";
                 _realmEnvMetrics[IdeUsed] = "FILL ME";
                 _realmEnvMetrics[IdeUsedVersion] = "FILL ME";
