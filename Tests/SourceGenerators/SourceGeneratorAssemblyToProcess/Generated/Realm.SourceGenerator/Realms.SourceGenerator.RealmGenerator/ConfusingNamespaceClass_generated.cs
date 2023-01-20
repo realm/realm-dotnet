@@ -160,7 +160,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         public static explicit operator ConfusingNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<ConfusingNamespaceClass>();
 
-        public static implicit operator Realms.RealmValue(ConfusingNamespaceClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ConfusingNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

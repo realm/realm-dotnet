@@ -166,7 +166,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
 
-        public static implicit operator Realms.RealmValue(Dog? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Dog? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

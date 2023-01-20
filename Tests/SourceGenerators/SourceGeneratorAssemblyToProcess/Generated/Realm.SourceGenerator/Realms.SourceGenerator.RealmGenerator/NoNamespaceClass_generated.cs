@@ -157,7 +157,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     public static explicit operator NoNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<NoNamespaceClass>();
 
-    public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+    public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

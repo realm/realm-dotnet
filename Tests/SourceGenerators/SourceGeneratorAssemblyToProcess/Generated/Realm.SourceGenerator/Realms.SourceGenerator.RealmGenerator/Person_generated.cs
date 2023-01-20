@@ -163,7 +163,7 @@ namespace SourceGeneratorPlayground
 
         public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
 
-        public static implicit operator Realms.RealmValue(Person? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(Person? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

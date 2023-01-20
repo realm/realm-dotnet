@@ -275,7 +275,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator AllTypesClass(Realms.RealmValue val) => val.AsRealmObject<AllTypesClass>();
 
-        public static implicit operator Realms.RealmValue(AllTypesClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(AllTypesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

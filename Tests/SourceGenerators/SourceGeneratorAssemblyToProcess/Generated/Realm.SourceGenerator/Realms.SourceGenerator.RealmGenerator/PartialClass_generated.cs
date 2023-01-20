@@ -165,7 +165,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator PartialClass(Realms.RealmValue val) => val.AsRealmObject<PartialClass>();
 
-        public static implicit operator Realms.RealmValue(PartialClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(PartialClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

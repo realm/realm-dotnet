@@ -168,7 +168,7 @@ namespace SourceGeneratorPlayground
 
             public static explicit operator NestedClass(Realms.RealmValue val) => val.AsRealmObject<NestedClass>();
 
-            public static implicit operator Realms.RealmValue(NestedClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(NestedClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

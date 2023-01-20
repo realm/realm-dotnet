@@ -161,7 +161,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public static explicit operator InitializerNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<InitializerNamespaceClass>();
 
-        public static implicit operator Realms.RealmValue(InitializerNamespaceClass? val) => val == null? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(InitializerNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
