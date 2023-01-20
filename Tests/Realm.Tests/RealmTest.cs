@@ -43,8 +43,11 @@ namespace Realms.Tests
         static RealmTest()
         {
 #if !UNITY
+            // Store test files in the tmp directory for local development and in the current directory on CI.
+            var basePath = Environment.GetEnvironmentVariable("CI") == null ? Path.GetTempPath() : Path.Combine(Directory.GetCurrentDirectory(), "tmp");
+
 #pragma warning disable CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
-            InteropConfig.SetDefaultStorageFolder(Path.Combine(Path.GetTempPath(), $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}"));
+            InteropConfig.SetDefaultStorageFolder(Path.Combine(basePath, $"rt-{System.Diagnostics.Process.GetCurrentProcess().Id}"));
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
             Directory.CreateDirectory(InteropConfig.GetDefaultStorageFolder("No error expected here"));
 #endif
