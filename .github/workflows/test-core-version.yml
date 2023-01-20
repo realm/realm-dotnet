@@ -34,8 +34,8 @@ jobs:
       run: |
         cd wrappers/realm-core
         pkgVersion=$(grep "\bVERSION" dependencies.list | cut -d= -f2)
-        echo "core_version=$pkgVersion" >> $GITHUB_OUTPUT
-        echo "core_version=$pkgVersion"
+        echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
+        echo "core-version=$pkgVersion"
       shell: bash
     - name: Set core version in analytics
       id: set-core-version-analytics
