@@ -61,7 +61,7 @@ namespace RealmWeaver
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
-        private const string _coreVersion = "";
+        private const string _coreVersion = "13.1.2";
 
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
