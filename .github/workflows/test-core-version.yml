@@ -40,6 +40,7 @@ jobs:
     - name: Set core version in analytics
       id: set-core-version-analytics
       run: |
+        echo STEPVERSION= ${{ steps.get-core-version.outputs.core-version }}
         cd Realm/Realm.Weaver/Analytics/
         sed -i 's/_coreVersion \= "\w*"/_coreVersion \= "'"${{ steps.get-core-version.outputs.core-version }}"'"/' Analytics.cs
         cat Analytics.cs
