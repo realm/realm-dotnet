@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -43,7 +44,7 @@ namespace Realms
             public static extern void clear(ResultsHandle results, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_query", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_query(ResultsHandle results, out NativeException ex);
@@ -159,11 +160,11 @@ namespace Realms
             return new SortDescriptorHandle(Root, result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new NotificationTokenHandle(Root, result);
         }

@@ -25,13 +25,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+using static Realms.ChangeSet;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -190,6 +187,417 @@ namespace Realms.Tests.Database
                     return (token, dictReference);
                 });
             });
+        }
+
+        [Test]
+        public void PrimitivePropertyInObjectShouldFireNotificationOnChange()
+        {
+            var testObject = new TestNotificationObject();
+            _realm.Write(() => _realm.Add(testObject));
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            _realm.Write(() =>
+            {
+                testObject.StringProperty = "foo";
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void BackLinkInObjectShouldNotFireNotificationOnChange()
+        {
+            var testObject = new TestNotificationObject();
+            var targetObject = new TestNotificationObject();
+            _realm.Write(() =>
+            {
+                _realm.Add(testObject);
+                _realm.Add(targetObject);
+            });
+            var notificationCount = 0;
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                notificationCount++;
+            };
+            Assert.That(testObject.BacklinksCount, Is.EqualTo(0));
+            _realm.Write(() =>
+            {
+                targetObject.LinkSameType = testObject;
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(0));
+            Assert.That(testObject.BacklinksCount, Is.EqualTo(1));
+            _realm.Write(() =>
+            {
+                targetObject.StringProperty = "foo";
+            });
+            _realm.Refresh();
+            Assert.That(notificationCount, Is.EqualTo(0));
+            Assert.That(testObject.BacklinksCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CollectionPropertiesOfDifferentTypeShouldNotFireNotificationsOnChange()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var propertyEventArgs = new List<string>();
+
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                propertyEventArgs.Add(e.PropertyName);
+            };
+
+            var person = new Person();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                testObject.ListDifferentType.Add(person);
+                testObject.SetDifferentType.Add(person);
+                testObject.DictionaryDifferentType.Add("foo", person);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Update primitive property while inserting
+            _realm.Write(() =>
+            {
+                testObject.StringProperty = "foo";
+                testObject.ListDifferentType.Add(person);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                person.Nickname = "foo1";
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Moving
+            _realm.Write(() =>
+            {
+                testObject.ListDifferentType.Move(0, 1);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Removing
+            _realm.Write(() =>
+            {
+                testObject.DictionaryDifferentType.Remove("foo");
+                _realm.Remove(person);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void CollectionPropertiesOfSameTypeShouldNotFireNotificationsOnChange()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var propertyEventArgs = new List<string>();
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                propertyEventArgs.Add(e.PropertyName);
+            };
+
+            var targetObject = new TestNotificationObject();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Add(targetObject);
+                testObject.SetSameType.Add(targetObject);
+                testObject.DictionarySameType.Add("foo", targetObject);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Update primitive property while inserting
+            _realm.Write(() =>
+            {
+                testObject.StringProperty = "foo";
+                testObject.ListSameType.Add(targetObject);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                targetObject.StringProperty = "foo1";
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Moving
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Move(0, 1);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+
+            // Removing
+            _realm.Write(() =>
+            {
+                testObject.DictionarySameType.Remove("foo");
+                _realm.Remove(targetObject);
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Link_ShouldOnlyFireNotificationForReassignment()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject
+            {
+                LinkSameType = new TestNotificationObject(),
+                LinkDifferentType = new Person()
+            }));
+
+            var propertyEventArgs = new List<string>();
+            testObject.PropertyChanged += (sender, e) =>
+            {
+                propertyEventArgs.Add(e.PropertyName);
+            };
+
+            _realm.Write(() =>
+            {
+                // Should should only fire for 'testObject.StringProperty = "foo"' since this isn't a nested property.
+                testObject.StringProperty = "foo";
+                testObject.LinkSameType.StringProperty = "bar";
+                testObject.LinkDifferentType.Nickname = "foobar";
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "StringProperty" }));
+            propertyEventArgs.Clear();
+
+            _realm.Write(() =>
+            {
+                testObject.LinkSameType = new TestNotificationObject();
+                testObject.LinkDifferentType = new Person();
+            });
+            _realm.Refresh();
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "LinkDifferentType", "LinkSameType" }));
+        }
+
+        [Test]
+        public void ListOnCollectionChangedShouldFireOnAddMoveReplaceRemove()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            testObject.ListSameType.AsRealmCollection().CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+            var testObject1 = new TestNotificationObject();
+            var testObject2 = new TestNotificationObject();
+            var testObject3 = new TestNotificationObject();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Add(testObject1);
+                testObject.ListSameType.Add(testObject2);
+                testObject.ListSameType.Add(testObject3);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(3));
+            eventArgs.Clear();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                testObject1.StringProperty = "foo1";
+                testObject2.StringProperty = "foo2";
+                testObject3.StringProperty = "foo3";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs, Is.Empty);
+
+            // Moving
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Move(0, 2);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Move));
+            Assert.That(eventArgs[0].OldStartingIndex, Is.EqualTo(0));
+            Assert.That(eventArgs[0].NewStartingIndex, Is.EqualTo(2));
+            eventArgs.Clear();
+
+            // Deletion
+            _realm.Write(() =>
+            {
+                testObject.ListSameType.Remove(testObject1);
+                testObject.ListSameType.Remove(testObject2);
+                testObject.ListSameType.Remove(testObject3);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void ResultOnCollectionChangedShouldFireOnAddRemove()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var eventArgsForFilter = new List<NotifyCollectionChangedEventArgs>();
+
+            var query = _realm.All<TestNotificationObject>().AsRealmCollection();
+            var queryWithFilter = _realm.All<TestNotificationObject>().Where(t => t.StringProperty.Contains("f")).AsRealmCollection();
+
+            query.CollectionChanged += (sender, e) => eventArgs.Add(e);
+            queryWithFilter.CollectionChanged += (sender, e) => eventArgsForFilter.Add(e);
+
+            var testObject1 = new TestNotificationObject();
+            var testObject2 = new TestNotificationObject();
+            var testObject3 = new TestNotificationObject();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                _realm.Add(testObject1);
+                _realm.Add(testObject2);
+                _realm.Add(testObject3);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(3));
+            eventArgs.Clear();
+
+            // Modifications
+            // this will be treated as adds for eventArgsForFilter since they now they satisfy the result filter and are added.
+            _realm.Write(() =>
+            {
+                testObject1.StringProperty = "foo3";
+                testObject2.StringProperty = "foo1";
+                testObject3.StringProperty = "foo2";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs, Is.Empty);
+            Assert.That(eventArgsForFilter.Count, Is.EqualTo(1));
+            Assert.That(eventArgsForFilter[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            eventArgsForFilter.Clear();
+
+            // Modifications2
+            _realm.Write(() =>
+            {
+                testObject1.StringProperty = "foo1";
+                testObject2.StringProperty = "foo2";
+                testObject3.StringProperty = "foo3";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgsForFilter, Is.Empty);
+
+            // Deletion
+            _realm.Write(() =>
+            {
+                _realm.Remove(testObject1);
+                _realm.Remove(testObject2);
+                _realm.Remove(testObject3);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+            Assert.That(eventArgs[0].OldItems!.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void DictionaryOnCollectionChangedShouldFireOnAddRemove()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            testObject.DictionarySameType.AsRealmCollection().CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+            var targetObject = new TestNotificationObject();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                testObject.DictionarySameType.Add("1", targetObject);
+            });
+
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(1));
+            eventArgs.Clear();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                testObject.DictionarySameType["1"].StringProperty = "foo1";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs, Is.Empty);
+
+            // Deletion
+            _realm.Write(() =>
+            {
+                testObject.DictionarySameType.Remove("1");
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SetOnCollectionChangedShouldFireOnAddRemove()
+        {
+            var testObject = _realm.Write(() => _realm.Add(new TestNotificationObject()));
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            testObject.SetSameType.AsRealmCollection().CollectionChanged += (sender, e) => eventArgs.Add(e);
+
+            var targetObject = new TestNotificationObject();
+
+            // Insertions
+            _realm.Write(() =>
+            {
+                testObject.SetSameType.Add(targetObject);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(1));
+            eventArgs.Clear();
+
+            // Modifications
+            _realm.Write(() =>
+            {
+                targetObject.StringProperty = "foo1";
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs, Is.Empty);
+
+            // Deletion
+            _realm.Write(() =>
+            {
+                testObject.SetSameType.Remove(targetObject);
+            });
+            _realm.Refresh();
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -845,6 +1253,365 @@ namespace Realms.Tests.Database
             new object[] { new int[] { 1, 3, 5 }, NotifyCollectionChangedAction.Add, new int[] { 2, 4 }, -1 },
             new object[] { new int[] { 1, 2, 3, 4, 5 }, NotifyCollectionChangedAction.Remove, new int[] { 2, 4 }, -1 },
         };
+
+        [Test]
+        public void ResultsOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
+        {
+            var changesets = new List<ChangeSet>();
+
+            // This is testing using the internal API because we're not exposing the shallow/keypath functionality publicly yet.
+            var results = (RealmResults<TestNotificationObject>)_realm.All<TestNotificationObject>();
+
+            using var token = results.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                _realm.Add(new TestNotificationObject());
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0 });
+
+            _realm.Write(() =>
+            {
+                results.First().StringProperty = "abc";
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 }, expectedNotifications: !shallow);
+
+            _realm.Write(() =>
+            {
+                _realm.RemoveAll<TestNotificationObject>();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 });
+        }
+
+        [Test]
+        public void ListOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var list = (RealmList<IntPropertyObject>)testObject.ObjectList;
+
+            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                list.Add(new IntPropertyObject());
+                list.Add(new IntPropertyObject());
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                list[0].Int = 456;
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 }, expectedNotifications: !shallow);
+
+            _realm.Write(() =>
+            {
+                list[0] = new IntPropertyObject();
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+            _realm.Write(() =>
+            {
+                list.Move(0, 1);
+            });
+
+            // Moves are detected both as a move and a deletion + insertion
+            VerifyNotifications(changesets, expectedInserted: new[] { 1 }, expectedDeleted: new[] { 0 }, expectedMoves: new Move[] { new(0, 1) });
+
+            _realm.Write(() =>
+            {
+                list.RemoveAt(1);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                list.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
+        }
+
+        [Test]
+        public void ListOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var list = (RealmList<int>)testObject.Int32List;
+
+            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                list.Add(123);
+                list.Add(456);
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                list[0] = 999;
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+            _realm.Write(() =>
+            {
+                list.Move(0, 1);
+            });
+
+            // Moves are detected both as a move and a deletion + insertion
+            VerifyNotifications(changesets, expectedInserted: new[] { 1 }, expectedDeleted: new[] { 0 }, expectedMoves: new Move[] { new(0, 1) });
+
+            _realm.Write(() =>
+            {
+                list.RemoveAt(1);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                list.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
+        }
+
+        [Test]
+        public void SetOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var set = (RealmSet<IntPropertyObject>)testObject.ObjectSet;
+
+            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                set.Add(new IntPropertyObject());
+                set.Add(new IntPropertyObject());
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                set[0].Int = 456;
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 }, expectedNotifications: !shallow);
+
+            _realm.Write(() =>
+            {
+                set.Remove(set[1]);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                set.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
+        }
+
+        [Test]
+        public void SetOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var set = (RealmSet<int>)testObject.Int32Set;
+
+            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                set.Add(123);
+                set.Add(456);
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                set.Remove(set[1]);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                set.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: true);
+        }
+
+        [Test]
+        public void DictionaryOfObjects_SubscribeForNotifications_DoesntReceiveModifications([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var dict = (RealmDictionary<IntPropertyObject>)testObject.ObjectDict;
+
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                dict["1"] = new IntPropertyObject();
+                dict["2"] = new IntPropertyObject();
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                dict["1"].Int = 456;
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 }, expectedNotifications: !shallow);
+
+            _realm.Write(() =>
+            {
+                dict["1"] = new IntPropertyObject();
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+            _realm.Write(() =>
+            {
+                dict.Remove(dict[1].Key);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                dict.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: false);
+        }
+
+        [Test]
+        public void DictionaryOfPrimitives_SubscribeForNotifications_ShallowHasNoEffect([Values(true, false)] bool shallow)
+        {
+            var testObject = _realm.Write(() => _realm.Add(new CollectionsObject()));
+            var changesets = new List<ChangeSet>();
+
+            var dict = (RealmDictionary<int>)testObject.Int32Dict;
+
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            {
+                if (changes != null)
+                {
+                    changesets.Add(changes);
+                }
+            }, shallow);
+
+            _realm.Write(() =>
+            {
+                dict["1"] = 123;
+                dict["2"] = 456;
+            });
+
+            VerifyNotifications(changesets, expectedInserted: new[] { 0, 1 });
+
+            _realm.Write(() =>
+            {
+                dict["1"] = 999;
+            });
+
+            VerifyNotifications(changesets, expectedModified: new[] { 0 });
+
+            _realm.Write(() =>
+            {
+                dict.Remove(dict[1].Key);
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 1 });
+
+            _realm.Write(() =>
+            {
+                dict.Clear();
+            });
+
+            VerifyNotifications(changesets, expectedDeleted: new[] { 0 }, expectedCleared: false);
+        }
+
+        private void VerifyNotifications(List<ChangeSet> notifications,
+            int[] expectedInserted = null,
+            int[] expectedModified = null,
+            int[] expectedDeleted = null,
+            Move[] expectedMoves = null,
+            bool expectedCleared = false,
+            bool expectedNotifications = true)
+        {
+            _realm.Refresh();
+            Assert.That(notifications.Count, Is.EqualTo(expectedNotifications ? 1 : 0));
+            if (expectedNotifications)
+            {
+                Assert.That(notifications[0].InsertedIndices, expectedInserted == null ? Is.Empty : Is.EquivalentTo(expectedInserted));
+                Assert.That(notifications[0].ModifiedIndices, expectedModified == null ? Is.Empty : Is.EquivalentTo(expectedModified));
+                Assert.That(notifications[0].DeletedIndices, expectedDeleted == null ? Is.Empty : Is.EquivalentTo(expectedDeleted));
+                Assert.That(notifications[0].Moves, expectedMoves == null ? Is.Empty : Is.EquivalentTo(expectedMoves));
+                Assert.That(notifications[0].IsCleared, Is.EqualTo(expectedCleared));
+            }
+
+            notifications.Clear();
+        }
     }
 
     public partial class OrderedContainer : TestRealmObject

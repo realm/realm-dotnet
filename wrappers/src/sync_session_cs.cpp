@@ -71,6 +71,7 @@ REALM_EXPORT CSharpSessionState realm_syncsession_get_state(const SharedSyncSess
         switch (session->state()) {
         case SyncSession::State::Inactive:
         case SyncSession::State::Dying:
+        case SyncSession::State::Paused:
             return CSharpSessionState::Inactive;
         default:
             return CSharpSessionState::Active;
@@ -209,14 +210,14 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
 REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        session->log_out();
+        session->pause();
     });
 }
 
 REALM_EXPORT void realm_syncsession_start(const SharedSyncSession& session, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        session->revive_if_needed();
+        session->resume();
     });
 }
 

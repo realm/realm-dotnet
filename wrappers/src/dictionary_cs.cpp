@@ -155,12 +155,13 @@ extern "C" {
         delete dictionary;
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, bool shallow, NativeException::Marshallable& ex)
+    
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
-                return dictionary->add_notification_callback(callback);
-            });
+            return subscribe_for_notifications(managed_dict, [dictionary, shallow](CollectionChangeCallback callback) {
+                return dictionary->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+            }, shallow);
         });
     }
 
@@ -171,7 +172,7 @@ extern "C" {
             context->managed_object = managed_dict;
             context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes) {
                 if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
-                    s_dictionary_notification_callback(context->managed_object, nullptr);
+                    s_dictionary_notification_callback(context->managed_object, nullptr, false);
                 }
                 else {
                     auto deletions = get_keys_vector(changes.deletions);
@@ -184,9 +185,9 @@ extern "C" {
                         { modifications.data(), modifications.size() },
                     };
 
-                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
+                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes, false);
                 }
-            });
+            }, KeyPathArray());
 
             return context;
         });

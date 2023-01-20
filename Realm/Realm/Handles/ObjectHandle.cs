@@ -143,7 +143,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -175,7 +175,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
 
             // We need to special-handle objects because they need to be managed before we can set them.
             if (value.Type == RealmValueType.Object)
@@ -229,7 +229,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
 
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -255,7 +255,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -268,7 +268,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -281,7 +281,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -294,7 +294,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(Root, objPtr);
@@ -314,7 +314,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -325,7 +325,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -351,12 +351,12 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
             EnsureIsOpen();
-
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
+
             return new NotificationTokenHandle(Root, result);
         }
 
@@ -367,16 +367,6 @@ namespace Realms
             var result = NativeMethods.freeze(this, frozenRealmHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ObjectHandle(frozenRealmHandle, result);
-        }
-
-        private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
-        {
-            if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
-            {
-                return result;
-            }
-
-            throw new MissingMemberException(metadata.Schema.Name, propertyName);
         }
 
         private static Property GetProperty(string propertyName, Metadata metadata)
