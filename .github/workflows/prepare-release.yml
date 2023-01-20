@@ -2,7 +2,6 @@ name: Prepare Release
 
 on:
   workflow_dispatch:
-  pull_request:
 jobs:
   main:
     runs-on: ubuntu-latest
@@ -13,17 +12,17 @@ jobs:
           submodules: recursive
       - name: Read Core version
         id: get-core-version
-        if: inputs.set-core-version-analytics
         run: |
           cd wrappers/realm-core
           pkgVersion=$(grep "\bVERSION=" dependencies.list | cut -d= -f2)
           echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
+          echo "core-version=$pkgVersion"
         shell: bash
       - name: Update Analytics.cs
         uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:
-          find: '_coreVersion \= "\w*"'
-          replace: '_coreVersion \= "${{ steps.get-core-version.outputs.core-version }}"'
+          find: '_coreVersion = "\w*"'
+          replace: '_coreVersion = "${{ steps.get-core-version.outputs.core-version }}"'
           include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog
