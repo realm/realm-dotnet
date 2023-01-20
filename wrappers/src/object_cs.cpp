@@ -41,8 +41,10 @@ namespace binding {
     {
         KeyPathArray keyPathArray;
         for (auto& prop : object.persisted_properties) {
-            bool is_primitive = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
-            if (is_primitive) {
+            // We want to filter out all collection properties. By providing keypaths with just the top-level properties
+            // means we won't get deep change notifications either.
+            bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
+            if (is_scalar) {
                 KeyPath keyPath;
                 keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
                 keyPathArray.push_back(keyPath);

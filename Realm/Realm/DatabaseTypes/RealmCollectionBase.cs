@@ -187,7 +187,7 @@ namespace Realms
             Argument.NotNull(callback, nameof(callback));
             _notificationCallbacks.Value.Add(callback, shallow);
 
-            return NotificationToken.Create(callback, (c) => UnsubscribeFromNotifications(c, shallow));
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -609,6 +609,8 @@ namespace Realms
             {
                 if (subscription.DeliveredInitialNotification)
                 {
+                    // If Core already delivered the initial notification, we need to manually invoke the callback as it won't be invoked by Core.
+                    // It's part of the SubscribeForNotifications API contract that an initial callback with `null` changes is always delivered.
                     callback(_parent, null, null);
                 }
 
