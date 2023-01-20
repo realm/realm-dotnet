@@ -39,6 +39,7 @@ jobs:
     - build-wrappers
     with:
       build-docs: ${{ contains(github.head_ref, 'release') }}
+      set-core-version-analytics: ${{ contains(github.head_ref, 'release') }}
   build-unity:
     uses: ./.github/workflows/build-unity.yml
     name: Package

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "readCoreVersion", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet")
 
 #@ def buildDocs():
   - name: Check Docfx cache
@@ -23,6 +23,16 @@
       Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
   - _: #@ template.replace(uploadArtifacts("Docs.zip", "Realm/packages/Docs.zip"))
     if: inputs.build-docs
+#@ end
+
+#@ def setCoreVersionAnalytics():
+  - name: Set core version in analytics
+    id: set-core-version-analytics
+    run: |
+      cd Realm/Realm.Weaver/Analytics/
+      sed -i 's/_coreVersion \= "\w*"/_coreVersion \= "'"${{ steps.get-core-version.outputs.core-version }}"'"/' Analytics.cs
+      cat Analytics.cs
+    shell: bash
 #@ end
 
 #@ def uploadPackageArtifacts():
@@ -49,7 +59,7 @@ name: build-packages
         type: boolean
         required: false
         default: false
-      set-core-version-wrapper:
+      set-core-version-analytics:
         type: boolean
         required: false
         default: false

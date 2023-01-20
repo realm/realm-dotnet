@@ -6,6 +6,10 @@ name: build-packages
         type: boolean
         required: false
         default: false
+      set-core-version-analytics:
+        type: boolean
+        required: false
+        default: false
     outputs:
       package_version:
         value: ${{ jobs.build-packages.outputs.package_version }}
@@ -45,6 +49,13 @@ jobs:
           $suffix = "alpha.$env:GITHUB_RUN_NUMBER"
         }
         echo "build_suffix=$suffix" >> $Env:GITHUB_OUTPUT
+    - name: Read Core version
+      id: get-core-version
+      run: |
+        cd wrappers/realm-core
+        pkgVersion=$(grep "\bVERSION" dependencies.list | cut -d= -f2)
+        echo "core_version=$pkgVersion" >> $GITHUB_OUTPUT
+      shell: bash
     - name: Fetch artifacts for macos
       uses: actions/download-artifact@v3
       with:
