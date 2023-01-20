@@ -124,6 +124,7 @@ with:
       cd wrappers/realm-core
       pkgVersion=$(grep "\bVERSION" dependencies.list | cut -d= -f2)
       echo "core_version=$pkgVersion" >> $GITHUB_OUTPUT
+      echo "core_version=$pkgVersion"
     shell: bash
 #@ end
 
