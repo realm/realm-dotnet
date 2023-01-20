@@ -12,15 +12,17 @@
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
+* Improved performance of `PropertyChanged` and `CollectionChanged` notifications. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
 
 ### Fixed
-* Set<Mixed> consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
+* `ISet<RealmValue>` consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
 * Fixed wrong assertion on query error that could result in a crash. (Core 13.1.0)
 * Fixed an issue preventing opening an encrypted file on a device with a page size bigger than the one on which the file was produced. (Core 13.1.1)
 * Fixed possible segfault in sync client where async callback was using object after being deallocated (Core 13.2.0)
 * Fixed crash when using client reset with recovery and flexible sync with a single subscription (Core 13.2.0)
 * Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
 * Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
+* Fixed an issue that would cause `PropertyChanged` notifications to be delivered for collection properties when the content of the collection was modified even if the collection itself was not replaced. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
@@ -32,7 +34,6 @@
 ## 10.19.0 (2023-01-06)
 
 ### Enhancements
-* PropertyChanged will no longer fire notifications for changes to collection-properties. CollectionChanged will no longer fire notifications for modifications to objects within the collection itself. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
 * Removed redundant serialization/deserialization of arguments in CallAsync. (Issue [#3079](https://github.com/realm/realm-dotnet/issues/3079))
 * Added a field `Transaction.State` which describes the current state of the transaction. (Issue [#2551](https://github.com/realm/realm-dotnet/issues/2551))
 * Improved error message when null is passed as argument to params for EmailPasswordAuth.CallResetPasswordFunctionAsync. (Issue [#3011](https://github.com/realm/realm-dotnet/issues/3011))
