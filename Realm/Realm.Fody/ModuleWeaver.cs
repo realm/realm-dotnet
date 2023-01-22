@@ -86,7 +86,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
         };
 
-        config.TargetFramework = frameworkName.FullName;
+        config.TargetFramework = frameworkName.Identifier;
         config.TargetFrameworkVersion = frameworkName.Version.ToString();
         config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
         return config;

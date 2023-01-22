@@ -22,8 +22,10 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Mono.Cecil;
+
 using static RealmWeaver.Analytics;
 using static RealmWeaver.Metric;
+using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
 {
@@ -51,29 +53,33 @@ namespace RealmWeaver
             WrapInTryCatch(() =>
             {
                 string targetOs = frameworkName.Identifier;
+
                 if (targetOs.ContainsIgnoreCase("android"))
                 {
-                    return Metric.OperatingSystem.Android;
+                    return OperatingSystem.Android;
                 }
                 else if (targetOs.ContainsIgnoreCase("ios"))
                 {
-                    return Metric.OperatingSystem.Ios;
+                    return OperatingSystem.Ios;
                 }
                 else if (targetOs.ContainsIgnoreCase("mac"))
                 {
-                    return Metric.OperatingSystem.MacOS;
+                    return OperatingSystem.MacOS;
                 }
                 else if (targetOs.ContainsIgnoreCase("tvos"))
                 {
-                    return Metric.OperatingSystem.TvOs;
+                    return OperatingSystem.TvOs;
                 }
                 else if (targetOs.ContainsIgnoreCase("linux"))
                 {
-                    return Metric.OperatingSystem.Linux;
+                    return OperatingSystem.Linux;
                 }
-                else if (targetOs.ContainsIgnoreCase(".NETFramework"))
+                else if (targetOs.ContainsIgnoreCase("win") ||
+                    targetOs.ContainsIgnoreCase("uap") ||
+                    targetOs.ContainsIgnoreCase("win") ||
+                    frameworkName.Identifier == ".NETFramework")
                 {
-                    return Metric.OperatingSystem.Windows;
+                    return OperatingSystem.Windows;
                 }
                 else
                 {
@@ -103,19 +109,13 @@ namespace RealmWeaver
 
         public static string ConvertPlatformIdOsToMetricVersion(PlatformID platformID) =>
             WrapInTryCatch(() =>
-            {
-                switch (platformID)
+                platformID switch
                 {
-                    case PlatformID.Win32NT:
-                        return Metric.OperatingSystem.Windows;
-                    case PlatformID.MacOSX:
-                        return Metric.OperatingSystem.MacOS;
-                    case PlatformID.Unix:
-                        return Metric.OperatingSystem.Linux;
-                    default:
-                        return $"{platformID} is an unsupported operating system.";
-                }
-            });
+                    PlatformID.Win32NT => OperatingSystem.Windows,
+                    PlatformID.MacOSX => OperatingSystem.MacOS,
+                    PlatformID.Unix => OperatingSystem.Linux,
+                    _ => $"{platformID} is an unsupported operating system."
+                });
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
@@ -129,7 +129,7 @@ namespace RealmWeaver
             {
                 // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
                 // I didn't have any handy one.
-                var possibleFrameworks = new string[] { "Xamarin.Form", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
+                var possibleFrameworks = new string[] { "Xamarin.Forms", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
                 {

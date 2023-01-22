@@ -26,7 +26,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 
 using static RealmWeaver.AnalyticsUtils;
-using static RealmWeaver.Metric.SdkFeature;
 
 namespace RealmWeaver
 {
@@ -64,529 +63,13 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
 
-        #region FeatureDictionaries
+        private readonly Dictionary<string, string> _realmEnvMetrics;
 
-        private readonly Dictionary<string, byte> _realmFeaturesToAnalyze = new Dictionary<string, byte>()
-        {
-            [IEmbeddedObject] = 0,
-            [IAsymmetricObject] = 0,
-            [ReferenceList] = 0,
-            [PrimitiveList] = 0,
-            [ReferenceDictionary] = 0,
-            [PrimitiveDictionary] = 0,
-            [ReferenceSet] = 0,
-            [PrimitiveSet] = 0,
-            [RealmInteger] = 0,
-            [RealmObjectReference] = 0,
-            [RealmValue] = 0,
-            [BacklinkAttribute] = 0,
-            [GetInstanceAsync] = 0,
-            [GetInstance] = 0,
-            [NOT_SUPPORTED_YET] = 0,
-            [Find] = 0,
-            [WriteAsync] = 0,
-            [ThreadSafeReference] = 0,
-            [Add] = 0,
-            [ShouldCompactOnLaunch] = 0,
-            [MigrationCallback] = 0,
-            [RealmChanged] = 0,
-            [ListSubscribeForNotifications] = 0,
-            [SetSubscribeForNotifications] = 0,
-            [DictionarySubscribeForNotifications] = 0,
-            [ResultSubscribeForNotifications] = 0,
-            [PropertyChanged] = 0,
-            [RecoverOrDiscardUnsyncedChangesHandler] = 0,
-            [RecoverUnsyncedChangesHandler] = 0,
-            [DiscardUnsyncedChangesHandler] = 0,
-            [ManualRecoveryHandler] = 0,
-            [GetProgressObservable] = 0,
-            [PartitionSyncConfiguration] = 0,
-            [FlexibleSyncConfiguration] = 0,
-            [Anonymous] = 0,
-            [EmailPassword] = 0,
-            [Facebook] = 0,
-            [Google] = 0,
-            [Apple] = 0,
-            [JWT] = 0,
-            [ApiKey] = 0,
-            [ServerApiKey] = 0,
-            [Function] = 0,
-            [CallAsync] = 0,
-            [GetMongoClient] = 0,
-            [DynamicApi] = 0,
-        };
+        private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
-        private readonly Dictionary<string, string> _realmEnvMetrics = new Dictionary<string, string>()
-        {
-            { UserId, string.Empty },
-            { RealmSdk, ".NET" },
-            { Language, "CSharp" },
-            { LanguageVersion, string.Empty },
-            { HostOsType, string.Empty },
-            { HostOsVersion, string.Empty },
-            { HostCpuArch, string.Empty },
-            { TargetOsType, string.Empty },
-            { TargetOsMinimumVersion, string.Empty },
-            { TargetOsVersion, string.Empty },
-            { TargetCpuArch, string.Empty },
-            { RealmSdkVersion, string.Empty },
-            { CoreVersion, string.Empty },
-            { FrameworkUsedInConjunction, string.Empty },
-            { FrameworkUsedInConjunctionVersion, string.Empty },
-            { SdkInstallationMethod, string.Empty },
-            { IdeUsed, string.Empty },
-            { IdeUsedVersion, string.Empty },
-        };
+        private readonly Dictionary<string, Func<Instruction, (bool IsToDelete, string DictKey)>> _apiAnalysisSetters;
 
-        private readonly Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>> _apiAnalysisSetters = new Dictionary<string, Func<Instruction, Dictionary<string, byte>, ImportedReferences, bool>>()
-        {
-            {
-                nameof(GetInstanceAsync), (instruction, featureDict, references) =>
-                {
-                    if (IsInRealmNamespace(instruction.Operand))
-                    {
-                        featureDict[GetInstanceAsync] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(GetInstance),  (instruction, featureDict, references) =>
-                {
-                    if (IsInRealmNamespace(instruction.Operand))
-                    {
-                        featureDict[GetInstance] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(NOT_SUPPORTED_YET),  (instruction, featureDict, references) =>
-                {
-                    featureDict[NOT_SUPPORTED_YET] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(Find), (instruction, featureDict, references) =>
-                {
-                    if (IsInRealmNamespace(instruction.Operand))
-                    {
-                        featureDict[Find] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(WriteAsync),  (instruction, featureDict, references) =>
-                {
-                    if (IsInRealmNamespace(instruction.Operand))
-                    {
-                        featureDict[WriteAsync] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(ThreadSafeReference),  (instruction, featureDict, references) =>
-                {
-                    featureDict[ThreadSafeReference] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(Add),  (instruction, featureDict, references) =>
-                {
-                    // check if it's the right signature, that is 2 params in total of which
-                    // the second a bool and that it's set to true.
-                    if (IsInRealmNamespace(instruction.Operand) &&
-                        instruction.Operand is MethodSpecification methodSpecification &&
-                        methodSpecification.Parameters.Count == 2 &&
-                        methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
-                        instruction.Previous.OpCode == OpCodes.Ldc_I4_1)
-                    {
-                        featureDict[Add] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(ShouldCompactOnLaunch),  (instruction, featureDict, references) =>
-                {
-                    featureDict[ShouldCompactOnLaunch] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(MigrationCallback),  (instruction, featureDict, references) =>
-                {
-                    featureDict[MigrationCallback] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(RealmChanged),  (instruction, featureDict, references) =>
-                {
-                    featureDict[RealmChanged] = 1;
-                    return true;
-                }
-            },
-            {
-                "SubscribeForNotifications", (instruction, featureDict, references) =>
-                {
-                    if (!(instruction.Operand is MethodSpecification methodSpecification))
-                    {
-                        return false;
-                    }
-
-                    switch (((TypeSpecification)methodSpecification.Parameters[0].ParameterType).Name)
-                    {
-                        case "IQueryable`1":
-                        case "IOrderedQueryable`1":
-                            featureDict[ResultSubscribeForNotifications] = 1;
-                            break;
-                        case "IList`1":
-                            featureDict[ListSubscribeForNotifications] = 1;
-                            break;
-                        case "ISet`1":
-                            featureDict[SetSubscribeForNotifications] = 1;
-                            break;
-                        case "IDictionary`2":
-                            featureDict[DictionarySubscribeForNotifications] = 1;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    return (featureDict[ResultSubscribeForNotifications] &
-                        featureDict[ListSubscribeForNotifications] &
-                        featureDict[SetSubscribeForNotifications] &
-                        featureDict[DictionarySubscribeForNotifications]) == 0x1;
-                }
-            },
-            {
-                nameof(PropertyChanged), (instruction, featureDict, references) =>
-                {
-                    featureDict[PropertyChanged] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(RecoverOrDiscardUnsyncedChangesHandler),  (instruction, featureDict, references) =>
-                {
-                    featureDict[RecoverOrDiscardUnsyncedChangesHandler] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(RecoverUnsyncedChangesHandler),  (instruction, featureDict, references) =>
-                {
-                    featureDict[RecoverUnsyncedChangesHandler] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(DiscardUnsyncedChangesHandler), (instruction, featureDict, references) =>
-                {
-                    featureDict[DiscardUnsyncedChangesHandler] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(ManualRecoveryHandler), (instruction, featureDict, references) =>
-                {
-                    featureDict[ManualRecoveryHandler] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(GetProgressObservable), (instruction, featureDict, references) =>
-                {
-                    featureDict[GetProgressObservable] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(PartitionSyncConfiguration), (instruction, featureDict, references) =>
-                {
-                    featureDict[PartitionSyncConfiguration] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(FlexibleSyncConfiguration), (instruction, featureDict, references) =>
-                {
-                    featureDict[FlexibleSyncConfiguration] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(Anonymous), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[Anonymous] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(EmailPassword), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[EmailPassword] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(Facebook), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[Facebook] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(Google), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[Google] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(Apple), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[Apple] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(JWT), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[JWT] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(ApiKey), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[ApiKey] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(ServerApiKey), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[ServerApiKey] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(Function), (instruction, featureDict, references) =>
-                {
-                    if (IsCredential(instruction.Operand))
-                    {
-                        featureDict[Function] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(CallAsync), (instruction, featureDict, references) =>
-                {
-                    if (IsFromNamespace(instruction.Operand, "Realms.Sync.User/FunctionsClient"))
-                    {
-                        featureDict[CallAsync] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(GetMongoClient), (instruction, featureDict, references) =>
-                {
-                    featureDict[GetMongoClient] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(DynamicApi), (instruction, featureDict, references) =>
-                {
-                    featureDict[DynamicApi] = 1;
-                    return true;
-                }
-            },
-        };
-
-        private readonly Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>> _classAnalysisSetters = new Dictionary<string, Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool>>()
-        {
-            {
-                nameof(IEmbeddedObject), (member, featureDict, references) =>
-                {
-                    featureDict[IEmbeddedObject] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(IAsymmetricObject), (member, featureDict, references) =>
-                {
-                    featureDict[IAsymmetricObject] = 1;
-                    return true;
-                }
-            },
-            {
-                "Class", (member, featureDict, references) =>
-                {
-                    if (!(member is PropertyDefinition property))
-                    {
-                        return false;
-                    }
-
-                    if (property.PropertyType.IsIRealmObjectBaseImplementor(references) ||
-                        property.PropertyType.IsRealmObjectDescendant(references))
-                    {
-                        featureDict[RealmObjectReference] = 1;
-                        return true;
-                    }
-
-                    return false;
-                }
-            },
-            {
-                nameof(RealmValue), (member, featureDict, references) =>
-                {
-                    featureDict[RealmValue] = 1;
-                    return true;
-                }
-            },
-            {
-                "IList`1", (member, featureDict, references) =>
-                {
-                    if (!(member is PropertyDefinition property))
-                    {
-                        return false;
-                    }
-
-                    if (((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive)
-                    {
-                        featureDict[PrimitiveList] = 1;
-                    }
-                    else
-                    {
-                        featureDict[ReferenceList] = 1;
-                    }
-
-                    return (featureDict[PrimitiveList] &
-                        featureDict[ReferenceList]) == 0x1;
-                }
-            },
-            {
-                "IDictionary`2", (member, featureDict, references) =>
-                {
-                    if (!(member is PropertyDefinition property))
-                    {
-                        return false;
-                    }
-
-                    if (((GenericInstanceType)property.PropertyType).GenericArguments[1].IsPrimitive)
-                    {
-                        featureDict[PrimitiveDictionary] = 1;
-                    }
-                    else
-                    {
-                        featureDict[ReferenceDictionary] = 1;
-                    }
-
-                    return (featureDict[PrimitiveDictionary] &
-                        featureDict[ReferenceDictionary]) == 0x1;
-                }
-            },
-            {
-                "ISet`1", (member, featureDict, references) =>
-                {
-                    if (!(member is PropertyDefinition property))
-                    {
-                        return false;
-                    }
-
-                    if (((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive)
-                    {
-                        featureDict[PrimitiveSet] = 1;
-                    }
-                    else
-                    {
-                        featureDict[ReferenceSet] = 1;
-                    }
-
-                    return (featureDict[PrimitiveSet] &
-                        featureDict[ReferenceSet]) == 0x1;
-                }
-            },
-            {
-                "RealmInteger`1", (member, featureDict, references) =>
-                {
-                    featureDict[RealmInteger] = 1;
-                    return true;
-                }
-            },
-            {
-                nameof(BacklinkAttribute), (member, featureDict, references) =>
-                {
-                    featureDict[BacklinkAttribute] = 1;
-                    return true;
-                }
-            }
-        };
-
-        #endregion
+        private readonly Dictionary<string, Func<IMemberDefinition, (bool IsToDelete, string DictKey)>> _classAnalysisSetters;
 
         private readonly Config _config;
 
@@ -595,6 +78,128 @@ namespace RealmWeaver
             _references = references;
             _config = config;
             _logger = logger;
+
+            _realmFeaturesToAnalyze = Metric.SdkFeatures.Keys.ToDictionary(c => c, _ => (byte)0);
+            _realmEnvMetrics = Metric.UserEnvironment.Keys.ToDictionary(c => c, _ => string.Empty);
+
+            _classAnalysisSetters = new ()
+            {
+                ["IEmbeddedObject"] = member => (true, "IEmbeddedObject"),
+                ["IAsymmetricObject"] = member => (true, "IAsymmetricObject"),
+                ["Class"] = member =>
+                    member is PropertyDefinition property &&
+                    (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
+                    property.PropertyType.IsRealmObjectDescendant(_references)) ?
+                    (true, "RealmObjectReference") : default,
+                ["RealmValue"] = member => (true, "RealmValue"),
+                ["IList`1"] = member =>
+                {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return default;
+                    }
+
+                    var keyToSet = ((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive ?
+                        "PrimitiveList" : "ReferenceList";
+
+                    return ((_realmFeaturesToAnalyze["PrimitiveList"] &
+                        _realmFeaturesToAnalyze["ReferenceList"]) == 0x1, keyToSet);
+                },
+                ["IDictionary`2"] = member =>
+                {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return default;
+                    }
+
+                    var keyToSet = ((GenericInstanceType)property.PropertyType).GenericArguments[1].IsPrimitive ?
+                        "PrimitiveDictionary" : "ReferenceDictionary";
+
+                    return ((_realmFeaturesToAnalyze["PrimitiveDictionary"] &
+                        _realmFeaturesToAnalyze["ReferenceDictionary"]) == 0x1, keyToSet);
+                },
+                ["ISet`1"] = member =>
+                {
+                    if (!(member is PropertyDefinition property))
+                    {
+                        return default;
+                    }
+
+                    var keyToSet = ((GenericInstanceType)property.PropertyType).GenericArguments[0].IsPrimitive ?
+                        "PrimitiveSet" : "ReferenceSet";
+
+                    return ((_realmFeaturesToAnalyze["PrimitiveSet"] &
+                        _realmFeaturesToAnalyze["ReferenceSet"]) == 0x1, keyToSet);
+                },
+                ["RealmInteger`1"] = member => (true, "RealmInteger"),
+                ["BacklinkAttribute"] = member => (true, "BacklinkAttribute")
+            };
+
+            _apiAnalysisSetters = new ()
+            {
+                ["GetInstanceAsync"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "GetInstanceAsync") : default,
+                ["GetInstance"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "GetInstance") : default,
+
+                // ["NOT_SUPPORTED_YET"] = instruction => (true, **SOMETHING**),
+                ["Find"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Find") : default,
+                ["WriteAsync"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "WriteAsync") : default,
+                ["ThreadSafeReference"] = instruction => (true, "ThreadSafeReference"),
+
+                // check if it's the right signature, that is 2 params in total of which
+                // the second a bool and that it's set to true.
+                ["Add"] = instruction =>
+                    IsInRealmNamespace(instruction.Operand) &&
+                    instruction.Operand is MethodSpecification methodSpecification &&
+                    methodSpecification.Parameters.Count == 2 &&
+                    methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
+                    instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
+                    (true, "Add") : default,
+                ["ShouldCompactOnLaunch"] = instruction => (true, "ShouldCompactOnLaunch"),
+                ["MigrationCallback"] = instruction => (true, "MigrationCallback"),
+                ["RealmChanged"] = instruction => (true, "RealmChanged"),
+                ["SubscribeForNotifications"] = instruction =>
+                {
+                    if (!(instruction.Operand is MethodSpecification methodSpecification) || !IsInRealmNamespace(instruction.Operand))
+                    {
+                        return default;
+                    }
+
+                    var collectionType = ((TypeSpecification)methodSpecification.Parameters[0].ParameterType).Name;
+                    var key = collectionType switch
+                    {
+                        "IQueryable`1" or "IOrderedQueryable`1" => "ResultSubscribeForNotifications",
+                        "IList`1" => "ListSubscribeForNotifications",
+                        "ISet`1" => "SetSubscribeForNotifications",
+                        "IDictionary`2" => "DictionarySubscribeForNotifications",
+                        _ => $"{collectionType} unknown collection"
+                    };
+
+                    return ((_realmFeaturesToAnalyze["ResultSubscribeForNotifications"] &
+                        _realmFeaturesToAnalyze["ListSubscribeForNotifications"] &
+                        _realmFeaturesToAnalyze["SetSubscribeForNotifications"] &
+                        _realmFeaturesToAnalyze["DictionarySubscribeForNotifications"]) == 0x1, key);
+                },
+                ["PropertyChanged"] = instruction => (true, "PropertyChanged"),
+                ["RecoverOrDiscardUnsyncedChangesHandler"] = instruction => (true, "RecoverOrDiscardUnsyncedChangesHandler"),
+                ["RecoverUnsyncedChangesHandler"] = instruction => (true, "RecoverUnsyncedChangesHandler"),
+                ["DiscardUnsyncedChangesHandler"] = instruction => (true, "DiscardUnsyncedChangesHandler"),
+                ["ManualRecoveryHandler"] = instruction => (true, "ManualRecoveryHandler"),
+                ["GetProgressObservable"] = instruction => (true, "GetProgressObservable"),
+                ["PartitionSyncConfiguration"] = instruction => (true, "PartitionSyncConfiguration"),
+                ["FlexibleSyncConfiguration"] = instruction => (true, "FlexibleSyncConfiguration"),
+                ["Anonymous"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Anonymous") : default,
+                ["EmailPassword"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "EmailPassword") : default,
+                ["Facebook"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Facebook") : default,
+                ["Google"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Google") : default,
+                ["Apple"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Apple") : default,
+                ["JWT"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "JWT") : default,
+                ["ApiKey"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "ApiKey") : default,
+                ["ServerApiKey"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "ServerApiKey") : default,
+                ["Function"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Function") : default,
+                ["CallAsync"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "CallAsync") : default,
+                ["GetMongoClient"] = instruction => (true, "GetMongoClient"),
+                ["DynamicApi"] = instruction => (true, "DynamicApi")
+            };
         }
 
         internal void AnalyzeUserAssembly(ModuleDefinition module)
@@ -604,23 +209,27 @@ namespace RealmWeaver
                 // collect environment details
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
-                _realmEnvMetrics[UserId] = AnonymizedUserID;
-                _realmEnvMetrics[ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
-                _realmEnvMetrics[HostOsType] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
-                _realmEnvMetrics[HostOsVersion] = Environment.OSVersion.Version.ToString();
-                _realmEnvMetrics[HostCpuArch] = GetHostCpuArchitecture;
-                _realmEnvMetrics[TargetOsType] = _config.TargetOSName;
-                _realmEnvMetrics[TargetOsVersion] = "FILL ME";
-                _realmEnvMetrics[TargetOsMinimumVersion] = "FILL ME";
-                _realmEnvMetrics[TargetCpuArch] = GetTargetCpuArchitecture(module);
-                _realmEnvMetrics[FrameworkUsedInConjunction] = frameworkInfo.Name;
-                _realmEnvMetrics[FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
-                _realmEnvMetrics[LanguageVersion] = GetLanguageVersion(module, _config.TargetFramework);
-                _realmEnvMetrics[RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
-                _realmEnvMetrics[CoreVersion] = "FILL ME";
-                _realmEnvMetrics[SdkInstallationMethod] = "FILL ME";
-                _realmEnvMetrics[IdeUsed] = "FILL ME";
-                _realmEnvMetrics[IdeUsedVersion] = "FILL ME";
+                _realmEnvMetrics["UserId"] = AnonymizedUserID;
+                _realmEnvMetrics["ProjectId"] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
+                _realmEnvMetrics["RealmSdk"] = ".NET";
+                _realmEnvMetrics["Language"] = "CSharp";
+                _realmEnvMetrics["HostOsType"] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
+                _realmEnvMetrics["HostOsVersion"] = Environment.OSVersion.Version.ToString();
+                _realmEnvMetrics["HostCpuArch"] = GetHostCpuArchitecture;
+                _realmEnvMetrics["TargetOsType"] = _config.TargetOSName;
+                _realmEnvMetrics["TargetOsVersion"] = "FILL ME";
+                _realmEnvMetrics["TargetOsMinimumVersion"] = "FILL ME";
+                _realmEnvMetrics["TargetCpuArch"] = GetTargetCpuArchitecture(module);
+                _realmEnvMetrics["FrameworkUsedInConjunction"] = frameworkInfo.Name;
+                _realmEnvMetrics["FrameworkUsedInConjunctionVersion"] = frameworkInfo.Version;
+                _realmEnvMetrics["LanguageVersion"] = GetLanguageVersion(module, _config.TargetFramework);
+                _realmEnvMetrics["RealmSdkVersion"] = module.FindReference("Realm").Version.ToString();
+                _realmEnvMetrics["CoreVersion"] = "FILL ME";
+                _realmEnvMetrics["SdkInstallationMethod"] = "FILL ME";
+                _realmEnvMetrics["IdeUsed"] = "msbuild";
+                _realmEnvMetrics["IdeUsedVersion"] = "FILL ME";
+                _realmEnvMetrics["NetFramework"] = _config.TargetFramework;
+                _realmEnvMetrics["NetFrameworkVersion"] = _config.TargetFrameworkVersion;
 
                 foreach (var type in module.Types)
                 {
@@ -642,7 +251,7 @@ namespace RealmWeaver
                     continue;
                 }
 
-                Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
+                Func<IMemberDefinition, (bool IsToDelete, string DictKey)> featureFunc = null;
 
                 foreach (var propertyResult in type.Properties)
                 {
@@ -654,19 +263,16 @@ namespace RealmWeaver
                         key = property.PropertyType.MetadataType.ToString();
                     }
 
-                    if (_classAnalysisSetters.TryGetValue(key, out featureFunc) &&
-                        featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
+                    if (_classAnalysisSetters.TryGetValue(key, out featureFunc))
                     {
-                        // if the byte is set, remove the entry from the dict to avoid future unnecessary work
-                        _classAnalysisSetters.Remove(key);
+                        HandleFeatureSetting(featureFunc.Invoke(property), key);
                     }
 
                     foreach (var attribute in property.CustomAttributes)
                     {
-                        if (_classAnalysisSetters.TryGetValue(attribute.AttributeType.Name, out featureFunc) &&
-                            featureFunc.Invoke(property, _realmFeaturesToAnalyze, _references))
+                        if (_classAnalysisSetters.TryGetValue(attribute.AttributeType.Name, out featureFunc))
                         {
-                            _classAnalysisSetters.Remove(key);
+                            HandleFeatureSetting(featureFunc.Invoke(property), key);
                         }
                     }
                 }
@@ -680,19 +286,17 @@ namespace RealmWeaver
                 return;
             }
 
-            Func<IMemberDefinition, Dictionary<string, byte>, ImportedReferences, bool> featureFunc = null;
+            Func<IMemberDefinition, (bool IsToDelete, string DictKey)> featureFunc = null;
 
-            if (_classAnalysisSetters.TryGetValue(nameof(IAsymmetricObject), out featureFunc) &&
-                (type.IsIAsymmetricObjectImplementor(_references) || type.IsAsymmetricObjectDescendant(_references)) &&
-                featureFunc.Invoke(type, _realmFeaturesToAnalyze, _references))
+            if (_classAnalysisSetters.TryGetValue("IAsymmetricObject", out featureFunc) &&
+                (type.IsIAsymmetricObjectImplementor(_references) || type.IsAsymmetricObjectDescendant(_references)))
             {
-                _classAnalysisSetters.Remove(nameof(IAsymmetricObject));
+                HandleFeatureSetting(featureFunc.Invoke(type), "IAsymmetricObject");
             }
-            else if (_classAnalysisSetters.TryGetValue(nameof(IEmbeddedObject), out featureFunc) &&
-                (type.IsIEmbeddedObjectImplementor(_references) || type.IsEmbeddedObjectDescendant(_references)) &&
-                featureFunc.Invoke(type, _realmFeaturesToAnalyze, _references))
+            else if (_classAnalysisSetters.TryGetValue("IEmbeddedObject", out featureFunc) &&
+                (type.IsIEmbeddedObjectImplementor(_references) || type.IsEmbeddedObjectDescendant(_references)))
             {
-                _classAnalysisSetters.Remove(nameof(IEmbeddedObject));
+                HandleFeatureSetting(featureFunc.Invoke(type), "IEmbeddedObject");
             }
 
             AnalyzeClassMethods(type);
@@ -700,6 +304,19 @@ namespace RealmWeaver
             foreach (var innerType in type.NestedTypes)
             {
                 InternalAnalyzeSdkApi(innerType);
+            }
+        }
+
+        private void HandleFeatureSetting((bool IsToDelete, string DictKey) tuple, string key)
+        {
+            if (!string.IsNullOrEmpty(tuple.DictKey))
+            {
+                _realmFeaturesToAnalyze[tuple.DictKey] = 1;
+            }
+
+            if (tuple.IsToDelete)
+            {
+                _classAnalysisSetters.Remove(key);
             }
         }
 
@@ -750,10 +367,19 @@ namespace RealmWeaver
                         key = ((MemberReference)cil.Operand).DeclaringType.Name;
                     }
 
-                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc) &&
-                        featureFunc.Invoke(cil, _realmFeaturesToAnalyze, _references))
+                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
                     {
-                        _apiAnalysisSetters.Remove(key);
+                        var (IsToDelete, DictKey) = featureFunc.Invoke(cil);
+
+                        if (!string.IsNullOrEmpty(DictKey))
+                        {
+                            _realmFeaturesToAnalyze[DictKey] = 1;
+                        }
+
+                        if (IsToDelete)
+                        {
+                            _apiAnalysisSetters.Remove(key);
+                        }
                     }
                 }
             }
@@ -800,14 +426,14 @@ namespace RealmWeaver
                 jsonPayload.AppendLine();
             }
 
-            foreach (var entry in _realmEnvMetrics)
+            foreach (var kvp in _realmEnvMetrics)
             {
-                AppendKeyValue(entry);
+                AppendKeyValue(Metric.UserEnvironment[kvp.Key], kvp.Value);
             }
 
-            foreach (var entry in _realmFeaturesToAnalyze)
+            foreach (var kvp in _realmFeaturesToAnalyze)
             {
-                AppendKeyValue(entry);
+                AppendKeyValue(Metric.SdkFeatures[kvp.Key], kvp.Value);
             }
 
             var trailingCommaIndex = pretty ? Environment.NewLine.Length + 1 : 1;
@@ -817,14 +443,14 @@ namespace RealmWeaver
 
             return jsonPayload.ToString();
 
-            void AppendKeyValue<Tkey, Tvalue>(KeyValuePair<Tkey, Tvalue> entry)
+            void AppendKeyValue<Tkey, Tvalue>(Tkey key, Tvalue value)
             {
                 if (pretty)
                 {
                     jsonPayload.Append('\t');
                 }
 
-                jsonPayload.Append($"\"{entry.Key}\": \"{entry.Value}\",");
+                jsonPayload.Append($"\"{key}\": \"{value}\",");
 
                 if (pretty)
                 {
@@ -842,19 +468,15 @@ namespace RealmWeaver
             }
         }
 
-        private static bool IsFromNamespace(object operand, string targetNamespace)
+        private static bool IsInRealmNamespace(object operand)
         {
             if (!(operand is MemberReference memberReference))
             {
                 return false;
             }
 
-            return memberReference.DeclaringType.FullName == targetNamespace;
+            return memberReference.DeclaringType.FullName.StartsWith("Realms", StringComparison.Ordinal);
         }
-
-        private static bool IsCredential(object operand) => IsFromNamespace(operand, "Realms.Sync.Credentials");
-
-        private static bool IsInRealmNamespace(object operand) => IsFromNamespace(operand, "Realms.Realm");
 
         public class Config
         {

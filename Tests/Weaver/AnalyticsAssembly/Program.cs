@@ -139,7 +139,7 @@ public class Program
     }
 #endif
 
-#if ADD_UPDATE
+#if ADD
     public static void AddUpdateMethod()
     {
         Realm.GetInstance().Add(new RootRealmClass(), update: true);
@@ -242,7 +242,7 @@ public class Program
     }
 #endif
 
-#if JWT
+#if J_W_T
     public static void JwtAuthenticationMethod()
     {
         _ = Credentials.JWT("customToken");
@@ -294,7 +294,7 @@ public class Program
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }
 
-#if EMBEDDED_OBJECT
+#if I_EMBEDDED_OBJECT
 public partial class EmbeddedTestClass : TestEmbeddedObject
 {
     public int Int32Property { get; set; }
@@ -345,13 +345,13 @@ public partial class RootRealmClass : TestRealmObject
     RealmValue RealmValue { get; set; }
 #endif
 
-#if BACKLINK
+#if BACKLINK_ATTRIBUTE
     [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
     IQueryable<JustForObjectReference> JustBackLink { get; }
 #endif
 }
 
-#if ASYMMETRIC_OBJECT
+#if I_ASYMMETRIC_OBJECT
 public partial class AsymmetricTestClass : TestAsymmetricObject
 {
     public int Int32Property { get; set; }

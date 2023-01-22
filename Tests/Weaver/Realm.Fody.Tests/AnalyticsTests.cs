@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -31,60 +32,11 @@ namespace Analytics
 {
     extern alias realm;
     using Metric = realm::RealmWeaver.Metric;
-    using SdkFeature = realm::RealmWeaver.Metric.SdkFeature;
 
     [TestFixture]
     internal class Tests : WeaverTestBase
     {
-        private static readonly Dictionary<string, string> _featureMap = new Dictionary<string, string>()
-        {
-            [SdkFeature.IEmbeddedObject] = "EMBEDDED_OBJECT",
-            [SdkFeature.IAsymmetricObject] = "ASYMMETRIC_OBJECT",
-            [SdkFeature.ReferenceList] = "REFERENCE_LIST",
-            [SdkFeature.PrimitiveList] = "PRIMITIVE_LIST",
-            [SdkFeature.ReferenceDictionary] = "REFERENCE_DICTIONARY",
-            [SdkFeature.PrimitiveDictionary] = "PRIMITIVE_DICTIONARY",
-            [SdkFeature.ReferenceSet] = "REFERENCE_SET",
-            [SdkFeature.PrimitiveSet] = "PRIMITIVE_SET",
-            [SdkFeature.RealmInteger] = "REALM_INTEGER",
-            [SdkFeature.RealmObjectReference] = "REALM_OBJECT_REFERENCE",
-            [SdkFeature.RealmValue] = "REALM_VALUE",
-            [SdkFeature.BacklinkAttribute] = "BACKLINK",
-            [SdkFeature.GetInstanceAsync] = "GET_INSTANCE_ASYNC",
-            [SdkFeature.GetInstance] = "GET_INSTANCE",
-            //[SdkFeature.NOT_SUPPORTED_YET] = "NOT_SUPPORTED_YET",
-            [SdkFeature.Find] = "FIND",
-            [SdkFeature.WriteAsync] = "WRITE_ASYNC",
-            [SdkFeature.ThreadSafeReference] = "THREAD_SAFE_REFERENCE",
-            [SdkFeature.Add] = "ADD_UPDATE",
-            [SdkFeature.ShouldCompactOnLaunch] = "SHOULD_COMPACT_ON_LAUNCH",
-            [SdkFeature.MigrationCallback] = "MIGRATION_CALLBACK",
-            [SdkFeature.RealmChanged] = "REALM_CHANGED",
-            [SdkFeature.ListSubscribeForNotifications] = "LIST_SUBSCRIBE_FOR_NOTIFICATIONS",
-            [SdkFeature.SetSubscribeForNotifications] = "SET_SUBSCRIBE_FOR_NOTIFICATIONS",
-            [SdkFeature.DictionarySubscribeForNotifications] = "DICTIONARY_SUBSCRIBE_FOR_NOTIFICATIONS",
-            [SdkFeature.ResultSubscribeForNotifications] = "RESULT_SUBSCRIBE_FOR_NOTIFICATIONS",
-            [SdkFeature.PropertyChanged] = "PROPERTY_CHANGED",
-            [SdkFeature.RecoverOrDiscardUnsyncedChangesHandler] = "RECOVER_OR_DISCARD_UNSYNCED_CHANGES_HANDLER",
-            [SdkFeature.RecoverUnsyncedChangesHandler] = "RECOVER_UNSYNCED_CHANGES_HANDLER",
-            [SdkFeature.DiscardUnsyncedChangesHandler] = "DISCARD_UNSYNCED_CHANGES_HANDLER",
-            [SdkFeature.ManualRecoveryHandler] = "MANUAL_RECOVERY_HANDLER",
-            [SdkFeature.GetProgressObservable] = "GET_PROGRESS_OBSERVABLE",
-            [SdkFeature.PartitionSyncConfiguration] = "PARTITION_SYNC_CONFIGURATION",
-            [SdkFeature.FlexibleSyncConfiguration] = "FLEXIBLE_SYNC_CONFIGURATION",
-            [SdkFeature.Anonymous] = "ANONYMOUS",
-            [SdkFeature.EmailPassword] = "EMAIL_PASSWORD",
-            [SdkFeature.Facebook] = "FACEBOOK",
-            [SdkFeature.Google] = "GOOGLE",
-            [SdkFeature.Apple] = "APPLE",
-            [SdkFeature.JWT] = "JWT",
-            [SdkFeature.ApiKey] = "API_KEY",
-            [SdkFeature.ServerApiKey] = "SERVER_API_KEY",
-            [SdkFeature.Function] = "FUNCTION",
-            [SdkFeature.CallAsync] = "CALL_ASYNC",
-            [SdkFeature.GetMongoClient] = "GET_MONGO_CLIENT",
-            [SdkFeature.DynamicApi] = "DYNAMIC_API",
-        };
+        private readonly Dictionary<string, string> _featureMap = Metric.SdkFeatures.Keys.ToDictionary(c => c, c => ConvertToUpperCase(c));
 
         private static readonly Lazy<string[]> _frameworks = new Lazy<string[]>(() =>
         {
@@ -104,6 +56,24 @@ namespace Analytics
             return Path.Combine(folder, "Tests", "Weaver", "AnalyticsAssembly");
         });
 
+        private static string ConvertToUpperCase(string target)
+        {
+            var strBuilder = new StringBuilder();
+            strBuilder.Append(target[0]);
+            var charArray = target.ToCharArray(1, target.Length - 1);
+            foreach (var c in charArray)
+            {
+                if (char.IsUpper(c))
+                {
+                    strBuilder.Append('_');
+                }
+
+                strBuilder.Append(char.ToUpper(c));
+            }
+
+            return strBuilder.ToString();
+        }
+
         [Test]
         public void ValidateFeatureUsage()
         {
@@ -112,7 +82,7 @@ namespace Analytics
                 try
                 {
                     CompileAnalyticsProject(kvp.Value);
-                    ValidateSdkApiAnalyticsPayload(kvp.Key);
+                    ValidateSdkApiAnalyticsPayload(Metric.SdkFeatures[kvp.Key]);
                 }
                 catch (Exception e)
                 {
@@ -137,16 +107,9 @@ namespace Analytics
         {
             foreach (var framework in _frameworks.Value)
             {
-                try
-                {
-                    var response = WeaveRealm(framework, "DryRun");
-                    var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
-                    Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
-                }
-                catch (Exception ex)
-                {
-                    Assert.Fail($"For framework {framework} an exception was raised:\n{ex.Message}");
-                }
+                var response = WeaveRealm(framework, "DryRun");
+                var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
+                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
             }
         }
 
