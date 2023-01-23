@@ -22,8 +22,10 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Mono.Cecil;
+
 using static RealmWeaver.Analytics;
 using static RealmWeaver.Metric;
+using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
 {
@@ -50,22 +52,38 @@ namespace RealmWeaver
         public static string GetTargetOsName(FrameworkName frameworkName) =>
             WrapInTryCatch(() =>
             {
-                switch (frameworkName.Identifier)
+                string targetOs = frameworkName.Identifier;
+
+                if (targetOs.ContainsIgnoreCase("android"))
                 {
-                    case string s when s.ContainsIgnoreCase("android"):
-                        return Metric.OperatingSystem.Android;
-                    case string s when s.ContainsIgnoreCase("ios"):
-                        return Metric.OperatingSystem.Ios;
-                    case string s when s.ContainsIgnoreCase("mac") ||
-                            s.ContainsIgnoreCase("macos") ||
-                            s.ContainsIgnoreCase("maccatalyst"):
-                        return Metric.OperatingSystem.MacOS;
-                    case string s when s.ContainsIgnoreCase("tvos"):
-                        return Metric.OperatingSystem.TvOs;
-                    case string s when s.ContainsIgnoreCase("linux"):
-                        return Metric.OperatingSystem.Linux;
-                    default:
-                        return Metric.OperatingSystem.Windows;
+                    return OperatingSystem.Android;
+                }
+                else if (targetOs.ContainsIgnoreCase("ios"))
+                {
+                    return OperatingSystem.Ios;
+                }
+                else if (targetOs.ContainsIgnoreCase("mac"))
+                {
+                    return OperatingSystem.MacOS;
+                }
+                else if (targetOs.ContainsIgnoreCase("tvos"))
+                {
+                    return OperatingSystem.TvOs;
+                }
+                else if (targetOs.ContainsIgnoreCase("linux"))
+                {
+                    return OperatingSystem.Linux;
+                }
+                else if (targetOs.ContainsIgnoreCase("win") ||
+                    targetOs.ContainsIgnoreCase("uap") ||
+                    targetOs.ContainsIgnoreCase("win") ||
+                    targetOs == ".NETFramework")
+                {
+                    return OperatingSystem.Windows;
+                }
+                else
+                {
+                    return $"{frameworkName.Identifier} is an unknown target os";
                 }
             });
 
@@ -91,19 +109,13 @@ namespace RealmWeaver
 
         public static string ConvertPlatformIdOsToMetricVersion(PlatformID platformID) =>
             WrapInTryCatch(() =>
-            {
-                switch (platformID)
+                platformID switch
                 {
-                    case PlatformID.Win32NT:
-                        return Metric.OperatingSystem.Windows;
-                    case PlatformID.MacOSX:
-                        return Metric.OperatingSystem.MacOS;
-                    case PlatformID.Unix:
-                        return Metric.OperatingSystem.Linux;
-                    default:
-                        return $"{platformID} is an unsupported operating system.";
-                }
-            });
+                    PlatformID.Win32NT => OperatingSystem.Windows,
+                    PlatformID.MacOSX => OperatingSystem.MacOS,
+                    PlatformID.Unix => OperatingSystem.Linux,
+                    _ => $"{platformID} is an unsupported operating system."
+                });
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
@@ -117,7 +129,7 @@ namespace RealmWeaver
             {
                 // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
                 // I didn't have any handy one.
-                var possibleFrameworks = new string[] { "Xamarin.Form", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
+                var possibleFrameworks = new string[] { "Xamarin.Forms", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
                 {
@@ -128,18 +140,18 @@ namespace RealmWeaver
                     }
                 }
 
-                var framework = string.Empty;
-                switch (frameworkUsedInConjunction?.Name)
+                var framework = "No framework of interest";
+                if (frameworkUsedInConjunction != null)
                 {
-                    case string s when s.ContainsIgnoreCase("xamarin") || s.ContainsIgnoreCase("android"):
+                    var name = frameworkUsedInConjunction.Name;
+                    if (name.ContainsIgnoreCase("xamarin") || name.ContainsIgnoreCase("android"))
+                    {
                         framework = Framework.Xamarin;
-                        break;
-                    case string s when s.ContainsIgnoreCase("maui"):
+                    }
+                    else if (name.ContainsIgnoreCase("maui"))
+                    {
                         framework = Framework.Maui;
-                        break;
-                    default:
-                        framework = "No framework of interest";
-                        break;
+                    }
                 }
 
                 return (framework, frameworkUsedInConjunction?.Version.ToString());
@@ -204,18 +216,25 @@ namespace RealmWeaver
         private static string ConvertArchitectureToMetricsVersion(string arch) =>
             WrapInTryCatch(() =>
             {
-                switch (arch)
+                if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)))
                 {
-                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)):
-                        return CpuArchitecture.Arm;
-                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)):
-                        return CpuArchitecture.Arm64;
-                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) || s.ContainsIgnoreCase("amd64"):
-                        return CpuArchitecture.X64;
-                    case string s when s.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) || s.ContainsIgnoreCase("i386"):
-                        return CpuArchitecture.X86;
-                    default:
-                        throw new ArgumentException($"{arch} is an unknown architecture");
+                    return CpuArchitecture.Arm;
+                }
+                else if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)))
+                {
+                    return CpuArchitecture.Arm64;
+                }
+                else if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) || arch.ContainsIgnoreCase("amd64"))
+                {
+                    return CpuArchitecture.X64;
+                }
+                else if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) || arch.ContainsIgnoreCase("i386"))
+                {
+                    return CpuArchitecture.X86;
+                }
+                else
+                {
+                    return $"{arch} is an unknown architecture";
                 }
             });
 

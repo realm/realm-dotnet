@@ -29,6 +29,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEngine;
 using static RealmWeaver.Analytics;
+using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
 {
@@ -360,18 +361,18 @@ namespace RealmWeaver
             switch (target)
             {
                 case BuildTarget.StandaloneOSX:
-                    return "macos";
+                    return OperatingSystem.MacOS;
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
-                    return "windows";
+                    return OperatingSystem.Windows;
                 case BuildTarget.iOS:
-                    return "ios";
+                    return OperatingSystem.Ios;
                 case BuildTarget.Android:
-                    return "android";
+                    return OperatingSystem.Android;
                 case BuildTarget.StandaloneLinux64:
-                    return "linux";
+                    return OperatingSystem.Linux;
                 case BuildTarget.tvOS:
-                    return "tvos";
+                    return OperatingSystem.TvOs;
                 default:
                     return "UNKNOWN";
             }
@@ -382,11 +383,11 @@ namespace RealmWeaver
             switch (target)
             {
                 case RuntimePlatform.WindowsEditor:
-                    return "windows";
+                    return OperatingSystem.Windows;
                 case RuntimePlatform.OSXEditor:
-                    return "macos";
+                    return OperatingSystem.MacOS;
                 case RuntimePlatform.LinuxEditor:
-                    return "linux";
+                    return OperatingSystem.Linux;
                 default:
                     return "UNKOWN";
             }

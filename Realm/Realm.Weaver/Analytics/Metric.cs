@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Realm.Fody.Tests")]
@@ -35,6 +36,7 @@ namespace RealmWeaver
             public const string IpadOs = "iPadOS";
             public const string WatchOs = "watchOS";
             public const string TvOs = "tvOS";
+            public const string Unknown = "Unknown";
         }
 
         public static class CpuArchitecture
@@ -53,75 +55,81 @@ namespace RealmWeaver
             public const string Xamarin = "Xamarin";
         }
 
-        public static class SdkFeature
+        public static readonly Dictionary<string, string> UserEnvironment = new Dictionary<string, string>()
         {
-            public const string UserId = "User_Id";
-            public const string ProjectId = "Project_Id";
-            public const string RealmSdk = "Realm_SDK";
-            public const string Language = "Language";
-            public const string LanguageVersion = "Language_Version";
-            public const string HostOsType = "Host_OS_Type";
-            public const string HostOsVersion = "Host_OS_Version";
-            public const string HostCpuArch = "Host_CPU_Arch";
-            public const string TargetOsType = "Target_OS_Type";
-            public const string TargetOsMinimumVersion = "Target_OS_Minimum_Version";
-            public const string TargetOsVersion = "Target_OS_Version";
-            public const string TargetCpuArch = "Target_CPU_Arch";
-            public const string RealmSdkVersion = "Realm_SDK_Version";
-            public const string CoreVersion = "Core_Version";
-            public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
-            public const string FrameworkUsedInConjunctionVersion = "Framework_Version";
-            public const string SdkInstallationMethod = "Installation_Method";
-            public const string IdeUsed = "IDE";
-            public const string IdeUsedVersion = "IDE_Version";
+            ["UserId"] = "User_Id",
+            ["ProjectId"] = "Project_Id",
+            ["RealmSdk"] = "Realm_SDK",
+            ["Language"] = "Language",
+            ["LanguageVersion"] = "Language_Version",
+            ["HostOsType"] = "Host_OS_Type",
+            ["HostOsVersion"] = "Host_OS_Version",
+            ["HostCpuArch"] = "Host_CPU_Arch",
+            ["TargetOsType"] = "Target_OS_Type",
+            ["TargetOsMinimumVersion"] = "Target_OS_Minimum_Version",
+            ["TargetOsVersion"] = "Target_OS_Version",
+            ["TargetCpuArch"] = "Target_CPU_Arch",
+            ["RealmSdkVersion"] = "Realm_SDK_Version",
+            ["CoreVersion"] = "Core_Version",
+            ["FrameworkUsedInConjunction"] = "Framework", // this refers to UI frameworks and similar Realm is used together with
+            ["FrameworkUsedInConjunctionVersion"] = "Framework_Version",
+            ["SdkInstallationMethod"] = "Installation_Method",
+            ["IdeUsed"] = "IDE",
+            ["IdeUsedVersion"] = "IDE_Version", // this holds info about the msbuild version
+            ["NetFramework"] = "Net_Framework",
+            ["NetFrameworkVersion"] = "Net_Framework_Version"
+        };
 
-            public const string IEmbeddedObject = "Embedded_Object";
-            public const string IAsymmetricObject = "Asymmetric_Object";
-            public const string ReferenceList = "Reference_List";
-            public const string PrimitiveList = "Primitive_List";
-            public const string ReferenceDictionary = "Reference_Dictionary";
-            public const string PrimitiveDictionary = "Primitive_Dictionary";
-            public const string ReferenceSet = "Reference_Set";
-            public const string PrimitiveSet = "Primitive_Set";
-            public const string RealmInteger = "Realm_Integer";
-            public const string RealmObjectReference = "Reference_Link";
-            public const string RealmValue = "Mixed";
-            public const string BacklinkAttribute = "Backlink";
+        public static readonly Dictionary<string, string> SdkFeatures = new Dictionary<string, string>()
+        {
+            ["IEmbeddedObject"] = "Embedded_Object",
+            ["IAsymmetricObject"] = "Asymmetric_Object",
+            ["ReferenceList"] = "Reference_List",
+            ["PrimitiveList"] = "Primitive_List",
+            ["ReferenceDictionary"] = "Reference_Dictionary",
+            ["PrimitiveDictionary"] = "Primitive_Dictionary",
+            ["ReferenceSet"] = "Reference_Set",
+            ["PrimitiveSet"] = "Primitive_Set",
+            ["RealmInteger"] = "Realm_Integer",
+            ["RealmObjectReference"] = "Reference_Link",
+            ["RealmValue"] = "Mixed",
+            ["BacklinkAttribute"] = "Backlink",
 
-            public const string GetInstanceAsync = "Asynchronous_Realm_Open";
-            public const string GetInstance = "Synchronous_Realm_Open";
-            public const string NOT_SUPPORTED_YET = "Query_Async"; // this is not supported yet
-            public const string Find = "Query_Primary_Key";
-            public const string WriteAsync = "Write_Async";
-            public const string ThreadSafeReference = "Thread_Safe_Reference";
-            public const string Add = "Insert_Modified";
-            public const string ShouldCompactOnLaunch = "Compact_On_Launch";
-            public const string MigrationCallback = "Schema_Migration_Block";
-            public const string RealmChanged = "Realm_Change_Listener";
-            public const string ListSubscribeForNotifications = "List_Change_Listener";
-            public const string SetSubscribeForNotifications = "Set_Change_Listener";
-            public const string DictionarySubscribeForNotifications = "Dictionary_Change_Listener";
-            public const string ResultSubscribeForNotifications = "Result_Change_Listener";
-            public const string PropertyChanged = "Object_Change_Listener";
-            public const string RecoverOrDiscardUnsyncedChangesHandler = "Client_Reset_Recover_Or_Discard";
-            public const string RecoverUnsyncedChangesHandler = "Client_Reset_Recover";
-            public const string DiscardUnsyncedChangesHandler = "Client_Reset_Discard";
-            public const string ManualRecoveryHandler = "Client_Reset_Manual";
-            public const string GetProgressObservable = "Progress_Notification";
-            public const string PartitionSyncConfiguration = "Pbs_Sync";
-            public const string FlexibleSyncConfiguration = "Flexible_Sync";
-            public const string Anonymous = "Auth_Anonymous";
-            public const string EmailPassword = "Auth_Email_Password";
-            public const string Facebook = "Auth_Facebook";
-            public const string Google = "Auth_Google";
-            public const string Apple = "Auth_Apple";
-            public const string JWT = "Auth_Custom_JWT";
-            public const string ApiKey = "Auth_API_Key";
-            public const string ServerApiKey = "Auth_Server_API_Key";
-            public const string Function = "Auth_Function";
-            public const string CallAsync = "Remote_Function";
-            public const string GetMongoClient = "MongoDB_Data_Access";
-            public const string DynamicApi = "Dynamic_API";
-        }
+            ["GetInstanceAsync"] = "Asynchronous_Realm_Open",
+            ["GetInstance"] = "Synchronous_Realm_Open",
+
+            // ["NOT_SUPPORTED_YET"] = "Query_Async",
+            ["Find"] = "Query_Primary_Key",
+            ["WriteAsync"] = "Write_Async",
+            ["ThreadSafeReference"] = "Thread_Safe_Reference",
+            ["Add"] = "Insert_Modified",
+            ["ShouldCompactOnLaunch"] = "Compact_On_Launch",
+            ["MigrationCallback"] = "Schema_Migration_Block",
+            ["RealmChanged"] = "Realm_Change_Listener",
+            ["ListSubscribeForNotifications"] = "List_Change_Listener",
+            ["SetSubscribeForNotifications"] = "Set_Change_Listener",
+            ["DictionarySubscribeForNotifications"] = "Dictionary_Change_Listener",
+            ["ResultSubscribeForNotifications"] = "Result_Change_Listener",
+            ["PropertyChanged"] = "Object_Change_Listener",
+            ["RecoverOrDiscardUnsyncedChangesHandler"] = "Client_Reset_Recover_Or_Discard",
+            ["RecoverUnsyncedChangesHandler"] = "Client_Reset_Recover",
+            ["DiscardUnsyncedChangesHandler"] = "Client_Reset_Discard",
+            ["ManualRecoveryHandler"] = "Client_Reset_Manual",
+            ["GetProgressObservable"] = "Progress_Notification",
+            ["PartitionSyncConfiguration"] = "Pbs_Sync",
+            ["FlexibleSyncConfiguration"] = "Flexible_Sync",
+            ["Anonymous"] = "Auth_Anonymous",
+            ["EmailPassword"] = "Auth_Email_Password",
+            ["Facebook"] = "Auth_Facebook",
+            ["Google"] = "Auth_Google",
+            ["Apple"] = "Auth_Apple",
+            ["JWT"] = "Auth_Custom_JWT",
+            ["ApiKey"] = "Auth_API_Key",
+            ["ServerApiKey"] = "Auth_Server_API_Key",
+            ["Function"] = "Auth_Function",
+            ["CallAsync"] = "Remote_Function",
+            ["GetMongoClient"] = "MongoDB_Data_Access",
+            ["DynamicApi"] = "Dynamic_API",
+        };
     }
 }
