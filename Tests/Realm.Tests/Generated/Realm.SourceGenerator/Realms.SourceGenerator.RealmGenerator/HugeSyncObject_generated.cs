@@ -226,7 +226,7 @@ namespace Realms.Tests
         {
             MongoDB.Bson.ObjectId Id { get; set; }
 
-            byte[] Data { get; set; }
+            byte[]? Data { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -238,9 +238,9 @@ namespace Realms.Tests
                 set => SetValueUnique("_id", value);
             }
 
-            public byte[] Data
+            public byte[]? Data
             {
-                get => (byte[])GetValue("Data");
+                get => (byte[]?)GetValue("Data");
                 set => SetValue("Data", value);
             }
         }
@@ -261,8 +261,8 @@ namespace Realms.Tests
                 }
             }
 
-            private byte[] _data = null!;
-            public byte[] Data
+            private byte[]? _data = null!;
+            public byte[]? Data
             {
                 get => _data;
                 set
@@ -293,7 +293,7 @@ namespace Realms.Tests
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Data":
-                        Data = (byte[])val;
+                        Data = (byte[]?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

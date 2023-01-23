@@ -232,9 +232,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDynamicSubTaskAccessor : Realms.IRealmAccessor
         {
-            string Summary { get; set; }
+            string? Summary { get; set; }
 
-            Realms.Tests.Database.CompletionReport CompletionReport { get; set; }
+            Realms.Tests.Database.CompletionReport? CompletionReport { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; }
         }
@@ -242,15 +242,15 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DynamicSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubTaskAccessor
         {
-            public string Summary
+            public string? Summary
             {
-                get => (string)GetValue("Summary");
+                get => (string?)GetValue("Summary");
                 set => SetValue("Summary", value);
             }
 
-            public Realms.Tests.Database.CompletionReport CompletionReport
+            public Realms.Tests.Database.CompletionReport? CompletionReport
             {
-                get => (Realms.Tests.Database.CompletionReport)GetValue("CompletionReport");
+                get => (Realms.Tests.Database.CompletionReport?)GetValue("CompletionReport");
                 set => SetValue("CompletionReport", value);
             }
 
@@ -274,8 +274,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicSubTask.RealmSchema;
 
-            private string _summary = null!;
-            public string Summary
+            private string? _summary = null!;
+            public string? Summary
             {
                 get => _summary;
                 set
@@ -285,8 +285,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.CompletionReport _completionReport = null!;
-            public Realms.Tests.Database.CompletionReport CompletionReport
+            private Realms.Tests.Database.CompletionReport? _completionReport = null!;
+            public Realms.Tests.Database.CompletionReport? CompletionReport
             {
                 get => _completionReport;
                 set
@@ -317,10 +317,10 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Summary":
-                        Summary = (string)val;
+                        Summary = (string?)val;
                         return;
                     case "CompletionReport":
-                        CompletionReport = (Realms.Tests.Database.CompletionReport)val;
+                        CompletionReport = (Realms.Tests.Database.CompletionReport?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

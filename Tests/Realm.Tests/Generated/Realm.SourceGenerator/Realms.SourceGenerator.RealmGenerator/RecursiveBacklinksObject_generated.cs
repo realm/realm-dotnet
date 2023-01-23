@@ -231,7 +231,7 @@ namespace Realms.Tests
         {
             int Id { get; set; }
 
-            Realms.Tests.RecursiveBacklinksObject Parent { get; set; }
+            Realms.Tests.RecursiveBacklinksObject? Parent { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children { get; }
         }
@@ -245,9 +245,9 @@ namespace Realms.Tests
                 set => SetValue("Id", value);
             }
 
-            public Realms.Tests.RecursiveBacklinksObject Parent
+            public Realms.Tests.RecursiveBacklinksObject? Parent
             {
-                get => (Realms.Tests.RecursiveBacklinksObject)GetValue("Parent");
+                get => (Realms.Tests.RecursiveBacklinksObject?)GetValue("Parent");
                 set => SetValue("Parent", value);
             }
 
@@ -282,8 +282,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.RecursiveBacklinksObject _parent = null!;
-            public Realms.Tests.RecursiveBacklinksObject Parent
+            private Realms.Tests.RecursiveBacklinksObject? _parent = null!;
+            public Realms.Tests.RecursiveBacklinksObject? Parent
             {
                 get => _parent;
                 set
@@ -318,7 +318,7 @@ namespace Realms.Tests
                         Id = (int)val;
                         return;
                     case "Parent":
-                        Parent = (Realms.Tests.RecursiveBacklinksObject)val;
+                        Parent = (Realms.Tests.RecursiveBacklinksObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

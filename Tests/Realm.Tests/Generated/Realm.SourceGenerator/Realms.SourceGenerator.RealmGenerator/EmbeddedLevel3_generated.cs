@@ -225,15 +225,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IEmbeddedLevel3Accessor : Realms.IRealmAccessor
         {
-            string String { get; set; }
+            string? String { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class EmbeddedLevel3ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel3Accessor
         {
-            public string String
+            public string? String
             {
-                get => (string)GetValue("String");
+                get => (string?)GetValue("String");
                 set => SetValue("String", value);
             }
         }
@@ -243,8 +243,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;
 
-            private string _string = null!;
-            public string String
+            private string? _string = null!;
+            public string? String
             {
                 get => _string;
                 set
@@ -272,7 +272,7 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "String":
-                        String = (string)val;
+                        String = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

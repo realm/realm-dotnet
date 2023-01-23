@@ -100,7 +100,7 @@ namespace Realms.SourceGenerator
 
             foreach (var property in _classInfo.Properties)
             {
-                var type = property.TypeInfo.CompleteFullyQualifiedString;
+                var type = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).CompleteType;
                 var name = property.Name;
                 var hasSetter = !property.TypeInfo.IsCollection;
                 var setterString = hasSetter ? " set;" : string.Empty;
@@ -512,7 +512,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
             {
                 var name = property.Name;
                 var backingFieldName = GetBackingFieldName(name);
-                var type = property.TypeInfo.CompleteFullyQualifiedString;
+                var (type, internalType) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
@@ -530,7 +530,6 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     }
                     else
                     {
-                        var parameterString = property.TypeInfo.InternalType.CompleteFullyQualifiedString;
                         var propertyMapToName = property.GetMappedOrOriginalName();
 
                         string constructorString;
@@ -538,22 +537,22 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                         switch (property.TypeInfo.CollectionType)
                         {
                             case CollectionType.List:
-                                constructorString = $"new List<{parameterString}>()";
+                                constructorString = $"new List<{internalType}>()";
                                 getListValueLines.AppendLine($@"""{propertyMapToName}"" => (IList<T>){property.Name},");
                                 break;
                             case CollectionType.Set:
-                                constructorString = $"new HashSet<{parameterString}>(RealmSet<{parameterString}>.Comparer)";
+                                constructorString = $"new HashSet<{internalType}>(RealmSet<{internalType}>.Comparer)";
                                 getSetValueLines.AppendLine($@"""{propertyMapToName}"" => (ISet<T>){property.Name},");
                                 break;
                             case CollectionType.Dictionary:
-                                constructorString = $"new Dictionary<string, {parameterString}>()";
+                                constructorString = $"new Dictionary<string, {internalType}>()";
                                 getDictionaryValueLines.AppendLine($@"""{propertyMapToName}"" => (IDictionary<string, TValue>){property.Name},");
                                 break;
                             default:
                                 throw new NotImplementedException($"Collection {property.TypeInfo.CollectionType} is not supported yet");
                         }
 
-                        var propertyString = $@"public {property.TypeInfo.CompleteFullyQualifiedString} {property.Name} {{ get; }} = {constructorString};";
+                        var propertyString = $@"public {property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired).CompleteType} {property.Name} {{ get; }} = {constructorString};";
 
                         propertiesString.AppendLine(propertyString);
                         propertiesString.AppendLine();
@@ -750,7 +749,7 @@ internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_acces
 
             foreach (var property in _classInfo.Properties)
             {
-                var type = property.TypeInfo.CompleteFullyQualifiedString;
+                var (type, internalType) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
@@ -759,7 +758,6 @@ internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_acces
                     var backingFieldName = GetBackingFieldName(property.Name);
                     var nullableForgivingString = property.TypeInfo.NeedsNullForgiving() ? " = null!" : string.Empty;
                     var backingFieldString = $@"private {type} {backingFieldName}{nullableForgivingString};";
-                    var internalTypeString = property.TypeInfo.InternalType.CompleteFullyQualifiedString;
 
                     string getFieldString;
 
@@ -785,7 +783,7 @@ public {type} {name}
     {{
         if ({backingFieldName} == null)
         {{
-            {backingFieldName} = {getFieldString}<{internalTypeString}>(""{property.GetMappedOrOriginalName()}"");
+            {backingFieldName} = {getFieldString}<{internalType}>(""{property.GetMappedOrOriginalName()}"");
         }}
 
         return {backingFieldName};

@@ -223,15 +223,15 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IBAccessor : Realms.IRealmAccessor
         {
-            Realms.Tests.IntPropertyObject C { get; set; }
+            Realms.Tests.IntPropertyObject? C { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class BManagedAccessor : Realms.ManagedAccessor, IBAccessor
         {
-            public Realms.Tests.IntPropertyObject C
+            public Realms.Tests.IntPropertyObject? C
             {
-                get => (Realms.Tests.IntPropertyObject)GetValue("C");
+                get => (Realms.Tests.IntPropertyObject?)GetValue("C");
                 set => SetValue("C", value);
             }
         }
@@ -241,8 +241,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => B.RealmSchema;
 
-            private Realms.Tests.IntPropertyObject _c = null!;
-            public Realms.Tests.IntPropertyObject C
+            private Realms.Tests.IntPropertyObject? _c = null!;
+            public Realms.Tests.IntPropertyObject? C
             {
                 get => _c;
                 set
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "C":
-                        C = (Realms.Tests.IntPropertyObject)val;
+                        C = (Realms.Tests.IntPropertyObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

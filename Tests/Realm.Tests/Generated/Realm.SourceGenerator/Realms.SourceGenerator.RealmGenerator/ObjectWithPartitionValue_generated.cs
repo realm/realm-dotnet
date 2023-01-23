@@ -243,11 +243,11 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
         {
-            string Id { get; set; }
+            string? Id { get; set; }
 
-            string Value { get; set; }
+            string? Value { get; set; }
 
-            string Partition { get; set; }
+            string? Partition { get; set; }
 
             System.Guid Guid { get; set; }
         }
@@ -255,21 +255,21 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
-            public string Id
+            public string? Id
             {
-                get => (string)GetValue("_id");
+                get => (string?)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
-            public string Value
+            public string? Value
             {
-                get => (string)GetValue("Value");
+                get => (string?)GetValue("Value");
                 set => SetValue("Value", value);
             }
 
-            public string Partition
+            public string? Partition
             {
-                get => (string)GetValue("realm_id");
+                get => (string?)GetValue("realm_id");
                 set => SetValue("realm_id", value);
             }
 
@@ -285,8 +285,8 @@ namespace Realms.Tests.Sync
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
 
-            private string _id = null!;
-            public string Id
+            private string? _id = null!;
+            public string? Id
             {
                 get => _id;
                 set
@@ -296,8 +296,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string _value = null!;
-            public string Value
+            private string? _value = null!;
+            public string? Value
             {
                 get => _value;
                 set
@@ -307,8 +307,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string _partition = null!;
-            public string Partition
+            private string? _partition = null!;
+            public string? Partition
             {
                 get => _partition;
                 set
@@ -352,10 +352,10 @@ namespace Realms.Tests.Sync
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
-                        Value = (string)val;
+                        Value = (string?)val;
                         return;
                     case "realm_id":
-                        Partition = (string)val;
+                        Partition = (string?)val;
                         return;
                     case "Guid":
                         Guid = (System.Guid)val;
@@ -372,7 +372,7 @@ namespace Realms.Tests.Sync
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string?)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

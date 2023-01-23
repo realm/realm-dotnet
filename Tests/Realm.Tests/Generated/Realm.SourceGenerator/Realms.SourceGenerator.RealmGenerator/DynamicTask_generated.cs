@@ -240,37 +240,37 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDynamicTaskAccessor : Realms.IRealmAccessor
         {
-            string Id { get; set; }
+            string? Id { get; set; }
 
-            string Summary { get; set; }
+            string? Summary { get; set; }
 
-            Realms.Tests.Database.CompletionReport CompletionReport { get; set; }
+            Realms.Tests.Database.CompletionReport? CompletionReport { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubTask> SubTasks { get; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask?> SubTasksDictionary { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DynamicTaskManagedAccessor : Realms.ManagedAccessor, IDynamicTaskAccessor
         {
-            public string Id
+            public string? Id
             {
-                get => (string)GetValue("Id");
+                get => (string?)GetValue("Id");
                 set => SetValueUnique("Id", value);
             }
 
-            public string Summary
+            public string? Summary
             {
-                get => (string)GetValue("Summary");
+                get => (string?)GetValue("Summary");
                 set => SetValue("Summary", value);
             }
 
-            public Realms.Tests.Database.CompletionReport CompletionReport
+            public Realms.Tests.Database.CompletionReport? CompletionReport
             {
-                get => (Realms.Tests.Database.CompletionReport)GetValue("CompletionReport");
+                get => (Realms.Tests.Database.CompletionReport?)GetValue("CompletionReport");
                 set => SetValue("CompletionReport", value);
             }
 
@@ -302,14 +302,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> _subTasksDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask?> _subTasksDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask?> SubTasksDictionary
             {
                 get
                 {
                     if (_subTasksDictionary == null)
                     {
-                        _subTasksDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicSubTask>("SubTasksDictionary");
+                        _subTasksDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicSubTask?>("SubTasksDictionary");
                     }
 
                     return _subTasksDictionary;
@@ -322,8 +322,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;
 
-            private string _id = null!;
-            public string Id
+            private string? _id = null!;
+            public string? Id
             {
                 get => _id;
                 set
@@ -333,8 +333,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _summary = null!;
-            public string Summary
+            private string? _summary = null!;
+            public string? Summary
             {
                 get => _summary;
                 set
@@ -344,8 +344,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.CompletionReport _completionReport = null!;
-            public Realms.Tests.Database.CompletionReport CompletionReport
+            private Realms.Tests.Database.CompletionReport? _completionReport = null!;
+            public Realms.Tests.Database.CompletionReport? CompletionReport
             {
                 get => _completionReport;
                 set
@@ -359,7 +359,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.DynamicSubSubTask> SubSubTasks { get; } = new List<Realms.Tests.Database.DynamicSubSubTask>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask> SubTasksDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicSubTask>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask?> SubTasksDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicSubTask?>();
 
             public DynamicTaskUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -383,10 +383,10 @@ namespace Realms.Tests.Database
                     case "Id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Summary":
-                        Summary = (string)val;
+                        Summary = (string?)val;
                         return;
                     case "CompletionReport":
-                        CompletionReport = (Realms.Tests.Database.CompletionReport)val;
+                        CompletionReport = (Realms.Tests.Database.CompletionReport?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -400,7 +400,7 @@ namespace Realms.Tests.Database
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string?)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

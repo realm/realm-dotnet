@@ -225,7 +225,7 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface INoListPropertiesAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
             int Age { get; set; }
         }
@@ -233,9 +233,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class NoListPropertiesManagedAccessor : Realms.ManagedAccessor, INoListPropertiesAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
@@ -251,8 +251,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => NoListProperties.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -292,7 +292,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "Age":
                         Age = (int)val;

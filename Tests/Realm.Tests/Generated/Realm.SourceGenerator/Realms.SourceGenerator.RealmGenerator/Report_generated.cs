@@ -238,11 +238,11 @@ namespace Realms.Tests.Database
         {
             int Id { get; set; }
 
-            string Ref { get; set; }
+            string? Ref { get; set; }
 
-            string Date { get; set; }
+            string? Date { get; set; }
 
-            Realms.Tests.Database.Product Parent { get; set; }
+            Realms.Tests.Database.Product? Parent { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -254,21 +254,21 @@ namespace Realms.Tests.Database
                 set => SetValue("Id", value);
             }
 
-            public string Ref
+            public string? Ref
             {
-                get => (string)GetValue("Ref");
+                get => (string?)GetValue("Ref");
                 set => SetValue("Ref", value);
             }
 
-            public string Date
+            public string? Date
             {
-                get => (string)GetValue("Date");
+                get => (string?)GetValue("Date");
                 set => SetValue("Date", value);
             }
 
-            public Realms.Tests.Database.Product Parent
+            public Realms.Tests.Database.Product? Parent
             {
-                get => (Realms.Tests.Database.Product)GetValue("Parent");
+                get => (Realms.Tests.Database.Product?)GetValue("Parent");
                 set => SetValue("Parent", value);
             }
         }
@@ -289,8 +289,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _ref = null!;
-            public string Ref
+            private string? _ref = null!;
+            public string? Ref
             {
                 get => _ref;
                 set
@@ -300,8 +300,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _date = null!;
-            public string Date
+            private string? _date = null!;
+            public string? Date
             {
                 get => _date;
                 set
@@ -311,8 +311,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Product _parent = null!;
-            public Realms.Tests.Database.Product Parent
+            private Realms.Tests.Database.Product? _parent = null!;
+            public Realms.Tests.Database.Product? Parent
             {
                 get => _parent;
                 set
@@ -346,13 +346,13 @@ namespace Realms.Tests.Database
                         Id = (int)val;
                         return;
                     case "Ref":
-                        Ref = (string)val;
+                        Ref = (string?)val;
                         return;
                     case "Date":
-                        Date = (string)val;
+                        Date = (string?)val;
                         return;
                     case "Parent":
-                        Parent = (Realms.Tests.Database.Product)val;
+                        Parent = (Realms.Tests.Database.Product?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

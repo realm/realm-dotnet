@@ -218,15 +218,15 @@ namespace SourceGeneratorAssemblyToProcess
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IClassWithoutParameterlessConstructorAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class ClassWithoutParameterlessConstructorManagedAccessor : Realms.ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
         }
@@ -236,8 +236,8 @@ namespace SourceGeneratorAssemblyToProcess
         {
             public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -265,7 +265,7 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

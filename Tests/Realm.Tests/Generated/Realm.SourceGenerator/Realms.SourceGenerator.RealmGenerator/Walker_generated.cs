@@ -238,9 +238,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IWalkerAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            Realms.Tests.Dog TopDog { get; set; }
+            Realms.Tests.Dog? TopDog { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; }
 
@@ -250,15 +250,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class WalkerManagedAccessor : Realms.ManagedAccessor, IWalkerAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public Realms.Tests.Dog TopDog
+            public Realms.Tests.Dog? TopDog
             {
-                get => (Realms.Tests.Dog)GetValue("TopDog");
+                get => (Realms.Tests.Dog?)GetValue("TopDog");
                 set => SetValue("TopDog", value);
             }
 
@@ -296,8 +296,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => Walker.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -307,8 +307,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.Dog _topDog = null!;
-            public Realms.Tests.Dog TopDog
+            private Realms.Tests.Dog? _topDog = null!;
+            public Realms.Tests.Dog? TopDog
             {
                 get => _topDog;
                 set
@@ -341,10 +341,10 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "TopDog":
-                        TopDog = (Realms.Tests.Dog)val;
+                        TopDog = (Realms.Tests.Dog?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

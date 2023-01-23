@@ -241,7 +241,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; }
 
-            string Name { get; set; }
+            string? Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -281,9 +281,9 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
         }
@@ -308,8 +308,8 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -341,7 +341,7 @@ namespace Realms.Tests.Database
                         Age = (int)val;
                         return;
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -223,15 +223,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IUnqueryableBacklinksAccessor : Realms.IRealmAccessor
         {
-            Realms.Tests.ClassWithUnqueryableMembers Parent { get; set; }
+            Realms.Tests.ClassWithUnqueryableMembers? Parent { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
         {
-            public Realms.Tests.ClassWithUnqueryableMembers Parent
+            public Realms.Tests.ClassWithUnqueryableMembers? Parent
             {
-                get => (Realms.Tests.ClassWithUnqueryableMembers)GetValue("Parent");
+                get => (Realms.Tests.ClassWithUnqueryableMembers?)GetValue("Parent");
                 set => SetValue("Parent", value);
             }
         }
@@ -241,8 +241,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
 
-            private Realms.Tests.ClassWithUnqueryableMembers _parent = null!;
-            public Realms.Tests.ClassWithUnqueryableMembers Parent
+            private Realms.Tests.ClassWithUnqueryableMembers? _parent = null!;
+            public Realms.Tests.ClassWithUnqueryableMembers? Parent
             {
                 get => _parent;
                 set
@@ -270,7 +270,7 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "Parent":
-                        Parent = (Realms.Tests.ClassWithUnqueryableMembers)val;
+                        Parent = (Realms.Tests.ClassWithUnqueryableMembers?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -225,23 +225,23 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
         {
-            Realms.Tests.IntPropertyObject StandaloneObject { get; set; }
+            Realms.Tests.IntPropertyObject? StandaloneObject { get; set; }
 
-            Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject { get; set; }
+            Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
         {
-            public Realms.Tests.IntPropertyObject StandaloneObject
+            public Realms.Tests.IntPropertyObject? StandaloneObject
             {
-                get => (Realms.Tests.IntPropertyObject)GetValue("StandaloneObject");
+                get => (Realms.Tests.IntPropertyObject?)GetValue("StandaloneObject");
                 set => SetValue("StandaloneObject", value);
             }
 
-            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject
             {
-                get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObject");
+                get => (Realms.Tests.EmbeddedIntPropertyObject?)GetValue("EmbeddedObject");
                 set => SetValue("EmbeddedObject", value);
             }
         }
@@ -251,8 +251,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
 
-            private Realms.Tests.IntPropertyObject _standaloneObject = null!;
-            public Realms.Tests.IntPropertyObject StandaloneObject
+            private Realms.Tests.IntPropertyObject? _standaloneObject = null!;
+            public Realms.Tests.IntPropertyObject? StandaloneObject
             {
                 get => _standaloneObject;
                 set
@@ -262,8 +262,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedIntPropertyObject _embeddedObject = null!;
-            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObject
+            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObject = null!;
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject
             {
                 get => _embeddedObject;
                 set
@@ -292,10 +292,10 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "StandaloneObject":
-                        StandaloneObject = (Realms.Tests.IntPropertyObject)val;
+                        StandaloneObject = (Realms.Tests.IntPropertyObject?)val;
                         return;
                     case "EmbeddedObject":
-                        EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject)val;
+                        EmbeddedObject = (Realms.Tests.EmbeddedIntPropertyObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

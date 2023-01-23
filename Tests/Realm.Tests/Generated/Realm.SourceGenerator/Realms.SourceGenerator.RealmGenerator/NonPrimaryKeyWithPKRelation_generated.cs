@@ -229,23 +229,23 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never)]
             internal interface INonPrimaryKeyWithPKRelationAccessor : Realms.IRealmAccessor
             {
-                string StringValue { get; set; }
+                string? StringValue { get; set; }
 
-                Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject OtherObject { get; set; }
+                Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject? OtherObject { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             internal class NonPrimaryKeyWithPKRelationManagedAccessor : Realms.ManagedAccessor, INonPrimaryKeyWithPKRelationAccessor
             {
-                public string StringValue
+                public string? StringValue
                 {
-                    get => (string)GetValue("StringValue");
+                    get => (string?)GetValue("StringValue");
                     set => SetValue("StringValue", value);
                 }
 
-                public Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject OtherObject
+                public Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject? OtherObject
                 {
-                    get => (Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject)GetValue("OtherObject");
+                    get => (Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject?)GetValue("OtherObject");
                     set => SetValue("OtherObject", value);
                 }
             }
@@ -255,8 +255,8 @@ namespace Realms.Tests.Database
             {
                 public override ObjectSchema ObjectSchema => NonPrimaryKeyWithPKRelation.RealmSchema;
 
-                private string _stringValue = null!;
-                public string StringValue
+                private string? _stringValue = null!;
+                public string? StringValue
                 {
                     get => _stringValue;
                     set
@@ -266,8 +266,8 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject _otherObject = null!;
-                public Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject OtherObject
+                private Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject? _otherObject = null!;
+                public Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject? OtherObject
                 {
                     get => _otherObject;
                     set
@@ -296,10 +296,10 @@ namespace Realms.Tests.Database
                     switch (propertyName)
                     {
                         case "StringValue":
-                            StringValue = (string)val;
+                            StringValue = (string?)val;
                             return;
                         case "OtherObject":
-                            OtherObject = (Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject)val;
+                            OtherObject = (Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject?)val;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

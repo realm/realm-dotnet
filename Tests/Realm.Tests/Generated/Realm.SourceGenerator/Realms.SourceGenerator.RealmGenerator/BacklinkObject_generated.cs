@@ -227,19 +227,19 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IBacklinkObjectAccessor : Realms.IRealmAccessor
         {
-            string BeforeBacklinks { get; set; }
+            string? BeforeBacklinks { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links { get; }
 
-            string AfterBacklinks { get; set; }
+            string? AfterBacklinks { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class BacklinkObjectManagedAccessor : Realms.ManagedAccessor, IBacklinkObjectAccessor
         {
-            public string BeforeBacklinks
+            public string? BeforeBacklinks
             {
-                get => (string)GetValue("BeforeBacklinks");
+                get => (string?)GetValue("BeforeBacklinks");
                 set => SetValue("BeforeBacklinks", value);
             }
 
@@ -257,9 +257,9 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public string AfterBacklinks
+            public string? AfterBacklinks
             {
-                get => (string)GetValue("AfterBacklinks");
+                get => (string?)GetValue("AfterBacklinks");
                 set => SetValue("AfterBacklinks", value);
             }
         }
@@ -269,8 +269,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => BacklinkObject.RealmSchema;
 
-            private string _beforeBacklinks = null!;
-            public string BeforeBacklinks
+            private string? _beforeBacklinks = null!;
+            public string? BeforeBacklinks
             {
                 get => _beforeBacklinks;
                 set
@@ -282,8 +282,8 @@ namespace Realms.Tests.Database
 
             public System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-            private string _afterBacklinks = null!;
-            public string AfterBacklinks
+            private string? _afterBacklinks = null!;
+            public string? AfterBacklinks
             {
                 get => _afterBacklinks;
                 set
@@ -313,10 +313,10 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "BeforeBacklinks":
-                        BeforeBacklinks = (string)val;
+                        BeforeBacklinks = (string?)val;
                         return;
                     case "AfterBacklinks":
-                        AfterBacklinks = (string)val;
+                        AfterBacklinks = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

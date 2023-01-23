@@ -227,23 +227,23 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IPrimaryKeyStringObjectAccessor : Realms.IRealmAccessor
         {
-            string Id { get; set; }
+            string? Id { get; set; }
 
-            string Value { get; set; }
+            string? Value { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class PrimaryKeyStringObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyStringObjectAccessor
         {
-            public string Id
+            public string? Id
             {
-                get => (string)GetValue("_id");
+                get => (string?)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
-            public string Value
+            public string? Value
             {
-                get => (string)GetValue("Value");
+                get => (string?)GetValue("Value");
                 set => SetValue("Value", value);
             }
         }
@@ -253,8 +253,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyStringObject.RealmSchema;
 
-            private string _id = null!;
-            public string Id
+            private string? _id = null!;
+            public string? Id
             {
                 get => _id;
                 set
@@ -264,8 +264,8 @@ namespace Realms.Tests
                 }
             }
 
-            private string _value = null!;
-            public string Value
+            private string? _value = null!;
+            public string? Value
             {
                 get => _value;
                 set
@@ -296,7 +296,7 @@ namespace Realms.Tests
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
-                        Value = (string)val;
+                        Value = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -310,7 +310,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string?)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

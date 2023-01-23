@@ -238,9 +238,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            string Color { get; set; }
+            string? Color { get; set; }
 
             bool Vaccinated { get; set; }
 
@@ -252,15 +252,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public string Color
+            public string? Color
             {
-                get => (string)GetValue("Color");
+                get => (string?)GetValue("Color");
                 set => SetValue("Color", value);
             }
 
@@ -296,8 +296,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -307,8 +307,8 @@ namespace Realms.Tests
                 }
             }
 
-            private string _color = null!;
-            public string Color
+            private string? _color = null!;
+            public string? Color
             {
                 get => _color;
                 set
@@ -364,10 +364,10 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "Color":
-                        Color = (string)val;
+                        Color = (string?)val;
                         return;
                     case "Vaccinated":
                         Vaccinated = (bool)val;

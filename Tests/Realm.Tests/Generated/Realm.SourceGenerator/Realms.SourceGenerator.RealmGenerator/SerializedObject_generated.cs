@@ -244,13 +244,13 @@ namespace Realms.Tests.Database
         {
             int IntValue { get; set; }
 
-            string Name { get; set; }
+            string? Name { get; set; }
 
             System.Collections.Generic.IDictionary<string, int> Dict { get; }
 
-            System.Collections.Generic.IList<string> List { get; }
+            System.Collections.Generic.IList<string?> List { get; }
 
-            System.Collections.Generic.ISet<string> Set { get; }
+            System.Collections.Generic.ISet<string?> Set { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -262,9 +262,9 @@ namespace Realms.Tests.Database
                 set => SetValue("IntValue", value);
             }
 
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
@@ -282,28 +282,28 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IList<string> _list = null!;
-            public System.Collections.Generic.IList<string> List
+            private System.Collections.Generic.IList<string?> _list = null!;
+            public System.Collections.Generic.IList<string?> List
             {
                 get
                 {
                     if (_list == null)
                     {
-                        _list = GetListValue<string>("List");
+                        _list = GetListValue<string?>("List");
                     }
 
                     return _list;
                 }
             }
 
-            private System.Collections.Generic.ISet<string> _set = null!;
-            public System.Collections.Generic.ISet<string> Set
+            private System.Collections.Generic.ISet<string?> _set = null!;
+            public System.Collections.Generic.ISet<string?> Set
             {
                 get
                 {
                     if (_set == null)
                     {
-                        _set = GetSetValue<string>("Set");
+                        _set = GetSetValue<string?>("Set");
                     }
 
                     return _set;
@@ -327,8 +327,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -340,9 +340,9 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, int> Dict { get; } = new Dictionary<string, int>();
 
-            public System.Collections.Generic.IList<string> List { get; } = new List<string>();
+            public System.Collections.Generic.IList<string?> List { get; } = new List<string?>();
 
-            public System.Collections.Generic.ISet<string> Set { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<string?> Set { get; } = new HashSet<string?>(RealmSet<string?>.Comparer);
 
             public SerializedObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -366,7 +366,7 @@ namespace Realms.Tests.Database
                         IntValue = (int)val;
                         return;
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

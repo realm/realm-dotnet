@@ -518,11 +518,11 @@ namespace Realms.Tests
 
             System.Collections.Generic.ISet<string> StringSet { get; }
 
-            System.Collections.Generic.ISet<string> NullableStringSet { get; }
+            System.Collections.Generic.ISet<string?> NullableStringSet { get; }
 
             System.Collections.Generic.ISet<byte[]> ByteArraySet { get; }
 
-            System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; }
+            System.Collections.Generic.ISet<byte[]?> NullableByteArraySet { get; }
 
             System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; }
 
@@ -578,11 +578,11 @@ namespace Realms.Tests
 
             System.Collections.Generic.IList<string> StringList { get; }
 
-            System.Collections.Generic.IList<string> NullableStringList { get; }
+            System.Collections.Generic.IList<string?> NullableStringList { get; }
 
             System.Collections.Generic.IList<byte[]> ByteArrayList { get; }
 
-            System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; }
+            System.Collections.Generic.IList<byte[]?> NullableByteArrayList { get; }
 
             System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; }
 
@@ -640,11 +640,11 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, string> StringDict { get; }
 
-            System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; }
+            System.Collections.Generic.IDictionary<string, string?> NullableStringDict { get; }
 
             System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; }
 
-            System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; }
+            System.Collections.Generic.IDictionary<string, byte[]?> NullableByteArrayDict { get; }
 
             System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; }
 
@@ -672,7 +672,7 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
         }
@@ -848,14 +848,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.ISet<string> _nullableStringSet = null!;
-            public System.Collections.Generic.ISet<string> NullableStringSet
+            private System.Collections.Generic.ISet<string?> _nullableStringSet = null!;
+            public System.Collections.Generic.ISet<string?> NullableStringSet
             {
                 get
                 {
                     if (_nullableStringSet == null)
                     {
-                        _nullableStringSet = GetSetValue<string>("NullableStringSet");
+                        _nullableStringSet = GetSetValue<string?>("NullableStringSet");
                     }
 
                     return _nullableStringSet;
@@ -876,14 +876,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.ISet<byte[]> _nullableByteArraySet = null!;
-            public System.Collections.Generic.ISet<byte[]> NullableByteArraySet
+            private System.Collections.Generic.ISet<byte[]?> _nullableByteArraySet = null!;
+            public System.Collections.Generic.ISet<byte[]?> NullableByteArraySet
             {
                 get
                 {
                     if (_nullableByteArraySet == null)
                     {
-                        _nullableByteArraySet = GetSetValue<byte[]>("NullableByteArraySet");
+                        _nullableByteArraySet = GetSetValue<byte[]?>("NullableByteArraySet");
                     }
 
                     return _nullableByteArraySet;
@@ -1268,14 +1268,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IList<string> _nullableStringList = null!;
-            public System.Collections.Generic.IList<string> NullableStringList
+            private System.Collections.Generic.IList<string?> _nullableStringList = null!;
+            public System.Collections.Generic.IList<string?> NullableStringList
             {
                 get
                 {
                     if (_nullableStringList == null)
                     {
-                        _nullableStringList = GetListValue<string>("NullableStringList");
+                        _nullableStringList = GetListValue<string?>("NullableStringList");
                     }
 
                     return _nullableStringList;
@@ -1296,14 +1296,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IList<byte[]> _nullableByteArrayList = null!;
-            public System.Collections.Generic.IList<byte[]> NullableByteArrayList
+            private System.Collections.Generic.IList<byte[]?> _nullableByteArrayList = null!;
+            public System.Collections.Generic.IList<byte[]?> NullableByteArrayList
             {
                 get
                 {
                     if (_nullableByteArrayList == null)
                     {
-                        _nullableByteArrayList = GetListValue<byte[]>("NullableByteArrayList");
+                        _nullableByteArrayList = GetListValue<byte[]?>("NullableByteArrayList");
                     }
 
                     return _nullableByteArrayList;
@@ -1702,14 +1702,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, string> _nullableStringDict = null!;
-            public System.Collections.Generic.IDictionary<string, string> NullableStringDict
+            private System.Collections.Generic.IDictionary<string, string?> _nullableStringDict = null!;
+            public System.Collections.Generic.IDictionary<string, string?> NullableStringDict
             {
                 get
                 {
                     if (_nullableStringDict == null)
                     {
-                        _nullableStringDict = GetDictionaryValue<string>("NullableStringDict");
+                        _nullableStringDict = GetDictionaryValue<string?>("NullableStringDict");
                     }
 
                     return _nullableStringDict;
@@ -1730,14 +1730,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, byte[]> _nullableByteArrayDict = null!;
-            public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict
+            private System.Collections.Generic.IDictionary<string, byte[]?> _nullableByteArrayDict = null!;
+            public System.Collections.Generic.IDictionary<string, byte[]?> NullableByteArrayDict
             {
                 get
                 {
                     if (_nullableByteArrayDict == null)
                     {
-                        _nullableByteArrayDict = GetDictionaryValue<byte[]>("NullableByteArrayDict");
+                        _nullableByteArrayDict = GetDictionaryValue<byte[]?>("NullableByteArrayDict");
                     }
 
                     return _nullableByteArrayDict;
@@ -1926,14 +1926,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDict = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> _objectDict = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict
             {
                 get
                 {
                     if (_objectDict == null)
                     {
-                        _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDict");
+                        _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject?>("ObjectDict");
                     }
 
                     return _objectDict;
@@ -1984,11 +1984,11 @@ namespace Realms.Tests
 
             public System.Collections.Generic.ISet<string> StringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
 
-            public System.Collections.Generic.ISet<string> NullableStringSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<string?> NullableStringSet { get; } = new HashSet<string?>(RealmSet<string?>.Comparer);
 
             public System.Collections.Generic.ISet<byte[]> ByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
 
-            public System.Collections.Generic.ISet<byte[]> NullableByteArraySet { get; } = new HashSet<byte[]>(RealmSet<byte[]>.Comparer);
+            public System.Collections.Generic.ISet<byte[]?> NullableByteArraySet { get; } = new HashSet<byte[]?>(RealmSet<byte[]?>.Comparer);
 
             public System.Collections.Generic.ISet<System.DateTimeOffset> DateTimeOffsetSet { get; } = new HashSet<System.DateTimeOffset>(RealmSet<System.DateTimeOffset>.Comparer);
 
@@ -2044,11 +2044,11 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<string> StringList { get; } = new List<string>();
 
-            public System.Collections.Generic.IList<string> NullableStringList { get; } = new List<string>();
+            public System.Collections.Generic.IList<string?> NullableStringList { get; } = new List<string?>();
 
             public System.Collections.Generic.IList<byte[]> ByteArrayList { get; } = new List<byte[]>();
 
-            public System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; } = new List<byte[]>();
+            public System.Collections.Generic.IList<byte[]?> NullableByteArrayList { get; } = new List<byte[]?>();
 
             public System.Collections.Generic.IList<System.DateTimeOffset> DateTimeOffsetList { get; } = new List<System.DateTimeOffset>();
 
@@ -2106,11 +2106,11 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, string> StringDict { get; } = new Dictionary<string, string>();
 
-            public System.Collections.Generic.IDictionary<string, string> NullableStringDict { get; } = new Dictionary<string, string>();
+            public System.Collections.Generic.IDictionary<string, string?> NullableStringDict { get; } = new Dictionary<string, string?>();
 
             public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDict { get; } = new Dictionary<string, byte[]>();
 
-            public System.Collections.Generic.IDictionary<string, byte[]> NullableByteArrayDict { get; } = new Dictionary<string, byte[]>();
+            public System.Collections.Generic.IDictionary<string, byte[]?> NullableByteArrayDict { get; } = new Dictionary<string, byte[]?>();
 
             public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset>();
 
@@ -2138,7 +2138,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDict { get; } = new Dictionary<string, MongoDB.Bson.ObjectId?>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject?>();
 
             public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; } = new Dictionary<string, Realms.RealmValue>();
 

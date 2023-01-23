@@ -370,9 +370,9 @@ namespace Realms.Tests
 
             System.Collections.Generic.IList<System.Guid?> NullableGuidList { get; }
 
-            System.Collections.Generic.IList<string> NullableStringList { get; }
+            System.Collections.Generic.IList<string?> NullableStringList { get; }
 
-            System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; }
+            System.Collections.Generic.IList<byte[]?> NullableByteArrayList { get; }
 
             System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
         }
@@ -772,28 +772,28 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IList<string> _nullableStringList = null!;
-            public System.Collections.Generic.IList<string> NullableStringList
+            private System.Collections.Generic.IList<string?> _nullableStringList = null!;
+            public System.Collections.Generic.IList<string?> NullableStringList
             {
                 get
                 {
                     if (_nullableStringList == null)
                     {
-                        _nullableStringList = GetListValue<string>("NullableStringList");
+                        _nullableStringList = GetListValue<string?>("NullableStringList");
                     }
 
                     return _nullableStringList;
                 }
             }
 
-            private System.Collections.Generic.IList<byte[]> _nullableByteArrayList = null!;
-            public System.Collections.Generic.IList<byte[]> NullableByteArrayList
+            private System.Collections.Generic.IList<byte[]?> _nullableByteArrayList = null!;
+            public System.Collections.Generic.IList<byte[]?> NullableByteArrayList
             {
                 get
                 {
                     if (_nullableByteArrayList == null)
                     {
-                        _nullableByteArrayList = GetListValue<byte[]>("NullableByteArrayList");
+                        _nullableByteArrayList = GetListValue<byte[]?>("NullableByteArrayList");
                     }
 
                     return _nullableByteArrayList;
@@ -876,9 +876,9 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<System.Guid?> NullableGuidList { get; } = new List<System.Guid?>();
 
-            public System.Collections.Generic.IList<string> NullableStringList { get; } = new List<string>();
+            public System.Collections.Generic.IList<string?> NullableStringList { get; } = new List<string?>();
 
-            public System.Collections.Generic.IList<byte[]> NullableByteArrayList { get; } = new List<byte[]>();
+            public System.Collections.Generic.IList<byte[]?> NullableByteArrayList { get; } = new List<byte[]?>();
 
             public System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; } = new List<Realms.RealmValue>();
 

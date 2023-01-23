@@ -223,7 +223,7 @@ namespace SourceGeneratorAssemblyToProcess
         {
             int Id { get; set; }
 
-            string Name { get; set; }
+            string? Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -235,9 +235,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("Id", value);
             }
 
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
         }
@@ -258,8 +258,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -291,7 +291,7 @@ namespace SourceGeneratorAssemblyToProcess
                         Id = (int)val;
                         return;
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

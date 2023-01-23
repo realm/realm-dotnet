@@ -231,7 +231,7 @@ namespace Realms.Tests.Sync
         {
             MongoDB.Bson.ObjectId Id { get; set; }
 
-            string PartitionLike { get; set; }
+            string? PartitionLike { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -243,9 +243,9 @@ namespace Realms.Tests.Sync
                 set => SetValueUnique("_id", value);
             }
 
-            public string PartitionLike
+            public string? PartitionLike
             {
-                get => (string)GetValue("PartitionLike");
+                get => (string?)GetValue("PartitionLike");
                 set => SetValue("PartitionLike", value);
             }
         }
@@ -266,8 +266,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string _partitionLike = null!;
-            public string PartitionLike
+            private string? _partitionLike = null!;
+            public string? PartitionLike
             {
                 get => _partitionLike;
                 set
@@ -298,7 +298,7 @@ namespace Realms.Tests.Sync
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "PartitionLike":
-                        PartitionLike = (string)val;
+                        PartitionLike = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

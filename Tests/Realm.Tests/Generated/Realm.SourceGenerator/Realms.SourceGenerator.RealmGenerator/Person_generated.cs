@@ -273,9 +273,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IPersonAccessor : Realms.IRealmAccessor
         {
-            string FirstName { get; set; }
+            string? FirstName { get; set; }
 
-            string LastName { get; set; }
+            string? LastName { get; set; }
 
             float Score { get; set; }
 
@@ -289,11 +289,11 @@ namespace Realms.Tests.Database
 
             System.DateTimeOffset Birthday { get; set; }
 
-            byte[] PublicCertificateBytes { get; set; }
+            byte[]? PublicCertificateBytes { get; set; }
 
-            string OptionalAddress { get; set; }
+            string? OptionalAddress { get; set; }
 
-            string Email_ { get; set; }
+            string? Email_ { get; set; }
 
             bool IsInteresting { get; set; }
 
@@ -303,15 +303,15 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
-            public string FirstName
+            public string? FirstName
             {
-                get => (string)GetValue("FirstName");
+                get => (string?)GetValue("FirstName");
                 set => SetValue("FirstName", value);
             }
 
-            public string LastName
+            public string? LastName
             {
-                get => (string)GetValue("LastName");
+                get => (string?)GetValue("LastName");
                 set => SetValue("LastName", value);
             }
 
@@ -351,21 +351,21 @@ namespace Realms.Tests.Database
                 set => SetValue("Birthday", value);
             }
 
-            public byte[] PublicCertificateBytes
+            public byte[]? PublicCertificateBytes
             {
-                get => (byte[])GetValue("PublicCertificateBytes");
+                get => (byte[]?)GetValue("PublicCertificateBytes");
                 set => SetValue("PublicCertificateBytes", value);
             }
 
-            public string OptionalAddress
+            public string? OptionalAddress
             {
-                get => (string)GetValue("OptionalAddress");
+                get => (string?)GetValue("OptionalAddress");
                 set => SetValue("OptionalAddress", value);
             }
 
-            public string Email_
+            public string? Email_
             {
-                get => (string)GetValue("Email");
+                get => (string?)GetValue("Email");
                 set => SetValue("Email", value);
             }
 
@@ -395,8 +395,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Person.RealmSchema;
 
-            private string _firstName = null!;
-            public string FirstName
+            private string? _firstName = null!;
+            public string? FirstName
             {
                 get => _firstName;
                 set
@@ -406,8 +406,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _lastName = null!;
-            public string LastName
+            private string? _lastName = null!;
+            public string? LastName
             {
                 get => _lastName;
                 set
@@ -483,8 +483,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private byte[] _publicCertificateBytes = null!;
-            public byte[] PublicCertificateBytes
+            private byte[]? _publicCertificateBytes = null!;
+            public byte[]? PublicCertificateBytes
             {
                 get => _publicCertificateBytes;
                 set
@@ -494,8 +494,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _optionalAddress = null!;
-            public string OptionalAddress
+            private string? _optionalAddress = null!;
+            public string? OptionalAddress
             {
                 get => _optionalAddress;
                 set
@@ -505,8 +505,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _email_ = null!;
-            public string Email_
+            private string? _email_ = null!;
+            public string? Email_
             {
                 get => _email_;
                 set
@@ -558,10 +558,10 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "FirstName":
-                        FirstName = (string)val;
+                        FirstName = (string?)val;
                         return;
                     case "LastName":
-                        LastName = (string)val;
+                        LastName = (string?)val;
                         return;
                     case "Score":
                         Score = (float)val;
@@ -582,13 +582,13 @@ namespace Realms.Tests.Database
                         Birthday = (System.DateTimeOffset)val;
                         return;
                     case "PublicCertificateBytes":
-                        PublicCertificateBytes = (byte[])val;
+                        PublicCertificateBytes = (byte[]?)val;
                         return;
                     case "OptionalAddress":
-                        OptionalAddress = (string)val;
+                        OptionalAddress = (string?)val;
                         return;
                     case "Email":
-                        Email_ = (string)val;
+                        Email_ = (string?)val;
                         return;
                     case "IsInteresting":
                         IsInteresting = (bool)val;

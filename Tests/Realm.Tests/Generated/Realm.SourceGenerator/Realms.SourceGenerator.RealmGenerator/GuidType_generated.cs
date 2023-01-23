@@ -283,7 +283,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; }
 
-            Realms.Tests.Database.GuidType LinkProperty { get; set; }
+            Realms.Tests.Database.GuidType? LinkProperty { get; set; }
 
             Realms.RealmValue MixedProperty { get; set; }
 
@@ -293,7 +293,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; }
 
-            Realms.Tests.Database.EmbeddedGuidType EmbeddedProperty { get; set; }
+            Realms.Tests.Database.EmbeddedGuidType? EmbeddedProperty { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -401,9 +401,9 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public Realms.Tests.Database.GuidType LinkProperty
+            public Realms.Tests.Database.GuidType? LinkProperty
             {
-                get => (Realms.Tests.Database.GuidType)GetValue("LinkProperty");
+                get => (Realms.Tests.Database.GuidType?)GetValue("LinkProperty");
                 set => SetValue("LinkProperty", value);
             }
 
@@ -455,9 +455,9 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public Realms.Tests.Database.EmbeddedGuidType EmbeddedProperty
+            public Realms.Tests.Database.EmbeddedGuidType? EmbeddedProperty
             {
-                get => (Realms.Tests.Database.EmbeddedGuidType)GetValue("EmbeddedProperty");
+                get => (Realms.Tests.Database.EmbeddedGuidType?)GetValue("EmbeddedProperty");
                 set => SetValue("EmbeddedProperty", value);
             }
         }
@@ -512,8 +512,8 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; } = new Dictionary<string, System.Guid?>();
 
-            private Realms.Tests.Database.GuidType _linkProperty = null!;
-            public Realms.Tests.Database.GuidType LinkProperty
+            private Realms.Tests.Database.GuidType? _linkProperty = null!;
+            public Realms.Tests.Database.GuidType? LinkProperty
             {
                 get => _linkProperty;
                 set
@@ -540,8 +540,8 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; } = new Dictionary<string, Realms.RealmValue>();
 
-            private Realms.Tests.Database.EmbeddedGuidType _embeddedProperty = null!;
-            public Realms.Tests.Database.EmbeddedGuidType EmbeddedProperty
+            private Realms.Tests.Database.EmbeddedGuidType? _embeddedProperty = null!;
+            public Realms.Tests.Database.EmbeddedGuidType? EmbeddedProperty
             {
                 get => _embeddedProperty;
                 set
@@ -582,13 +582,13 @@ namespace Realms.Tests.Database
                         OptionalProperty = (System.Guid?)val;
                         return;
                     case "LinkProperty":
-                        LinkProperty = (Realms.Tests.Database.GuidType)val;
+                        LinkProperty = (Realms.Tests.Database.GuidType?)val;
                         return;
                     case "MixedProperty":
                         MixedProperty = (Realms.RealmValue)val;
                         return;
                     case "EmbeddedProperty":
-                        EmbeddedProperty = (Realms.Tests.Database.EmbeddedGuidType)val;
+                        EmbeddedProperty = (Realms.Tests.Database.EmbeddedGuidType?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

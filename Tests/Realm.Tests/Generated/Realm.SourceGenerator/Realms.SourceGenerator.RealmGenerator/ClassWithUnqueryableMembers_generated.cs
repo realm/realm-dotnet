@@ -241,13 +241,13 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IClassWithUnqueryableMembersAccessor : Realms.IRealmAccessor
         {
-            string RealPropertyToSatisfyWeaver { get; set; }
+            string? RealPropertyToSatisfyWeaver { get; set; }
 
-            Realms.Tests.Database.Person RealmObjectProperty { get; set; }
+            Realms.Tests.Database.Person? RealmObjectProperty { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; }
 
-            string FirstName { get; set; }
+            string? FirstName { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty { get; }
         }
@@ -255,15 +255,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
         {
-            public string RealPropertyToSatisfyWeaver
+            public string? RealPropertyToSatisfyWeaver
             {
-                get => (string)GetValue("RealPropertyToSatisfyWeaver");
+                get => (string?)GetValue("RealPropertyToSatisfyWeaver");
                 set => SetValue("RealPropertyToSatisfyWeaver", value);
             }
 
-            public Realms.Tests.Database.Person RealmObjectProperty
+            public Realms.Tests.Database.Person? RealmObjectProperty
             {
-                get => (Realms.Tests.Database.Person)GetValue("RealmObjectProperty");
+                get => (Realms.Tests.Database.Person?)GetValue("RealmObjectProperty");
                 set => SetValue("RealmObjectProperty", value);
             }
 
@@ -281,9 +281,9 @@ namespace Realms.Tests
                 }
             }
 
-            public string FirstName
+            public string? FirstName
             {
-                get => (string)GetValue("FirstName");
+                get => (string?)GetValue("FirstName");
                 set => SetValue("FirstName", value);
             }
 
@@ -307,8 +307,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
 
-            private string _realPropertyToSatisfyWeaver = null!;
-            public string RealPropertyToSatisfyWeaver
+            private string? _realPropertyToSatisfyWeaver = null!;
+            public string? RealPropertyToSatisfyWeaver
             {
                 get => _realPropertyToSatisfyWeaver;
                 set
@@ -318,8 +318,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.Database.Person _realmObjectProperty = null!;
-            public Realms.Tests.Database.Person RealmObjectProperty
+            private Realms.Tests.Database.Person? _realmObjectProperty = null!;
+            public Realms.Tests.Database.Person? RealmObjectProperty
             {
                 get => _realmObjectProperty;
                 set
@@ -331,8 +331,8 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; } = new List<Realms.Tests.Database.Person>();
 
-            private string _firstName = null!;
-            public string FirstName
+            private string? _firstName = null!;
+            public string? FirstName
             {
                 get => _firstName;
                 set
@@ -365,13 +365,13 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "RealPropertyToSatisfyWeaver":
-                        RealPropertyToSatisfyWeaver = (string)val;
+                        RealPropertyToSatisfyWeaver = (string?)val;
                         return;
                     case "RealmObjectProperty":
-                        RealmObjectProperty = (Realms.Tests.Database.Person)val;
+                        RealmObjectProperty = (Realms.Tests.Database.Person?)val;
                         return;
                     case "FirstName":
-                        FirstName = (string)val;
+                        FirstName = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

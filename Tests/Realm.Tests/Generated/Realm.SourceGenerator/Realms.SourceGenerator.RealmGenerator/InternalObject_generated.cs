@@ -201,7 +201,7 @@ namespace Realms.Tests.Database
         {
             int IntProperty { get; set; }
 
-            string StringProperty { get; set; }
+            string? StringProperty { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -213,9 +213,9 @@ namespace Realms.Tests.Database
                 set => SetValue("IntProperty", value);
             }
 
-            public string StringProperty
+            public string? StringProperty
             {
-                get => (string)GetValue("StringProperty");
+                get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
             }
         }
@@ -236,8 +236,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _stringProperty = null!;
-            public string StringProperty
+            private string? _stringProperty = null!;
+            public string? StringProperty
             {
                 get => _stringProperty;
                 set
@@ -269,7 +269,7 @@ namespace Realms.Tests.Database
                         IntProperty = (int)val;
                         return;
                     case "StringProperty":
-                        StringProperty = (string)val;
+                        StringProperty = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

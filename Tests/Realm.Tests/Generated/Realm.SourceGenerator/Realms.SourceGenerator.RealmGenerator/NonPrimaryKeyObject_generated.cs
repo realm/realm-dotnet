@@ -223,15 +223,15 @@ namespace Realms.Tests.Database
             [EditorBrowsable(EditorBrowsableState.Never)]
             internal interface INonPrimaryKeyObjectAccessor : Realms.IRealmAccessor
             {
-                string StringValue { get; set; }
+                string? StringValue { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
             internal class NonPrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, INonPrimaryKeyObjectAccessor
             {
-                public string StringValue
+                public string? StringValue
                 {
-                    get => (string)GetValue("StringValue");
+                    get => (string?)GetValue("StringValue");
                     set => SetValue("StringValue", value);
                 }
             }
@@ -241,8 +241,8 @@ namespace Realms.Tests.Database
             {
                 public override ObjectSchema ObjectSchema => NonPrimaryKeyObject.RealmSchema;
 
-                private string _stringValue = null!;
-                public string StringValue
+                private string? _stringValue = null!;
+                public string? StringValue
                 {
                     get => _stringValue;
                     set
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database
                     switch (propertyName)
                     {
                         case "StringValue":
-                            StringValue = (string)val;
+                            StringValue = (string?)val;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

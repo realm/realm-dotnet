@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
         {
             System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject?> ItemsDictionary { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -251,14 +251,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> _itemsDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject?> _itemsDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject?> ItemsDictionary
             {
                 get
                 {
                     if (_itemsDictionary == null)
                     {
-                        _itemsDictionary = GetDictionaryValue<Realms.Tests.Database.OrderedObject>("ItemsDictionary");
+                        _itemsDictionary = GetDictionaryValue<Realms.Tests.Database.OrderedObject?>("ItemsDictionary");
                     }
 
                     return _itemsDictionary;
@@ -273,7 +273,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items { get; } = new List<Realms.Tests.Database.OrderedObject>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject> ItemsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.OrderedObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject?> ItemsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.OrderedObject?>();
 
             public OrderedContainerUnmanagedAccessor(Type objectType) : base(objectType)
             {

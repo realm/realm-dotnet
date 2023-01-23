@@ -236,9 +236,9 @@ namespace Realms.Tests.Database
             {
                 long Id { get; set; }
 
-                string Name { get; set; }
+                string? Name { get; set; }
 
-                Realms.Tests.Database.AddOrUpdateTests.Child Child { get; set; }
+                Realms.Tests.Database.AddOrUpdateTests.Child? Child { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
@@ -250,15 +250,15 @@ namespace Realms.Tests.Database
                     set => SetValueUnique("Id", value);
                 }
 
-                public string Name
+                public string? Name
                 {
-                    get => (string)GetValue("Name");
+                    get => (string?)GetValue("Name");
                     set => SetValue("Name", value);
                 }
 
-                public Realms.Tests.Database.AddOrUpdateTests.Child Child
+                public Realms.Tests.Database.AddOrUpdateTests.Child? Child
                 {
-                    get => (Realms.Tests.Database.AddOrUpdateTests.Child)GetValue("Child");
+                    get => (Realms.Tests.Database.AddOrUpdateTests.Child?)GetValue("Child");
                     set => SetValue("Child", value);
                 }
             }
@@ -279,8 +279,8 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private string _name = null!;
-                public string Name
+                private string? _name = null!;
+                public string? Name
                 {
                     get => _name;
                     set
@@ -290,8 +290,8 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.Child _child = null!;
-                public Realms.Tests.Database.AddOrUpdateTests.Child Child
+                private Realms.Tests.Database.AddOrUpdateTests.Child? _child = null!;
+                public Realms.Tests.Database.AddOrUpdateTests.Child? Child
                 {
                     get => _child;
                     set
@@ -323,10 +323,10 @@ namespace Realms.Tests.Database
                         case "Id":
                             throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                         case "Name":
-                            Name = (string)val;
+                            Name = (string?)val;
                             return;
                         case "Child":
-                            Child = (Realms.Tests.Database.AddOrUpdateTests.Child)val;
+                            Child = (Realms.Tests.Database.AddOrUpdateTests.Child?)val;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -234,9 +234,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IEmbeddedLevel1Accessor : Realms.IRealmAccessor
         {
-            string String { get; set; }
+            string? String { get; set; }
 
-            Realms.Tests.EmbeddedLevel2 Child { get; set; }
+            Realms.Tests.EmbeddedLevel2? Child { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> Children { get; }
         }
@@ -244,15 +244,15 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class EmbeddedLevel1ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel1Accessor
         {
-            public string String
+            public string? String
             {
-                get => (string)GetValue("String");
+                get => (string?)GetValue("String");
                 set => SetValue("String", value);
             }
 
-            public Realms.Tests.EmbeddedLevel2 Child
+            public Realms.Tests.EmbeddedLevel2? Child
             {
-                get => (Realms.Tests.EmbeddedLevel2)GetValue("Child");
+                get => (Realms.Tests.EmbeddedLevel2?)GetValue("Child");
                 set => SetValue("Child", value);
             }
 
@@ -276,8 +276,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel1.RealmSchema;
 
-            private string _string = null!;
-            public string String
+            private string? _string = null!;
+            public string? String
             {
                 get => _string;
                 set
@@ -287,8 +287,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedLevel2 _child = null!;
-            public Realms.Tests.EmbeddedLevel2 Child
+            private Realms.Tests.EmbeddedLevel2? _child = null!;
+            public Realms.Tests.EmbeddedLevel2? Child
             {
                 get => _child;
                 set
@@ -319,10 +319,10 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "String":
-                        String = (string)val;
+                        String = (string?)val;
                         return;
                     case "Child":
-                        Child = (Realms.Tests.EmbeddedLevel2)val;
+                        Child = (Realms.Tests.EmbeddedLevel2?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

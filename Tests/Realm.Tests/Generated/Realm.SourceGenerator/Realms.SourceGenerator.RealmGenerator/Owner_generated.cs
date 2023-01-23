@@ -241,29 +241,29 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IOwnerAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            Realms.Tests.Dog TopDog { get; set; }
+            Realms.Tests.Dog? TopDog { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Dog> ListOfDogs { get; }
 
             System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Dog?> DictOfDogs { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public Realms.Tests.Dog TopDog
+            public Realms.Tests.Dog? TopDog
             {
-                get => (Realms.Tests.Dog)GetValue("TopDog");
+                get => (Realms.Tests.Dog?)GetValue("TopDog");
                 set => SetValue("TopDog", value);
             }
 
@@ -295,14 +295,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> _dictOfDogs = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Dog?> _dictOfDogs = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog?> DictOfDogs
             {
                 get
                 {
                     if (_dictOfDogs == null)
                     {
-                        _dictOfDogs = GetDictionaryValue<Realms.Tests.Dog>("DictOfDogs");
+                        _dictOfDogs = GetDictionaryValue<Realms.Tests.Dog?>("DictOfDogs");
                     }
 
                     return _dictOfDogs;
@@ -315,8 +315,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => Owner.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -326,8 +326,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.Dog _topDog = null!;
-            public Realms.Tests.Dog TopDog
+            private Realms.Tests.Dog? _topDog = null!;
+            public Realms.Tests.Dog? TopDog
             {
                 get => _topDog;
                 set
@@ -341,7 +341,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; } = new HashSet<Realms.Tests.Dog>(RealmSet<Realms.Tests.Dog>.Comparer);
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog> DictOfDogs { get; } = new Dictionary<string, Realms.Tests.Dog>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Dog?> DictOfDogs { get; } = new Dictionary<string, Realms.Tests.Dog?>();
 
             public OwnerUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -362,10 +362,10 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "TopDog":
-                        TopDog = (Realms.Tests.Dog)val;
+                        TopDog = (Realms.Tests.Dog?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

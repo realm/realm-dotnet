@@ -217,15 +217,15 @@ namespace SourceGeneratorAssemblyToProcess
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IInitializerNamespaceClassAccessor : Realms.IRealmAccessor
         {
-            string Id { get; set; }
+            string? Id { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
         {
-            public string Id
+            public string? Id
             {
-                get => (string)GetValue("Id");
+                get => (string?)GetValue("Id");
                 set => SetValue("Id", value);
             }
         }
@@ -235,8 +235,8 @@ namespace SourceGeneratorAssemblyToProcess
         {
             public override ObjectSchema ObjectSchema => InitializerNamespaceClass.RealmSchema;
 
-            private string _id = ObjectId.GenerateNewId().ToString();
-            public string Id
+            private string? _id = ObjectId.GenerateNewId().ToString();
+            public string? Id
             {
                 get => _id;
                 set
@@ -264,7 +264,7 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (propertyName)
                 {
                     case "Id":
-                        Id = (string)val;
+                        Id = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

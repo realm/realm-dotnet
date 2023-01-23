@@ -233,7 +233,7 @@ namespace Realms.Tests.Sync
         {
             MongoDB.Bson.ObjectId Id { get; set; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedDictionaryObject { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedDictionaryObject { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -245,14 +245,14 @@ namespace Realms.Tests.Sync
                 set => SetValueUnique("_id", value);
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> _embeddedDictionaryObject = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedDictionaryObject
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> _embeddedDictionaryObject = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedDictionaryObject
             {
                 get
                 {
                     if (_embeddedDictionaryObject == null)
                     {
-                        _embeddedDictionaryObject = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedDictionaryObject");
+                        _embeddedDictionaryObject = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject?>("EmbeddedDictionaryObject");
                     }
 
                     return _embeddedDictionaryObject;
@@ -276,7 +276,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedDictionaryObject { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedDictionaryObject { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject?>();
 
             public AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor(Type objectType) : base(objectType)
             {

@@ -225,7 +225,7 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDynamicSubSubTaskAccessor : Realms.IRealmAccessor
         {
-            string Summary { get; set; }
+            string? Summary { get; set; }
 
             System.Linq.IQueryable<Realms.Tests.Database.DynamicSubTask> ParentSubTask { get; }
 
@@ -235,9 +235,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DynamicSubSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubSubTaskAccessor
         {
-            public string Summary
+            public string? Summary
             {
-                get => (string)GetValue("Summary");
+                get => (string?)GetValue("Summary");
                 set => SetValue("Summary", value);
             }
 
@@ -275,8 +275,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
 
-            private string _summary = null!;
-            public string Summary
+            private string? _summary = null!;
+            public string? Summary
             {
                 get => _summary;
                 set
@@ -310,7 +310,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Summary":
-                        Summary = (string)val;
+                        Summary = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
         {
             bool Value { get; set; }
 
-            Realms.Tests.Database.B B { get; set; }
+            Realms.Tests.Database.B? B { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -242,9 +242,9 @@ namespace Realms.Tests.Database
                 set => SetValue("Value", value);
             }
 
-            public Realms.Tests.Database.B B
+            public Realms.Tests.Database.B? B
             {
-                get => (Realms.Tests.Database.B)GetValue("B");
+                get => (Realms.Tests.Database.B?)GetValue("B");
                 set => SetValue("B", value);
             }
         }
@@ -265,8 +265,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.B _b = null!;
-            public Realms.Tests.Database.B B
+            private Realms.Tests.Database.B? _b = null!;
+            public Realms.Tests.Database.B? B
             {
                 get => _b;
                 set
@@ -298,7 +298,7 @@ namespace Realms.Tests.Database
                         Value = (bool)val;
                         return;
                     case "B":
-                        B = (Realms.Tests.Database.B)val;
+                        B = (Realms.Tests.Database.B?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

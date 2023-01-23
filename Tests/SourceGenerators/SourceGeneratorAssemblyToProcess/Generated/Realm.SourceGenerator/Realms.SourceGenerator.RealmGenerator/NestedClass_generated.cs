@@ -226,7 +226,7 @@ namespace SourceGeneratorPlayground
             {
                 int Id { get; set; }
 
-                SourceGeneratorPlayground.OuterClass.NestedClass Link { get; set; }
+                SourceGeneratorPlayground.OuterClass.NestedClass? Link { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never)]
@@ -238,9 +238,9 @@ namespace SourceGeneratorPlayground
                     set => SetValue("Id", value);
                 }
 
-                public SourceGeneratorPlayground.OuterClass.NestedClass Link
+                public SourceGeneratorPlayground.OuterClass.NestedClass? Link
                 {
-                    get => (SourceGeneratorPlayground.OuterClass.NestedClass)GetValue("Link");
+                    get => (SourceGeneratorPlayground.OuterClass.NestedClass?)GetValue("Link");
                     set => SetValue("Link", value);
                 }
             }
@@ -261,8 +261,8 @@ namespace SourceGeneratorPlayground
                     }
                 }
 
-                private SourceGeneratorPlayground.OuterClass.NestedClass _link = null!;
-                public SourceGeneratorPlayground.OuterClass.NestedClass Link
+                private SourceGeneratorPlayground.OuterClass.NestedClass? _link = null!;
+                public SourceGeneratorPlayground.OuterClass.NestedClass? Link
                 {
                     get => _link;
                     set
@@ -294,7 +294,7 @@ namespace SourceGeneratorPlayground
                             Id = (int)val;
                             return;
                         case "Link":
-                            Link = (SourceGeneratorPlayground.OuterClass.NestedClass)val;
+                            Link = (SourceGeneratorPlayground.OuterClass.NestedClass?)val;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

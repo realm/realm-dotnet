@@ -338,9 +338,9 @@ namespace Realms.Tests.Sync
 
             string RequiredStringProperty { get; set; }
 
-            string StringProperty { get; set; }
+            string? StringProperty { get; set; }
 
-            byte[] ByteArrayProperty { get; set; }
+            byte[]? ByteArrayProperty { get; set; }
 
             char? NullableCharProperty { get; set; }
 
@@ -456,15 +456,15 @@ namespace Realms.Tests.Sync
                 set => SetValue("RequiredStringProperty", value);
             }
 
-            public string StringProperty
+            public string? StringProperty
             {
-                get => (string)GetValue("StringProperty");
+                get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
             }
 
-            public byte[] ByteArrayProperty
+            public byte[]? ByteArrayProperty
             {
-                get => (byte[])GetValue("ByteArrayProperty");
+                get => (byte[]?)GetValue("ByteArrayProperty");
                 set => SetValue("ByteArrayProperty", value);
             }
 
@@ -706,8 +706,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string _stringProperty = null!;
-            public string StringProperty
+            private string? _stringProperty = null!;
+            public string? StringProperty
             {
                 get => _stringProperty;
                 set
@@ -717,8 +717,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private byte[] _byteArrayProperty = null!;
-            public byte[] ByteArrayProperty
+            private byte[]? _byteArrayProperty = null!;
+            public byte[]? ByteArrayProperty
             {
                 get => _byteArrayProperty;
                 set
@@ -958,10 +958,10 @@ namespace Realms.Tests.Sync
                         RequiredStringProperty = (string)val;
                         return;
                     case "StringProperty":
-                        StringProperty = (string)val;
+                        StringProperty = (string?)val;
                         return;
                     case "ByteArrayProperty":
-                        ByteArrayProperty = (byte[])val;
+                        ByteArrayProperty = (byte[]?)val;
                         return;
                     case "NullableCharProperty":
                         NullableCharProperty = (char?)val;

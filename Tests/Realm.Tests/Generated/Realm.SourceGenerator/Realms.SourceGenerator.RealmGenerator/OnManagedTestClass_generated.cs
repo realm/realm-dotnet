@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
         {
             int Id { get; set; }
 
-            Realms.Tests.Database.OnManagedTestClass RelatedObject { get; set; }
+            Realms.Tests.Database.OnManagedTestClass? RelatedObject { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; }
         }
@@ -253,9 +253,9 @@ namespace Realms.Tests.Database
                 set => SetValueUnique("Id", value);
             }
 
-            public Realms.Tests.Database.OnManagedTestClass RelatedObject
+            public Realms.Tests.Database.OnManagedTestClass? RelatedObject
             {
-                get => (Realms.Tests.Database.OnManagedTestClass)GetValue("RelatedObject");
+                get => (Realms.Tests.Database.OnManagedTestClass?)GetValue("RelatedObject");
                 set => SetValue("RelatedObject", value);
             }
 
@@ -290,8 +290,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.OnManagedTestClass _relatedObject = null!;
-            public Realms.Tests.Database.OnManagedTestClass RelatedObject
+            private Realms.Tests.Database.OnManagedTestClass? _relatedObject = null!;
+            public Realms.Tests.Database.OnManagedTestClass? RelatedObject
             {
                 get => _relatedObject;
                 set
@@ -324,7 +324,7 @@ namespace Realms.Tests.Database
                     case "Id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "RelatedObject":
-                        RelatedObject = (Realms.Tests.Database.OnManagedTestClass)val;
+                        RelatedObject = (Realms.Tests.Database.OnManagedTestClass?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

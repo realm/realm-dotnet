@@ -226,7 +226,7 @@ namespace Realms.Tests
         {
             string Id { get; set; }
 
-            string Value { get; set; }
+            string? Value { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -238,9 +238,9 @@ namespace Realms.Tests
                 set => SetValueUnique("_id", value);
             }
 
-            public string Value
+            public string? Value
             {
-                get => (string)GetValue("Value");
+                get => (string?)GetValue("Value");
                 set => SetValue("Value", value);
             }
         }
@@ -261,8 +261,8 @@ namespace Realms.Tests
                 }
             }
 
-            private string _value = null!;
-            public string Value
+            private string? _value = null!;
+            public string? Value
             {
                 get => _value;
                 set
@@ -293,7 +293,7 @@ namespace Realms.Tests
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
-                        Value = (string)val;
+                        Value = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

@@ -59,9 +59,16 @@ namespace SourceGeneratorAssemblyToProcess
             Realms.Schema.Property.Primitive("Int64CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64CounterProperty"),
             Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
             Realms.Schema.Property.Object("ObjectProperty", "AllTypesClass", managedName: "ObjectProperty"),
+            Realms.Schema.Property.ObjectList("ObjectCollectionProperty", "AllTypesClass", managedName: "ObjectCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("IntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "IntCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("NullableIntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableIntCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("StringCollectionProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "StringCollectionProperty"),
+            Realms.Schema.Property.PrimitiveList("RequiredStringListProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringListProperty"),
+            Realms.Schema.Property.PrimitiveSet("RequiredStringSetProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringSetProperty"),
+            Realms.Schema.Property.PrimitiveDictionary("RequiredStringDictionaryProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringDictionaryProperty"),
+            Realms.Schema.Property.PrimitiveList("NonRequiredStringListProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NonRequiredStringListProperty"),
+            Realms.Schema.Property.PrimitiveSet("NonRequiredStringSetProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NonRequiredStringSetProperty"),
+            Realms.Schema.Property.PrimitiveDictionary("NonRequiredStringDictionaryProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NonRequiredStringDictionaryProperty"),
         }.Build();
 
         #region IRealmObject implementation
@@ -103,9 +110,16 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 if (!skipDefaults)
                 {
+                    newAccessor.ObjectCollectionProperty.Clear();
                     newAccessor.IntCollectionProperty.Clear();
                     newAccessor.NullableIntCollectionProperty.Clear();
                     newAccessor.StringCollectionProperty.Clear();
+                    newAccessor.RequiredStringListProperty.Clear();
+                    newAccessor.RequiredStringSetProperty.Clear();
+                    newAccessor.RequiredStringDictionaryProperty.Clear();
+                    newAccessor.NonRequiredStringListProperty.Clear();
+                    newAccessor.NonRequiredStringSetProperty.Clear();
+                    newAccessor.NonRequiredStringDictionaryProperty.Clear();
                 }
 
                 if(!skipDefaults || oldAccessor.CharProperty != default(char))
@@ -178,9 +192,16 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.Realm.Add(oldAccessor.ObjectProperty, update);
                 }
                 newAccessor.ObjectProperty = oldAccessor.ObjectProperty!;
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.ObjectCollectionProperty, newAccessor.ObjectCollectionProperty, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.IntCollectionProperty, newAccessor.IntCollectionProperty, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableIntCollectionProperty, newAccessor.NullableIntCollectionProperty, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.StringCollectionProperty, newAccessor.StringCollectionProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RequiredStringListProperty, newAccessor.RequiredStringListProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RequiredStringSetProperty, newAccessor.RequiredStringSetProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.RequiredStringDictionaryProperty, newAccessor.RequiredStringDictionaryProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NonRequiredStringListProperty, newAccessor.NonRequiredStringListProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NonRequiredStringSetProperty, newAccessor.NonRequiredStringSetProperty, update, skipDefaults);
+                Realms.CollectionExtensions.PopulateCollection(oldAccessor.NonRequiredStringDictionaryProperty, newAccessor.NonRequiredStringDictionaryProperty, update, skipDefaults);
             }
 
             if (_propertyChanged != null)
@@ -359,11 +380,11 @@ namespace SourceGeneratorAssemblyToProcess
 
             string RequiredStringProperty { get; set; }
 
-            string StringProperty { get; set; }
+            string? StringProperty { get; set; }
 
             byte[] RequiredByteArrayProperty { get; set; }
 
-            byte[] ByteArrayProperty { get; set; }
+            byte[]? ByteArrayProperty { get; set; }
 
             char? NullableCharProperty { get; set; }
 
@@ -401,13 +422,27 @@ namespace SourceGeneratorAssemblyToProcess
 
             Realms.RealmValue RealmValueProperty { get; set; }
 
-            SourceGeneratorAssemblyToProcess.AllTypesClass ObjectProperty { get; set; }
+            SourceGeneratorAssemblyToProcess.AllTypesClass? ObjectProperty { get; set; }
+
+            System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.AllTypesClass> ObjectCollectionProperty { get; }
 
             System.Collections.Generic.IList<int> IntCollectionProperty { get; }
 
             System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; }
 
-            System.Collections.Generic.IList<string> StringCollectionProperty { get; }
+            System.Collections.Generic.IList<string?> StringCollectionProperty { get; }
+
+            System.Collections.Generic.IList<string> RequiredStringListProperty { get; }
+
+            System.Collections.Generic.ISet<string> RequiredStringSetProperty { get; }
+
+            System.Collections.Generic.IDictionary<string, string> RequiredStringDictionaryProperty { get; }
+
+            System.Collections.Generic.IList<string?> NonRequiredStringListProperty { get; }
+
+            System.Collections.Generic.ISet<string?> NonRequiredStringSetProperty { get; }
+
+            System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -497,9 +532,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("RequiredStringProperty", value);
             }
 
-            public string StringProperty
+            public string? StringProperty
             {
-                get => (string)GetValue("StringProperty");
+                get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
             }
 
@@ -509,9 +544,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("RequiredByteArrayProperty", value);
             }
 
-            public byte[] ByteArrayProperty
+            public byte[]? ByteArrayProperty
             {
-                get => (byte[])GetValue("ByteArrayProperty");
+                get => (byte[]?)GetValue("ByteArrayProperty");
                 set => SetValue("ByteArrayProperty", value);
             }
 
@@ -623,10 +658,24 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("RealmValueProperty", value);
             }
 
-            public SourceGeneratorAssemblyToProcess.AllTypesClass ObjectProperty
+            public SourceGeneratorAssemblyToProcess.AllTypesClass? ObjectProperty
             {
-                get => (SourceGeneratorAssemblyToProcess.AllTypesClass)GetValue("ObjectProperty");
+                get => (SourceGeneratorAssemblyToProcess.AllTypesClass?)GetValue("ObjectProperty");
                 set => SetValue("ObjectProperty", value);
+            }
+
+            private System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.AllTypesClass> _objectCollectionProperty = null!;
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.AllTypesClass> ObjectCollectionProperty
+            {
+                get
+                {
+                    if (_objectCollectionProperty == null)
+                    {
+                        _objectCollectionProperty = GetListValue<SourceGeneratorAssemblyToProcess.AllTypesClass>("ObjectCollectionProperty");
+                    }
+
+                    return _objectCollectionProperty;
+                }
             }
 
             private System.Collections.Generic.IList<int> _intCollectionProperty = null!;
@@ -657,17 +706,101 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private System.Collections.Generic.IList<string> _stringCollectionProperty = null!;
-            public System.Collections.Generic.IList<string> StringCollectionProperty
+            private System.Collections.Generic.IList<string?> _stringCollectionProperty = null!;
+            public System.Collections.Generic.IList<string?> StringCollectionProperty
             {
                 get
                 {
                     if (_stringCollectionProperty == null)
                     {
-                        _stringCollectionProperty = GetListValue<string>("StringCollectionProperty");
+                        _stringCollectionProperty = GetListValue<string?>("StringCollectionProperty");
                     }
 
                     return _stringCollectionProperty;
+                }
+            }
+
+            private System.Collections.Generic.IList<string> _requiredStringListProperty = null!;
+            public System.Collections.Generic.IList<string> RequiredStringListProperty
+            {
+                get
+                {
+                    if (_requiredStringListProperty == null)
+                    {
+                        _requiredStringListProperty = GetListValue<string>("RequiredStringListProperty");
+                    }
+
+                    return _requiredStringListProperty;
+                }
+            }
+
+            private System.Collections.Generic.ISet<string> _requiredStringSetProperty = null!;
+            public System.Collections.Generic.ISet<string> RequiredStringSetProperty
+            {
+                get
+                {
+                    if (_requiredStringSetProperty == null)
+                    {
+                        _requiredStringSetProperty = GetSetValue<string>("RequiredStringSetProperty");
+                    }
+
+                    return _requiredStringSetProperty;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, string> _requiredStringDictionaryProperty = null!;
+            public System.Collections.Generic.IDictionary<string, string> RequiredStringDictionaryProperty
+            {
+                get
+                {
+                    if (_requiredStringDictionaryProperty == null)
+                    {
+                        _requiredStringDictionaryProperty = GetDictionaryValue<string>("RequiredStringDictionaryProperty");
+                    }
+
+                    return _requiredStringDictionaryProperty;
+                }
+            }
+
+            private System.Collections.Generic.IList<string?> _nonRequiredStringListProperty = null!;
+            public System.Collections.Generic.IList<string?> NonRequiredStringListProperty
+            {
+                get
+                {
+                    if (_nonRequiredStringListProperty == null)
+                    {
+                        _nonRequiredStringListProperty = GetListValue<string?>("NonRequiredStringListProperty");
+                    }
+
+                    return _nonRequiredStringListProperty;
+                }
+            }
+
+            private System.Collections.Generic.ISet<string?> _nonRequiredStringSetProperty = null!;
+            public System.Collections.Generic.ISet<string?> NonRequiredStringSetProperty
+            {
+                get
+                {
+                    if (_nonRequiredStringSetProperty == null)
+                    {
+                        _nonRequiredStringSetProperty = GetSetValue<string?>("NonRequiredStringSetProperty");
+                    }
+
+                    return _nonRequiredStringSetProperty;
+                }
+            }
+
+            private System.Collections.Generic.IDictionary<string, string?> _nonRequiredStringDictionaryProperty = null!;
+            public System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty
+            {
+                get
+                {
+                    if (_nonRequiredStringDictionaryProperty == null)
+                    {
+                        _nonRequiredStringDictionaryProperty = GetDictionaryValue<string?>("NonRequiredStringDictionaryProperty");
+                    }
+
+                    return _nonRequiredStringDictionaryProperty;
                 }
             }
         }
@@ -831,8 +964,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string _stringProperty = null!;
-            public string StringProperty
+            private string? _stringProperty = null!;
+            public string? StringProperty
             {
                 get => _stringProperty;
                 set
@@ -853,8 +986,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private byte[] _byteArrayProperty = null!;
-            public byte[] ByteArrayProperty
+            private byte[]? _byteArrayProperty = null!;
+            public byte[]? ByteArrayProperty
             {
                 get => _byteArrayProperty;
                 set
@@ -1062,8 +1195,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private SourceGeneratorAssemblyToProcess.AllTypesClass _objectProperty = null!;
-            public SourceGeneratorAssemblyToProcess.AllTypesClass ObjectProperty
+            private SourceGeneratorAssemblyToProcess.AllTypesClass? _objectProperty = null!;
+            public SourceGeneratorAssemblyToProcess.AllTypesClass? ObjectProperty
             {
                 get => _objectProperty;
                 set
@@ -1073,11 +1206,25 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
+            public System.Collections.Generic.IList<SourceGeneratorAssemblyToProcess.AllTypesClass> ObjectCollectionProperty { get; } = new List<SourceGeneratorAssemblyToProcess.AllTypesClass>();
+
             public System.Collections.Generic.IList<int> IntCollectionProperty { get; } = new List<int>();
 
             public System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; } = new List<int?>();
 
-            public System.Collections.Generic.IList<string> StringCollectionProperty { get; } = new List<string>();
+            public System.Collections.Generic.IList<string?> StringCollectionProperty { get; } = new List<string?>();
+
+            public System.Collections.Generic.IList<string> RequiredStringListProperty { get; } = new List<string>();
+
+            public System.Collections.Generic.ISet<string> RequiredStringSetProperty { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, string> RequiredStringDictionaryProperty { get; } = new Dictionary<string, string>();
+
+            public System.Collections.Generic.IList<string?> NonRequiredStringListProperty { get; } = new List<string?>();
+
+            public System.Collections.Generic.ISet<string?> NonRequiredStringSetProperty { get; } = new HashSet<string?>(RealmSet<string?>.Comparer);
+
+            public System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; } = new Dictionary<string, string?>();
 
             public AllTypesClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -1174,13 +1321,13 @@ namespace SourceGeneratorAssemblyToProcess
                         RequiredStringProperty = (string)val;
                         return;
                     case "StringProperty":
-                        StringProperty = (string)val;
+                        StringProperty = (string?)val;
                         return;
                     case "RequiredByteArrayProperty":
                         RequiredByteArrayProperty = (byte[])val;
                         return;
                     case "ByteArrayProperty":
-                        ByteArrayProperty = (byte[])val;
+                        ByteArrayProperty = (byte[]?)val;
                         return;
                     case "NullableCharProperty":
                         NullableCharProperty = (char?)val;
@@ -1237,7 +1384,7 @@ namespace SourceGeneratorAssemblyToProcess
                         RealmValueProperty = (Realms.RealmValue)val;
                         return;
                     case "ObjectProperty":
-                        ObjectProperty = (SourceGeneratorAssemblyToProcess.AllTypesClass)val;
+                        ObjectProperty = (SourceGeneratorAssemblyToProcess.AllTypesClass?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -1253,9 +1400,12 @@ namespace SourceGeneratorAssemblyToProcess
             {
                 return propertyName switch
                             {
+                "ObjectCollectionProperty" => (IList<T>)ObjectCollectionProperty,
                 "IntCollectionProperty" => (IList<T>)IntCollectionProperty,
                 "NullableIntCollectionProperty" => (IList<T>)NullableIntCollectionProperty,
                 "StringCollectionProperty" => (IList<T>)StringCollectionProperty,
+                "RequiredStringListProperty" => (IList<T>)RequiredStringListProperty,
+                "NonRequiredStringListProperty" => (IList<T>)NonRequiredStringListProperty,
 
                                 _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
                             };
@@ -1263,12 +1413,23 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}");
+                return propertyName switch
+                            {
+                "RequiredStringSetProperty" => (ISet<T>)RequiredStringSetProperty,
+                "NonRequiredStringSetProperty" => (ISet<T>)NonRequiredStringSetProperty,
+
+                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                            };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)
             {
-                throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}");
+                return propertyName switch
+                {
+                    "RequiredStringDictionaryProperty" => (IDictionary<string, TValue>)RequiredStringDictionaryProperty,
+                    "NonRequiredStringDictionaryProperty" => (IDictionary<string, TValue>)NonRequiredStringDictionaryProperty,
+                    _ => throw new MissingMemberException($"The object does not have a Realm dictionary property with name {propertyName}"),
+                };
             }
         }
     }

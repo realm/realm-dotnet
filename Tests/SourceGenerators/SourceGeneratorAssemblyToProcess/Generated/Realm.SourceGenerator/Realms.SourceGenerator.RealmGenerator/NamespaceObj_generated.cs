@@ -225,7 +225,7 @@ namespace SourceGeneratorAssemblyToProcess
         {
             int Id { get; set; }
 
-            OtherNamespace.OtherNamespaceObj OtherNamespaceObj { get; set; }
+            OtherNamespace.OtherNamespaceObj? OtherNamespaceObj { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -237,9 +237,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("Id", value);
             }
 
-            public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
+            public OtherNamespace.OtherNamespaceObj? OtherNamespaceObj
             {
-                get => (OtherNamespace.OtherNamespaceObj)GetValue("OtherNamespaceObj");
+                get => (OtherNamespace.OtherNamespaceObj?)GetValue("OtherNamespaceObj");
                 set => SetValue("OtherNamespaceObj", value);
             }
         }
@@ -260,8 +260,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private OtherNamespace.OtherNamespaceObj _otherNamespaceObj = null!;
-            public OtherNamespace.OtherNamespaceObj OtherNamespaceObj
+            private OtherNamespace.OtherNamespaceObj? _otherNamespaceObj = null!;
+            public OtherNamespace.OtherNamespaceObj? OtherNamespaceObj
             {
                 get => _otherNamespaceObj;
                 set
@@ -293,7 +293,7 @@ namespace SourceGeneratorAssemblyToProcess
                         Id = (int)val;
                         return;
                     case "OtherNamespaceObj":
-                        OtherNamespaceObj = (OtherNamespace.OtherNamespaceObj)val;
+                        OtherNamespaceObj = (OtherNamespace.OtherNamespaceObj?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

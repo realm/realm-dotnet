@@ -227,23 +227,23 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface ILevel1Accessor : Realms.IRealmAccessor
         {
-            string StringValue { get; set; }
+            string? StringValue { get; set; }
 
-            Realms.Tests.Database.Level2 Level2 { get; set; }
+            Realms.Tests.Database.Level2? Level2 { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class Level1ManagedAccessor : Realms.ManagedAccessor, ILevel1Accessor
         {
-            public string StringValue
+            public string? StringValue
             {
-                get => (string)GetValue("StringValue");
+                get => (string?)GetValue("StringValue");
                 set => SetValue("StringValue", value);
             }
 
-            public Realms.Tests.Database.Level2 Level2
+            public Realms.Tests.Database.Level2? Level2
             {
-                get => (Realms.Tests.Database.Level2)GetValue("Level2");
+                get => (Realms.Tests.Database.Level2?)GetValue("Level2");
                 set => SetValue("Level2", value);
             }
         }
@@ -253,8 +253,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Level1.RealmSchema;
 
-            private string _stringValue = null!;
-            public string StringValue
+            private string? _stringValue = null!;
+            public string? StringValue
             {
                 get => _stringValue;
                 set
@@ -264,8 +264,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Level2 _level2 = null!;
-            public Realms.Tests.Database.Level2 Level2
+            private Realms.Tests.Database.Level2? _level2 = null!;
+            public Realms.Tests.Database.Level2? Level2
             {
                 get => _level2;
                 set
@@ -294,10 +294,10 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "StringValue":
-                        StringValue = (string)val;
+                        StringValue = (string?)val;
                         return;
                     case "Level2":
-                        Level2 = (Realms.Tests.Database.Level2)val;
+                        Level2 = (Realms.Tests.Database.Level2?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

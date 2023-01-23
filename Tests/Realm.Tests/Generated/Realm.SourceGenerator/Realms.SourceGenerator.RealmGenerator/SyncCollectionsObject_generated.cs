@@ -473,9 +473,9 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDict { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
         }
@@ -1153,28 +1153,28 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDict = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> _objectDict = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict
             {
                 get
                 {
                     if (_objectDict == null)
                     {
-                        _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDict");
+                        _objectDict = GetDictionaryValue<Realms.Tests.IntPropertyObject?>("ObjectDict");
                     }
 
                     return _objectDict;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectDict = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> _embeddedObjectDict = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDict
             {
                 get
                 {
                     if (_embeddedObjectDict == null)
                     {
-                        _embeddedObjectDict = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectDict");
+                        _embeddedObjectDict = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject?>("EmbeddedObjectDict");
                     }
 
                     return _embeddedObjectDict;
@@ -1317,9 +1317,9 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDict { get; } = new Dictionary<string, System.DateTimeOffset>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDict { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject?>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDict { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDict { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject?>();
 
             public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; } = new Dictionary<string, Realms.RealmValue>();
 

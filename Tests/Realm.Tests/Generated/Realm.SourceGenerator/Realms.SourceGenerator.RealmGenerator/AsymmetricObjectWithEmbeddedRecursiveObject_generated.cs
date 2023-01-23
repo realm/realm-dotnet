@@ -228,7 +228,7 @@ namespace Realms.Tests.Sync
         {
             MongoDB.Bson.ObjectId Id { get; set; }
 
-            Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
+            Realms.Tests.EmbeddedLevel1? RecursiveObject { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -240,9 +240,9 @@ namespace Realms.Tests.Sync
                 set => SetValueUnique("_id", value);
             }
 
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
+            public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
-                get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
+                get => (Realms.Tests.EmbeddedLevel1?)GetValue("RecursiveObject");
                 set => SetValue("RecursiveObject", value);
             }
         }
@@ -263,8 +263,8 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private Realms.Tests.EmbeddedLevel1 _recursiveObject = null!;
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
+            private Realms.Tests.EmbeddedLevel1? _recursiveObject = null!;
+            public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
                 get => _recursiveObject;
                 set
@@ -295,7 +295,7 @@ namespace Realms.Tests.Sync
                     case "_id":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "RecursiveObject":
-                        RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
+                        RecursiveObject = (Realms.Tests.EmbeddedLevel1?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

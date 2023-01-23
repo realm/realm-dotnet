@@ -341,9 +341,9 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, string> StringDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, string> NullableStringDictionary { get; }
+            System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; }
+            System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; }
 
             System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; }
 
@@ -371,13 +371,13 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, byte[]> NullableBinaryDictionary { get; }
+            System.Collections.Generic.IDictionary<string, byte[]?> NullableBinaryDictionary { get; }
 
             System.Collections.Generic.IDictionary<string, byte[]> BinaryDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDictionary { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDictionary { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; }
         }
@@ -553,28 +553,28 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, string> _nullableStringDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, string> NullableStringDictionary
+            private System.Collections.Generic.IDictionary<string, string?> _nullableStringDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary
             {
                 get
                 {
                     if (_nullableStringDictionary == null)
                     {
-                        _nullableStringDictionary = GetDictionaryValue<string>("NullableStringDictionary");
+                        _nullableStringDictionary = GetDictionaryValue<string?>("NullableStringDictionary");
                     }
 
                     return _nullableStringDictionary;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary
+            private System.Collections.Generic.IDictionary<string, byte[]?> _byteArrayDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary
             {
                 get
                 {
                     if (_byteArrayDictionary == null)
                     {
-                        _byteArrayDictionary = GetDictionaryValue<byte[]>("ByteArrayDictionary");
+                        _byteArrayDictionary = GetDictionaryValue<byte[]?>("ByteArrayDictionary");
                     }
 
                     return _byteArrayDictionary;
@@ -763,14 +763,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, byte[]> _nullableBinaryDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, byte[]> NullableBinaryDictionary
+            private System.Collections.Generic.IDictionary<string, byte[]?> _nullableBinaryDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, byte[]?> NullableBinaryDictionary
             {
                 get
                 {
                     if (_nullableBinaryDictionary == null)
                     {
-                        _nullableBinaryDictionary = GetDictionaryValue<byte[]>("NullableBinaryDictionary");
+                        _nullableBinaryDictionary = GetDictionaryValue<byte[]?>("NullableBinaryDictionary");
                     }
 
                     return _nullableBinaryDictionary;
@@ -791,28 +791,28 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> _objectDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> _objectDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDictionary
             {
                 get
                 {
                     if (_objectDictionary == null)
                     {
-                        _objectDictionary = GetDictionaryValue<Realms.Tests.IntPropertyObject>("ObjectDictionary");
+                        _objectDictionary = GetDictionaryValue<Realms.Tests.IntPropertyObject?>("ObjectDictionary");
                     }
 
                     return _objectDictionary;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> _embeddedObjectDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> _embeddedObjectDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDictionary
             {
                 get
                 {
                     if (_embeddedObjectDictionary == null)
                     {
-                        _embeddedObjectDictionary = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject>("EmbeddedObjectDictionary");
+                        _embeddedObjectDictionary = GetDictionaryValue<Realms.Tests.EmbeddedIntPropertyObject?>("EmbeddedObjectDictionary");
                     }
 
                     return _embeddedObjectDictionary;
@@ -863,9 +863,9 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, string> StringDictionary { get; } = new Dictionary<string, string>();
 
-            public System.Collections.Generic.IDictionary<string, string> NullableStringDictionary { get; } = new Dictionary<string, string>();
+            public System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; } = new Dictionary<string, string?>();
 
-            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; } = new Dictionary<string, byte[]>();
+            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; } = new Dictionary<string, byte[]?>();
 
             public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; } = new Dictionary<string, System.DateTimeOffset>();
 
@@ -893,13 +893,13 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, MongoDB.Bson.ObjectId?> NullableObjectIdDictionary { get; } = new Dictionary<string, MongoDB.Bson.ObjectId?>();
 
-            public System.Collections.Generic.IDictionary<string, byte[]> NullableBinaryDictionary { get; } = new Dictionary<string, byte[]>();
+            public System.Collections.Generic.IDictionary<string, byte[]?> NullableBinaryDictionary { get; } = new Dictionary<string, byte[]?>();
 
             public System.Collections.Generic.IDictionary<string, byte[]> BinaryDictionary { get; } = new Dictionary<string, byte[]>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject> ObjectDictionary { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.IntPropertyObject?> ObjectDictionary { get; } = new Dictionary<string, Realms.Tests.IntPropertyObject?>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedObjectDictionary { get; } = new Dictionary<string, Realms.Tests.EmbeddedIntPropertyObject?>();
 
             public System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; } = new Dictionary<string, Realms.RealmValue>();
 

@@ -221,15 +221,15 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface ICitiesAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class CitiesManagedAccessor : Realms.ManagedAccessor, ICitiesAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
         }
@@ -239,8 +239,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Cities.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -268,7 +268,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

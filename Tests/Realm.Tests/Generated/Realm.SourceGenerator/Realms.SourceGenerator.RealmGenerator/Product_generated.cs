@@ -239,9 +239,9 @@ namespace Realms.Tests.Database
         {
             int Id { get; set; }
 
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            string Date { get; set; }
+            string? Date { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.Report> Reports { get; }
         }
@@ -255,15 +255,15 @@ namespace Realms.Tests.Database
                 set => SetValue("Id", value);
             }
 
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public string Date
+            public string? Date
             {
-                get => (string)GetValue("Date");
+                get => (string?)GetValue("Date");
                 set => SetValue("Date", value);
             }
 
@@ -298,8 +298,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -309,8 +309,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _date = null!;
-            public string Date
+            private string? _date = null!;
+            public string? Date
             {
                 get => _date;
                 set
@@ -345,10 +345,10 @@ namespace Realms.Tests.Database
                         Id = (int)val;
                         return;
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "Date":
-                        Date = (string)val;
+                        Date = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

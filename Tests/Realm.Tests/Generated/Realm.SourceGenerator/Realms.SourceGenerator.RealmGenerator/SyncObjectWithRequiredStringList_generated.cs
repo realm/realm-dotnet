@@ -238,7 +238,7 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
-            string Id { get; set; }
+            string? Id { get; set; }
 
             System.Collections.Generic.IList<string> Strings { get; }
         }
@@ -246,9 +246,9 @@ namespace Realms.Tests.Sync
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
-            public string Id
+            public string? Id
             {
-                get => (string)GetValue("_id");
+                get => (string?)GetValue("_id");
                 set => SetValueUnique("_id", value);
             }
 
@@ -272,8 +272,8 @@ namespace Realms.Tests.Sync
         {
             public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
 
-            private string _id = null!;
-            public string Id
+            private string? _id = null!;
+            public string? Id
             {
                 get => _id;
                 set
@@ -316,7 +316,7 @@ namespace Realms.Tests.Sync
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string?)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

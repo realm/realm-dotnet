@@ -229,7 +229,7 @@ namespace Realms.Tests.Database
         {
             int IntValue { get; set; }
 
-            Realms.Tests.Database.Level3 Level3 { get; set; }
+            Realms.Tests.Database.Level3? Level3 { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -241,9 +241,9 @@ namespace Realms.Tests.Database
                 set => SetValue("IntValue", value);
             }
 
-            public Realms.Tests.Database.Level3 Level3
+            public Realms.Tests.Database.Level3? Level3
             {
-                get => (Realms.Tests.Database.Level3)GetValue("Level3");
+                get => (Realms.Tests.Database.Level3?)GetValue("Level3");
                 set => SetValue("Level3", value);
             }
         }
@@ -264,8 +264,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Level3 _level3 = null!;
-            public Realms.Tests.Database.Level3 Level3
+            private Realms.Tests.Database.Level3? _level3 = null!;
+            public Realms.Tests.Database.Level3? Level3
             {
                 get => _level3;
                 set
@@ -297,7 +297,7 @@ namespace Realms.Tests.Database
                         IntValue = (int)val;
                         return;
                     case "Level3":
-                        Level3 = (Realms.Tests.Database.Level3)val;
+                        Level3 = (Realms.Tests.Database.Level3?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

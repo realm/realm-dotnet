@@ -280,7 +280,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; }
 
-            Realms.Tests.Database.GuidType LinkProperty { get; set; }
+            Realms.Tests.Database.GuidType? LinkProperty { get; set; }
 
             Realms.RealmValue MixedProperty { get; set; }
 
@@ -390,9 +390,9 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public Realms.Tests.Database.GuidType LinkProperty
+            public Realms.Tests.Database.GuidType? LinkProperty
             {
-                get => (Realms.Tests.Database.GuidType)GetValue("LinkProperty");
+                get => (Realms.Tests.Database.GuidType?)GetValue("LinkProperty");
                 set => SetValue("LinkProperty", value);
             }
 
@@ -484,8 +484,8 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; } = new Dictionary<string, System.Guid?>();
 
-            private Realms.Tests.Database.GuidType _linkProperty = null!;
-            public Realms.Tests.Database.GuidType LinkProperty
+            private Realms.Tests.Database.GuidType? _linkProperty = null!;
+            public Realms.Tests.Database.GuidType? LinkProperty
             {
                 get => _linkProperty;
                 set
@@ -539,7 +539,7 @@ namespace Realms.Tests.Database
                         OptionalProperty = (System.Guid?)val;
                         return;
                     case "LinkProperty":
-                        LinkProperty = (Realms.Tests.Database.GuidType)val;
+                        LinkProperty = (Realms.Tests.Database.GuidType?)val;
                         return;
                     case "MixedProperty":
                         MixedProperty = (Realms.RealmValue)val;

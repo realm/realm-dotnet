@@ -222,23 +222,23 @@ namespace SourceGeneratorPlayground
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            SourceGeneratorPlayground.Person Owner { get; set; }
+            SourceGeneratorPlayground.Person? Owner { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public SourceGeneratorPlayground.Person Owner
+            public SourceGeneratorPlayground.Person? Owner
             {
-                get => (SourceGeneratorPlayground.Person)GetValue("Owner");
+                get => (SourceGeneratorPlayground.Person?)GetValue("Owner");
                 set => SetValue("Owner", value);
             }
         }
@@ -248,8 +248,8 @@ namespace SourceGeneratorPlayground
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -259,8 +259,8 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            private SourceGeneratorPlayground.Person _owner = null!;
-            public SourceGeneratorPlayground.Person Owner
+            private SourceGeneratorPlayground.Person? _owner = null!;
+            public SourceGeneratorPlayground.Person? Owner
             {
                 get => _owner;
                 set
@@ -289,10 +289,10 @@ namespace SourceGeneratorPlayground
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "Owner":
-                        Owner = (SourceGeneratorPlayground.Person)val;
+                        Owner = (SourceGeneratorPlayground.Person?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

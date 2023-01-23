@@ -248,35 +248,35 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDynamicOwnerAccessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
-            Realms.Tests.Database.DynamicDog TopDog { get; set; }
+            Realms.Tests.Database.DynamicDog? TopDog { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; }
 
-            System.Collections.Generic.IList<string> Tags { get; }
+            System.Collections.Generic.IList<string?> Tags { get; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog> DogsDictionary { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, string> TagsDictionary { get; }
+            System.Collections.Generic.IDictionary<string, string?> TagsDictionary { get; }
 
             System.Collections.Generic.ISet<Realms.Tests.Database.DynamicDog> DogsSet { get; }
 
-            System.Collections.Generic.ISet<string> TagsSet { get; }
+            System.Collections.Generic.ISet<string?> TagsSet { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DynamicOwnerManagedAccessor : Realms.ManagedAccessor, IDynamicOwnerAccessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
-            public Realms.Tests.Database.DynamicDog TopDog
+            public Realms.Tests.Database.DynamicDog? TopDog
             {
-                get => (Realms.Tests.Database.DynamicDog)GetValue("TopDog");
+                get => (Realms.Tests.Database.DynamicDog?)GetValue("TopDog");
                 set => SetValue("TopDog", value);
             }
 
@@ -294,42 +294,42 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IList<string> _tags = null!;
-            public System.Collections.Generic.IList<string> Tags
+            private System.Collections.Generic.IList<string?> _tags = null!;
+            public System.Collections.Generic.IList<string?> Tags
             {
                 get
                 {
                     if (_tags == null)
                     {
-                        _tags = GetListValue<string>("Tags");
+                        _tags = GetListValue<string?>("Tags");
                     }
 
                     return _tags;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog> _dogsDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog> DogsDictionary
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> _dogsDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary
             {
                 get
                 {
                     if (_dogsDictionary == null)
                     {
-                        _dogsDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicDog>("DogsDictionary");
+                        _dogsDictionary = GetDictionaryValue<Realms.Tests.Database.DynamicDog?>("DogsDictionary");
                     }
 
                     return _dogsDictionary;
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, string> _tagsDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, string> TagsDictionary
+            private System.Collections.Generic.IDictionary<string, string?> _tagsDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, string?> TagsDictionary
             {
                 get
                 {
                     if (_tagsDictionary == null)
                     {
-                        _tagsDictionary = GetDictionaryValue<string>("TagsDictionary");
+                        _tagsDictionary = GetDictionaryValue<string?>("TagsDictionary");
                     }
 
                     return _tagsDictionary;
@@ -350,14 +350,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.ISet<string> _tagsSet = null!;
-            public System.Collections.Generic.ISet<string> TagsSet
+            private System.Collections.Generic.ISet<string?> _tagsSet = null!;
+            public System.Collections.Generic.ISet<string?> TagsSet
             {
                 get
                 {
                     if (_tagsSet == null)
                     {
-                        _tagsSet = GetSetValue<string>("TagsSet");
+                        _tagsSet = GetSetValue<string?>("TagsSet");
                     }
 
                     return _tagsSet;
@@ -370,8 +370,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicOwner.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -381,8 +381,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.DynamicDog _topDog = null!;
-            public Realms.Tests.Database.DynamicDog TopDog
+            private Realms.Tests.Database.DynamicDog? _topDog = null!;
+            public Realms.Tests.Database.DynamicDog? TopDog
             {
                 get => _topDog;
                 set
@@ -394,15 +394,15 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; } = new List<Realms.Tests.Database.DynamicDog>();
 
-            public System.Collections.Generic.IList<string> Tags { get; } = new List<string>();
+            public System.Collections.Generic.IList<string?> Tags { get; } = new List<string?>();
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog> DogsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicDog>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicDog?>();
 
-            public System.Collections.Generic.IDictionary<string, string> TagsDictionary { get; } = new Dictionary<string, string>();
+            public System.Collections.Generic.IDictionary<string, string?> TagsDictionary { get; } = new Dictionary<string, string?>();
 
             public System.Collections.Generic.ISet<Realms.Tests.Database.DynamicDog> DogsSet { get; } = new HashSet<Realms.Tests.Database.DynamicDog>(RealmSet<Realms.Tests.Database.DynamicDog>.Comparer);
 
-            public System.Collections.Generic.ISet<string> TagsSet { get; } = new HashSet<string>(RealmSet<string>.Comparer);
+            public System.Collections.Generic.ISet<string?> TagsSet { get; } = new HashSet<string?>(RealmSet<string?>.Comparer);
 
             public DynamicOwnerUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -423,10 +423,10 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "TopDog":
-                        TopDog = (Realms.Tests.Database.DynamicDog)val;
+                        TopDog = (Realms.Tests.Database.DynamicDog?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

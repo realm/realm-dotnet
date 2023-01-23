@@ -222,15 +222,15 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface ISomeClassAccessor : Realms.IRealmAccessor
         {
-            Realms.Tests.Database.BacklinkObject BacklinkObject { get; set; }
+            Realms.Tests.Database.BacklinkObject? BacklinkObject { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class SomeClassManagedAccessor : Realms.ManagedAccessor, ISomeClassAccessor
         {
-            public Realms.Tests.Database.BacklinkObject BacklinkObject
+            public Realms.Tests.Database.BacklinkObject? BacklinkObject
             {
-                get => (Realms.Tests.Database.BacklinkObject)GetValue("BacklinkObject");
+                get => (Realms.Tests.Database.BacklinkObject?)GetValue("BacklinkObject");
                 set => SetValue("BacklinkObject", value);
             }
         }
@@ -240,8 +240,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => SomeClass.RealmSchema;
 
-            private Realms.Tests.Database.BacklinkObject _backlinkObject = null!;
-            public Realms.Tests.Database.BacklinkObject BacklinkObject
+            private Realms.Tests.Database.BacklinkObject? _backlinkObject = null!;
+            public Realms.Tests.Database.BacklinkObject? BacklinkObject
             {
                 get => _backlinkObject;
                 set
@@ -269,7 +269,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "BacklinkObject":
-                        BacklinkObject = (Realms.Tests.Database.BacklinkObject)val;
+                        BacklinkObject = (Realms.Tests.Database.BacklinkObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

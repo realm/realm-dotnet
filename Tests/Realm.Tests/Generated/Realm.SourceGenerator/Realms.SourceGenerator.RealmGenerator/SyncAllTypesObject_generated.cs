@@ -317,15 +317,15 @@ namespace Realms.Tests
 
             System.Guid GuidProperty { get; set; }
 
-            string StringProperty { get; set; }
+            string? StringProperty { get; set; }
 
-            byte[] ByteArrayProperty { get; set; }
+            byte[]? ByteArrayProperty { get; set; }
 
             Realms.RealmValue RealmValueProperty { get; set; }
 
-            Realms.Tests.IntPropertyObject ObjectProperty { get; set; }
+            Realms.Tests.IntPropertyObject? ObjectProperty { get; set; }
 
-            Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
+            Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObjectProperty { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -415,15 +415,15 @@ namespace Realms.Tests
                 set => SetValue("GuidProperty", value);
             }
 
-            public string StringProperty
+            public string? StringProperty
             {
-                get => (string)GetValue("StringProperty");
+                get => (string?)GetValue("StringProperty");
                 set => SetValue("StringProperty", value);
             }
 
-            public byte[] ByteArrayProperty
+            public byte[]? ByteArrayProperty
             {
-                get => (byte[])GetValue("ByteArrayProperty");
+                get => (byte[]?)GetValue("ByteArrayProperty");
                 set => SetValue("ByteArrayProperty", value);
             }
 
@@ -433,15 +433,15 @@ namespace Realms.Tests
                 set => SetValue("RealmValueProperty", value);
             }
 
-            public Realms.Tests.IntPropertyObject ObjectProperty
+            public Realms.Tests.IntPropertyObject? ObjectProperty
             {
-                get => (Realms.Tests.IntPropertyObject)GetValue("ObjectProperty");
+                get => (Realms.Tests.IntPropertyObject?)GetValue("ObjectProperty");
                 set => SetValue("ObjectProperty", value);
             }
 
-            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObjectProperty
             {
-                get => (Realms.Tests.EmbeddedIntPropertyObject)GetValue("EmbeddedObjectProperty");
+                get => (Realms.Tests.EmbeddedIntPropertyObject?)GetValue("EmbeddedObjectProperty");
                 set => SetValue("EmbeddedObjectProperty", value);
             }
         }
@@ -605,8 +605,8 @@ namespace Realms.Tests
                 }
             }
 
-            private string _stringProperty = null!;
-            public string StringProperty
+            private string? _stringProperty = null!;
+            public string? StringProperty
             {
                 get => _stringProperty;
                 set
@@ -616,8 +616,8 @@ namespace Realms.Tests
                 }
             }
 
-            private byte[] _byteArrayProperty = null!;
-            public byte[] ByteArrayProperty
+            private byte[]? _byteArrayProperty = null!;
+            public byte[]? ByteArrayProperty
             {
                 get => _byteArrayProperty;
                 set
@@ -638,8 +638,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.IntPropertyObject _objectProperty = null!;
-            public Realms.Tests.IntPropertyObject ObjectProperty
+            private Realms.Tests.IntPropertyObject? _objectProperty = null!;
+            public Realms.Tests.IntPropertyObject? ObjectProperty
             {
                 get => _objectProperty;
                 set
@@ -649,8 +649,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedIntPropertyObject _embeddedObjectProperty = null!;
-            public Realms.Tests.EmbeddedIntPropertyObject EmbeddedObjectProperty
+            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObjectProperty = null!;
+            public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObjectProperty
             {
                 get => _embeddedObjectProperty;
                 set
@@ -737,19 +737,19 @@ namespace Realms.Tests
                         GuidProperty = (System.Guid)val;
                         return;
                     case "StringProperty":
-                        StringProperty = (string)val;
+                        StringProperty = (string?)val;
                         return;
                     case "ByteArrayProperty":
-                        ByteArrayProperty = (byte[])val;
+                        ByteArrayProperty = (byte[]?)val;
                         return;
                     case "RealmValueProperty":
                         RealmValueProperty = (Realms.RealmValue)val;
                         return;
                     case "ObjectProperty":
-                        ObjectProperty = (Realms.Tests.IntPropertyObject)val;
+                        ObjectProperty = (Realms.Tests.IntPropertyObject?)val;
                         return;
                     case "EmbeddedObjectProperty":
-                        EmbeddedObjectProperty = (Realms.Tests.EmbeddedIntPropertyObject)val;
+                        EmbeddedObjectProperty = (Realms.Tests.EmbeddedIntPropertyObject?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

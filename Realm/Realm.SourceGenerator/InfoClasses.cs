@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -270,6 +272,55 @@ namespace Realms.SourceGenerator
             }
 
             return true;
+        }
+
+        /** This method returns the type with the type string with correct nullability annotation wether they were enabled or not in the original file,
+         * together with the same annotation for the internal type (for collections). In some cases we were just getting the internal type string on his own, and this would be wrong for some collections.
+         * Simplified example from a generated unmanaged accessor:
+         * <code>
+         * public IList≪AllTypesClass≫ ObjectCollectionProperty
+         * {
+         *      get => GetListValue≪AllTypesClass≫("ObjectCollectionProperty")
+         * }
+         * </code>
+         * If we would take the nullability of AllTypesClass on his own, this would be nullable. This can't be nullable though, because it can't be nullable in a list.
+         */
+        public (string CompleteType, string InternalType) GetCorrectlyAnnotatedTypeName(bool isRequired)
+        {
+            var internalTypeString = InternalType?.CompleteFullyQualifiedString;
+            var nullableInternalTypeString = $"{internalTypeString}?";
+
+            if (!isRequired)
+            {
+                if (NullableAnnotation == NullableAnnotation.None && (ScalarType == ScalarType.Data || ScalarType == ScalarType.String))
+                {
+                    return (CompleteFullyQualifiedString + "?", null);
+                }
+
+                if (IsCollection && InternalType.NullableAnnotation == NullableAnnotation.None
+                    && (InternalType.ScalarType == ScalarType.Data || InternalType.ScalarType == ScalarType.String))
+                {
+                    return CollectionType switch
+                    {
+                        CollectionType.List => ($"System.Collections.Generic.IList<{nullableInternalTypeString}>", nullableInternalTypeString),
+                        CollectionType.Set => ($"System.Collections.Generic.ISet<{nullableInternalTypeString}>", nullableInternalTypeString),
+                        CollectionType.Dictionary => ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString),
+                        _ => throw new NotImplementedException($"Collection type {CollectionType} with string or byte array argument is not supported yet"),
+                    };
+                }
+            }
+
+            if (ScalarType == ScalarType.Object && NullableAnnotation == NullableAnnotation.None)
+            {
+                return (CompleteFullyQualifiedString + "?", null);
+            }
+
+            if (CollectionType == CollectionType.Dictionary && InternalType.ScalarType == ScalarType.Object && InternalType.NullableAnnotation == NullableAnnotation.None)
+            {
+                return ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString);
+            }
+
+            return (CompleteFullyQualifiedString, internalTypeString);
         }
 
         public bool NeedsNullForgiving()

@@ -235,7 +235,7 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IMixedProperties1Accessor : Realms.IRealmAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
 
@@ -247,9 +247,9 @@ namespace Realms.Tests.Database
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class MixedProperties1ManagedAccessor : Realms.ManagedAccessor, IMixedProperties1Accessor
         {
-            public string Name
+            public string? Name
             {
-                get => (string)GetValue("Name");
+                get => (string?)GetValue("Name");
                 set => SetValue("Name", value);
             }
 
@@ -293,8 +293,8 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => MixedProperties1.RealmSchema;
 
-            private string _name = null!;
-            public string Name
+            private string? _name = null!;
+            public string? Name
             {
                 get => _name;
                 set
@@ -338,7 +338,7 @@ namespace Realms.Tests.Database
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string)val;
+                        Name = (string?)val;
                         return;
                     case "Age":
                         Age = (int)val;

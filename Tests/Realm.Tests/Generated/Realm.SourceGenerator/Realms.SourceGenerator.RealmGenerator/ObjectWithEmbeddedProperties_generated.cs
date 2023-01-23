@@ -238,13 +238,13 @@ namespace Realms.Tests
         {
             int PrimaryKey { get; set; }
 
-            Realms.Tests.EmbeddedAllTypesObject AllTypesObject { get; set; }
+            Realms.Tests.EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
             System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
 
-            Realms.Tests.EmbeddedLevel1 RecursiveObject { get; set; }
+            Realms.Tests.EmbeddedLevel1? RecursiveObject { get; set; }
 
-            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
+            System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -256,9 +256,9 @@ namespace Realms.Tests
                 set => SetValueUnique("PrimaryKey", value);
             }
 
-            public Realms.Tests.EmbeddedAllTypesObject AllTypesObject
+            public Realms.Tests.EmbeddedAllTypesObject? AllTypesObject
             {
-                get => (Realms.Tests.EmbeddedAllTypesObject)GetValue("AllTypesObject");
+                get => (Realms.Tests.EmbeddedAllTypesObject?)GetValue("AllTypesObject");
                 set => SetValue("AllTypesObject", value);
             }
 
@@ -276,20 +276,20 @@ namespace Realms.Tests
                 }
             }
 
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
+            public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
-                get => (Realms.Tests.EmbeddedLevel1)GetValue("RecursiveObject");
+                get => (Realms.Tests.EmbeddedLevel1?)GetValue("RecursiveObject");
                 set => SetValue("RecursiveObject", value);
             }
 
-            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> _dictionaryOfAllTypesObjects = null!;
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects
+            private System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> _dictionaryOfAllTypesObjects = null!;
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects
             {
                 get
                 {
                     if (_dictionaryOfAllTypesObjects == null)
                     {
-                        _dictionaryOfAllTypesObjects = GetDictionaryValue<Realms.Tests.EmbeddedAllTypesObject>("DictionaryOfAllTypesObjects");
+                        _dictionaryOfAllTypesObjects = GetDictionaryValue<Realms.Tests.EmbeddedAllTypesObject?>("DictionaryOfAllTypesObjects");
                     }
 
                     return _dictionaryOfAllTypesObjects;
@@ -313,8 +313,8 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedAllTypesObject _allTypesObject = null!;
-            public Realms.Tests.EmbeddedAllTypesObject AllTypesObject
+            private Realms.Tests.EmbeddedAllTypesObject? _allTypesObject = null!;
+            public Realms.Tests.EmbeddedAllTypesObject? AllTypesObject
             {
                 get => _allTypesObject;
                 set
@@ -326,8 +326,8 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<Realms.Tests.EmbeddedAllTypesObject>();
 
-            private Realms.Tests.EmbeddedLevel1 _recursiveObject = null!;
-            public Realms.Tests.EmbeddedLevel1 RecursiveObject
+            private Realms.Tests.EmbeddedLevel1? _recursiveObject = null!;
+            public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
                 get => _recursiveObject;
                 set
@@ -337,7 +337,7 @@ namespace Realms.Tests
                 }
             }
 
-            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; } = new Dictionary<string, Realms.Tests.EmbeddedAllTypesObject>();
+            public System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; } = new Dictionary<string, Realms.Tests.EmbeddedAllTypesObject?>();
 
             public ObjectWithEmbeddedPropertiesUnmanagedAccessor(Type objectType) : base(objectType)
             {
@@ -361,10 +361,10 @@ namespace Realms.Tests
                     case "PrimaryKey":
                         throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "AllTypesObject":
-                        AllTypesObject = (Realms.Tests.EmbeddedAllTypesObject)val;
+                        AllTypesObject = (Realms.Tests.EmbeddedAllTypesObject?)val;
                         return;
                     case "RecursiveObject":
-                        RecursiveObject = (Realms.Tests.EmbeddedLevel1)val;
+                        RecursiveObject = (Realms.Tests.EmbeddedLevel1?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

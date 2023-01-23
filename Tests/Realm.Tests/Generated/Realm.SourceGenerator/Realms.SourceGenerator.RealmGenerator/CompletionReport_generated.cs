@@ -227,7 +227,7 @@ namespace Realms.Tests.Database
         {
             System.DateTimeOffset CompletionDate { get; set; }
 
-            string Remarks { get; set; }
+            string? Remarks { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -239,9 +239,9 @@ namespace Realms.Tests.Database
                 set => SetValue("CompletionDate", value);
             }
 
-            public string Remarks
+            public string? Remarks
             {
-                get => (string)GetValue("Remarks");
+                get => (string?)GetValue("Remarks");
                 set => SetValue("Remarks", value);
             }
         }
@@ -262,8 +262,8 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string _remarks = null!;
-            public string Remarks
+            private string? _remarks = null!;
+            public string? Remarks
             {
                 get => _remarks;
                 set
@@ -295,7 +295,7 @@ namespace Realms.Tests.Database
                         CompletionDate = (System.DateTimeOffset)val;
                         return;
                     case "Remarks":
-                        Remarks = (string)val;
+                        Remarks = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

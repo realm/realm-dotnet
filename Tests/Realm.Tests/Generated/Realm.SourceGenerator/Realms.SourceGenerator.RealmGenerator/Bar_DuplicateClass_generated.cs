@@ -223,15 +223,15 @@ namespace Bar
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal interface IDuplicateClassAccessor : Realms.IRealmAccessor
         {
-            string StringValue { get; set; }
+            string? StringValue { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         internal class DuplicateClassManagedAccessor : Realms.ManagedAccessor, IDuplicateClassAccessor
         {
-            public string StringValue
+            public string? StringValue
             {
-                get => (string)GetValue("StringValue");
+                get => (string?)GetValue("StringValue");
                 set => SetValue("StringValue", value);
             }
         }
@@ -241,8 +241,8 @@ namespace Bar
         {
             public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
 
-            private string _stringValue = null!;
-            public string StringValue
+            private string? _stringValue = null!;
+            public string? StringValue
             {
                 get => _stringValue;
                 set
@@ -270,7 +270,7 @@ namespace Bar
                 switch (propertyName)
                 {
                     case "StringValue":
-                        StringValue = (string)val;
+                        StringValue = (string?)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
