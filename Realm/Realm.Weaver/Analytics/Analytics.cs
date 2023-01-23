@@ -140,7 +140,7 @@ namespace RealmWeaver
                 ["GetInstanceAsync"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "GetInstanceAsync") : default,
                 ["GetInstance"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "GetInstance") : default,
 
-                // ["NOT_SUPPORTED_YET"] = instruction => (true, **SOMETHING**),
+                // ["NOT_SUPPORTED_YET"] = instruction => (true, NOT_SUPPORTED_YET),
                 ["Find"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "Find") : default,
                 ["WriteAsync"] = instruction => IsInRealmNamespace(instruction.Operand) ? (true, "WriteAsync") : default,
                 ["ThreadSafeReference"] = instruction => (true, "ThreadSafeReference"),

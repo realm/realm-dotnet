@@ -77,7 +77,7 @@ namespace RealmWeaver
                 else if (targetOs.ContainsIgnoreCase("win") ||
                     targetOs.ContainsIgnoreCase("uap") ||
                     targetOs.ContainsIgnoreCase("win") ||
-                    frameworkName.Identifier == ".NETFramework")
+                    targetOs == ".NETFramework")
                 {
                     return OperatingSystem.Windows;
                 }
