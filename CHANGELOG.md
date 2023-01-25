@@ -23,6 +23,7 @@
 * Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
 * Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
 * Fixed an issue that would cause `PropertyChanged` notifications to be delivered for collection properties when the content of the collection was modified even if the collection itself was not replaced. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
+* Fixed an issue where weaving assemblies on Unity could result in `System.InvalidOperationException`. (Issue [#3199](https://github.com/realm/realm-dotnet/issues/3199))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
