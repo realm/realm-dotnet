@@ -17,10 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
-using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.Win32;
 using Mono.Cecil;
 
 using static RealmWeaver.Analytics;
@@ -31,24 +35,6 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
-        // TODO andrea: https://github.com/realm/realm-dotnet/issues/2706#event-7877818404
-        // add a stable ID not reliant on MACAddress
-        public static string AnonymizedUserID
-        {
-            get
-            {
-                try
-                {
-                    var id = GenerateComputerIdentifier;
-                    return id != null ? SHA256Hash(id) : "UNKNOWN";
-                }
-                catch
-                {
-                    return "UNKNOWN";
-                }
-            }
-        }
-
         public static string GetTargetOsName(FrameworkName frameworkName) =>
             WrapInTryCatch(() =>
             {
@@ -89,23 +75,17 @@ namespace RealmWeaver
 
         public static string SHA256Hash(byte[] bytes)
         {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            using (var sha256 = SHA256.Create())
             {
                 return BitConverter.ToString(sha256.ComputeHash(bytes));
             }
         }
 
-        public static string GetHostCpuArchitecture =>
+        public static string GetHostCpuArchitecture() =>
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString()));
 
         public static string GetTargetCpuArchitecture(ModuleDefinition module) =>
             WrapInTryCatch(() => ConvertArchitectureToMetricsVersion(module.Architecture.ToString()));
-
-        public static byte[] GenerateComputerIdentifier =>
-            NetworkInterface.GetAllNetworkInterfaces()
-                .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
-                .Select(n => n.GetPhysicalAddress().GetAddressBytes())
-                .FirstOrDefault();
 
         public static string ConvertPlatformIdOsToMetricVersion(PlatformID platformID) =>
             WrapInTryCatch(() =>
@@ -210,6 +190,96 @@ namespace RealmWeaver
                 {
                     return "unknown version";
                 }
+            }
+        }
+
+        // Knowledge on unique machine Ids for different OSes
+        // obtained from https://github.com/denisbrodbeck/machineid
+        public static string GetAnonymizedUserId()
+        {
+            var id = string.Empty;
+            var currentOs = Environment.OSVersion.Platform;
+
+            try
+            {
+                if (currentOs == PlatformID.Win32S || currentOs == PlatformID.Win32Windows ||
+                    currentOs == PlatformID.Win32NT || currentOs == PlatformID.WinCE)
+                {
+                    var rk = Registry.LocalMachine;
+                    id = (string)rk.OpenSubKey("SOFTWARE\\Microsoft\\Cryptography").GetValue("MachineGuid");
+                }
+                else if (currentOs == PlatformID.MacOSX)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo();
+                    psi.FileName = "ioreg";
+                    psi.Arguments = "-rd1 -c IOPlatformExpertDevice";
+                    psi.UseShellExecute = false;
+                    psi.RedirectStandardOutput = true;
+                    psi.RedirectStandardError = true;
+
+                    using Process process = new Process
+                    {
+                        StartInfo = psi
+                    };
+
+                    process.Start();
+
+                    var stdout = new StringBuilder();
+
+                    while (!process.HasExited)
+                    {
+                        stdout.Append(process.StandardOutput.ReadToEnd());
+                    }
+
+                    stdout.Append(process.StandardOutput.ReadToEnd());
+
+                    var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                    var match = regex.Match(stdout.ToString());
+                    if (match.Groups.Count == 1)
+                    {
+                        id = match.Groups[0].Value;
+                    }
+                }
+                else if (currentOs == PlatformID.Unix)
+                {
+                    // Some systems only know the /etc path. Sometimes it's the other way round.
+                    string[] linuxIdPaths = new string[] { "/var/lib/dbus/machine-id", "/etc/machine-id" };
+
+                    foreach (var path in linuxIdPaths)
+                    {
+                        try
+                        {
+                            id = File.ReadAllText(path);
+                        }
+                        catch
+                        {
+                            id = string.Empty;
+                        }
+
+                        if (id.Length > 0)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (id.Length == 0)
+                {
+                    return "UNKNOWN";
+                }
+                else
+                {
+                    var salt = new byte[] { 5, 67, 101, 45, 99, 239, 51, 111, 205, 174, 76, 16, 85, 158, 29, 8 };
+                    var byteId = Encoding.ASCII.GetBytes(id);
+                    var saltedId = new byte[byteId.Length + salt.Length];
+                    Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
+                    Buffer.BlockCopy(salt, 0, saltedId, byteId.Length, salt.Length);
+                    return SHA256Hash(saltedId);
+                }
+            }
+            catch
+            {
+                return "UNKNOWN";
             }
         }
 

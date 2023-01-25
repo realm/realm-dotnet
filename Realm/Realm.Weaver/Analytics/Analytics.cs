@@ -209,13 +209,13 @@ namespace RealmWeaver
                 // collect environment details
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
-                _realmEnvMetrics["UserId"] = AnonymizedUserID;
+                _realmEnvMetrics["UserId"] = GetAnonymizedUserId();
                 _realmEnvMetrics["ProjectId"] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics["RealmSdk"] = ".NET";
                 _realmEnvMetrics["Language"] = "CSharp";
                 _realmEnvMetrics["HostOsType"] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
                 _realmEnvMetrics["HostOsVersion"] = Environment.OSVersion.Version.ToString();
-                _realmEnvMetrics["HostCpuArch"] = GetHostCpuArchitecture;
+                _realmEnvMetrics["HostCpuArch"] = GetHostCpuArchitecture();
                 _realmEnvMetrics["TargetOsType"] = _config.TargetOSName;
                 _realmEnvMetrics["TargetOsVersion"] = "FILL ME";
                 _realmEnvMetrics["TargetOsMinimumVersion"] = "FILL ME";
