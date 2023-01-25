@@ -46,6 +46,8 @@ namespace binding {
 
         MarshaledAppError(AppError err)
         {
+            is_null = false;
+
             message = to_capi_value(err.reason());
             error_category = to_capi_value(err.code_string());
             logs_link = to_capi_value(err.link_to_server_logs);
