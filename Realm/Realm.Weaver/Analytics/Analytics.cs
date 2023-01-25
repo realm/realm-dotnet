@@ -227,7 +227,7 @@ namespace RealmWeaver
                 _realmEnvMetrics["CoreVersion"] = "FILL ME";
                 _realmEnvMetrics["SdkInstallationMethod"] = "FILL ME";
                 _realmEnvMetrics["IdeUsed"] = "msbuild";
-                _realmEnvMetrics["IdeUsedVersion"] = "FILL ME";
+                _realmEnvMetrics["IdeUsedVersion"] = GetMsBuildVersion();
                 _realmEnvMetrics["NetFramework"] = _config.TargetFramework;
                 _realmEnvMetrics["NetFrameworkVersion"] = _config.TargetFrameworkVersion;
 

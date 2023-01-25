@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 
 using static RealmWeaver.Analytics;
@@ -156,6 +159,54 @@ namespace RealmWeaver
 
                 return (framework, frameworkUsedInConjunction?.Version.ToString());
             }
+        }
+
+        public static string GetMsBuildVersion()
+        {
+            var msbuildCmd = "msbuild";
+            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                msbuildCmd = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe";
+            }
+
+            var msbuildVersion = RunApplication(msbuildCmd, "--version");
+            var regex = new Regex("^(\\d+\\.?)+", RegexOptions.Multiline);
+            return regex.Match(msbuildVersion).Value;
+        }
+
+        private static string RunApplication(string filename, string arguments)
+        {
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = filename,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+#if DEBUG
+                    RedirectStandardError = true,
+#endif
+                }
+            };
+
+            proc.Start();
+
+            var stdout = new StringBuilder();
+            while (!proc.HasExited)
+            {
+                stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+                stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+            }
+
+            stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+            stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+
+            return stdout.ToString();
         }
 
         // Unfortunately,
