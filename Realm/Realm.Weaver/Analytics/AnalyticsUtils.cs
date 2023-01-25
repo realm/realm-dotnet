@@ -210,31 +210,9 @@ namespace RealmWeaver
                 }
                 else if (currentOs == PlatformID.MacOSX)
                 {
-                    ProcessStartInfo psi = new ProcessStartInfo();
-                    psi.FileName = "ioreg";
-                    psi.Arguments = "-rd1 -c IOPlatformExpertDevice";
-                    psi.UseShellExecute = false;
-                    psi.RedirectStandardOutput = true;
-                    psi.RedirectStandardError = true;
-
-                    using Process process = new Process
-                    {
-                        StartInfo = psi
-                    };
-
-                    process.Start();
-
-                    var stdout = new StringBuilder();
-
-                    while (!process.HasExited)
-                    {
-                        stdout.Append(process.StandardOutput.ReadToEnd());
-                    }
-
-                    stdout.Append(process.StandardOutput.ReadToEnd());
-
+                    var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
                     var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                    var match = regex.Match(stdout.ToString());
+                    var match = regex.Match(machineIdToParse);
                     if (match.Groups.Count == 1)
                     {
                         id = match.Groups[0].Value;
@@ -327,6 +305,41 @@ namespace RealmWeaver
                 return string.Empty;
 #endif
             }
+        }
+
+        private static string RunProcess(string filename, string arguments)
+        {
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = filename,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+#if DEBUG
+                    RedirectStandardError = true,
+#endif
+                }
+            };
+
+            proc.Start();
+
+            var stdout = new StringBuilder();
+            while (!proc.HasExited)
+            {
+                stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+                stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+            }
+
+            stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+            stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+
+            return stdout.ToString();
         }
     }
 }
