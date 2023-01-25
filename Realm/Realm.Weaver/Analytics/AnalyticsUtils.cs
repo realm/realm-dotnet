@@ -169,44 +169,9 @@ namespace RealmWeaver
                 msbuildCmd = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\MSBuild.exe";
             }
 
-            var msbuildVersion = RunApplication(msbuildCmd, "--version");
+            var msbuildVersion = RunProcess(msbuildCmd, "--version");
             var regex = new Regex("^(\\d+\\.?)+", RegexOptions.Multiline);
             return regex.Match(msbuildVersion).Value;
-        }
-
-        private static string RunApplication(string filename, string arguments)
-        {
-            using var proc = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = filename,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-#if DEBUG
-                    RedirectStandardError = true,
-#endif
-                }
-            };
-
-            proc.Start();
-
-            var stdout = new StringBuilder();
-            while (!proc.HasExited)
-            {
-                stdout.AppendLine(proc.StandardOutput.ReadToEnd());
-#if DEBUG
-                stdout.AppendLine(proc.StandardError.ReadToEnd());
-#endif
-            }
-
-            stdout.AppendLine(proc.StandardOutput.ReadToEnd());
-#if DEBUG
-            stdout.AppendLine(proc.StandardError.ReadToEnd());
-#endif
-
-            return stdout.ToString();
         }
 
         // Unfortunately,
@@ -308,6 +273,41 @@ namespace RealmWeaver
                 return string.Empty;
 #endif
             }
+        }
+
+        private static string RunProcess(string filename, string arguments)
+        {
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = filename,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+#if DEBUG
+                    RedirectStandardError = true,
+#endif
+                }
+            };
+
+            proc.Start();
+
+            var stdout = new StringBuilder();
+            while (!proc.HasExited)
+            {
+                stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+                stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+            }
+
+            stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+            stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+
+            return stdout.ToString();
         }
     }
 }
