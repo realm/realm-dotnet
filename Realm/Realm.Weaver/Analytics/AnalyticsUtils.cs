@@ -75,10 +75,8 @@ namespace RealmWeaver
 
         public static string SHA256Hash(byte[] bytes)
         {
-            using (var sha256 = SHA256.Create())
-            {
-                return BitConverter.ToString(sha256.ComputeHash(bytes));
-            }
+            using var sha256 = SHA256.Create();
+            return BitConverter.ToString(sha256.ComputeHash(bytes));
         }
 
         public static string GetHostCpuArchitecture() =>
