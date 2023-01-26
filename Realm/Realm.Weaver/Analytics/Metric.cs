@@ -50,34 +50,36 @@ namespace RealmWeaver
         public static class Framework
         {
             public const string Unity = "Unity";
-            public const string UnityEditor = "Unity_Editor";
+            public const string UnityEditor = "Unity Editor";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
         }
 
         public static readonly Dictionary<string, string> UserEnvironment = new Dictionary<string, string>()
         {
-            ["UserId"] = "User_Id",
-            ["ProjectId"] = "Project_Id",
-            ["RealmSdk"] = "Realm_SDK",
+            ["UserId"] = "distinct id",
+            ["OldUserId"] = "Anonymized MAC Address", // this is just the same as UserId, it's just kept for legacy
+            ["ProjectId"] = "Anonymized Bundle ID",
+            ["RealmSdk"] = "Binding",
             ["Language"] = "Language",
-            ["LanguageVersion"] = "Language_Version",
-            ["HostOsType"] = "Host_OS_Type",
-            ["HostOsVersion"] = "Host_OS_Version",
-            ["HostCpuArch"] = "Host_CPU_Arch",
-            ["TargetOsType"] = "Target_OS_Type",
-            ["TargetOsMinimumVersion"] = "Target_OS_Minimum_Version",
-            ["TargetOsVersion"] = "Target_OS_Version",
-            ["TargetCpuArch"] = "Target_CPU_Arch",
-            ["RealmSdkVersion"] = "Realm_SDK_Version",
-            ["CoreVersion"] = "Core_Version",
+            ["LanguageVersion"] = "Language Version",
+            ["HostOsType"] = "Host OS Type",
+            ["HostOsVersion"] = "Host OS Version",
+            ["HostCpuArch"] = "Host CPU Arch",
+            ["TargetOsType"] = "Target OS Type",
+            ["TargetOsMinimumVersion"] = "Target OS Minimum Version",
+            ["TargetOsVersion"] = "Target OS Version",
+            ["TargetCpuArch"] = "Target CPU Arch",
+            ["RealmSdkVersion"] = "Binding Version",
+            ["CoreVersion"] = "Core Version",
+            ["IsSyncEnabled"] = "Sync Enabled",
             ["FrameworkUsedInConjunction"] = "Framework", // this refers to UI frameworks and similar Realm is used together with
-            ["FrameworkUsedInConjunctionVersion"] = "Framework_Version",
-            ["SdkInstallationMethod"] = "Installation_Method",
+            ["FrameworkUsedInConjunctionVersion"] = "Framework Version",
+            ["SdkInstallationMethod"] = "Installation Method",
             ["IdeUsed"] = "IDE",
-            ["IdeUsedVersion"] = "IDE_Version", // this holds info about the msbuild version
-            ["NetFramework"] = "Net_Framework",
-            ["NetFrameworkVersion"] = "Net_Framework_Version"
+            ["IdeUsedVersion"] = "IDE Version", // this holds info about the msbuild version
+            ["NetFramework"] = "Net Framework",
+            ["NetFrameworkVersion"] = "Net Framework Version"
         };
 
         public static readonly Dictionary<string, string> SdkFeatures = new Dictionary<string, string>()
