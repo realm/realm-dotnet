@@ -225,7 +225,7 @@ namespace RealmWeaver
                 _realmEnvMetrics["LanguageVersion"] = GetLanguageVersion(module, _config.TargetFramework);
                 _realmEnvMetrics["RealmSdkVersion"] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics["CoreVersion"] = "FILL ME";
-                _realmEnvMetrics["SdkInstallationMethod"] = "FILL ME";
+                _realmEnvMetrics["SdkInstallationMethod"] = _config.InstallationMethod;
                 _realmEnvMetrics["IdeUsed"] = "msbuild";
                 _realmEnvMetrics["IdeUsedVersion"] = "FILL ME";
                 _realmEnvMetrics["NetFramework"] = _config.TargetFramework;
@@ -493,6 +493,8 @@ namespace RealmWeaver
             // When in Unity this holds the Unity editor's or Unity player's version;
             // otherwise it holds the .NET target version
             public string TargetFrameworkVersion { get; set; }
+
+            public string InstallationMethod { get; set; }
         }
 
         public enum AnalyticsCollection

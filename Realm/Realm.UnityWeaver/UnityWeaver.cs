@@ -27,6 +27,8 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static RealmWeaver.Analytics;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
@@ -41,6 +43,7 @@ namespace RealmWeaver
 
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
+        private const string PackageName = "io.realm.unity"; //TODO Check if it's declared somewhere else
 
         private static bool _analyticsEnabled;
 
@@ -56,6 +59,8 @@ namespace RealmWeaver
         }
 
         private static bool _weaveEditorAssemblies;
+        private static SearchRequest _searchRequest;
+        private static TaskCompletionSource<string> _installMethodTask;
 
         private static bool WeaveEditorAssemblies
         {
@@ -73,9 +78,16 @@ namespace RealmWeaver
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
+
             // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
             EditorApplication.delayCall += () =>
             {
+                UnityLogger.Instance.Info($"DelayCall called");
+
+                _searchRequest = Client.Search(PackageName);
+                _installMethodTask = new TaskCompletionSource<string>();
+                EditorApplication.update += OnEditorApplicationUpdate;
+
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
                 WeaverAssemblyResolver.ApplicationDataPath = Application.dataPath;
@@ -84,6 +96,8 @@ namespace RealmWeaver
 
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
             {
+                UnityLogger.Instance.Info($"Assembly compilation finished");
+
                 if (string.IsNullOrEmpty(assemblyPath))
                 {
                     return;
@@ -98,6 +112,40 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
+        }
+
+        private static void OnEditorApplicationUpdate()
+        {
+            if (_searchRequest.IsCompleted)
+            {
+                UnityLogger.Instance.Info($"Unity package research completed");
+
+                if (_searchRequest.Status == StatusCode.Success && _searchRequest.Result.Length == 1)
+                {
+                    UnityLogger.Instance.Info($"SUCCESS in research");
+
+                    var source = _searchRequest.Result[0].source;
+                    var installMethod = source switch
+                    {
+                        PackageSource.LocalTarball => "Manual",
+                        PackageSource.Registry => "NPM",
+                        _ => "Unknown",
+                    };
+
+                    _installMethodTask.SetResult(installMethod);
+                }
+                else if (_searchRequest.Status >= StatusCode.Failure)
+                {
+                    UnityLogger.Instance.Info($"FAILURE in research");
+
+                    _installMethodTask.SetResult("Unknown");
+                }
+
+                UnityLogger.Instance.Info($"Set Result called");
+
+
+                EditorApplication.update -= OnEditorApplicationUpdate;
+            }
         }
 
         [MenuItem("Tools/Realm/Weave Assemblies")]
@@ -215,12 +263,19 @@ namespace RealmWeaver
                         Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                         Environment.GetEnvironmentVariable("CI") == null;
 
+                    UnityLogger.Instance.Info($"BEFORE result");
+
+                    var installMethod = _installMethodTask.Task.Result;
+
+                    UnityLogger.Instance.Info($"AFTER result : " + installMethod);
+
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
-                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
+                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
+                        InstallationMethod = installMethod
                     };
 
                     var results = weaver.Execute(analyticsConfig);
