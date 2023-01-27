@@ -43,11 +43,7 @@ namespace Realms
           IThreadConfined,
           IMetadataObject
     {
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new();
-
-        private NotificationTokenHandle _notificationToken;
-
-        private bool _deliveredInitialNotification;
+        private readonly Lazy<NotificationCallbacks<T>> _notificationCallbacks;
 
         internal readonly bool _isEmbedded;
 
@@ -149,11 +145,15 @@ namespace Realms
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
             _isEmbedded = metadata?.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject;
+            _notificationCallbacks = new(() => new(this));
         }
 
         ~RealmCollectionBase()
         {
-            UnsubscribeFromNotifications();
+            if (_notificationCallbacks.IsValueCreated)
+            {
+                _notificationCallbacks.Value.RemoveAll();
+            }
         }
 
         internal abstract CollectionHandleBase GetOrCreateHandle();
@@ -180,21 +180,14 @@ namespace Realms
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
+            => SubscribeForNotificationsImpl(callback, shallow: false);
+
+        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             Argument.NotNull(callback, nameof(callback));
+            _notificationCallbacks.Value.Add(callback, shallow);
 
-            if (_callbacks.Count == 0)
-            {
-                SubscribeForNotifications();
-            }
-            else if (_deliveredInitialNotification)
-            {
-                callback(this, null, null);
-            }
-
-            _callbacks.Add(callback);
-
-            return NotificationToken.Create(callback, UnsubscribeFromNotifications);
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -254,31 +247,9 @@ namespace Realms
             return result;
         }
 
-        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
+        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
         {
-            if (_callbacks.Remove(callback) &&
-                _callbacks.Count == 0)
-            {
-                UnsubscribeFromNotifications();
-            }
-        }
-
-        private void SubscribeForNotifications()
-        {
-            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
-
-            Realm.ExecuteOutsideTransaction(() =>
-            {
-                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
-            });
-        }
-
-        private void UnsubscribeFromNotifications()
-        {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
-            _deliveredInitialNotification = false;
+            _notificationCallbacks.Value.Remove(callback, shallow);
         }
 
         #region INotifyCollectionChanged
@@ -410,18 +381,18 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotifications(OnChange);
+                    SubscribeForNotificationsImpl(OnChange, shallow: true);
                 }
                 else
                 {
-                    UnsubscribeFromNotifications(OnChange);
+                    UnsubscribeFromNotifications(OnChange, shallow: true);
                 }
             }
         }
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
         {
             ChangeSet changeset = null;
             if (changes != null)
@@ -435,15 +406,8 @@ namespace Realms
                     moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
                     cleared: actualChanges.Cleared);
             }
-            else
-            {
-                _deliveredInitialNotification = true;
-            }
 
-            foreach (var callback in _callbacks.ToArray())
-            {
-                callback(this, changeset, null);
-            }
+            _notificationCallbacks.Value.Notify(changeset, shallow);
         }
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
@@ -622,6 +586,102 @@ namespace Realms
         /// Gets the native handle for that collection.
         /// </summary>
         THandle NativeHandle { get; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "NotificationCallbacks are tighly coupled with the collection and it's easier to reason about when they're in the same file.")]
+    internal class NotificationCallbacks<T>
+    {
+        private readonly RealmCollectionBase<T> _parent;
+
+        private readonly Dictionary<KeyPath, (NotificationTokenHandle Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+
+        public NotificationCallbacks(RealmCollectionBase<T> parent)
+        {
+            _parent = parent;
+        }
+
+        // Shallow here and everywhere else is a bit of a shortcut we're taking until we have proper keypath filtering.
+        // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
+        public void Add(NotificationCallbackDelegate<T> callback, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                if (subscription.DeliveredInitialNotification)
+                {
+                    // If Core already delivered the initial notification, we need to manually invoke the callback as it won't be invoked by Core.
+                    // It's part of the SubscribeForNotifications API contract that an initial callback with `null` changes is always delivered.
+                    callback(_parent, null, null);
+                }
+
+                // If we have a subscription already, we just add the callback to the list we're managing
+                subscription.Callbacks.Add(callback);
+            }
+            else
+            {
+                // If this is a new subscription, we store it in the backing dictionary, then we subscribe outside of transaction
+                _subscriptions[keyPath] = (null, false, new() { callback });
+                _parent.Realm.ExecuteOutsideTransaction(() =>
+                {
+                    // It's possible that we unsubscribed in the meantime, so only add a notification callback if we still have callbacks
+                    if (_subscriptions.TryGetValue(keyPath, out var subscription) && subscription.Callbacks.Count > 0)
+                    {
+                        var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
+                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), subscription.DeliveredInitialNotification, subscription.Callbacks);
+                    }
+                });
+            }
+        }
+
+        public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                subscription.Callbacks.Remove(callback);
+                if (subscription.Callbacks.Count == 0)
+                {
+                    subscription.Token?.Dispose();
+                    _subscriptions.Remove(keyPath);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Notify(ChangeSet changes, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                if (changes == null)
+                {
+                    _subscriptions[keyPath] = (subscription.Token, true, subscription.Callbacks);
+                }
+
+                foreach (var callback in subscription.Callbacks.ToArray())
+                {
+                    callback(_parent, changes, null);
+                }
+            }
+        }
+
+        public void RemoveAll()
+        {
+            foreach (var token in _subscriptions.Values.Select(c => c.Token))
+            {
+                token.Dispose();
+            }
+        }
+    }
+
+    // Eventually this should be a proper class holding the keypaths
+    internal enum KeyPath
+    {
+        Full,
+        Empty
     }
 
     /// <summary>

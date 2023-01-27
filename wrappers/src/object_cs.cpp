@@ -23,6 +23,7 @@
 #include "realm_export_decls.hpp"
 #include "timestamp_helpers.hpp"
 
+#include <cstddef>
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
@@ -35,6 +36,22 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 namespace realm {
 namespace binding {
     extern std::function<GetNativeSchemaT> s_get_native_schema;
+
+    REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object)
+    {
+        KeyPathArray keyPathArray;
+        for (auto& prop : object.persisted_properties) {
+            // We want to filter out all collection properties. By providing keypaths with just the top-level properties
+            // means we won't get deep change notifications either.
+            bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
+            if (is_scalar) {
+                KeyPath keyPath;
+                keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
+                keyPathArray.push_back(keyPath);
+            }
+        }
+        return keyPathArray;
+    }
 }
 }
 
@@ -283,9 +300,10 @@ extern "C" {
     REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return subscribe_for_notifications(managed_object, [object](CollectionChangeCallback callback) {
-                return object->add_notification_callback(callback);
-            }, new ObjectSchema(object->get_object_schema()));
+            return subscribe_for_notifications(managed_object, [&](CollectionChangeCallback callback) {
+                auto keyPaths = construct_key_path_array(object->get_object_schema());
+                return object->add_notification_callback(callback, keyPaths);
+            }, true, new ObjectSchema(object->get_object_schema()));
         });
     }
 

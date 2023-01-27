@@ -175,6 +175,7 @@ namespace Realms
 
         private State _state;
         private WeakReference<Session> _sessionRef;
+        private Transaction _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
@@ -427,10 +428,8 @@ namespace Realms
         {
             if (!IsClosed)
             {
-                if (SharedRealmHandle.OwnsNativeRealm)
-                {
-                    _state.RemoveRealm(this);
-                }
+                _activeTransaction?.Dispose();
+                _state.RemoveRealm(this, closeOnEmpty: SharedRealmHandle.OwnsNativeRealm);
 
                 _state = null;
                 SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
@@ -767,7 +766,9 @@ namespace Realms
             ThrowIfFrozen("Starting a write transaction on a frozen Realm is not allowed.");
 
             SharedRealmHandle.BeginTransaction();
-            return new Transaction(this);
+
+            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            return _activeTransaction = new Transaction(this);
         }
 
         /// <summary>
@@ -885,7 +886,9 @@ namespace Realms
             }
 
             await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
-            return new Transaction(this);
+
+            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            return _activeTransaction = new Transaction(this);
         }
 
         /// <summary>
@@ -1595,6 +1598,7 @@ namespace Realms
 
         internal void DrainTransactionQueue()
         {
+            _activeTransaction = null;
             _state.DrainTransactionQueue();
         }
 
@@ -1700,14 +1704,14 @@ namespace Realms
             /// 4. Once the last instance is deleted, the CSharpBindingContext destructor is called, which frees the state GCHandle.
             /// 5. The State is now eligible for collection, and its fields will be GC-ed.
             /// </summary>
-            public void RemoveRealm(Realm realm)
+            public void RemoveRealm(Realm realm, bool closeOnEmpty)
             {
                 _weakRealms.RemoveAll(r =>
                 {
                     return !r.TryGetTarget(out var other) || ReferenceEquals(realm, other);
                 });
 
-                if (!_weakRealms.Any())
+                if (closeOnEmpty && !_weakRealms.Any())
                 {
                     realm.SharedRealmHandle.CloseRealm();
                 }

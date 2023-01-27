@@ -28,12 +28,8 @@ using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -327,7 +323,9 @@ namespace Realms.Tests.Database
                 var newSize = new FileInfo(config.DatabasePath).Length;
                 if (shouldCompact)
                 {
-                    Assert.That(newSize, Is.LessThan(oldSize));
+                    // Less than or equal because of the new online compaction mechanism - it's possible
+                    // that the Realm was already at the optimal size.
+                    Assert.That(newSize, Is.LessThanOrEqualTo(oldSize));
 
                     // Less than 20% error in projections
                     Assert.That((newSize - projectedNewSize) / newSize, Is.LessThan(0.2));
@@ -617,7 +615,7 @@ namespace Realms.Tests.Database
                 var sw = new Stopwatch();
                 sw.Start();
 
-                using var realm = await GetRealmAsync(config).Timeout(1000);
+                using var realm = await GetRealmAsync(config, 1000);
 
                 sw.Stop();
 
@@ -1330,6 +1328,28 @@ namespace Realms.Tests.Database
             Assert.That(frozenObj.Realm.IsClosed, Is.True);
             Assert.That(realm.IsClosed, Is.True);
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
+        [Test]
+        public void BeginWrite_CalledMultipleTimes_Throws()
+        {
+            using var realm = GetRealm();
+            var ts = realm.BeginWrite();
+
+            Assert.That(() => realm.BeginWrite(), Throws.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void RealmDispose_DisposesActiveTransaction()
+        {
+            var realm = GetRealm();
+            var ts = realm.BeginWrite();
+
+            Assert.That(ts.State, Is.EqualTo(TransactionState.Running));
+
+            realm.Dispose();
+
+            Assert.That(ts.State, Is.EqualTo(TransactionState.RolledBack));
         }
 
         private const int DummyDataSize = 200;

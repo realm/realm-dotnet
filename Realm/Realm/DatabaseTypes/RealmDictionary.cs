@@ -42,7 +42,7 @@ namespace Realms
           IRealmCollectionBase<DictionaryHandle>,
           INotifiable<DictionaryHandle.DictionaryChangeSet>
     {
-        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
+        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new();
         private readonly DictionaryHandle _dictionaryHandle;
 
         private bool _deliveredInitialKeyNotification;
@@ -249,8 +249,10 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, bool shallow)
         {
+            Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
+
             DictionaryChangeSet changeset = null;
             if (changes != null)
             {

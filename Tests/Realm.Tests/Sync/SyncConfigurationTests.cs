@@ -95,11 +95,13 @@ namespace Realms.Tests.Sync
             WeakReference weakConfigRef = null;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
-                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
-                var session = GetSession(realm);
+                var config = await GetIntegrationConfigAsync();
+                weakConfigRef = new WeakReference(config);
+                using var realm = await Realm.GetInstanceAsync(config);
+                var session = realm.SyncSession;
                 Assert.That(weakConfigRef.Target, Is.Not.Null);
             });
+
             TearDown();
 
             for (var i = 0; i < 50; i++)

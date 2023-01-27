@@ -61,5 +61,7 @@ namespace Realms
         protected abstract IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex);
 
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
+
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
     }
 }
