@@ -43,7 +43,7 @@ namespace RealmWeaver
 
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
-        private const string PackageName = "io.realm.unity"; //TODO Check if it's declared somewhere else
+        private const string UnityPackageName = "io.realm.unity";
 
         private static bool _analyticsEnabled;
 
@@ -59,7 +59,7 @@ namespace RealmWeaver
         }
 
         private static bool _weaveEditorAssemblies;
-        private static SearchRequest _searchRequest;
+        private static ListRequest _listRequest;
         private static TaskCompletionSource<string> _installMethodTask;
 
         private static bool WeaveEditorAssemblies
@@ -78,13 +78,10 @@ namespace RealmWeaver
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
-
             // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
             EditorApplication.delayCall += () =>
             {
-                UnityLogger.Instance.Info($"DelayCall called");
-
-                _searchRequest = Client.Search(PackageName);
+                _listRequest = Client.List();
                 _installMethodTask = new TaskCompletionSource<string>();
                 EditorApplication.update += OnEditorApplicationUpdate;
 
@@ -96,8 +93,6 @@ namespace RealmWeaver
 
             CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
             {
-                UnityLogger.Instance.Info($"Assembly compilation finished");
-
                 if (string.IsNullOrEmpty(assemblyPath))
                 {
                     return;
@@ -116,34 +111,32 @@ namespace RealmWeaver
 
         private static void OnEditorApplicationUpdate()
         {
-            if (_searchRequest.IsCompleted)
+            if (_listRequest.IsCompleted)
             {
-                UnityLogger.Instance.Info($"Unity package research completed");
+                var installMethod = "Unknown";
 
-                if (_searchRequest.Status == StatusCode.Success && _searchRequest.Result.Length == 1)
+                if (_listRequest.Status == StatusCode.Success)
                 {
-                    UnityLogger.Instance.Info($"SUCCESS in research");
-
-                    var source = _searchRequest.Result[0].source;
-                    var installMethod = source switch
+                    foreach (var package in _listRequest.Result)
                     {
-                        PackageSource.LocalTarball => "Manual",
-                        PackageSource.Registry => "NPM",
-                        _ => "Unknown",
-                    };
+                        if (package.name != UnityPackageName)
+                        {
+                            continue;
+                        }
 
-                    _installMethodTask.SetResult(installMethod);
+                        var source = package.source;
+                        installMethod = source switch
+                        {
+                            PackageSource.LocalTarball => "Manual",
+                            PackageSource.Registry => "NPM",
+                            _ => installMethod,
+                        };
+
+                        break;
+                    }
                 }
-                else if (_searchRequest.Status >= StatusCode.Failure)
-                {
-                    UnityLogger.Instance.Info($"FAILURE in research");
 
-                    _installMethodTask.SetResult("Unknown");
-                }
-
-                UnityLogger.Instance.Info($"Set Result called");
-
-
+                _installMethodTask.SetResult(installMethod);
                 EditorApplication.update -= OnEditorApplicationUpdate;
             }
         }
@@ -263,11 +256,7 @@ namespace RealmWeaver
                         Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                         Environment.GetEnvironmentVariable("CI") == null;
 
-                    UnityLogger.Instance.Info($"BEFORE result");
-
                     var installMethod = _installMethodTask.Task.Result;
-
-                    UnityLogger.Instance.Info($"AFTER result : " + installMethod);
 
                     var analyticsConfig = new Config
                     {
