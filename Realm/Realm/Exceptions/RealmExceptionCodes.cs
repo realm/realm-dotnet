@@ -19,7 +19,7 @@
 namespace Realms.Exceptions
 {
     /// <summary>Codes used in forwarding exceptions from the native C++ core, to be regenerated in C#.</summary>
-    /// <remarks> <b>Warning:</b> Keep these codes aligned with realm_error_type.hpp in wrappers.</remarks>
+    /// <remarks> <b>Warning:</b> Keep these codes aligned with error_codes.h in Core.</remarks>
     internal enum RealmExceptionCodes : int
     {
         RLM_ERR_NONE = 0,
@@ -185,6 +185,9 @@ namespace Realms.Exceptions
         RLM_ERR_CALLBACK = 1000000,
         RLM_ERR_UNKNOWN = 2000000,
 
+        // These are custom errors defined by the .NET SDK. They're defined in CustomError in error_handling.hpp
+        // They are being sent via the same field as Core-originating errors to reduce memory allocation for exceptions.
+        // Ideally, they should not conflict, but if they do, we can just update the values as they're not user-facing.
         RowDetached = 1000004000,
         RealmClosed = 1000004001,
         DuplicatePrimaryKey = 1000004002,

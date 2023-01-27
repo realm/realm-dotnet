@@ -131,7 +131,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
         }
 
-        s_session_error_callback(new SharedSyncSession(session), error.code(), to_capi_value(error.reason()), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), configuration_handle->handle());
+        s_session_error_callback(new SharedSyncSession(session), error.get_system_error().value(), to_capi_value(error.reason()), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), configuration_handle->handle());
     };
 
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
