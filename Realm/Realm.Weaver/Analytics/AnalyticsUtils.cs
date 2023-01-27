@@ -111,7 +111,8 @@ namespace RealmWeaver
             WrapInTryCatch(() =>
                 platformID switch
                 {
-                    PlatformID.Win32NT => OperatingSystem.Windows,
+                    PlatformID.Win32NT or PlatformID.Win32S or
+                    PlatformID.Win32Windows or PlatformID.WinCE => OperatingSystem.Windows,
                     PlatformID.MacOSX => OperatingSystem.MacOS,
                     PlatformID.Unix => OperatingSystem.Linux,
                     _ => $"{platformID} is an unsupported operating system."
