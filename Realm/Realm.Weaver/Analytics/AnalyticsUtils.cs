@@ -24,7 +24,6 @@ using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Win32;
 using Mono.Cecil;
 
 using static RealmWeaver.Analytics;
@@ -197,46 +196,37 @@ namespace RealmWeaver
         {
             var id = string.Empty;
             var currentOs = Environment.OSVersion.Platform;
-
+            Match match = null;
             try
             {
                 if (currentOs == PlatformID.Win32S || currentOs == PlatformID.Win32Windows ||
                     currentOs == PlatformID.Win32NT || currentOs == PlatformID.WinCE)
                 {
-                    var rk = Registry.LocalMachine;
-                    id = (string)rk.OpenSubKey("SOFTWARE\\Microsoft\\Cryptography").GetValue("MachineGuid");
+                    var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                    var regex = new Regex("^\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                    match = regex.Match(machineIdToParse);
                 }
                 else if (currentOs == PlatformID.MacOSX)
                 {
                     var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
                     var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                    var match = regex.Match(machineIdToParse);
-                    if (match.Groups.Count == 1)
-                    {
-                        id = match.Groups[0].Value;
-                    }
+                    match = regex.Match(machineIdToParse);
                 }
                 else if (currentOs == PlatformID.Unix)
                 {
-                    // Some systems only know the /etc path. Sometimes it's the other way round.
-                    string[] linuxIdPaths = new string[] { "/var/lib/dbus/machine-id", "/etc/machine-id" };
-
-                    foreach (var path in linuxIdPaths)
+                    try
                     {
-                        try
-                        {
-                            id = File.ReadAllText(path);
-                        }
-                        catch
-                        {
-                            id = string.Empty;
-                        }
-
-                        if (id.Length > 0)
-                        {
-                            break;
-                        }
+                        id = File.ReadAllText("/etc/machine-id");
                     }
+                    catch
+                    {
+                        id = string.Empty;
+                    }
+                }
+
+                if (match?.Groups.Count > 1)
+                {
+                    id = match.Groups[1].Value;
                 }
 
                 if (id.Length == 0)
@@ -245,7 +235,7 @@ namespace RealmWeaver
                 }
                 else
                 {
-                    var salt = new byte[] { 5, 67, 101, 45, 99, 239, 51, 111, 205, 174, 76, 16, 85, 158, 29, 8 };
+                    var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
                     var byteId = Encoding.ASCII.GetBytes(id);
                     var saltedId = new byte[byteId.Length + salt.Length];
                     Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
