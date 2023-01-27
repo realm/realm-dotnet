@@ -210,16 +210,13 @@ namespace RealmWeaver
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
                 _realmEnvMetrics["UserId"] = AnonymizedUserID;
-                _realmEnvMetrics["OldUserId"] = AnonymizedUserID;
                 _realmEnvMetrics["ProjectId"] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics["RealmSdk"] = ".NET";
-                _realmEnvMetrics["Language"] = "CSharp";
+                _realmEnvMetrics["Language"] = "C#";
                 _realmEnvMetrics["HostOsType"] = ConvertPlatformIdOsToMetricVersion(Environment.OSVersion.Platform);
                 _realmEnvMetrics["HostOsVersion"] = Environment.OSVersion.Version.ToString();
                 _realmEnvMetrics["HostCpuArch"] = GetHostCpuArchitecture;
                 _realmEnvMetrics["TargetOsType"] = _config.TargetOSName;
-                _realmEnvMetrics["TargetOsVersion"] = "FILL ME";
-                _realmEnvMetrics["TargetOsMinimumVersion"] = "FILL ME";
                 _realmEnvMetrics["TargetCpuArch"] = GetTargetCpuArchitecture(module);
                 _realmEnvMetrics["FrameworkUsedInConjunction"] = frameworkInfo.Name;
                 _realmEnvMetrics["FrameworkUsedInConjunctionVersion"] = frameworkInfo.Version;
@@ -228,7 +225,6 @@ namespace RealmWeaver
                 _realmEnvMetrics["CoreVersion"] = "FILL ME";
                 _realmEnvMetrics["SdkInstallationMethod"] = "FILL ME";
                 _realmEnvMetrics["IdeUsed"] = "MSBuild";
-                _realmEnvMetrics["IdeUsedVersion"] = "FILL ME";
                 _realmEnvMetrics["NetFramework"] = _config.TargetFramework;
                 _realmEnvMetrics["NetFrameworkVersion"] = _config.TargetFrameworkVersion;
 

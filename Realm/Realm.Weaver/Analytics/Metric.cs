@@ -57,7 +57,7 @@ namespace RealmWeaver
 
         public static readonly Dictionary<string, string> UserEnvironment = new Dictionary<string, string>()
         {
-            ["UserId"] = "distinct id",
+            ["UserId"] = "distinct_id",
             ["OldUserId"] = "Anonymized MAC Address", // this is just the same as UserId, it's just kept for legacy
             ["ProjectId"] = "Anonymized Bundle ID",
             ["RealmSdk"] = "Binding",
@@ -70,7 +70,7 @@ namespace RealmWeaver
             ["TargetOsMinimumVersion"] = "Target OS Minimum Version",
             ["TargetOsVersion"] = "Target OS Version",
             ["TargetCpuArch"] = "Target CPU Arch",
-            ["RealmSdkVersion"] = "Binding Version",
+            ["RealmSdkVersion"] = "Realm Version",
             ["CoreVersion"] = "Core Version",
             ["IsSyncEnabled"] = "Sync Enabled",
             ["FrameworkUsedInConjunction"] = "Framework", // this refers to UI frameworks and similar Realm is used together with
