@@ -580,7 +580,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.ListOfDogs.Filter("Name = $0"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
         [Test]
@@ -894,7 +894,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.SetOfDogs.Filter("Name = $0"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
         [Test]

@@ -1310,7 +1310,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.DictOfDogs.Filter("Name = $0"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
         private static void RunUnmanagedTests<T>(Func<DictionariesObject, IDictionary<string, T>> accessor, TestCaseData<T> testData)
