@@ -210,6 +210,7 @@ namespace RealmWeaver
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
                 _realmEnvMetrics["UserId"] = AnonymizedUserID;
+                _realmEnvMetrics["OldUserId"] = AnonymizedUserID;
                 _realmEnvMetrics["ProjectId"] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics["RealmSdk"] = ".NET";
                 _realmEnvMetrics["Language"] = "CSharp";
@@ -226,7 +227,7 @@ namespace RealmWeaver
                 _realmEnvMetrics["RealmSdkVersion"] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics["CoreVersion"] = "FILL ME";
                 _realmEnvMetrics["SdkInstallationMethod"] = _config.InstallationMethod;
-                _realmEnvMetrics["IdeUsed"] = "msbuild";
+                _realmEnvMetrics["IdeUsed"] = "MSBuild";
                 _realmEnvMetrics["IdeUsedVersion"] = "FILL ME";
                 _realmEnvMetrics["NetFramework"] = _config.TargetFramework;
                 _realmEnvMetrics["NetFrameworkVersion"] = _config.TargetFrameworkVersion;
@@ -235,6 +236,10 @@ namespace RealmWeaver
                 {
                     InternalAnalyzeSdkApi(type);
                 }
+
+                _realmEnvMetrics.TryGetValue("PartitionSyncConfiguration", out var isPbsUsed);
+                _realmEnvMetrics.TryGetValue("FlexibleSyncConfiguration", out var isFlxSUsed);
+                _realmEnvMetrics["IsSyncEnabled"] = ((!string.IsNullOrEmpty(isPbsUsed) && isPbsUsed == "1") || (!string.IsNullOrEmpty(isFlxSUsed) && isFlxSUsed == "1")).ToString().ToLower();
             }
             catch (Exception e)
             {
