@@ -119,20 +119,18 @@ namespace RealmWeaver
                 {
                     foreach (var package in _listRequest.Result)
                     {
-                        if (package.name != UnityPackageName)
+                        if (package.name == UnityPackageName)
                         {
-                            continue;
+                            var source = package.source;
+                            installMethod = source switch
+                            {
+                                PackageSource.LocalTarball => "Manual",
+                                PackageSource.Registry => "NPM",
+                                _ => installMethod,
+                            };
+
+                            break;
                         }
-
-                        var source = package.source;
-                        installMethod = source switch
-                        {
-                            PackageSource.LocalTarball => "Manual",
-                            PackageSource.Registry => "NPM",
-                            _ => installMethod,
-                        };
-
-                        break;
                     }
                 }
 
