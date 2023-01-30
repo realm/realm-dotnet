@@ -351,6 +351,7 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
@@ -424,10 +425,10 @@ namespace Realms.Tests.Sync
                     var validKey = copyConfig.EncryptionKey;
                     copyConfig.EncryptionKey = null;
 
-                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+                    Assert.Throws<RealmInvalidDatabaseException>(() => GetRealm(copyConfig));
 
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(1, 2, 3);
-                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+                    Assert.Throws<RealmInvalidDatabaseException>(() => GetRealm(copyConfig));
 
                     copyConfig.EncryptionKey = validKey;
                 }
