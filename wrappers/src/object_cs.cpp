@@ -206,7 +206,7 @@ extern "C" {
             const Property& source_property = source_object_schema.persisted_properties[source_property_ndx];
 
             if (source_property.object_type != object.get_object_schema().name) {
-                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
+                throw InvalidArgument(ErrorCodes::InvalidProperty, util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
 
             TableView backlink_view = object.obj().get_backlink_view(source_table, source_property.column_key);
