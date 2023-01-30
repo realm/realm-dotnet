@@ -190,8 +190,7 @@ namespace RealmWeaver
             }
         }
 
-        // Knowledge on unique machine Ids for different OSes
-        // obtained from https://github.com/denisbrodbeck/machineid
+        // Knowledge on unique machine Ids for different OSes obtained from https://github.com/denisbrodbeck/machineid
         public static string GetAnonymizedUserId()
         {
             var id = string.Empty;
