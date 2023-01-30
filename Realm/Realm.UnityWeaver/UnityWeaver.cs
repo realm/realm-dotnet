@@ -256,15 +256,13 @@ namespace RealmWeaver
                         Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
                         Environment.GetEnvironmentVariable("CI") == null;
 
-                    var installMethod = _installMethodTask.Task.Result;
-
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = installMethod
+                        InstallationMethod = _installMethodTask.Task.Result
                     };
 
                     var results = weaver.Execute(analyticsConfig);
