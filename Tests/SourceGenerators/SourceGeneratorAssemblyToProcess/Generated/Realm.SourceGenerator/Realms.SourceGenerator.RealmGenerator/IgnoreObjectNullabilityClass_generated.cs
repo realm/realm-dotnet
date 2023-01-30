@@ -85,12 +85,12 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
                 }
-                newAccessor.NullableObject = oldAccessor.NullableObject!;
+                newAccessor.NullableObject = oldAccessor.NullableObject;
                 if(oldAccessor.NonNullableObject != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NonNullableObject, update);
                 }
-                newAccessor.NonNullableObject = oldAccessor.NonNullableObject!;
+                newAccessor.NonNullableObject = oldAccessor.NonNullableObject;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListNonNullableObject, newAccessor.ListNonNullableObject, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListNullableObject, newAccessor.ListNullableObject, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetNonNullableObject, newAccessor.SetNonNullableObject, update, skipDefaults);
