@@ -269,7 +269,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => BacklinkObject.RealmSchema;
 
-            private string? _beforeBacklinks = null!;
+            private string? _beforeBacklinks;
             public string? BeforeBacklinks
             {
                 get => _beforeBacklinks;
@@ -282,7 +282,7 @@ namespace Realms.Tests.Database
 
             public System.Linq.IQueryable<Realms.Tests.Database.SomeClass> Links => throw new NotSupportedException("Using backlinks is only possible for managed(persisted) objects.");
 
-            private string? _afterBacklinks = null!;
+            private string? _afterBacklinks;
             public string? AfterBacklinks
             {
                 get => _afterBacklinks;

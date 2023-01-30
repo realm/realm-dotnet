@@ -251,7 +251,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;
 
-            private Realms.Tests.IntPropertyObject? _standaloneObject = null!;
+            private Realms.Tests.IntPropertyObject? _standaloneObject;
             public Realms.Tests.IntPropertyObject? StandaloneObject
             {
                 get => _standaloneObject;
@@ -262,7 +262,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObject = null!;
+            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObject;
             public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject
             {
                 get => _embeddedObject;

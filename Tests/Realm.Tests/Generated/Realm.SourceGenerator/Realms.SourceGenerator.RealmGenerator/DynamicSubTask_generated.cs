@@ -274,7 +274,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicSubTask.RealmSchema;
 
-            private string? _summary = null!;
+            private string? _summary;
             public string? Summary
             {
                 get => _summary;
@@ -285,7 +285,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.CompletionReport? _completionReport = null!;
+            private Realms.Tests.Database.CompletionReport? _completionReport;
             public Realms.Tests.Database.CompletionReport? CompletionReport
             {
                 get => _completionReport;

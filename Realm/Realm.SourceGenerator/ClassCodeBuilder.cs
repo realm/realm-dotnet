@@ -512,7 +512,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
             {
                 var name = property.Name;
                 var backingFieldName = GetBackingFieldName(name);
-                var (type, internalType) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
+                var (type, internalType, needsNullForgiving) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
@@ -567,7 +567,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     {
                         initializerString = $" {property.Initializer}";
                     }
-                    else if (property.TypeInfo.NeedsNullForgiving())
+                    else if (needsNullForgiving)
                     {
                         initializerString = " = null!";
                     }
@@ -749,14 +749,14 @@ internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_acces
 
             foreach (var property in _classInfo.Properties)
             {
-                var (type, internalType) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
+                var (type, internalType, needsNullForgiving) = property.TypeInfo.GetCorrectlyAnnotatedTypeName(property.IsRequired);
                 var name = property.Name;
                 var stringName = property.MapTo ?? name;
 
                 if (property.TypeInfo.IsCollection)
                 {
                     var backingFieldName = GetBackingFieldName(property.Name);
-                    var nullableForgivingString = property.TypeInfo.NeedsNullForgiving() ? " = null!" : string.Empty;
+                    var nullableForgivingString = needsNullForgiving ? " = null!" : string.Empty;
                     var backingFieldString = $@"private {type} {backingFieldName}{nullableForgivingString};";
 
                     string getFieldString;

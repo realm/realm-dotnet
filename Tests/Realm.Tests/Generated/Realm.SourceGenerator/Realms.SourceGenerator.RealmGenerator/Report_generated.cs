@@ -289,7 +289,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _ref = null!;
+            private string? _ref;
             public string? Ref
             {
                 get => _ref;
@@ -300,7 +300,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _date = null!;
+            private string? _date;
             public string? Date
             {
                 get => _date;
@@ -311,7 +311,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Product? _parent = null!;
+            private Realms.Tests.Database.Product? _parent;
             public Realms.Tests.Database.Product? Parent
             {
                 get => _parent;

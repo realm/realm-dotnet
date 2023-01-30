@@ -313,7 +313,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedAllTypesObject? _allTypesObject = null!;
+            private Realms.Tests.EmbeddedAllTypesObject? _allTypesObject;
             public Realms.Tests.EmbeddedAllTypesObject? AllTypesObject
             {
                 get => _allTypesObject;
@@ -326,7 +326,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<Realms.Tests.EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = new List<Realms.Tests.EmbeddedAllTypesObject>();
 
-            private Realms.Tests.EmbeddedLevel1? _recursiveObject = null!;
+            private Realms.Tests.EmbeddedLevel1? _recursiveObject;
             public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
                 get => _recursiveObject;

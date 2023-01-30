@@ -296,7 +296,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => Walker.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -307,7 +307,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.Dog? _topDog = null!;
+            private Realms.Tests.Dog? _topDog;
             public Realms.Tests.Dog? TopDog
             {
                 get => _topDog;

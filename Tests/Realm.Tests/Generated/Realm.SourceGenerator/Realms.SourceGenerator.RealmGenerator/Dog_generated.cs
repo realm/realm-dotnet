@@ -296,7 +296,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -307,7 +307,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _color = null!;
+            private string? _color;
             public string? Color
             {
                 get => _color;

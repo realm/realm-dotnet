@@ -240,7 +240,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => SomeClass.RealmSchema;
 
-            private Realms.Tests.Database.BacklinkObject? _backlinkObject = null!;
+            private Realms.Tests.Database.BacklinkObject? _backlinkObject;
             public Realms.Tests.Database.BacklinkObject? BacklinkObject
             {
                 get => _backlinkObject;

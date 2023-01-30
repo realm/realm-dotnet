@@ -298,7 +298,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -309,7 +309,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _date = null!;
+            private string? _date;
             public string? Date
             {
                 get => _date;

@@ -368,7 +368,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _stringValue = null!;
+            private string? _stringValue;
             public string? StringValue
             {
                 get => _stringValue;
@@ -379,7 +379,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.RemappedTypeObject? _normalLink = null!;
+            private Realms.Tests.RemappedTypeObject? _normalLink;
             public Realms.Tests.RemappedTypeObject? NormalLink
             {
                 get => _normalLink;
@@ -390,7 +390,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.RemappedTypeObject? _mappedLink = null!;
+            private Realms.Tests.RemappedTypeObject? _mappedLink;
             public Realms.Tests.RemappedTypeObject? MappedLink
             {
                 get => _mappedLink;

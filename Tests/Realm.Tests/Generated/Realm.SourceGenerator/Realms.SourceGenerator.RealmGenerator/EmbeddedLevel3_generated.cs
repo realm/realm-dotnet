@@ -243,7 +243,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;
 
-            private string? _string = null!;
+            private string? _string;
             public string? String
             {
                 get => _string;

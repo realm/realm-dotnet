@@ -261,7 +261,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _stringValue = null!;
+            private string? _stringValue;
             public string? StringValue
             {
                 get => _stringValue;

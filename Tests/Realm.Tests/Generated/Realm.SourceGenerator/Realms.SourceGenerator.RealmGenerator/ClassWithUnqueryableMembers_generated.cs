@@ -307,7 +307,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;
 
-            private string? _realPropertyToSatisfyWeaver = null!;
+            private string? _realPropertyToSatisfyWeaver;
             public string? RealPropertyToSatisfyWeaver
             {
                 get => _realPropertyToSatisfyWeaver;
@@ -318,7 +318,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.Database.Person? _realmObjectProperty = null!;
+            private Realms.Tests.Database.Person? _realmObjectProperty;
             public Realms.Tests.Database.Person? RealmObjectProperty
             {
                 get => _realmObjectProperty;
@@ -331,7 +331,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IList<Realms.Tests.Database.Person> RealmListProperty { get; } = new List<Realms.Tests.Database.Person>();
 
-            private string? _firstName = null!;
+            private string? _firstName;
             public string? FirstName
             {
                 get => _firstName;

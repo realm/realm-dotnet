@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
             {
                 public override ObjectSchema ObjectSchema => NonPrimaryKeyObject.RealmSchema;
 
-                private string? _stringValue = null!;
+                private string? _stringValue;
                 public string? StringValue
                 {
                     get => _stringValue;

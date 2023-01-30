@@ -266,7 +266,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string? _partitionLike = null!;
+            private string? _partitionLike;
             public string? PartitionLike
             {
                 get => _partitionLike;

@@ -260,7 +260,7 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private OtherNamespace.OtherNamespaceObj? _otherNamespaceObj = null!;
+            private OtherNamespace.OtherNamespaceObj? _otherNamespaceObj;
             public OtherNamespace.OtherNamespaceObj? OtherNamespaceObj
             {
                 get => _otherNamespaceObj;

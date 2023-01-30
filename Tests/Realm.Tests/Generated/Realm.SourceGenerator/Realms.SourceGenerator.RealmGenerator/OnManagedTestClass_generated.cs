@@ -290,7 +290,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.OnManagedTestClass? _relatedObject = null!;
+            private Realms.Tests.Database.OnManagedTestClass? _relatedObject;
             public Realms.Tests.Database.OnManagedTestClass? RelatedObject
             {
                 get => _relatedObject;

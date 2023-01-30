@@ -277,7 +277,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private string? _name = null!;
+                private string? _name;
                 public string? Name
                 {
                     get => _name;
@@ -288,7 +288,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.Parent? _parent = null!;
+                private Realms.Tests.Database.AddOrUpdateTests.Parent? _parent;
                 public Realms.Tests.Database.AddOrUpdateTests.Parent? Parent
                 {
                     get => _parent;

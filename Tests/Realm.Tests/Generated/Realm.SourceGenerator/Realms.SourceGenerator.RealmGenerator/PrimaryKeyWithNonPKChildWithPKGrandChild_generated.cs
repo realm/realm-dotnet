@@ -277,7 +277,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private string? _stringValue = null!;
+                private string? _stringValue;
                 public string? StringValue
                 {
                     get => _stringValue;
@@ -288,7 +288,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation? _nonPKChild = null!;
+                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation? _nonPKChild;
                 public Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation? NonPKChild
                 {
                     get => _nonPKChild;

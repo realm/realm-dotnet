@@ -395,7 +395,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Person.RealmSchema;
 
-            private string? _firstName = null!;
+            private string? _firstName;
             public string? FirstName
             {
                 get => _firstName;
@@ -406,7 +406,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _lastName = null!;
+            private string? _lastName;
             public string? LastName
             {
                 get => _lastName;
@@ -483,7 +483,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private byte[]? _publicCertificateBytes = null!;
+            private byte[]? _publicCertificateBytes;
             public byte[]? PublicCertificateBytes
             {
                 get => _publicCertificateBytes;
@@ -494,7 +494,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _optionalAddress = null!;
+            private string? _optionalAddress;
             public string? OptionalAddress
             {
                 get => _optionalAddress;
@@ -505,7 +505,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _email_ = null!;
+            private string? _email_;
             public string? Email_
             {
                 get => _email_;

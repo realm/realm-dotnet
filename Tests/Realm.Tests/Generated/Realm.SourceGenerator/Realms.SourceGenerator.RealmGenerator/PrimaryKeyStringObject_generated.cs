@@ -253,7 +253,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyStringObject.RealmSchema;
 
-            private string? _id = null!;
+            private string? _id;
             public string? Id
             {
                 get => _id;
@@ -264,7 +264,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _value = null!;
+            private string? _value;
             public string? Value
             {
                 get => _value;

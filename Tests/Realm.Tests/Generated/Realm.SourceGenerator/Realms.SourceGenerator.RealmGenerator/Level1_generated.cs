@@ -253,7 +253,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => Level1.RealmSchema;
 
-            private string? _stringValue = null!;
+            private string? _stringValue;
             public string? StringValue
             {
                 get => _stringValue;
@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Level2? _level2 = null!;
+            private Realms.Tests.Database.Level2? _level2;
             public Realms.Tests.Database.Level2? Level2
             {
                 get => _level2;

@@ -261,7 +261,7 @@ namespace SourceGeneratorPlayground
                     }
                 }
 
-                private SourceGeneratorPlayground.OuterClass.NestedClass? _link = null!;
+                private SourceGeneratorPlayground.OuterClass.NestedClass? _link;
                 public SourceGeneratorPlayground.OuterClass.NestedClass? Link
                 {
                     get => _link;

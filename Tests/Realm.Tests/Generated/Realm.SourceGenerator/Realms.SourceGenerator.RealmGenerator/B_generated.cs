@@ -241,7 +241,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => B.RealmSchema;
 
-            private Realms.Tests.IntPropertyObject? _c = null!;
+            private Realms.Tests.IntPropertyObject? _c;
             public Realms.Tests.IntPropertyObject? C
             {
                 get => _c;

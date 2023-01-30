@@ -308,7 +308,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.Person> Enemies { get; } = new List<Realms.Tests.Database.Person>();
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;

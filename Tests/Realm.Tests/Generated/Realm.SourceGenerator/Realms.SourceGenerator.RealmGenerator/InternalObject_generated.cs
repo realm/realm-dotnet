@@ -236,7 +236,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _stringProperty = null!;
+            private string? _stringProperty;
             public string? StringProperty
             {
                 get => _stringProperty;

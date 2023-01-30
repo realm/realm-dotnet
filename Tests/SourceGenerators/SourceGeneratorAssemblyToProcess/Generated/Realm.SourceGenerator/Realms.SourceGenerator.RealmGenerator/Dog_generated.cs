@@ -248,7 +248,7 @@ namespace SourceGeneratorPlayground
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -259,7 +259,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            private SourceGeneratorPlayground.Person? _owner = null!;
+            private SourceGeneratorPlayground.Person? _owner;
             public SourceGeneratorPlayground.Person? Owner
             {
                 get => _owner;

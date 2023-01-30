@@ -276,7 +276,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel1.RealmSchema;
 
-            private string? _string = null!;
+            private string? _string;
             public string? String
             {
                 get => _string;
@@ -287,7 +287,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedLevel2? _child = null!;
+            private Realms.Tests.EmbeddedLevel2? _child;
             public Realms.Tests.EmbeddedLevel2? Child
             {
                 get => _child;

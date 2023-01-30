@@ -241,7 +241,7 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;
 
-            private Realms.Tests.ClassWithUnqueryableMembers? _parent = null!;
+            private Realms.Tests.ClassWithUnqueryableMembers? _parent;
             public Realms.Tests.ClassWithUnqueryableMembers? Parent
             {
                 get => _parent;

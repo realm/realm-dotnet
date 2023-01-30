@@ -275,7 +275,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;
 
-            private string? _summary = null!;
+            private string? _summary;
             public string? Summary
             {
                 get => _summary;

@@ -297,7 +297,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string? _value = null!;
+            private string? _value;
             public string? Value
             {
                 get => _value;
@@ -308,7 +308,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private string? _partition = null!;
+            private string? _partition;
             public string? Partition
             {
                 get => _partition;

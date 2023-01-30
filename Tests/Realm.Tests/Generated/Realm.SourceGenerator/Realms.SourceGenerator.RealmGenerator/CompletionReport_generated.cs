@@ -262,7 +262,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _remarks = null!;
+            private string? _remarks;
             public string? Remarks
             {
                 get => _remarks;

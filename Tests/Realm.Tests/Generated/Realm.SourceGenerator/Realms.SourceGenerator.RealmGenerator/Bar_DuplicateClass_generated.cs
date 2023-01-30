@@ -241,7 +241,7 @@ namespace Bar
         {
             public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;
 
-            private string? _stringValue = null!;
+            private string? _stringValue;
             public string? StringValue
             {
                 get => _stringValue;

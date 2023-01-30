@@ -282,7 +282,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.RecursiveBacklinksObject? _parent = null!;
+            private Realms.Tests.RecursiveBacklinksObject? _parent;
             public Realms.Tests.RecursiveBacklinksObject? Parent
             {
                 get => _parent;

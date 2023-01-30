@@ -272,7 +272,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;

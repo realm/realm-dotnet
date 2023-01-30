@@ -285,7 +285,7 @@ namespace Realms.SourceGenerator
          * </code>
          * If we would take the nullability of AllTypesClass on his own, this would be nullable. This can't be nullable though, because it can't be nullable in a list.
          */
-        public (string CompleteType, string InternalType) GetCorrectlyAnnotatedTypeName(bool isRequired)
+        public (string CompleteType, string InternalType, bool NeedsNullForgiving) GetCorrectlyAnnotatedTypeName(bool isRequired)
         {
             var internalTypeString = InternalType?.CompleteFullyQualifiedString;
             var nullableInternalTypeString = $"{internalTypeString}?";
@@ -294,7 +294,7 @@ namespace Realms.SourceGenerator
             {
                 if (NullableAnnotation == NullableAnnotation.None && (ScalarType == ScalarType.Data || ScalarType == ScalarType.String))
                 {
-                    return (CompleteFullyQualifiedString + "?", null);
+                    return (CompleteFullyQualifiedString + "?", null, false);
                 }
 
                 if (IsCollection && InternalType.NullableAnnotation == NullableAnnotation.None
@@ -302,9 +302,9 @@ namespace Realms.SourceGenerator
                 {
                     return CollectionType switch
                     {
-                        CollectionType.List => ($"System.Collections.Generic.IList<{nullableInternalTypeString}>", nullableInternalTypeString),
-                        CollectionType.Set => ($"System.Collections.Generic.ISet<{nullableInternalTypeString}>", nullableInternalTypeString),
-                        CollectionType.Dictionary => ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString),
+                        CollectionType.List => ($"System.Collections.Generic.IList<{nullableInternalTypeString}>", nullableInternalTypeString, true),
+                        CollectionType.Set => ($"System.Collections.Generic.ISet<{nullableInternalTypeString}>", nullableInternalTypeString, true),
+                        CollectionType.Dictionary => ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString, true),
                         _ => throw new NotImplementedException($"Collection type {CollectionType} with string or byte array argument is not supported yet"),
                     };
                 }
@@ -312,30 +312,23 @@ namespace Realms.SourceGenerator
 
             if (ScalarType == ScalarType.Object && NullableAnnotation == NullableAnnotation.None)
             {
-                return (CompleteFullyQualifiedString + "?", null);
+                return (CompleteFullyQualifiedString + "?", null, false);
             }
 
             if (CollectionType == CollectionType.Dictionary && InternalType.ScalarType == ScalarType.Object && InternalType.NullableAnnotation == NullableAnnotation.None)
             {
-                return ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString);
+                return ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString, true);
             }
 
-            return (CompleteFullyQualifiedString, internalTypeString);
-        }
+            var nullForgiving = false;
 
-        public bool NeedsNullForgiving()
-        {
-            if (NullableAnnotation == NullableAnnotation.Annotated)
+            if (NullableAnnotation != NullableAnnotation.Annotated &&
+                (ScalarType == ScalarType.Data || ScalarType == ScalarType.String || ScalarType == ScalarType.Object || IsCollection))
             {
-                return false;
+                nullForgiving = true;
             }
 
-            if (ScalarType == ScalarType.Data || ScalarType == ScalarType.String || ScalarType == ScalarType.Object || IsCollection)
-            {
-                return true;
-            }
-
-            return false;
+            return (CompleteFullyQualifiedString, internalTypeString, nullForgiving);
         }
     }
 

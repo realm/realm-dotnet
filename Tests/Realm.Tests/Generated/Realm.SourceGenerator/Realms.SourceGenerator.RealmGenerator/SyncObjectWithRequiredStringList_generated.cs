@@ -271,7 +271,7 @@ namespace Realms.Tests.Sync
         {
             public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;
 
-            private string? _id = null!;
+            private string? _id;
             public string? Id
             {
                 get => _id;

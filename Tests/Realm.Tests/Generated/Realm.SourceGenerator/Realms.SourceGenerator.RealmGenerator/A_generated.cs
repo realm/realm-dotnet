@@ -265,7 +265,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.B? _b = null!;
+            private Realms.Tests.Database.B? _b;
             public Realms.Tests.Database.B? B
             {
                 get => _b;

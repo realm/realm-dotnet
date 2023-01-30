@@ -263,7 +263,7 @@ namespace Realms.Tests.Sync
                 }
             }
 
-            private Realms.Tests.EmbeddedLevel1? _recursiveObject = null!;
+            private Realms.Tests.EmbeddedLevel1? _recursiveObject;
             public Realms.Tests.EmbeddedLevel1? RecursiveObject
             {
                 get => _recursiveObject;

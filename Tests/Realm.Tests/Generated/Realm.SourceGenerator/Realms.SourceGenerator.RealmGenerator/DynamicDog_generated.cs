@@ -281,7 +281,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -292,7 +292,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _color = null!;
+            private string? _color;
             public string? Color
             {
                 get => _color;

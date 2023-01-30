@@ -236,7 +236,7 @@ namespace SourceGeneratorAssemblyToProcess
         {
             public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;

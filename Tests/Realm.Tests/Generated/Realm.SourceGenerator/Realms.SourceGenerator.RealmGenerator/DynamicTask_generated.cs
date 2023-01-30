@@ -322,7 +322,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;
 
-            private string? _id = null!;
+            private string? _id;
             public string? Id
             {
                 get => _id;
@@ -333,7 +333,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private string? _summary = null!;
+            private string? _summary;
             public string? Summary
             {
                 get => _summary;
@@ -344,7 +344,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.CompletionReport? _completionReport = null!;
+            private Realms.Tests.Database.CompletionReport? _completionReport;
             public Realms.Tests.Database.CompletionReport? CompletionReport
             {
                 get => _completionReport;

@@ -261,7 +261,7 @@ namespace Realms.Tests
                 }
             }
 
-            private byte[]? _data = null!;
+            private byte[]? _data;
             public byte[]? Data
             {
                 get => _data;

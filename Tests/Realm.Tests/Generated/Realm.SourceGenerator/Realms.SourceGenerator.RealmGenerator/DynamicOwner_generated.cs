@@ -370,7 +370,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => DynamicOwner.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;
@@ -381,7 +381,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.DynamicDog? _topDog = null!;
+            private Realms.Tests.Database.DynamicDog? _topDog;
             public Realms.Tests.Database.DynamicDog? TopDog
             {
                 get => _topDog;

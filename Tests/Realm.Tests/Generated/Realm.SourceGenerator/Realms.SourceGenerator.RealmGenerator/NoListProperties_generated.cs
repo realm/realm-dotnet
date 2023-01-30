@@ -251,7 +251,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => NoListProperties.RealmSchema;
 
-            private string? _name = null!;
+            private string? _name;
             public string? Name
             {
                 get => _name;

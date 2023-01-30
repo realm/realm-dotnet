@@ -605,7 +605,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _stringProperty = null!;
+            private string? _stringProperty;
             public string? StringProperty
             {
                 get => _stringProperty;
@@ -616,7 +616,7 @@ namespace Realms.Tests
                 }
             }
 
-            private byte[]? _byteArrayProperty = null!;
+            private byte[]? _byteArrayProperty;
             public byte[]? ByteArrayProperty
             {
                 get => _byteArrayProperty;
@@ -638,7 +638,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.IntPropertyObject? _objectProperty = null!;
+            private Realms.Tests.IntPropertyObject? _objectProperty;
             public Realms.Tests.IntPropertyObject? ObjectProperty
             {
                 get => _objectProperty;
@@ -649,7 +649,7 @@ namespace Realms.Tests
                 }
             }
 
-            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObjectProperty = null!;
+            private Realms.Tests.EmbeddedIntPropertyObject? _embeddedObjectProperty;
             public Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObjectProperty
             {
                 get => _embeddedObjectProperty;

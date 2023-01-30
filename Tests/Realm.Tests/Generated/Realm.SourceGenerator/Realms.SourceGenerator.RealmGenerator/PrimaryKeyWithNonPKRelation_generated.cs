@@ -277,7 +277,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private string? _stringValue = null!;
+                private string? _stringValue;
                 public string? StringValue
                 {
                     get => _stringValue;
@@ -288,7 +288,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? _otherObject = null!;
+                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? _otherObject;
                 public Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? OtherObject
                 {
                     get => _otherObject;

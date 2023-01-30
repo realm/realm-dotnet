@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private Realms.Tests.Database.Level3? _level3 = null!;
+            private Realms.Tests.Database.Level3? _level3;
             public Realms.Tests.Database.Level3? Level3
             {
                 get => _level3;

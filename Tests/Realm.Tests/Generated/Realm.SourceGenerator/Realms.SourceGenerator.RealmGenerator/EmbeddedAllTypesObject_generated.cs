@@ -727,7 +727,7 @@ namespace Realms.Tests
                 }
             }
 
-            private string? _stringProperty = null!;
+            private string? _stringProperty;
             public string? StringProperty
             {
                 get => _stringProperty;
@@ -771,7 +771,7 @@ namespace Realms.Tests
                 }
             }
 
-            private byte[]? _byteArrayProperty = null!;
+            private byte[]? _byteArrayProperty;
             public byte[]? ByteArrayProperty
             {
                 get => _byteArrayProperty;

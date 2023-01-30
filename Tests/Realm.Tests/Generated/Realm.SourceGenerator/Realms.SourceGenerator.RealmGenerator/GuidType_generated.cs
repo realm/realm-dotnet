@@ -512,7 +512,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, System.Guid?> OptionalDict { get; } = new Dictionary<string, System.Guid?>();
 
-            private Realms.Tests.Database.GuidType? _linkProperty = null!;
+            private Realms.Tests.Database.GuidType? _linkProperty;
             public Realms.Tests.Database.GuidType? LinkProperty
             {
                 get => _linkProperty;
@@ -540,7 +540,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; } = new Dictionary<string, Realms.RealmValue>();
 
-            private Realms.Tests.Database.EmbeddedGuidType? _embeddedProperty = null!;
+            private Realms.Tests.Database.EmbeddedGuidType? _embeddedProperty;
             public Realms.Tests.Database.EmbeddedGuidType? EmbeddedProperty
             {
                 get => _embeddedProperty;

@@ -398,7 +398,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => TestNotificationObject.RealmSchema;
 
-            private string? _stringProperty = null!;
+            private string? _stringProperty;
             public string? StringProperty
             {
                 get => _stringProperty;
@@ -415,7 +415,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.TestNotificationObject?> DictionarySameType { get; } = new Dictionary<string, Realms.Tests.Database.TestNotificationObject?>();
 
-            private Realms.Tests.Database.TestNotificationObject? _linkSameType = null!;
+            private Realms.Tests.Database.TestNotificationObject? _linkSameType;
             public Realms.Tests.Database.TestNotificationObject? LinkSameType
             {
                 get => _linkSameType;
@@ -432,7 +432,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.Person?> DictionaryDifferentType { get; } = new Dictionary<string, Realms.Tests.Database.Person?>();
 
-            private Realms.Tests.Database.Person? _linkDifferentType = null!;
+            private Realms.Tests.Database.Person? _linkDifferentType;
             public Realms.Tests.Database.Person? LinkDifferentType
             {
                 get => _linkDifferentType;
