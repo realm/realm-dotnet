@@ -281,7 +281,7 @@ namespace Realms.SourceGenerator
          * public IList≪AllTypesClass≫ ObjectCollectionProperty
          * {
          *      get => GetListValue≪AllTypesClass≫("ObjectCollectionProperty")
-         * }
+         * }.
          * </code>
          * If we would take the nullability of AllTypesClass on his own, this would be nullable. This can't be nullable though, because it can't be nullable in a list.
          */
