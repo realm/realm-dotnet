@@ -184,7 +184,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 }}");
                     }
 
-                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name}!;");
+                    copyToRealm.AppendLine(@$"newAccessor.{property.Name} = oldAccessor.{property.Name};");
                 }
                 else if (property.TypeInfo.ScalarType == ScalarType.RealmValue)
                 {

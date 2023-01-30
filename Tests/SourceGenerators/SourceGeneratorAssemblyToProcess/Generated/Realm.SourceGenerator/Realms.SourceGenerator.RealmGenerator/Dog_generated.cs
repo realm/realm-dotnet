@@ -71,7 +71,7 @@ namespace SourceGeneratorPlayground
                 {
                     newAccessor.Realm.Add(oldAccessor.Owner, update);
                 }
-                newAccessor.Owner = oldAccessor.Owner!;
+                newAccessor.Owner = oldAccessor.Owner;
             }
 
             if (_propertyChanged != null)

@@ -72,7 +72,7 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Realm.Add(oldAccessor.OtherNamespaceObj, update);
                 }
-                newAccessor.OtherNamespaceObj = oldAccessor.OtherNamespaceObj!;
+                newAccessor.OtherNamespaceObj = oldAccessor.OtherNamespaceObj;
             }
 
             if (_propertyChanged != null)

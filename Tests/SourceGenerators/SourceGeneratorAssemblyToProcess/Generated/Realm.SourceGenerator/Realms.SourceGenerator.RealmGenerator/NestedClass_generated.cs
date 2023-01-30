@@ -73,7 +73,7 @@ namespace SourceGeneratorPlayground
                     {
                         newAccessor.Realm.Add(oldAccessor.Link, update);
                     }
-                    newAccessor.Link = oldAccessor.Link!;
+                    newAccessor.Link = oldAccessor.Link;
                 }
 
                 if (_propertyChanged != null)

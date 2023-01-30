@@ -76,7 +76,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.Level3, update);
                 }
-                newAccessor.Level3 = oldAccessor.Level3!;
+                newAccessor.Level3 = oldAccessor.Level3;
             }
 
             if (_propertyChanged != null)

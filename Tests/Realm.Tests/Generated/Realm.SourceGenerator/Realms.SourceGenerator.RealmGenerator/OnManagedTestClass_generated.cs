@@ -85,7 +85,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.RelatedObject, update);
                 }
-                newAccessor.RelatedObject = oldAccessor.RelatedObject!;
+                newAccessor.RelatedObject = oldAccessor.RelatedObject;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.RelatedCollection, newAccessor.RelatedCollection, update, skipDefaults);
             }
 

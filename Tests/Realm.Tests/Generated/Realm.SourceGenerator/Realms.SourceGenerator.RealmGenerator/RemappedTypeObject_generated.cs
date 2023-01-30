@@ -93,12 +93,12 @@ namespace Realms.Tests
                 {
                     newAccessor.Realm.Add(oldAccessor.NormalLink, update);
                 }
-                newAccessor.NormalLink = oldAccessor.NormalLink!;
+                newAccessor.NormalLink = oldAccessor.NormalLink;
                 if(oldAccessor.MappedLink != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.MappedLink, update);
                 }
-                newAccessor.MappedLink = oldAccessor.MappedLink!;
+                newAccessor.MappedLink = oldAccessor.MappedLink;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.NormalList, newAccessor.NormalList, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.MappedList, newAccessor.MappedList, update, skipDefaults);
             }

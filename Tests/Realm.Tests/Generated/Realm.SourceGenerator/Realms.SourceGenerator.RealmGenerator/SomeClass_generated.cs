@@ -71,7 +71,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.BacklinkObject, update);
                 }
-                newAccessor.BacklinkObject = oldAccessor.BacklinkObject!;
+                newAccessor.BacklinkObject = oldAccessor.BacklinkObject;
             }
 
             if (_propertyChanged != null)

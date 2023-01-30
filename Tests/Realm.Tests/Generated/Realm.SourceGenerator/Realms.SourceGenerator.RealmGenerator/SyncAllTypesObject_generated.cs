@@ -137,8 +137,8 @@ namespace Realms.Tests
                 {
                     newAccessor.Realm.Add(oldAccessor.ObjectProperty, update);
                 }
-                newAccessor.ObjectProperty = oldAccessor.ObjectProperty!;
-                newAccessor.EmbeddedObjectProperty = oldAccessor.EmbeddedObjectProperty!;
+                newAccessor.ObjectProperty = oldAccessor.ObjectProperty;
+                newAccessor.EmbeddedObjectProperty = oldAccessor.EmbeddedObjectProperty;
             }
 
             if (_propertyChanged != null)

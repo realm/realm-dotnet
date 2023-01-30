@@ -72,7 +72,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.C, update);
                 }
-                newAccessor.C = oldAccessor.C!;
+                newAccessor.C = oldAccessor.C;
             }
 
             if (_propertyChanged != null)

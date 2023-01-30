@@ -86,7 +86,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Summary = oldAccessor.Summary;
                 }
-                newAccessor.CompletionReport = oldAccessor.CompletionReport!;
+                newAccessor.CompletionReport = oldAccessor.CompletionReport;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SubTasks, newAccessor.SubTasks, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SubSubTasks, newAccessor.SubSubTasks, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SubTasksDictionary, newAccessor.SubTasksDictionary, update, skipDefaults);

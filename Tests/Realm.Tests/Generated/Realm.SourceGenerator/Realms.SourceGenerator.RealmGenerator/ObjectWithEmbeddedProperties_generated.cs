@@ -82,9 +82,9 @@ namespace Realms.Tests
                 {
                     newAccessor.PrimaryKey = oldAccessor.PrimaryKey;
                 }
-                newAccessor.AllTypesObject = oldAccessor.AllTypesObject!;
+                newAccessor.AllTypesObject = oldAccessor.AllTypesObject;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListOfAllTypesObjects, newAccessor.ListOfAllTypesObjects, update, skipDefaults);
-                newAccessor.RecursiveObject = oldAccessor.RecursiveObject!;
+                newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryOfAllTypesObjects, newAccessor.DictionaryOfAllTypesObjects, update, skipDefaults);
             }
 

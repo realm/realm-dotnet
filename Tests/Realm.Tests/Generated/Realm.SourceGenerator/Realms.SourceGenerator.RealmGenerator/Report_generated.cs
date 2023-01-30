@@ -85,7 +85,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.Parent, update);
                 }
-                newAccessor.Parent = oldAccessor.Parent!;
+                newAccessor.Parent = oldAccessor.Parent;
             }
 
             if (_propertyChanged != null)

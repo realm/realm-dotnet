@@ -191,7 +191,7 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Realm.Add(oldAccessor.ObjectProperty, update);
                 }
-                newAccessor.ObjectProperty = oldAccessor.ObjectProperty!;
+                newAccessor.ObjectProperty = oldAccessor.ObjectProperty;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ObjectCollectionProperty, newAccessor.ObjectCollectionProperty, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.IntCollectionProperty, newAccessor.IntCollectionProperty, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.NullableIntCollectionProperty, newAccessor.NullableIntCollectionProperty, update, skipDefaults);

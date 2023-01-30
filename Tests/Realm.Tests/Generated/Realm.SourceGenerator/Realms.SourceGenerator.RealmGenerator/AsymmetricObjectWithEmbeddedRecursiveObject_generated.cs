@@ -75,7 +75,7 @@ namespace Realms.Tests.Sync
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
-                newAccessor.RecursiveObject = oldAccessor.RecursiveObject!;
+                newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
             }
 
             if (_propertyChanged != null)

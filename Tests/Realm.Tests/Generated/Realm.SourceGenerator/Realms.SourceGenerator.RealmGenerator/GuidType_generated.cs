@@ -109,12 +109,12 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkProperty, update);
                 }
-                newAccessor.LinkProperty = oldAccessor.LinkProperty!;
+                newAccessor.LinkProperty = oldAccessor.LinkProperty;
                 newAccessor.MixedProperty = oldAccessor.MixedProperty;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.MixedList, newAccessor.MixedList, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.MixedSet, newAccessor.MixedSet, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.MixedDict, newAccessor.MixedDict, update, skipDefaults);
-                newAccessor.EmbeddedProperty = oldAccessor.EmbeddedProperty!;
+                newAccessor.EmbeddedProperty = oldAccessor.EmbeddedProperty;
             }
 
             if (_propertyChanged != null)

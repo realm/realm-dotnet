@@ -73,8 +73,8 @@ namespace Realms.Tests
                 {
                     newAccessor.Realm.Add(oldAccessor.StandaloneObject, update);
                 }
-                newAccessor.StandaloneObject = oldAccessor.StandaloneObject!;
-                newAccessor.EmbeddedObject = oldAccessor.EmbeddedObject!;
+                newAccessor.StandaloneObject = oldAccessor.StandaloneObject;
+                newAccessor.EmbeddedObject = oldAccessor.EmbeddedObject;
             }
 
             if (_propertyChanged != null)

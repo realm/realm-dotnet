@@ -82,7 +82,7 @@ namespace Realms.Tests
                 {
                     newAccessor.String = oldAccessor.String;
                 }
-                newAccessor.Child = oldAccessor.Child!;
+                newAccessor.Child = oldAccessor.Child;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.Children, newAccessor.Children, update, skipDefaults);
             }
 

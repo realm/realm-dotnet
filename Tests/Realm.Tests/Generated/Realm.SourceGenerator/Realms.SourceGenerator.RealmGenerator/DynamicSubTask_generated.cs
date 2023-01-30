@@ -80,7 +80,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Summary = oldAccessor.Summary;
                 }
-                newAccessor.CompletionReport = oldAccessor.CompletionReport!;
+                newAccessor.CompletionReport = oldAccessor.CompletionReport;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SubSubTasks, newAccessor.SubSubTasks, update, skipDefaults);
             }
 

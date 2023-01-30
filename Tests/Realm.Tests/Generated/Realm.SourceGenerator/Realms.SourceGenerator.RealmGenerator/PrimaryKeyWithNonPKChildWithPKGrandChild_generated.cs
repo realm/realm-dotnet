@@ -81,7 +81,7 @@ namespace Realms.Tests.Database
                     {
                         newAccessor.Realm.Add(oldAccessor.NonPKChild, update);
                     }
-                    newAccessor.NonPKChild = oldAccessor.NonPKChild!;
+                    newAccessor.NonPKChild = oldAccessor.NonPKChild;
                 }
 
                 if (_propertyChanged != null)

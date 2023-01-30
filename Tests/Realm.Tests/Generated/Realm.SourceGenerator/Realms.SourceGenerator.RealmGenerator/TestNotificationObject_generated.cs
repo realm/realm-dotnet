@@ -93,7 +93,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkSameType, update);
                 }
-                newAccessor.LinkSameType = oldAccessor.LinkSameType!;
+                newAccessor.LinkSameType = oldAccessor.LinkSameType;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListDifferentType, newAccessor.ListDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetDifferentType, newAccessor.SetDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryDifferentType, newAccessor.DictionaryDifferentType, update, skipDefaults);
@@ -101,7 +101,7 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
                 }
-                newAccessor.LinkDifferentType = oldAccessor.LinkDifferentType!;
+                newAccessor.LinkDifferentType = oldAccessor.LinkDifferentType;
             }
 
             if (_propertyChanged != null)
