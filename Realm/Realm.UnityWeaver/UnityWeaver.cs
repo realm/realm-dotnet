@@ -121,8 +121,7 @@ namespace RealmWeaver
                     {
                         if (package.name == UnityPackageName)
                         {
-                            var source = package.source;
-                            installMethod = source switch
+                            installMethod = package.source switch
                             {
                                 PackageSource.LocalTarball => "Manual",
                                 PackageSource.Registry => "NPM",
