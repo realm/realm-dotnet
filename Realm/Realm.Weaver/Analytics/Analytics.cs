@@ -179,9 +179,8 @@ namespace RealmWeaver
                     return default;
                 }
 
-                var isPrimitive = genericType.GenericArguments[genericArgIndex].IsPrimitive;
-
-                var keyToAdd = isPrimitive ? primitiveKey : referenceKey;
+                var keyToAdd = genericType.GenericArguments[genericArgIndex].IsPrimitive ?
+                    primitiveKey : referenceKey;
 
                 var shouldDelete = ContainsAllRelatedFeatures(keyToAdd, referenceKey, primitiveKey);
                 return (shouldDelete, keyToAdd);
@@ -501,7 +500,6 @@ namespace RealmWeaver
         {
             Disabled,
             DryRun,
-            Minimal,
             Full,
         }
     }
