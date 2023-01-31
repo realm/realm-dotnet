@@ -65,8 +65,8 @@ struct ManagedNotificationTokenContext {
     ObjectSchema* schema;
 };
 
-using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*);
-using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*);
+using ObjectNotificationCallbackT = void(void* managed_results, MarshallableCollectionChangeSet*, bool shallow);
+using DictionaryNotificationCallbackT = void(void* managed_results, MarshallableDictionaryChangeSet*, bool shallow);
 
 extern std::function<ObjectNotificationCallbackT> s_object_notification_callback;
 extern std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
@@ -106,9 +106,9 @@ static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed
     return result;
 }
 
-static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes) {
+static inline void handle_changes(ManagedNotificationTokenContext* context, CollectionChangeSet changes, bool shallow) {
     if (changes.empty()) {
-        s_object_notification_callback(context->managed_object, nullptr);
+        s_object_notification_callback(context->managed_object, nullptr, shallow);
     }
     else {
         auto deletions = get_indexes_vector(changes.deletions);
@@ -134,19 +134,19 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
             { properties.data(), properties.size() }
         };
 
-        s_object_notification_callback(context->managed_object, &marshallable_changes);
+        s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);
     }
 }
 
 
 template<typename Subscriber>
-inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber, ObjectSchema* schema = nullptr)
+inline ManagedNotificationTokenContext* subscribe_for_notifications(void* managed_object, Subscriber subscriber, bool shallow, ObjectSchema* schema = nullptr)
 {
     auto context = new ManagedNotificationTokenContext();
     context->managed_object = managed_object;
     context->schema = schema;
-    context->token = subscriber([context](CollectionChangeSet changes) {
-        handle_changes(context, changes);
+    context->token = subscriber([context, shallow](CollectionChangeSet changes) {
+        handle_changes(context, changes, shallow);
     });
 
     return context;

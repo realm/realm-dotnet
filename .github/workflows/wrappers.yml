@@ -468,7 +468,7 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
-    - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97
+    - uses: jpribyl/action-docker-layer-caching@c632825d12ec837065f49726ea27ddd40bcc7894
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build CentOS image

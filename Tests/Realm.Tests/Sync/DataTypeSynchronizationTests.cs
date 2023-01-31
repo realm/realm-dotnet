@@ -425,7 +425,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectAsync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2, "initial obj from 1 shows up in 2");
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -477,7 +477,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(dict1, Is.Empty);
                 Assert.That(dict2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            }, ensureNoSessionErrors: true, timeout: 60_000);
         }
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)

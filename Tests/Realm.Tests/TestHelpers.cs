@@ -345,6 +345,21 @@ namespace Realms.Tests
             }
         }
 
+        public static void DrainQueueAsync<T>(this ConcurrentQueue<StrongBox<T>> queue, Func<T, Task> action)
+        {
+            AsyncContext.Run(async () =>
+            {
+                await Task.Run(async () =>
+                {
+                    while (queue.TryDequeue(out var result))
+                    {
+                        await action(result.Value);
+                        result.Value = default;
+                    }
+                }).Timeout(20_000, detail: $"Failed to drain queue: {queue.GetType().Name}");
+            });
+        }
+
         public static IDisposable Subscribe<T>(this IObservable<T> observable, Action<T> onNext)
         {
             var observer = new FunctionObserver<T>(onNext);

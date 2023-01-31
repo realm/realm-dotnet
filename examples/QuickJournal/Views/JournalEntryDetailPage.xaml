@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="QuickJournal.Views.JournalEntryDetailPage"
+             xmlns:vm="clr-namespace:QuickJournal.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="{Binding Entry.Metadata.CreatedDate, StringFormat='{0:MMMM d yyyy}'}">
+    <ContentPage.Behaviors>
+            <toolkit:EventToCommandBehavior
+                EventName="Unloaded"
+                Command="{Binding PageClosedCommand}" />
+    </ContentPage.Behaviors>
+    <ContentPage.BindingContext>
+        <vm:JournalEntryDetailViewModel/>
+    </ContentPage.BindingContext>
+    <StackLayout Orientation="Vertical" Margin="15" Spacing="15">
+        <Entry Text="{Binding Entry.Title}" Placeholder="Title"  />
+        <Editor Text="{Binding Entry.Body}" Placeholder="Note" AutoSize="TextChanges"  />
+    </StackLayout>
+</ContentPage>
