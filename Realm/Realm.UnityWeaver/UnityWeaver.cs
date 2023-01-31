@@ -366,7 +366,7 @@ namespace RealmWeaver
                 BuildTarget.Android => OperatingSystem.Android,
                 BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
                 BuildTarget.tvOS => OperatingSystem.TvOs,
-                _ => OperatingSystem.Unknown(target.ToString()),
+                _ => Metric.Unknown(target.ToString()),
             };
         }
 
@@ -377,7 +377,7 @@ namespace RealmWeaver
                 RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
                 RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
                 RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
-                _ => OperatingSystem.Unknown(target.ToString()),
+                _ => Metric.Unknown(target.ToString()),
             };
         }
 
