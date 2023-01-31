@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0-tvos</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>true</ImplicitUsings>
+    <SupportedOSPlatformVersion>11.2</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <CreatePackage>false</CreatePackage>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <CreatePackage>false</CreatePackage>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj" />
+  </ItemGroup>
+    <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <NativeReference Include="..\..\wrappers\build\appletvos\$(Configuration)\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhone' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\..\wrappers\build\appletvsimulator\$(Configuration)\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnitLite">
+      <Version>3.13.2</Version>
+    </PackageReference>
+  </ItemGroup>
+</Project>

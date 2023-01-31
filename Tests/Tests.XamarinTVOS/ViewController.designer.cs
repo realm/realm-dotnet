@@ -16,13 +16,7 @@ namespace Realms.Tests.XamarinTVOS
 		UIKit.UIActivityIndicatorView ActivityIndicator { get; set; }
 
 		[Outlet]
-		UIKit.UIButton RunTestsButton { get; set; }
-
-		[Outlet]
 		UIKit.UITextView TestLogsView { get; set; }
-
-		[Action ("RunTests")]
-		partial void RunTests ();
 		
 		void ReleaseDesignerOutlets ()
 		{
@@ -34,11 +28,6 @@ namespace Realms.Tests.XamarinTVOS
 			if (TestLogsView != null) {
 				TestLogsView.Dispose ();
 				TestLogsView = null;
-			}
-
-			if (RunTestsButton != null) {
-				RunTestsButton.Dispose ();
-				RunTestsButton = null;
 			}
 		}
 	}
