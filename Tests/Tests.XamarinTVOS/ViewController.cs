@@ -27,12 +27,16 @@ using NUnit.Common;
 using System.Diagnostics;
 using System.Text;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Realms.Tests.XamarinTVOS
 {
     public partial class ViewController : UIViewController
     {
-        private Task testsTask;
+        private readonly ConcurrentQueue<(string Message, ColorStyle Style, bool NewLine)> _logsQueue = new();
+
+        private Task _testsTask;
+        private Task _streamLogsTask;
 
         public ViewController(IntPtr handle) : base(handle)
         {
@@ -44,6 +48,10 @@ namespace Realms.Tests.XamarinTVOS
             this.TestLogsView.Selectable = true;
             this.TestLogsView.PanGestureRecognizer.AllowedTouchTypes = new[] { new NSNumber((long)UITouchType.Indirect) };
 
+            if (_streamLogsTask == null)
+            {
+                _streamLogsTask = StreamLogs();
+            }
 
             if (TestHelpers.IsHeadlessRun(Application.Args))
             {
@@ -66,7 +74,7 @@ namespace Realms.Tests.XamarinTVOS
 
         private void RunTests()
         {
-            if (this.testsTask?.Status == TaskStatus.Running)
+            if (this._testsTask?.Status == TaskStatus.Running)
             {
                 return;
             }
@@ -75,25 +83,11 @@ namespace Realms.Tests.XamarinTVOS
             this.ActivityIndicator.StartAnimating();
             this.TestLogsView.AttributedText = new NSAttributedString();
 
-            this.testsTask = Task.Run(() =>
+            this._testsTask = Task.Run(() =>
             {
+                _logsQueue.Clear();
                 using var reader = new StringReader(string.Empty);
-                using var writer = new DebugWriter((msg, style, newLine) =>
-                {
-                    this.InvokeOnMainThread(() =>
-                    {
-                        var newText = this.TestLogsView.AttributedText.MutableCopy() as NSMutableAttributedString;
-                        newText.Append(GetString(msg, style));
-                        if (newLine)
-                        {
-                            newText.Append(new NSAttributedString("\n"));
-                        }
-                        this.TestLogsView.AttributedText = newText;
-
-                        var bottomOffset = new CoreGraphics.CGPoint(0, this.TestLogsView.ContentSize.Height - this.TestLogsView.Bounds.Size.Height + this.TestLogsView.ContentInset.Bottom);
-                        this.TestLogsView.SetContentOffset(bottomOffset, animated: false);
-                    });
-                });
+                using var writer = new DebugWriter((msg, style, newLine) => _logsQueue.Enqueue((msg, style, newLine)));
 
                 var autorun = new AutoRun(typeof(TestHelpers).Assembly);
 
@@ -112,6 +106,33 @@ namespace Realms.Tests.XamarinTVOS
                     }
                 });
             });
+        }
+
+        private async Task StreamLogs()
+        {
+            while (true)
+            {
+                var counter = 0;
+                while (_logsQueue.TryDequeue(out var item) && counter++ < 50)
+                {
+                    var newText = this.TestLogsView.AttributedText.MutableCopy() as NSMutableAttributedString;
+                    newText.Append(GetString(item.Message, item.Style));
+                    if (item.NewLine)
+                    {
+                        newText.Append(new NSAttributedString("\n"));
+                    }
+
+                    this.TestLogsView.AttributedText = newText;
+                }
+
+                if (counter > 0)
+                {
+                    var bottomOffset = this.TestLogsView.ContentSize.Height - this.TestLogsView.Bounds.Size.Height + this.TestLogsView.ContentInset.Bottom;
+                    this.TestLogsView.ContentOffset = new(0, bottomOffset);
+                }
+
+                await Task.Delay(10);
+            }
         }
 
         private static NSAttributedString GetString(string message, ColorStyle style)
@@ -155,7 +176,7 @@ namespace Realms.Tests.XamarinTVOS
                     textColor = UIColor.Red;
                     break;
                 case ColorStyle.Warning:
-                    underlineStyle = NSUnderlineStyle.Thick; ;
+                    underlineStyle = NSUnderlineStyle.Thick;
                     textColor = UIColor.Orange;
                     break;
             }
