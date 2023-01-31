@@ -363,8 +363,7 @@ namespace RealmWeaver
                     {
                         // when dealing with ThreadSafeReference
                         // TODO nikola: why?
-                        key = methodReference.ReturnType.DeclaringType.ToString();
-                        key = key.Replace("Realms.", string.Empty);
+                        key = methodReference.ReturnType.DeclaringType.Name;
                     }
 
                     if (!_apiAnalysisSetters.ContainsKey(key) && key == ".ctor")

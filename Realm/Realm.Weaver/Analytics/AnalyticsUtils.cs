@@ -106,12 +106,12 @@ namespace RealmWeaver
                 .FirstOrDefault();
 
         public static string GetHostOsName() =>
-            Environment.OSVersion.Platform switch
+            System.Environment.OSVersion.Platform switch
             {
                 PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => OperatingSystem.Windows,
                 PlatformID.MacOSX => OperatingSystem.MacOS,
                 PlatformID.Unix => OperatingSystem.Linux,
-                _ => Unknown(Environment.OSVersion.Platform.ToString())
+                _ => Unknown(System.Environment.OSVersion.Platform.ToString())
             };
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
