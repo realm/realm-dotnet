@@ -358,39 +358,27 @@ namespace RealmWeaver
         private static string GetTargetOSName(BuildTarget target)
         {
             // These have to match Analytics.GetConfig(FrameworkName)
-            switch (target)
+            return target switch
             {
-                case BuildTarget.StandaloneOSX:
-                    return OperatingSystem.MacOS;
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64:
-                    return OperatingSystem.Windows;
-                case BuildTarget.iOS:
-                    return OperatingSystem.Ios;
-                case BuildTarget.Android:
-                    return OperatingSystem.Android;
-                case BuildTarget.StandaloneLinux64:
-                    return OperatingSystem.Linux;
-                case BuildTarget.tvOS:
-                    return OperatingSystem.TvOs;
-                default:
-                    return "UNKNOWN";
-            }
+                BuildTarget.StandaloneOSX => OperatingSystem.MacOS,
+                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 => OperatingSystem.Windows,
+                BuildTarget.iOS => OperatingSystem.Ios,
+                BuildTarget.Android => OperatingSystem.Android,
+                BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
+                BuildTarget.tvOS => OperatingSystem.TvOs,
+                _ => Metric.Unknown(target.ToString()),
+            };
         }
 
         private static string GetTargetOSName(RuntimePlatform target)
         {
-            switch (target)
+            return target switch
             {
-                case RuntimePlatform.WindowsEditor:
-                    return OperatingSystem.Windows;
-                case RuntimePlatform.OSXEditor:
-                    return OperatingSystem.MacOS;
-                case RuntimePlatform.LinuxEditor:
-                    return OperatingSystem.Linux;
-                default:
-                    return "UNKOWN";
-            }
+                RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
+                RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
+                RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
+                _ => Metric.Unknown(target.ToString()),
+            };
         }
 
         private class UnityLogger : ILogger
