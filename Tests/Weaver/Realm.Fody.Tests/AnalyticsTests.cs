@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -86,7 +87,7 @@ namespace Analytics
                 }
                 catch (Exception e)
                 {
-                    Assert.Fail($"Exception: {e.Message}");
+                    Assert.Fail($"An error occurred validating {kvp.Key}: {e.Message}");
                 }
             }
         }
@@ -127,6 +128,20 @@ namespace Analytics
                 var payloadPath = Path.GetTempFileName();
                 WeaveRealm(assemblyPath, XElement.Parse($"<Realm AnalyticsCollection=\"{collectionType}\" AnalyticsLogPath=\"{payloadPath}\"/>"));
 
+                var counter = 0;
+                while (!File.Exists(payloadPath) || string.IsNullOrEmpty(File.ReadAllText(payloadPath)))
+                {
+                    if (counter++ > 5000)
+                    {
+                        throw new Exception($"File at {payloadPath} did not appear after 5000 ms");
+                    }
+
+                    Task.Delay(1).Wait();
+                }
+
+                // Make sure the file has been written completely.
+                Task.Delay(10).Wait();
+
                 return File.ReadAllText(payloadPath);
             }
             catch (Exception ex)
@@ -160,7 +175,7 @@ namespace Analytics
             // this, together with b) is only for debugging
             //process.StartInfo.RedirectStandardOutput = true;
             //process.StartInfo.RedirectStandardError = true;
-            
+
             process.Start();
 
             // *** b)

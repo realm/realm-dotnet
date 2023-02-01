@@ -18,9 +18,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -64,7 +62,7 @@ namespace RealmWeaver
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
         internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
 
-        private static readonly HashSet<string> _realmValueTypes = new HashSet<string>
+        private static readonly HashSet<string> _realmValueTypes = new()
         {
             CharTypeName,
             SingleTypeName,
@@ -124,7 +122,7 @@ namespace RealmWeaver
             NullableGuidTypeName
         };
 
-        private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
+        private static readonly HashSet<string> RealmPropertyAttributes = new()
         {
             "PrimaryKeyAttribute",
             "IndexedAttribute",
@@ -192,17 +190,7 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-            Task analyzeAPITask = null;
-            Analytics analytics = null;
-
-            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
-            {
-                analyzeAPITask = Task.Run(() =>
-                {
-                    analytics = new Analytics(analyticsConfig, _references, _logger);
-                    analytics.AnalyzeUserAssembly(_moduleDefinition);
-                });
-            }
+            var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
@@ -227,18 +215,10 @@ namespace RealmWeaver
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
-            var metricsResult = "Analytics disabled";
-            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
-            {
-                analyzeAPITask.Wait();
-                analytics.AnalyzeRealmClassProperties(weaveResults);
-                metricsResult = analytics.SubmitAnalytics().Result;
-            }
+            analytics.AnalyzeRealmClassProperties(weaveResults);
 
-            if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
-            {
-                File.WriteAllText(analyticsConfig.AnalyticsLogPath, metricsResult);
-            }
+            // Don't wait for submission
+            _ = analytics.SubmitAnalytics();
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful);
             if (failedResults.Any())
@@ -1347,7 +1327,7 @@ namespace RealmWeaver
             return userAssembly_DoNotNotify_Ctor;
         }
 
-        private struct MatchingType
+        private readonly struct MatchingType
         {
             public bool IsGenerated { get; }
 
