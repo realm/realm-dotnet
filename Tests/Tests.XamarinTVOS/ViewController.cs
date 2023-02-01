@@ -57,7 +57,6 @@ namespace Realms.Tests.XamarinTVOS
             if (TestHelpers.IsHeadlessRun(Application.Args))
             {
                 RunTests();
-                Environment.Exit(0);
             }
         }
 
@@ -83,13 +82,10 @@ namespace Realms.Tests.XamarinTVOS
             ActivityIndicator.Hidden = false;
             ActivityIndicator.StartAnimating();
 
+            _logs.Clear();
+
             _testsTask = Task.Run(() =>
             {
-                lock (_logs)
-                {
-                    _logs.Clear();
-                }
-
                 using var reader = new StringReader(string.Empty);
                 using var writer = new DebugWriter((msg, style, newLine) => _logsQueue.Enqueue((msg, style, newLine)));
            
@@ -207,11 +203,14 @@ namespace Realms.Tests.XamarinTVOS
 
         private class DebugWriter : ExtendedTextWriter
         {
+            // NUnit will hijack Console.Out so we need to capture it before we run the tests
+            private readonly TextWriter _oldConsole;
             private readonly Action<string, ColorStyle, bool> _logAction;
 
             public DebugWriter(Action<string, ColorStyle, bool> logAction)
             {
                 _logAction = logAction;
+                _oldConsole = Console.Out;
             }
 
             public override Encoding Encoding => Encoding.Unicode;
@@ -245,11 +244,11 @@ namespace Realms.Tests.XamarinTVOS
                 {
                     if (newLine)
                     {
-                        Console.WriteLine(value);
+                        _oldConsole.WriteLine(value);
                     }
                     else
                     {
-                        Console.Write(value);
+                        _oldConsole.Write(value);
                     }
                 }
 

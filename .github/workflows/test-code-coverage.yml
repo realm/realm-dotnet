@@ -58,25 +58,25 @@ jobs:
       with:
         name: wrappers-linux
         path: wrappers/build
-    - name: Fetch artifacts for apple-iOS-Device
+    - name: Fetch artifacts for iOS-Device
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-apple-iOS-Device
+        name: wrappers-iOS-Device
         path: wrappers/build
-    - name: Fetch artifacts for apple-iOS-Simulator
+    - name: Fetch artifacts for iOS-Simulator
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-apple-iOS-Simulator
+        name: wrappers-iOS-Simulator
         path: wrappers/build
-    - name: Fetch artifacts for apple-tvOS-Device
+    - name: Fetch artifacts for tvOS-Device
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-apple-tvOS-Device
+        name: wrappers-tvOS-Device
         path: wrappers/build
-    - name: Fetch artifacts for apple-tvOS-Simulator
+    - name: Fetch artifacts for tvOS-Simulator
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-apple-tvOS-Simulator
+        name: wrappers-tvOS-Simulator
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
       uses: actions/download-artifact@v3
@@ -133,7 +133,7 @@ jobs:
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
-    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+    - uses: realm/ci-actions/mdb-realm/deploy@0bae33b6fc2456a8a1318e60ad65af3cddf8983d
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}

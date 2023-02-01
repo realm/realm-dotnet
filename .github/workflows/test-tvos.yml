@@ -1,4 +1,4 @@
-name: test-uwp-managed
+name: test-tvos
 "on":
   workflow_call:
     inputs:
@@ -21,17 +21,13 @@ name: test-uwp-managed
         required: false
       AtlasPrivateKey:
         required: false
-      Base64_Encoded_Pfx:
-        required: true
-      Pfx_Password:
-        required: true
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
 jobs:
-  run-tests:
-    runs-on: windows-2019
-    name: UWP
+  test-xamarin:
+    runs-on: macos-latest
+    name: Xamarin.tvOS
     timeout-minutes: 45
     steps:
     - name: Checkout code
@@ -67,27 +63,25 @@ jobs:
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
         clusterSize: M10
-    - name: Import test certificate
-      run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $currentDirectory = Get-Location
-        [IO.File]::WriteAllBytes("${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx", $pfx_cert_byte)
-        certutil -f -p "${{ secrets.Pfx_Password }}" -importpfx my ${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx
-      shell: powershell
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
-    - name: Build Tests/Tests.UWP
-      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateKeyFile=${{ github.workspace }}\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx -p:PackageCertificatePassword="${{ secrets.Pfx_Password }}" -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+    - name: Build Tests/Tests.XamarinTVOS
+      run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=uwp-managed'
-      shell: powershell
+      uses: realm/ci-actions/run-ios-simulator@0bae33b6fc2456a8a1318e60ad65af3cddf8983d
+      with:
+        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
+        bundleId: io.realm.Tests-XamarinTVOS
+        iphoneToSimulate: Apple-TV-1080p
+        arguments: --headless --result=${{ github.workspace }}/TestResults.tvOS.xml --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=tvos
+        os: tvOS
     - name: Publish Unit Test Results
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
-        name: Results UWP Managed
-        path: ${{ env.TEST_RESULTS }}
+        name: Results Xamarin.tvOS
+        path: TestResults.tvOS.xml
         reporter: java-junit
         list-suites: failed
         list-tests: failed
