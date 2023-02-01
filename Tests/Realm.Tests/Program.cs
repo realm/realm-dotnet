@@ -31,15 +31,19 @@ namespace Realms.Tests
             Console.WriteLine($"Running on {RuntimeInformation.OSDescription} / CPU {RuntimeInformation.ProcessArchitecture} / Framework {RuntimeInformation.FrameworkDescription}");
 
             var autorun = new AutoRun(typeof(Program).GetTypeInfo().Assembly);
-            var arguments = Sync.SyncTestHelpers.ExtractBaasSettings(args);
+            IDisposable logger = null;
+            (args, logger) = Sync.SyncTestHelpers.SetLoggerFromArgs(args);
+            args = Sync.SyncTestHelpers.ExtractBaasSettings(args);
 
-            autorun.Execute(arguments);
+            autorun.Execute(args);
 
             var resultPath = args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty);
             if (!string.IsNullOrEmpty(resultPath))
             {
                 TestHelpers.TransformTestResults(resultPath);
             }
+
+            logger?.Dispose();
 
             return 0;
         }

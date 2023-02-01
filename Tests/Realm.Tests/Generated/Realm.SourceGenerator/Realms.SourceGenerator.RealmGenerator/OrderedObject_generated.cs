@@ -5,6 +5,7 @@ using Realms.Logging;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
+using static Realms.ChangeSet;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -16,8 +17,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database

@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Realms.Schema;
 
 namespace Realms
@@ -153,7 +154,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(System.Linq.IQueryable{T}, NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
         IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
     }
 }

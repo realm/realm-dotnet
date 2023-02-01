@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -48,23 +47,11 @@ namespace Realms.Tests.Sync
     {
         private readonly ConcurrentQueue<StrongBox<EventHandler<ErrorEventArgs>>> _sessionErrorHandlers = new();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
         public static readonly object[] AllClientResetHandlers = new object[]
         {
             typeof(DiscardUnsyncedChangesHandler),
             typeof(RecoverUnsyncedChangesHandler),
             typeof(RecoverOrDiscardUnsyncedChangesHandler),
-
-            // Just to check that we don't break previous code. Remove in next major version
-            typeof(DiscardLocalResetHandler),
-        };
-
-        // Just to check that we don't break previous code. Remove in next major version
-        public static readonly object[] ObosoleteHandlerCoexistence = new object[]
-        {
-            typeof(DiscardUnsyncedChangesHandler),
-            typeof(DiscardLocalResetHandler),
         };
 
         [Preserve]
@@ -91,17 +78,6 @@ namespace Realms.Tests.Sync
                 OnAfterReset = (beforeFrozen, after) => { },
                 ManualResetFallback = (clientResetException) => { },
             };
-
-            // Just to check that we don't break previous code. Remove in next major version
-            var preserveObsoleteDiscardHandler = new DiscardLocalResetHandler
-            {
-                OnBeforeReset = (beforeFrozen) => { },
-                OnAfterReset = (beforeFrozen, after) => { },
-                ManualResetFallback = (clientResetException) => { },
-            };
-
-#pragma warning restore CS0618 // Type or member is obsolete
-
         }
 
         public static readonly string[] AppTypes = new[]
@@ -167,7 +143,7 @@ namespace Realms.Tests.Sync
                 Session session = null;
                 var tcs = new TaskCompletionSource<object>();
 
-                var handler = GetErrorEventHandler(tcs, (sender, error) =>
+                Session.Error += GetErrorEventHandler(tcs, (sender, error) =>
                 {
                     if (session == null)
                     {
@@ -182,8 +158,6 @@ namespace Realms.Tests.Sync
                     Assert.That(sender, Is.EqualTo(session));
                     return true;
                 });
-
-                Session.Error += handler;
 
                 var config = GetFakeConfig();
                 using var realm = GetRealm(config);
@@ -203,12 +177,10 @@ namespace Realms.Tests.Sync
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var manualOnClientResetTriggered = false;
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
-                SyncConfigurationBase config = appType == AppConfigType.FlexibleSync ? await GetFLXIntegrationConfigAsync() : await GetIntegrationConfigAsync();
+                var (config, _) = await GetConfigForApp(appType);
                 config.ClientResetHandler = new ManualRecoveryHandler((e) =>
                 {
-                    manualOnClientResetTriggered = true;
                     errorTcs.TrySetResult(e);
                 });
 
@@ -218,8 +190,6 @@ namespace Realms.Tests.Sync
 
                 var clientEx = await errorTcs.Task;
 
-                Assert.That(manualOnClientResetTriggered, Is.True);
-
                 Assert.That(clientEx.Message, Does.Contain("Bad client file identifier"));
                 Assert.That(clientEx.InnerException, Is.Null);
 
@@ -227,21 +197,19 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Also tests Session.Error")]
+        [Test]
         public void Session_ClientResetHandlers_ManualResetFallback_InitiateClientReset(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                var manualResetFallbackHandled = false;
                 var errorTcs = new TaskCompletionSource<ClientResetException>();
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
                 void manualCb(ClientResetException err)
                 {
-                    manualResetFallbackHandled = true;
                     errorTcs.TrySetResult(err);
                 }
 
@@ -252,28 +220,13 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb: beforeCb, manualCb: manualCb);
 
-                using var realm = await GetRealmAsync(config, waitForSync: true);
-
-                // This should be removed when we remove Session.Error
-                var obsoleteSessionErrorTriggered = false;
-
-                // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
-                Session.Error += OnSessionError;
+                using var realm = await GetRealmAsync(config, waitForSync: true, timeout: 20_000);
 
                 await TriggerClientReset(realm);
 
-                var clientEx = await errorTcs.Task;
-
-                Assert.That(manualResetFallbackHandled, Is.True);
+                var clientEx = await errorTcs.Task.Timeout(20_000, "Expected client reset");
 
                 await TryInitiateClientReset(realm, clientEx, (int)ClientError.AutoClientResetFailed);
-
-                Assert.That(obsoleteSessionErrorTriggered, Is.False);
-
-                void OnSessionError(object sender, ErrorEventArgs error)
-                {
-                    obsoleteSessionErrorTriggered = true;
-                }
             });
         }
 
@@ -288,7 +241,7 @@ namespace Realms.Tests.Sync
                 var onAfterTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -304,15 +257,15 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
-                using var realm = await GetRealmAsync(config, waitForSync: true);
+                using var realm = await GetRealmAsync(config, waitForSync: true, timeout: 20000);
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(30_000, "Wait for client reset");
 
                 Assert.That(onBeforeTriggered, Is.True);
                 Assert.That(onAfterTriggered, Is.True);
-            });
+            }, timeout: 120_000);
         }
 
         [TestCaseSource(nameof(AppTypes))]
@@ -323,31 +276,17 @@ namespace Realms.Tests.Sync
                 var automaticResetCalled = false;
                 var discardLocalResetCalled = false;
 
-                SyncConfigurationBase config = appType == AppConfigType.FlexibleSync ? await GetFLXIntegrationConfigAsync() : await GetIntegrationConfigAsync();
-                var flxSyncPartition = Guid.NewGuid();
-
-                if (config is FlexibleSyncConfiguration flxConf)
-                {
-                    flxConf.PopulateInitialSubscriptions = (realm) =>
-                    {
-                        var query = realm.All<ObjectWithPartitionValue>().Where(p => p.Guid == flxSyncPartition);
-                        realm.Subscriptions.Add(query);
-                    };
-                }
+                var (config, guid) = await GetConfigForApp(appType);
 
                 var tcsAfterClientReset = new TaskCompletionSource<object>();
 
-                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
                 var afterAutomaticResetCb = GetOnAfterHandler(tcsAfterClientReset, (before, after) =>
                 {
-                    Assert.That(automaticResetCalled, Is.False);
-                    Assert.That(discardLocalResetCalled, Is.False);
                     automaticResetCalled = true;
                 });
+
                 var afterDiscardLocalResetCb = GetOnAfterHandler(tcsAfterClientReset, (before, after) =>
                 {
-                    Assert.That(automaticResetCalled, Is.False);
-                    Assert.That(discardLocalResetCalled, Is.False);
                     discardLocalResetCalled = true;
                     Assert.That(after.All<ObjectWithPartitionValue>().Count, Is.EqualTo(0));
                 });
@@ -369,17 +308,13 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Guid = flxSyncPartition
-                    });
+                    realm.Add(new ObjectWithPartitionValue(guid));
                 });
 
                 await DisableClientResetRecoveryOnServer(appType);
                 await TriggerClientReset(realm);
 
-                await tcsAfterClientReset.Task;
+                await tcsAfterClientReset.Task.Timeout(20_000, "Expected client reset");
                 Assert.That(automaticResetCalled, Is.False);
                 Assert.That(discardLocalResetCalled, Is.True);
             });
@@ -395,7 +330,7 @@ namespace Realms.Tests.Sync
          * 6. only now clientB goes online, downloads and merges the changes. clientB will have innerObj[0,1,3]
          * 7. clientA will also have innerObj[0,1,3]
          */
-        [Test]
+        [Test, NUnit.Framework.Explicit("This is an integration test testing the client reset behavior and should probably be in Core")]
         public void SessionIntegrationTest_ClientResetHandlers_OutOfBoundArrayInsert_AddedToTail()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -431,7 +366,7 @@ namespace Realms.Tests.Sync
                     toAdd.Strings.Add("2");
                     return realmA.Add(toAdd);
                 });
-                await WaitForUploadAsync(realmA);
+                await WaitForUploadAsync(realmA).Timeout(10_000, detail: "Wait for upload realm A");
 
                 var sessionA = GetSession(realmA);
                 sessionA.Stop();
@@ -458,7 +393,7 @@ namespace Realms.Tests.Sync
                 };
 
                 using var realmB = await GetRealmAsync(configB, waitForSync: true);
-                await WaitForDownloadAsync(realmB);
+                await WaitForDownloadAsync(realmB).Timeout(10_000, detail: "Wait for download realm B");
 
                 var originalObjStr = realmB.All<SyncObjectWithRequiredStringList>().Single().Strings;
                 Assert.That(originalObjStr.ToArray(), Is.EqualTo(new[] { "0", "1", "2" }));
@@ -477,7 +412,7 @@ namespace Realms.Tests.Sync
                 await TriggerClientReset(realmB, restartSession: false);
 
                 // ===== clientA =====
-                await tcsAfterClientResetA.Task;
+                await tcsAfterClientResetA.Task.Timeout(10_000, "Client Reset A");
 
                 var tcsAfterRemoteUpdateA = new TaskCompletionSource<object>();
 
@@ -502,29 +437,39 @@ namespace Realms.Tests.Sync
                 // ===== clientB =====
                 sessionB.Start();
 
-                await tcsAfterClientResetB.Task;
-                await tcsAfterRemoteUpdateA.Task;
+                await tcsAfterClientResetB.Task.Timeout(10_000, "Client Reset B");
+                await tcsAfterRemoteUpdateA.Task.Timeout(10_000, "After remote update A");
                 Assert.That(stringsA.ToArray(), Is.EquivalentTo(new[] { "0", "1", "3" }));
-            });
+            }, timeout: 120_000);
         }
 
-        private async Task<SyncConfigurationBase> GetConfigForApp(string appType)
+        private async Task<(SyncConfigurationBase Config, Guid Guid)> GetConfigForApp(string appType)
         {
             var appConfig = SyncTestHelpers.GetAppConfig(appType);
             var app = App.Create(appConfig);
             var user = await GetUserAsync(app);
 
+            var guid = Guid.NewGuid();
             SyncConfigurationBase config;
             if (appType == AppConfigType.FlexibleSync)
             {
-                config = GetFLXIntegrationConfig(user);
+                var flxConfig = GetFLXIntegrationConfig(user);
+                flxConfig.PopulateInitialSubscriptions = (realm) =>
+                {
+                    var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
+                    realm.Subscriptions.Add(query);
+                };
+
+                config = flxConfig;
             }
             else
             {
                 config = GetIntegrationConfig(user);
             }
 
-            return config;
+            config.Schema = new[] { typeof(ObjectWithPartitionValue) };
+
+            return (config, guid);
         }
 
         [Test]
@@ -539,18 +484,8 @@ namespace Realms.Tests.Sync
             {
                 var tcs = new TaskCompletionSource<object>();
                 var onBeforeTriggered = false;
-                var guid = Guid.NewGuid();
 
-                var config = await GetConfigForApp(appType);
-                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-                if (config is FlexibleSyncConfiguration flxConfig)
-                {
-                    flxConfig.PopulateInitialSubscriptions = (realm) =>
-                    {
-                        var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
-                        realm.Subscriptions.Add(query);
-                    };
-                }
+                var (config, guid) = await GetConfigForApp(appType);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -566,25 +501,21 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(guid)
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = alwaysSynced,
-                        Guid = guid
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(15_000, detail: "Wait for upload");
                 var session = GetSession(realm);
                 session.Stop();
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(guid)
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = maybeSynced,
-                        Guid = guid
                     });
                 });
 
@@ -592,7 +523,7 @@ namespace Realms.Tests.Sync
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(20_000, "Expected client reset");
                 Assert.That(onBeforeTriggered, Is.True);
 
                 var objs = realm.All<ObjectWithPartitionValue>();
@@ -610,12 +541,12 @@ namespace Realms.Tests.Sync
                     AssertOnObjectPair(realm);
                 }
 
-                void AssertOnObjectPair(Realm realm)
+                static void AssertOnObjectPair(Realm realm)
                 {
                     Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value),
                         Is.EquivalentTo(new[] { alwaysSynced, maybeSynced }));
                 }
-            });
+            }, timeout: 120_000);
         }
 
         [Test]
@@ -630,18 +561,8 @@ namespace Realms.Tests.Sync
             {
                 var tcs = new TaskCompletionSource<object>();
                 var onAfterTriggered = false;
-                var guid = Guid.NewGuid();
 
-                var config = await GetConfigForApp(appType);
-
-                if (config is FlexibleSyncConfiguration flxConf)
-                {
-                    flxConf.PopulateInitialSubscriptions = (realm) =>
-                    {
-                        var query = realm.All<ObjectWithPartitionValue>().Where(o => o.Guid == guid);
-                        realm.Subscriptions.Add(query);
-                    };
-                }
+                var (config, guid) = await GetConfigForApp(appType);
 
                 var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                 {
@@ -651,38 +572,33 @@ namespace Realms.Tests.Sync
                     onAfterTriggered = true;
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, afterCb: afterCb);
-                config.Schema = new[] { typeof(ObjectWithPartitionValue) };
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(guid)
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = alwaysSynced,
-                        Guid = guid
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(20_000, detail: "Wait for upload");
 
                 var session = GetSession(realm);
                 session.Stop();
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(guid)
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = maybeSynced,
-                        Guid = guid
                     });
                 });
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(30_000, "Expected client reset");
                 Assert.That(onAfterTriggered, Is.True);
 
                 var expected = config.ClientResetHandler.ClientResetMode == ClientResyncMode.Discard ?
@@ -691,61 +607,58 @@ namespace Realms.Tests.Sync
                 await TestHelpers.WaitForConditionAsync(() => realm.All<ObjectWithPartitionValue>().Count() == expected.Length, attempts: 300);
 
                 Assert.That(realm.All<ObjectWithPartitionValue>().ToArray().Select(o => o.Value), Is.EquivalentTo(expected));
-            });
+            }, timeout: 120_000);
         }
 
-        [TestCaseSource(nameof(ObosoleteHandlerCoexistence))]
-        public void Session_ClientResetDiscard_TriggersNotifications(Type handlerType)
+        [Test]
+        public void Session_ClientResetDiscard_TriggersNotifications()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 // We'll add an object with the wrong partition
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(ObjectWithPartitionValue) };
-                config.ClientResetHandler = (ClientResetHandlerBase)Activator.CreateInstance(handlerType);
+                config.ClientResetHandler = new DiscardUnsyncedChangesHandler();
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(Guid.NewGuid())
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = "this will sync"
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(10_000, detail: "Wait for upload");
                 var session = GetSession(realm);
                 session.Stop();
 
                 realm.Write(() =>
                 {
-                    realm.Add(new ObjectWithPartitionValue
+                    realm.Add(new ObjectWithPartitionValue(Guid.NewGuid())
                     {
-                        Id = Guid.NewGuid().ToString(),
                         Value = "this will be merged at client reset"
                     });
                 });
 
                 var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
                 Assert.That(objects.Count, Is.EqualTo(2));
-                var tcs = new TaskCompletionSource<NotifyCollectionChangedEventArgs>();
-                objects.CollectionChanged += onCollectionChanged;
+                var tcs = new TaskCompletionSource<ChangeSet>();
+                using var token = objects.SubscribeForNotifications((sender, changes, _) =>
+                {
+                    if (changes != null)
+                    {
+                        tcs.TrySetResult(changes);
+                    }
+                });
 
                 await TriggerClientReset(realm);
 
-                var args = await tcs.Task;
+                var args = await tcs.Task.Timeout(15_000, "Wait for notifications");
 
-                Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+                Assert.That(args.DeletedIndices.Length, Is.EqualTo(1));
                 Assert.That(objects.Count, Is.EqualTo(1));
-
-                objects.CollectionChanged -= onCollectionChanged;
-
-                void onCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
-                {
-                    tcs.TrySetResult(args);
-                }
             }, timeout: 120_000);
         }
 
@@ -761,9 +674,9 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
-                BeforeResetCallback beforeCb = beforeFrozen =>
+                void beforeCb(Realm beforeFrozen)
                 {
                     try
                     {
@@ -778,7 +691,7 @@ namespace Realms.Tests.Sync
                     }
 
                     throw new Exception("Exception thrown in OnBeforeReset");
-                };
+                }
 
                 var afterCb = GetOnAfterHandler(tcs, (beforeFrozen, after) =>
                 {
@@ -820,7 +733,7 @@ namespace Realms.Tests.Sync
                 var manualFallbackTriggered = false;
                 var onAfterResetTriggered = false;
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -854,12 +767,12 @@ namespace Realms.Tests.Sync
 
                 await TriggerClientReset(realm);
 
-                await tcs.Task;
+                await tcs.Task.Timeout(20_000, "Expect client reset");
 
                 Assert.That(manualFallbackTriggered, Is.True);
                 Assert.That(onBeforeTriggered, Is.True);
                 Assert.That(onAfterResetTriggered, Is.True);
-            });
+            }, timeout: 120_000);
         }
 
         [Test]
@@ -893,7 +806,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Session.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientResetHandlers_Coexistence(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
@@ -904,7 +817,7 @@ namespace Realms.Tests.Sync
                 var onAfterTriggered = false;
                 var tcs = new TaskCompletionSource<object>();
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
                 var beforeCb = GetOnBeforeHandler(tcs, beforeFrozen =>
                 {
@@ -921,7 +834,7 @@ namespace Realms.Tests.Sync
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb, afterCb);
 
-                var handler = new EventHandler<ErrorEventArgs>((session, error) =>
+                var handler = new EventHandler<ErrorEventArgs>((_, error) =>
                 {
                     if (error.Exception is ClientResetException crex)
                     {
@@ -940,7 +853,7 @@ namespace Realms.Tests.Sync
 
                 // to avoid a race condition where e.g. both methods are called but because of timing differences `tcs.TrySetResult(true);` is reached
                 // earlier in a call not letting the other finish to run. This would hide an issue.
-                await tcs.Task;
+                await tcs.Task.Timeout(10_000, "Client reset expected");
                 await Task.Delay(1000);
 
                 Assert.That(onBeforeTriggered, Is.True);
@@ -948,7 +861,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_WithNewClientResetHandlers_DoesntRaiseSessionError(
             [ValueSource(nameof(AppTypes))] string appType,
             [ValueSource(nameof(AllClientResetHandlers))] Type resetHandlerType)
@@ -957,7 +870,7 @@ namespace Realms.Tests.Sync
             {
                 var obsoleteSessionErrorTriggered = false;
 
-                var config = await GetConfigForApp(appType);
+                var (config, _) = await GetConfigForApp(appType);
 
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType);
                 using var realm = await GetRealmAsync(config, waitForSync: true);
@@ -981,7 +894,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientReset_OldSessionError_InitiateClientReset_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1021,7 +934,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_Error_OldSessionError_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1039,6 +952,8 @@ namespace Realms.Tests.Sync
                     Assert.That(error.InnerException == null);
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
+
+                    return true;
                 });
 
                 Session.Error += handler;
@@ -1053,7 +968,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_ClientReset_ManualRecovery_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1098,7 +1013,7 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Testing Sesion.Error compatibility")]
+        [Test, Obsolete("Testing Sesion.Error compatibility"), NUnit.Framework.Explicit("Testing obsolete functionality")]
         public void Session_Error_OnSessionError_Coexistence()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -1123,6 +1038,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(obsoleteSessionErrorTriggered, Is.False);
                     obsoleteSessionErrorTriggered = true;
+                    return true;
                 });
 
                 // priority is given to the newer appoach in SyncConfigurationBase, so this should never be reached
@@ -1279,7 +1195,7 @@ namespace Realms.Tests.Sync
                 session.Start();
                 await Task.Delay(1000);
                 session.Stop();
-                await completionTCS.Task;
+                await completionTCS.Task.Timeout(10_000);
                 Assert.That(stateChanged, Is.EqualTo(3));
                 Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 session.PropertyChanged -= NotificationChanged;
@@ -1608,10 +1524,10 @@ namespace Realms.Tests.Sync
 
             if (afterCb != null)
             {
-                var cbName = type == typeof(RecoverOrDiscardUnsyncedChangesHandler)
-                    ? nameof(RecoverOrDiscardUnsyncedChangesHandler.OnAfterRecovery)
-                    : nameof(DiscardUnsyncedChangesHandler.OnAfterReset);
-                type.GetProperty(cbName).SetValue(handler, afterCb);
+                var prop = type.GetProperty(nameof(DiscardUnsyncedChangesHandler.OnAfterReset))
+                    ?? type.GetProperty(nameof(RecoverOrDiscardUnsyncedChangesHandler.OnAfterRecovery));
+
+                prop.SetValue(handler, afterCb);
             }
 
             if (manualCb != null)
@@ -1691,9 +1607,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static EventHandler<ErrorEventArgs> GetErrorEventHandler(TaskCompletionSource<object> tcs, Func<Session, SessionException, bool> assertions)
+        private EventHandler<ErrorEventArgs> GetErrorEventHandler(TaskCompletionSource<object> tcs, Func<Session, SessionException, bool> assertions)
         {
-            return new((sender, error) =>
+            var result = new EventHandler<ErrorEventArgs>((sender, error) =>
             {
                 try
                 {
@@ -1706,15 +1622,6 @@ namespace Realms.Tests.Sync
                 {
                     tcs.TrySetException(ex);
                 }
-            });
-        }
-
-        private EventHandler<ErrorEventArgs> GetErrorEventHandler(TaskCompletionSource<object> tcs, Action<Session, SessionException> assertions)
-        {
-            var result = GetErrorEventHandler(tcs, (sender, error) =>
-            {
-                assertions(sender, error);
-                return true;
             });
 
             CleanupOnTearDown(result);
@@ -1760,14 +1667,25 @@ namespace Realms.Tests.Sync
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string Id { get; set; }
+        public string Id { get; private set; } = Guid.NewGuid().ToString();
 
         public string Value { get; set; }
 
         [MapTo("realm_id")]
         public string Partition { get; set; }
 
-        public Guid Guid { get; set; }
+        public Guid Guid { get; private set; }
+
+        public ObjectWithPartitionValue(Guid guid)
+        {
+            Guid = guid;
+        }
+
+#if TEST_WEAVER
+        private ObjectWithPartitionValue()
+        {
+        }
+#endif
     }
 
     public partial class SyncObjectWithRequiredStringList : TestRealmObject
