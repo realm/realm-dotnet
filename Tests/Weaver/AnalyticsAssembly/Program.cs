@@ -36,7 +36,7 @@ public class Program
 {
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
 
     }

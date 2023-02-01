@@ -33,7 +33,8 @@ namespace Realms
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
-        void NotifyCallbacks(TChangeset? changes);
+        /// <param name="shallow">Whether the changes are coming from a shallow notifier or not.</param>
+        void NotifyCallbacks(TChangeset? changes, bool shallow);
     }
 
     internal class NotificationToken<TCallback> : IDisposable

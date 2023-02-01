@@ -21,14 +21,17 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using static Baas.BaasClient.FunctionReturn;
 
 namespace Baas
 {
@@ -41,18 +44,46 @@ namespace Baas
         public const string FlexibleSync = "flx";
     }
 
+    public static class ArgumentHelper
+    {
+        public static (Dictionary<string, string> Extracted, string[] RemainingArgs) ExtractArguments(string[] args, params string[] toExtract)
+        {
+            if (args == null)
+            {
+                throw new ArgumentNullException(nameof(args));
+            }
+
+            var extracted = new Dictionary<string, string>();
+            var remainingArgs = new List<string>();
+            for (var i = 0; i < args.Length; i++)
+            {
+                if (!toExtract.Any(name => ExtractArg(i, name)))
+                {
+                    remainingArgs.Add(args[i]);
+                }
+            }
+
+            return (extracted, remainingArgs.ToArray());
+
+            bool ExtractArg(int index, string name)
+            {
+                var arg = args[index];
+                if (arg.StartsWith($"--{name}="))
+                {
+                    extracted[name] = arg.Replace($"--{name}=", string.Empty);
+                    return true;
+                }
+
+                return false;
+            }
+        }
+    }
+
     public class BaasClient
     {
         public class FunctionReturn
         {
-            [SuppressMessage("StyleCop.Analyzers.DocumentationRules", "SA1602:Enumeration items should be documented", Justification = "The enum is only used internally")]
-            public enum Result
-            {
-                success = 0,
-                failure = 1
-            }
-
-            public Result status { get; set; } = Result.failure;
+            public int Deleted { get; set; }
         }
 
         private const string ConfirmFuncSource =
@@ -83,12 +114,12 @@ namespace Baas
                   let dbName = '__realm_sync';
                   if (appId !== '')
                   {
-                    dbName = [dbName, '_', appId].join('');
+                    dbName += `_${appId}`;
                   }
                   const deletionResult = await mongodb.db(dbName).collection('clientfiles').deleteMany({ ownerId: userId });
                   console.log('Deleted documents: ' + deletionResult.deletedCount);
 
-                  return { status: deletionResult.deletedCount > 0 ? 'success' : 'failure' };
+                  return { Deleted: deletionResult.deletedCount };
                 } catch(err) {
                   throw 'Deletion failed: ' + err;
                 }
@@ -102,6 +133,7 @@ namespace Baas
         private readonly TextWriter _output;
 
         private string _groupId;
+        private string _refreshToken;
 
         private string _shortDifferentiator
         {
@@ -176,31 +208,18 @@ namespace Baas
                 throw new ArgumentNullException(nameof(args));
             }
 
-            var result = new List<string>();
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
-            string baasCluster = null;
-            string baasApiKey = null;
-            string baasPrivateApiKey = null;
-            string groupId = null;
-            string baseUrl = null;
-            string differentiator = null;
-
-            for (var i = 0; i < args.Length; i++)
-            {
-                if (!ExtractArg(i, "baasurl", ref baseUrl) &&
-                    !ExtractArg(i, "baascluster", ref baasCluster) &&
-                    !ExtractArg(i, "baasapikey", ref baasApiKey) &&
-                    !ExtractArg(i, "baasprivateapikey", ref baasPrivateApiKey) &&
-                    !ExtractArg(i, "baasprojectid", ref groupId) &&
-                    !ExtractArg(i, "baasdifferentiator", ref differentiator))
-                {
-                    result.Add(args[i]);
-                }
-            }
+            extracted.TryGetValue("baasurl", out var baseUrl);
+            extracted.TryGetValue("baascluster", out var baasCluster);
+            extracted.TryGetValue("baasapikey", out var baasApiKey);
+            extracted.TryGetValue("baasprivateapikey", out var baasPrivateApiKey);
+            extracted.TryGetValue("baasprojectid", out var groupId);
+            extracted.TryGetValue("baasdifferentiator", out var differentiator);
 
             if (string.IsNullOrEmpty(baseUrl))
             {
-                return (null, null, result.ToArray());
+                return (null, null, remaining);
             }
 
             var baseUri = new Uri(baseUrl);
@@ -209,26 +228,15 @@ namespace Baas
                 ? await Docker(baseUri, differentiator, output)
                 : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
 
-            return (client, baseUri, result.ToArray());
-
-            bool ExtractArg(int index, string name, ref string value)
-            {
-                var arg = args[index];
-                if (arg.StartsWith($"--{name}="))
-                {
-                    value = arg.Replace($"--{name}=", string.Empty);
-                    return true;
-                }
-
-                return false;
-            }
+            return (client, baseUri, remaining);
         }
 
         private async Task Authenticate(string provider, object credentials)
         {
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
 
-            _client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {authDoc["access_token"].AsString}");
+            _refreshToken = authDoc["refresh_token"].AsString;
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
         public async Task<IDictionary<string, BaasApp>> GetOrCreateApps()
@@ -386,7 +394,7 @@ namespace Baas
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
-            var (app, mongoServiceId) = await CreateAppCore(name, new
+            var (app, _) = await CreateAppCore(name, new
             {
                 flexible_sync = new
                 {
@@ -406,15 +414,9 @@ namespace Baas
                                 write = true,
                             }
                         }
-                    }
+                    },
                 }
             });
-
-            var basicAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "BasicAsymmetricObject");
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", basicAsymmetricObject);
-
-            var allTypesAsymmetricObject = Schemas.GenericFlxBaasRule(Differentiator, "AsymmetricObjectWithAllTypes");
-            await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", allTypesAsymmetricObject);
 
             await CreateFunction(app, "triggerClientResetOnSyncServer", TriggerClientResetOnSyncServerFuncSource, runAsSystem: true);
 
@@ -612,6 +614,24 @@ namespace Baas
             return;
         }
 
+        private async Task RefreshAccessTokenAsync()
+        {
+            using var message = new HttpRequestMessage(HttpMethod.Post, new Uri("auth/session", UriKind.Relative));
+            message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _refreshToken);
+
+            var response = await _client.SendAsync(message);
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Failed to refresh access token - {response.StatusCode}: {content}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var doc = BsonSerializer.Deserialize<BsonDocument>(json);
+
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", doc["access_token"].AsString);
+        }
+
         private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
 
         private Task<T> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
@@ -631,8 +651,14 @@ namespace Baas
             var response = await _client.SendAsync(message);
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Unauthorized && _refreshToken != null)
+                {
+                    await RefreshAccessTokenAsync();
+                    return await SendAsync<T>(method, relativePath, payload);
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
-                throw new Exception($"An error occurred while executing {method} {relativePath}: {content}");
+                throw new Exception($"An error ({response.StatusCode}) occurred while executing {method} {relativePath}: {content}");
             }
 
             response.EnsureSuccessStatusCode();

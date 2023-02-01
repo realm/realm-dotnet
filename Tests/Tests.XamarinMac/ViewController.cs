@@ -39,18 +39,26 @@ namespace Realms.Tests.XamarinMac
 
         private async Task RunTests()
         {
-            StateField.StringValue = "Running tests...";
-
-            await Task.Delay(50);
-
-            var result = new AutoRun(typeof(TestHelpers).Assembly).Execute(MainClass.Args.Where(a => a != "--headless").ToArray());
-
-            StateField.StringValue = $"Test run complete. Failed: {result}";
-
-            if (TestHelpers.IsHeadlessRun(MainClass.Args))
+            try
             {
-                var resultPath = TestHelpers.GetResultsPath(MainClass.Args);
-                TestHelpers.TransformTestResults(resultPath);
+                StateField.StringValue = "Running tests...";
+
+                await Task.Delay(50);
+
+                var result = new AutoRun(typeof(TestHelpers).Assembly).Execute(MainClass.Args.Where(a => a != "--headless").ToArray());
+
+                StateField.StringValue = $"Test run complete. Failed: {result}";
+
+                if (TestHelpers.IsHeadlessRun(MainClass.Args))
+                {
+                    var resultPath = TestHelpers.GetResultsPath(MainClass.Args);
+                    TestHelpers.TransformTestResults(resultPath);
+                    NSApplication.SharedApplication.Terminate(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while running the tests: {ex}");
                 NSApplication.SharedApplication.Terminate(this);
             }
         }

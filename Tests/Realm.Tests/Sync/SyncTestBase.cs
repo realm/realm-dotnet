@@ -22,7 +22,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using MongoDB.Bson;
-using Nito.AsyncEx;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 using static Realms.Tests.TestHelpers;
@@ -36,15 +35,7 @@ namespace Realms.Tests.Sync
         private readonly ConcurrentQueue<StrongBox<App>> _apps = new();
         private readonly ConcurrentQueue<StrongBox<string>> _clientResetAppsToRestore = new();
 
-        private App _defaultApp;
-
-        protected App DefaultApp
-        {
-            get
-            {
-                return _defaultApp ?? CreateApp();
-            }
-        }
+        protected App DefaultApp => CreateApp();
 
         protected App CreateApp(AppConfiguration config = null)
         {
@@ -52,11 +43,6 @@ namespace Realms.Tests.Sync
 
             var app = App.Create(config);
             _apps.Enqueue(app);
-
-            if (_defaultApp == null)
-            {
-                _defaultApp = app;
-            }
 
             return app;
         }
@@ -69,16 +55,7 @@ namespace Realms.Tests.Sync
 
             _apps.DrainQueue(app => app.Handle.ResetForTesting());
 
-            _defaultApp = null;
-
-            AsyncContext.Run(async () =>
-            {
-                while (_clientResetAppsToRestore.TryDequeue(out var appConfigType))
-                {
-                    await SyncTestHelpers.SetRecoveryModeOnServer(appConfigType.Value, enabled: true);
-                    appConfigType.Value = null;
-                }
-            });
+            _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }
 
         protected void CleanupOnTearDown(Session session)
@@ -114,12 +91,12 @@ namespace Realms.Tests.Sync
             await WaitForDownloadAsync(realm);
         }
 
-        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2)
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2, string message = null)
             where T : IRealmObject
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null);
+            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message);
         }
 
         protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
@@ -127,14 +104,14 @@ namespace Realms.Tests.Sync
             app ??= DefaultApp;
             username ??= SyncTestHelpers.GetVerifiedUsername();
             password ??= SyncTestHelpers.DefaultPassword;
-            await app.EmailPasswordAuth.RegisterUserAsync(username, password);
+            await app.EmailPasswordAuth.RegisterUserAsync(username, password).Timeout(10_000, detail: "Failed to register user");
             var credentials = Credentials.EmailPassword(username, password);
 
             for (var i = 0; i < 5; i++)
             {
                 try
                 {
-                    return await app.LogInAsync(credentials);
+                    return await app.LogInAsync(credentials).Timeout(10_000, "Failed to login user");
                 }
                 catch (AppException ex) when (ex.Message.Contains("confirmation required"))
                 {
@@ -154,10 +131,10 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
-        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null)
+        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
-            return await GetRealmAsync(config);
+            return await GetRealmAsync(config, timeout);
         }
 
         protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
@@ -223,9 +200,9 @@ namespace Realms.Tests.Sync
             _clientResetAppsToRestore.Enqueue(appConfigType);
         }
 
-        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, CancellationToken cancellationToken = default)
+        protected async Task<Realm> GetRealmAsync(SyncConfigurationBase config, bool waitForSync = false, int timeout = 10000, CancellationToken cancellationToken = default)
         {
-            var realm = await GetRealmAsync(config, cancellationToken);
+            var realm = await GetRealmAsync(config, timeout, cancellationToken);
             if (waitForSync)
             {
                 await WaitForUploadAsync(realm);
@@ -269,7 +246,7 @@ namespace Realms.Tests.Sync
                 session.Stop();
             }
 
-            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig);
+            await SyncTestHelpers.TriggerClientResetOnServer(syncConfig).Timeout(10_000, detail: "Trigger client reset");
 
             if (restartSession)
             {
