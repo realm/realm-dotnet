@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -112,7 +111,6 @@ namespace RealmWeaver
 
                 // check if it's the right signature, that is 2 params in total of which
                 // the second a bool and that it's set to true.
-                // TODO - Nikola: why?
                 [Feature.Add] = instruction =>
                     IsInRealmNamespace(instruction.Operand) &&
                     instruction.Operand is MethodSpecification methodSpecification &&
@@ -223,7 +221,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
-                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture;
+                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module);
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
@@ -232,7 +230,6 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = "FILL ME";
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = "FILL ME";
-                _realmEnvMetrics[UserEnvironment.IdeUsed] = "MSBuild";
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.TargetFrameworkVersion;
 
@@ -361,7 +358,6 @@ namespace RealmWeaver
                         methodReference.ReturnType.DeclaringType != null)
                     {
                         // when dealing with ThreadSafeReference
-                        // TODO nikola: why?
                         key = methodReference.ReturnType.DeclaringType.Name;
                     }
 

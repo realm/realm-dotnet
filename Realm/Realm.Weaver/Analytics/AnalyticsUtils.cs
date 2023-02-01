@@ -80,7 +80,7 @@ namespace RealmWeaver
             return BitConverter.ToString(sha256.ComputeHash(bytes));
         }
 
-        public static string GetHostCpuArchitecture => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
+        public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
 
         public static string GetTargetCpuArchitecture(ModuleDefinition module) => ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
 
