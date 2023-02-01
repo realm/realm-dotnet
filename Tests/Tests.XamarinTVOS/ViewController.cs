@@ -110,19 +110,19 @@ namespace Realms.Tests.XamarinTVOS
 
         private async Task StreamLogs()
         {
-            var indexPaths = new List<NSIndexPath>();
             var currentMsg = new NSMutableAttributedString();
 
             while (true)
             {
                 var counter = 0;
+
+                // Don't add more than 50 log messages before we give the UI a chance to catch up
                 while (_logsQueue.TryDequeue(out var item) && counter++ < 50)
                 {
                     currentMsg.Append(GetString(item.Message, item.Style));
 
                     if (item.NewLine)
                     {
-                        indexPaths.Add(NSIndexPath.FromRowSection(_logs.Count, 0));
                         _logs.Add(currentMsg);
                         currentMsg = new NSMutableAttributedString();
                     }
@@ -130,13 +130,13 @@ namespace Realms.Tests.XamarinTVOS
 
                 if (counter > 0)
                 {
+                    // Since we're doing a lot of updates, we do them without animations, otherwise the UI gets too jumpy
                     LogsTableView.ReloadData();
-                    //LogsTableView.InsertRows(indexPaths.ToArray(), UITableViewRowAnimation.None);
                     LogsTableView.ScrollToRow(NSIndexPath.FromRowSection(_logs.Count - 1, 0), UITableViewScrollPosition.Bottom, false);
-
-                    indexPaths.Clear();
                 }
 
+                // The delay is pretty arbitrary - it was chosen to get a good balance between the UI updating frequently
+                // and the log messages being somewhat readable
                 await Task.Delay(100);
             }
         }
@@ -188,7 +188,7 @@ namespace Realms.Tests.XamarinTVOS
             }
 
             var font = UIFont.GetMonospacedSystemFont(fontSize, fontWeight);
-            return new NSAttributedString(message, font: font, foregroundColor: textColor, underlineStyle:underlineStyle);
+            return new NSAttributedString(message, font, foregroundColor: textColor, underlineStyle: underlineStyle);
         }
 
         public nint RowsInSection(UITableView tableView, nint section) => _logs.Count;

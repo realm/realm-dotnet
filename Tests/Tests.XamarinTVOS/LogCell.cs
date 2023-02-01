@@ -22,15 +22,15 @@ using UIKit;
 
 namespace Realms.Tests.XamarinTVOS
 {
-	public partial class LogCell : UITableViewCell
-	{
-		public LogCell (IntPtr handle) : base (handle)
-		{
-		}
+    public partial class LogCell : UITableViewCell
+    {
+        public LogCell (IntPtr handle) : base (handle)
+        {
+        }
 
-		public void SetText(NSAttributedString text)
-		{
-			Label.AttributedText = text;
-		}
-	}
+        public void SetText(NSAttributedString text)
+        {
+            Label.AttributedText = text;
+        }
+    }
 }
