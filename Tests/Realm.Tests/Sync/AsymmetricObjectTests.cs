@@ -135,10 +135,10 @@ namespace Realms.Tests.Sync
                     });
                 });
 
-                await WaitForUploadAsync(realm);
+                await WaitForUploadAsync(realm).Timeout(10_000, detail: "Wait for upload");
 
                 var documents = await GetRemoteObjects<BasicAsymmetricObject>(
-                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike);
+                    flxConfig.User, nameof(BasicAsymmetricObject.PartitionLike), partitionLike).Timeout(10_000, "Get remote objects");
 
                 Assert.That(documents.Length, Is.EqualTo(4));
                 Assert.That(documents.Where(x => x.PartitionLike == partitionLike).Count, Is.EqualTo(4));

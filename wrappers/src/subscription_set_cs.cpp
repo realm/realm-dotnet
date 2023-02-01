@@ -332,6 +332,7 @@ REALM_EXPORT void realm_subscriptionset_wait_for_state(SharedSubscriptionSet& su
         subs->get_state_change_notification(SubscriptionSet::State::Complete)
             .get_async([task_completion_source, weak_subs=WeakSubscriptionSet(subs)](StatusWith<SubscriptionSet::State> status) mutable noexcept {
                 try {
+                    // Here -1 being sent to the wait callback indicates the wait was cancelled.
                     if (auto subs = weak_subs.lock()) {
                         subs->refresh();
                         if (status.is_ok()) {

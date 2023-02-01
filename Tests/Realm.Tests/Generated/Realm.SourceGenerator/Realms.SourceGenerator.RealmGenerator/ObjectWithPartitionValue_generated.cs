@@ -16,7 +16,6 @@ using static Realms.Tests.TestHelpers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -40,6 +39,8 @@ namespace Realms.Tests.Sync
             Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
             Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
         }.Build();
+
+        private ObjectWithPartitionValue() {}
 
         #region IRealmObject implementation
 
@@ -283,7 +284,7 @@ namespace Realms.Tests.Sync
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
 
-            private string _id;
+            private string _id = Guid.NewGuid().ToString();
             public string Id
             {
                 get => _id;

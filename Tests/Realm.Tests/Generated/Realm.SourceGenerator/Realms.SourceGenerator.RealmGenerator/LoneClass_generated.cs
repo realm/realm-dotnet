@@ -17,8 +17,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database

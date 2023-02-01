@@ -199,7 +199,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
         {
             if (changes.HasValue)
             {
