@@ -224,8 +224,8 @@ Realm/Realm.Unity/LICENSE.md
 Tests/Tests.Unity/Player_*
 Tests/Tests.Unity/*.csproj
 Tests/Tests.Unity/*.sln
-Realm/Realm.Unity/Runtime/iOS/realm-wrappers.xcframework/**/realm-wrappers.framework/realm-wrappers
-Realm/Realm.Unity/Runtime/iOS/realm-wrappers.xcframework/**/Info.plist
+Realm/Realm.Unity/Runtime/**/**/realm-wrappers.framework/realm-wrappers
+Realm/Realm.Unity/Runtime/**/**/Info.plist
 CodeResources
 Tests/Tests.Unity/Assets/Tests/Dependencies
 dashboard.charts
