@@ -64,6 +64,9 @@ namespace RealmWeaver
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
+        // The value of this field is modified by CI in the "prepare-release" action, so do not change its name.
+        private const string _coreVersion = "13.1.2";
+
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
 
@@ -243,7 +246,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
                 _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.TargetFramework);
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
-                _realmEnvMetrics[UserEnvironment.CoreVersion] = "FILL ME";
+                _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = "FILL ME";
                 _realmEnvMetrics[UserEnvironment.IdeUsed] = "FILL ME";
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
