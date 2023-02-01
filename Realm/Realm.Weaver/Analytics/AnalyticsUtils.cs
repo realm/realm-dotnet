@@ -226,7 +226,7 @@ namespace RealmWeaver
                 return Unknown();
             }
         }
-        
+
         private static string ConvertArchitectureToMetricsVersion(string arch)
         {
             if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)))
