@@ -209,15 +209,7 @@ namespace RealmWeaver
 
                     case PlatformID.Unix:
                     {
-                        try
-                        {
-                            id = File.ReadAllText("/etc/machine-id");
-                        }
-                        catch
-                        {
-                            id = string.Empty;
-                        }
-
+                        id = File.ReadAllText("/etc/machine-id");
                         break;
                     }
                 }
