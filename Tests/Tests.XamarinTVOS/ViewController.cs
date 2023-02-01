@@ -31,9 +31,10 @@ using System.Collections.Concurrent;
 
 namespace Realms.Tests.XamarinTVOS
 {
-    public partial class ViewController : UIViewController
+    public partial class ViewController : UIViewController, IUITableViewDataSource
     {
         private readonly ConcurrentQueue<(string Message, ColorStyle Style, bool NewLine)> _logsQueue = new();
+        private readonly List<NSAttributedString> _logs = new();
 
         private Task _testsTask;
         private Task _streamLogsTask;
@@ -45,8 +46,8 @@ namespace Realms.Tests.XamarinTVOS
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            this.TestLogsView.Selectable = true;
-            this.TestLogsView.PanGestureRecognizer.AllowedTouchTypes = new[] { new NSNumber((long)UITouchType.Indirect) };
+            LogsTableView.DataSource = this;
+            LogsTableView.PanGestureRecognizer.AllowedTouchTypes = new[] { new NSNumber((long)UITouchType.Indirect) };
 
             if (_streamLogsTask == null)
             {
@@ -74,21 +75,24 @@ namespace Realms.Tests.XamarinTVOS
 
         private void RunTests()
         {
-            if (this._testsTask?.Status == TaskStatus.Running)
+            if (_testsTask?.Status == TaskStatus.Running)
             {
                 return;
             }
 
-            this.ActivityIndicator.Hidden = false;
-            this.ActivityIndicator.StartAnimating();
-            this.TestLogsView.AttributedText = new NSAttributedString();
+            ActivityIndicator.Hidden = false;
+            ActivityIndicator.StartAnimating();
 
-            this._testsTask = Task.Run(() =>
+            _testsTask = Task.Run(() =>
             {
-                _logsQueue.Clear();
+                lock (_logs)
+                {
+                    _logs.Clear();
+                }
+
                 using var reader = new StringReader(string.Empty);
                 using var writer = new DebugWriter((msg, style, newLine) => _logsQueue.Enqueue((msg, style, newLine)));
-
+           
                 var autorun = new AutoRun(typeof(TestHelpers).Assembly);
 
                 autorun.Execute(Application.Args.Where(a => a != "--headless").ToArray(), writer, reader);
@@ -110,28 +114,34 @@ namespace Realms.Tests.XamarinTVOS
 
         private async Task StreamLogs()
         {
+            var indexPaths = new List<NSIndexPath>();
+            var currentMsg = new NSMutableAttributedString();
+
             while (true)
             {
                 var counter = 0;
                 while (_logsQueue.TryDequeue(out var item) && counter++ < 50)
                 {
-                    var newText = this.TestLogsView.AttributedText.MutableCopy() as NSMutableAttributedString;
-                    newText.Append(GetString(item.Message, item.Style));
+                    currentMsg.Append(GetString(item.Message, item.Style));
+
                     if (item.NewLine)
                     {
-                        newText.Append(new NSAttributedString("\n"));
+                        indexPaths.Add(NSIndexPath.FromRowSection(_logs.Count, 0));
+                        _logs.Add(currentMsg);
+                        currentMsg = new NSMutableAttributedString();
                     }
-
-                    this.TestLogsView.AttributedText = newText;
                 }
 
                 if (counter > 0)
                 {
-                    var bottomOffset = this.TestLogsView.ContentSize.Height - this.TestLogsView.Bounds.Size.Height + this.TestLogsView.ContentInset.Bottom;
-                    this.TestLogsView.ContentOffset = new(0, bottomOffset);
+                    LogsTableView.ReloadData();
+                    //LogsTableView.InsertRows(indexPaths.ToArray(), UITableViewRowAnimation.None);
+                    LogsTableView.ScrollToRow(NSIndexPath.FromRowSection(_logs.Count - 1, 0), UITableViewScrollPosition.Bottom, false);
+
+                    indexPaths.Clear();
                 }
 
-                await Task.Delay(10);
+                await Task.Delay(100);
             }
         }
 
@@ -183,6 +193,16 @@ namespace Realms.Tests.XamarinTVOS
 
             var font = UIFont.GetMonospacedSystemFont(fontSize, fontWeight);
             return new NSAttributedString(message, font: font, foregroundColor: textColor, underlineStyle:underlineStyle);
+        }
+
+        public nint RowsInSection(UITableView tableView, nint section) => _logs.Count;
+
+        public UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
+        {
+            var cell = tableView.DequeueReusableCell("LogCell", indexPath) as LogCell;
+            var text = _logs[indexPath.Row];
+            cell.SetText(text);
+            return cell;
         }
 
         private class DebugWriter : ExtendedTextWriter

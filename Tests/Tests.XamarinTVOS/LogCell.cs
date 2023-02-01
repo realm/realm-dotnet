@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2023 Realm Inc.
 //
@@ -16,20 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using Foundation;
 using UIKit;
 
 namespace Realms.Tests.XamarinTVOS
 {
-    public class Application
-    {
-        public static string[] Args { get; private set; }
+	public partial class LogCell : UITableViewCell
+	{
+		public LogCell (IntPtr handle) : base (handle)
+		{
+		}
 
-        // This is the main entry point of the application.
-        static void Main(string[] args)
-        {
-            Args = Sync.SyncTestHelpers.ExtractBaasSettings(args);
-            UIApplication.Main(args, null, typeof(AppDelegate));
-        }
-    }
+		public void SetText(NSAttributedString text)
+		{
+			Label.AttributedText = text;
+		}
+	}
 }
-

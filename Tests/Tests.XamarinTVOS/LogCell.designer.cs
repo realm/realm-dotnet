@@ -9,25 +9,17 @@ using System.CodeDom.Compiler;
 
 namespace Realms.Tests.XamarinTVOS
 {
-	[Register ("ViewController")]
-	partial class ViewController
+	[Register ("LogCell")]
+	partial class LogCell
 	{
 		[Outlet]
-		UIKit.UIActivityIndicatorView ActivityIndicator { get; set; }
-
-		[Outlet]
-		UIKit.UITableView LogsTableView { get; set; }
+		UIKit.UILabel Label { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
-			if (ActivityIndicator != null) {
-				ActivityIndicator.Dispose ();
-				ActivityIndicator = null;
-			}
-
-			if (LogsTableView != null) {
-				LogsTableView.Dispose ();
-				LogsTableView = null;
+			if (Label != null) {
+				Label.Dispose ();
+				Label = null;
 			}
 		}
 	}
