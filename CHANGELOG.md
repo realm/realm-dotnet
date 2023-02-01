@@ -13,6 +13,7 @@
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
 * Improved performance of `PropertyChanged` and `CollectionChanged` notifications. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
+* Added support for tvOS in Xamarin and Unity applications. (Issue [#3161](https://github.com/realm/realm-dotnet/issues/3161))
 
 ### Fixed
 * `ISet<RealmValue>` consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
