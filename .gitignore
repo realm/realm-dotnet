@@ -225,7 +225,7 @@ Tests/Tests.Unity/Player_*
 Tests/Tests.Unity/*.csproj
 Tests/Tests.Unity/*.sln
 Realm/Realm.Unity/Runtime/**/**/realm-wrappers.framework/realm-wrappers
-Realm/Realm.Unity/Runtime/**/**/Info.plist
+Realm/Realm.Unity/Runtime/**/**/realm-wrappers.framework/Info.plist
 CodeResources
 Tests/Tests.Unity/Assets/Tests/Dependencies
 dashboard.charts
