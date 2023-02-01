@@ -9,7 +9,7 @@
     <LangVersion>9.0</LangVersion>
     <AssemblyName>Realm.UnityWeaver</AssemblyName>
     <NoWarn>1701;1702;NU1701</NoWarn>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
