@@ -18,6 +18,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Fody;
 
 namespace RealmWeaver
@@ -30,9 +31,13 @@ namespace RealmWeaver
         protected readonly List<string> _errors = new List<string>();
         protected readonly List<string> _messages = new List<string>();
 
-        protected TestResult WeaveRealm(string assemblyPath)
+        protected TestResult WeaveRealm(string assemblyPath, XElement config = null)
         {
             var weaver = new realm::ModuleWeaver();
+            if (config != null)
+            {
+                weaver.Config = config;
+            }
 
             var result = weaver.ExecuteTestRun(assemblyPath, ignoreCodes: new[] { "80131869" }, runPeVerify: false);
             _warnings.AddRange(result.Warnings.Select(m => m.Text));

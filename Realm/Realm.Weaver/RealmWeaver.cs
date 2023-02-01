@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Mono.Cecil;
@@ -191,27 +192,17 @@ namespace RealmWeaver
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
-            var submitAnalytics = Task.Run(() =>
+            Task analyzeAPITask = null;
+            Analytics analytics = null;
+
+            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
             {
-                analyticsConfig.ModuleName = _moduleDefinition.Name;
-                analyticsConfig.IsUsingSync = IsUsingSync();
-                var analytics = new Analytics(analyticsConfig);
-                try
+                analyzeAPITask = Task.Run(() =>
                 {
-                    var payload = analytics.SubmitAnalytics();
-#if DEBUG
-                    _logger.Info($@"
-----------------------------------
-Analytics payload
-{payload}
-----------------------------------");
-#endif
-                }
-                catch (Exception e)
-                {
-                    _logger.Debug("Error submitting analytics: " + e.Message);
-                }
-            });
+                    analytics = new Analytics(analyticsConfig, _references, _logger);
+                    analytics.AnalyzeUserAssembly(_moduleDefinition);
+                });
+            }
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
@@ -236,7 +227,18 @@ Analytics payload
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
-            submitAnalytics.Wait();
+            var metricsResult = "Analytics disabled";
+            if (analyticsConfig.AnalyticsCollection != Analytics.AnalyticsCollection.Disabled)
+            {
+                analyzeAPITask.Wait();
+                analytics.AnalyzeRealmClassProperties(weaveResults);
+                metricsResult = analytics.SubmitAnalytics().Result;
+            }
+
+            if (!string.IsNullOrEmpty(analyticsConfig.AnalyticsLogPath))
+            {
+                File.WriteAllText(analyticsConfig.AnalyticsLogPath, metricsResult);
+            }
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful);
             if (failedResults.Any())

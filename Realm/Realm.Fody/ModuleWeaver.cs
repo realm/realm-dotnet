@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using Mono.Cecil.Cil;
 using RealmWeaver;
+using static RealmWeaver.Analytics;
 
 public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 {
@@ -55,66 +56,40 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Threading";
     }
 
-    private Analytics.Config GetAnalyticsConfig(FrameworkName frameworkName)
+    private Config GetAnalyticsConfig(FrameworkName frameworkName)
     {
-        var disableAnalytics = bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var result) && result;
-
-        var config = new Analytics.Config
+        AnalyticsCollection analyticsCollection;
+        if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
         {
-            Framework = "xamarin", // This is for backwards compatibility
-            RunAnalytics = !disableAnalytics,
-        };
-
-        config.FrameworkVersion = frameworkName.Version.ToString();
-        config.TargetOSName = GetTargetOSName(frameworkName);
-
-        // For backward compatibility
-        config.TargetOSVersion = frameworkName.Version.ToString();
-
-        return config;
-    }
-
-    private static string GetTargetOSName(FrameworkName frameworkName)
-    {
-        try
-        {
-            // Legacy reporting used ios, osx, and android
-            switch (frameworkName.Identifier)
-            {
-                case "Xamarin.iOS":
-                    return "ios";
-                case "Xamarin.Mac":
-                    return "osx";
-                case "MonoAndroid":
-                case "Mono.Android":
-                    return "android";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-android", StringComparison.OrdinalIgnoreCase))
-            {
-                return "android";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-ios", StringComparison.OrdinalIgnoreCase))
-            {
-                return "ios";
-            }
-
-            if (frameworkName.Identifier.EndsWith("-maccatalyst", StringComparison.OrdinalIgnoreCase))
-            {
-                return "osx";
-            }
+            analyticsCollection = collection;
         }
-        catch
+        else if (bool.TryParse(Config.Attribute("DisableAnalytics")?.Value, out var disableAnalytics))
+        {
+            analyticsCollection = disableAnalytics ? AnalyticsCollection.Disabled : AnalyticsCollection.Full;
+        }
+        else if (Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") != null || Environment.GetEnvironmentVariable("CI") != null)
+        {
+            analyticsCollection = AnalyticsCollection.Disabled;
+        }
+        else
         {
 #if DEBUG
-            // Make sure we get build failures and address the problem in debug,
-            // but don't fail users' builds because of that.
-            throw;
+            analyticsCollection = AnalyticsCollection.DryRun;
+#else
+            analyticsCollection = AnalyticsCollection.Full;
 #endif
         }
 
-        return "windows";
+        var config = new Config
+        {
+            AnalyticsCollection = analyticsCollection,
+            AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
+        };
+
+        config.TargetFramework = frameworkName.Identifier;
+        config.TargetFrameworkVersion = frameworkName.Version.ToString();
+        config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
+        return config;
     }
 
     void ILogger.Debug(string message)

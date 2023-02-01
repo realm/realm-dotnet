@@ -16,6 +16,7 @@
         <Compile Include="..\..\..\Realm\Realm\Attributes\GeneratedAttribute.cs" Link="Attributes\GeneratedAttribute.cs" />
         <Compile Include="..\..\..\Realm\Realm\DatabaseTypes\RealmValueType.cs" Link="RealmValueType.cs" />
         <Compile Include="..\..\..\Realm\Realm\Schema\PropertyType.cs" Link="PropertyType.cs" />
+        <Compile Include="..\..\..\Realm\Realm\Sync\GoogleCredentialType.cs" Link="GoogleCredentialType.cs" />
         <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />
         <Compile Include="..\..\..\Realm\Realm\Attributes\ExplicitAttribute.cs">
             <Link>Attributes\ExplicitAttribute.cs</Link>

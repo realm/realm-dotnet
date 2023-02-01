@@ -21,7 +21,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using RealmWeaver;
@@ -30,8 +29,6 @@ using static RealmWeaver.Weaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class PropertyDefinitionExtensions
 {
-    private static readonly Regex NullableRegex = new Regex("^System.Nullable`1<(?<typeName>.*)>$");
-
     private static readonly IEnumerable<string> _indexableTypes = new[]
     {
         StringTypeName,
@@ -113,11 +110,6 @@ internal static class PropertyDefinitionExtensions
     internal static bool IsNullable(this PropertyDefinition property)
     {
         return property.PropertyType.IsNullable();
-    }
-
-    internal static bool IsNullable(this TypeReference reference)
-    {
-        return NullableRegex.IsMatch(reference.FullName);
     }
 
     internal static bool IsSingle(this PropertyDefinition property)
@@ -203,20 +195,6 @@ internal static class PropertyDefinitionExtensions
         return _indexableTypes.Contains(propertyType.FullName);
     }
 
-    public static bool IsEmbeddedObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.BaseType.IsSameAs(references.EmbeddedObject);
-
-    public static bool IsRealmObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.BaseType.IsSameAs(references.RealmObject);
-
-    public static bool IsAsymmetricObjectInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.BaseType.IsSameAs(references.AsymmetricObject);
-
-    public static bool IsValidRealmObjectBaseInheritor(this TypeDefinition type, ImportedReferences references) =>
-        type.IsEmbeddedObjectInheritor(references) ||
-        type.IsRealmObjectInheritor(references) ||
-        type.IsAsymmetricObjectInheritor(references);
-
     public static bool ContainsRealmObject(this PropertyDefinition property, ImportedReferences references) =>
         property.PropertyType.Resolve().IsRealmObjectInheritor(references);
 
@@ -225,28 +203,6 @@ internal static class PropertyDefinitionExtensions
 
     public static bool ContainsEmbeddedObject(this PropertyDefinition property, ImportedReferences references) =>
         property.PropertyType.Resolve().IsEmbeddedObjectInheritor(references);
-
-    public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
-    {
-        var nullableMatch = NullableRegex.Match(type.FullName);
-        isNullable = nullableMatch.Success;
-        if (isNullable)
-        {
-            var genericType = (GenericInstanceType)type;
-            type = genericType.GenericArguments.Single();
-        }
-
-        var result = type.Name == "RealmInteger`1" && type.Namespace == "Realms";
-        if (result)
-        {
-            var genericType = (GenericInstanceType)type;
-            genericArgumentType = genericType.GenericArguments.Single();
-            return true;
-        }
-
-        genericArgumentType = null;
-        return false;
-    }
 
     private static bool IsType(this PropertyDefinition property, string name, string @namespace)
     {

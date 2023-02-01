@@ -16,24 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
+using System;
 
 namespace Realms
 {
-    public class Realm
+    public class RealmException : Exception
     {
-        public T Add<T>(T obj, bool update) where T : RealmObject
-        {
-            return default(T);
-        }
-
-        public RealmObject Add(RealmObject obj, bool update)
-        {
-            return null;
-        }
-
-        public void Add<T>(IEnumerable<T> objs, bool update = false)
-            where T : RealmObject
+        public RealmException(string message) : base(message)
         {
         }
     }

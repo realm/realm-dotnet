@@ -28,6 +28,8 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEngine;
+using static RealmWeaver.Analytics;
+using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
 {
@@ -209,12 +211,16 @@ namespace RealmWeaver
                     // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
 
-                    var analyticsConfig = new Analytics.Config
+                    var analyticsEnabled = AnalyticsEnabled &&
+                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
+                        Environment.GetEnvironmentVariable("CI") == null;
+
+                    var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
-                        FrameworkVersion = Application.unityVersion,
-                        Framework = framework,
-                        RunAnalytics = AnalyticsEnabled
+                        TargetFrameworkVersion = Application.unityVersion,
+                        TargetFramework = framework,
+                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
                     };
 
                     var results = weaver.Execute(analyticsConfig);
@@ -352,39 +358,27 @@ namespace RealmWeaver
         private static string GetTargetOSName(BuildTarget target)
         {
             // These have to match Analytics.GetConfig(FrameworkName)
-            switch (target)
+            return target switch
             {
-                case BuildTarget.StandaloneOSX:
-                    return "osx";
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64:
-                    return "windows";
-                case BuildTarget.iOS:
-                    return "ios";
-                case BuildTarget.Android:
-                    return "android";
-                case BuildTarget.StandaloneLinux64:
-                    return "linux";
-                case BuildTarget.tvOS:
-                    return "tvos";
-                default:
-                    return "UNKNOWN";
-            }
+                BuildTarget.StandaloneOSX => OperatingSystem.MacOS,
+                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 => OperatingSystem.Windows,
+                BuildTarget.iOS => OperatingSystem.Ios,
+                BuildTarget.Android => OperatingSystem.Android,
+                BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
+                BuildTarget.tvOS => OperatingSystem.TvOs,
+                _ => Metric.Unknown(target.ToString()),
+            };
         }
 
         private static string GetTargetOSName(RuntimePlatform target)
         {
-            switch (target)
+            return target switch
             {
-                case RuntimePlatform.WindowsEditor:
-                    return "windows";
-                case RuntimePlatform.OSXEditor:
-                    return "osx";
-                case RuntimePlatform.LinuxEditor:
-                    return "linux";
-                default:
-                    return "UNKOWN";
-            }
+                RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
+                RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
+                RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
+                _ => Metric.Unknown(target.ToString()),
+            };
         }
 
         private class UnityLogger : ILogger

@@ -43,11 +43,11 @@ namespace Realms
     {
     }
 
-    public interface IRealmObject: IRealmObjectBase
-    { 
+    public interface IRealmObject : IRealmObjectBase
+    {
     }
 
-    public interface IEmbeddedObject: IRealmObjectBase
+    public interface IEmbeddedObject : IRealmObjectBase
     {
     }
 

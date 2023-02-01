@@ -11,7 +11,7 @@
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn),1591, NU5100, NU5128</NoWarn>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <IncludeSymbols>False</IncludeSymbols>
   </PropertyGroup>
   <ItemGroup Label="References">

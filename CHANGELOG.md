@@ -30,6 +30,7 @@
 
 ### Internal
 * Using Core 13.2.0.
+* Overhauled and extended the metrics collection of the SDK to better drive future development effort. (PR [#3080](https://github.com/realm/realm-dotnet/pull/3080))
 * Updated `DynamicRealmObjectHelper.TryGetPrimaryKeyValue` not to use reflection. (Issue [#3166](https://github.com/realm/realm-dotnet/issues/3166))
 * Fixed UWP tests workflow when running a debug build. (Issue [#3030](https://github.com/realm/realm-dotnet/issues/3030))
 
