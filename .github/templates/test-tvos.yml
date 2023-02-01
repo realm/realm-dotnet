@@ -19,6 +19,6 @@ jobs:
           appPath: #@ "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/" + configuration + "/Tests.XamarinTVOS.app"
           bundleId: 'io.realm.Tests-XamarinTVOS'
           iphoneToSimulate: 'Apple-TV-1080p'
-          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.tvOS.xml" + baasTestArgs("tvos")
+          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.tvOS.xml --labels=All" + baasTestArgs("tvos")
           os: 'tvOS'
       - #@ publishTestsResults("TestResults.tvOS.xml", "Xamarin.tvOS")
