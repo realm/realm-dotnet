@@ -12,6 +12,44 @@
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
+* Enhanced support for nullable reference types in the model definition for source generated classes. This allows to use realm models as usual when nullable context is active, and removes the need to use of the `Required` attribute to indicate required properties, as this information will be inferred directly from the nullability status. There are some considerations regarding the nullability of properties that link to realm object:
+  - Properties that link to a single realm object are inherently nullable, and thus the type must be defined as nullable. 
+  - List, Sets and Backlinks cannot contain null objects, and thus the type parameter must be non-nullable.
+  - Dictionaries can contain null values, and thus the type parameter must be nullable.
+
+  Defining the properties with a different nullability annotation than what has been outlined here will raise a diagnostic error. For instance:
+  ```cs
+  public partial class Person: IRealmObject
+  {
+      //Single values
+      public Dog? MyDog { get; set; } //Correct
+
+      public Dog MyDog { get; set; } //Error
+
+      //List
+      public IList<Dog> MyDogs { get; } //Correct
+
+      public IList<Dog?> MyDogs { get; } //Error
+
+      //Set
+      public ISet<Dog> MyDogs { get; } //Correct
+
+      public ISet<Dog?> MyDogs { get; } //Error
+
+      //Dictionary
+      public IDictionary<string, Dog?> MyDogs { get; } //Correct
+
+      public IDictionary<string, Dog> MyDogs { get; } //Error
+
+      //Backlink
+      [Realms.Backlink("...")]
+      public IQueryable<Dog> MyDogs { get; } //Correct
+
+      [Realms.Backlink("...")]
+      public IQueryable<Dog?> MyDogs { get; } //Error
+  }
+  ```
+  We realise that some developers would still prefer to have more freedom in the nullability annotation of such properties, and it is possible to do so by setting  `realm.ignore_objects_nullability = true` in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). If this is enabled, all the previous properties will be considered valid, and the nullability annotations for properties linking to objects will be ignored.
 * Improved performance of `PropertyChanged` and `CollectionChanged` notifications. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
 
 ### Fixed
