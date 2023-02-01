@@ -174,52 +174,65 @@ namespace RealmWeaver
         {
             var id = string.Empty;
             var currentOs = System.Environment.OSVersion.Platform;
-            Match match = null;
             try
             {
-                if (currentOs == PlatformID.Win32S || currentOs == PlatformID.Win32Windows ||
-                    currentOs == PlatformID.Win32NT || currentOs == PlatformID.WinCE)
+                switch (currentOs)
                 {
-                    var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                    var regex = new Regex("^\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
-                    match = regex.Match(machineIdToParse);
-                }
-                else if (currentOs == PlatformID.MacOSX)
-                {
-                    var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                    var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                    match = regex.Match(machineIdToParse);
-                }
-                else if (currentOs == PlatformID.Unix)
-                {
-                    try
+                    case PlatformID.Win32S or PlatformID.Win32Windows or
+                        PlatformID.Win32NT or PlatformID.WinCE:
                     {
-                        id = File.ReadAllText("/etc/machine-id");
-                    }
-                    catch
-                    {
-                        id = string.Empty;
-                    }
-                }
+                        var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                        var regex = new Regex("^\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                        var match = regex.Match(machineIdToParse);
 
-                if (match?.Groups.Count > 1)
-                {
-                    id = match.Groups[1].Value;
+                        if (match?.Groups.Count > 1)
+                        {
+                            id = match.Groups[1].Value;
+                        }
+
+                        break;
+                    }
+
+                    case PlatformID.MacOSX:
+                    {
+                        var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                        var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                        var match = regex.Match(machineIdToParse);
+
+                        if (match?.Groups.Count > 1)
+                        {
+                            id = match.Groups[1].Value;
+                        }
+
+                        break;
+                    }
+
+                    case PlatformID.Unix:
+                    {
+                        try
+                        {
+                            id = File.ReadAllText("/etc/machine-id");
+                        }
+                        catch
+                        {
+                            id = string.Empty;
+                        }
+
+                        break;
+                    }
                 }
 
                 if (id.Length == 0)
                 {
                     return Unknown();
                 }
-                else
-                {
-                    var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
-                    var byteId = Encoding.ASCII.GetBytes(id);
-                    var saltedId = new byte[byteId.Length + salt.Length];
-                    Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
-                    Buffer.BlockCopy(salt, 0, saltedId, byteId.Length, salt.Length);
-                    return SHA256Hash(saltedId);
-                }
+
+                var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
+                var byteId = Encoding.ASCII.GetBytes(id);
+                var saltedId = new byte[byteId.Length + salt.Length];
+                Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
+                Buffer.BlockCopy(salt, 0, saltedId, byteId.Length, salt.Length);
+                return SHA256Hash(saltedId);
             }
             catch
             {
