@@ -102,7 +102,7 @@ env:
 #@ else:
 - #@ template.replace(fetchPackageArtifacts())
 #@ end
-- uses: realm/ci-actions/mdb-realm/deploy@f39edd6e40996ee9bab7462fbecd956494cb229e
+- uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
   if: ${{ inputs.realmUrl }}
   with:
     projectId: ${{ secrets.AtlasProjectId}}

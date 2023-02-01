@@ -29,7 +29,7 @@ jobs:
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
-    - uses: realm/ci-actions/mdb-realm/cleanup@f39edd6e40996ee9bab7462fbecd956494cb229e
+    - uses: realm/ci-actions/mdb-realm/cleanup@187889c026eb16673dba3152906a46ed87406e30
       with:
         projectId: ${{ secrets.AtlasProjectId}}
         realmUrl: ${{ inputs.BaseUrl }}

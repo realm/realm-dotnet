@@ -8,12 +8,12 @@
 #@ actionDownloadArtifact = "actions/download-artifact@v3"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
 #@ actionSetupDotnet = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
-#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@f39edd6e40996ee9bab7462fbecd956494cb229e"
+#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30"
 #@ actionCodeQLInit = "github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31"
 #@ actionCodeQLAnalyze = "github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31"
 #@ actionSetupNode = "actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1-node16"
-#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@f39edd6e40996ee9bab7462fbecd956494cb229e"
+#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@187889c026eb16673dba3152906a46ed87406e30"
 #@ actionSetupXcode = "maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]

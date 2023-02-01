@@ -54,7 +54,7 @@ jobs:
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@f39edd6e40996ee9bab7462fbecd956494cb229e
+    - uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -69,7 +69,7 @@ jobs:
     - name: Build Tests/Tests.XamarinTVOS
       run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@f39edd6e40996ee9bab7462fbecd956494cb229e
+      uses: realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30
       with:
         appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
         bundleId: io.realm.Tests-XamarinTVOS
