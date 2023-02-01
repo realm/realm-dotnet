@@ -98,8 +98,6 @@ namespace RealmWeaver
 
             _classAnalysisSetters = new()
             {
-                [Feature.IEmbeddedObject] = member => (true, Feature.IEmbeddedObject),
-                [Feature.IAsymmetricObject] = member => (true, Feature.IAsymmetricObject),
                 ["Class"] = member =>
                     member is PropertyDefinition property &&
                     (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
