@@ -113,7 +113,7 @@ namespace RealmWeaver
         {
             if (_listRequest.IsCompleted)
             {
-                var installMethod = "Unknown";
+                var installMethod = Metric.Unknown();
 
                 if (_listRequest.Status == StatusCode.Success)
                 {
@@ -125,7 +125,7 @@ namespace RealmWeaver
                             {
                                 PackageSource.LocalTarball => "Manual",
                                 PackageSource.Registry => "NPM",
-                                _ => installMethod,
+                                _ => Metric.Unknown(package.source.ToString()),
                             };
 
                             break;
