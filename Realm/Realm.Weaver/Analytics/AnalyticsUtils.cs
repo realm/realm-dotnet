@@ -182,7 +182,7 @@ namespace RealmWeaver
                         PlatformID.Win32NT or PlatformID.WinCE:
                     {
                         var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                        var regex = new Regex("^\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                        var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
                         var match = regex.Match(machineIdToParse);
 
                         if (match?.Groups.Count > 1)
@@ -196,7 +196,7 @@ namespace RealmWeaver
                     case PlatformID.MacOSX:
                     {
                         var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                        var regex = new Regex("^.*IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                        var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
                         var match = regex.Match(machineIdToParse);
 
                         if (match?.Groups.Count > 1)
@@ -219,6 +219,8 @@ namespace RealmWeaver
                     return Unknown();
                 }
 
+                // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
+                // unrelated projects that use the same mechanics to obtain a machine's ID
                 var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
                 var byteId = Encoding.ASCII.GetBytes(id);
                 var saltedId = new byte[byteId.Length + salt.Length];
