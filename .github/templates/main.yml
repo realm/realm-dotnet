@@ -54,7 +54,7 @@ jobs:
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net6.0\"]"))
+  _: #@ template.replace(runNetCoreTests("[\"net6.0\", \"net7.0\"]"))
   _: #@ template.replace(runTests("macOS"))
   _: #@ template.replace(runTests("iOS"))
   _: #@ template.replace(runTests("tvOS", runSyncTests = False))
