@@ -27,6 +27,8 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static RealmWeaver.Analytics;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
@@ -41,6 +43,7 @@ namespace RealmWeaver
 
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
+        private const string UnityPackageName = "io.realm.unity";
 
         private static bool _analyticsEnabled;
 
@@ -56,6 +59,8 @@ namespace RealmWeaver
         }
 
         private static bool _weaveEditorAssemblies;
+        private static ListRequest _listRequest;
+        private static TaskCompletionSource<string> _installMethodTask;
 
         private static bool WeaveEditorAssemblies
         {
@@ -76,6 +81,10 @@ namespace RealmWeaver
             // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
             EditorApplication.delayCall += () =>
             {
+                _listRequest = Client.List();
+                _installMethodTask = new TaskCompletionSource<string>();
+                EditorApplication.update += OnEditorApplicationUpdate;
+
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
                 WeaverAssemblyResolver.ApplicationDataPath = Application.dataPath;
@@ -98,6 +107,35 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
             };
+        }
+
+        private static void OnEditorApplicationUpdate()
+        {
+            if (_listRequest.IsCompleted)
+            {
+                var installMethod = Metric.Unknown();
+
+                if (_listRequest.Status == StatusCode.Success)
+                {
+                    foreach (var package in _listRequest.Result)
+                    {
+                        if (package.name == UnityPackageName)
+                        {
+                            installMethod = package.source switch
+                            {
+                                PackageSource.LocalTarball => "Manual",
+                                PackageSource.Registry => "NPM",
+                                _ => Metric.Unknown(package.source.ToString()),
+                            };
+
+                            break;
+                        }
+                    }
+                }
+
+                _installMethodTask.SetResult(installMethod);
+                EditorApplication.update -= OnEditorApplicationUpdate;
+            }
         }
 
         [MenuItem("Tools/Realm/Weave Assemblies")]
@@ -220,7 +258,8 @@ namespace RealmWeaver
                         TargetOSName = targetOSName,
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
-                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled
+                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
+                        InstallationMethod = _installMethodTask.Task.Result
                     };
 
                     var results = weaver.Execute(analyticsConfig);

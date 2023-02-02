@@ -9,6 +9,21 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Read Core version
+        id: get-core-version
+        run: |
+          cd wrappers/realm-core
+          pkgVersion=$(grep "\bVERSION=" dependencies.list | cut -d= -f2)
+          echo "core-version=$pkgVersion" >> $GITHUB_OUTPUT
+        shell: bash
+      - name: Update Analytics.cs
+        uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
+        with:
+          find: '_coreVersion = "\w*"'
+          replace: '_coreVersion = "${{ steps.get-core-version.outputs.core-version }}"'
+          include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog
         uses: realm/ci-actions/update-changelog@e7b65d7d587e1abc358968d7ff816cc0163906d2
