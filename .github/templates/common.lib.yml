@@ -8,18 +8,18 @@
 #@ actionDownloadArtifact = "actions/download-artifact@v3"
 #@ actionSetupMSBuild = "microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497"
 #@ actionSetupDotnet = "actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a"
-#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@e7b65d7d587e1abc358968d7ff816cc0163906d2"
+#@ actionRuniOSSimulator = "realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30"
 #@ actionCodeQLInit = "github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31"
 #@ actionCodeQLAnalyze = "github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31"
 #@ actionSetupNode = "actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e"
 #@ actionAWSConfigureCredentials = "aws-actions/configure-aws-credentials@v1-node16"
-#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@e7b65d7d587e1abc358968d7ff816cc0163906d2"
+#@ actionReleaseToSlack = "realm/ci-actions/release-to-slack@187889c026eb16673dba3152906a46ed87406e30"
 #@ actionSetupXcode = "maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98"
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
-#@ iOSArchs = [ 'Simulator', 'Device', 'Catalyst' ]
+#@ applePlatforms = [ 'iOS', 'tvOS'  ]
 
 #@ actionDockerLayerCaching = "jpribyl/action-docker-layer-caching@c632825d12ec837065f49726ea27ddd40bcc7894" #! 0.1.1
 #@ actionDockerBuild = "docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7" #! 2.7.0
@@ -145,9 +145,10 @@ with:
 #@ end
 
 #@ def getWrapperBinaryNames():
-#@ wrapperPlatforms = [ 'macos', 'linux' ]
-#@ for iOSArch in iOSArchs:
-#@   wrapperPlatforms.append("ios-" + iOSArch)
+#@ wrapperPlatforms = [ 'macos', 'catalyst', 'linux' ]
+#@ for platform in applePlatforms:
+#@   wrapperPlatforms.append(platform + "-Device")
+#@   wrapperPlatforms.append(platform + "-Simulator")
 #@ end
 #@ for androidABI in androidABIs:
 #@   wrapperPlatforms.append("android-" + androidABI)

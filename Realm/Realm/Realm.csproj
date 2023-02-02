@@ -59,6 +59,22 @@
       <PackagePath>runtimes\maccatalyst\native\realm-wrappers.framework.zip</PackagePath>
       <Link>wrappers\macosx\realm-wrappers.framework.zip</Link>
     </None>
+    <!-- tvOS -->
+    <Content Include="wrappers-props\xamarintvos\Realm.dll.config">
+      <Pack>true</Pack>
+      <PackagePath>build\xamarintvos\</PackagePath>
+    </Content>
+    <Content Include="wrappers-props\xamarintvos\wrappers.props" Pack="true" PackagePath="build\xamarintvos\Realm.props" />
+    <None Include="..\..\wrappers\build\appletvos\$(Configuration)\realm-wrappers.framework\**">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\tvos\native\realm-wrappers.framework</PackagePath>
+      <Link>wrappers\appletvos\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+    <None Include="..\..\wrappers\build\appletvsimulator\$(Configuration)\realm-wrappers.framework\**">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\tvossimulator\native\realm-wrappers.framework</PackagePath>
+      <Link>wrappers\appletvsimulator\realm-wrappers.framework\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
     <!-- macOS -->
     <Content Include="wrappers-props\xamarinmac\wrappers.props" Pack="true" PackagePath="build\xamarinmac\Realm.props" />
     <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">

@@ -51,6 +51,7 @@
   ```
   We realise that some developers would still prefer to have more freedom in the nullability annotation of such properties, and it is possible to do so by setting  `realm.ignore_objects_nullability = true` in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). If this is enabled, all the previous properties will be considered valid, and the nullability annotations for properties linking to objects will be ignored.
 * Improved performance of `PropertyChanged` and `CollectionChanged` notifications. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
+* Added support for tvOS in Xamarin and Unity applications. (Issue [#3161](https://github.com/realm/realm-dotnet/issues/3161))
 
 ### Fixed
 * `ISet<RealmValue>` consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
