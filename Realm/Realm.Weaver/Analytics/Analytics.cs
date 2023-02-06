@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -115,7 +114,6 @@ namespace RealmWeaver
 
                 // check if it's the right signature, that is 2 params in total of which
                 // the second a bool and that it's set to true.
-                // TODO - Nikola: why?
                 [Feature.Add] = instruction =>
                     IsInRealmNamespace(instruction.Operand) &&
                     instruction.Operand is MethodSpecification methodSpecification &&
@@ -220,13 +218,13 @@ namespace RealmWeaver
                 // collect environment details
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
-                _realmEnvMetrics[UserEnvironment.UserId] = AnonymizedUserID;
+                _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
-                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture;
+                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module);
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
@@ -364,7 +362,6 @@ namespace RealmWeaver
                         methodReference.ReturnType.DeclaringType != null)
                     {
                         // when dealing with ThreadSafeReference
-                        // TODO nikola: why?
                         key = methodReference.ReturnType.DeclaringType.Name;
                     }
 
