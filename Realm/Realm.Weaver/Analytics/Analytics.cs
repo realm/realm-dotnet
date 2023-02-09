@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -79,18 +80,24 @@ namespace RealmWeaver
 
         private readonly Config _config;
 
-        internal Analytics(Config config, ImportedReferences references, ILogger logger)
+        private Task _analyzeUserAssemblyTask;
+
+        public Analytics(Config config, ImportedReferences references, ILogger logger, ModuleDefinition module)
         {
-            _references = references;
             _config = config;
+
+            if (config.AnalyticsCollection == AnalyticsCollection.Disabled)
+            {
+                return;
+            }
+
+            _references = references;
             _logger = logger;
 
             _realmFeaturesToAnalyze = Metric.SdkFeatures.Keys.ToDictionary(c => c, _ => (byte)0);
 
             _classAnalysisSetters = new()
             {
-                [Feature.IEmbeddedObject] = member => (true, Feature.IEmbeddedObject),
-                [Feature.IAsymmetricObject] = member => (true, Feature.IAsymmetricObject),
                 ["Class"] = member =>
                     member is PropertyDefinition property &&
                     (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
@@ -104,7 +111,7 @@ namespace RealmWeaver
                 [Feature.BacklinkAttribute] = member => (true, Feature.BacklinkAttribute)
             };
 
-            _apiAnalysisSetters = new ()
+            _apiAnalysisSetters = new()
             {
                 [Feature.GetInstanceAsync] = instruction => AnalyzeRealmApi(instruction, Feature.GetInstanceAsync),
                 [Feature.GetInstance] = instruction => AnalyzeRealmApi(instruction, Feature.GetInstance),
@@ -171,6 +178,11 @@ namespace RealmWeaver
                 [Feature.DynamicApi] = instruction => (true, Feature.DynamicApi)
             };
 
+            _analyzeUserAssemblyTask = Task.Run(() =>
+            {
+                AnalyzeUserAssembly(module);
+            });
+
             (bool ShouldDelete, string DictKey) AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
             {
                 if (member is not PropertyDefinition property ||
@@ -211,7 +223,7 @@ namespace RealmWeaver
             }
         }
 
-        internal void AnalyzeUserAssembly(ModuleDefinition module)
+        private void AnalyzeUserAssembly(ModuleDefinition module)
         {
             try
             {
@@ -237,7 +249,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.TargetFrameworkVersion;
 
-                foreach (var type in module.Types)
+                foreach (var type in module.Types.ToArray())
                 {
                     InternalAnalyzeSdkApi(type);
                 }
@@ -253,8 +265,15 @@ namespace RealmWeaver
             }
         }
 
-        internal void AnalyzeRealmClassProperties(WeaveTypeResult[] types)
+        public void AnalyzeRealmClassProperties(WeaveTypeResult[] types)
         {
+            if (_config.AnalyticsCollection == AnalyticsCollection.Disabled)
+            {
+                return;
+            }
+
+            _analyzeUserAssemblyTask.Wait();
+
             foreach (var type in types)
             {
                 if (type.Properties == null)
@@ -326,7 +345,7 @@ namespace RealmWeaver
 
         private void AnalyzeClassMethods(TypeDefinition type)
         {
-            string[] prefixes = new[] { "get_", "set_", "add_" };
+            var prefixes = new[] { "get_", "set_", "add_" };
 
             foreach (var method in type.Methods)
             {
@@ -388,34 +407,41 @@ namespace RealmWeaver
             }
         }
 
-        internal async Task<string> SubmitAnalytics()
+        public async Task SubmitAnalytics()
         {
-            try
-            {
-                var pretty = false;
+            var payload = "Analytics disabled";
 
-                // TODO andrea: see what the correct address for production should be
-                var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
+            if (_config.AnalyticsCollection != AnalyticsCollection.Disabled)
+            {
+                try
+                {
+                    var pretty = false;
+
+                    // TODO andrea: see what the correct address for production should be
+                    var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
-                pretty = true;
+                    pretty = true;
 #endif
 
-                // TODO andrea: find a general address that the whole team can use to do tests
-                // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
-                var payload = GetJsonPayload(pretty);
+                    // TODO andrea: find a general address that the whole team can use to do tests
+                    // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
+                    payload = GetJsonPayload(pretty);
 
-                if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
-                {
-                    var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
-                    await SendRequest(sendAddr, base64Payload, string.Empty);
+                    if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
+                    {
+                        var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+                        await SendRequest(sendAddr, base64Payload, string.Empty);
+                    }
                 }
-
-                return payload;
+                catch (Exception e)
+                {
+                    payload = e.Message;
+                }
             }
-            catch (Exception e)
+
+            if (!string.IsNullOrEmpty(_config.AnalyticsLogPath))
             {
-                _logger.Error($"Could not submit analytics.{Environment.NewLine}{e.Message}");
-                return e.Message;
+                File.WriteAllText(_config.AnalyticsLogPath, payload);
             }
         }
 
