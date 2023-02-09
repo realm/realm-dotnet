@@ -308,7 +308,7 @@ namespace RealmWeaver
                 WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
             }
 
-            if (report.summary.platform == BuildTarget.iOS)
+            if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
             {
                 var realmAssemblyPath = report.files
                     .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
@@ -329,26 +329,34 @@ namespace RealmWeaver
 
         public void OnPostprocessBuild(BuildReport report)
         {
-            if (report == null || report.summary.platform != BuildTarget.iOS)
+            switch (report?.summary.platform)
             {
-                return;
+                case BuildTarget.iOS:
+                case BuildTarget.tvOS:
+                    UpdateiOSFrameworks(false, false, report.summary.platform);
+                    break;
             }
-
-            UpdateiOSFrameworks(
-                enableForDevice: false,
-                enableForSimulator: false);
         }
 
         public void OnPreprocessBuild(BuildReport report)
         {
-            if (report == null || report.summary.platform != BuildTarget.iOS)
+            bool enableForDevice;
+            bool enableForSimulator;
+            switch (report?.summary.platform)
             {
-                return;
+                case BuildTarget.iOS:
+                    enableForDevice = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK;
+                    enableForSimulator = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK;
+                    break;
+                case BuildTarget.tvOS:
+                    enableForDevice = PlayerSettings.tvOS.sdkVersion == tvOSSdkVersion.Device;
+                    enableForSimulator = PlayerSettings.tvOS.sdkVersion == tvOSSdkVersion.Simulator;
+                    break;
+                default:
+                    return;
             }
 
-            UpdateiOSFrameworks(
-                enableForDevice: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK,
-                enableForSimulator: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK);
+            UpdateiOSFrameworks(enableForDevice, enableForSimulator, report.summary.platform);
         }
 
         /// <summary>
@@ -357,11 +365,11 @@ namespace RealmWeaver
         /// a somewhat hacky solution that will manually update the compatibilify flag and the AddToEmbeddedBinaries
         /// flag just for the slice that is compatible with the current build target (simulator or device).
         /// </summary>
-        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator)
+        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator, BuildTarget buildTarget)
         {
             const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
                 "Please double check that you have imported Realm correctly and that the file exists. " +
-                "Typically, it should be located at Packages/io.realm.unity/Runtime/iOS";
+                "Typically, it should be located at Packages/io.realm.unity/Runtime/{1}";
             const string SimulatorPath = "Simulator";
             const string DevicePath = "Device";
 
@@ -372,15 +380,15 @@ namespace RealmWeaver
 
             void UpdateiOSFramework(string path, bool enabled)
             {
-                path = $"iOS/{path}/realm-wrappers.framework";
+                path = $"{buildTarget}/{path}/realm-wrappers.framework";
                 var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
                 if (frameworkImporter == null)
                 {
-                    throw new Exception(string.Format(ErrorMessage, path));
+                    throw new Exception(string.Format(ErrorMessage, path, buildTarget));
                 }
 
-                frameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enabled);
-                frameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
+                frameworkImporter.SetCompatibleWithPlatform(buildTarget, enabled);
+                frameworkImporter.SetPlatformData(buildTarget, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
             }
         }
 

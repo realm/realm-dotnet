@@ -27,11 +27,13 @@ namespace Realms.SourceGenerator
 {
     internal class Parser
     {
-        private GeneratorExecutionContext _context;
+        private readonly GeneratorExecutionContext _context;
+        private readonly GeneratorConfig _generatorConfig;
 
-        public Parser(GeneratorExecutionContext context)
+        public Parser(GeneratorExecutionContext context, GeneratorConfig generatorConfig)
         {
             _context = context;
+            _generatorConfig = generatorConfig;
         }
 
         public ParsingResults Parse(IEnumerable<RealmClassDefinition> realmClasses)
@@ -145,7 +147,7 @@ namespace Realms.SourceGenerator
             return usings;
         }
 
-        private static IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
+        private IEnumerable<PropertyInfo> GetProperties(ClassInfo classInfo, IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes, SemanticModel model)
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
@@ -258,7 +260,7 @@ namespace Realms.SourceGenerator
             }
         }
 
-        private static PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
+        private PropertyTypeInfo GetPropertyTypeInfo(ClassInfo classInfo, PropertyInfo propertyInfo, IPropertySymbol propertySymbol, PropertyDeclarationSyntax propertySyntax)
         {
             var propertyLocation = propertySyntax.GetLocation();
             var typeSymbol = propertySymbol.Type;
@@ -287,11 +289,6 @@ namespace Realms.SourceGenerator
                 }
 
                 return propertyTypeInfo;  // We are sure we can't produce more diagnostics
-            }
-
-            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation())
-            {
-                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             if (propertyTypeInfo.IsRealmInteger)
@@ -388,6 +385,11 @@ namespace Realms.SourceGenerator
                 {
                     return PropertyTypeInfo.Unsupported;
                 }
+            }
+
+            if (!propertyTypeInfo.HasCorrectNullabilityAnnotation(_generatorConfig.IgnoreObjectsNullability))
+            {
+                classInfo.Diagnostics.Add(Diagnostics.NullabilityNotSupported(classInfo.Name, propertySymbol.Name, typeString, propertyLocation));
             }
 
             return propertyTypeInfo;

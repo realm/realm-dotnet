@@ -109,7 +109,7 @@
         </None>
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == '' AND '$(RealmTestsStandaloneExe)' == 'true'">
         <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX'))">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>

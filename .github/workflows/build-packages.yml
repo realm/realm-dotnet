@@ -50,25 +50,35 @@ jobs:
       with:
         name: wrappers-macos
         path: wrappers/build
+    - name: Fetch artifacts for catalyst
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-catalyst
+        path: wrappers/build
     - name: Fetch artifacts for linux
       uses: actions/download-artifact@v3
       with:
         name: wrappers-linux
         path: wrappers/build
-    - name: Fetch artifacts for ios-Simulator
+    - name: Fetch artifacts for iOS-Device
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Simulator
+        name: wrappers-iOS-Device
         path: wrappers/build
-    - name: Fetch artifacts for ios-Device
+    - name: Fetch artifacts for iOS-Simulator
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Device
+        name: wrappers-iOS-Simulator
         path: wrappers/build
-    - name: Fetch artifacts for ios-Catalyst
+    - name: Fetch artifacts for tvOS-Device
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Catalyst
+        name: wrappers-tvOS-Device
+        path: wrappers/build
+    - name: Fetch artifacts for tvOS-Simulator
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-tvOS-Simulator
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
       uses: actions/download-artifact@v3

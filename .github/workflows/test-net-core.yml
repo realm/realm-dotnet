@@ -79,7 +79,7 @@ jobs:
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@e7b65d7d587e1abc358968d7ff816cc0163906d2
+    - uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}

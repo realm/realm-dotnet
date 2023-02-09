@@ -57,6 +57,7 @@ jobs:
   _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net6.0\"]"))
   _: #@ template.replace(runTests("macOS"))
   _: #@ template.replace(runTests("iOS"))
+  _: #@ template.replace(runTests("tvOS", runSyncTests = False))
   _: #@ template.replace(runTests("Android", additionalSecrets=["AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "DEVICEFARM_PROJECT_ARN", "DEVICEFARM_ANDROID_POOL_ARN"]))
   test-xunit:
     runs-on: windows-latest

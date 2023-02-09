@@ -1,0 +1,89 @@
+name: test-tvos
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  test-xamarin:
+    runs-on: macos-latest
+    name: Xamarin.tvOS
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.Fody
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.Fody.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.SourceGenerator
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.SourceGenerator.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+      if: ${{ runner.os == 'Windows' }}
+    - name: Build Tests/Tests.XamarinTVOS
+      run: msbuild Tests/Tests.XamarinTVOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
+    - name: Run the tests
+      uses: realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30
+      with:
+        appPath: Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/Release/Tests.XamarinTVOS.app
+        bundleId: io.realm.Tests-XamarinTVOS
+        iphoneToSimulate: Apple-TV-1080p
+        arguments: --headless --result=${{ github.workspace }}/TestResults.tvOS.xml --labels=All --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=tvos
+        os: tvOS
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      if: always()
+      with:
+        name: Results Xamarin.tvOS
+        path: TestResults.tvOS.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
