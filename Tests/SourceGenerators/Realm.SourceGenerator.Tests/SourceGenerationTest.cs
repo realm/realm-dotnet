@@ -49,11 +49,11 @@ namespace SourceGeneratorTests
             Environment.SetEnvironmentVariable("NO_GENERATOR_DIAGNOSTICS", "true");
         }
 
-        private static string GetGeneratedFileNameForClass(string className) => $"{className}_generated.cs";
+        protected static string GetGeneratedFileNameForClass(string className) => $"{className}_generated.cs";
 
-        private static string GetDiagnosticFileNameForClass(string className) => $"{className}.diagnostics.cs";
+        protected static string GetDiagnosticFileNameForClass(string className) => $"{className}.diagnostics.cs";
 
-        private string GetSource(string filename, ClassFolder classFolder)
+        protected string GetSource(string filename, ClassFolder classFolder)
         {
             var folder = classFolder switch
             {
@@ -66,21 +66,21 @@ namespace SourceGeneratorTests
             return File.ReadAllText(Path.Combine(folder, $"{filename}.cs"));
         }
 
-        private string GetGeneratedForClass(string className)
+        protected string GetGeneratedForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, GetGeneratedFileNameForClass(className));
             return File.Exists(fileName) ? File.ReadAllText(fileName) : null;
         }
 
-        private List<DiagnosticInfo> GetDiagnosticsForClass(string className)
+        protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, GetDiagnosticFileNameForClass(className));
             return File.Exists(fileName) ? JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName)) : null;
         }
 
-        protected async Task RunComparisonTest(string fileName, IEnumerable<string> classNames)
+        protected async Task RunComparisonTest(string fileName, IEnumerable<string> classNames = null)
         {
-            if (!classNames.Any())
+            if (!classNames?.Any() == true)
             {
                 classNames = classNames.Append(fileName);
             }
@@ -101,9 +101,9 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
-        protected async Task RunErrorTest(string fileName, IEnumerable<string> classNames)
+        protected async Task RunErrorTest(string fileName, IEnumerable<string> classNames = null)
         {
-            if (!classNames.Any())
+            if (!classNames?.Any() == true)
             {
                 classNames = classNames.Append(fileName);
             }
@@ -125,6 +125,11 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
+        protected static string BuildGlobalOptions(Dictionary<string, string> globalOptions)
+        {
+            return string.Join(Environment.NewLine, globalOptions.Select(go => $"{go.Key} = {go.Value}"));
+        }
+
         private void AddSupportClasses(RealmGeneratorVerifier.Test test)
         {
             foreach (var supportClassName in _supportClasses)
@@ -139,7 +144,7 @@ namespace SourceGeneratorTests
             }
         }
 
-        private static DiagnosticResult Convert(DiagnosticInfo info)
+        protected static DiagnosticResult Convert(DiagnosticInfo info)
         {
             var dr = new DiagnosticResult(info.Id, info.Severity)
                 .WithMessage(info.Message);
@@ -155,7 +160,7 @@ namespace SourceGeneratorTests
             return dr;
         }
 
-        private enum ClassFolder
+        protected enum ClassFolder
         {
             Test,
             Error,

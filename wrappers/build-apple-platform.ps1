@@ -4,9 +4,12 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
 
-    [ValidateSet('Device', 'Simulator', 'Catalyst')]
+    [ValidateSet('iOS', 'Catalyst', 'tvOS')]
     [Parameter(Position = 0)]
-    [string[]]$Platforms = ('Simulator'),
+    [string[]]$Platforms = ('iOS'),
+
+    [ValidateSet('Device', 'Simulator')]
+    [string]$Targets = 'Simulator',
 
     [Switch]$Incremental,
 
@@ -16,7 +19,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 
-$build_directory = "$PSScriptRoot/cmake/iOS"
+$build_directory = "$PSScriptRoot/cmake/apple-device"
 
 New-Item $build_directory -ItemType Directory -Force -ErrorAction Ignore > $null
 Push-Location $build_directory
@@ -34,11 +37,21 @@ if (-Not $Incremental) {
 }
 
 $destinations = @()
-if ($Platforms.Contains('Simulator')) {
-    $destinations += $('-destination', 'generic/platform=iOS Simulator')
+if ($Platforms.Contains('iOS')) {
+    if ($Targets.Contains('Device')) {
+        $destinations += $('-destination', 'generic/platform=iOS')
+    }
+    if ($Targets.Contains('Simulator')) {
+        $destinations += $('-destination', 'generic/platform=iOS Simulator')
+    }
 }
-if ($Platforms.Contains('Device')) {
-    $destinations += $('-destination', 'generic/platform=iOS')
+if ($Platforms.Contains('tvOS')) {
+    if ($Targets.Contains('Device')) {
+        $destinations += $('-destination', 'generic/platform=tvOS')
+    }
+    if ($Targets.Contains('Simulator')) {
+        $destinations += $('-destination', 'generic/platform=tvOS Simulator')
+    }
 }
 if ($Platforms.Contains('Catalyst')) {
     $destinations += $('-destination', 'generic/platform=macOS,variant=Mac Catalyst')

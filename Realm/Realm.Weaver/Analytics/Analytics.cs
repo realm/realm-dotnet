@@ -121,7 +121,6 @@ namespace RealmWeaver
 
                 // check if it's the right signature, that is 2 params in total of which
                 // the second a bool and that it's set to true.
-                // TODO - Nikola: why?
                 [Feature.Add] = instruction =>
                     IsInRealmNamespace(instruction.Operand) &&
                     instruction.Operand is MethodSpecification methodSpecification &&
@@ -231,13 +230,13 @@ namespace RealmWeaver
                 // collect environment details
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
-                _realmEnvMetrics[UserEnvironment.UserId] = AnonymizedUserID;
+                _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
-                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture;
+                _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module);
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
@@ -245,7 +244,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.TargetFramework);
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
-                _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = "FILL ME";
+                _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
                 _realmEnvMetrics[UserEnvironment.IdeUsed] = "FILL ME";
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.TargetFrameworkVersion;
@@ -382,7 +381,6 @@ namespace RealmWeaver
                         methodReference.ReturnType.DeclaringType != null)
                     {
                         // when dealing with ThreadSafeReference
-                        // TODO nikola: why?
                         key = methodReference.ReturnType.DeclaringType.Name;
                     }
 
@@ -522,6 +520,8 @@ namespace RealmWeaver
             // When in Unity this holds the Unity editor's or Unity player's version;
             // otherwise it holds the .NET target version
             public string TargetFrameworkVersion { get; set; }
+
+            public string InstallationMethod { get; set; }
         }
 
         public enum AnalyticsCollection

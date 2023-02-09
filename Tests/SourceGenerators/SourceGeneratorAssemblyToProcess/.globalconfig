@@ -1,0 +1,5 @@
+is_global = true
+
+# This document can be used to experiment with the source generator configurations
+
+# realm.ignore_objects_nullability = true

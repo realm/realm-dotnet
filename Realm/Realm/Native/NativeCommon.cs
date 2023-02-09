@@ -43,7 +43,7 @@ namespace Realms
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
 #if NET5_0_OR_GREATER
-                if (OperatingSystem.IsIOS())
+                if (OperatingSystem.IsIOS() || OperatingSystem.IsTvOS())
                 {
                     NativeLibrary.SetDllImportResolver(typeof(NativeCommon).Assembly, (libraryName, assembly, searchPath) =>
                     {

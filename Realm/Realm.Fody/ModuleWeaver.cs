@@ -84,6 +84,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         {
             AnalyticsCollection = analyticsCollection,
             AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
+            InstallationMethod = "Nuget",
         };
 
         config.TargetFramework = frameworkName.Identifier;

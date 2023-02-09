@@ -17,10 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
-using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 
 using static RealmWeaver.Analytics;
@@ -31,24 +34,6 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
-        // TODO andrea: https://github.com/realm/realm-dotnet/issues/2706#event-7877818404
-        // add a stable ID not reliant on MACAddress
-        public static string AnonymizedUserID
-        {
-            get
-            {
-                try
-                {
-                    var id = GenerateComputerIdentifier;
-                    return id != null ? SHA256Hash(id) : "UNKNOWN";
-                }
-                catch
-                {
-                    return "UNKNOWN";
-                }
-            }
-        }
-
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
             string targetOs = frameworkName.Identifier;
@@ -91,19 +76,13 @@ namespace RealmWeaver
 
         public static string SHA256Hash(byte[] bytes)
         {
-            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            using var sha256 = SHA256.Create();
             return BitConverter.ToString(sha256.ComputeHash(bytes));
         }
 
-        public static string GetHostCpuArchitecture => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
+        public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
 
         public static string GetTargetCpuArchitecture(ModuleDefinition module) => ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
-
-        public static byte[] GenerateComputerIdentifier =>
-            NetworkInterface.GetAllNetworkInterfaces()
-                .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
-                .Select(n => n.GetPhysicalAddress().GetAddressBytes())
-                .FirstOrDefault();
 
         public static string GetHostOsName() =>
             System.Environment.OSVersion.Platform switch
@@ -190,6 +169,71 @@ namespace RealmWeaver
             return Unknown();
         }
 
+        // Knowledge on unique machine Ids for different OSes obtained from https://github.com/denisbrodbeck/machineid
+        public static string GetAnonymizedUserId()
+        {
+            var id = string.Empty;
+            var currentOs = System.Environment.OSVersion.Platform;
+            try
+            {
+                switch (currentOs)
+                {
+                    case PlatformID.Win32S or PlatformID.Win32Windows or
+                        PlatformID.Win32NT or PlatformID.WinCE:
+                    {
+                        var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                        var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                        var match = regex.Match(machineIdToParse);
+
+                        if (match?.Groups.Count > 1)
+                        {
+                            id = match.Groups[1].Value;
+                        }
+
+                        break;
+                    }
+
+                    case PlatformID.MacOSX:
+                    {
+                        var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                        var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                        var match = regex.Match(machineIdToParse);
+
+                        if (match?.Groups.Count > 1)
+                        {
+                            id = match.Groups[1].Value;
+                        }
+
+                        break;
+                    }
+
+                    case PlatformID.Unix:
+                    {
+                        id = File.ReadAllText("/etc/machine-id");
+                        break;
+                    }
+                }
+
+                if (id.Length == 0)
+                {
+                    return Unknown();
+                }
+
+                // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
+                // unrelated projects that use the same mechanics to obtain a machine's ID
+                var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
+                var byteId = Encoding.ASCII.GetBytes(id);
+                var saltedId = new byte[byteId.Length + salt.Length];
+                Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
+                Buffer.BlockCopy(salt, 0, saltedId, byteId.Length, salt.Length);
+                return SHA256Hash(saltedId);
+            }
+            catch
+            {
+                return Unknown();
+            }
+        }
+
         private static string ConvertArchitectureToMetricsVersion(string arch)
         {
             if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)))
@@ -217,5 +261,40 @@ namespace RealmWeaver
 
         private static bool ContainsIgnoreCase(this string @this, string strCompare) =>
             @this.IndexOf(strCompare, StringComparison.OrdinalIgnoreCase) > -1;
+
+        private static string RunProcess(string filename, string arguments)
+        {
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = filename,
+                    Arguments = arguments,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+#if DEBUG
+                    RedirectStandardError = true,
+#endif
+                }
+            };
+
+            proc.Start();
+
+            var stdout = new StringBuilder();
+            while (!proc.HasExited)
+            {
+                stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+                stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+            }
+
+            stdout.AppendLine(proc.StandardOutput.ReadToEnd());
+#if DEBUG
+            stdout.AppendLine(proc.StandardError.ReadToEnd());
+#endif
+
+            return stdout.ToString();
+        }
     }
 }
