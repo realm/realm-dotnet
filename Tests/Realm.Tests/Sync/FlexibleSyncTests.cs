@@ -1740,7 +1740,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_SubscriptionOnUnqueryableField_ShouldError()
+        public void Integration_SubscriptionOnUnqueryableField_ShouldAddThemAutomatically()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1751,18 +1751,9 @@ namespace Realms.Tests.Sync
                     realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
                 });
 
-                try
-                {
-                    await WaitForSubscriptionsAsync(realm);
-                    Assert.Fail("Expected an error to be thrown.");
-                }
-                catch (SubscriptionException ex)
-                {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-                }
+                await WaitForSubscriptionsAsync(realm);
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error), "State should be 'Error' when querying unqueryable field");
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
             });
         }
 
