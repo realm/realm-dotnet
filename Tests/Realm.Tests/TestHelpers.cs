@@ -297,12 +297,12 @@ namespace Realms.Tests
             });
         }
 
-        public static async Task<T> AssertThrows<T>(Func<Task> function)
+        public static async Task<T> AssertThrows<T>(Func<Task> function, int timeout = 5000)
             where T : Exception
         {
             try
             {
-                await function().Timeout(5000);
+                await function().Timeout(timeout);
             }
             catch (T ex)
             {
