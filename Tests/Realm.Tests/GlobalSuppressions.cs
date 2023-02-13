@@ -28,3 +28,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Globalization", "CA1310: Specify StringComparison for correctness", Justification = "We can't assume users follow best practices.", Scope = "module")]
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:Parameter should not span multiple lines", Justification = "This is fine for tests.", Scope = "module")]
 [assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "In C# 9.0 we can use new() to instantiate objects and we don't need a space there", Scope = "module")]
+[assembly: SuppressMessage("Security", "CA3075:Insecure DTD processing in XML", Justification = "This is an xml file we use internally only.", Scope = "member", Target = "~M:Realms.Tests.ConfigHelpers.#cctor")]
