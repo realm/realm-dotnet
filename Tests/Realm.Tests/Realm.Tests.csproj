@@ -78,7 +78,6 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
         <!-- Removing the generated files from compilation, adding them back as non-content files. -->
         <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
         <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
@@ -109,7 +108,7 @@
         </None>
     </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == '' AND '$(RealmTestsStandaloneExe)' == 'true'">
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
         <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX'))">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -137,9 +136,9 @@
     <ItemGroup>
         <AdditionalFiles Include="..\..\stylecop.json" />
         <None Include="..\App.config" Link="App.config" />
-        <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
+        <Content Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
+        </Content>
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Include="EmbeddedResources\v6db.realm">
