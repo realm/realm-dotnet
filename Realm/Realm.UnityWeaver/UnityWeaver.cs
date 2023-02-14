@@ -82,8 +82,12 @@ namespace RealmWeaver
             EditorApplication.delayCall += () =>
             {
                 _listRequest = Client.List();
-                _installMethodTask = new TaskCompletionSource<string>();
-                EditorApplication.update += OnEditorApplicationUpdate;
+
+                if (UnityEditorInternal.InternalEditorUtility.inBatchMode)
+                {
+                    _installMethodTask = new TaskCompletionSource<string>();
+                    EditorApplication.update += OnEditorApplicationUpdate;
+                }
 
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
@@ -259,7 +263,8 @@ namespace RealmWeaver
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = _installMethodTask.Task.Status != TaskStatus.WaitingForActivation ? _installMethodTask.Task.Result : "Likely a headless instance of Unity, so it's hard to say where the pkg is coming from"
+                        InstallationMethod = _installMethodTask != null && _installMethodTask.Task.Wait(1000) ?
+                            _installMethodTask.Task.Result : Metric.Unknown()
                     };
 
                     var results = weaver.Execute(analyticsConfig);
