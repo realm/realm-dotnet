@@ -1,6 +1,6 @@
 {
   "name": "io.realm.unity",
-  "version": "10.19.0",
+  "version": "10.20.0",
   "displayName": "Realm",
   "description": "Realm is an embedded, object-oriented database that lets you build real-time, always-on applications. With Realm, data is directly exposed as objects and queryable by code, removing the need for ORM's riddled with performance & maintenance issues. Additionally, objects and collections in Realm are always live, meaning that they always reflect the latest data stored in the database. You can subscribe to changes, letting you keep your UI consistently up to date.\nThe .NET Realm SDK also provide access to Atlas App Services, a secure backend that can sync data between devices, authenticate and manage users, and run serverless JavaScript functions.",
   "unity": "2021.1",
