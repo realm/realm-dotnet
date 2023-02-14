@@ -259,7 +259,7 @@ namespace RealmWeaver
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = _installMethodTask.Task.Result
+                        InstallationMethod = _installMethodTask.Task.Status != TaskStatus.WaitingForActivation ? _installMethodTask.Task.Result : "Likely a headless instance of Unity, so it's hard to say where the pkg is coming from"
                     };
 
                     var results = weaver.Execute(analyticsConfig);
