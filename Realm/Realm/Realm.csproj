@@ -28,6 +28,7 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
+	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
     <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile" />
   </ItemGroup>
