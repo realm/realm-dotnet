@@ -209,7 +209,7 @@ namespace SourceGeneratorPlayground
 
             public Realms.IRealmObjectBase CreateInstance() => new Person();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IPersonAccessor)instance.Accessor).Id;
                 return true;
