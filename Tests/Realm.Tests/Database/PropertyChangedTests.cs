@@ -135,20 +135,22 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
+        [Test]
         public void ManagedObject_WhenAnotherThreadInstanceChanged()
         {
             TestHelpers.RunAsyncTest(() =>
             {
                 return TestManagedAsync(async (_, name) =>
                 {
-                    await _realm.WriteAsync(otherRealm =>
+                    await Task.Run(() =>
                     {
-                        var otherPersonInstance = otherRealm.All<Person>().First();
-                        otherPersonInstance.FirstName = name;
+                        using var bgRealm = GetRealm(_realm.Config);
+                        bgRealm.Write(() =>
+                        {
+                            var otherPersonInstance = bgRealm.All<Person>().First();
+                            otherPersonInstance.FirstName = name;
+                        });
                     });
-
-                    await Task.Delay(50);
                 });
             });
         }
@@ -474,7 +476,7 @@ namespace Realms.Tests.Database
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
+        [Test]
         public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -492,10 +494,14 @@ namespace Realms.Tests.Database
                     notifiedPropertyNames.Add(e.PropertyName);
                 };
 
-                await _realm.WriteAsync(r =>
+                await Task.Run(() =>
                 {
-                    var otherThreadInstance = r.All<AgedObject>().Single();
-                    otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                    using var bgRealm = GetRealm(_realm.Config);
+                    bgRealm.Write(() =>
+                    {
+                        var otherThreadInstance = bgRealm.All<AgedObject>().Single();
+                        otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                    });
                 });
 
                 await Task.Yield();
