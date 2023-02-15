@@ -212,7 +212,7 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyInt32Object();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IPrimaryKeyInt32ObjectAccessor)instance.Accessor).Id;
                 return true;

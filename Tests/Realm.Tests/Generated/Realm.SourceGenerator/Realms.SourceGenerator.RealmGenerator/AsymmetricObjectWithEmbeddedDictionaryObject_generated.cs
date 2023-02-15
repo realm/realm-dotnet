@@ -221,7 +221,7 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithEmbeddedDictionaryObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor)instance.Accessor).Id;
                 return true;

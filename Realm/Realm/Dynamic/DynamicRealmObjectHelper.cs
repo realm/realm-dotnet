@@ -58,15 +58,15 @@ namespace Realms.Dynamic
                 _ => throw new NotSupportedException($"{_schemaType} type not supported, yet."),
             };
 
-        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value)
+        public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out RealmValue value)
         {
             if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
 
-            value = instance.Accessor.GetValue(instance.ObjectSchema.PrimaryKeyProperty.Value.Name).AsAny();
+            value = instance.Accessor.GetValue(instance.ObjectSchema.PrimaryKeyProperty.Value.Name);
             return true;
         }
 

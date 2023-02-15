@@ -207,23 +207,6 @@ namespace Realms
 
 #pragma warning restore SA1600 // Elements should be documented
 
-        /// <summary>
-        /// Returns all the objects that link to this object in the specified relationship.
-        /// </summary>
-        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
-        /// <param name="property">The property that is on the other end of the relationship.</param>
-        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
-        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
-        {
-            if (!_accessor.IsManaged)
-            {
-                throw new NotSupportedException("Using the dynamic API to access a RealmObject is only possible for managed (persisted) objects.");
-            }
-
-            return (_accessor as ManagedAccessor).GetBacklinks(objectType, property);
-        }
-
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {

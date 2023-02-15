@@ -44,7 +44,7 @@ namespace Realms.Tests.Database
 
             var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
             Assert.That(success, Is.False);
-            Assert.That(pk, Is.Null);
+            Assert.That(pk.AsAny(), Is.Null);
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace Realms.Tests.Database
             var success = GetHelper(obj.GetType()).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.False);
-            Assert.That(pk, Is.Null);
+            Assert.That(pk.AsAny(), Is.Null);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -81,7 +81,7 @@ namespace Realms.Tests.Database
             var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
-            Assert.That(pk, Is.EqualTo(pkValue));
+            Assert.That(pk.AsAny(), Is.EqualTo(pkValue));
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -99,7 +99,7 @@ namespace Realms.Tests.Database
             var success = GetHelper(objectType).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
-            Assert.That(pk, Is.EqualTo(pkValue));
+            Assert.That(pk.AsAny(), Is.EqualTo(pkValue));
         }
 
         private static IRealmObjectHelper GetHelper(IRealmObjectBase obj)

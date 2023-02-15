@@ -365,7 +365,7 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new SyncCollectionsObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((ISyncCollectionsObjectAccessor)instance.Accessor).Id;
                 return true;

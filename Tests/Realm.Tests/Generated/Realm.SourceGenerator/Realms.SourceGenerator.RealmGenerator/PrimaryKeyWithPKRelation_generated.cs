@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
 
                 public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyWithPKRelation();
 
-                public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+                public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
                 {
                     value = ((IPrimaryKeyWithPKRelationAccessor)instance.Accessor).Id;
                     return true;

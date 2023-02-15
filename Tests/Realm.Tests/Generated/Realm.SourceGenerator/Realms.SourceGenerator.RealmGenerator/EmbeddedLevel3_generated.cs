@@ -215,9 +215,9 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new EmbeddedLevel3();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }

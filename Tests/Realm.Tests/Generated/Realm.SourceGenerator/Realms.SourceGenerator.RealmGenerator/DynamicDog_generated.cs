@@ -221,9 +221,9 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new DynamicDog();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }

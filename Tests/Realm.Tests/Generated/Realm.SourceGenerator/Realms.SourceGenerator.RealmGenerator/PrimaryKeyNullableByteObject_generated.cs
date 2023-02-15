@@ -209,7 +209,7 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new PrimaryKeyNullableByteObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IPrimaryKeyNullableByteObjectAccessor)instance.Accessor).Id;
                 return true;

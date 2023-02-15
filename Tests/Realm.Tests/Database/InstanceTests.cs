@@ -566,7 +566,7 @@ namespace Realms.Tests.Database
                 Assert.That(() => realm.All<Person>(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.DynamicApi.All(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.BeginWrite(), Throws.TypeOf<ObjectDisposedException>());
-                Assert.That(() => realm.DynamicApi.CreateObject(nameof(Person), null), Throws.TypeOf<ObjectDisposedException>());
+                Assert.That(() => realm.DynamicApi.CreateObject(nameof(Person)), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.Find<Person>(0), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.GetHashCode(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.IsSameInstance(other), Throws.TypeOf<ObjectDisposedException>());
@@ -731,7 +731,7 @@ namespace Realms.Tests.Database
             Assert.That(hasExpectedProp);
             Assert.That(requiredStringProp.Type, Is.EqualTo(PropertyType.String));
 
-            var ato = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(AllTypesObject))).Single();
+            var ato = dynamicRealm.DynamicApi.All(nameof(AllTypesObject)).Single();
             Assert.That(ato.DynamicApi.Get<string>(nameof(AllTypesObject.RequiredStringProperty)), Is.EqualTo("This is required!"));
 
 #if !UNITY
@@ -746,7 +746,7 @@ namespace Realms.Tests.Database
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var embeddedParent = ((IQueryable<IRealmObject>)dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties))).Single();
+            var embeddedParent = dynamicRealm.DynamicApi.All(nameof(ObjectWithEmbeddedProperties)).Single();
             var embeddedChild = embeddedParent.DynamicApi.Get<IEmbeddedObject>(nameof(ObjectWithEmbeddedProperties.AllTypesObject));
             Assert.That(embeddedChild.DynamicApi.Get<string>(nameof(EmbeddedAllTypesObject.StringProperty)), Is.EqualTo("This is not required!"));
 
@@ -1091,8 +1091,8 @@ namespace Realms.Tests.Database
 
             realm.Write(() =>
             {
-                var other = (IRealmObject)(object)realm.DynamicApi.CreateObject("OtherObject", "abc");
-                var myType1 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var other = (IRealmObject)realm.DynamicApi.CreateObject("OtherObject", "abc");
+                var myType1 = realm.DynamicApi.CreateObject("MyType");
                 myType1.DynamicApi.Set("IntValue", 123);
                 myType1.DynamicApi.GetList<DateTimeOffset>("ListValue").Add(DateTimeOffset.UtcNow);
                 myType1.DynamicApi.GetSet<Guid>("SetValue").Add(Guid.NewGuid());
@@ -1102,7 +1102,7 @@ namespace Realms.Tests.Database
                 myType1.DynamicApi.GetSet<IRealmObject>("ObjectSetValue").Add(other);
                 myType1.DynamicApi.GetDictionary<IRealmObject>("ObjectDictionaryValue").Add("key", other);
 
-                var myType2 = (IRealmObject)(object)realm.DynamicApi.CreateObject("MyType", primaryKey: null);
+                var myType2 = realm.DynamicApi.CreateObject("MyType");
                 myType2.DynamicApi.Set("IntValue", 456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("foo", 123.456);
                 myType2.DynamicApi.GetDictionary<double>("DictionaryValue").Add("bar", 987.654);
@@ -1111,13 +1111,13 @@ namespace Realms.Tests.Database
                 Assert.Throws<MissingMemberException>(() => other.DynamicApi.Set("hoho", 123));
             });
 
-            var myTypes = (IQueryable<IRealmObject>)realm.DynamicApi.All("MyType");
-            var otherObjects = (IQueryable<IRealmObject>)realm.DynamicApi.All("OtherObject");
+            var myTypes = realm.DynamicApi.All("MyType");
+            var otherObjects = realm.DynamicApi.All("OtherObject");
 
             Assert.That(myTypes.Count(), Is.EqualTo(2));
             Assert.That(otherObjects.Count(), Is.EqualTo(1));
 
-            var foundById = (IRealmObject)(object)realm.DynamicApi.Find("OtherObject", "abc");
+            var foundById = realm.DynamicApi.Find("OtherObject", "abc");
             Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
             var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
 
@@ -1305,7 +1305,7 @@ namespace Realms.Tests.Database
             var ex = Assert.Throws<ArgumentException>(() => realm.All<IntPropertyObject>());
             Assert.That(ex.Message, Does.Contain($"The class {nameof(IntPropertyObject)} is not in the limited set of classes for this realm"));
 
-            var allFoos = (IQueryable<IRealmObject>)realm.DynamicApi.All("Foo");
+            var allFoos = realm.DynamicApi.All("Foo");
             Assert.That(allFoos.Count(), Is.EqualTo(0));
         }
 

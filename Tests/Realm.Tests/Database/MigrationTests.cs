@@ -151,7 +151,7 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = realm.DynamicApi.CreateObject("Person");
                     person.DynamicApi.Set("Name", "Foo");
                 });
             }
@@ -175,7 +175,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = realm.DynamicApi.CreateObject("Person");
                     person.DynamicApi.Set("Name", 123);
                 });
             }
@@ -191,7 +191,7 @@ namespace Realms.Tests.Database
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
 
-                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     for (var i = 0; i < newPeople.Count(); i++)

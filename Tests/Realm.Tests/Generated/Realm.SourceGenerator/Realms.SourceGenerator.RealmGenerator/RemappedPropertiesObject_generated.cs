@@ -217,7 +217,7 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new RemappedPropertiesObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IRemappedPropertiesObjectAccessor)instance.Accessor).Id;
                 return true;

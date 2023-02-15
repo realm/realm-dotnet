@@ -207,13 +207,13 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(PKTestCases))]
-        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
+        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType pkType)
         {
-            _realm.Write(() => (object)_realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
+            _realm.Write(() => CreateObjectWithPK(type, primaryKeyValue, pkType));
 
             Assert.That(() =>
             {
-                _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
+                _realm.Write(() => CreateObjectWithPK(type, primaryKeyValue, pkType));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -261,6 +261,39 @@ namespace Realms.Tests.Database
 
                 case PKType.Guid:
                     return (IRealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+
+                default:
+                    throw new NotSupportedException($"Unsupported pk type: {pkType}");
+            }
+        }
+
+        private IRealmObjectBase CreateObjectWithPK(Type type, object primaryKeyValue, PKType pkType)
+        {
+            switch (pkType)
+            {
+                case PKType.Int:
+                    long? castPKValue;
+                    if (primaryKeyValue == null)
+                    {
+                        castPKValue = null;
+                    }
+                    else
+                    {
+                        castPKValue = Convert.ToInt64(primaryKeyValue);
+                    }
+
+                    // The double cast is necessary to avoid creating a callsite.
+                    // TODO: remove the casts when https://github.com/realm/realm-dotnet/issues/2373 is done
+                    return _realm.DynamicApi.CreateObject(type.Name, castPKValue);
+
+                case PKType.String:
+                    return _realm.DynamicApi.CreateObject(type.Name, (string)primaryKeyValue);
+
+                case PKType.ObjectId:
+                    return _realm.DynamicApi.CreateObject(type.Name, (ObjectId?)primaryKeyValue);
+
+                case PKType.Guid:
+                    return _realm.DynamicApi.CreateObject(type.Name, (Guid?)primaryKeyValue);
 
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");

@@ -18,9 +18,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
 
 namespace Realms.Tests.Database
 {
@@ -214,7 +214,7 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new ThrowsBeforeInitializer();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IThrowsBeforeInitializerAccessor)instance.Accessor).Id;
                 return true;
