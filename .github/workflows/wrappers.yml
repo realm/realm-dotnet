@@ -17,10 +17,12 @@ jobs:
       CACHE_SKIP_SAVE: true
     outputs:
       wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
+      wrappers-catalyst: ${{ steps.check-cache-catalyst.outputs.cache-hit }}
       wrappers-linux: ${{ steps.check-cache-linux.outputs.cache-hit }}
-      wrappers-ios-Simulator: ${{ steps.check-cache-ios-Simulator.outputs.cache-hit }}
-      wrappers-ios-Device: ${{ steps.check-cache-ios-Device.outputs.cache-hit }}
-      wrappers-ios-Catalyst: ${{ steps.check-cache-ios-Catalyst.outputs.cache-hit }}
+      wrappers-iOS-Device: ${{ steps.check-cache-iOS-Device.outputs.cache-hit }}
+      wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
+      wrappers-tvOS-Device: ${{ steps.check-cache-tvOS-Device.outputs.cache-hit }}
+      wrappers-tvOS-Simulator: ${{ steps.check-cache-tvOS-Simulator.outputs.cache-hit }}
       wrappers-android-armeabi-v7a: ${{ steps.check-cache-android-armeabi-v7a.outputs.cache-hit }}
       wrappers-android-arm64-v8a: ${{ steps.check-cache-android-arm64-v8a.outputs.cache-hit }}
       wrappers-android-x86: ${{ steps.check-cache-android-x86.outputs.cache-hit }}
@@ -55,6 +57,23 @@ jobs:
       if: matrix.os == 'ubuntu' && steps.check-cache-macos.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
+    - name: Check cache for catalyst
+      id: check-cache-catalyst
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'ubuntu'
+    - name: Store artifacts for wrappers-catalyst
+      uses: actions/upload-artifact@v3
+      with:
+        name: wrappers-catalyst
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+        if-no-files-found: error
+      if: matrix.os == 'ubuntu' && steps.check-cache-catalyst.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'ubuntu'
     - name: Check cache for linux
       id: check-cache-linux
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
@@ -72,55 +91,72 @@ jobs:
       if: matrix.os == 'ubuntu' && steps.check-cache-linux.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for ios-Simulator
-      id: check-cache-ios-Simulator
+    - name: Check cache for iOS-Device
+      id: check-cache-iOS-Device
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Simulator-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-iOS-Device-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-ios-Simulator
+    - name: Store artifacts for wrappers-iOS-Device
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-ios-Simulator
+        name: wrappers-iOS-Device
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-ios-Simulator.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-iOS-Device.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for ios-Device
-      id: check-cache-ios-Device
+    - name: Check cache for iOS-Simulator
+      id: check-cache-iOS-Simulator
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Device-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-iOS-Simulator-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-ios-Device
+    - name: Store artifacts for wrappers-iOS-Simulator
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-ios-Device
+        name: wrappers-iOS-Simulator
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-ios-Device.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-iOS-Simulator.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for ios-Catalyst
-      id: check-cache-ios-Catalyst
+    - name: Check cache for tvOS-Device
+      id: check-cache-tvOS-Device
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-Catalyst-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-tvOS-Device-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-ios-Catalyst
+    - name: Store artifacts for wrappers-tvOS-Device
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-ios-Catalyst
+        name: wrappers-tvOS-Device
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-ios-Catalyst.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-tvOS-Device.outputs.cache-hit == 'true'
+    - run: git clean -fdx
+      if: matrix.os == 'ubuntu'
+    - name: Check cache for tvOS-Simulator
+      id: check-cache-tvOS-Simulator
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-tvOS-Simulator-Release-${{hashFiles('./wrappers/**')}}
+      if: matrix.os == 'ubuntu'
+    - name: Store artifacts for wrappers-tvOS-Simulator
+      uses: actions/upload-artifact@v3
+      with:
+        name: wrappers-tvOS-Simulator
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+        if-no-files-found: error
+      if: matrix.os == 'ubuntu' && steps.check-cache-tvOS-Simulator.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for android-armeabi-v7a
@@ -339,15 +375,46 @@ jobs:
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-  ios:
+  catalyst:
     runs-on: macos-12
-    name: iOS
+    name: Catalyst
+    timeout-minutes: 90
+    needs:
+    - check-cache
+    if: needs.check-cache.outputs.wrappers-catalyst != 'true'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Check cache
+      id: check-cache
+      uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
+      with:
+        path: ./wrappers/build/**
+        key: wrappers-catalyst-Release-${{hashFiles('./wrappers/**')}}
+    - name: Build wrappers
+      run: pwsh ./wrappers/build-apple-platform.ps1 Catalyst -Configuration Release -EnableLTO
+      if: steps.check-cache.outputs.cache-hit != 'true'
+    - name: Store artifacts for wrappers-catalyst
+      uses: actions/upload-artifact@v3
+      with:
+        name: wrappers-catalyst
+        path: ${{ github.workspace }}/wrappers/build/**
+        retention-days: 1
+        if-no-files-found: error
+  apple-platforms:
+    runs-on: macos-12
+    name: Apple Platform
     strategy:
       matrix:
-        arch:
-        - Simulator
+        platform:
+        - iOS
+        - tvOS
+        target:
         - Device
-        - Catalyst
+        - Simulator
     timeout-minutes: 90
     needs:
     - check-cache
@@ -362,22 +429,22 @@ jobs:
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-ios-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-${{ matrix.platform }}-${{ matrix.target }}-Release-${{hashFiles('./wrappers/**')}}
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@9a697e2b393340c3cacd97468baa318e4c883d98
       with:
         xcode-version: 14.0.1
     - name: Build wrappers
-      run: pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }} -Configuration Release
+      run: pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }} -Configuration Release
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-ios-${{ matrix.arch }}
+    - name: Store artifacts for wrappers-${{ matrix.platform }}-${{ matrix.target }}
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-ios-${{ matrix.arch }}
+        name: wrappers-${{ matrix.platform }}-${{ matrix.target }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-    if: needs.check-cache.outputs.wrappers-ios-Simulator != 'true' || needs.check-cache.outputs.wrappers-ios-Device != 'true' || needs.check-cache.outputs.wrappers-ios-Catalyst != 'true'
+    if: needs.check-cache.outputs.wrappers-iOS-Device != 'true' || needs.check-cache.outputs.wrappers-tvOS-Device != 'true'
   linux:
     runs-on: ubuntu-latest
     name: Linux
@@ -401,7 +468,7 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
-    - uses: satackey/action-docker-layer-caching@cc3f3828e75cbb45f0cf5139b95329c88480aa97
+    - uses: jpribyl/action-docker-layer-caching@c632825d12ec837065f49726ea27ddd40bcc7894
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build CentOS image

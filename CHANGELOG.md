@@ -1,5 +1,20 @@
 ## vNext (TBD)
 
+### Enhancements
+* Added `SyncConfiguration.CancelAsyncOperationsOnNonFatalErrors` which controls whether async operations (such as `Realm.GetInstanceAsync`, `Session.WaitForUploadAsync` and so on) should throw an exception whenever a non-fatal session error occurs. (Issue [#3222](https://github.com/realm/realm-dotnet/issues/3222))
+* Added `AppConfiguration.SyncTimeoutOptions` which has a handful of properties that control sync timeouts, such as the connection timeout, ping-pong intervals, and others. (Issue [#3223](https://github.com/realm/realm-dotnet/issues/3223))
+
+### Fixed
+* Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.20.0 (2023-02-10)
+
 **File format version bumped. Old files will be automatically upgraded but cannot be downgraded and opened with older versions of the .NET SDK.**
 
 ### Breaking Changes
@@ -12,7 +27,47 @@
 * Upgrade OpenSSL from 1.1.1n to 3.0.7. (Core 13.2.0)
 * Converting flexible sync realms to bundled and local realms is now supported (Core 13.2.0)
 * Add support for nested classes for source generated classes. (Issue [#3031](https://github.com/realm/realm-dotnet/issues/3031))
+* Enhanced support for nullable reference types in the model definition for source generated classes. This allows to use realm models as usual when nullable context is active, and removes the need to use of the `Required` attribute to indicate required properties, as this information will be inferred directly from the nullability status. There are some considerations regarding the nullability of properties that link to realm object:
+  - Properties that link to a single realm object are inherently nullable, and thus the type must be defined as nullable.
+  - List, Sets and Backlinks cannot contain null objects, and thus the type parameter must be non-nullable.
+  - Dictionaries can contain null values, and thus the type parameter must be nullable.
+
+  Defining the properties with a different nullability annotation than what has been outlined here will raise a diagnostic error. For instance:
+  ```cs
+  public partial class Person: IRealmObject
+  {
+      //Single values
+      public Dog? MyDog { get; set; } //Correct
+
+      public Dog MyDog { get; set; } //Error
+
+      //List
+      public IList<Dog> MyDogs { get; } //Correct
+
+      public IList<Dog?> MyDogs { get; } //Error
+
+      //Set
+      public ISet<Dog> MyDogs { get; } //Correct
+
+      public ISet<Dog?> MyDogs { get; } //Error
+
+      //Dictionary
+      public IDictionary<string, Dog?> MyDogs { get; } //Correct
+
+      public IDictionary<string, Dog> MyDogs { get; } //Error
+
+      //Backlink
+      [Realms.Backlink("...")]
+      public IQueryable<Dog> MyDogs { get; } //Correct
+
+      [Realms.Backlink("...")]
+      public IQueryable<Dog?> MyDogs { get; } //Error
+  }
+  ```
+  We realise that some developers would still prefer to have more freedom in the nullability annotation of such properties, and it is possible to do so by setting  `realm.ignore_objects_nullability = true` in a global configuration file (more information about global configuration files can be found in the [.NET documentation](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-files)). If this is enabled, all the previous properties will be considered valid, and the nullability annotations for properties linking to objects will be ignored.
 * Improved performance of `PropertyChanged` and `CollectionChanged` notifications. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
+* Added support for tvOS in Xamarin/MAUI and Unity applications. (Issue [#3161](https://github.com/realm/realm-dotnet/issues/3161))
+* Improve the performance of `Realm.Freeze()`. (Core 13.3.0)
 
 ### Fixed
 * `ISet<RealmValue>` consider string and binary data equivalent. This could cause the client to be inconsistent with the server if a string and some binary data with equivalent content was inserted from Atlas. (Core 13.0.0)
@@ -23,12 +78,20 @@
 * Added a more descriptive error message when a model's property is unsupported. It'll now suggest that the target type may need to inherit from `RealmObject`. (Issue [#3162](https://github.com/realm/realm-dotnet/issues/3162))
 * Disposing a Realm instance while an active transaction is running will now correctly roll back the transaction. (Issue [#2924](https://github.com/realm/realm-dotnet/issues/2924))
 * Fixed an issue that would cause `PropertyChanged` notifications to be delivered for collection properties when the content of the collection was modified even if the collection itself was not replaced. (Issue [#3112](https://github.com/realm/realm-dotnet/issues/3112))
+* Fixed an issue where weaving assemblies on Unity could result in `System.InvalidOperationException`. (Issue [#3199](https://github.com/realm/realm-dotnet/issues/3199))
+* `Session.Stop` will now correctly keep the session stopped until `Session.Start` is called. Previously, there were a number of circumstances that could cause the session to be resumed, even if not explicitly requested. (Core 13.3.0)
+* When client reset with recovery is used and the recovery does not actually result in any new local commits, the sync client may have gotten stuck in a cycle with a A fatal error occured during client reset: 'A previous 'Recovery' mode reset from <timestamp> did not succeed, giving up on 'Recovery' mode to prevent a cycle' error message. (Core 13.3.0)
+* Fixed diverging history in flexible sync if writes occur during bootstrap to objects that just came into view. (Core 13.3.0)
+* Fix several data races when opening cached frozen Realms. New frozen Realms were added to the cache and the lock released before they were fully initialized, resulting in races if they were immediately read from the cache on another thread. (Core 13.3.0)
+* If a client reset w/recovery or discard local is interrupted while the "fresh" realm is being downloaded, the sync client may crash with a MultpleSyncAgents exception. (Core 13.3.0)
+* Changesets from the server sent during FLX bootstrapping that are larger than 16MB can cause the sync client to crash with a LogicError. (Core 13.3.0)
+* Sharing Realm files between a Catalyst app and Realm Studio did not properly synchronize access to the Realm file. (Core 13.4.0)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.2.0.
+* Using Core 13.4.0.
 * Updated `DynamicRealmObjectHelper.TryGetPrimaryKeyValue` not to use reflection. (Issue [#3166](https://github.com/realm/realm-dotnet/issues/3166))
 * Fixed UWP tests workflow when running a debug build. (Issue [#3030](https://github.com/realm/realm-dotnet/issues/3030))
 

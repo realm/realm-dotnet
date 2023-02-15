@@ -29,6 +29,8 @@ using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
+using NUnitExplicit = NUnit.Framework.ExplicitAttribute;
+
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
@@ -654,6 +656,76 @@ namespace Realms.Tests.Sync
 
             // Dispose should close the session and allow us to delete the Realm.
             Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
+        }
+
+        [Test]
+        public void SyncTimeouts_ArePassedCorrectlyToCore()
+        {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+            Logger.LogLevel = LogLevel.Debug;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1234);
+                appConfig.SyncTimeoutOptions.ConnectionLingerTime = TimeSpan.FromMilliseconds(3456);
+                appConfig.SyncTimeoutOptions.PingKeepAlivePeriod = TimeSpan.FromMilliseconds(5678);
+                appConfig.SyncTimeoutOptions.PongKeepAliveTimeout = TimeSpan.FromMilliseconds(7890);
+                appConfig.SyncTimeoutOptions.FastReconnectLimit = TimeSpan.FromMilliseconds(9012);
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+
+                using var realm = await GetRealmAsync(config);
+
+                var logs = logger.GetLog();
+
+                Assert.That(logs, Does.Contain("Config param: connect_timeout = 1234 ms"));
+                Assert.That(logs, Does.Contain("Config param: connection_linger_time = 3456 ms"));
+                Assert.That(logs, Does.Contain("Config param: ping_keepalive_period = 5678 ms"));
+                Assert.That(logs, Does.Contain("Config param: pong_keepalive_timeout = 7890 ms"));
+                Assert.That(logs, Does.Contain("Config param: fast_reconnect_limit = 9012 ms"));
+            });
+        }
+
+        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        public void CancelAsyncOperationsOnNonFatalErrors_WhenTrue_ShouldCancelAsyncOperationsOnTimeout()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+
+                // 1 ms timeout is way too short to establish a connection
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1);
+
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+                config.CancelAsyncOperationsOnNonFatalErrors = true;
+
+                var ex = await TestHelpers.AssertThrows<RealmException>(() => GetRealmAsync(config));
+                Assert.That(ex.InnerException, Is.TypeOf<SessionException>().And.Message.Contains("Sync connection was not fully established in time"));
+            });
+        }
+
+        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        public void CancelAsyncOperationsOnNonFatalErrors_WhenFalse_ShouldNotCancelAsyncOperationsOnTimeout()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+
+                // 1 ms timeout is way too short to establish a connection
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1);
+
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+                config.CancelAsyncOperationsOnNonFatalErrors = false;
+
+                // Connection should timeout immediately, but we should continue retrying until we eventually
+                // timeout the GetRealmAsync operation
+                var ex = await TestHelpers.AssertThrows<TimeoutException>(() => GetRealmAsync(config), timeout: 1000);
+                Assert.That(ex.Message, Does.Contain("The operation has timed out after 1000 ms"));
+            });
         }
 
         private const int DummyDataSize = 100;

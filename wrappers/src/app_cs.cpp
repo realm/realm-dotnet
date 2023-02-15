@@ -90,6 +90,16 @@ namespace realm {
             void* managed_logger;
 
             void* managed_http_client;
+
+            uint64_t sync_connect_timeout_ms;
+
+            uint64_t sync_connection_linger_time_ms;
+
+            uint64_t sync_ping_keep_alive_period_ms;
+
+            uint64_t sync_pong_keep_alive_timeout_ms;
+
+            uint64_t sync_fast_reconnect_limit;
         };
 
         class SyncLogger : public util::Logger {
@@ -190,6 +200,11 @@ extern "C" {
             SyncClientConfig sync_client_config;
             sync_client_config.log_level = app_config.log_level;
             sync_client_config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
+            sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
+            sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
+            sync_client_config.timeouts.fast_reconnect_limit = app_config.sync_fast_reconnect_limit;
+            sync_client_config.timeouts.ping_keepalive_period = app_config.sync_ping_keep_alive_period_ms;
+            sync_client_config.timeouts.pong_keepalive_timeout = app_config.sync_pong_keep_alive_timeout_ms;
 
             if (app_config.metadata_mode_has_value) {
                 sync_client_config.metadata_mode = app_config.metadata_mode;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using MongoDB.Bson;
 using Realms;
 
@@ -55,6 +56,9 @@ namespace SourceGeneratorAssemblyToProcess
 
         public string StringProperty { get; set; }
 
+        [Required]
+        public byte[] RequiredByteArrayProperty { get; set; }
+
         public byte[] ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
@@ -92,5 +96,31 @@ namespace SourceGeneratorAssemblyToProcess
         public RealmInteger<long> Int64CounterProperty { get; set; }
 
         public RealmValue RealmValueProperty { get; set; }
+
+        public AllTypesClass ObjectProperty { get; set; }
+
+        public IList<AllTypesClass> ObjectCollectionProperty { get; }
+
+        public IList<int> IntCollectionProperty { get; }
+
+        public IList<int?> NullableIntCollectionProperty { get; }
+
+        public IList<string> StringCollectionProperty { get; }
+
+        [Required]
+        public IList<string> RequiredStringListProperty { get; }
+
+        [Required]
+        public ISet<string> RequiredStringSetProperty { get; }
+
+        [Required]
+        public IDictionary<string, string> RequiredStringDictionaryProperty { get; }
+
+        public IList<string> NonRequiredStringListProperty { get; }
+
+        public ISet<string> NonRequiredStringSetProperty { get; }
+
+        public IDictionary<string, string> NonRequiredStringDictionaryProperty { get; }
+
     }
 }

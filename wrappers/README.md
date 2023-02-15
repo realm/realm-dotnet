@@ -27,12 +27,12 @@ If you downloaded a zip of the source, you need to go back to github to identify
 1. Download a zip using the GitHub download button in that tree, eg `realm-core-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
 1. Unpack its contents into `wrappers/src/realm-core`
 
-Building iOS wrappers on macOS
+Building iOS, tvOS, and macCatalyst wrappers on macOS
 ------------------------------------------
 
 Building for iOS required cmake and zlib installed. In case you do not have them installed, you can do it with `brew install cmake zlib`.
 
-You can use `build-ios.ps1` to build for iOS, specifying one or more the available platforms, `Device`, `Simulator` or `Catalayst`, and either `Debug` or `Release` configuration.
+You can use `build-apple-platform.ps1` to build for iOS, tvOS, and macCatalyst, specifying one or more of the available platforms, `Device`, `Simulator` or `Catalayst`, and either `Debug` or `Release` configuration.
 
 Building Android wrappers
 -------------

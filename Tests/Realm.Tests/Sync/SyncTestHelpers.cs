@@ -17,12 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using Nito.AsyncEx;
@@ -50,7 +47,7 @@ namespace Realms.Tests.Sync
 #if !UNITY
             try
             {
-                _baseUri = new Uri(System.Configuration.ConfigurationManager.AppSettings["BaasUrl"]);
+                _baseUri = new Uri(ConfigHelpers.GetSetting("BaasUrl"));
             }
             catch
             {
@@ -200,12 +197,13 @@ namespace Realms.Tests.Sync
 #if !UNITY
             try
             {
-                var cluster = System.Configuration.ConfigurationManager.AppSettings["Cluster"];
-                var apiKey = System.Configuration.ConfigurationManager.AppSettings["ApiKey"];
-                var privateApiKey = System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
-                var groupId = System.Configuration.ConfigurationManager.AppSettings["GroupId"];
+                var cluster = ConfigHelpers.GetSetting("Cluster");
+                var apiKey = ConfigHelpers.GetSetting("ApiKey");
+                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey");
+                var groupId = ConfigHelpers.GetSetting("GroupId");
+                var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
 
-                _baasClient ??= await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient ??= await BaasClient.Atlas(_baseUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {

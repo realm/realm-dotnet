@@ -139,6 +139,7 @@ namespace Realms.Sync
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));
+            var syncTimeouts = config.SyncTimeoutOptions ?? new();
 
             if (config.MetadataPersistenceMode.HasValue)
             {
@@ -167,6 +168,11 @@ namespace Realms.Sync
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),
 #pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
                 log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
+                sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
+                sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
+                sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
+                sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
+                sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
             };
 
             if (config.CustomLogger != null)

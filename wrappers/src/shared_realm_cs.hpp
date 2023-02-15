@@ -78,6 +78,8 @@ struct SyncConfiguration
     bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
+
+    bool cancel_waits_on_nonfatal_error;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

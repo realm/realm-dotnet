@@ -23,6 +23,10 @@ namespace Realms
     /// <summary>
     /// An attribute that indicates a required property. When persisting, the Realm will validate that the value of the property is not null.
     /// </summary>
+    /// <remarks>
+    /// This attribute cannot be used with source generated classes when nullability annotations are enabled.
+    /// In that case having a non-nullable type has the same effect as using this attribute.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Property)]
     public class RequiredAttribute : Attribute
     {
