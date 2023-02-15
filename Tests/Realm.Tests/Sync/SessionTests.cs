@@ -420,7 +420,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(stringsA.ToArray(), Is.EquivalentTo(new[] { "0", "1" }));
 
-                using var token = stringsA.SubscribeForNotifications((sender, changes, error) =>
+                using var token = stringsA.SubscribeForNotifications((sender, changes) =>
                 {
                     if (sender.Count != 3)
                     {
@@ -645,7 +645,7 @@ namespace Realms.Tests.Sync
                 var objects = realm.All<ObjectWithPartitionValue>().AsRealmCollection();
                 Assert.That(objects.Count, Is.EqualTo(2));
                 var tcs = new TaskCompletionSource<ChangeSet>();
-                using var token = objects.SubscribeForNotifications((sender, changes, _) =>
+                using var token = objects.SubscribeForNotifications((sender, changes) =>
                 {
                     if (changes != null)
                     {

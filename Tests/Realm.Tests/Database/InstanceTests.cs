@@ -428,7 +428,7 @@ namespace Realms.Tests.Database
         {
             using var realm = GetRealm();
 
-            var token = realm.All<Person>().SubscribeForNotifications((sender, changes, error) =>
+            var token = realm.All<Person>().SubscribeForNotifications((sender, changes) =>
             {
                 Console.WriteLine(changes?.InsertedIndices);
             });

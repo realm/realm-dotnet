@@ -31,10 +31,8 @@ namespace Realms
     /// <param name="sender">The <see cref="IRealmCollection{T}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>,
     /// or <c>null</c> if an error has occurred.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a
-    /// <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors have occurred.</param>
     /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
-    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
+    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes);
 
     /// <summary>
     /// A callback that will be invoked each time the contents of a <see cref="IDictionary{String, TValue}"/> have changed.
@@ -42,10 +40,8 @@ namespace Realms
     /// <param name="sender">The <see cref="IDictionary{String, TValue}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="DictionaryChangeSet"/> describing the changes to a <see cref="IDictionary{String, TValue}"/>,
     /// or <c>null</c> if an has error occurred.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a
-    /// <see cref="IDictionary{String, TValue}"/> for changes, or <c>null</c> if no errors have occurred.</param>
     /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive contained in the dictionary.</typeparam>
-    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet changes, Exception error);
+    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet changes);
 
     /// <summary>
     /// Iterable, sortable collection of one kind of RealmObjectBase resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.

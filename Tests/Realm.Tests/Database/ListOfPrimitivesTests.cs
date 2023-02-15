@@ -970,10 +970,8 @@ namespace Realms.Tests.Database
                 var realm = list.AsRealmCollection().Realm;
 
                 var changeSetList = new List<ChangeSet>();
-                using var token = list.SubscribeForNotifications((collection, changes, error) =>
+                using var token = list.SubscribeForNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         changeSetList.Add(changes);

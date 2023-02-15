@@ -70,15 +70,11 @@ namespace Realms.Tests.Database
                 using var realm = GetRealm(_config);
 
                 var query = realm.All<IntPropertyObject>();
-                using var token = query.SubscribeForNotifications((sender, changes, error) =>
+                using var token = query.SubscribeForNotifications((sender, changes) =>
                 {
                     if (changes != null)
                     {
                         tcs.TrySetResult(changes);
-                    }
-                    else if (error != null)
-                    {
-                        tcs.TrySetException(error);
                     }
                 });
 
