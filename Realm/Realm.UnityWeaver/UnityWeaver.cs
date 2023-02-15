@@ -83,7 +83,7 @@ namespace RealmWeaver
             {
                 _listRequest = Client.List();
 
-                if (UnityEditorInternal.InternalEditorUtility.inBatchMode)
+                if (Application.isBatchMode)
                 {
                     _installMethodTask = new TaskCompletionSource<string>();
                     EditorApplication.update += OnEditorApplicationUpdate;
