@@ -135,6 +135,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
     config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
+    config.sync_config->cancel_waits_on_nonfatal_error = sync_configuration.cancel_waits_on_nonfatal_error;
 
     if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal ||
         sync_configuration.client_resync_mode == ClientResyncMode::Recover ||
