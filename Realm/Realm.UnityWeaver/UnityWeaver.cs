@@ -82,8 +82,19 @@ namespace RealmWeaver
             EditorApplication.delayCall += () =>
             {
                 _listRequest = Client.List();
+
                 _installMethodTask = new TaskCompletionSource<string>();
-                EditorApplication.update += OnEditorApplicationUpdate;
+
+                if (Application.isBatchMode)
+                {
+                    // In batch mode, `update` won't get called until compilation is complete,
+                    // which means we'll deadlock when we block compilation on the tcs completing
+                    _installMethodTask.TrySetResult(Metric.Unknown());
+                }
+                else
+                {
+                    EditorApplication.update += OnEditorApplicationUpdate;
+                }
 
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
@@ -259,7 +270,7 @@ namespace RealmWeaver
                         TargetFrameworkVersion = Application.unityVersion,
                         TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = _installMethodTask.Task.Result
+                        InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown()
                     };
 
                     var results = weaver.Execute(analyticsConfig);
