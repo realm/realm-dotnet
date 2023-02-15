@@ -83,7 +83,7 @@ namespace RealmWeaver
             {
                 _listRequest = Client.List();
 
-                if (Application.isBatchMode)
+                if (!Application.isBatchMode)
                 {
                     _installMethodTask = new TaskCompletionSource<string>();
                     EditorApplication.update += OnEditorApplicationUpdate;
