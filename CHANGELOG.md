@@ -23,6 +23,7 @@
     await realm.RefreshAsync();
   }
   ```
+* Removed `InMemoryConfiguration.EncryptionKey`. It was never possible to encrypt in-memory Realms and setting that property would have resulted in runtime errors.
 
 ### Enhancements
 
