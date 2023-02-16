@@ -74,9 +74,9 @@ namespace RealmWeaver
 
         private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
-        private readonly Dictionary<string, Func<Instruction, (bool IsToDelete, string DictKey)>> _apiAnalysisSetters;
+        private readonly Dictionary<string, Func<Instruction, ActionDriver>> _apiAnalysisSetters;
 
-        private readonly Dictionary<string, Func<IMemberDefinition, (bool IsToDelete, string DictKey)>> _classAnalysisSetters;
+        private readonly Dictionary<string, Func<IMemberDefinition, ActionDriver>> _classAnalysisSetters;
 
         private readonly Config _config;
 
@@ -102,13 +102,13 @@ namespace RealmWeaver
                     member is PropertyDefinition property &&
                     (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
                     property.PropertyType.IsRealmObjectDescendant(_references)) ?
-                    (true, Feature.RealmObjectReference) : default,
-                [Feature.RealmValue] = member => (true, Feature.RealmValue),
+                    new ActionDriver(true, Feature.RealmObjectReference) : new ActionDriver(),
+                [Feature.RealmValue] = member => new ActionDriver(true, Feature.RealmValue),
                 ["IList`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveList, Feature.ReferenceList),
                 ["IDictionary`2"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveDictionary, Feature.ReferenceDictionary, 1),
                 ["ISet`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveSet, Feature.ReferenceSet),
-                ["RealmInteger`1"] = member => (true, Feature.RealmInteger),
-                [Feature.BacklinkAttribute] = member => (true, Feature.BacklinkAttribute)
+                ["RealmInteger`1"] = member => new ActionDriver(true, Feature.RealmInteger),
+                [Feature.BacklinkAttribute] = member => new ActionDriver(true, Feature.BacklinkAttribute)
             };
 
             _apiAnalysisSetters = new()
@@ -127,15 +127,15 @@ namespace RealmWeaver
                     methodSpecification.Parameters.Count == 2 &&
                     methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
                     instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
-                    (true, Feature.Add) : default,
-                [Feature.ShouldCompactOnLaunch] = instruction => (true, Feature.ShouldCompactOnLaunch),
-                [Feature.MigrationCallback] = instruction => (true, Feature.MigrationCallback),
-                [Feature.RealmChanged] = instruction => (true, Feature.RealmChanged),
+                    new ActionDriver(true, Feature.Add) : new ActionDriver(),
+                [Feature.ShouldCompactOnLaunch] = instruction => new ActionDriver(true, Feature.ShouldCompactOnLaunch),
+                [Feature.MigrationCallback] = instruction => new ActionDriver(true, Feature.MigrationCallback),
+                [Feature.RealmChanged] = instruction => new ActionDriver(true, Feature.RealmChanged),
                 ["SubscribeForNotifications"] = instruction =>
                 {
                     if (instruction.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction.Operand))
                     {
-                        return default;
+                        return new ActionDriver();
                     }
 
                     var collectionType = ((TypeSpecification)methodSpecification.Parameters[0].ParameterType).Name;
@@ -154,16 +154,16 @@ namespace RealmWeaver
                         Feature.SetSubscribeForNotifications,
                         Feature.DictionarySubscribeForNotifications);
 
-                    return (shouldDelete, key);
+                    return new ActionDriver(shouldDelete, key);
                 },
-                [Feature.PropertyChanged] = instruction => (true, Feature.PropertyChanged),
-                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => (true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
-                [Feature.RecoverUnsyncedChangesHandler] = instruction => (true, Feature.RecoverUnsyncedChangesHandler),
-                [Feature.DiscardUnsyncedChangesHandler] = instruction => (true, Feature.DiscardUnsyncedChangesHandler),
-                [Feature.ManualRecoveryHandler] = instruction => (true, Feature.ManualRecoveryHandler),
-                [Feature.GetProgressObservable] = instruction => (true, Feature.GetProgressObservable),
-                [Feature.PartitionSyncConfiguration] = instruction => (true, Feature.PartitionSyncConfiguration),
-                [Feature.FlexibleSyncConfiguration] = instruction => (true, Feature.FlexibleSyncConfiguration),
+                [Feature.PropertyChanged] = instruction => new ActionDriver(true, Feature.PropertyChanged),
+                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
+                [Feature.RecoverUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.RecoverUnsyncedChangesHandler),
+                [Feature.DiscardUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.DiscardUnsyncedChangesHandler),
+                [Feature.ManualRecoveryHandler] = instruction => new ActionDriver(true, Feature.ManualRecoveryHandler),
+                [Feature.GetProgressObservable] = instruction => new ActionDriver(true, Feature.GetProgressObservable),
+                [Feature.PartitionSyncConfiguration] = instruction => new ActionDriver(true, Feature.PartitionSyncConfiguration),
+                [Feature.FlexibleSyncConfiguration] = instruction => new ActionDriver(true, Feature.FlexibleSyncConfiguration),
                 [Feature.Anonymous] = instruction => AnalyzeRealmApi(instruction, Feature.Anonymous),
                 [Feature.EmailPassword] = instruction => AnalyzeRealmApi(instruction, Feature.EmailPassword),
                 [Feature.Facebook] = instruction => AnalyzeRealmApi(instruction, Feature.Facebook),
@@ -174,8 +174,8 @@ namespace RealmWeaver
                 [Feature.ServerApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ServerApiKey),
                 [Feature.Function] = instruction => AnalyzeRealmApi(instruction, Feature.Function),
                 [Feature.CallAsync] = instruction => AnalyzeRealmApi(instruction, Feature.CallAsync),
-                [Feature.GetMongoClient] = instruction => (true, Feature.GetMongoClient),
-                [Feature.DynamicApi] = instruction => (true, Feature.DynamicApi)
+                [Feature.GetMongoClient] = instruction => new ActionDriver(true, Feature.GetMongoClient),
+                [Feature.DynamicApi] = instruction => new ActionDriver(true, Feature.DynamicApi)
             };
 
             _analyzeUserAssemblyTask = Task.Run(() =>
@@ -183,30 +183,30 @@ namespace RealmWeaver
                 AnalyzeUserAssembly(module);
             });
 
-            (bool ShouldDelete, string DictKey) AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
+            ActionDriver AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
             {
                 if (member is not PropertyDefinition property ||
                     property.PropertyType is not GenericInstanceType genericType ||
                     genericType.GenericArguments.Count < genericArgIndex + 1)
                 {
-                    return default;
+                    return new ActionDriver();
                 }
 
                 var keyToAdd = genericType.GenericArguments[genericArgIndex].IsPrimitive ?
                     primitiveKey : referenceKey;
 
                 var shouldDelete = ContainsAllRelatedFeatures(keyToAdd, referenceKey, primitiveKey);
-                return (shouldDelete, keyToAdd);
+                return new ActionDriver(shouldDelete, keyToAdd);
             }
 
-            (bool ShouldDelete, string DictKey) AnalyzeRealmApi(Instruction instruction, string key)
+            ActionDriver AnalyzeRealmApi(Instruction instruction, string key)
             {
                 if (IsInRealmNamespace(instruction.Operand))
                 {
-                    return (true, key);
+                    return new ActionDriver(true, key);
                 }
 
-                return default;
+                return new ActionDriver();
             }
 
             bool ContainsAllRelatedFeatures(string key, params string[] features)
@@ -304,14 +304,14 @@ namespace RealmWeaver
             {
                 if (_classAnalysisSetters.TryGetValue(key, out var featureFunc))
                 {
-                    var (shouldDelete, keyToSet) = featureFunc(property);
+                    var actionDriver = featureFunc(property);
 
-                    if (!string.IsNullOrEmpty(keyToSet))
+                    if (!string.IsNullOrEmpty(actionDriver.DictKey))
                     {
-                        _realmFeaturesToAnalyze[keyToSet] = 1;
+                        _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
                     }
 
-                    if (shouldDelete)
+                    if (actionDriver.IsToDelete)
                     {
                         _classAnalysisSetters.Remove(key);
                     }
@@ -391,14 +391,14 @@ namespace RealmWeaver
 
                     if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
                     {
-                        var (IsToDelete, DictKey) = featureFunc.Invoke(cil);
+                        var actionDriver = featureFunc.Invoke(cil);
 
-                        if (!string.IsNullOrEmpty(DictKey))
+                        if (!string.IsNullOrEmpty(actionDriver.DictKey))
                         {
-                            _realmFeaturesToAnalyze[DictKey] = 1;
+                            _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
                         }
 
-                        if (IsToDelete)
+                        if (actionDriver.IsToDelete)
                         {
                             _apiAnalysisSetters.Remove(key);
                         }
@@ -529,6 +529,19 @@ namespace RealmWeaver
             Disabled,
             DryRun,
             Full,
+        }
+
+        private class ActionDriver
+        {
+            public bool IsToDelete { get; }
+
+            public string DictKey { get; }
+
+            public ActionDriver(bool isToDelete = false, string dictKey = "")
+            {
+                IsToDelete = isToDelete;
+                DictKey = dictKey;
+            }
         }
     }
 }
