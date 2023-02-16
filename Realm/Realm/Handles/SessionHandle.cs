@@ -343,18 +343,13 @@ namespace Realms.Sync
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
-                    DiscardLocalResetHandler handler => handler.OnBeforeReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (cb != null)
                 {
@@ -383,18 +378,13 @@ namespace Realms.Sync
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnAfterReset,
-                    DiscardLocalResetHandler handler => handler.OnAfterReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnAfterReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => didRecover ? handler.OnAfterRecovery : handler.OnAfterDiscard,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (cb != null)
                 {
