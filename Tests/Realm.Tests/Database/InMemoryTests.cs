@@ -149,16 +149,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Tests obsolete functionality")]
-        public void InMemoryRealm_WhenEncrypted_Throws()
-        {
-            Assert.Throws<NotSupportedException>(() => _ = new InMemoryConfiguration(_config.Identifier)
-            {
-                EncryptionKey = TestHelpers.GetEncryptionKey(23)
-            });
-        }
-
-        [Test]
         public void InMemoryRealmWithFrozenObjects_WhenDeleted_DoesNotThrow()
         {
             var realm = GetRealm(_config);
