@@ -410,38 +410,6 @@ namespace Realms.Tests.Sync
             });
         }
 
-        [Test, Obsolete("Tests push client")]
-        public void User_Push_RegisterDevice()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                await user.GetPushClient("gcm").RegisterDeviceAsync("hello");
-            });
-        }
-
-        [Test, Obsolete("Tests push client")]
-        public void User_Push_RegisterDevice_WrongService()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                var ex = await TestHelpers.AssertThrows<AppException>(() => user.GetPushClient("non-existent").RegisterDeviceAsync("hello"));
-                Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-                Assert.That(ex.Message, Does.Contain("service not found: 'non-existent'"));
-            });
-        }
-
-        [Test, Obsolete("Tests push client")]
-        public void User_Push_DeregisterDevice()
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var user = await GetUserAsync();
-                await user.GetPushClient("gcm").DeregisterDeviceAsync();
-            });
-        }
-
         [Test]
         public void User_JWT_LogsInAndReadsDataFromToken()
         {
