@@ -65,7 +65,7 @@ jobs:
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
@@ -227,7 +227,7 @@ jobs:
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Publish Tests/Tests.XUnit
       run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
