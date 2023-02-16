@@ -31,12 +31,6 @@ namespace Realms.Sync
     /// </summary>
     public class Session : INotifyPropertyChanged
     {
-        /// <summary>
-        /// Triggered when an error occurs on a session. The <c>sender</c> argument will be the session which has errored.
-        /// </summary>
-        [Obsolete("Use SyncConfigurationBase.OnSessionError in conjunction with SyncConfigurationBase.ClientResetHandler instead.")]
-        public static event EventHandler<ErrorEventArgs> Error;
-
         private readonly SessionHandle _handle;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
@@ -218,12 +212,6 @@ namespace Realms.Sync
         }
 
         internal void ReportErrorForTesting(int errorCode, SessionErrorCategory sessionErrorCategory, string errorMessage, bool isFatal, ServerRequestsAction action) => Handle.ReportErrorForTesting(errorCode, sessionErrorCategory, errorMessage, isFatal, action);
-
-        internal static void RaiseError(Session session, Exception error)
-        {
-            var args = new ErrorEventArgs(error);
-            Error?.Invoke(session, args);
-        }
 
         internal void RaisePropertyChanged(string propertyName)
         {

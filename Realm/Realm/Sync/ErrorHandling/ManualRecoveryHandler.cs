@@ -46,16 +46,5 @@ namespace Realms.Sync.ErrorHandling
         {
             ManualClientReset = onClientReset;
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class that uses the Session.Error as handler for client resets.
-        /// </summary>
-        /// <remarks>
-        /// This obsolete constructor should be used only when the user wants to use the obsolete Session.Error event for handling session errors and client resets.
-        /// </remarks>
-        [Obsolete("Use ManualRecoveryHandler(ClientResetCallback onClientReset) instead.")]
-        public ManualRecoveryHandler()
-        {
-        }
     }
 }

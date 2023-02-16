@@ -291,10 +291,7 @@ namespace Realms.Tests.Sync
 
         private void TestListCore<T>(Func<SyncCollectionsObject, IList<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a.Equals(b);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -345,15 +342,12 @@ namespace Realms.Tests.Sync
 
                 Assert.That(list1, Is.Empty);
                 Assert.That(list2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
         private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a.Equals(b);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -404,7 +398,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(set1, Is.Empty);
                 Assert.That(set2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
         private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
@@ -477,15 +471,12 @@ namespace Realms.Tests.Sync
 
                 Assert.That(dict1, Is.Empty);
                 Assert.That(dict2, Is.Empty);
-            }, ensureNoSessionErrors: true, timeout: 60_000);
+            }, timeout: 60_000);
         }
 
         private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a.Equals(b);
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -525,7 +516,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(equalsOverride(prop1, prop2), Is.True);
                 Assert.That(equalsOverride(prop2, item2), Is.True);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
         private static RealmValue Clone(RealmValue original)
