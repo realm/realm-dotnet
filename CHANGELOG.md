@@ -23,7 +23,9 @@
     await realm.RefreshAsync();
   }
   ```
-* Removed `InMemoryConfiguration.EncryptionKey`. It was never possible to encrypt in-memory Realms and setting that property would have resulted in runtime errors.
+  (PR [#3234](https://github.com/realm/realm-dotnet/pull/3234))
+* Removed `InMemoryConfiguration.EncryptionKey`. It was never possible to encrypt in-memory Realms and setting that property would have resulted in runtime errors. (PR [#3236](https://github.com/realm/realm-dotnet/pull/3236))
+* Removed `SyncConfiguration`. Use `PartitionSyncConfiguration` or `FlexibleSyncConfiguration` instead.
 
 ### Enhancements
 
