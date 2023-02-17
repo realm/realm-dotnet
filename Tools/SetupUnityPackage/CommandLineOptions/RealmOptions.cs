@@ -26,7 +26,7 @@ namespace SetupUnityPackage
     internal class RealmOptions : OptionsBase
     {
         [Option("packages-path", Required = true, HelpText = "Path to the folder containing Realm.nupkg, Realm.UnityUtils.nupkg, and Realm.UnityWeaver.nupkg to use.")]
-        public string PackagesPath { get; set; }
+        public string PackagesPath { get; set; } = null!;
 
         [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
         public bool Pack { get; set; }
