@@ -36,7 +36,7 @@ namespace Realms.SourceGenerator
                 return;
             }
 
-            var classSymbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as ITypeSymbol;
+            var classSymbol = (ITypeSymbol)context.SemanticModel.GetDeclaredSymbol(classSyntax)!;
 
             if (_realmClassesDict.TryGetValue(classSymbol, out var rcDefinition))
             {
@@ -52,7 +52,7 @@ namespace Realms.SourceGenerator
         }
     }
 
-    internal struct RealmClassDefinition
+    internal readonly struct RealmClassDefinition
     {
         public ITypeSymbol ClassSymbol { get; }
 

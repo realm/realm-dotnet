@@ -9,6 +9,8 @@
     <AssemblyName>Realm.UnityUtils</AssemblyName>
     <DisableFody>true</DisableFody>
     <NoWarn>1701;1702;NU1701</NoWarn>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
