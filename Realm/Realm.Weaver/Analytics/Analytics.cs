@@ -74,9 +74,9 @@ namespace RealmWeaver
 
         private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
-        private readonly Dictionary<string, Func<Instruction, ActionDriver>> _apiAnalysisSetters;
+        private readonly Dictionary<string, Func<Instruction, FeatureAnalysisResult>> _apiAnalysisSetters;
 
-        private readonly Dictionary<string, Func<IMemberDefinition, ActionDriver>> _classAnalysisSetters;
+        private readonly Dictionary<string, Func<IMemberDefinition, FeatureAnalysisResult>> _classAnalysisSetters;
 
         private readonly Config _config;
 
@@ -102,13 +102,13 @@ namespace RealmWeaver
                     member is PropertyDefinition property &&
                     (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
                     property.PropertyType.IsRealmObjectDescendant(_references)) ?
-                    new ActionDriver(true, Feature.RealmObjectReference) : new ActionDriver(),
-                [Feature.RealmValue] = member => new ActionDriver(true, Feature.RealmValue),
+                    new(true, Feature.RealmObjectReference) : default,
+                [Feature.RealmValue] = member => new(true, Feature.RealmValue),
                 ["IList`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveList, Feature.ReferenceList),
                 ["IDictionary`2"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveDictionary, Feature.ReferenceDictionary, 1),
                 ["ISet`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveSet, Feature.ReferenceSet),
-                ["RealmInteger`1"] = member => new ActionDriver(true, Feature.RealmInteger),
-                [Feature.BacklinkAttribute] = member => new ActionDriver(true, Feature.BacklinkAttribute)
+                ["RealmInteger`1"] = member => new(true, Feature.RealmInteger),
+                [Feature.BacklinkAttribute] = member => new(true, Feature.BacklinkAttribute)
             };
 
             _apiAnalysisSetters = new()
@@ -127,15 +127,15 @@ namespace RealmWeaver
                     methodSpecification.Parameters.Count == 2 &&
                     methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
                     instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
-                    new ActionDriver(true, Feature.Add) : new ActionDriver(),
-                [Feature.ShouldCompactOnLaunch] = instruction => new ActionDriver(true, Feature.ShouldCompactOnLaunch),
-                [Feature.MigrationCallback] = instruction => new ActionDriver(true, Feature.MigrationCallback),
-                [Feature.RealmChanged] = instruction => new ActionDriver(true, Feature.RealmChanged),
+                    new(true, Feature.Add) : default,
+                [Feature.ShouldCompactOnLaunch] = instruction => new(true, Feature.ShouldCompactOnLaunch),
+                [Feature.MigrationCallback] = instruction => new(true, Feature.MigrationCallback),
+                [Feature.RealmChanged] = instruction => new(true, Feature.RealmChanged),
                 ["SubscribeForNotifications"] = instruction =>
                 {
                     if (instruction.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction.Operand))
                     {
-                        return new ActionDriver();
+                        return default;
                     }
 
                     var collectionType = ((TypeSpecification)methodSpecification.Parameters[0].ParameterType).Name;
@@ -154,16 +154,16 @@ namespace RealmWeaver
                         Feature.SetSubscribeForNotifications,
                         Feature.DictionarySubscribeForNotifications);
 
-                    return new ActionDriver(shouldDelete, key);
+                    return new(shouldDelete, key);
                 },
-                [Feature.PropertyChanged] = instruction => new ActionDriver(true, Feature.PropertyChanged),
-                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
-                [Feature.RecoverUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.RecoverUnsyncedChangesHandler),
-                [Feature.DiscardUnsyncedChangesHandler] = instruction => new ActionDriver(true, Feature.DiscardUnsyncedChangesHandler),
-                [Feature.ManualRecoveryHandler] = instruction => new ActionDriver(true, Feature.ManualRecoveryHandler),
-                [Feature.GetProgressObservable] = instruction => new ActionDriver(true, Feature.GetProgressObservable),
-                [Feature.PartitionSyncConfiguration] = instruction => new ActionDriver(true, Feature.PartitionSyncConfiguration),
-                [Feature.FlexibleSyncConfiguration] = instruction => new ActionDriver(true, Feature.FlexibleSyncConfiguration),
+                [Feature.PropertyChanged] = instruction => new(true, Feature.PropertyChanged),
+                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
+                [Feature.RecoverUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverUnsyncedChangesHandler),
+                [Feature.DiscardUnsyncedChangesHandler] = instruction => new(true, Feature.DiscardUnsyncedChangesHandler),
+                [Feature.ManualRecoveryHandler] = instruction => new(true, Feature.ManualRecoveryHandler),
+                [Feature.GetProgressObservable] = instruction => new(true, Feature.GetProgressObservable),
+                [Feature.PartitionSyncConfiguration] = instruction => new(true, Feature.PartitionSyncConfiguration),
+                [Feature.FlexibleSyncConfiguration] = instruction => new(true, Feature.FlexibleSyncConfiguration),
                 [Feature.Anonymous] = instruction => AnalyzeRealmApi(instruction, Feature.Anonymous),
                 [Feature.EmailPassword] = instruction => AnalyzeRealmApi(instruction, Feature.EmailPassword),
                 [Feature.Facebook] = instruction => AnalyzeRealmApi(instruction, Feature.Facebook),
@@ -174,8 +174,8 @@ namespace RealmWeaver
                 [Feature.ServerApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ServerApiKey),
                 [Feature.Function] = instruction => AnalyzeRealmApi(instruction, Feature.Function),
                 [Feature.CallAsync] = instruction => AnalyzeRealmApi(instruction, Feature.CallAsync),
-                [Feature.GetMongoClient] = instruction => new ActionDriver(true, Feature.GetMongoClient),
-                [Feature.DynamicApi] = instruction => new ActionDriver(true, Feature.DynamicApi)
+                [Feature.GetMongoClient] = instruction => new(true, Feature.GetMongoClient),
+                [Feature.DynamicApi] = instruction => new(true, Feature.DynamicApi)
             };
 
             _analyzeUserAssemblyTask = Task.Run(() =>
@@ -183,30 +183,30 @@ namespace RealmWeaver
                 AnalyzeUserAssembly(module);
             });
 
-            ActionDriver AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
+            FeatureAnalysisResult AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
             {
                 if (member is not PropertyDefinition property ||
                     property.PropertyType is not GenericInstanceType genericType ||
                     genericType.GenericArguments.Count < genericArgIndex + 1)
                 {
-                    return new ActionDriver();
+                    return default;
                 }
 
                 var keyToAdd = genericType.GenericArguments[genericArgIndex].IsPrimitive ?
                     primitiveKey : referenceKey;
 
                 var shouldDelete = ContainsAllRelatedFeatures(keyToAdd, referenceKey, primitiveKey);
-                return new ActionDriver(shouldDelete, keyToAdd);
+                return new(shouldDelete, keyToAdd);
             }
 
-            ActionDriver AnalyzeRealmApi(Instruction instruction, string key)
+            FeatureAnalysisResult AnalyzeRealmApi(Instruction instruction, string key)
             {
                 if (IsInRealmNamespace(instruction.Operand))
                 {
-                    return new ActionDriver(true, key);
+                    return new(true, key);
                 }
 
-                return new ActionDriver();
+                return default;
             }
 
             bool ContainsAllRelatedFeatures(string key, params string[] features)
@@ -311,7 +311,7 @@ namespace RealmWeaver
                         _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
                     }
 
-                    if (actionDriver.IsToDelete)
+                    if (actionDriver.ShouldDelete)
                     {
                         _classAnalysisSetters.Remove(key);
                     }
@@ -398,7 +398,7 @@ namespace RealmWeaver
                             _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
                         }
 
-                        if (actionDriver.IsToDelete)
+                        if (actionDriver.ShouldDelete)
                         {
                             _apiAnalysisSetters.Remove(key);
                         }
@@ -417,14 +417,11 @@ namespace RealmWeaver
                 {
                     var pretty = false;
 
-                    // TODO andrea: see what the correct address for production should be
                     var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
                     pretty = true;
 #endif
 
-                    // TODO andrea: find a general address that the whole team can use to do tests
-                    // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
                     payload = GetJsonPayload(pretty);
 
                     if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
@@ -531,15 +528,15 @@ namespace RealmWeaver
             Full,
         }
 
-        private class ActionDriver
+        private readonly struct FeatureAnalysisResult
         {
-            public bool IsToDelete { get; }
+            public bool ShouldDelete { get; }
 
             public string DictKey { get; }
 
-            public ActionDriver(bool isToDelete = false, string dictKey = "")
+            public FeatureAnalysisResult(bool isToDelete = false, string dictKey = "")
             {
-                IsToDelete = isToDelete;
+                ShouldDelete = isToDelete;
                 DictKey = dictKey;
             }
         }

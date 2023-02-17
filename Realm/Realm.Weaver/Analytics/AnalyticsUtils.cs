@@ -63,12 +63,14 @@ namespace RealmWeaver
                 return OperatingSystem.Linux;
             }
 
-            if (targetOs.ContainsIgnoreCase("win") ||
-                targetOs.ContainsIgnoreCase("uap") ||
-                targetOs.ContainsIgnoreCase("win") ||
-                targetOs == ".NETFramework")
+            if (targetOs.ContainsIgnoreCase("win") || targetOs == ".NETFramework")
             {
                 return OperatingSystem.Windows;
+            }
+
+            if (targetOs.ContainsIgnoreCase("uap"))
+            {
+                return OperatingSystem.Uwp;
             }
 
             return Unknown(frameworkName.Identifier);
