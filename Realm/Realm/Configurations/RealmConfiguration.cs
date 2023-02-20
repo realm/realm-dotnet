@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -82,7 +84,7 @@ namespace Realms
         /// The <see cref="MigrationCallbackDelegate"/> that will be invoked if the <see cref="Realm"/> needs
         /// to be migrated.
         /// </value>
-        public MigrationCallbackDelegate MigrationCallback { get; set; }
+        public MigrationCallbackDelegate? MigrationCallback { get; set; }
 
         /// <summary>
         /// Gets or sets the compact on launch callback.
@@ -91,19 +93,19 @@ namespace Realms
         /// The <see cref="ShouldCompactDelegate"/> that will be invoked when opening a Realm for the first time
         /// to determine if it should be compacted before being returned to the user.
         /// </value>
-        public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
+        public ShouldCompactDelegate? ShouldCompactOnLaunch { get; set; }
 
         /// <summary>
         /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
-        public new byte[] EncryptionKey
+        public new byte[]? EncryptionKey
         {
             get => base.EncryptionKey;
             set => base.EncryptionKey = value;
         }
 
-        private static RealmConfigurationBase _defaultConfiguration;
+        private static RealmConfigurationBase? _defaultConfiguration;
 
         /// <summary>
         /// Gets or sets the <see cref="RealmConfigurationBase"/> that is used when creating a new <see cref="Realm"/> without specifying a configuration.
@@ -124,7 +126,7 @@ namespace Realms
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
         /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        public RealmConfiguration(string optionalPath = null) : base(optionalPath)
+        public RealmConfiguration(string? optionalPath = null) : base(optionalPath)
         {
         }
 

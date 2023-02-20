@@ -7,6 +7,8 @@
 #pragma warning disable SA1502 // Element should not be on a single line
 #pragma warning disable SA1623 // Property summary documentation should match accessors
 
+#if NETSTANDARD2_0
+
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
@@ -148,6 +150,8 @@ namespace System.Diagnostics.CodeAnalysis
         public string[] Members { get; }
     }
 }
+
+#endif
 
 #pragma warning restore SA1649 // File name should match first type name
 #pragma warning restore SA1402 // File may only contain a single type

@@ -804,7 +804,7 @@ namespace Realms
                 using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
                 var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-                using var newRealm = new Realm(newRealmHandle, config, config.GetSchema(), isInMigration: true);
+                using var newRealm = new Realm(newRealmHandle, config, config.Schema, isInMigration: true);
                 migration = new Migration(oldRealm, newRealm, migrationSchema);
 
                 config.MigrationCallback.Invoke(migration, schemaVersion);

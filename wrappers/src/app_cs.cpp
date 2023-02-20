@@ -320,30 +320,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT size_t shared_app_sync_get_path_for_realm(SharedApp& app, SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            std::string path;
-            if (partition_buf) {
-                Utf16StringAccessor partition(partition_buf, partition_len);
-                auto sync_config = SyncConfig(user, partition);
-                path = app->sync_manager()->path_for_realm(std::move(sync_config));
-            }
-            else {
-                // We're using flx, so we don't have a partition. However, the default
-                // path in core is flx_sync_default while the .NET SDK has been using
-                // `default`. To avoid losing users' data, we're passing `default` as
-                // custom_file_name. We're passing a dummy partition to the SyncConfig
-                // because Core asserts that the name when using FLX config is flx_sync_default.
-                // TODO: revisit once https://github.com/realm/realm-core/issues/5473 is addressed.
-                auto sync_config = SyncConfig(user, "\"\"");
-                path = app->sync_manager()->path_for_realm(std::move(sync_config), util::Optional<std::string>("default"));
-            }
-
-            return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
-        });
-    }
-
     REALM_EXPORT bool shared_app_sync_immediately_run_file_actions(SharedApp& app, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {

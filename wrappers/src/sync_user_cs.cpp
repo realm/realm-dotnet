@@ -326,4 +326,22 @@ extern "C" {
     {
         delete user;
     }
+
+    REALM_EXPORT size_t realm_syncuser_get_path_for_realm(SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            std::string path;
+            if (partition_buf) {
+                Utf16StringAccessor partition(partition_buf, partition_len);
+                auto sync_config = SyncConfig(user, partition);
+                path = user->sync_manager()->path_for_realm(std::move(sync_config));
+            }
+            else {
+                auto sync_config = SyncConfig(user, realm::SyncConfig::FLXSyncEnabled{});
+                path = user->sync_manager()->path_for_realm(std::move(sync_config), "default");
+            }
+
+            return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
+        });
+    }
 }

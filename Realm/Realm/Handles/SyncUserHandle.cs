@@ -108,6 +108,9 @@ namespace Realms.Sync
 
             #endregion
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_path_for_realm(SyncUserHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string partition, IntPtr partition_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -390,6 +393,15 @@ namespace Realms.Sync
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        public string GetRealmPath(string partition = null)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_path_for_realm(this, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
+            });
         }
     }
 }
