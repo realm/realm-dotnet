@@ -504,7 +504,7 @@ namespace Realms.Tests.Database
                     });
                 });
 
-                await Task.Yield();
+                await _realm.RefreshAsync();
 
                 Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
             });
