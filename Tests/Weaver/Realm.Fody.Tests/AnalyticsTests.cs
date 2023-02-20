@@ -104,6 +104,34 @@ namespace Analytics
             }
         }
 
+        [Test]
+        public void ValidateHostOS()
+        {
+            var currentOs = Environment.OSVersion;
+            foreach (var framework in _frameworks.Value)
+            {
+                try
+                {
+                    CompileAnalyticsProject();
+                    ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsType, ConvertToMetricOS(currentOs.Platform));
+                    ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsVersion, currentOs.Version.ToString());
+                }
+                catch (Exception e)
+                {
+                    Assert.Fail($"An error occurred for framework {framework} while validating {Metric.Environment.HostOsType} or {Metric.Environment.HostOsVersion}: {e.Message}");
+                }
+            }
+        }
+
+        private static string ConvertToMetricOS(PlatformID platformID) =>
+            platformID switch
+            {
+                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => Metric.OperatingSystem.Windows,
+                PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
+                PlatformID.Unix => Metric.OperatingSystem.Linux,
+                _ => platformID.ToString()
+            };
+
         private void ValidateAnalyticsPayload<T>(string featureName, T expectedResult)
         {
             foreach (var framework in _frameworks.Value)
@@ -117,6 +145,11 @@ namespace Analytics
         private void ValidateSdkApiAnalyticsPayload(string featureName, byte expectedUsed = 1)
         {
             ValidateAnalyticsPayload(featureName, expectedUsed);
+        }
+
+        private void ValidateEnvironmentMetricsPayload(string featureName, string expectedValue)
+        {
+            ValidateAnalyticsPayload(featureName, expectedValue);
         }
 
         private string WeaveRealm(string framework, string collectionType)
