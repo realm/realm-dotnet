@@ -261,7 +261,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedAllTypesObject(Realms.RealmValue val) => val.AsRealmObject<EmbeddedAllTypesObject>();
+        public static explicit operator EmbeddedAllTypesObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<EmbeddedAllTypesObject>();
 
         public static implicit operator Realms.RealmValue(EmbeddedAllTypesObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

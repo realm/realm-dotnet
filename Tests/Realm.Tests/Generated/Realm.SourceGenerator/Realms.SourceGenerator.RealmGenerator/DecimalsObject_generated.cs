@@ -163,7 +163,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DecimalsObject(Realms.RealmValue val) => val.AsRealmObject<DecimalsObject>();
+        public static explicit operator DecimalsObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DecimalsObject>();
 
         public static implicit operator Realms.RealmValue(DecimalsObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

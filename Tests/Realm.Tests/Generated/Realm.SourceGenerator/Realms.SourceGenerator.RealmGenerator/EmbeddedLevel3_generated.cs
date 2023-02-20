@@ -167,7 +167,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedLevel3(Realms.RealmValue val) => val.AsRealmObject<EmbeddedLevel3>();
+        public static explicit operator EmbeddedLevel3?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<EmbeddedLevel3>();
 
         public static implicit operator Realms.RealmValue(EmbeddedLevel3? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

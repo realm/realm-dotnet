@@ -400,7 +400,7 @@ private void UnsubscribeFromNotifications()
     Accessor.UnsubscribeFromNotifications();
 }}")}
 
-public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+public static explicit operator {_classInfo.Name}?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<{_classInfo.Name}>();
 
 public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

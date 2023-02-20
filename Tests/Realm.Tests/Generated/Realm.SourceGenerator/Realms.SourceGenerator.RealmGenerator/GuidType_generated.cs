@@ -207,7 +207,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator GuidType(Realms.RealmValue val) => val.AsRealmObject<GuidType>();
+        public static explicit operator GuidType?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<GuidType>();
 
         public static implicit operator Realms.RealmValue(GuidType? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

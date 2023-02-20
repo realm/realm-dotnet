@@ -173,7 +173,7 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
+        public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
 
         public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

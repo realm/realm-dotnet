@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -113,7 +115,7 @@ namespace Realms
         /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
         /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
         /// </summary>
-        public IRealmObjectBase Parent { get; }
+        public IRealmObjectBase? Parent { get; }
     }
 
     /// <summary>
@@ -132,6 +134,6 @@ namespace Realms
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
+        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false);
     }
 }

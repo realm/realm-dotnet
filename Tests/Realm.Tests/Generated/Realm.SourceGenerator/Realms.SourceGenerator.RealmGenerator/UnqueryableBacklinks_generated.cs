@@ -165,7 +165,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator UnqueryableBacklinks(Realms.RealmValue val) => val.AsRealmObject<UnqueryableBacklinks>();
+        public static explicit operator UnqueryableBacklinks?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<UnqueryableBacklinks>();
 
         public static implicit operator Realms.RealmValue(UnqueryableBacklinks? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

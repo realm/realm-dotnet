@@ -186,7 +186,7 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
+        public static explicit operator ObjectWithPartitionValue?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectWithPartitionValue>();
 
         public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

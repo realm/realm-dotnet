@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator NonPrimaryKeyWithPKRelation(Realms.RealmValue val) => val.AsRealmObject<NonPrimaryKeyWithPKRelation>();
+            public static explicit operator NonPrimaryKeyWithPKRelation?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NonPrimaryKeyWithPKRelation>();
 
             public static implicit operator Realms.RealmValue(NonPrimaryKeyWithPKRelation? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

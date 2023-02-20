@@ -179,7 +179,7 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SyncObjectWithRequiredStringList(Realms.RealmValue val) => val.AsRealmObject<SyncObjectWithRequiredStringList>();
+        public static explicit operator SyncObjectWithRequiredStringList?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<SyncObjectWithRequiredStringList>();
 
         public static implicit operator Realms.RealmValue(SyncObjectWithRequiredStringList? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

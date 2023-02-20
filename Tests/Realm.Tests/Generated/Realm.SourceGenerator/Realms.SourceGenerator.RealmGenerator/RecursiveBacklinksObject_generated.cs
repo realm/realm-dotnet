@@ -171,7 +171,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RecursiveBacklinksObject(Realms.RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
+        public static explicit operator RecursiveBacklinksObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RecursiveBacklinksObject>();
 
         public static implicit operator Realms.RealmValue(RecursiveBacklinksObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

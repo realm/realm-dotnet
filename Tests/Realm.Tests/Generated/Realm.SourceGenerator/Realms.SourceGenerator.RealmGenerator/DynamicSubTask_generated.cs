@@ -174,7 +174,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicSubTask(Realms.RealmValue val) => val.AsRealmObject<DynamicSubTask>();
+        public static explicit operator DynamicSubTask?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DynamicSubTask>();
 
         public static implicit operator Realms.RealmValue(DynamicSubTask? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

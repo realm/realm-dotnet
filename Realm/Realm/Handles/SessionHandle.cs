@@ -213,7 +213,7 @@ namespace Realms.Sync
 
         public async Task WaitAsync(ProgressDirection direction)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -409,11 +409,11 @@ namespace Realms.Sync
         private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, PrimitiveValue message)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<object>)handle.Target;
+            var tcs = (TaskCompletionSource)handle.Target;
 
             if (error_code == 0)
             {
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
             }
             else
             {

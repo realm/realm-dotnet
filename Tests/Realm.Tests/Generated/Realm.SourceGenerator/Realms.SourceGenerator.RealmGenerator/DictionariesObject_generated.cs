@@ -259,7 +259,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DictionariesObject(Realms.RealmValue val) => val.AsRealmObject<DictionariesObject>();
+        public static explicit operator DictionariesObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DictionariesObject>();
 
         public static implicit operator Realms.RealmValue(DictionariesObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

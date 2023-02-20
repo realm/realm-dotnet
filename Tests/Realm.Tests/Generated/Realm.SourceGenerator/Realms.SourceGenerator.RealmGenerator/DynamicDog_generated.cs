@@ -173,7 +173,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicDog(Realms.RealmValue val) => val.AsRealmObject<DynamicDog>();
+        public static explicit operator DynamicDog?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DynamicDog>();
 
         public static implicit operator Realms.RealmValue(DynamicDog? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

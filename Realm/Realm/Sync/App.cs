@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -99,21 +101,21 @@ namespace Realms.Sync
         /// Gets a <see cref="SyncClient"/> instance that exposes API for interacting with the synchronization client for this <see cref="App"/>.
         /// </summary>
         /// <value>A <see cref="SyncClient"/> instance scoped to this <see cref="App"/>.</value>
-        public SyncClient Sync { get; }
+        public SyncClient Sync => new(this);
 
         /// <summary>
         /// Gets a <see cref="EmailPasswordClient"/> instance that exposes functionality related to users either being created or logged in using
         /// the <see cref="Credentials.AuthProvider.EmailPassword"/> provider.
         /// </summary>
         /// <value>An <see cref="EmailPasswordClient"/> instance scoped to this <see cref="App"/>.</value>
-        public EmailPasswordClient EmailPasswordAuth { get; }
+        public EmailPasswordClient EmailPasswordAuth => new(this);
 
         /// <summary>
         /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public User CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
+        public User? CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
 
         /// <summary>
         /// Gets all currently logged in users.
@@ -126,8 +128,6 @@ namespace Realms.Sync
         internal App(AppHandle handle)
         {
             Handle = handle;
-            Sync = new SyncClient(this);
-            EmailPasswordAuth = new EmailPasswordClient(this);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Realms.Sync
         /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a
         /// particular app and can only be accessed via <see cref="Sync"/>.
         /// </summary>
-        public class SyncClient
+        public readonly struct SyncClient
         {
             private readonly App _app;
 
@@ -286,7 +286,7 @@ namespace Realms.Sync
         /// A class, encapsulating functionality for users, logged in with the <see cref="Credentials.AuthProvider.EmailPassword"/> provider.
         /// It is always scoped to a particular app and can only be accessed via <see cref="EmailPasswordAuth"/>.
         /// </summary>
-        public class EmailPasswordClient
+        public readonly struct EmailPasswordClient
         {
             private readonly App _app;
 
@@ -312,9 +312,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.RegisterUser(email, password, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.RegisterUserAsync(email, password);
             }
 
             /// <summary>
@@ -336,9 +334,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(token, nameof(token));
                 Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ConfirmUser(token, tokenId, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ConfirmUserAsync(token, tokenId);
             }
 
             /// <summary>
@@ -354,9 +350,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ResendConfirmationEmail(email, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ResendConfirmationEmailAsync(email);
             }
 
             /// <summary>
@@ -372,9 +366,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.SendResetPasswordEmail(email, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.SendResetPasswordEmailAsync(email);
             }
 
             /// <summary>
@@ -397,9 +389,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
                 Argument.NotNullOrEmpty(password, nameof(password));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ResetPassword(password, token, tokenId, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ResetPasswordAsync(password, token, tokenId);
             }
 
             /// <summary>
@@ -422,9 +412,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(password, nameof(password));
                 Argument.NotNull(functionArgs, nameof(functionArgs));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToNativeJson(), tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.CallResetPasswordFunctionAsync(email, password, functionArgs.ToNativeJson());
             }
         }
     }

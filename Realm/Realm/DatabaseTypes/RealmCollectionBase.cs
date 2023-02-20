@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -54,12 +56,12 @@ namespace Realms
         internal bool IsDynamic;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event NotifyCollectionChangedEventHandler _collectionChanged;
+        private event NotifyCollectionChangedEventHandler? _collectionChanged;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
+        private event PropertyChangedEventHandler? _propertyChanged;
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add
             {
@@ -76,7 +78,7 @@ namespace Realms
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -108,7 +110,7 @@ namespace Realms
         }
 
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema? ObjectSchema => Metadata?.Schema;
 
         Metadata IMetadataObject.Metadata => Metadata;
 
@@ -239,7 +241,7 @@ namespace Realms
         protected static IEmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
         {
             var result = value.AsRealmObject<IEmbeddedObject>();
-            if (result?.IsManaged == true)
+            if (result.IsManaged)
             {
                 throw new RealmException("Can't add to the collection an embedded object that is already managed.");
             }
@@ -349,7 +351,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
+        private static bool TryGetConsecutive(int[] indices, Func<int, object?> getter, out IList? items, out int startIndex)
         {
             items = null;
 
@@ -390,7 +392,7 @@ namespace Realms
 
         void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
         {
-            ChangeSet changeset = null;
+            ChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;
@@ -418,35 +420,39 @@ namespace Realms
 
         public bool IsSynchronized => false;
 
-        public object SyncRoot => null;
+        public object SyncRoot => this;
 
-        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+        object? IList.this[int index]
+        {
+            get => this[index];
+            set => throw new NotSupportedException();
+        }
 
         public void Clear() => Handle.Value.Clear();
 
-        public int IndexOf(object value)
+        public int IndexOf(object? value)
         {
             if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return IndexOf((T)value);
+            return IndexOf((T?)value);
         }
 
-        public bool Contains(object value)
+        public bool Contains(object? value)
         {
             if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return Contains((T)value);
+            return Contains((T?)value);
         }
 
-        public virtual bool Contains(T value) => IndexOf(value) > -1;
+        public virtual bool Contains([AllowNull] T value) => IndexOf(value) > -1;
 
-        public abstract int IndexOf(T value);
+        public abstract int IndexOf([AllowNull] T value);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -468,30 +474,28 @@ namespace Realms
             }
         }
 
-        public virtual int Add(object value)
+        public virtual int Add(object? value)
         {
-            if (value is T tValue)
-            {
-                Add(tValue);
-                return Count - 1;
-            }
-
-            throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
-        }
-
-        public virtual void Insert(int index, object value)
-        {
-            if (value is T tValue)
-            {
-                Insert(index, tValue);
-            }
-            else
+            if (value is not T tValue)
             {
                 throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
             }
+
+            Add(tValue);
+            return Count - 1;
         }
 
-        public void Remove(object value)
+        public virtual void Insert(int index, object? value)
+        {
+            if (value is not T tValue)
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+
+            Insert(index, tValue);
+        }
+
+        public void Remove(object? value)
         {
             if (value is T tValue)
             {
@@ -542,7 +546,7 @@ namespace Realms
 
             public T Current => _enumerating[_index];
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public bool MoveNext()
             {
@@ -589,7 +593,7 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<KeyPath, (NotificationTokenHandle Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<KeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
@@ -647,7 +651,7 @@ namespace Realms
             return false;
         }
 
-        public void Notify(ChangeSet changes, bool shallow)
+        public void Notify(ChangeSet? changes, bool shallow)
         {
             var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
             if (_subscriptions.TryGetValue(keyPath, out var subscription))
@@ -668,7 +672,7 @@ namespace Realms
         {
             foreach (var token in _subscriptions.Values.Select(c => c.Token))
             {
-                token.Dispose();
+                token?.Dispose();
             }
         }
     }
@@ -695,7 +699,7 @@ namespace Realms
         internal static InvalidObject Instance { get; } = new InvalidObject();
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             // This is to resolve the WPF bug
             return true;

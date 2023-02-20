@@ -182,7 +182,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RealmValueObject(Realms.RealmValue val) => val.AsRealmObject<RealmValueObject>();
+        public static explicit operator RealmValueObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RealmValueObject>();
 
         public static implicit operator Realms.RealmValue(RealmValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

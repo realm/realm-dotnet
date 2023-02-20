@@ -164,7 +164,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyInt64Object(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyInt64Object>();
+        public static explicit operator PrimaryKeyInt64Object?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PrimaryKeyInt64Object>();
 
         public static implicit operator Realms.RealmValue(PrimaryKeyInt64Object? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

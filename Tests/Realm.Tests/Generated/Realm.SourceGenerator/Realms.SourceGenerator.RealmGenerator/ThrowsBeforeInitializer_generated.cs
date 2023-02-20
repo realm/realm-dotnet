@@ -166,7 +166,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ThrowsBeforeInitializer(Realms.RealmValue val) => val.AsRealmObject<ThrowsBeforeInitializer>();
+        public static explicit operator ThrowsBeforeInitializer?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ThrowsBeforeInitializer>();
 
         public static implicit operator Realms.RealmValue(ThrowsBeforeInitializer? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

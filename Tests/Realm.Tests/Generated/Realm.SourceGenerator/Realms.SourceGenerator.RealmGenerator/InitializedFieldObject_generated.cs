@@ -158,7 +158,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator InitializedFieldObject(Realms.RealmValue val) => val.AsRealmObject<InitializedFieldObject>();
+        public static explicit operator InitializedFieldObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<InitializedFieldObject>();
 
         public static implicit operator Realms.RealmValue(InitializedFieldObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

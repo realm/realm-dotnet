@@ -174,7 +174,7 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator PrimaryKeyWithNonPKChildWithPKGrandChild(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithNonPKChildWithPKGrandChild>();
+            public static explicit operator PrimaryKeyWithNonPKChildWithPKGrandChild?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PrimaryKeyWithNonPKChildWithPKGrandChild>();
 
             public static implicit operator Realms.RealmValue(PrimaryKeyWithNonPKChildWithPKGrandChild? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

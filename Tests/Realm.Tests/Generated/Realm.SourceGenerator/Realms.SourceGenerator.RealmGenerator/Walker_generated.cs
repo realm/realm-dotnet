@@ -180,7 +180,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Walker(Realms.RealmValue val) => val.AsRealmObject<Walker>();
+        public static explicit operator Walker?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Walker>();
 
         public static implicit operator Realms.RealmValue(Walker? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

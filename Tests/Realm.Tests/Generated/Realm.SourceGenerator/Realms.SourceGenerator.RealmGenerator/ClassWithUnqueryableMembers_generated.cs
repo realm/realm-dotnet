@@ -183,7 +183,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ClassWithUnqueryableMembers(Realms.RealmValue val) => val.AsRealmObject<ClassWithUnqueryableMembers>();
+        public static explicit operator ClassWithUnqueryableMembers?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ClassWithUnqueryableMembers>();
 
         public static implicit operator Realms.RealmValue(ClassWithUnqueryableMembers? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

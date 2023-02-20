@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,13 +60,13 @@ namespace Realms
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
-        Realm Realm { get; }
+        Realm? Realm { get; }
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        ObjectSchema ObjectSchema { get; }
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
@@ -147,7 +149,7 @@ namespace Realms
         /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
         /// </summary>
         /// <returns>The parent of the embedded object.</returns>
-        IRealmObjectBase GetParent();
+        IRealmObjectBase? GetParent();
 
         /// <summary>
         /// A method called internally to subscribe to the notifications for the associated object.

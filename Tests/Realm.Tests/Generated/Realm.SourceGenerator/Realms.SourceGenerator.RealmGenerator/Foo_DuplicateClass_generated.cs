@@ -163,7 +163,7 @@ namespace Foo
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DuplicateClass(Realms.RealmValue val) => val.AsRealmObject<DuplicateClass>();
+        public static explicit operator DuplicateClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DuplicateClass>();
 
         public static implicit operator Realms.RealmValue(DuplicateClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

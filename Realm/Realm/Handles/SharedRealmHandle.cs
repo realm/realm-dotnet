@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -475,7 +476,7 @@ namespace Realms
 
         public async Task BeginTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
             ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
@@ -509,7 +510,7 @@ namespace Realms
 
         public async Task CommitTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
             ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
@@ -729,7 +730,7 @@ namespace Realms
 
         public async Task<bool> RefreshAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -765,9 +766,22 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Realm will be owned by the creator of the tcs")]
         private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
-            HandleTaskCompletion(taskCompletionSource, () => new ThreadSafeReferenceHandle(realm_reference), ex);
+            var handleTcs = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handleTcs.Target;
+
+            if (ex.type == RealmExceptionCodes.NoError)
+            {
+                tcs.TrySetResult(new(realm_reference));
+            }
+            else
+            {
+                var inner = ex.Convert();
+                const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
+                tcs.TrySetException(new RealmException(outerMessage, inner));
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.DisposeGCHandleCallback))]
@@ -848,33 +862,33 @@ namespace Realms
                 // One example is Realm::run_writes which needs to complete before we can start writing to the Realm.
                 SynchronizationContext.Current.Post(_ =>
                 {
-                    HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+                    SetResult();
                 }, null);
             }
             else
             {
-                HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+                SetResult();
+            }
+
+            void SetResult()
+            {
+                var handleTcs = GCHandle.FromIntPtr(tcs_ptr);
+                var tcs = (TaskCompletionSource)handleTcs.Target;
+
+                if (ex.type == RealmExceptionCodes.RLM_ERR_NONE)
+                {
+                    tcs.TrySetResult();
+                }
+                else
+                {
+                    var inner = ex.Convert();
+                    const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
+                    tcs.TrySetException(new RealmException(outerMessage, inner));
+                }
             }
         }
 
-        private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
-        {
-            var handleTcs = GCHandle.FromIntPtr(tcsPtr);
-            var tcs = (TaskCompletionSource<T>)handleTcs.Target;
-
-            if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
-            {
-                tcs.TrySetResult(resultBuilder());
-            }
-            else
-            {
-                var inner = ex.Convert();
-                const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
-                tcs.TrySetException(new RealmException(outerMessage, inner));
-            }
-        }
-
-        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs, SynchronizationContext synchronizationContext)
+        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource tcs, SynchronizationContext synchronizationContext)
         {
             // We need to post on the original SynchronizationContext where the lock was acquired because
             // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation

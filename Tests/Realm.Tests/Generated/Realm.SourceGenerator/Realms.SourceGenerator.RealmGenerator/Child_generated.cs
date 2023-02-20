@@ -174,7 +174,7 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator Child(Realms.RealmValue val) => val.AsRealmObject<Child>();
+            public static explicit operator Child?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Child>();
 
             public static implicit operator Realms.RealmValue(Child? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

@@ -167,7 +167,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedIntPropertyObject(Realms.RealmValue val) => val.AsRealmObject<EmbeddedIntPropertyObject>();
+        public static explicit operator EmbeddedIntPropertyObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<EmbeddedIntPropertyObject>();
 
         public static implicit operator Realms.RealmValue(EmbeddedIntPropertyObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

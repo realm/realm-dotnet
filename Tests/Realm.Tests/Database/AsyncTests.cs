@@ -353,14 +353,14 @@ namespace Realms.Tests.Database
             {
                 var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
 
                 var syncTask = Task.Run(() => AsyncContext.Run(async () =>
                 {
                     using var realm = GetRealm(_realm.Config);
                     using var transaction = realm.BeginWrite();
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                     cts.Cancel();
                     await Task.Delay(1000);
                 }));
@@ -391,7 +391,7 @@ namespace Realms.Tests.Database
             {
                 var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
 
                 var syncTask = Task.Run(() => AsyncContext.Run(() =>
@@ -399,7 +399,7 @@ namespace Realms.Tests.Database
                     using var realm = GetRealm(_realm.Config);
                     var transaction = realm.BeginWrite();
 
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
 
                     cts.Cancel();
                     transaction.Rollback();

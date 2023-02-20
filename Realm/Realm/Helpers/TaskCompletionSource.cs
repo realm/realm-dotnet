@@ -1,8 +1,8 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2020 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -18,14 +18,14 @@
 
 #nullable enable
 
-namespace Realms
+namespace System.Threading.Tasks
 {
-    /// <summary>
-    /// Base for any embedded object that can be persisted in a <see cref="Realm"/>.
-    /// </summary>
-    public class EmbeddedObject : RealmObjectBase, IEmbeddedObject
+#if NETSTANDARD2_0
+
+    internal class TaskCompletionSource : TaskCompletionSource<object?>
     {
-        /// <inheritdoc/>
-        public IRealmObjectBase? Parent => ((IRealmObjectBase)this).Accessor.GetParent();
+        public void TrySetResult() => TrySetResult(null);
     }
+
+#endif
 }

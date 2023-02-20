@@ -161,7 +161,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator PrimaryKeyNullableCharObject(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyNullableCharObject>();
+        public static explicit operator PrimaryKeyNullableCharObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PrimaryKeyNullableCharObject>();
 
         public static implicit operator Realms.RealmValue(PrimaryKeyNullableCharObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

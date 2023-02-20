@@ -168,7 +168,7 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AsymmetricObjectWithEmbeddedRecursiveObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedRecursiveObject>();
+        public static explicit operator AsymmetricObjectWithEmbeddedRecursiveObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AsymmetricObjectWithEmbeddedRecursiveObject>();
 
         public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedRecursiveObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

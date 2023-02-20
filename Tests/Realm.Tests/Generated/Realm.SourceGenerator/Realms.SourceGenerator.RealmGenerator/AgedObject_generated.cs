@@ -160,7 +160,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AgedObject(Realms.RealmValue val) => val.AsRealmObject<AgedObject>();
+        public static explicit operator AgedObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AgedObject>();
 
         public static implicit operator Realms.RealmValue(AgedObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

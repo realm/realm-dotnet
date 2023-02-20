@@ -190,7 +190,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicOwner(Realms.RealmValue val) => val.AsRealmObject<DynamicOwner>();
+        public static explicit operator DynamicOwner?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DynamicOwner>();
 
         public static implicit operator Realms.RealmValue(DynamicOwner? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

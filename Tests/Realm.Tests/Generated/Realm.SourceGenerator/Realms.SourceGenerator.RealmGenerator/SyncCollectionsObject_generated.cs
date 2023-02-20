@@ -317,7 +317,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SyncCollectionsObject(Realms.RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
+        public static explicit operator SyncCollectionsObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<SyncCollectionsObject>();
 
         public static implicit operator Realms.RealmValue(SyncCollectionsObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

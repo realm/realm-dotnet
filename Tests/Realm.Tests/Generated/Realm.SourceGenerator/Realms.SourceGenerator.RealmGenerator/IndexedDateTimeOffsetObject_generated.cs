@@ -159,7 +159,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IndexedDateTimeOffsetObject(Realms.RealmValue val) => val.AsRealmObject<IndexedDateTimeOffsetObject>();
+        public static explicit operator IndexedDateTimeOffsetObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<IndexedDateTimeOffsetObject>();
 
         public static implicit operator Realms.RealmValue(IndexedDateTimeOffsetObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

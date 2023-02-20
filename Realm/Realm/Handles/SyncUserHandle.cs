@@ -192,7 +192,7 @@ namespace Realms.Sync
 
         public async Task RefreshCustomDataAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
@@ -334,7 +334,7 @@ namespace Realms.Sync
 
         public async Task DeleteApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
@@ -352,7 +352,7 @@ namespace Realms.Sync
 
         public async Task DisableApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -371,7 +371,7 @@ namespace Realms.Sync
 
         public async Task EnableApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try

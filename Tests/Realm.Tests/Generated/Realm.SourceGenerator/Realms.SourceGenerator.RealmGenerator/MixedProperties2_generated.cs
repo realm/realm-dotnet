@@ -177,7 +177,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator MixedProperties2(Realms.RealmValue val) => val.AsRealmObject<MixedProperties2>();
+        public static explicit operator MixedProperties2?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<MixedProperties2>();
 
         public static implicit operator Realms.RealmValue(MixedProperties2? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

@@ -180,7 +180,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator CounterObject(Realms.RealmValue val) => val.AsRealmObject<CounterObject>();
+        public static explicit operator CounterObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<CounterObject>();
 
         public static implicit operator Realms.RealmValue(CounterObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

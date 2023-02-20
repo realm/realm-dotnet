@@ -179,7 +179,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OnManagedTestClass(Realms.RealmValue val) => val.AsRealmObject<OnManagedTestClass>();
+        public static explicit operator OnManagedTestClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<OnManagedTestClass>();
 
         public static implicit operator Realms.RealmValue(OnManagedTestClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

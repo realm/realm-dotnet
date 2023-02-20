@@ -170,7 +170,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OrderedObject(Realms.RealmValue val) => val.AsRealmObject<OrderedObject>();
+        public static explicit operator OrderedObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<OrderedObject>();
 
         public static implicit operator Realms.RealmValue(OrderedObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

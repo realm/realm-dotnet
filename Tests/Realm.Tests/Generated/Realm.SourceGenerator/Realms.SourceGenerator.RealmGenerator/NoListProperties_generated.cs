@@ -167,7 +167,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator NoListProperties(Realms.RealmValue val) => val.AsRealmObject<NoListProperties>();
+        public static explicit operator NoListProperties?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NoListProperties>();
 
         public static implicit operator Realms.RealmValue(NoListProperties? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

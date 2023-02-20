@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -63,12 +65,8 @@ namespace Realms
 
             set
             {
-                if (index < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
-
-                var realmValue = Operator.Convert<T, RealmValue>(value);
+                ValidateIndex(index);
+                var realmValue = ValidateValueToInsert(value);
 
                 if (_isEmbedded)
                 {
@@ -90,7 +88,7 @@ namespace Realms
 
         public void Add(T value)
         {
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = ValidateValueToInsert(value);
 
             if (_isEmbedded)
             {
@@ -107,9 +105,9 @@ namespace Realms
             _listHandle.Add(realmValue);
         }
 
-        public override int IndexOf(T value)
+        public override int IndexOf([AllowNull] T value)
         {
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = Operator.Convert<T?, RealmValue>(value);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
@@ -121,12 +119,8 @@ namespace Realms
 
         public void Insert(int index, T value)
         {
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            ValidateIndex(index);
+            var realmValue = ValidateValueToInsert(value);
 
             if (_isEmbedded)
             {
@@ -157,10 +151,7 @@ namespace Realms
 
         public override void RemoveAt(int index)
         {
-            if (index < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
+            ValidateIndex(index);
 
             _listHandle.Erase((IntPtr)index);
         }
@@ -169,15 +160,8 @@ namespace Realms
 
         public void Move(int sourceIndex, int targetIndex)
         {
-            if (targetIndex < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(targetIndex));
-            }
-
-            if (sourceIndex < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(sourceIndex));
-            }
+            ValidateIndex(sourceIndex, nameof(sourceIndex));
+            ValidateIndex(targetIndex, nameof(targetIndex));
 
             _listHandle.Move((IntPtr)sourceIndex, (IntPtr)targetIndex);
         }
@@ -193,5 +177,24 @@ namespace Realms
         protected override T GetValueAtIndex(int index) => _listHandle.GetValueAtIndex(index, Realm).As<T>();
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
+
+        private static void ValidateIndex(int index, string name = "index")
+        {
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(name);
+            }
+        }
+
+        private RealmValue ValidateValueToInsert(T value)
+        {
+            // Lists of objects may not contain null
+            if (Metadata is not null && value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return Operator.Convert<T, RealmValue>(value);
+        }
     }
 }
