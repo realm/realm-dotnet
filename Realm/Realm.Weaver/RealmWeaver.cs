@@ -196,7 +196,6 @@ namespace RealmWeaver
             {
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
-            _logger.Info($"*** Andrea *** - Getting matching types");
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
@@ -216,16 +215,12 @@ namespace RealmWeaver
                 }
             }).ToArray();
 
-            _logger.Info($"*** Andrea *** - weaving schema");
-
             WeaveSchema(matchingTypes.Select(t => t.Type).ToArray());
 
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
-            _logger.Info($"*** Andrea *** - analyze class props");
 
             analytics.AnalyzeRealmClassProperties(weaveResults);
-            _logger.Info($"*** Andrea *** - starting analytics submission");
 
             // Don't wait for submission
             _ = analytics.SubmitAnalytics();
