@@ -35,7 +35,6 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
-        // TODO andrea: this always return the framework name. So what the selected conditions aren't good. It's generally NET something
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
             string targetOs = frameworkName.Identifier;
@@ -143,7 +142,6 @@ namespace RealmWeaver
             // We don't have a reliable way to get the version in the weaver so we're using the default version
             // associated with the framework.
             // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
-
             if (!netFramework.ContainsIgnoreCase("net"))
             {
                 return Unknown($"Likely not the model assembly, but the platform specific one: {netFramework}");
