@@ -29,7 +29,7 @@ namespace RealmWeaver
         public static string Unknown(string clarifier = null)
         {
             var result = "Unknown";
-            if (string.IsNullOrEmpty(clarifier))
+            if (!string.IsNullOrEmpty(clarifier))
             {
                 result += $" ({clarifier})";
             }
@@ -43,7 +43,6 @@ namespace RealmWeaver
             public const string MacOS = "macOS";
             public const string Windows = "Windows";
             public const string Android = "Android";
-            public const string Uwp = "UWP";
             public const string Ios = "iOS";
             public const string IpadOs = "iPadOS";
             public const string WatchOs = "watchOS";
@@ -64,6 +63,7 @@ namespace RealmWeaver
             public const string UnityEditor = "Unity Editor";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
+            public const string Uwp = "UWP";
         }
 
         public static class Environment
@@ -71,6 +71,7 @@ namespace RealmWeaver
             public const string UserId = "distinct_id";
             public const string ProjectId = "Anonymized Bundle ID";
             public const string RealmSdk = "Binding";
+            public const string RealmSdkVersion = "Realm Version";
             public const string Language = "Language";
             public const string LanguageVersion = "Language Version";
             public const string HostOsType = "Host OS Type";
@@ -80,7 +81,6 @@ namespace RealmWeaver
             public const string TargetOsMinimumVersion = "Target OS Minimum Version";
             public const string TargetOsVersion = "Target OS Version";
             public const string TargetCpuArch = "Target CPU Arch";
-            public const string RealmSdkVersion = "Realm Version";
             public const string CoreVersion = "Core Version";
             public const string IsSyncEnabled = "Sync Enabled";
             public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with

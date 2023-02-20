@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -34,6 +35,7 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
+        // TODO andrea: this always return the framework name. So what the selected conditions aren't good. It's generally NET something
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
             string targetOs = frameworkName.Identifier;
@@ -63,14 +65,9 @@ namespace RealmWeaver
                 return OperatingSystem.Linux;
             }
 
-            if (targetOs.ContainsIgnoreCase("win") || targetOs == ".NETFramework")
+            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("net"))
             {
                 return OperatingSystem.Windows;
-            }
-
-            if (targetOs.ContainsIgnoreCase("uap"))
-            {
-                return OperatingSystem.Uwp;
             }
 
             return Unknown(frameworkName.Identifier);
@@ -105,13 +102,13 @@ namespace RealmWeaver
             }
             else
             {
-                // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
-                // I didn't have any handy one.
-                var possibleFrameworks = new string[] { "Xamarin.Forms", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
+                // the order is important as both, xamarin android and maui android use Mono.Android.
+                // So, in order to report Maui it has to be before Mono.Android
+                var possibleFrameworks = new string[] { "Xamarin.Forms.Platform.UAP", "Microsoft.Maui", "Mono.Android", "Xamarin.iOS", "Xamarin.Mac" };
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
                 {
-                    frameworkUsedInConjunction = module.FindReference(toSearch);
+                    frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == toSearch).SingleOrDefault();
                     if (frameworkUsedInConjunction != null)
                     {
                         break;
@@ -122,7 +119,12 @@ namespace RealmWeaver
                 if (frameworkUsedInConjunction != null)
                 {
                     var name = frameworkUsedInConjunction.Name;
-                    if (name.ContainsIgnoreCase("xamarin") || name.ContainsIgnoreCase("android"))
+
+                    if (name.ContainsIgnoreCase("uap"))
+                    {
+                        framework = Framework.Uwp;
+                    }
+                    else if (name.ContainsIgnoreCase("ios") || name.ContainsIgnoreCase("android") || name.ContainsIgnoreCase("mac"))
                     {
                         framework = Framework.Xamarin;
                     }
@@ -136,34 +138,40 @@ namespace RealmWeaver
             }
         }
 
-        public static string GetLanguageVersion(string targetFramework)
+        public static string GetLanguageVersion(string netFramework, string netFrameworkVersion)
         {
             // We don't have a reliable way to get the version in the weaver so we're using the default version
             // associated with the framework.
             // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
-            if (targetFramework.ContainsIgnoreCase("netcoreapp2") ||
-                targetFramework.ContainsIgnoreCase("netframework"))
+
+            if (!netFramework.ContainsIgnoreCase("net"))
+            {
+                return Unknown($"Likely not the model assembly, but the platform specific one: {netFramework}");
+            }
+
+            if (netFrameworkVersion.ContainsIgnoreCase("2.0") ||
+                netFrameworkVersion.ContainsIgnoreCase("4."))
             {
                 return "7.3";
             }
 
-            if (targetFramework.ContainsIgnoreCase("netstandard2.1") ||
-                targetFramework.ContainsIgnoreCase("netcoreapp3.1"))
+            if (netFrameworkVersion.ContainsIgnoreCase("2.1") ||
+                netFrameworkVersion.ContainsIgnoreCase("3.1"))
             {
                 return "8";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net5.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("5.0"))
             {
                 return "9";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net6.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("6.0"))
             {
                 return "10";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net7.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("7.0"))
             {
                 return "11";
             }

@@ -70,7 +70,7 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
 
-        private readonly Dictionary<string, string> _realmEnvMetrics = new();
+        private readonly Dictionary<string, string> _realmEnvMetrics;
 
         private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
@@ -93,7 +93,7 @@ namespace RealmWeaver
 
             _references = references;
             _logger = logger;
-
+            _realmEnvMetrics = new();
             _realmFeaturesToAnalyze = Metric.SdkFeatures.Keys.ToDictionary(c => c, _ => (byte)0);
 
             _classAnalysisSetters = new()
@@ -233,19 +233,22 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
+                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm")?.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
+                _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.TargetFramework, _config.TargetFrameworkVersion);
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
+                _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = string.Empty;
+                _realmEnvMetrics[UserEnvironment.TargetOsVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module);
+                _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
-                _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.TargetFramework);
-                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm").Version.ToString();
-                _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
-                _realmEnvMetrics[UserEnvironment.IdeUsed] = "FILL ME";
+                _realmEnvMetrics[UserEnvironment.IdeUsed] = string.Empty;
+                _realmEnvMetrics[UserEnvironment.IdeUsedVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.TargetFrameworkVersion;
 
@@ -413,6 +416,10 @@ namespace RealmWeaver
 
             if (_config.AnalyticsCollection != AnalyticsCollection.Disabled)
             {
+                // this is necessary since when not in the assembly that has the models
+                // AnalyzeRealmClassProperties won't be called
+                _analyzeUserAssemblyTask.Wait();
+
                 try
                 {
                     var pretty = false;
