@@ -517,15 +517,13 @@ namespace RealmWeaver
 
             public string TargetOSName { get; set; }
 
-            // When in Unity this holds the Unity editor's or Unity player's name; otherwise it holds
-            // the .NET target name
             public string TargetFramework { get; set; }
 
-            // When in Unity this holds the Unity editor's or Unity player's version;
-            // otherwise it holds the .NET target version
             public string TargetFrameworkVersion { get; set; }
 
             public string InstallationMethod { get; set; }
+
+            public bool IsUnity { get; set; }
         }
 
         public enum AnalyticsCollection

@@ -93,11 +93,9 @@ namespace RealmWeaver
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
-            if (config.TargetFramework.ContainsIgnoreCase("unity"))
+            if (config.IsUnity)
             {
-                return config.TargetFramework.ContainsIgnoreCase("editor") ?
-                    (Framework.UnityEditor, config.TargetFrameworkVersion) :
-                    (Framework.Unity, config.TargetFrameworkVersion);
+                return (config.TargetFramework, config.TargetFrameworkVersion);
             }
             else
             {

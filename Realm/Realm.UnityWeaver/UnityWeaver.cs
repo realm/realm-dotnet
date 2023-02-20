@@ -116,7 +116,7 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, framework: Metric.Framework.UnityEditor, frameworkVersion: "", GetTargetOSName(Application.platform));
             };
         }
 
@@ -202,7 +202,7 @@ namespace RealmWeaver
                 {
                     foreach (var assembly in assembliesToWeave)
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, framework: Metric.Framework.UnityEditor, frameworkVersion: "", GetTargetOSName(Application.platform)))
                         {
                             continue;
                         }
@@ -239,7 +239,7 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string targetOSName)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string frameworkVersion, string targetOSName)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -267,10 +267,11 @@ namespace RealmWeaver
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
-                        TargetFrameworkVersion = Application.unityVersion,
+                        TargetFrameworkVersion = frameworkVersion,
                         TargetFramework = framework,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown()
+                        InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                        IsUnity = true
                     };
 
                     var results = weaver.Execute(analyticsConfig);
@@ -313,10 +314,14 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            var targetOS = GetTargetOSName(report.summary.platform);
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
+
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
+                WeaveAssemblyCore(file.path, referencePaths,
+                    framework: PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
+                    frameworkVersion: PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString(),
+                    targetOSName: GetTargetOSName(report.summary.platform));
             }
 
             if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
