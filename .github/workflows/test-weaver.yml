@@ -37,7 +37,7 @@ jobs:
     - name: Install .netcore3.1
       run: sudo apt install -y dotnet-sdk-3.1
       shell: bash
-      if: ${{ ${{ matrix.os.runner }} == "ubuntu-latest" }}
+      if: ${{ matrix.os.runner }} == "ubuntu-latest"
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
     - name: Publish Unit Test Results
