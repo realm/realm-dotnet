@@ -123,14 +123,30 @@ namespace Analytics
             }
         }
 
-        private static string ConvertToMetricOS(PlatformID platformID) =>
-            platformID switch
+        private static string ConvertToMetricOS(PlatformID platformID)
+        {
+            switch (platformID)
             {
-                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => Metric.OperatingSystem.Windows,
-                PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
-                PlatformID.Unix => Metric.OperatingSystem.Linux,
-                _ => platformID.ToString()
-            };
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    return Metric.OperatingSystem.Windows;
+                case PlatformID.MacOSX:
+                    return Metric.OperatingSystem.MacOS;
+                case PlatformID.Unix:
+                    return Metric.OperatingSystem.Linux;
+                default:
+                    return platformID.ToString();
+            }
+        }
+            //platformID switch
+            //{
+            //    PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => Metric.OperatingSystem.Windows,
+            //    PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
+            //    PlatformID.Unix => Metric.OperatingSystem.Linux,
+            //    _ => platformID.ToString()
+            //};
 
         private void ValidateAnalyticsPayload<T>(string featureName, T expectedResult)
         {
