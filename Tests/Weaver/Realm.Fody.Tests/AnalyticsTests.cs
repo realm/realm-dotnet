@@ -108,18 +108,15 @@ namespace Analytics
         public void ValidateHostOS()
         {
             var currentOs = Environment.OSVersion;
-            foreach (var framework in _frameworks.Value)
+            try
             {
-                try
-                {
-                    CompileAnalyticsProject();
-                    ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsType, ConvertToMetricOS(currentOs.Platform));
-                    ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsVersion, currentOs.Version.ToString());
-                }
-                catch (Exception e)
-                {
-                    Assert.Fail($"An error occurred for framework {framework} while validating {Metric.Environment.HostOsType} or {Metric.Environment.HostOsVersion}: {e.Message}");
-                }
+                CompileAnalyticsProject();
+                ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsType, ConvertToMetricOS(currentOs.Platform));
+                ValidateEnvironmentMetricsPayload(Metric.Environment.HostOsVersion, currentOs.Version.ToString());
+            }
+            catch (Exception e)
+            {
+                Assert.Fail($"{e.Message}");
             }
         }
 
@@ -138,7 +135,7 @@ namespace Analytics
             {
                 var response = WeaveRealm(framework, "DryRun");
                 var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
-                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
+                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"For framework {framework}, field \"{featureName}\" doesn't match the expected value \"{expectedResult}\"");
             }
         }
 
