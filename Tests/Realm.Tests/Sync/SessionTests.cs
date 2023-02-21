@@ -96,10 +96,10 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Realm_SyncSession_WhenLocalRealm_ShouldReturnNull()
+        public void Realm_SyncSession_WhenLocalRealm_ShouldThrow()
         {
             using var realm = GetRealm();
-            Assert.That(realm.SyncSession, Is.Null);
+            Assert.That(() => realm.SyncSession, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

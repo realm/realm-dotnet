@@ -34,20 +34,20 @@ namespace Realms.Tests.Sync
     public class FlexibleSyncTests : SyncTestBase
     {
         [Test]
-        public void Realm_Subscriptions_WhenLocalRealm_ReturnsNull()
+        public void Realm_Subscriptions_WhenLocalRealm_Throws()
         {
             var realm = GetRealm();
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
-        public void Realm_Subscriptions_WhenPBS_ReturnsNull()
+        public void Realm_Subscriptions_WhenPBS_Throws()
         {
             var config = GetFakeConfig();
             var realm = GetRealm(config);
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]

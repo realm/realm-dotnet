@@ -38,12 +38,14 @@
 * Removed `User.GetPushClient` as it has been deprecated in Atlas App Services - see https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3241))
 * Removed `SyncSession.Error` event - use `SyncConfigurationBase.OnSessionError` when opening a Realm instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
 * Removed the parameterless constructor for `ManualRecoveryHandler` - use the one that takes a callback instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
-* `RealmValue.AsString` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableString`.
-* `RealmValue.AsData` will now throw an exception if the value contains `null`. If you want to get a nullable `byte[]`, use `AsNullableData`.
-* `RealmValue.AsRealmObject` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableRealmObject`.
-
+* `RealmValue.AsString` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableString`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
+* `RealmValue.AsData` will now throw an exception if the value contains `null`. If you want to get a nullable `byte[]`, use `AsNullableData`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
+* `RealmValue.AsRealmObject` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableRealmObject`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
+* `Realm.SyncSession` will now throw an error if the Realm is not opened with a `PartitionSyncConfiguration` or `FlexibleSyncConfiguration` - before it used to return `null`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
+* `Realm.Subscriptions` will now throw an error if the Realm is not opened with a `FlexibleSyncConfiguration` - before it used to return `null`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
 
 ### Enhancements
+* Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
 
 ### Fixed
 
