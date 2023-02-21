@@ -15,7 +15,7 @@ jobs:
           runtime: linux-x64
         - runner: macos-latest
           runtime: osx-x64
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.runner }}
     name: Weaver
     timeout-minutes: 15
     steps:
