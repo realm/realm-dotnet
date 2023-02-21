@@ -106,7 +106,7 @@ namespace Realms
                 {
                     isNull = false;
                     return NativeMethods.get_description(this, buffer, bufferLength, out ex);
-                });
+                })!;
             }
         }
 
@@ -148,7 +148,7 @@ namespace Realms
             var result = NativeMethods.get_query(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new QueryHandle(Root, result);
+            return new QueryHandle(Root!, result);
         }
 
         public SortDescriptorHandle GetSortDescriptor()
@@ -158,7 +158,7 @@ namespace Realms
             var result = NativeMethods.get_sort_descriptor(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new SortDescriptorHandle(Root, result);
+            return new SortDescriptorHandle(Root!, result);
         }
 
         public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
@@ -167,7 +167,7 @@ namespace Realms
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public override ThreadSafeReferenceHandle GetThreadSafeReference()

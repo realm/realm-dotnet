@@ -22,7 +22,7 @@ namespace Realms.Native
 {
 #pragma warning disable IDE0049 // Use built-in type alias
 
-    internal struct TableKey : IEquatable<TableKey>
+    internal readonly struct TableKey : IEquatable<TableKey>
     {
         public readonly UInt32 Value;
 
@@ -33,7 +33,7 @@ namespace Realms.Native
 
         public bool Equals(TableKey other) => Value.Equals(other.Value);
 
-        public override bool Equals(object obj) => obj is TableKey other && Equals(other);
+        public override bool Equals(object? obj) => obj is TableKey other && Equals(other);
 
         public override int GetHashCode() => Value.GetHashCode();
 

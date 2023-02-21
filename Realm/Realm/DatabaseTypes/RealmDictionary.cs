@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -115,7 +113,7 @@ namespace Realms
 
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata? metadata)
             : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;
@@ -168,7 +166,9 @@ namespace Realms
             return _dictionaryHandle.Remove(item.Key, realmValue);
         }
 
+#pragma warning disable CS8767 // .NET Standard's definition of TryGetValue doesn't have [MaybeNullWhen]
         public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value)
+#pragma warning restore CS8767
         {
             if (key != null && _dictionaryHandle.TryGet(key, Realm, out var realmValue))
             {

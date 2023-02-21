@@ -63,8 +63,8 @@ namespace Realms
             }
 
             var frozenRealm = realmObj.Realm.Freeze();
-            var frozenHandle = realmObj.GetObjectHandle().Freeze(frozenRealm.SharedRealmHandle);
-            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata(), frozenHandle);
+            var frozenHandle = realmObj.GetObjectHandle()!.Freeze(frozenRealm.SharedRealmHandle);
+            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata()!, frozenHandle);
         }
 
         /// <summary>

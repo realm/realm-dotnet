@@ -144,7 +144,7 @@ namespace Realms
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public NotificationTokenHandle AddKeyNotificationCallback(IntPtr managedObjectHandle)
@@ -153,7 +153,7 @@ namespace Realms
 
             var result = NativeMethods.add_key_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public override int Count()
@@ -258,7 +258,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public ObjectHandle SetEmbedded(string key)
@@ -272,7 +272,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public bool ContainsKey(string key)
@@ -327,7 +327,7 @@ namespace Realms
 
             var resultsPtr = NativeMethods.get_values(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         public ResultsHandle GetKeys()
@@ -336,7 +336,7 @@ namespace Realms
 
             var resultsPtr = NativeMethods.get_keys(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]

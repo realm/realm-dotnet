@@ -38,6 +38,10 @@
 * Removed `User.GetPushClient` as it has been deprecated in Atlas App Services - see https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3241))
 * Removed `SyncSession.Error` event - use `SyncConfigurationBase.OnSessionError` when opening a Realm instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
 * Removed the parameterless constructor for `ManualRecoveryHandler` - use the one that takes a callback instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
+* `RealmValue.AsString` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableString`.
+* `RealmValue.AsData` will now throw an exception if the value contains `null`. If you want to get a nullable `byte[]`, use `AsNullableData`.
+* `RealmValue.AsRealmObject` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableRealmObject`.
+
 
 ### Enhancements
 

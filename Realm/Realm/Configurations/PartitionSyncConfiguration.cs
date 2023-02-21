@@ -16,10 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson;
 using Realms.Helpers;
 

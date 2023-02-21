@@ -41,7 +41,7 @@ namespace Realms
 
             var ptr = SnapshotCore(out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
         public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
@@ -53,7 +53,7 @@ namespace Realms
             handles.Dispose();
 
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);

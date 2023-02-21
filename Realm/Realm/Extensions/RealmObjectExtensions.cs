@@ -16,27 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using Realms.Weaving;
-
 namespace Realms.Extensions
 {
     internal static class RealmObjectExtensions
     {
-        public static ObjectHandle GetObjectHandle(this IRealmObjectBase iro)
+        public static ObjectHandle? GetObjectHandle(this IRealmObjectBase iro)
         {
             return (iro.Accessor as ManagedAccessor)?.ObjectHandle;
         }
 
-        public static Metadata GetObjectMetadata(this IRealmObjectBase iro)
+        public static Metadata? GetObjectMetadata(this IRealmObjectBase iro)
         {
-            return (iro.Accessor as IMetadataObject)?.Metadata;
+            return (iro.Accessor as ManagedAccessor)?.Metadata;
         }
 
         public static RealmResults<T> GetBacklinksForHandle<T>(this IRealmObjectBase iro, string propertyName, ResultsHandle resultsHandle)
             where T : IRealmObjectBase
         {
-            return (iro.Accessor as ManagedAccessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
+            return ((ManagedAccessor)iro.Accessor).GetBacklinksForHandle<T>(propertyName, resultsHandle);
         }
 
         public static void CreateAndSetAccessor(this ISettableManagedAccessor iro,

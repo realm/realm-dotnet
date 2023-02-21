@@ -97,7 +97,7 @@ namespace Realms
         /// <exception cref="RealmFileAccessErrorException">
         /// Thrown if the file system returns an error preventing file creation.
         /// </exception>
-        public static Realm GetInstance(RealmConfigurationBase config = null)
+        public static Realm GetInstance(RealmConfigurationBase? config = null)
         {
             config ??= RealmConfiguration.DefaultConfiguration;
 
@@ -119,7 +119,7 @@ namespace Realms
         /// </returns>
         /// <param name="config">A configuration object that describes the realm.</param>
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
-        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken cancellationToken = default)
+        public static Task<Realm> GetInstanceAsync(RealmConfigurationBase? config = null, CancellationToken cancellationToken = default)
         {
             config ??= RealmConfiguration.DefaultConfiguration;
 
@@ -137,7 +137,7 @@ namespace Realms
         /// </remarks>
         /// <param name="config">Optional configuration.</param>
         /// <returns><c>true</c> if successful, <c>false</c> if any file operation failed.</returns>
-        public static bool Compact(RealmConfigurationBase config = null)
+        public static bool Compact(RealmConfigurationBase? config = null)
         {
             using var realm = GetInstance(config);
             if (config is SyncConfigurationBase)
@@ -168,11 +168,11 @@ namespace Realms
 
         #endregion static
 
-        private WeakReference<SubscriptionSet> _subscriptionRef;
+        private WeakReference<SubscriptionSet>? _subscriptionRef;
 
         private State _state;
-        private WeakReference<Session> _sessionRef;
-        private Transaction _activeTransaction;
+        private WeakReference<Session>? _sessionRef;
+        private Transaction? _activeTransaction;
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly RealmMetadata Metadata;
@@ -237,27 +237,27 @@ namespace Realms
             {
                 ThrowIfDisposed();
 
-                if (Config is SyncConfigurationBase)
+                if (Config is not SyncConfigurationBase)
                 {
-                    if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
-                    {
-                        var sessionHandle = SharedRealmHandle.GetSession();
-                        session = new Session(sessionHandle);
-
-                        if (_sessionRef == null)
-                        {
-                            _sessionRef = new WeakReference<Session>(session);
-                        }
-                        else
-                        {
-                            _sessionRef.SetTarget(session);
-                        }
-                    }
-
-                    return session;
+                    throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
                 }
 
-                return null;
+                if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
+                {
+                    var sessionHandle = SharedRealmHandle.GetSession();
+                    session = new Session(sessionHandle);
+
+                    if (_sessionRef == null)
+                    {
+                        _sessionRef = new WeakReference<Session>(session);
+                    }
+                    else
+                    {
+                        _sessionRef.SetTarget(session);
+                    }
+                }
+
+                return session;
             }
         }
 
@@ -275,49 +275,51 @@ namespace Realms
             {
                 ThrowIfDisposed();
 
-                if (Config is FlexibleSyncConfiguration)
+                if (Config is not FlexibleSyncConfiguration)
                 {
-                    // If the last subscription ref is alive and its version matches the current subscription
-                    // version, we return it. Otherwise, we create a new set and replace the existing one.
-                    if (_subscriptionRef != null && _subscriptionRef.TryGetTarget(out var existingSet))
-                    {
-                        var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
-                        if (existingSet.Version >= currentVersion)
-                        {
-                            return existingSet;
-                        }
-                    }
-
-                    var handle = SharedRealmHandle.GetSubscriptions();
-                    var set = new SubscriptionSet(handle);
-                    _subscriptionRef = new WeakReference<SubscriptionSet>(set);
-                    return set;
+                    throw new NotSupportedException("Realm.Subscriptions is only valid for flexible sync Realms (i.e. ones that are opened with FlexibleSyncConfiguration).");
                 }
 
-                return null;
+                // If the last subscription ref is alive and its version matches the current subscription
+                // version, we return it. Otherwise, we create a new set and replace the existing one.
+                if (_subscriptionRef != null && _subscriptionRef.TryGetTarget(out var existingSet))
+                {
+                    var currentVersion = SharedRealmHandle.GetSubscriptionsVersion();
+                    if (existingSet.Version >= currentVersion)
+                    {
+                        return existingSet;
+                    }
+                }
+
+                var handle = SharedRealmHandle.GetSubscriptions();
+                var set = new SubscriptionSet(handle);
+                _subscriptionRef = new WeakReference<SubscriptionSet>(set);
+                return set;
             }
         }
 
-        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata metadata = null, bool isInMigration = false)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfigurationBase config, RealmSchema schema, RealmMetadata? metadata = null, bool isInMigration = false)
         {
             Config = config;
             IsInMigration = isInMigration;
 
+            State? state = null;
             if (config.EnableCache && sharedRealmHandle.OwnsNativeRealm)
             {
                 var statePtr = sharedRealmHandle.GetManagedStateHandle();
                 if (statePtr != IntPtr.Zero)
                 {
-                    _state = GCHandle.FromIntPtr(statePtr).Target as State;
+                    state = GCHandle.FromIntPtr(statePtr).Target as State;
                 }
             }
 
-            if (_state == null)
+            if (state == null)
             {
-                _state = new State();
-                sharedRealmHandle.SetManagedStateHandle(_state);
+                state = new State();
+                sharedRealmHandle.SetManagedStateHandle(state);
             }
 
+            _state = state;
             _state.AddRealm(this);
 
             SharedRealmHandle = sharedRealmHandle;
@@ -339,7 +341,7 @@ namespace Realms
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObjectBase but has not been woven.");
                 }
 
-                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
+                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType)!;
             }
             else
             {
@@ -369,12 +371,12 @@ namespace Realms
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event RealmChangedEventHandler _realmChanged;
+        private event RealmChangedEventHandler? _realmChanged;
 
         /// <summary>
         /// Triggered when a Realm has changed (i.e. a <see cref="Transaction"/> was committed).
         /// </summary>
-        public event RealmChangedEventHandler RealmChanged
+        public event RealmChangedEventHandler? RealmChanged
         {
             add
             {
@@ -397,7 +399,7 @@ namespace Realms
         /// <summary>
         /// Triggered when a Realm-level exception has occurred.
         /// </summary>
-        public event EventHandler<ErrorEventArgs> Error;
+        public event EventHandler<ErrorEventArgs>? Error;
 
         internal void NotifyError(Exception ex)
         {
@@ -427,7 +429,7 @@ namespace Realms
                 _activeTransaction?.Dispose();
                 _state.RemoveRealm(this, closeOnEmpty: SharedRealmHandle.OwnsNativeRealm);
 
-                _state = null;
+                _state = null!;
                 SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
             }
         }
@@ -475,9 +477,9 @@ namespace Realms
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as Realm);
+        public override bool Equals(object? obj) => Equals(obj as Realm);
 
-        private bool Equals(Realm other)
+        private bool Equals(Realm? other)
         {
             if (other == null)
             {
@@ -710,7 +712,7 @@ namespace Realms
             bool isNew;
             if (metadata.Helper.TryGetPrimaryKeyValue(obj, out var primaryKey))
             {
-                var pkProperty = metadata.Schema.PrimaryKeyProperty.Value;
+                var pkProperty = metadata.Schema.PrimaryKeyProperty!.Value;
                 objectHandle = SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty, primaryKey, metadata.TableKey, objectName, update, out isNew);
             }
             else
@@ -1052,7 +1054,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(long? primaryKey)
+        public T? Find<T>(long? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1064,7 +1066,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(string primaryKey)
+        public T? Find<T>(string primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1076,7 +1078,7 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(ObjectId? primaryKey)
+        public T? Find<T>(ObjectId? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
@@ -1088,11 +1090,11 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">
         /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T Find<T>(Guid? primaryKey)
+        public T? Find<T>(Guid? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-        internal T FindCore<T>(RealmValue primaryKey)
+        internal T? FindCore<T>(RealmValue primaryKey)
             where T : IRealmObject
         {
             ThrowIfDisposed();
@@ -1120,7 +1122,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
-        public T ResolveReference<T>(ThreadSafeReference.Object<T> reference)
+        public T? ResolveReference<T>(ThreadSafeReference.Object<T> reference)
             where T : IRealmObjectBase
         {
             Argument.NotNull(reference, nameof(reference));
@@ -1134,7 +1136,7 @@ namespace Realms
                 return default;
             }
 
-            if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
+            if (!Metadata.TryGetValue(reference.Metadata!.Schema.Name, out var metadata))
             {
                 metadata = reference.Metadata;
             }
@@ -1152,7 +1154,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IList{T}"/> resolved for the current thread or <c>null</c>
         /// if the list's parent object has been deleted after the reference was created.
         /// </returns>
-        public IList<T> ResolveReference<T>(ThreadSafeReference.List<T> reference)
+        public IList<T>? ResolveReference<T>(ThreadSafeReference.List<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1177,7 +1179,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="ISet{T}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
-        public ISet<T> ResolveReference<T>(ThreadSafeReference.Set<T> reference)
+        public ISet<T>? ResolveReference<T>(ThreadSafeReference.Set<T> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1202,7 +1204,7 @@ namespace Realms
         /// A thread-confined instance of the original <see cref="IDictionary{String, TValue}"/> resolved for the current thread or <c>null</c>
         /// if the set's parent object has been deleted after the reference was created.
         /// </returns>
-        public IDictionary<string, TValue> ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
+        public IDictionary<string, TValue>? ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
         {
             Argument.NotNull(reference, nameof(reference));
 
@@ -1252,7 +1254,7 @@ namespace Realms
             Argument.NotNull(obj, nameof(obj));
             Argument.Ensure(obj.IsManaged, "Object is not managed by Realm, so it cannot be removed.", nameof(obj));
 
-            obj.GetObjectHandle().RemoveFromRealm(SharedRealmHandle);
+            obj.GetObjectHandle()!.RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>
@@ -1375,10 +1377,18 @@ namespace Realms
                 Add(objectsMetadata);
             }
 
-            public bool TryGetValue(string objectType, out Metadata metadata) =>
-                stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata);
+            public bool TryGetValue(string? objectType, [MaybeNullWhen(false)] out Metadata metadata)
+            {
+                if (objectType != null && stringToRealmObjectMetadataDict.TryGetValue(objectType, out metadata))
+                {
+                    return true;
+                }
 
-            public bool TryGetValue(TableKey tablekey, out Metadata metadata) =>
+                metadata = null;
+                return false;
+            }
+
+            public bool TryGetValue(TableKey tablekey, [MaybeNullWhen(false)] out Metadata metadata) =>
                 tableKeyToRealmObjectMetadataDict.TryGetValue(tablekey, out metadata);
 
             public Metadata this[string objectType] => stringToRealmObjectMetadataDict[objectType];
@@ -1638,12 +1648,12 @@ namespace Realms
                 Argument.NotNull(parent, nameof(parent));
                 Argument.Ensure(parent.IsManaged && parent.IsValid, "The object passed as parent must be managed and valid to create an embedded object.", nameof(parent));
                 Argument.Ensure(parent.Realm.IsSameInstance(_realm), "The object passed as parent is managed by a different Realm", nameof(parent));
-                Argument.Ensure(parent.GetObjectMetadata().Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
+                Argument.Ensure(parent.GetObjectMetadata()!.Schema.TryFindProperty(propertyName, out var property), $"The schema for class {parent.GetType().Name} does not contain a property {propertyName}.", nameof(propertyName));
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
                 Argument.Ensure(metadata.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
                 var obj = (IEmbeddedObject)metadata.Helper.CreateInstance();
-                var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
+                var handle = parent.GetObjectHandle()!.CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata()!);
 
                 obj.CreateAndSetAccessor(handle, _realm, metadata);
 
@@ -1806,7 +1816,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public IRealmObject Find(string className, long? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject? Find(string className, long? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1817,7 +1827,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public IRealmObject Find(string className, string primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject? Find(string className, string primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1830,7 +1840,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public IRealmObject Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject? Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1843,10 +1853,10 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public IRealmObject Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject? Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
-            internal IRealmObject FindCore(string className, RealmValue primaryKey)
+            internal IRealmObject? FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1899,6 +1909,8 @@ namespace Realms
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
 
+                Argument.Ensure(realmList.Metadata != null, $"Supplied list cannot contain embedded objects because its type is: {list.GetType().FullName}.", nameof(list));
+
                 var obj = (IEmbeddedObject)realmList.Metadata.Helper.CreateInstance();
 
                 obj.CreateAndSetAccessor(getHandle(realmList.NativeHandle), _realm, realmList.Metadata);
@@ -1916,6 +1928,8 @@ namespace Realms
                 {
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }
+
+                Argument.Ensure(realmDict.Metadata != null, $"Supplied dictionary cannot contain embedded objects because its type is: {dictionary.GetType().FullName}.", nameof(dictionary));
 
                 var obj = (IEmbeddedObject)realmDict.Metadata.Helper.CreateInstance();
 

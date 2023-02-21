@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -118,7 +119,7 @@ namespace Realms.Sync
         public override bool ForceRootOwnership => true;
 
         [Preserve]
-        public SessionHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
+        public SessionHandle(SharedRealmHandle? root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -141,17 +142,15 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(error, progress, wait, propertyChanged, beforeReset, afterReset);
         }
 
-        public bool TryGetUser(out SyncUserHandle userHandle)
+        public SyncUserHandle GetUser()
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                userHandle = null;
-                return false;
+                throw new RealmException("Unable to obtain user for session. This likely means the session is being torn down.");
             }
 
-            userHandle = new SyncUserHandle(ptr);
-            return true;
+            return new(ptr);
         }
 
         public SessionState GetState()
@@ -174,7 +173,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_path(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public ulong RegisterProgressNotifier(GCHandle managedHandle, ProgressDirection direction, ProgressMode mode)
@@ -282,7 +281,7 @@ namespace Realms.Sync
                 var messageString = error.message.AsString();
                 var logUrlString = error.log_url.AsString();
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
                 if (error.is_client_reset)
                 {
@@ -326,12 +325,12 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
         private static IntPtr NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
-            SyncConfigurationBase syncConfig = null;
+            SyncConfigurationBase? syncConfig = null;
 
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
                 var cb = syncConfig.ClientResetHandler switch
                 {
@@ -363,12 +362,12 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
         private static IntPtr NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
         {
-            SyncConfigurationBase syncConfig = null;
+            SyncConfigurationBase? syncConfig = null;
 
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
                 var cb = syncConfig.ClientResetHandler switch
                 {
@@ -401,15 +400,15 @@ namespace Realms.Sync
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
-            var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
-            token.Notify(transferredBytes, transferableBytes);
+            var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
+            token?.Notify(transferredBytes, transferableBytes);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
         private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, PrimitiveValue message)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource)handle.Target;
+            var tcs = (TaskCompletionSource)handle.Target!;
 
             if (error_code == 0)
             {
@@ -438,7 +437,7 @@ namespace Realms.Sync
                     NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
-                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target;
+                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target!;
                 if (session == null)
                 {
                     // We're taking a weak handle to the session, so it's possible that it's been collected

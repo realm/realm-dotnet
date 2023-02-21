@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -46,7 +44,7 @@ namespace Realms
     {
         private readonly ListHandle _listHandle;
 
-        internal RealmList(Realm realm, ListHandle adoptedList, Metadata metadata) : base(realm, metadata)
+        internal RealmList(Realm realm, ListHandle adoptedList, Metadata? metadata) : base(realm, metadata)
         {
             _listHandle = adoptedList;
         }

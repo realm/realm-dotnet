@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Helpers;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -24,9 +25,9 @@ namespace Realms.Dynamic
 {
     internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
-        private static readonly DynamicRealmObjectHelper _embeddedInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectType.EmbeddedObject);
-        private static readonly DynamicRealmObjectHelper _objectInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectType.RealmObject);
-        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new DynamicRealmObjectHelper(ObjectSchema.ObjectType.AsymmetricObject);
+        private static readonly DynamicRealmObjectHelper _embeddedInstance = new(ObjectSchema.ObjectType.EmbeddedObject);
+        private static readonly DynamicRealmObjectHelper _objectInstance = new(ObjectSchema.ObjectType.RealmObject);
+        private static readonly DynamicRealmObjectHelper _asymmetricInstance = new(ObjectSchema.ObjectType.AsymmetricObject);
 
         private readonly ObjectSchema.ObjectType _schemaType;
 
@@ -60,6 +61,8 @@ namespace Realms.Dynamic
 
         public bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out RealmValue value)
         {
+            Argument.Ensure(instance.IsManaged, "DynamicRealmObjectHelper should only operate on managed instances", nameof(instance));
+
             if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
             {
                 value = RealmValue.Null;
@@ -70,6 +73,6 @@ namespace Realms.Dynamic
             return true;
         }
 
-        public ManagedAccessor CreateAccessor() => null;
+        public ManagedAccessor? CreateAccessor() => null;
     }
 }

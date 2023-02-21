@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
@@ -32,7 +33,7 @@ namespace Realms
 
         public static readonly string FrameworkName;
 
-        public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
+        public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version!;
 
         private static readonly List<string> _potentialStorageFolders = new()
         {
@@ -40,7 +41,7 @@ namespace Realms
             Path.Combine(Directory.GetCurrentDirectory(), "Documents")
         };
 
-        private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
+        private static readonly Lazy<string?> _defaultStorageFolder = new(() =>
         {
             if (TryGetUWPFolder(out var folder))
             {
@@ -58,7 +59,7 @@ namespace Realms
             return null;
         });
 
-        private static string _customStorageFolder;
+        private static string? _customStorageFolder;
 
         public static string GetDefaultStorageFolder(string errorMessage) =>
             _customStorageFolder ??
@@ -103,7 +104,7 @@ namespace Realms
                 }
 
                 var initialize = fileHelper.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
-                initialize.Invoke(null, null);
+                initialize!.Invoke(null, null);
 
                 return true;
             }
@@ -114,7 +115,7 @@ namespace Realms
             return false;
         }
 
-        private static bool TryGetUWPFolder(out string folder) => TryGetDatabaseFolder(() =>
+        private static bool TryGetUWPFolder([MaybeNullWhen(false)] out string folder) => TryGetDatabaseFolder(() =>
         {
             // On UWP, the sandbox folder is obtained by:
             // ApplicationData.Current.LocalFolder.Path
@@ -124,16 +125,16 @@ namespace Realms
                 return null;
             }
 
-            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
-            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
-            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public)!;
+            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance)!;
+            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance)!;
 
             var currentApplicationData = currentProperty.GetValue(null);
             var localFolder = localFolderProperty.GetValue(currentApplicationData);
-            return (string)pathProperty.GetValue(localFolder);
+            return (string)pathProperty.GetValue(localFolder)!;
         }, out folder);
 
-        private static bool TryGetDatabaseFolder(Func<string> getter, out string folder)
+        private static bool TryGetDatabaseFolder(Func<string?> getter, [MaybeNullWhen(false)] out string folder)
         {
             try
             {

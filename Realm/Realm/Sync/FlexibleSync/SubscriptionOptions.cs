@@ -32,7 +32,7 @@ namespace Realms.Sync
         /// an automatic name will be generated from the query.
         /// </summary>
         /// <value>The subscription's name.</value>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the operation should update

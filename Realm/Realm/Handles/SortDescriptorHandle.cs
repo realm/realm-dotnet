@@ -48,7 +48,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            NativeMethods.add_clause(this, tableKey.Value, Root, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
+            NativeMethods.add_clause(this, tableKey.Value, Root!, propertyIndexChain, (IntPtr)propertyIndexChain.Length, ascending, replacing, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

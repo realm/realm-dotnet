@@ -44,6 +44,8 @@ namespace Realms.Schema
             set
             {
                 Argument.NotNull(name, nameof(name));
+                Argument.NotNull(value, nameof(value));
+
                 if (name != GetKey(value))
                 {
                     throw new ArgumentException($"The name of the element ('{GetKey(value)}') doesn't match the provided name ('{name}'). ", nameof(name));
@@ -60,6 +62,8 @@ namespace Realms.Schema
 
         protected void Add(T item)
         {
+            Argument.NotNull(item, nameof(item));
+
             var key = GetKey(item);
             if (_values.ContainsKey(key))
             {

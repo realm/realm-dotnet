@@ -139,7 +139,7 @@ namespace Realms
 
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public void Set(int targetIndex, in RealmValue value)
@@ -158,7 +158,7 @@ namespace Realms
 
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -177,7 +177,7 @@ namespace Realms
 
             var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public int Find(in RealmValue value)
@@ -221,7 +221,7 @@ namespace Realms
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public override int Count()
@@ -250,7 +250,7 @@ namespace Realms
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)

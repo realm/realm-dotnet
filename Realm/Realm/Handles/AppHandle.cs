@@ -247,7 +247,7 @@ namespace Realms.Sync
             NativeMethods.reconnect(this);
         }
 
-        public bool TryGetCurrentUser(out SyncUserHandle? userHandle)
+        public bool TryGetCurrentUser([MaybeNullWhen(false)] out SyncUserHandle userHandle)
         {
             var userPtr = NativeMethods.get_current_user(this, out var ex);
             ex.ThrowIfNecessary();

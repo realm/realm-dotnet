@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -125,10 +123,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return $"{_objectType.Name} (unmanaged)";
-        }
+        public override string? ToString() => $"{_objectType.Name} (unmanaged)";
 
         /// <inheritdoc/>
         public override bool Equals(object? obj)

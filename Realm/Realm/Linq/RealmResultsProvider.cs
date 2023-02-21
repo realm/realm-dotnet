@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -27,23 +28,22 @@ namespace Realms
     internal class RealmResultsProvider : IQueryProvider
     {
         private readonly Realm _realm;
-        private readonly Metadata _metadata;
+        private readonly Metadata? _metadata;
 
-        internal RealmResultsProvider(Realm realm, Metadata metadata)
+        private Metadata Metadata => _metadata ?? throw new NotSupportedException("Realm queries are not supported on collections of primitives");
+
+        internal RealmResultsProvider(Realm realm, Metadata? metadata)
         {
             _realm = realm;
             _metadata = metadata;
         }
 
-        internal RealmResultsVisitor MakeVisitor()
-        {
-            return new RealmResultsVisitor(_realm, _metadata);
-        }
+        internal RealmResultsVisitor MakeVisitor() => new RealmResultsVisitor(_realm, Metadata);
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
             // If that line is changed, make sure to update the non-generic CreateQuery below!
-            return new RealmResults<T>(_realm, _metadata, this, expression);
+            return new RealmResults<T>(_realm, Metadata, this, expression);
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -53,20 +53,17 @@ namespace Realms
             {
                 var resultsType = typeof(RealmResults<>).MakeGenericType(elementType);
                 var ctor = resultsType.GetTypeInfo().DeclaredConstructors.Single(c => c.GetParameters().Length == 4);
-                return (IQueryable)ctor.Invoke(new object[] { _realm, _metadata, this, expression });
+                return (IQueryable)ctor.Invoke(new object[] { _realm, Metadata, this, expression });
             }
             catch (TargetInvocationException tie)
             {
-                throw tie.InnerException;
+                throw tie.InnerException ?? tie;
             }
         }
 
-        public T Execute<T>(Expression expression)
-        {
-            return (T)Execute(expression);
-        }
+        public T Execute<T>(Expression expression) => (T)Execute(expression)!;
 
-        public object Execute(Expression expression)
+        public object? Execute(Expression expression)
         {
             expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
             var v = MakeVisitor();

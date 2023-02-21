@@ -38,7 +38,7 @@ namespace Realms.Sync.Exceptions
         {
         }
 
-        internal AppException(string message, string helpLink, int httpStatusCode)
+        internal AppException(string message, string? helpLink, int httpStatusCode)
             : base(message)
         {
             HelpLink = helpLink;

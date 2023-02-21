@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -60,7 +58,7 @@ namespace Realms
             }
         }
 
-        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata metadata)
+        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata? metadata)
             : base(realm, metadata)
         {
             _setHandle = adoptedSet;

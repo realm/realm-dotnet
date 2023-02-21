@@ -100,7 +100,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
-        public BsonDocument GetCustomData()
+        public BsonDocument? GetCustomData()
         {
             var serialized = Handle.GetCustomData();
             if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
@@ -120,7 +120,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
-        public T GetCustomData<T>()
+        public T? GetCustomData<T>()
             where T : class
         {
             var customData = GetCustomData();
@@ -162,14 +162,14 @@ namespace Realms.Sync
         internal readonly SyncUserHandle Handle;
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
-        internal User(SyncUserHandle handle, App app = null)
+        internal User(SyncUserHandle handle, App? app = null)
         {
             if (app == null && handle.TryGetApp(out var appHandle))
             {
                 app = new App(appHandle);
             }
 
-            App = app;
+            App = app!;
             Handle = handle;
             Profile = new UserProfile(this);
             ApiKeys = new ApiKeyClient(this);
@@ -189,7 +189,7 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData"/> will also be updated with the new information.
         /// </returns>
-        public async Task<BsonDocument> RefreshCustomDataAsync()
+        public async Task<BsonDocument?> RefreshCustomDataAsync()
         {
             await Handle.RefreshCustomDataAsync();
 
@@ -204,7 +204,7 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData{T}"/> will also be updated with the new information.
         /// </returns>
-        public async Task<T> RefreshCustomDataAsync<T>()
+        public async Task<T?> RefreshCustomDataAsync<T>()
             where T : class
         {
             var result = await RefreshCustomDataAsync();
@@ -262,14 +262,14 @@ namespace Realms.Sync
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as User);
+        public override bool Equals(object? obj) => Equals(obj as User);
 
         /// <summary>
         /// Determines whether this instance and another <see cref="User"/> instance are equal by comparing their identities.
         /// </summary>
         /// <param name="other">The <see cref="User"/> instance to compare with.</param>
         /// <returns>true if the two instances are equal; false otherwise.</returns>
-        public bool Equals(User other) => Id.Equals(other?.Id);
+        public bool Equals(User? other) => Id.Equals(other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => Id.GetHashCode();
@@ -325,7 +325,7 @@ namespace Realms.Sync
             /// <returns>
             /// An awaitable <see cref="Task{T}"/> representing the asynchronous lookup operation.
             /// </returns>
-            public Task<ApiKey> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
+            public Task<ApiKey?> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Fetches all API keys associated with the user.
@@ -362,7 +362,7 @@ namespace Realms.Sync
             /// <seealso cref="DisableAsync(ObjectId)"/>
             public Task EnableAsync(ObjectId id) => Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
 
-            private static async Task<T> Handle404<T>(Task<T> task)
+            private static async Task<T?> Handle404<T>(Task<T> task)
             {
                 try
                 {
@@ -437,7 +437,7 @@ namespace Realms.Sync
             /// </returns>
             public Task<T> CallAsync<T>(string name, params object[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
 
-            internal async Task<T> CallSerializedAsync<T>(string name, string args, string serviceName = null)
+            internal async Task<T> CallSerializedAsync<T>(string name, string args, string? serviceName = null)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 

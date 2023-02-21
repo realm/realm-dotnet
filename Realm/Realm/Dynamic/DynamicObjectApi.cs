@@ -28,7 +28,7 @@ namespace Realms
     /// <summary>
     /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
     /// </summary>
-    public struct DynamicObjectApi
+    public readonly struct DynamicObjectApi
     {
         private readonly ManagedAccessor _managedAccessor;
 
@@ -107,7 +107,7 @@ namespace Realms
 
             if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
             {
-                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
+                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny()?.GetType().Name} ({value}).");
             }
 
             if (property.IsPrimaryKey)
@@ -135,7 +135,7 @@ namespace Realms
 
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
-            var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
+            var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType!];
             if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
             {
                 return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
@@ -244,7 +244,7 @@ namespace Realms
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = null)
+        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
         {
             Argument.NotNull(propertyName, nameof(propertyName));
 

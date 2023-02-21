@@ -32,9 +32,9 @@ namespace Realms.Sync.Native
         public string Key;
 
         [MarshalAs(UnmanagedType.LPStr)]
-        public string Value;
+        public string? Value;
 
-        public static Dictionary<string, string> UnmarshalDictionary(IntPtr pairs, int pairsLength)
+        public static Dictionary<string, string?> UnmarshalDictionary(IntPtr pairs, int pairsLength)
         {
             return Enumerable.Range(0, pairsLength)
                              .Select(i => Marshal.PtrToStructure<StringStringPair>(IntPtr.Add(pairs, i * StringStringPair.Size)))

@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -83,7 +81,7 @@ namespace Realms
         protected ManagedAccessor()
 #pragma warning restore CS8618
         {
-            _hashCode = new(() => ObjectHandle!.GetHashCode());
+            _hashCode = new(() => ObjectHandle!.GetObjHash());
         }
 
         [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
@@ -162,7 +160,7 @@ namespace Realms
             where T : IRealmObjectBase
         {
             Metadata.Schema.TryFindProperty(propertyName, out var property);
-            var relatedMeta = Realm.Metadata[property.ObjectType];
+            var relatedMeta = Realm.Metadata[property.ObjectType!];
 
             return new RealmResults<T>(Realm, resultsHandle, relatedMeta);
         }
@@ -270,9 +268,9 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string? ToString()
         {
-            var typeName = Metadata.Schema.Type.Name;
+            var typeName = Metadata.Schema.Type!.Name;
 
             if (!IsValid)
             {

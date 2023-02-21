@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -44,12 +43,12 @@ namespace Realms
         private IRealmAccessor _accessor;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
+        private event PropertyChangedEventHandler? _propertyChanged;
 
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -119,14 +118,14 @@ namespace Realms
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
         [IgnoreDataMember]
-        public Realm Realm => _accessor.Realm;
+        public Realm? Realm => _accessor.Realm;
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => _accessor.ObjectSchema;
+        public ObjectSchema? ObjectSchema => _accessor.ObjectSchema;
 
         /// <summary>
         /// Gets the number of objects referring to this one via either a to-one or to-many relationship.
@@ -153,7 +152,7 @@ namespace Realms
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void ISettableManagedAccessor.SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper, bool update, bool skipDefaults)
+        void ISettableManagedAccessor.SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             _accessor = accessor;
 
@@ -208,7 +207,7 @@ namespace Realms
 #pragma warning restore SA1600 // Elements should be documented
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             // If parameter is null, return false.
             if (obj is null)
@@ -248,16 +247,13 @@ namespace Realms
         /// Returns a string that represents the current object.
         /// </summary>
         /// <returns>A string that represents the current object.</returns>
-        public override string ToString()
-        {
-            return _accessor.ToString();
-        }
+        public override string? ToString() => _accessor.ToString();
 
         /// <summary>
         /// Allows you to raise the PropertyChanged event.
         /// </summary>
         /// <param name="propertyName">The name of the property that has changed. If not specified, we'll use the caller name.</param>
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             OnPropertyChanged(propertyName);

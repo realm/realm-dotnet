@@ -51,7 +51,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The value of the key that needs to be provided when constructing <see cref="Credentials.ApiKey(string)"/>.</value>
         [Preserve]
-        public string Value { get; }
+        public string? Value { get; }
 
         /// <summary>
         /// Gets a value indicating whether or not this key is currently enabled.
@@ -61,7 +61,7 @@ namespace Realms.Sync
         public bool IsEnabled { get; }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj) => (obj is ApiKey key) && key.Id == Id;
+        public override bool Equals(object? obj) => (obj is ApiKey key) && key.Id == Id;
 
         /// <summary>
         /// Gets the hash code.

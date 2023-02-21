@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -42,8 +40,7 @@ namespace Realms
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
           IList,
-          IThreadConfined,
-          IMetadataObject
+          IThreadConfined
     {
         private readonly Lazy<NotificationCallbacks<T>> _notificationCallbacks;
 
@@ -51,7 +48,7 @@ namespace Realms
 
         internal readonly Lazy<CollectionHandleBase> Handle;
 
-        internal readonly Metadata Metadata;
+        internal readonly Metadata? Metadata;
 
         internal bool IsDynamic;
 
@@ -112,7 +109,7 @@ namespace Realms
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
         public ObjectSchema? ObjectSchema => Metadata?.Schema;
 
-        Metadata IMetadataObject.Metadata => Metadata;
+        Metadata? IMetadataObject.Metadata => Metadata;
 
         [IgnoreDataMember]
         public bool IsManaged => Realm != null;
@@ -141,7 +138,7 @@ namespace Realms
             }
         }
 
-        internal RealmCollectionBase(Realm realm, Metadata metadata)
+        internal RealmCollectionBase(Realm realm, Metadata? metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
@@ -256,7 +253,7 @@ namespace Realms
 
         #region INotifyCollectionChanged
 
-        private void OnChange(IRealmCollection<T> sender, ChangeSet change)
+        private void OnChange(IRealmCollection<T> sender, ChangeSet? change)
         {
             if (!sender.IsValid)
             {
@@ -541,7 +538,7 @@ namespace Realms
                 // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
                 // snapshot if the collection is frozen.
                 _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
-                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
+                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata!) : parent;
             }
 
             public T Current => _enumerating[_index];

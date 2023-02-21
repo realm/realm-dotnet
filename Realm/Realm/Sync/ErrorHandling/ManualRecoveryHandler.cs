@@ -32,7 +32,7 @@ namespace Realms.Sync.ErrorHandling
         /// must be moved manually from the backup Realm to the new one.
         /// </summary>
         /// <value>Callback invoked on Client Reset.</value>
-        public ClientResetCallback OnClientReset => ManualClientReset;
+        public ClientResetCallback OnClientReset => ManualClientReset!;
 
         internal override ClientResyncMode ClientResetMode => ClientResyncMode.Manual;
 

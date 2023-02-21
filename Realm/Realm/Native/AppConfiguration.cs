@@ -52,41 +52,41 @@ namespace Realms.Sync.Native
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string base_url;
+        private string? base_url;
         private IntPtr base_url_len;
 
-        internal string BaseUrl
+        internal string? BaseUrl
         {
             set
             {
                 base_url = value;
-                base_url_len = (IntPtr)(value?.Length ?? 0);
+                base_url_len = value.IntPtrLength();
             }
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string local_app_name;
+        private string? local_app_name;
         private IntPtr local_app_name_len;
 
-        internal string LocalAppName
+        internal string? LocalAppName
         {
             set
             {
                 local_app_name = value;
-                local_app_name_len = (IntPtr)(value?.Length ?? 0);
+                local_app_name_len = value.IntPtrLength();
             }
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string local_app_version;
+        private string? local_app_version;
         private IntPtr local_app_version_len;
 
-        internal string LocalAppVersion
+        internal string? LocalAppVersion
         {
             set
             {
                 local_app_version = value;
-                local_app_version_len = (IntPtr)(value?.Length ?? 0);
+                local_app_version_len = value.IntPtrLength();
             }
         }
 

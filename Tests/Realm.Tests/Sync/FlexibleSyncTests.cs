@@ -612,10 +612,7 @@ namespace Realms.Tests.Sync
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
             var sub = realm.Subscriptions[0];
-            var nonExistent = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var nonExistent = new Subscription(ObjectId.GenerateNewId(), "a", nameof(SyncAllTypesObject), "TRUEPREDICATE", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             realm.Subscriptions.Update(() =>
             {
@@ -641,10 +638,7 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Remove_Subscription_OutsideUpdate_Throws()
         {
             var realm = GetFakeFLXRealm();
-            var sub = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var sub = new Subscription(ObjectId.GenerateNewId(), "a", "b", "c", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.Remove(sub));
         }

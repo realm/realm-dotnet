@@ -26,7 +26,7 @@ namespace Realms.Dynamic
     [Ignored]
     public class DynamicEmbeddedObject : DynamicRealmObjectBase, IEmbeddedObject, IDynamicMetaObjectProvider
     {
-        public IRealmObjectBase Parent => Accessor.GetParent();
+        public IRealmObjectBase? Parent => Accessor.GetParent();
 
         public DynamicMetaObject GetMetaObject(Expression parameter)
         {

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson;
 
 namespace Realms.Helpers
@@ -66,9 +67,9 @@ namespace Realms.Helpers
             [(typeof(RealmInteger<short>?), typeof(RealmValue))] = new NullableRealmIntegerShortRealmValueConverter(),
             [(typeof(RealmInteger<int>?), typeof(RealmValue))] = new NullableRealmIntegerIntRealmValueConverter(),
             [(typeof(RealmInteger<long>?), typeof(RealmValue))] = new NullableRealmIntegerLongRealmValueConverter(),
-            [(typeof(byte[]), typeof(RealmValue))] = new ByteArrayRealmValueConverter(),
-            [(typeof(string), typeof(RealmValue))] = new StringRealmValueConverter(),
-            [(typeof(RealmObjectBase), typeof(RealmValue))] = new RealmObjectBaseRealmValueConverter(),
+            [(typeof(byte[]), typeof(RealmValue))] = new NullableByteArrayRealmValueConverter(),
+            [(typeof(string), typeof(RealmValue))] = new NullableStringRealmValueConverter(),
+            [(typeof(RealmObjectBase), typeof(RealmValue))] = new NullableRealmObjectBaseRealmValueConverter(),
             [(typeof(RealmValue), typeof(char))] = new RealmValueCharConverter(),
             [(typeof(RealmValue), typeof(byte))] = new RealmValueByteConverter(),
             [(typeof(RealmValue), typeof(short))] = new RealmValueShortConverter(),
@@ -103,9 +104,9 @@ namespace Realms.Helpers
             [(typeof(RealmValue), typeof(RealmInteger<short>?))] = new RealmValueNullableRealmIntegerShortConverter(),
             [(typeof(RealmValue), typeof(RealmInteger<int>?))] = new RealmValueNullableRealmIntegerIntConverter(),
             [(typeof(RealmValue), typeof(RealmInteger<long>?))] = new RealmValueNullableRealmIntegerLongConverter(),
-            [(typeof(RealmValue), typeof(byte[]))] = new RealmValueByteArrayConverter(),
-            [(typeof(RealmValue), typeof(string))] = new RealmValueStringConverter(),
-            [(typeof(RealmValue), typeof(RealmObjectBase))] = new RealmValueRealmObjectBaseConverter(),
+            [(typeof(RealmValue), typeof(byte[]))] = new RealmValueNullableByteArrayConverter(),
+            [(typeof(RealmValue), typeof(string))] = new RealmValueNullableStringConverter(),
+            [(typeof(RealmValue), typeof(RealmObjectBase))] = new RealmValueNullableRealmObjectBaseConverter(),
             [(typeof(char), typeof(char?))] = new CharNullableCharConverter(),
             [(typeof(char), typeof(byte?))] = new CharNullableByteConverter(),
             [(typeof(char), typeof(short?))] = new CharNullableShortConverter(),
@@ -380,7 +381,8 @@ namespace Realms.Helpers
         /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
         /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
-        public static TResult Convert<TFrom, TResult>(TFrom value)
+        [return: NotNullIfNotNull(nameof(value))]
+        public static TResult? Convert<TFrom, TResult>(TFrom value)
         {
             if (value is TResult result)
             {
@@ -426,7 +428,8 @@ namespace Realms.Helpers
         /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
         /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
-        public static TResult Convert<TResult>(object value)
+        [return: NotNullIfNotNull(nameof(value))]
+        public static TResult? Convert<TResult>(object? value)
         {
             if (value is TResult result)
             {
@@ -464,7 +467,7 @@ namespace Realms.Helpers
 
             if (value is null)
             {
-                return default(TResult) == null ? default(TResult) : throw new InvalidCastException($"Can't convert from null to {targetType.FullName} because the target type is not nullable.");
+                return default(TResult) == null ? default : throw new InvalidCastException($"Can't convert from null to {targetType.FullName} because the target type is not nullable.");
             }
 
             var sourceType = value.GetType();
@@ -494,7 +497,8 @@ namespace Realms.Helpers
         {
             private static readonly ISpecializedConverter<TSource, TTarget> _converter;
 
-            public static TTarget Convert(TSource value) => _converter.Convert(value);
+            [return: NotNullIfNotNull(nameof(value))]
+            public static TTarget? Convert(TSource? value) => _converter.Convert(value);
 
             static GenericOperator()
             {
@@ -537,7 +541,8 @@ namespace Realms.Helpers
         {
             Type SourceType { get; }
 
-            TTarget Convert(object obj);
+            [return: NotNullIfNotNull(nameof(obj))]
+            TTarget? Convert(object? obj);
         }
 
         /// <summary>
@@ -550,16 +555,19 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private interface ISpecializedConverter<TSource, TTarget> : IGenericConverter<TTarget>
         {
-            TTarget Convert(TSource source);
+            [return: NotNullIfNotNull(nameof(source))]
+            TTarget? Convert(TSource? source);
         }
 
         private abstract class SpecializedConverterBase<TSource, TTarget> : ISpecializedConverter<TSource, TTarget>
         {
             public Type SourceType { get; } = typeof(TSource);
 
-            public abstract TTarget Convert(TSource source);
+            [return: NotNullIfNotNull(nameof(source))]
+            public abstract TTarget? Convert(TSource? source);
 
-            public virtual TTarget Convert(object obj) => Convert((TSource)obj);
+            [return: NotNullIfNotNull(nameof(obj))]
+            public virtual TTarget? Convert(object? obj) => Convert((TSource?)obj);
         }
 
         /// <summary>
@@ -571,7 +579,8 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class ThrowingConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
         {
-            public override TTarget Convert(TSource source) => throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+            [DoesNotReturn]
+            public override TTarget? Convert(TSource? source) => throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
         }
 
         /// <summary>
@@ -581,7 +590,8 @@ namespace Realms.Helpers
         /// <typeparam name="T">The type of both the source and the target.</typeparam>
         private class UnaryConverter<T> : SpecializedConverterBase<T, T>
         {
-            public override T Convert(T source) => source;
+            [return: NotNullIfNotNull(nameof(source))]
+            public override T? Convert(T? source) => source;
         }
 
         /// <summary>
@@ -593,9 +603,11 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class InheritanceConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
         {
-            public override TTarget Convert(TSource source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
+            [return: NotNullIfNotNull(nameof(source))]
+            public override TTarget? Convert(TSource? source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
 
-            public override TTarget Convert(object source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
+            [return: NotNullIfNotNull(nameof(source))]
+            public override TTarget? Convert(object? source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
         }
 
         #region ToRealmValue Converters
@@ -770,24 +782,24 @@ namespace Realms.Helpers
             public override RealmValue Convert(RealmInteger<long>? value) => value;
         }
 
-        private class ByteArrayRealmValueConverter : SpecializedConverterBase<byte[], RealmValue>
+        private class NullableByteArrayRealmValueConverter : SpecializedConverterBase<byte[]?, RealmValue>
         {
-            public override RealmValue Convert(byte[] value) => value;
+            public override RealmValue Convert(byte[]? value) => value;
         }
 
-        private class StringRealmValueConverter : SpecializedConverterBase<string, RealmValue>
+        private class NullableStringRealmValueConverter : SpecializedConverterBase<string?, RealmValue>
         {
-            public override RealmValue Convert(string value) => value;
+            public override RealmValue Convert(string? value) => value;
         }
 
-        private class RealmObjectBaseRealmValueConverter : SpecializedConverterBase<RealmObjectBase, RealmValue>
+        private class NullableRealmObjectBaseRealmValueConverter : SpecializedConverterBase<RealmObjectBase?, RealmValue>
         {
-            public override RealmValue Convert(RealmObjectBase value) => value;
+            public override RealmValue Convert(RealmObjectBase? value) => value;
         }
 
         private class IRealmObjectBaseRealmValueConverter : SpecializedConverterBase<IRealmObjectBase, RealmValue>
         {
-            public override RealmValue Convert(IRealmObjectBase value) => RealmValue.Object(value);
+            public override RealmValue Convert(IRealmObjectBase? value) => value is null ? RealmValue.Null : RealmValue.Object(value);
         }
         #endregion ToRealmValue Converters
 
@@ -963,19 +975,19 @@ namespace Realms.Helpers
             public override RealmInteger<long>? Convert(RealmValue value) => (RealmInteger<long>?)value;
         }
 
-        private class RealmValueByteArrayConverter : SpecializedConverterBase<RealmValue, byte[]>
+        private class RealmValueNullableByteArrayConverter : SpecializedConverterBase<RealmValue, byte[]?>
         {
-            public override byte[] Convert(RealmValue value) => (byte[])value;
+            public override byte[]? Convert(RealmValue value) => (byte[]?)value;
         }
 
-        private class RealmValueStringConverter : SpecializedConverterBase<RealmValue, string>
+        private class RealmValueNullableStringConverter : SpecializedConverterBase<RealmValue, string?>
         {
-            public override string Convert(RealmValue value) => (string)value;
+            public override string? Convert(RealmValue value) => (string?)value;
         }
 
-        private class RealmValueRealmObjectBaseConverter : SpecializedConverterBase<RealmValue, RealmObjectBase>
+        private class RealmValueNullableRealmObjectBaseConverter : SpecializedConverterBase<RealmValue, RealmObjectBase?>
         {
-            public override RealmObjectBase Convert(RealmValue value) => (RealmObjectBase)value;
+            public override RealmObjectBase? Convert(RealmValue value) => (RealmObjectBase?)value;
         }
 
         private class RealmValueIRealmObjectBaseConverter : SpecializedConverterBase<RealmValue, IRealmObjectBase>

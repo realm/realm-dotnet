@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
+using System.Diagnostics.CodeAnalysis;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -39,6 +38,7 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
+        [MemberNotNullWhen(true, nameof(Realm), nameof(ObjectSchema))]
         bool IsManaged { get; }
 
         /// <summary>
@@ -63,13 +63,13 @@ namespace Realms
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
-        Realm Realm { get; }
+        Realm? Realm { get; }
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        ObjectSchema ObjectSchema { get; }
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm object instance.

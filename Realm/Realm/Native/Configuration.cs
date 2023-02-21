@@ -38,10 +38,10 @@ namespace Realms.Native
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string fallback_path;
+        private string? fallback_path;
         private IntPtr fallback_path_len;
 
-        internal string FallbackPipePath
+        internal string? FallbackPipePath
         {
             set
             {

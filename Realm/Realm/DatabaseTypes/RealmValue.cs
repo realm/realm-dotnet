@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Buffers;
 using System.ComponentModel;
@@ -96,7 +94,7 @@ namespace Realms
                     break;
                 case RealmValueType.Object:
                     Argument.NotNull(realm, nameof(realm));
-                    _objectValue = primitive.AsObject(realm);
+                    _objectValue = primitive.AsObject(realm!);
                     break;
                 default:
                     _primitiveValue = primitive;
@@ -118,7 +116,7 @@ namespace Realms
 
         private RealmValue(IRealmObjectBase obj) : this()
         {
-            Type = obj == null ? RealmValueType.Null : RealmValueType.Object;
+            Type = RealmValueType.Object;
             _objectValue = obj;
         }
 
@@ -198,12 +196,13 @@ namespace Realms
                     var handle = GCHandle.Alloc(_dataValue, GCHandleType.Pinned);
                     return (PrimitiveValue.Data(handle.AddrOfPinnedObject(), _dataValue?.Length ?? 0), new HandlesToCleanup(handle));
                 case RealmValueType.Object:
-                    if (!AsIRealmObject().IsManaged)
+                    var obj = AsIRealmObject();
+                    if (!obj.IsManaged)
                     {
                         throw new InvalidOperationException("Can't convert unmanaged object to native");
                     }
 
-                    return (PrimitiveValue.Object(_objectValue?.GetObjectHandle()), null);
+                    return (PrimitiveValue.Object(obj.GetObjectHandle()!), null);
                 default:
                     return (_primitiveValue, null);
             }
@@ -703,7 +702,7 @@ namespace Realms
             // This largely copies AsAny to avoid boxing the underlying value in an object
             return Type switch
             {
-                RealmValueType.Null => Operator.Convert<T>(null),
+                RealmValueType.Null => Operator.Convert<T>(null)!,
                 RealmValueType.Int => Operator.Convert<long, T>(AsInt64()),
                 RealmValueType.Bool => Operator.Convert<bool, T>(AsBool()),
                 RealmValueType.String => Operator.Convert<string, T>(AsString()),

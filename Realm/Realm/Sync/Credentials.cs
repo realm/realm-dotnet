@@ -223,12 +223,12 @@ namespace Realms.Sync
         public AuthProvider Provider { get; }
 
         [Preserve]
-        internal string Token { get; }
+        internal string? Token { get; }
 
         [Preserve]
-        internal string AdditionalInfo { get; }
+        internal string? AdditionalInfo { get; }
 
-        private Credentials(AuthProvider provider, string token = null, string additionalInfo = null)
+        private Credentials(AuthProvider provider, string? token = null, string? additionalInfo = null)
         {
             Provider = provider;
             Token = token;
