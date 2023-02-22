@@ -48,6 +48,7 @@
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
+* Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
 
 ### Fixed
 
