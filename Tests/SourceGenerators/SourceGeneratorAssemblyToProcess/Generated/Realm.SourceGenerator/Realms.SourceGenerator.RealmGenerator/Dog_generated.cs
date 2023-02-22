@@ -44,10 +44,10 @@ namespace SourceGeneratorPlayground
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -63,11 +63,11 @@ namespace SourceGeneratorPlayground
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(oldAccessor.Owner != null)
+                if (oldAccessor.Owner != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Owner, update);
                 }
@@ -164,7 +164,7 @@ namespace SourceGeneratorPlayground
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
+        public static explicit operator Dog?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Dog>();
 
         public static implicit operator Realms.RealmValue(Dog? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

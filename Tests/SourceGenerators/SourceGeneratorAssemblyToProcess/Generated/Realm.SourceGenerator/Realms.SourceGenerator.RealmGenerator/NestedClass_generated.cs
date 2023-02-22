@@ -46,10 +46,10 @@ namespace SourceGeneratorPlayground
             public bool IsFrozen => Accessor.IsFrozen;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Realm Realm => Accessor.Realm;
+            public Realms.Realm? Realm => Accessor.Realm;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
             [IgnoreDataMember, XmlIgnore]
             public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -65,11 +65,11 @@ namespace SourceGeneratorPlayground
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if(!skipDefaults || oldAccessor.Id != default(int))
+                    if (!skipDefaults || oldAccessor.Id != default(int))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if(oldAccessor.Link != null)
+                    if (oldAccessor.Link != null && newAccessor.Realm != null)
                     {
                         newAccessor.Realm.Add(oldAccessor.Link, update);
                     }
@@ -166,7 +166,7 @@ namespace SourceGeneratorPlayground
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator NestedClass(Realms.RealmValue val) => val.AsRealmObject<NestedClass>();
+            public static explicit operator NestedClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NestedClass>();
 
             public static implicit operator Realms.RealmValue(NestedClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 

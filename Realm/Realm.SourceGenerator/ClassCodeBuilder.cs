@@ -664,10 +664,10 @@ return;".Indent());
             else
             {
                 getListValueBody = $@"return propertyName switch
-            {{
-{getListValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
-            }};";
+{{
+{getListValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
+}};";
             }
 
             // GetSetValue
@@ -680,10 +680,10 @@ return;".Indent());
             else
             {
                 getSetValueBody = $@"return propertyName switch
-            {{
-{getSetValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
-            }};";
+{{
+{getSetValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
+}};";
             }
 
             // GetDictionaryValue
@@ -697,7 +697,7 @@ return;".Indent());
             {
                 getDictionaryValueBody = $@"return propertyName switch
 {{
-{getDictionaryValueLines.Indent(1, trimNewLines: true)}
+{getDictionaryValueLines.Indent(trimNewLines: true)}
     _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
 }};";
             }

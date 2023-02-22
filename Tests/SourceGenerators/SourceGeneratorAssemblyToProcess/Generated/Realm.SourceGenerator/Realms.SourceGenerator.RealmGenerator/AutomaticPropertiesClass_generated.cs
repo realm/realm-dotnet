@@ -43,10 +43,10 @@ namespace SourceGeneratorAssemblyToProcess
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -62,7 +62,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
@@ -158,7 +158,7 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AutomaticPropertiesClass(Realms.RealmValue val) => val.AsRealmObject<AutomaticPropertiesClass>();
+        public static explicit operator AutomaticPropertiesClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AutomaticPropertiesClass>();
 
         public static implicit operator Realms.RealmValue(AutomaticPropertiesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
