@@ -178,7 +178,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
-                        copyToRealm.AppendLine(@$"if(oldAccessor.{property.Name} != null)
+                        copyToRealm.AppendLine(@$"if (oldAccessor.{property.Name} != null && newAccessor.Realm != null)
 {{
     newAccessor.Realm.Add(oldAccessor.{property.Name}, update);
 }}");
@@ -214,7 +214,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     }
                     else
                     {
-                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
+                        copyToRealm.AppendLine(@$"if (!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
 {{
     newAccessor.{property.Name} = oldAccessor.{property.Name};
 }}");
@@ -286,10 +286,10 @@ public bool IsValid => Accessor.IsValid;
 public bool IsFrozen => Accessor.IsFrozen;
 
 [IgnoreDataMember, XmlIgnore]
-public Realms.Realm Realm => Accessor.Realm;
+public Realms.Realm? Realm => Accessor.Realm;
 
 [IgnoreDataMember, XmlIgnore]
-public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
 [IgnoreDataMember, XmlIgnore]
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -299,7 +299,7 @@ public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
 $@"[IgnoreDataMember, XmlIgnore]
-public Realms.IRealmObjectBase Parent => Accessor.GetParent();")}
+public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
 public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
 {{
@@ -594,6 +594,8 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"case ""{stringName}"":");
 
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
                     if (property.IsPrimaryKey)
                     {
                         setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
@@ -603,11 +605,11 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
     throw new InvalidOperationException($""Cannot set the value of non primary key property ({{propertyName}}) with SetValueUnique"");
 }}
 
-{name} = ({type})val;");
+{name} = ({type})val{forceNotNullable};");
                     }
                     else
                     {
-                        setValueLines.AppendLine(@$"{name} = ({type})val;
+                        setValueLines.AppendLine(@$"{name} = ({type})val{forceNotNullable};
 return;".Indent());
                     }
                 }
@@ -792,7 +794,9 @@ public {type} {name}
                 }
                 else
                 {
-                    var getterString = $@"get => ({type})GetValue(""{stringName}"");";
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
+                    var getterString = $@"get => ({type})GetValue(""{stringName}""){forceNotNullable};";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
                     var setterString = $@"set => {setterMethod}(""{stringName}"", value);";

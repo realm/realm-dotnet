@@ -53,10 +53,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -82,14 +82,14 @@ namespace Realms.Tests.Database
                     newAccessor.DictionaryDifferentType.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListSameType, newAccessor.ListSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetSameType, newAccessor.SetSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionarySameType, newAccessor.DictionarySameType, update, skipDefaults);
-                if(oldAccessor.LinkSameType != null)
+                if (oldAccessor.LinkSameType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkSameType, update);
                 }
@@ -97,7 +97,7 @@ namespace Realms.Tests.Database
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListDifferentType, newAccessor.ListDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetDifferentType, newAccessor.SetDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryDifferentType, newAccessor.DictionaryDifferentType, update, skipDefaults);
-                if(oldAccessor.LinkDifferentType != null)
+                if (oldAccessor.LinkDifferentType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
                 }

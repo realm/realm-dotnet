@@ -48,10 +48,10 @@ namespace Foo
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -67,7 +67,7 @@ namespace Foo
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.IntValue != default(int))
+                if (!skipDefaults || oldAccessor.IntValue != default(int))
                 {
                     newAccessor.IntValue = oldAccessor.IntValue;
                 }

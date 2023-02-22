@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -70,7 +70,7 @@ namespace Realms.Tests
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
-                if(!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
@@ -234,7 +234,7 @@ namespace Realms.Tests
         {
             public string Id
             {
-                get => (string)GetValue("_id");
+                get => (string)GetValue("_id")!;
                 set => SetValueUnique("_id", value);
             }
 
@@ -307,7 +307,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string)val!;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

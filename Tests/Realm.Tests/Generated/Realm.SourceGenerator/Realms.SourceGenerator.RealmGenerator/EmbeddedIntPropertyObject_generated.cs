@@ -49,10 +49,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
 
         public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
         {
@@ -71,7 +71,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Int != default(int))
+                if (!skipDefaults || oldAccessor.Int != default(int))
                 {
                     newAccessor.Int = oldAccessor.Int;
                 }

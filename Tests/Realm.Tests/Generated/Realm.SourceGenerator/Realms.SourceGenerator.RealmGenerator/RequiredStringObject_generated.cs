@@ -49,10 +49,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -227,7 +227,7 @@ namespace Realms.Tests
         {
             public string String
             {
-                get => (string)GetValue("String");
+                get => (string)GetValue("String")!;
                 set => SetValue("String", value);
             }
         }
@@ -266,7 +266,7 @@ namespace Realms.Tests
                 switch (propertyName)
                 {
                     case "String":
-                        String = (string)val;
+                        String = (string)val!;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

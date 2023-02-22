@@ -56,10 +56,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -80,45 +80,45 @@ namespace Realms.Tests.Database
                     newAccessor.Friends.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.FirstName != default(string))
+                if (!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }
-                if(!skipDefaults || oldAccessor.LastName != default(string))
+                if (!skipDefaults || oldAccessor.LastName != default(string))
                 {
                     newAccessor.LastName = oldAccessor.LastName;
                 }
-                if(!skipDefaults || oldAccessor.Score != default(float))
+                if (!skipDefaults || oldAccessor.Score != default(float))
                 {
                     newAccessor.Score = oldAccessor.Score;
                 }
-                if(!skipDefaults || oldAccessor.Latitude != default(double))
+                if (!skipDefaults || oldAccessor.Latitude != default(double))
                 {
                     newAccessor.Latitude = oldAccessor.Latitude;
                 }
-                if(!skipDefaults || oldAccessor.Longitude != default(double))
+                if (!skipDefaults || oldAccessor.Longitude != default(double))
                 {
                     newAccessor.Longitude = oldAccessor.Longitude;
                 }
-                if(!skipDefaults || oldAccessor.Salary != default(long))
+                if (!skipDefaults || oldAccessor.Salary != default(long))
                 {
                     newAccessor.Salary = oldAccessor.Salary;
                 }
                 newAccessor.IsAmbivalent = oldAccessor.IsAmbivalent;
                 newAccessor.Birthday = oldAccessor.Birthday;
-                if(!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
+                if (!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
                 {
                     newAccessor.PublicCertificateBytes = oldAccessor.PublicCertificateBytes;
                 }
-                if(!skipDefaults || oldAccessor.OptionalAddress != default(string))
+                if (!skipDefaults || oldAccessor.OptionalAddress != default(string))
                 {
                     newAccessor.OptionalAddress = oldAccessor.OptionalAddress;
                 }
-                if(!skipDefaults || oldAccessor.Email_ != default(string))
+                if (!skipDefaults || oldAccessor.Email_ != default(string))
                 {
                     newAccessor.Email_ = oldAccessor.Email_;
                 }
-                if(!skipDefaults || oldAccessor.IsInteresting != default(bool))
+                if (!skipDefaults || oldAccessor.IsInteresting != default(bool))
                 {
                     newAccessor.IsInteresting = oldAccessor.IsInteresting;
                 }

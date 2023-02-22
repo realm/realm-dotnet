@@ -54,10 +54,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -83,11 +83,11 @@ namespace Realms.Tests.Database
                     newAccessor.TagsSet.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(oldAccessor.TopDog != null)
+                if (oldAccessor.TopDog != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }

@@ -49,10 +49,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -68,11 +68,11 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.IntProperty != default(int))
+                if (!skipDefaults || oldAccessor.IntProperty != default(int))
                 {
                     newAccessor.IntProperty = oldAccessor.IntProperty;
                 }
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }

@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -69,7 +69,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(oldAccessor.StandaloneObject != null)
+                if (oldAccessor.StandaloneObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.StandaloneObject, update);
                 }

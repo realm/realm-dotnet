@@ -435,7 +435,7 @@ namespace Realms.Tests.Sync
 
                     AssertOnObjectPair(beforeFrozen);
                     onBeforeTriggered = true;
-                    tcs.SetResult();
+                    tcs.TrySetResult();
                 });
                 config.ClientResetHandler = GetClientResetHandler(resetHandlerType, beforeCb);
 

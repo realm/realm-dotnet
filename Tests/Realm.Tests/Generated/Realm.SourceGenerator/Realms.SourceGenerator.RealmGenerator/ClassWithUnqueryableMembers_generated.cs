@@ -53,10 +53,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -77,17 +77,17 @@ namespace Realms.Tests
                     newAccessor.RealmListProperty.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string))
+                if (!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string))
                 {
                     newAccessor.RealPropertyToSatisfyWeaver = oldAccessor.RealPropertyToSatisfyWeaver;
                 }
-                if(oldAccessor.RealmObjectProperty != null)
+                if (oldAccessor.RealmObjectProperty != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.RealmObjectProperty, update);
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
-                if(!skipDefaults || oldAccessor.FirstName != default(string))
+                if (!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }
