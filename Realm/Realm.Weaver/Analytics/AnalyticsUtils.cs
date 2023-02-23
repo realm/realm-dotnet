@@ -112,9 +112,16 @@ namespace RealmWeaver
             }
             else
             {
-                var possibleFrameworks = new string[] { "Xamarin.Forms.Platform.UAP", "Xamarin.Forms.Platform",
-                    "Microsoft.Maui", "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.iOS", 
-                    "Xamarin.Forms.Platform.tvOS", "Xamarin.Forms.Platform.macOS" };
+                // the order in the array matters as all xamarin platforms share Xamarin.Forms.Platform
+                // but only Xamarin.Forms has only Xamarin.Forms.Platform
+                var possibleFrameworks = new string[]
+                {
+                    "Xamarin.Forms.Platform.UAP", "Microsoft.Maui",
+                    "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.iOS",
+                    "Xamarin.Forms.Platform.tvOS", "Xamarin.Mac",
+                    "Xamarin.Forms.Platform"
+                };
+
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
                 {
@@ -260,14 +267,18 @@ namespace RealmWeaver
         }
 
         // This is just a placeholder, until we figure out how to extract the proper info from Unity
-        public static string ConvertUnityArchitectureToMetricsVersion(int unityArchitecture) =>
-            unityArchitecture switch
+        public static string ConvertUnityArchitectureToMetricsVersion(int unityArchitecture)
+        {
+            var convertedValue = unityArchitecture switch
             {
                 0 => "None",
                 1 => CpuArchitecture.Arm64,
                 2 => "Unity_Universal",
                 _ => Unknown(System.Environment.OSVersion.Platform.ToString())
             };
+
+            return Unknown(convertedValue);
+        }
 
         private static string ConvertArchitectureToMetricsVersion(string arch)
         {
