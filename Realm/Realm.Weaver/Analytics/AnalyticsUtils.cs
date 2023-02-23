@@ -80,7 +80,15 @@ namespace RealmWeaver
 
         public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
 
-        public static string GetTargetCpuArchitecture(ModuleDefinition module) => ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
+        public static string GetTargetCpuArchitecture(ModuleDefinition module, Config config)
+        {
+            if (config.UnityInfo != null)
+            {
+                return config.UnityInfo.TargetArchitecture;
+            }
+
+            return ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
+        }
 
         public static string GetHostOsName() =>
             System.Environment.OSVersion.Platform switch
@@ -93,9 +101,9 @@ namespace RealmWeaver
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
-            if (config.IsUnity)
+            if (config.UnityInfo != null)
             {
-                return (config.TargetFramework, config.TargetFrameworkVersion);
+                return (config.UnityInfo.Type, config.UnityInfo.Version);
             }
             else
             {
@@ -239,6 +247,16 @@ namespace RealmWeaver
                 return Unknown();
             }
         }
+
+        // This is just a placeholder, until we figure out how to extract the proper info from Unity
+        public static string ConvertUnityArchitectureToMetricsVersion(int unityArchitecture) =>
+            unityArchitecture switch
+            {
+                0 => "None",
+                1 => CpuArchitecture.Arm64,
+                2 => "Unity_Universal",
+                _ => Unknown(System.Environment.OSVersion.Platform.ToString())
+            };
 
         private static string ConvertArchitectureToMetricsVersion(string arch)
         {

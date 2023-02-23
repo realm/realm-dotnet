@@ -235,22 +235,22 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm")?.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
-                _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.TargetFramework, _config.TargetFrameworkVersion);
+                _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.NetFrameworkTarget, _config.NetFrameworkTargetVersion);
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.TargetOsVersion] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module);
+                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module, _config);
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
                 _realmEnvMetrics[UserEnvironment.IdeUsed] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.IdeUsedVersion] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.NetFramework] = _config.TargetFramework;
-                _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.TargetFrameworkVersion;
+                _realmEnvMetrics[UserEnvironment.NetFramework] = _config.NetFrameworkTarget;
+                _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.NetFrameworkTargetVersion;
 
                 foreach (var type in module.Types.ToArray())
                 {
@@ -517,13 +517,24 @@ namespace RealmWeaver
 
             public string TargetOSName { get; set; }
 
-            public string TargetFramework { get; set; }
+            public string NetFrameworkTarget { get; set; }
 
-            public string TargetFrameworkVersion { get; set; }
+            public string NetFrameworkTargetVersion { get; set; }
 
             public string InstallationMethod { get; set; }
 
-            public bool IsUnity { get; set; }
+            // This is going to be null when we're not using Unity
+            public UnityInfoData UnityInfo { get; set; }
+
+            public class UnityInfoData
+            {
+                // Type is player or editor
+                public string Type { get; set; }
+
+                public string Version { get; set; }
+
+                public string TargetArchitecture { get; set; }
+            }
         }
 
         public enum AnalyticsCollection

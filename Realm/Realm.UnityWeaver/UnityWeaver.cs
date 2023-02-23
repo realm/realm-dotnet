@@ -116,7 +116,12 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences, framework: Metric.Framework.UnityEditor, frameworkVersion: "", GetTargetOSName(Application.platform));
+                var netFrameworkInfo = GetNetFrameworkInfo();
+
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences,
+                    Metric.Framework.UnityEditor, Application.unityVersion,
+                    GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
+                    netFrameworkInfo.Name, netFrameworkInfo.Version);
             };
         }
 
@@ -198,11 +203,20 @@ namespace RealmWeaver
                 EditorApplication.LockReloadAssemblies();
                 var assembliesToWeave = GetAssemblies();
                 var weaveResults = new List<string>();
+
+                // GetNetFrameworkInfo must be called on the main thread
+                // as the info that it extracts can only be extracted by the main thread
+                var netFrameworkInfo = GetNetFrameworkInfo();
+                var unityVersion = Application.unityVersion;
+
                 await Task.Run(() =>
                 {
                     foreach (var assembly in assembliesToWeave)
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, framework: Metric.Framework.UnityEditor, frameworkVersion: "", GetTargetOSName(Application.platform)))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences,
+                            Metric.Framework.UnityEditor, unityVersion,
+                            GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
+                            netFrameworkInfo.Name, netFrameworkInfo.Version))
                         {
                             continue;
                         }
@@ -239,7 +253,10 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string frameworkVersion, string targetOSName)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references,
+            string unityType, string unityVersion,
+            string targetOSName, string targetArchitecture,
+            string netFrameworkTarget, string netFrameworkTargetVersion)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -267,11 +284,16 @@ namespace RealmWeaver
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
-                        TargetFrameworkVersion = frameworkVersion,
-                        TargetFramework = framework,
+                        NetFrameworkTarget = netFrameworkTarget,
+                        NetFrameworkTargetVersion = netFrameworkTargetVersion,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
                         InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
-                        IsUnity = true
+                        UnityInfo = new()
+                        {
+                            Type = unityType,
+                            Version = unityVersion,
+                            TargetArchitecture = targetArchitecture
+                        }
                     };
 
                     var results = weaver.Execute(analyticsConfig);
@@ -314,14 +336,15 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
+            var netFrameworkInfo = GetNetFrameworkInfo();
+            var targetOSName = GetTargetOSName(report.summary.platform);
 
             foreach (var file in assembliesToWeave)
             {
                 WeaveAssemblyCore(file.path, referencePaths,
-                    framework: PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
-                    frameworkVersion: PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString(),
-                    targetOSName: GetTargetOSName(report.summary.platform));
+                    Metric.Framework.Unity, Application.unityVersion,
+                    targetOSName, netFrameworkInfo.TargetArchitecture,
+                    netFrameworkInfo.Name, netFrameworkInfo.Version);
             }
 
             if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
@@ -442,6 +465,14 @@ namespace RealmWeaver
                 RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
                 _ => Metric.Unknown(target.ToString()),
             };
+        }
+
+        private static (string Name, string Version, string TargetArchitecture) GetNetFrameworkInfo()
+        {
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
+            return (PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
+                PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString(),
+                AnalyticsUtils.ConvertUnityArchitectureToMetricsVersion(PlayerSettings.GetArchitecture(targetGroup)));
         }
 
         private class UnityLogger : ILogger
