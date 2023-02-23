@@ -40,7 +40,8 @@ namespace Realms
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
           IList,
-          IThreadConfined
+          IThreadConfined,
+          IMetadataObject
     {
         private readonly Lazy<NotificationCallbacks<T>> _notificationCallbacks;
 
