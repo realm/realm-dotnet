@@ -64,9 +64,14 @@ namespace RealmWeaver
                 return OperatingSystem.Linux;
             }
 
-            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("net"))
+            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("netframework"))
             {
                 return OperatingSystem.Windows;
+            }
+
+            if (targetOs.ContainsIgnoreCase("core") || targetOs.ContainsIgnoreCase("standard"))
+            {
+                return OperatingSystem.CrossPlatform;
             }
 
             return Unknown(frameworkName.Identifier);
@@ -107,9 +112,9 @@ namespace RealmWeaver
             }
             else
             {
-                // the order is important as both, xamarin android and maui android use Mono.Android.
-                // So, in order to report Maui it has to be before Mono.Android
-                var possibleFrameworks = new string[] { "Xamarin.Forms.Platform.UAP", "Microsoft.Maui", "Mono.Android", "Xamarin.iOS", "Xamarin.Mac" };
+                var possibleFrameworks = new string[] { "Xamarin.Forms.Platform.UAP", "Xamarin.Forms.Platform",
+                    "Microsoft.Maui", "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.iOS", 
+                    "Xamarin.Forms.Platform.tvOS", "Xamarin.Forms.Platform.macOS" };
                 AssemblyNameReference frameworkUsedInConjunction = null;
                 foreach (var toSearch in possibleFrameworks)
                 {
@@ -129,9 +134,14 @@ namespace RealmWeaver
                     {
                         framework = Framework.Uwp;
                     }
-                    else if (name.ContainsIgnoreCase("ios") || name.ContainsIgnoreCase("android") || name.ContainsIgnoreCase("mac"))
+                    else if (name.ContainsIgnoreCase("ios") || name.ContainsIgnoreCase("android") ||
+                        name.ContainsIgnoreCase("mac") || name.ContainsIgnoreCase("tv"))
                     {
                         framework = Framework.Xamarin;
+                    }
+                    else if (name == "Xamarin.Forms.Platform")
+                    {
+                        framework = Framework.XamarinForms;
                     }
                     else if (name.ContainsIgnoreCase("maui"))
                     {
@@ -150,7 +160,8 @@ namespace RealmWeaver
             // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
             if (!netFramework.ContainsIgnoreCase("net"))
             {
-                return Unknown($"Likely not the model assembly, but the platform specific one: {netFramework}");
+                // Likely this isn't the model assembly, but the platform specific one
+                return Unknown(netFramework);
             }
 
             if (netFrameworkVersion.ContainsIgnoreCase("2.0") ||

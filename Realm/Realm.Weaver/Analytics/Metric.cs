@@ -42,6 +42,7 @@ namespace RealmWeaver
             public const string Linux = "Linux";
             public const string MacOS = "macOS";
             public const string Windows = "Windows";
+            public const string CrossPlatform = "Cross Platform";
             public const string Android = "Android";
             public const string Ios = "iOS";
             public const string IpadOs = "iPadOS";
@@ -63,6 +64,7 @@ namespace RealmWeaver
             public const string UnityEditor = "Unity Editor";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
+            public const string XamarinForms = "Xamarin Forms";
             public const string Uwp = "UWP";
         }
 

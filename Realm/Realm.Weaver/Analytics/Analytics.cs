@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Mono.Cecil;
@@ -70,8 +71,7 @@ namespace RealmWeaver
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
 
-        private readonly Dictionary<string, string> _realmEnvMetrics;
-
+        private readonly Dictionary<string, string> _realmEnvMetrics = new();
         private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
         private readonly Dictionary<string, Func<Instruction, FeatureAnalysisResult>> _apiAnalysisSetters;
@@ -93,7 +93,6 @@ namespace RealmWeaver
 
             _references = references;
             _logger = logger;
-            _realmEnvMetrics = new();
             _realmFeaturesToAnalyze = Metric.SdkFeatures.Keys.ToDictionary(c => c, _ => (byte)0);
 
             _classAnalysisSetters = new()
@@ -233,7 +232,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
-                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = module.FindReference("Realm")?.Version.ToString();
+                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();//module.FindReference("Realm")?.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.Language] = "C#";
                 _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.NetFrameworkTarget, _config.NetFrameworkTargetVersion);
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
