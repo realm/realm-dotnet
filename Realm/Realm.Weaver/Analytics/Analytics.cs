@@ -74,9 +74,9 @@ namespace RealmWeaver
 
         private readonly Dictionary<string, byte> _realmFeaturesToAnalyze;
 
-        private readonly Dictionary<string, Func<Instruction, (bool IsToDelete, string DictKey)>> _apiAnalysisSetters;
+        private readonly Dictionary<string, Func<Instruction, FeatureAnalysisResult>> _apiAnalysisSetters;
 
-        private readonly Dictionary<string, Func<IMemberDefinition, (bool IsToDelete, string DictKey)>> _classAnalysisSetters;
+        private readonly Dictionary<string, Func<IMemberDefinition, FeatureAnalysisResult>> _classAnalysisSetters;
 
         private readonly Config _config;
 
@@ -102,13 +102,13 @@ namespace RealmWeaver
                     member is PropertyDefinition property &&
                     (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
                     property.PropertyType.IsRealmObjectDescendant(_references)) ?
-                    (true, Feature.RealmObjectReference) : default,
-                [Feature.RealmValue] = member => (true, Feature.RealmValue),
+                    new(true, Feature.RealmObjectReference) : default,
+                [Feature.RealmValue] = member => new(true, Feature.RealmValue),
                 ["IList`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveList, Feature.ReferenceList),
                 ["IDictionary`2"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveDictionary, Feature.ReferenceDictionary, 1),
                 ["ISet`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveSet, Feature.ReferenceSet),
-                ["RealmInteger`1"] = member => (true, Feature.RealmInteger),
-                [Feature.BacklinkAttribute] = member => (true, Feature.BacklinkAttribute)
+                ["RealmInteger`1"] = member => new(true, Feature.RealmInteger),
+                [Feature.BacklinkAttribute] = member => new(true, Feature.BacklinkAttribute)
             };
 
             _apiAnalysisSetters = new()
@@ -127,10 +127,10 @@ namespace RealmWeaver
                     methodSpecification.Parameters.Count == 2 &&
                     methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
                     instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
-                    (true, Feature.Add) : default,
-                [Feature.ShouldCompactOnLaunch] = instruction => (true, Feature.ShouldCompactOnLaunch),
-                [Feature.MigrationCallback] = instruction => (true, Feature.MigrationCallback),
-                [Feature.RealmChanged] = instruction => (true, Feature.RealmChanged),
+                    new(true, Feature.Add) : default,
+                [Feature.ShouldCompactOnLaunch] = instruction => new(true, Feature.ShouldCompactOnLaunch),
+                [Feature.MigrationCallback] = instruction => new(true, Feature.MigrationCallback),
+                [Feature.RealmChanged] = instruction => new(true, Feature.RealmChanged),
                 ["SubscribeForNotifications"] = instruction =>
                 {
                     if (instruction.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction.Operand))
@@ -154,16 +154,16 @@ namespace RealmWeaver
                         Feature.SetSubscribeForNotifications,
                         Feature.DictionarySubscribeForNotifications);
 
-                    return (shouldDelete, key);
+                    return new(shouldDelete, key);
                 },
-                [Feature.PropertyChanged] = instruction => (true, Feature.PropertyChanged),
-                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => (true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
-                [Feature.RecoverUnsyncedChangesHandler] = instruction => (true, Feature.RecoverUnsyncedChangesHandler),
-                [Feature.DiscardUnsyncedChangesHandler] = instruction => (true, Feature.DiscardUnsyncedChangesHandler),
-                [Feature.ManualRecoveryHandler] = instruction => (true, Feature.ManualRecoveryHandler),
-                [Feature.GetProgressObservable] = instruction => (true, Feature.GetProgressObservable),
-                [Feature.PartitionSyncConfiguration] = instruction => (true, Feature.PartitionSyncConfiguration),
-                [Feature.FlexibleSyncConfiguration] = instruction => (true, Feature.FlexibleSyncConfiguration),
+                [Feature.PropertyChanged] = instruction => new(true, Feature.PropertyChanged),
+                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
+                [Feature.RecoverUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverUnsyncedChangesHandler),
+                [Feature.DiscardUnsyncedChangesHandler] = instruction => new(true, Feature.DiscardUnsyncedChangesHandler),
+                [Feature.ManualRecoveryHandler] = instruction => new(true, Feature.ManualRecoveryHandler),
+                [Feature.GetProgressObservable] = instruction => new(true, Feature.GetProgressObservable),
+                [Feature.PartitionSyncConfiguration] = instruction => new(true, Feature.PartitionSyncConfiguration),
+                [Feature.FlexibleSyncConfiguration] = instruction => new(true, Feature.FlexibleSyncConfiguration),
                 [Feature.Anonymous] = instruction => AnalyzeRealmApi(instruction, Feature.Anonymous),
                 [Feature.EmailPassword] = instruction => AnalyzeRealmApi(instruction, Feature.EmailPassword),
                 [Feature.Facebook] = instruction => AnalyzeRealmApi(instruction, Feature.Facebook),
@@ -174,8 +174,8 @@ namespace RealmWeaver
                 [Feature.ServerApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ServerApiKey),
                 [Feature.Function] = instruction => AnalyzeRealmApi(instruction, Feature.Function),
                 [Feature.CallAsync] = instruction => AnalyzeRealmApi(instruction, Feature.CallAsync),
-                [Feature.GetMongoClient] = instruction => (true, Feature.GetMongoClient),
-                [Feature.DynamicApi] = instruction => (true, Feature.DynamicApi)
+                [Feature.GetMongoClient] = instruction => new(true, Feature.GetMongoClient),
+                [Feature.DynamicApi] = instruction => new(true, Feature.DynamicApi)
             };
 
             _analyzeUserAssemblyTask = Task.Run(() =>
@@ -183,7 +183,7 @@ namespace RealmWeaver
                 AnalyzeUserAssembly(module);
             });
 
-            (bool ShouldDelete, string DictKey) AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
+            FeatureAnalysisResult AnalyzeCollectionProperty(IMemberDefinition member, string primitiveKey, string referenceKey, int genericArgIndex = 0)
             {
                 if (member is not PropertyDefinition property ||
                     property.PropertyType is not GenericInstanceType genericType ||
@@ -196,14 +196,14 @@ namespace RealmWeaver
                     primitiveKey : referenceKey;
 
                 var shouldDelete = ContainsAllRelatedFeatures(keyToAdd, referenceKey, primitiveKey);
-                return (shouldDelete, keyToAdd);
+                return new(shouldDelete, keyToAdd);
             }
 
-            (bool ShouldDelete, string DictKey) AnalyzeRealmApi(Instruction instruction, string key)
+            FeatureAnalysisResult AnalyzeRealmApi(Instruction instruction, string key)
             {
                 if (IsInRealmNamespace(instruction.Operand))
                 {
-                    return (true, key);
+                    return new(true, key);
                 }
 
                 return default;
@@ -304,14 +304,14 @@ namespace RealmWeaver
             {
                 if (_classAnalysisSetters.TryGetValue(key, out var featureFunc))
                 {
-                    var (shouldDelete, keyToSet) = featureFunc(property);
+                    var analysisResult = featureFunc(property);
 
-                    if (!string.IsNullOrEmpty(keyToSet))
+                    if (!string.IsNullOrEmpty(analysisResult.DictKey))
                     {
-                        _realmFeaturesToAnalyze[keyToSet] = 1;
+                        _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
                     }
 
-                    if (shouldDelete)
+                    if (analysisResult.ShouldDelete)
                     {
                         _classAnalysisSetters.Remove(key);
                     }
@@ -391,14 +391,14 @@ namespace RealmWeaver
 
                     if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
                     {
-                        var (IsToDelete, DictKey) = featureFunc.Invoke(cil);
+                        var analysisResult = featureFunc.Invoke(cil);
 
-                        if (!string.IsNullOrEmpty(DictKey))
+                        if (!string.IsNullOrEmpty(analysisResult.DictKey))
                         {
-                            _realmFeaturesToAnalyze[DictKey] = 1;
+                            _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
                         }
 
-                        if (IsToDelete)
+                        if (analysisResult.ShouldDelete)
                         {
                             _apiAnalysisSetters.Remove(key);
                         }
@@ -417,14 +417,11 @@ namespace RealmWeaver
                 {
                     var pretty = false;
 
-                    // TODO andrea: see what the correct address for production should be
                     var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
 #if DEBUG
                     pretty = true;
 #endif
 
-                    // TODO andrea: find a general address that the whole team can use to do tests
-                    // sendAddr = "https://eu-central-1.aws.data.mongodb-api.com/app/realmmetricscollection-acxca/endpoint/realm_metrics/debug_route?data=";
                     payload = GetJsonPayload(pretty);
 
                     if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
@@ -529,6 +526,19 @@ namespace RealmWeaver
             Disabled,
             DryRun,
             Full,
+        }
+
+        private readonly struct FeatureAnalysisResult
+        {
+            public bool ShouldDelete { get; }
+
+            public string DictKey { get; }
+
+            public FeatureAnalysisResult(bool isToDelete = false, string dictKey = "")
+            {
+                ShouldDelete = isToDelete;
+                DictKey = dictKey;
+            }
         }
     }
 }
