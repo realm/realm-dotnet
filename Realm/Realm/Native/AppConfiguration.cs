@@ -52,10 +52,10 @@ namespace Realms.Sync.Native
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string? base_url;
+        private string base_url;
         private IntPtr base_url_len;
 
-        internal string? BaseUrl
+        internal string BaseUrl
         {
             set
             {

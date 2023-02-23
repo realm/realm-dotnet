@@ -150,7 +150,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ICollectionsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -2164,80 +2164,78 @@ namespace Realms.Tests
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharList" => (IList<T>)CharList,
-                "ByteList" => (IList<T>)ByteList,
-                "Int16List" => (IList<T>)Int16List,
-                "Int32List" => (IList<T>)Int32List,
-                "Int64List" => (IList<T>)Int64List,
-                "SingleList" => (IList<T>)SingleList,
-                "DoubleList" => (IList<T>)DoubleList,
-                "BooleanList" => (IList<T>)BooleanList,
-                "DecimalList" => (IList<T>)DecimalList,
-                "Decimal128List" => (IList<T>)Decimal128List,
-                "ObjectIdList" => (IList<T>)ObjectIdList,
-                "StringList" => (IList<T>)StringList,
-                "NullableStringList" => (IList<T>)NullableStringList,
-                "ByteArrayList" => (IList<T>)ByteArrayList,
-                "NullableByteArrayList" => (IList<T>)NullableByteArrayList,
-                "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
-                "NullableCharList" => (IList<T>)NullableCharList,
-                "NullableByteList" => (IList<T>)NullableByteList,
-                "NullableInt16List" => (IList<T>)NullableInt16List,
-                "NullableInt32List" => (IList<T>)NullableInt32List,
-                "NullableInt64List" => (IList<T>)NullableInt64List,
-                "NullableSingleList" => (IList<T>)NullableSingleList,
-                "NullableDoubleList" => (IList<T>)NullableDoubleList,
-                "NullableBooleanList" => (IList<T>)NullableBooleanList,
-                "NullableDateTimeOffsetList" => (IList<T>)NullableDateTimeOffsetList,
-                "NullableDecimalList" => (IList<T>)NullableDecimalList,
-                "NullableDecimal128List" => (IList<T>)NullableDecimal128List,
-                "NullableObjectIdList" => (IList<T>)NullableObjectIdList,
-                "ObjectList" => (IList<T>)ObjectList,
-                "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
-                "RealmValueList" => (IList<T>)RealmValueList,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "CharList" => (IList<T>)CharList,
+                    "ByteList" => (IList<T>)ByteList,
+                    "Int16List" => (IList<T>)Int16List,
+                    "Int32List" => (IList<T>)Int32List,
+                    "Int64List" => (IList<T>)Int64List,
+                    "SingleList" => (IList<T>)SingleList,
+                    "DoubleList" => (IList<T>)DoubleList,
+                    "BooleanList" => (IList<T>)BooleanList,
+                    "DecimalList" => (IList<T>)DecimalList,
+                    "Decimal128List" => (IList<T>)Decimal128List,
+                    "ObjectIdList" => (IList<T>)ObjectIdList,
+                    "StringList" => (IList<T>)StringList,
+                    "NullableStringList" => (IList<T>)NullableStringList,
+                    "ByteArrayList" => (IList<T>)ByteArrayList,
+                    "NullableByteArrayList" => (IList<T>)NullableByteArrayList,
+                    "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
+                    "NullableCharList" => (IList<T>)NullableCharList,
+                    "NullableByteList" => (IList<T>)NullableByteList,
+                    "NullableInt16List" => (IList<T>)NullableInt16List,
+                    "NullableInt32List" => (IList<T>)NullableInt32List,
+                    "NullableInt64List" => (IList<T>)NullableInt64List,
+                    "NullableSingleList" => (IList<T>)NullableSingleList,
+                    "NullableDoubleList" => (IList<T>)NullableDoubleList,
+                    "NullableBooleanList" => (IList<T>)NullableBooleanList,
+                    "NullableDateTimeOffsetList" => (IList<T>)NullableDateTimeOffsetList,
+                    "NullableDecimalList" => (IList<T>)NullableDecimalList,
+                    "NullableDecimal128List" => (IList<T>)NullableDecimal128List,
+                    "NullableObjectIdList" => (IList<T>)NullableObjectIdList,
+                    "ObjectList" => (IList<T>)ObjectList,
+                    "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
+                    "RealmValueList" => (IList<T>)RealmValueList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharSet" => (ISet<T>)CharSet,
-                "ByteSet" => (ISet<T>)ByteSet,
-                "Int16Set" => (ISet<T>)Int16Set,
-                "Int32Set" => (ISet<T>)Int32Set,
-                "Int64Set" => (ISet<T>)Int64Set,
-                "SingleSet" => (ISet<T>)SingleSet,
-                "DoubleSet" => (ISet<T>)DoubleSet,
-                "BooleanSet" => (ISet<T>)BooleanSet,
-                "DecimalSet" => (ISet<T>)DecimalSet,
-                "Decimal128Set" => (ISet<T>)Decimal128Set,
-                "ObjectIdSet" => (ISet<T>)ObjectIdSet,
-                "StringSet" => (ISet<T>)StringSet,
-                "NullableStringSet" => (ISet<T>)NullableStringSet,
-                "ByteArraySet" => (ISet<T>)ByteArraySet,
-                "NullableByteArraySet" => (ISet<T>)NullableByteArraySet,
-                "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
-                "NullableCharSet" => (ISet<T>)NullableCharSet,
-                "NullableByteSet" => (ISet<T>)NullableByteSet,
-                "NullableInt16Set" => (ISet<T>)NullableInt16Set,
-                "NullableInt32Set" => (ISet<T>)NullableInt32Set,
-                "NullableInt64Set" => (ISet<T>)NullableInt64Set,
-                "NullableSingleSet" => (ISet<T>)NullableSingleSet,
-                "NullableDoubleSet" => (ISet<T>)NullableDoubleSet,
-                "NullableBooleanSet" => (ISet<T>)NullableBooleanSet,
-                "NullableDateTimeOffsetSet" => (ISet<T>)NullableDateTimeOffsetSet,
-                "NullableDecimalSet" => (ISet<T>)NullableDecimalSet,
-                "NullableDecimal128Set" => (ISet<T>)NullableDecimal128Set,
-                "NullableObjectIdSet" => (ISet<T>)NullableObjectIdSet,
-                "ObjectSet" => (ISet<T>)ObjectSet,
-                "RealmValueSet" => (ISet<T>)RealmValueSet,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "CharSet" => (ISet<T>)CharSet,
+                    "ByteSet" => (ISet<T>)ByteSet,
+                    "Int16Set" => (ISet<T>)Int16Set,
+                    "Int32Set" => (ISet<T>)Int32Set,
+                    "Int64Set" => (ISet<T>)Int64Set,
+                    "SingleSet" => (ISet<T>)SingleSet,
+                    "DoubleSet" => (ISet<T>)DoubleSet,
+                    "BooleanSet" => (ISet<T>)BooleanSet,
+                    "DecimalSet" => (ISet<T>)DecimalSet,
+                    "Decimal128Set" => (ISet<T>)Decimal128Set,
+                    "ObjectIdSet" => (ISet<T>)ObjectIdSet,
+                    "StringSet" => (ISet<T>)StringSet,
+                    "NullableStringSet" => (ISet<T>)NullableStringSet,
+                    "ByteArraySet" => (ISet<T>)ByteArraySet,
+                    "NullableByteArraySet" => (ISet<T>)NullableByteArraySet,
+                    "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
+                    "NullableCharSet" => (ISet<T>)NullableCharSet,
+                    "NullableByteSet" => (ISet<T>)NullableByteSet,
+                    "NullableInt16Set" => (ISet<T>)NullableInt16Set,
+                    "NullableInt32Set" => (ISet<T>)NullableInt32Set,
+                    "NullableInt64Set" => (ISet<T>)NullableInt64Set,
+                    "NullableSingleSet" => (ISet<T>)NullableSingleSet,
+                    "NullableDoubleSet" => (ISet<T>)NullableDoubleSet,
+                    "NullableBooleanSet" => (ISet<T>)NullableBooleanSet,
+                    "NullableDateTimeOffsetSet" => (ISet<T>)NullableDateTimeOffsetSet,
+                    "NullableDecimalSet" => (ISet<T>)NullableDecimalSet,
+                    "NullableDecimal128Set" => (ISet<T>)NullableDecimal128Set,
+                    "NullableObjectIdSet" => (ISet<T>)NullableObjectIdSet,
+                    "ObjectSet" => (ISet<T>)ObjectSet,
+                    "RealmValueSet" => (ISet<T>)RealmValueSet,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

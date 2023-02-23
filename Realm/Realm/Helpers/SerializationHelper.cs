@@ -121,7 +121,7 @@ namespace Realms.Helpers
                 return rv.AsAny().ToNativeJson();
             }
 
-            if (value is object[] arr)
+            if (value is object?[] arr)
             {
                 var elements = arr.Select(ToNativeJson);
                 return $"[{string.Join(",", elements)}]";

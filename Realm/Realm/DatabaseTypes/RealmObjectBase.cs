@@ -31,7 +31,9 @@ using Realms.Weaving;
 namespace Realms
 {
     /// <summary>
-    /// Base for any object that can be persisted in a <see cref="Realm"/>.
+    /// Base for any object that can be persisted in a <see cref="Realms.Realm"/>. Models inheriting from
+    /// this class will be processed at compile time by the Fody weaver. It is recommended that you instead
+    /// inherit from <see cref="IRealmObject"/> and use the Realm Source Generator to generate your models.
     /// </summary>
     [Preserve(AllMembers = true)]
     public abstract class RealmObjectBase

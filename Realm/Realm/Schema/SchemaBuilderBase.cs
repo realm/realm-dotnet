@@ -29,7 +29,7 @@ namespace Realms.Schema
     /// <typeparam name="T">The type of the elements contained in the builder.</typeparam>
     public abstract class SchemaBuilderBase<T> : IEnumerable<T>
     {
-        protected readonly IDictionary<string, T> _values = new Dictionary<string, T>();
+        private protected readonly IDictionary<string, T> _values = new Dictionary<string, T>();
 
         /// <summary>
         /// Gets or sets an element in the builder by name.
@@ -58,6 +58,7 @@ namespace Realms.Schema
         /// <summary>
         /// Gets the number of elements the builder contains.
         /// </summary>
+        /// <value>The number of elements in the builder.</value>
         public int Count => _values.Count;
 
         protected void Add(T item)

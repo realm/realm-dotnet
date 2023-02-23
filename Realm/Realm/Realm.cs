@@ -39,11 +39,10 @@ namespace Realms
 {
     /// <summary>
     /// A Realm instance (also referred to as a Realm) represents a Realm database.
-    /// </summary>
-    /// <remarks>
+    /// <br/>
     /// <b>Warning</b>: Non-frozen Realm instances are not thread safe and can not be shared across threads.
     /// You must call <see cref="GetInstance(RealmConfigurationBase)"/> on each thread in which you want to interact with the Realm.
-    /// </remarks>
+    /// </summary>
     public class Realm : IDisposable
     {
         #region static
@@ -226,10 +225,15 @@ namespace Realms
         /// <summary>
         /// Gets the <see cref="Session"/> for this <see cref="Realm"/>.
         /// </summary>
+        /// <exception cref="NotSupportedException">
+        /// Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/> or
+        /// <see cref="PartitionSyncConfiguration"/>.
+        /// </exception>
         /// <value>
         /// The <see cref="Session"/> that is responsible for synchronizing with MongoDB Atlas
-        /// if the Realm instance was created with a <see cref="SyncConfigurationBase"/>; <c>null</c>
-        /// otherwise.
+        /// if the Realm instance was created with a <see cref="FlexibleSyncConfiguration"/> or
+        /// <see cref="PartitionSyncConfiguration"/>. If this is a local or in-memory Realm, a
+        /// <see cref="NotSupportedException"/> will be thrown.
         /// </value>
         public Session SyncSession
         {
@@ -264,10 +268,11 @@ namespace Realms
         /// <summary>
         /// Gets the <see cref="SubscriptionSet"/> representing the active subscriptions for this <see cref="Realm"/>.
         /// </summary>
+        /// <exception cref="NotSupportedException">Thrown if the Realm has not been opened with a <see cref="FlexibleSyncConfiguration"/>.</exception>
         /// <value>
         /// The <see cref="SubscriptionSet"/> containing the query subscriptions that the server is using to decide which objects to
         /// synchronize with the local <see cref="Realm"/>. If the Realm was not created with a <see cref="FlexibleSyncConfiguration"/>,
-        /// this will always be <c>null</c>.
+        /// this will throw a <see cref="NotSupportedException"/>.
         /// </value>
         public SubscriptionSet Subscriptions
         {
@@ -367,8 +372,8 @@ namespace Realms
         /// Handler type used by <see cref="RealmChanged"/>.
         /// </summary>
         /// <param name="sender">The <see cref="Realm"/> which has changed.</param>
-        /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
-        public delegate void RealmChangedEventHandler(object sender, EventArgs e);
+        /// <param name="e">Currently an empty argument, in the future may indicate more details about the change.</param>
+        public delegate void RealmChangedEventHandler(Realm sender, EventArgs e);
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
         private event RealmChangedEventHandler? _realmChanged;
@@ -533,10 +538,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// This <see cref="Realm"/> will start managing a <see cref="RealmObject"/> which has been created as a standalone object.
+        /// This <see cref="Realm"/> will start managing an <see cref="IRealmObject"/> which has been created as a standalone object.
         /// </summary>
         /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="RealmObject"/> but also have been processed by the Fody weaver,
+        /// The Type T must not only be a <see cref="IRealmObject"/> but also have been processed by the Fody weaver,
         /// so it has persistent properties.
         /// </typeparam>
         /// <param name="obj">Must be a standalone object, <c>null</c> not allowed.</param>
@@ -549,7 +554,7 @@ namespace Realms
         /// </exception>
         /// <remarks>
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
-        /// This method modifies the object in-place, meaning that after it has run, <c>obj</c> will be managed.
+        /// This method modifies the object in-place, meaning that after it has run, <paramref name="obj"/> will be managed.
         /// Returning it is just meant as a convenience to enable fluent syntax scenarios.
         /// </remarks>
         /// <returns>The passed object, so that you can write <c>var person = realm.Add(new Person { Id = 1 });</c>.</returns>
@@ -566,13 +571,13 @@ namespace Realms
         }
 
         /// <summary>
-        /// Add a collection of standalone <see cref="RealmObject"/>s to this <see cref="Realm"/>.
+        /// Add a collection of standalone <see cref="IRealmObject">RealmObjects</see> to this <see cref="Realm"/>.
         /// </summary>
         /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="RealmObject"/> but also have been processed by the Fody weaver,
+        /// The Type T must not only be a <see cref="IRealmObject"/> but also have been processed by the Fody weaver,
         /// so it has persistent properties.
         /// </typeparam>
-        /// <param name="objs">A collection of <see cref="RealmObject"/> instances that will be added to this <see cref="Realm"/>.</param>
+        /// <param name="objs">A collection of <see cref="IRealmObject"/> instances that will be added to this <see cref="Realm"/>.</param>
         /// <param name="update">If <c>true</c>, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">
         /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
@@ -582,7 +587,7 @@ namespace Realms
         /// </exception>
         /// <remarks>
         /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
-        /// This method modifies the objects in-place, meaning that after it has run, all items in <c>objs</c> will be managed.
+        /// This method modifies the objects in-place, meaning that after it has run, all items in <paramref name="objs"/> will be managed.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs, bool update = false)
             where T : IRealmObject
@@ -603,31 +608,25 @@ namespace Realms
         }
 
         /// <summary>
-        /// This <see cref="Realm"/> will start managing a <see cref="AsymmetricObject"/> which has been created as a standalone object.
+        /// This <see cref="Realm"/> will start managing an <see cref="IAsymmetricObject"/> which has been created as a standalone object.
         /// </summary>
         /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="AsymmetricObject"/> but also have been processed by the Fody weaver,
+        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
         /// so it has persistent properties.
         /// </typeparam>
-        /// <param name="obj">Must be a standalone <see cref="AsymmetricObject"/>, <c>null</c> not allowed.</param>
+        /// <param name="obj">Must be a standalone <see cref="IAsymmetricObject"/>, <c>null</c> not allowed.</param>
         /// <exception cref="RealmInvalidTransactionException">
         /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
         /// </exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">
         /// You can't manage an object with more than one <see cref="Realm"/>.
         /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        /// If you invoke this method on a closed <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// If you pass a null argument to this method.
-        /// </exception>
         /// <remarks>
         /// If the object is already managed by this <see cref="Realm"/>, this method does nothing.
         /// This method modifies the object in-place,
-        /// meaning that after it has run, <see cref="AsymmetricObject"/> will be managed.
-        /// Once an <see cref="AsymmetricObject"/> becomes managed dereferencing any property
-        /// of the original <see cref="AsymmetricObject"/> reference throws an exception.
+        /// meaning that after it has run, <see cref="IAsymmetricObject"/> will be managed.
+        /// Once an <see cref="IAsymmetricObject"/> becomes managed dereferencing any property
+        /// of the original <see cref="IAsymmetricObject"/> reference throws an exception.
         /// </remarks>
         public void Add<T>(T obj)
             where T : IAsymmetricObject
@@ -640,30 +639,24 @@ namespace Realms
         }
 
         /// <summary>
-        /// Add a collection of standalone <see cref="AsymmetricObject"/>s to this <see cref="Realm"/>.
+        /// Add a collection of standalone <see cref="IAsymmetricObject">AsymmetricObjects</see> to this <see cref="Realm"/>.
         /// </summary>
         /// <typeparam name="T">
-        /// The Type T must not only be a <see cref="AsymmetricObject"/> but also have been processed by the Fody weaver,
+        /// The Type T must not only be a <see cref="IAsymmetricObject"/> but also have been processed by the Fody weaver,
         /// so it has persistent properties.
         /// </typeparam>
-        /// <param name="objs">A collection of <see cref="RealmObject"/> instances that will be added to this <see cref="Realm"/>.</param>
+        /// <param name="objs">A collection of <see cref="IAsymmetricObject"/> instances that will be added to this <see cref="Realm"/>.</param>
         /// <exception cref="RealmInvalidTransactionException">
         /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
         /// </exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">
         /// You can't manage an object with more than one <see cref="Realm"/>.
         /// </exception>
-        /// <exception cref="ObjectDisposedException">
-        /// If you invoke this method on a closed <see cref="Realm"/>.
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// If you pass a null argument to this method.
-        /// </exception>
         /// <remarks>
         /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
         /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
-        /// Once an <see cref="AsymmetricObject"/> becomes managed and the transaction is committed,
-        /// dereferencing any property of the original <see cref="AsymmetricObject"/> reference throw an exeception.
+        /// Once an <see cref="IAsymmetricObject"/> becomes managed and the transaction is committed,
+        /// dereferencing any property of the original <see cref="IAsymmetricObject"/> reference throw an exeception.
         /// Hence, none of the properties of the elements in the collection can be deferenced anymore after the transaction.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs)
@@ -910,7 +903,7 @@ namespace Realms
         /// <param name="cancellationToken">
         /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> that indicates that the transaction has been committed succesffully.</returns>
         public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
@@ -946,7 +939,10 @@ namespace Realms
         /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
-        /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
+        /// <returns>
+        /// An awaitable <see cref="Task"/> that indicates that the transaction has been committed succesffully. The result of
+        /// the task is the result returned by invoking <paramref name="function"/>.
+        /// </returns>
         public async Task<T> WriteAsync<T>(Func<T> function, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
@@ -1011,8 +1007,12 @@ namespace Realms
         /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The Type T must be an <see cref="IRealmObject"/>.</typeparam>
         /// <returns>A queryable collection that without further filtering, allows iterating all objects of class T, in this <see cref="Realm"/>.</returns>
+        /// <remarks>
+        /// The returned collection is evaluated lazily and no objects are being held in memory by the collection itself, which means
+        /// this call is very cheap even for huge number of items.
+        /// </remarks>
         public IQueryable<T> All<T>()
             where T : IRealmObject
         {
@@ -1045,14 +1045,14 @@ namespace Realms
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The Type T must be a <see cref="IRealmObject"/>.</typeparam>
         /// <param name="primaryKey">
         /// Primary key to be matched exactly, same as an == search.
         /// An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.
         /// </param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T? Find<T>(long? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
@@ -1060,23 +1060,23 @@ namespace Realms
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The Type T must be a <see cref="IRealmObject"/>.</typeparam>
         /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
-        public T? Find<T>(string primaryKey)
+        public T? Find<T>(string? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The Type T must be a <see cref="IRealmObject"/>.</typeparam>
         /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T? Find<T>(ObjectId? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
@@ -1084,11 +1084,11 @@ namespace Realms
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a <see cref="RealmObject"/>.</typeparam>
+        /// <typeparam name="T">The Type T must be a <see cref="IRealmObject"/>.</typeparam>
         /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
         /// <returns><c>null</c> or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">
-        /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+        /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
         /// </exception>
         public T? Find<T>(Guid? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
@@ -1116,10 +1116,10 @@ namespace Realms
         /// Returns the same object as the one referenced when the <see cref="ThreadSafeReference.Object{T}"/> was first created,
         /// but resolved for the current Realm for this thread.
         /// </summary>
-        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> to resolve in this <see cref="Realm"/>.</param>
+        /// <param name="reference">The thread-safe reference to the thread-confined <see cref="IRealmObject"/>/<see cref="IEmbeddedObject"/> to resolve in this <see cref="Realm"/>.</param>
         /// <typeparam name="T">The type of the object, contained in the reference.</typeparam>
         /// <returns>
-        /// A thread-confined instance of the original <see cref="RealmObject"/>/<see cref="EmbeddedObject"/> resolved for the current thread or <c>null</c>
+        /// A thread-confined instance of the original <see cref="IRealmObject"/>/<see cref="IEmbeddedObject"/> resolved for the current thread or <c>null</c>
         /// if the object has been deleted after the reference was created.
         /// </returns>
         public T? ResolveReference<T>(ThreadSafeReference.Object<T> reference)
@@ -1202,7 +1202,7 @@ namespace Realms
         /// <typeparam name="TValue">The type of the values contained in the dictionary.</typeparam>
         /// <returns>
         /// A thread-confined instance of the original <see cref="IDictionary{String, TValue}"/> resolved for the current thread or <c>null</c>
-        /// if the set's parent object has been deleted after the reference was created.
+        /// if the dictionary's parent object has been deleted after the reference was created.
         /// </returns>
         public IDictionary<string, TValue>? ResolveReference<TValue>(ThreadSafeReference.Dictionary<TValue> reference)
         {
@@ -1246,7 +1246,7 @@ namespace Realms
         /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
         /// </exception>
         /// <exception cref="ArgumentNullException">If <c>obj</c> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">If you pass a standalone object.</exception>
+        /// <exception cref="ArgumentException">If you pass an unmanaged object.</exception>
         public void Remove(IRealmObjectBase obj)
         {
             ThrowIfDisposed();
@@ -1266,9 +1266,9 @@ namespace Realms
         /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// If <c>range</c> is not the result of <see cref="All{T}"/> or subsequent LINQ filtering.
+        /// If <paramref name="range"/> is not the result of <see cref="All{T}"/> or subsequent LINQ filtering.
         /// </exception>
-        /// <exception cref="ArgumentNullException">If <c>range</c> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">If <paramref name="range"/> is <c>null</c>.</exception>
         public void RemoveRange<T>(IQueryable<T> range)
             where T : IRealmObjectBase
         {
@@ -1312,7 +1312,7 @@ namespace Realms
 
         /// <summary>
         /// Writes a compacted copy of the Realm to the path in the specified config. If the configuration object has
-        /// non-null <see cref="RealmConfigurationBase.EncryptionKey"/>, the copy will be encrypted with that key.
+        /// non-null <see cref="RealmConfiguration.EncryptionKey"/>, the copy will be encrypted with that key.
         /// </summary>
         /// <remarks>
         /// 1. The destination file cannot already exist.
@@ -1525,9 +1525,6 @@ namespace Realms
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
             /// </exception>
-            /// <exception cref="ArgumentNullException">
-            /// If you pass <c>null</c> for an object with string primary key.
-            /// </exception>
             /// <exception cref="ArgumentException">
             /// If you use this method on an object that has primary key defined.
             /// </exception>
@@ -1547,9 +1544,6 @@ namespace Realms
             /// <param name="primaryKey">The primary key of the object to create.</param>
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-            /// </exception>
-            /// <exception cref="ArgumentNullException">
-            /// If you pass <c>null</c> for an object with string primary key.
             /// </exception>
             /// <exception cref="ArgumentException">
             /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
@@ -1571,9 +1565,6 @@ namespace Realms
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
             /// </exception>
-            /// <exception cref="ArgumentNullException">
-            /// If you pass <c>null</c> for an object with string primary key.
-            /// </exception>
             /// <exception cref="ArgumentException">
             /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
             /// </exception>
@@ -1583,7 +1574,7 @@ namespace Realms
             /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
             /// object will be an instance of a user-defined class.
             /// </remarks>
-            public IRealmObjectBase CreateObject(string className, string primaryKey) => CreateObjectCore(className, primaryKey);
+            public IRealmObjectBase CreateObject(string className, string? primaryKey) => CreateObjectCore(className, primaryKey);
 
             /// <summary>
             /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
@@ -1593,9 +1584,6 @@ namespace Realms
             /// <param name="primaryKey">The primary key of the object to create.</param>
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
-            /// </exception>
-            /// <exception cref="ArgumentNullException">
-            /// If you pass <c>null</c> for an object with string primary key.
             /// </exception>
             /// <exception cref="ArgumentException">
             /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
@@ -1617,9 +1605,6 @@ namespace Realms
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
             /// </exception>
-            /// <exception cref="ArgumentNullException">
-            /// If you pass <c>null</c> for an object with string primary key.
-            /// </exception>
             /// <exception cref="ArgumentException">
             /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
             /// </exception>
@@ -1636,7 +1621,7 @@ namespace Realms
             /// Embedded objects need to be owned immediately which is why they can only be created for a specific property.
             /// </summary>
             /// <param name="parent">
-            /// The parent <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> that will own the newly created
+            /// The parent <see cref="IRealmObject"/> or <see cref="IEmbeddedObject"/> that will own the newly created
             /// embedded object.
             /// </param>
             /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
@@ -1794,7 +1779,7 @@ namespace Realms
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
             /// </exception>
             /// <exception cref="ArgumentException">
-            /// If you pass <c>className</c> that does not belong to this Realm's schema.
+            /// If you pass <paramref name="className"/> that does not belong to this Realm's schema.
             /// </exception>
             public void RemoveAll(string className)
             {
@@ -1814,7 +1799,7 @@ namespace Realms
             /// </param>
             /// <returns><c>null</c> or an object matching the primary key.</returns>
             /// <exception cref="RealmClassLacksPrimaryKeyException">
-            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
             public IRealmObject? Find(string className, long? primaryKey) => FindCore(className, primaryKey);
 
@@ -1825,9 +1810,9 @@ namespace Realms
             /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
             /// <returns><c>null</c> or an object matching the primary key.</returns>
             /// <exception cref="RealmClassLacksPrimaryKeyException">
-            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public IRealmObject? Find(string className, string primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject? Find(string className, string? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -1838,7 +1823,7 @@ namespace Realms
             /// </param>
             /// <returns><c>null</c> or an object matching the primary key.</returns>
             /// <exception cref="RealmClassLacksPrimaryKeyException">
-            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
             public IRealmObject? Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
 
@@ -1851,7 +1836,7 @@ namespace Realms
             /// </param>
             /// <returns><c>null</c> or an object matching the primary key.</returns>
             /// <exception cref="RealmClassLacksPrimaryKeyException">
-            /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
+            /// If the <see cref="IRealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
             public IRealmObject? Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 

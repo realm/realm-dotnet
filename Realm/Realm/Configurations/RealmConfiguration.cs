@@ -26,10 +26,9 @@ namespace Realms
 {
     /// <summary>
     /// Realm configuration specifying settings that affect the Realm's behavior.
-    /// </summary>
-    /// <remarks>
+    /// <br/>
     /// Its main role is generating a canonical path from whatever absolute, relative subdirectory, or just filename the user supplies.
-    /// </remarks>
+    /// </summary>
     public class RealmConfiguration : RealmConfigurationBase
     {
         /// <summary>

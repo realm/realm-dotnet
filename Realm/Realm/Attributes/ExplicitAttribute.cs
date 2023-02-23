@@ -30,7 +30,7 @@ namespace Realms
     /// <code>
     /// var config = new RealmConfiguration
     /// {
-    ///     ObjectClasses = new[] { typeof(MyExplicitClass) }
+    ///     Schema = new[] { typeof(MyExplicitClass) }
     /// };
     ///
     /// var realm = Realm.GetInstance(config);

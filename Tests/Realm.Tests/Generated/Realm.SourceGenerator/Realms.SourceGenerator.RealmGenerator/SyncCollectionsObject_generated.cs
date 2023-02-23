@@ -111,7 +111,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ISyncCollectionsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -1364,52 +1364,50 @@ namespace Realms.Tests
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharList" => (IList<T>)CharList,
-                "ByteList" => (IList<T>)ByteList,
-                "Int16List" => (IList<T>)Int16List,
-                "Int32List" => (IList<T>)Int32List,
-                "Int64List" => (IList<T>)Int64List,
-                "FloatList" => (IList<T>)FloatList,
-                "DoubleList" => (IList<T>)DoubleList,
-                "BooleanList" => (IList<T>)BooleanList,
-                "DecimalList" => (IList<T>)DecimalList,
-                "Decimal128List" => (IList<T>)Decimal128List,
-                "ObjectIdList" => (IList<T>)ObjectIdList,
-                "StringList" => (IList<T>)StringList,
-                "ByteArrayList" => (IList<T>)ByteArrayList,
-                "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
-                "ObjectList" => (IList<T>)ObjectList,
-                "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
-                "RealmValueList" => (IList<T>)RealmValueList,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "CharList" => (IList<T>)CharList,
+                    "ByteList" => (IList<T>)ByteList,
+                    "Int16List" => (IList<T>)Int16List,
+                    "Int32List" => (IList<T>)Int32List,
+                    "Int64List" => (IList<T>)Int64List,
+                    "FloatList" => (IList<T>)FloatList,
+                    "DoubleList" => (IList<T>)DoubleList,
+                    "BooleanList" => (IList<T>)BooleanList,
+                    "DecimalList" => (IList<T>)DecimalList,
+                    "Decimal128List" => (IList<T>)Decimal128List,
+                    "ObjectIdList" => (IList<T>)ObjectIdList,
+                    "StringList" => (IList<T>)StringList,
+                    "ByteArrayList" => (IList<T>)ByteArrayList,
+                    "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
+                    "ObjectList" => (IList<T>)ObjectList,
+                    "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
+                    "RealmValueList" => (IList<T>)RealmValueList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharSet" => (ISet<T>)CharSet,
-                "ByteSet" => (ISet<T>)ByteSet,
-                "Int16Set" => (ISet<T>)Int16Set,
-                "Int32Set" => (ISet<T>)Int32Set,
-                "Int64Set" => (ISet<T>)Int64Set,
-                "FloatSet" => (ISet<T>)FloatSet,
-                "DoubleSet" => (ISet<T>)DoubleSet,
-                "BooleanSet" => (ISet<T>)BooleanSet,
-                "DecimalSet" => (ISet<T>)DecimalSet,
-                "Decimal128Set" => (ISet<T>)Decimal128Set,
-                "ObjectIdSet" => (ISet<T>)ObjectIdSet,
-                "StringSet" => (ISet<T>)StringSet,
-                "ByteArraySet" => (ISet<T>)ByteArraySet,
-                "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
-                "ObjectSet" => (ISet<T>)ObjectSet,
-                "RealmValueSet" => (ISet<T>)RealmValueSet,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "CharSet" => (ISet<T>)CharSet,
+                    "ByteSet" => (ISet<T>)ByteSet,
+                    "Int16Set" => (ISet<T>)Int16Set,
+                    "Int32Set" => (ISet<T>)Int32Set,
+                    "Int64Set" => (ISet<T>)Int64Set,
+                    "FloatSet" => (ISet<T>)FloatSet,
+                    "DoubleSet" => (ISet<T>)DoubleSet,
+                    "BooleanSet" => (ISet<T>)BooleanSet,
+                    "DecimalSet" => (ISet<T>)DecimalSet,
+                    "Decimal128Set" => (ISet<T>)Decimal128Set,
+                    "ObjectIdSet" => (ISet<T>)ObjectIdSet,
+                    "StringSet" => (ISet<T>)StringSet,
+                    "ByteArraySet" => (ISet<T>)ByteArraySet,
+                    "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
+                    "ObjectSet" => (ISet<T>)ObjectSet,
+                    "RealmValueSet" => (ISet<T>)RealmValueSet,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

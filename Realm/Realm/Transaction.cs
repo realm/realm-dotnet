@@ -58,6 +58,7 @@ namespace Realms
         /// <summary>
         /// Gets the state of this transaction.
         /// </summary>
+        /// <value>The state of the transaction.</value>
         public TransactionState State { get; private set; }
 
         internal Transaction(Realm realm)

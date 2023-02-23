@@ -180,10 +180,7 @@ extern "C" {
             config.device_info.device_version = s_device_version;
 
             config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
-
-            if (app_config.base_url != nullptr) {
-                config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
-            }
+            config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
 
             if (app_config.local_app_name != nullptr) {
                 config.local_app_name = Utf16StringAccessor(app_config.local_app_name, app_config.local_app_name_len).to_string();

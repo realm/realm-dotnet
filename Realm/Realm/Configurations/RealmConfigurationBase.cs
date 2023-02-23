@@ -28,10 +28,9 @@ namespace Realms
 {
     /// <summary>
     /// Base class for specifying configuration settings that affect the Realm's behavior.
-    /// </summary>
-    /// <remarks>
+    /// <br/>
     /// Its main role is generating a canonical path from whatever absolute, relative subdirectory, or just filename the user supplies.
-    /// </remarks>
+    /// </summary>
     public abstract class RealmConfigurationBase
     {
         private protected RealmSchema? _schema;
@@ -75,7 +74,8 @@ namespace Realms
         /// Gets or sets the schema of the Realm opened with this configuration.
         /// </summary>
         /// <remarks>
-        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
+        /// Typically left null so by default all <see cref="IRealmObject"/> and <see cref="IEmbeddedObject"/> instance will be able to
+        /// be stored in all Realms.
         /// <br />
         /// If specifying the schema explicitly, you can either use the implicit conversion operator from <c>Type[]</c> to <see cref="RealmSchema"/>
         /// or construct it using the <see cref="RealmSchema.Builder"/> API.

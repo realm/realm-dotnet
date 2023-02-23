@@ -24,11 +24,10 @@ namespace Realms.Sync
     /// <summary>
     /// A class representing an API key for a <see cref="User"/>. It can be used to represent the user when logging in
     /// instead of their regular credentials. These keys are created or fetched through <see cref="User.ApiKeys"/>.
-    /// </summary>
-    /// <remarks>
+    /// <br/>
     /// An API key's <see cref="Value"/> is only available when the key is created and cannot be obtained after that.
     /// This means that it's the caller's responsibility to safely store an API key's value upon creation.
-    /// </remarks>
+    /// </summary>
     /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
     public class ApiKey
     {

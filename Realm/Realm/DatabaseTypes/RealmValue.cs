@@ -813,152 +813,530 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="char"/>. Equivalent to <see cref="AsChar"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="char"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator char(RealmValue val) => val.AsChar();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="byte"/>. Equivalent to <see cref="AsByte"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="byte"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator byte(RealmValue val) => val.AsByte();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="short"/>. Equivalent to <see cref="AsInt16"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="short"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator short(RealmValue val) => val.AsInt16();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="int"/>. Equivalent to <see cref="AsInt32"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="int"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator int(RealmValue val) => val.AsInt32();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="long"/>. Equivalent to <see cref="AsInt64"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="long"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator long(RealmValue val) => val.AsInt64();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="float"/>. Equivalent to <see cref="AsFloat"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="float"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator float(RealmValue val) => val.AsFloat();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="double"/>. Equivalent to <see cref="AsDouble"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="double"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator double(RealmValue val) => val.AsDouble();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="bool"/>. Equivalent to <see cref="AsBool"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="bool"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator bool(RealmValue val) => val.AsBool();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="DateTimeOffset"/>. Equivalent to <see cref="AsDate"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="DateTimeOffset"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator DateTimeOffset(RealmValue val) => val.AsDate();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="decimal"/>. Equivalent to <see cref="AsDecimal"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="decimal"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator decimal(RealmValue val) => val.AsDecimal();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="Decimal128"/>. Equivalent to <see cref="AsDecimal128"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="Decimal128"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator Decimal128(RealmValue val) => val.AsDecimal128();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="MongoDB.Bson.ObjectId"/>. Equivalent to <see cref="AsObjectId"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="MongoDB.Bson.ObjectId"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator ObjectId(RealmValue val) => val.AsObjectId();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="System.Guid"/>. Equivalent to <see cref="AsGuid"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="System.Guid"/> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator Guid(RealmValue val) => val.AsGuid();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="char">char?</see>. Equivalent to <see cref="AsNullableChar"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="char">char?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator char?(RealmValue val) => val.AsNullableChar();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="byte">byte?</see>. Equivalent to <see cref="AsNullableByte"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="byte">byte?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator byte?(RealmValue val) => val.AsNullableByte();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="short">short?</see>. Equivalent to <see cref="AsNullableInt16"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="short">short?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator short?(RealmValue val) => val.AsNullableInt16();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="int">int?</see>. Equivalent to <see cref="AsNullableInt32"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="int">int?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator int?(RealmValue val) => val.AsNullableInt32();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="long">long?</see>. Equivalent to <see cref="AsNullableInt64"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="long">long?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator long?(RealmValue val) => val.AsNullableInt64();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="float">float?</see>. Equivalent to <see cref="AsNullableFloat"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="float">float?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator float?(RealmValue val) => val.AsNullableFloat();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="double">double?</see>. Equivalent to <see cref="AsNullableDouble"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="double">double?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator double?(RealmValue val) => val.AsNullableDouble();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="bool">bool?</see>. Equivalent to <see cref="AsNullableBool"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="bool">bool?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator bool?(RealmValue val) => val.AsNullableBool();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="DateTimeOffset">DateTimeOffset?</see>. Equivalent to <see cref="AsNullableDate"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="DateTimeOffset">DateTimeOffset?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator DateTimeOffset?(RealmValue val) => val.AsNullableDate();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="decimal">decimal?</see>. Equivalent to <see cref="AsNullableDecimal"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="decimal">decimal?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator decimal?(RealmValue val) => val.AsNullableDecimal();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="Decimal128">Decimal128?</see>. Equivalent to <see cref="AsNullableDecimal128"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="Decimal128">Decimal128?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator Decimal128?(RealmValue val) => val.AsNullableDecimal128();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="MongoDB.Bson.ObjectId">ObjectId?</see>. Equivalent to <see cref="AsNullableObjectId"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="MongoDB.Bson.ObjectId">ObjectId?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator ObjectId?(RealmValue val) => val.AsNullableObjectId();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="System.Guid">Guid?</see>. Equivalent to <see cref="AsNullableGuid"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="System.Guid">Guid?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator Guid?(RealmValue val) => val.AsNullableGuid();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;</see>.
+        /// Equivalent to <see cref="AsByteRealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<byte>(RealmValue val) => val.AsByteRealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;</see>.
+        /// Equivalent to <see cref="AsInt16RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<short>(RealmValue val) => val.AsInt16RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;</see>.
+        /// Equivalent to <see cref="AsInt32RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<int>(RealmValue val) => val.AsInt32RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;</see>.
+        /// Equivalent to <see cref="AsInt64RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<long>(RealmValue val) => val.AsInt64RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;?</see>.
+        /// Equivalent to <see cref="AsNullableByteRealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<byte>?(RealmValue val) => val.AsNullableByteRealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;?</see>.
+        /// Equivalent to <see cref="AsNullableInt16RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<short>?(RealmValue val) => val.AsNullableInt16RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;?</see>.
+        /// Equivalent to <see cref="AsNullableInt32RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<int>?(RealmValue val) => val.AsNullableInt32RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;?</see>.
+        /// Equivalent to <see cref="AsNullableInt64RealmInteger"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmInteger<long>?(RealmValue val) => val.AsNullableInt64RealmInteger();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="byte">byte[]?</see>. Equivalent to <see cref="AsNullableData"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="byte">byte[]?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator byte[]?(RealmValue val) => val.AsNullableData();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="string">string?</see>. Equivalent to <see cref="AsNullableString"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="string">string?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator string?(RealmValue val) => val.AsNullableString();
 
+        /// <summary>
+        /// Converts a <see cref="RealmValue"/> to <see cref="RealmObjectBase">RealmObjectBase?</see>. Equivalent to <see cref="AsNullableRealmObject"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="RealmObjectBase">RealmObjectBase?</see> stored in the <see cref="RealmValue"/>.</returns>
         public static explicit operator RealmObjectBase?(RealmValue val) => val.AsNullableRealmObject();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="char"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(char val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="byte"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(byte val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="short"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(short val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="int"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(int val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="long"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(long val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="float"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(float val) => Float(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="double"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(double val) => Double(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="bool"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(bool val) => Bool(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="DateTimeOffset"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(DateTimeOffset val) => Date(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="decimal"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(decimal val) => Decimal(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="Decimal128"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(Decimal128 val) => Decimal(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="MongoDB.Bson.ObjectId"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(ObjectId val) => ObjectId(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Guid"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(Guid val) => Guid(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="char">char?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(char? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="byte">byte?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(byte? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="short">short?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(short? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="int">int?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(int? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="long">long?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(long? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="float">float?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(float? val) => val == null ? Null : Float(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="double">double?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(double? val) => val == null ? Null : Double(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="bool">bool?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(bool? val) => val == null ? Null : Bool(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="DateTimeOffset">DateTimeOffset?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(DateTimeOffset? val) => val == null ? Null : Date(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="decimal">decimal?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(decimal? val) => val == null ? Null : Decimal(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="Decimal128">Decimal128?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(Decimal128? val) => val == null ? Null : Decimal(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="MongoDB.Bson.ObjectId">ObjectId?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(ObjectId? val) => val == null ? Null : ObjectId(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="System.Guid">Guid?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(Guid? val) => val == null ? Null : Guid(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<byte> val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<short> val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<int> val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<long> val) => Int(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;byte&gt;?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<byte>? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;short&gt;?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<short>? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;int&gt;?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<int>? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmInteger{T}">RealmInteger&lt;long&gt;?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmInteger<long>? val) => val == null ? Null : Int(val.Value);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="byte">byte[]?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(byte[]? val) => val == null ? Null : Data(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="string">string?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(string? val) => val == null ? Null : String(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="RealmValue"/> from <see cref="RealmObjectBase">RealmObjectBase?</see>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="RealmValue"/>.</param>
+        /// <returns>A <see cref="RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator RealmValue(RealmObjectBase? val) => val == null ? Null : Object(val);
 
         private void EnsureType(string target, RealmValueType type)
@@ -1020,11 +1398,27 @@ namespace Realms
             };
         }
 
+        /// <summary>
+        /// Compares two <see cref="RealmValue"/> instances for equality.
+        /// </summary>
+        /// <param name="left">The left instance.</param>
+        /// <param name="right">The right instance.</param>
+        /// <returns>
+        /// <c>true</c> if the underlying values stored in both instances are equal; <c>false</c> otherwise.
+        /// </returns>
         public static bool operator ==(RealmValue left, RealmValue right)
         {
             return left.Equals(right);
         }
 
+        /// <summary>
+        /// Compares two <see cref="RealmValue"/> instances for inequality.
+        /// </summary>
+        /// <param name="left">The left instance.</param>
+        /// <param name="right">The right instance.</param>
+        /// <returns>
+        /// <c>true</c> if the underlying values stored in both instances are not equal; <c>false</c> otherwise.
+        /// </returns>
         public static bool operator !=(RealmValue left, RealmValue right)
         {
             return !(left == right);

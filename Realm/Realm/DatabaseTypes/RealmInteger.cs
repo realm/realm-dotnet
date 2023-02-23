@@ -312,26 +312,78 @@ namespace Realms
 
         #region Operators
 
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Argument is required for proper operator overloading.")]
-        public static RealmInteger<T> operator ++(RealmInteger<T> source) => throw new NotSupportedException("++ is not supported, use Increment instead.");
+        /// <summary>
+        /// Increments the value of the integer by 1. Equivalent to calling <see cref="Increment()"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="RealmInteger{T}"/> that will be incremented.</param>
+        /// <returns>The incremented value.</returns>
+        public static RealmInteger<T> operator ++(RealmInteger<T> source) => source.Increment();
 
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Argument is required for proper operator overloading.")]
-        public static RealmInteger<T> operator --(RealmInteger<T> source) => throw new NotSupportedException("++ is not supported, use Decrement instead.");
+        /// <summary>
+        /// Decrements the value of the integer by 1. Equivalent to calling <see cref="Decrement()"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="RealmInteger{T}"/> that will be decremented.</param>
+        /// <returns>The decremented value.</returns>
+        public static RealmInteger<T> operator --(RealmInteger<T> source) => source.Decrement();
 
+        /// <summary>
+        /// Converts a <see cref="RealmInteger{T}"/> to its underlying value.
+        /// </summary>
+        /// <param name="i">The <see cref="RealmInteger{T}"/>.</param>
         public static implicit operator T(RealmInteger<T> i) => i._value;
 
+        /// <summary>
+        /// Construts a <see cref="RealmInteger{T}"/> from its underlying value.
+        /// </summary>
+        /// <param name="i">The value.</param>
         public static implicit operator RealmInteger<T>(T i) => new(i);
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> instances for equality.
+        /// </summary>
+        /// <param name="first">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="second">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if their underlying values are equal; <c>false</c> otherwise.</returns>
         public static bool operator ==(RealmInteger<T> first, RealmInteger<T> second) => first.Equals(second);
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> instances for inequality.
+        /// </summary>
+        /// <param name="first">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="second">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if their underlying values are equal; <c>false</c> otherwise.</returns>
         public static bool operator !=(RealmInteger<T> first, RealmInteger<T> second) => !(first == second);
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> values.
+        /// </summary>
+        /// <param name="left">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="right">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is less than <paramref name="right"/>.</returns>
         public static bool operator <(RealmInteger<T> left, RealmInteger<T> right) => left.CompareTo(right) < 0;
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> values.
+        /// </summary>
+        /// <param name="left">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="right">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is less than or equal to <paramref name="right"/>.</returns>
         public static bool operator <=(RealmInteger<T> left, RealmInteger<T> right) => left.CompareTo(right) <= 0;
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> values.
+        /// </summary>
+        /// <param name="left">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="right">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is greater than <paramref name="right"/>.</returns>
         public static bool operator >(RealmInteger<T> left, RealmInteger<T> right) => left.CompareTo(right) > 0;
 
+        /// <summary>
+        /// Compares two <see cref="RealmInteger{T}"/> values.
+        /// </summary>
+        /// <param name="left">The first <see cref="RealmInteger{T}"/>.</param>
+        /// <param name="right">The second <see cref="RealmInteger{T}"/>.</param>
+        /// <returns><c>true</c> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</returns>
         public static bool operator >=(RealmInteger<T> left, RealmInteger<T> right) => left.CompareTo(right) >= 0;
 
         #endregion

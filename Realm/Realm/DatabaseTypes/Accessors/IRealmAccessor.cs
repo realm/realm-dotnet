@@ -31,7 +31,7 @@ namespace Realms
     {
         /// <summary>
         /// Gets a value indicating whether the object has been associated with a Realm, either at creation or via
-        /// <see cref="Realm.Add{T}(T, bool)"/>.
+        /// <see cref="Realm.Add{T}(T, bool)">Realm.Add</see>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
         bool IsManaged { get; }
@@ -64,6 +64,12 @@ namespace Realms
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
+        /// <remarks>
+        /// This will always be available for models that use the Realm source generator tool (i.e. inheriting from <see cref="IRealmObject"/>,
+        /// <see cref="IEmbeddedObject"/>, or <see cref="IAsymmetricObject"/>). It will be <c>null</c> for unmanaged objects if the models have
+        /// been processed by the Fody weaver (i.e. inheriting from <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or
+        /// <see cref="AsymmetricObject"/>).
+        /// </remarks>
         ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
@@ -78,7 +84,7 @@ namespace Realms
         /// <summary>
         /// Gets an object encompassing the dynamic API for this RealmObjectBase instance.
         /// </summary>
-        /// <value>A <see cref="Dynamic"/> instance that wraps this RealmObject.</value>
+        /// <value>A <see cref="DynamicObjectApi"/> instance that wraps this RealmObject.</value>
         DynamicObjectApi DynamicApi { get; }
 
         /// <summary>

@@ -27,11 +27,10 @@ namespace Realms.Logging
 {
     /// <summary>
     /// A logger that logs messages originating from Realm. The default logger can be replaced by setting <see cref="Default"/>.
+    /// <br/>
+    /// A few built-in implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>,
+    /// but you can implement your own.
     /// </summary>
-    /// <remarks>
-    /// A few default implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>, but you
-    /// can implement your own.
-    /// </remarks>
     public abstract class Logger
     {
         private readonly Lazy<GCHandle> _gcHandle;

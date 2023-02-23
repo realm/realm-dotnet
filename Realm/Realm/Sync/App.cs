@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#nullable enable
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -31,8 +29,7 @@ namespace Realms.Sync
 {
     /// <summary>
     /// An <see cref="App"/> is the main client-side entry point for interacting with a Atlas App Services application.
-    /// </summary>
-    /// <remarks>
+    /// <br/><br/>
     /// The App can be used to:
     /// <br/>
     /// <list type="bullet">
@@ -91,8 +88,7 @@ namespace Realms.Sync
     /// var collection = db.GetCollection("foos");
     /// var foosCount = await collection.CountAsync();
     /// </code>
-    /// </remarks>
-    /// <seealso cref="AppConfiguration"/>
+    /// </summary>
     public class App
     {
         internal readonly AppHandle Handle;
@@ -159,12 +155,12 @@ namespace Realms.Sync
             var nativeConfig = new Native.AppConfiguration
             {
                 AppId = config.AppId,
-                BaseFilePath = config.BaseFilePath ?? InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store app files (such as metadata and Realm files). When constructing the app, set AppConfiguration.BaseFilePath to an absolute path where the app is allowed to write."),
-                BaseUrl = config.BaseUri?.ToString().TrimEnd('/'),
+                BaseFilePath = config.BaseFilePath,
+                BaseUrl = config.BaseUri.ToString().TrimEnd('/'),
                 LocalAppName = config.LocalAppName,
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
-                default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
+                default_request_timeout_ms = (ulong)config.DefaultRequestTimeout.TotalMilliseconds,
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),
                 sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
                 sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
@@ -406,7 +402,7 @@ namespace Realms.Sync
             /// that the user's password has been change and they can now use the new password to create <see cref="Credentials.EmailPassword"/>
             /// credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
-            public Task CallResetPasswordFunctionAsync(string email, string password, params object[] functionArgs)
+            public Task CallResetPasswordFunctionAsync(string email, string password, params object?[] functionArgs)
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));

@@ -274,11 +274,26 @@ namespace Realms.Sync
         /// <inheritdoc />
         public override int GetHashCode() => Id.GetHashCode();
 
-        public static bool operator ==(User user1, User user2) => user1?.Id == user2?.Id;
+        /// <summary>
+        /// Determines whether two <see cref="User"/> instances are equal.
+        /// </summary>
+        /// <param name="user1">The first user to compare.</param>
+        /// <param name="user2">The second user to compare.</param>
+        /// <returns><c>true</c> if the two instances are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==(User? user1, User? user2) => user1?.Id == user2?.Id;
 
-        public static bool operator !=(User user1, User user2) => !(user1 == user2);
+        /// <summary>
+        /// Determines whether two <see cref="User"/> instances are different.
+        /// </summary>
+        /// <param name="user1">The first user to compare.</param>
+        /// <param name="user2">The second user to compare.</param>
+        /// <returns><c>true</c> if the two instances are different; <c>false</c> otherwise.</returns>
+        public static bool operator !=(User? user1, User? user2) => !(user1 == user2);
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
             return $"User {Id}, State: {State}, Provider: {Provider}";
@@ -412,7 +427,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function.
             /// </returns>
-            public Task<BsonValue> CallAsync(string name, params object[] args) => CallAsync<BsonValue>(name, args);
+            public Task<BsonValue> CallAsync(string name, params object?[] args) => CallAsync<BsonValue>(name, args);
 
             /// <summary>
             /// Calls a remote function with the supplied arguments.
@@ -435,7 +450,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function decoded as <typeparamref name="T"/>.
             /// </returns>
-            public Task<T> CallAsync<T>(string name, params object[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
+            public Task<T> CallAsync<T>(string name, params object?[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
 
             internal async Task<T> CallSerializedAsync<T>(string name, string args, string? serviceName = null)
             {
