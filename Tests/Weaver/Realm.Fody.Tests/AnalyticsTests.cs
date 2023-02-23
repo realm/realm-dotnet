@@ -83,7 +83,7 @@ namespace Analytics
                 try
                 {
                     CompileAnalyticsProject(kvp.Value);
-                    ValidateAnalyticsPayloadAllFrameworks(new[] {(featureName: Metric.SdkFeatures[kvp.Key], expectedValue: (byte)1) });
+                    ValidateAnalyticsPayloadAllFrameworks(new[] {(featureName: Metric.SdkFeatures[kvp.Key], expectedValue: "1") });
                 }
                 catch (Exception e)
                 {
@@ -108,17 +108,10 @@ namespace Analytics
         public void ValidateHostOS()
         {
             var currentOs = Environment.OSVersion;
-            try
-            {
-                CompileAnalyticsProject();
-                ValidateAnalyticsPayloadAllFrameworks(new[] {
-                    (featureName: Metric.Environment.HostOsType, expectedValue: ConvertToMetricOS(currentOs.Platform)),
-                    (featureName: Metric.Environment.HostOsVersion, expectedValue: currentOs.Version.ToString()) });
-            }
-            catch (Exception e)
-            {
-                Assert.Fail($"{e.Message}");
-            }
+            CompileAnalyticsProject();
+            ValidateAnalyticsPayloadAllFrameworks(new[] {
+                (featureName: Metric.Environment.HostOsType, expectedValue: ConvertToMetricOS(currentOs.Platform)),
+                (featureName: Metric.Environment.HostOsVersion, expectedValue: currentOs.Version.ToString()) });
         }
 
         private static string ConvertToMetricOS(PlatformID platformID) =>
@@ -130,7 +123,7 @@ namespace Analytics
                 _ => platformID.ToString()
             };
 
-        private void ValidateAnalyticsPayloadAllFrameworks<T>((string featureName, T expectedValue)[] payloadFeatures)
+        private void ValidateAnalyticsPayloadAllFrameworks((string featureName, string expectedValue)[] payloadFeatures)
         {
             foreach (var framework in _frameworks.Value)
             {
@@ -139,7 +132,7 @@ namespace Analytics
                 
                 foreach (var entry in payloadFeatures)
                 {
-                    Assert.That(payload[entry.featureName].AsString, Is.EqualTo(entry.expectedValue.ToString()),
+                    Assert.That(payload[entry.featureName].AsString, Is.EqualTo(entry.expectedValue),
                         $"For framework {framework}, field \"{entry.expectedValue}\" doesn't match the expected value \"{entry.expectedValue}\"");
                 }
             }
