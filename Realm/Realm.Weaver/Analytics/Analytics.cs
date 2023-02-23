@@ -304,14 +304,14 @@ namespace RealmWeaver
             {
                 if (_classAnalysisSetters.TryGetValue(key, out var featureFunc))
                 {
-                    var actionDriver = featureFunc(property);
+                    var analysisResult = featureFunc(property);
 
-                    if (!string.IsNullOrEmpty(actionDriver.DictKey))
+                    if (!string.IsNullOrEmpty(analysisResult.DictKey))
                     {
-                        _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
+                        _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
                     }
 
-                    if (actionDriver.ShouldDelete)
+                    if (analysisResult.ShouldDelete)
                     {
                         _classAnalysisSetters.Remove(key);
                     }
@@ -391,14 +391,14 @@ namespace RealmWeaver
 
                     if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
                     {
-                        var actionDriver = featureFunc.Invoke(cil);
+                        var analysisResult = featureFunc.Invoke(cil);
 
-                        if (!string.IsNullOrEmpty(actionDriver.DictKey))
+                        if (!string.IsNullOrEmpty(analysisResult.DictKey))
                         {
-                            _realmFeaturesToAnalyze[actionDriver.DictKey] = 1;
+                            _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
                         }
 
-                        if (actionDriver.ShouldDelete)
+                        if (analysisResult.ShouldDelete)
                         {
                             _apiAnalysisSetters.Remove(key);
                         }
