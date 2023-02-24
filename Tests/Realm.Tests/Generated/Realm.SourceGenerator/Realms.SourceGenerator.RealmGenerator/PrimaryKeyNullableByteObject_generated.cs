@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyNullableByteObjectObjectHelper))]
+    [Woven(typeof(PrimaryKeyNullableByteObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableByteObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyNullableByteObject", ObjectSchema.ObjectType.RealmObject)
@@ -197,7 +197,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrimaryKeyNullableByteObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -216,13 +216,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrimaryKeyNullableByteObjectAccessor : Realms.IRealmAccessor
         {
             byte? Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableByteObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableByteObjectAccessor
         {
             public byte? Id
@@ -232,7 +232,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableByteObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableByteObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableByteObject.RealmSchema;

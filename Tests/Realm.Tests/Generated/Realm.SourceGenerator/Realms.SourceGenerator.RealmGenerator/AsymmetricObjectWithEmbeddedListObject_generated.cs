@@ -28,7 +28,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(AsymmetricObjectWithEmbeddedListObjectObjectHelper))]
+    [Woven(typeof(AsymmetricObjectWithEmbeddedListObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class AsymmetricObjectWithEmbeddedListObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedListObject", ObjectSchema.ObjectType.AsymmetricObject)
@@ -209,7 +209,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class AsymmetricObjectWithEmbeddedListObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -228,7 +228,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IAsymmetricObjectWithEmbeddedListObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -236,7 +236,7 @@ namespace Realms.Tests.Sync
             System.Collections.Generic.IList<Realms.Tests.EmbeddedIntPropertyObject> EmbeddedListObject { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedListObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -260,7 +260,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedListObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedListObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedListObject.RealmSchema;

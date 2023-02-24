@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(EmbeddedLevel3ObjectHelper))]
+    [Woven(typeof(EmbeddedLevel3ObjectHelper)), Preserve(AllMembers = true)]
     public partial class EmbeddedLevel3 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedLevel3", ObjectSchema.ObjectType.EmbeddedObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class EmbeddedLevel3ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,13 +222,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IEmbeddedLevel3Accessor : Realms.IRealmAccessor
         {
             string? String { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedLevel3ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel3Accessor
         {
             public string? String
@@ -238,7 +238,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedLevel3UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel3Accessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel3.RealmSchema;

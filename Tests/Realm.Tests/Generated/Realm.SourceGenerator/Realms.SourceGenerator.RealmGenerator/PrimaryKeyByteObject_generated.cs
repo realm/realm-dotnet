@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyByteObjectObjectHelper))]
+    [Woven(typeof(PrimaryKeyByteObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrimaryKeyByteObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyByteObject", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrimaryKeyByteObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrimaryKeyByteObjectAccessor : Realms.IRealmAccessor
         {
             byte Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyByteObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyByteObjectAccessor
         {
             public byte Id
@@ -235,7 +235,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyByteObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyByteObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyByteObject.RealmSchema;

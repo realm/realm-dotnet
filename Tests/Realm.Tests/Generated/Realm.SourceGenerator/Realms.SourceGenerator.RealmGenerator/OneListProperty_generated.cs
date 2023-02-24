@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(OneListPropertyObjectHelper))]
+    [Woven(typeof(OneListPropertyObjectHelper)), Preserve(AllMembers = true)]
     public partial class OneListProperty : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OneListProperty", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class OneListPropertyObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IOneListPropertyAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<Realms.Tests.Database.Person> People { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class OneListPropertyManagedAccessor : Realms.ManagedAccessor, IOneListPropertyAccessor
         {
             private System.Collections.Generic.IList<Realms.Tests.Database.Person> _people = null!;
@@ -243,7 +243,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class OneListPropertyUnmanagedAccessor : Realms.UnmanagedAccessor, IOneListPropertyAccessor
         {
             public override ObjectSchema ObjectSchema => OneListProperty.RealmSchema;

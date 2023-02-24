@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(IndexedDateTimeOffsetObjectObjectHelper))]
+    [Woven(typeof(IndexedDateTimeOffsetObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class IndexedDateTimeOffsetObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexedDateTimeOffsetObject", ObjectSchema.ObjectType.RealmObject)
@@ -195,7 +195,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class IndexedDateTimeOffsetObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -214,13 +214,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IIndexedDateTimeOffsetObjectAccessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset DateTimeOffset { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class IndexedDateTimeOffsetObjectManagedAccessor : Realms.ManagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
             public System.DateTimeOffset DateTimeOffset
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class IndexedDateTimeOffsetObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IndexedDateTimeOffsetObject.RealmSchema;

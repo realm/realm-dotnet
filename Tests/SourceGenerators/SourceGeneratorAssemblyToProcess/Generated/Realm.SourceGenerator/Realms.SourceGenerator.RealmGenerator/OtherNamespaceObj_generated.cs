@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace OtherNamespace
 {
     [Generated]
-    [Woven(typeof(OtherNamespaceObjObjectHelper))]
+    [Woven(typeof(OtherNamespaceObjObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OtherNamespaceObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OtherNamespaceObj", ObjectSchema.ObjectType.RealmObject)
@@ -194,7 +194,7 @@ namespace OtherNamespace
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OtherNamespaceObjObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace OtherNamespace
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IOtherNamespaceObjAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OtherNamespaceObjManagedAccessor : Realms.ManagedAccessor, IOtherNamespaceObjAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace OtherNamespace
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OtherNamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, IOtherNamespaceObjAccessor
         {
             public override ObjectSchema ObjectSchema => OtherNamespaceObj.RealmSchema;

@@ -185,7 +185,7 @@ namespace Realms.Schema
         /// <returns>
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
-        [return: NotNullIfNotNull(nameof(objects))]
+        [return: NotNullIfNotNull("objects")]
         public static implicit operator RealmSchema?(ObjectSchema[]? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Realms.Schema
         /// <returns>
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
-        [return: NotNullIfNotNull(nameof(objects))]
+        [return: NotNullIfNotNull("objects")]
         public static implicit operator RealmSchema?(List<ObjectSchema>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        [return: NotNullIfNotNull(nameof(objects))]
+        [return: NotNullIfNotNull("objects")]
         public static implicit operator RealmSchema?(Type[]? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        [return: NotNullIfNotNull(nameof(objects))]
+        [return: NotNullIfNotNull("objects")]
         public static implicit operator RealmSchema?(List<Type>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        [return: NotNullIfNotNull(nameof(objects))]
+        [return: NotNullIfNotNull("objects")]
         public static implicit operator RealmSchema?(HashSet<Type>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Realms.Schema
         /// </summary>
         /// <param name="builder">The builder that describes the newly created schema.</param>
         /// <returns><c>null</c> if <paramref name="builder"/> is <c>null</c>; the result of <see cref="Builder.Build"/> otherwise.</returns>
-        [return: NotNullIfNotNull(nameof(builder))]
+        [return: NotNullIfNotNull("builder")]
         public static implicit operator RealmSchema?(Builder? builder) => builder?.Build();
 
         /// <summary>

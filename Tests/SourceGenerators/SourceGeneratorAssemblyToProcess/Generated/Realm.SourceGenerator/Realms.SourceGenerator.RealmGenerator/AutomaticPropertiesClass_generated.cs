@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(AutomaticPropertiesClassObjectHelper))]
+    [Woven(typeof(AutomaticPropertiesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AutomaticPropertiesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AutomaticPropertiesClass", ObjectSchema.ObjectType.RealmObject)
@@ -194,7 +194,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AutomaticPropertiesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAutomaticPropertiesClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AutomaticPropertiesClassManagedAccessor : Realms.ManagedAccessor, IAutomaticPropertiesClassAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AutomaticPropertiesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAutomaticPropertiesClassAccessor
         {
             public override ObjectSchema ObjectSchema => AutomaticPropertiesClass.RealmSchema;

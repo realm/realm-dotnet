@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(CompletionReportObjectHelper))]
+    [Woven(typeof(CompletionReportObjectHelper)), Preserve(AllMembers = true)]
     public partial class CompletionReport : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class CompletionReportObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface ICompletionReportAccessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset CompletionDate { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
             string? Remarks { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class CompletionReportManagedAccessor : Realms.ManagedAccessor, ICompletionReportAccessor
         {
             public System.DateTimeOffset CompletionDate
@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class CompletionReportUnmanagedAccessor : Realms.UnmanagedAccessor, ICompletionReportAccessor
         {
             public override ObjectSchema ObjectSchema => CompletionReport.RealmSchema;

@@ -109,7 +109,7 @@ namespace Realms.SourceGenerator
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
@@ -440,7 +440,7 @@ $@"public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : bas
 $@"public override string? ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
-[Woven(typeof({_helperClassName}))]
+[Woven(typeof({_helperClassName})), Realms.Preserve(AllMembers = true)]
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{
 {contents.Indent()}
@@ -478,7 +478,7 @@ $@"public override string? ToString() => Accessor.ToString();")}";
             var primaryKeyProperty = _classInfo.PrimaryKey;
             var valueAccessor = primaryKeyProperty == null ? "RealmValue.Null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 {{
     public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -702,7 +702,7 @@ return;".Indent());
 }};";
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
 {{
     public override ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
@@ -811,7 +811,7 @@ public {type} {name}
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}

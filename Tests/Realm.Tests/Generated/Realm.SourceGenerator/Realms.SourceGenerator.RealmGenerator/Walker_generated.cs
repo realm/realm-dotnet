@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(WalkerObjectHelper))]
+    [Woven(typeof(WalkerObjectHelper)), Preserve(AllMembers = true)]
     public partial class Walker : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Walker", ObjectSchema.ObjectType.RealmObject)
@@ -216,7 +216,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class WalkerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -235,7 +235,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IWalkerAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -247,7 +247,7 @@ namespace Realms.Tests
             System.Collections.Generic.ISet<Realms.Tests.Dog> SetOfDogs { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class WalkerManagedAccessor : Realms.ManagedAccessor, IWalkerAccessor
         {
             public string? Name
@@ -291,7 +291,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class WalkerUnmanagedAccessor : Realms.UnmanagedAccessor, IWalkerAccessor
         {
             public override ObjectSchema ObjectSchema => Walker.RealmSchema;

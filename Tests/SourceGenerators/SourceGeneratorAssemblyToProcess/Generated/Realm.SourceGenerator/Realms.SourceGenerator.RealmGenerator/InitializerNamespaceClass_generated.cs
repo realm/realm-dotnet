@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(InitializerNamespaceClassObjectHelper))]
+    [Woven(typeof(InitializerNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class InitializerNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("InitializerNamespaceClass", ObjectSchema.ObjectType.RealmObject)
@@ -195,7 +195,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class InitializerNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -214,13 +214,13 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IInitializerNamespaceClassAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class InitializerNamespaceClassManagedAccessor : Realms.ManagedAccessor, IInitializerNamespaceClassAccessor
         {
             public string? Id
@@ -230,7 +230,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class InitializerNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializerNamespaceClassAccessor
         {
             public override ObjectSchema ObjectSchema => InitializerNamespaceClass.RealmSchema;

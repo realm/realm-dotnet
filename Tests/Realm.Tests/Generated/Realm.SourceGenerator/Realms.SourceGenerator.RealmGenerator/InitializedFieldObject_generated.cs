@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(InitializedFieldObjectObjectHelper))]
+    [Woven(typeof(InitializedFieldObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class InitializedFieldObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("InitializedFieldObject", ObjectSchema.ObjectType.RealmObject)
@@ -194,7 +194,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class InitializedFieldObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IInitializedFieldObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class InitializedFieldObjectManagedAccessor : Realms.ManagedAccessor, IInitializedFieldObjectAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class InitializedFieldObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IInitializedFieldObjectAccessor
         {
             public override ObjectSchema ObjectSchema => InitializedFieldObject.RealmSchema;

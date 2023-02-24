@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorPlayground
 {
     [Generated]
-    [Woven(typeof(RealmObjObjectHelper))]
+    [Woven(typeof(RealmObjObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RealmObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RealmObj", ObjectSchema.ObjectType.RealmObject)
@@ -194,7 +194,7 @@ namespace SourceGeneratorPlayground
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RealmObjObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRealmObjAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RealmObjManagedAccessor : Realms.ManagedAccessor, IRealmObjAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RealmObjUnmanagedAccessor : Realms.UnmanagedAccessor, IRealmObjAccessor
         {
             public override ObjectSchema ObjectSchema => RealmObj.RealmSchema;

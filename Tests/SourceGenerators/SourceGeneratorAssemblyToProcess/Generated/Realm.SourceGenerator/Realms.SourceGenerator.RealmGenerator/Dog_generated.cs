@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorPlayground
 {
     [Generated]
-    [Woven(typeof(DogObjectHelper))]
+    [Woven(typeof(DogObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace SourceGeneratorPlayground
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,7 +219,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -227,7 +227,7 @@ namespace SourceGeneratorPlayground
             SourceGeneratorPlayground.Person? Owner { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
             public string? Name
@@ -243,7 +243,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;

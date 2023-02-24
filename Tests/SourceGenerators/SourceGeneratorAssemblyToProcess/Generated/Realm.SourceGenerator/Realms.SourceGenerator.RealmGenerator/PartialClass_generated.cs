@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(PartialClassObjectHelper))]
+    [Woven(typeof(PartialClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PartialClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PartialClass", ObjectSchema.ObjectType.RealmObject)
@@ -199,7 +199,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PartialClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -218,7 +218,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPartialClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -226,7 +226,7 @@ namespace SourceGeneratorAssemblyToProcess
             string? Name { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PartialClassManagedAccessor : Realms.ManagedAccessor, IPartialClassAccessor
         {
             public int Id
@@ -242,7 +242,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PartialClassUnmanagedAccessor : Realms.UnmanagedAccessor, IPartialClassAccessor
         {
             public override ObjectSchema ObjectSchema => PartialClass.RealmSchema;

@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(SyncAllTypesObjectObjectHelper))]
+    [Woven(typeof(SyncAllTypesObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class SyncAllTypesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncAllTypesObject", ObjectSchema.ObjectType.RealmObject)
@@ -267,7 +267,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class SyncAllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -286,7 +286,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface ISyncAllTypesObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -328,7 +328,7 @@ namespace Realms.Tests
             Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObjectProperty { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class SyncAllTypesObjectManagedAccessor : Realms.ManagedAccessor, ISyncAllTypesObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -446,7 +446,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class SyncAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => SyncAllTypesObject.RealmSchema;

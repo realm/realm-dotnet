@@ -18,6 +18,7 @@
 
 namespace Realms.Extensions
 {
+    [Preserve(AllMembers = true)]
     internal static class RealmObjectExtensions
     {
         public static ObjectHandle? GetObjectHandle(this IRealmObjectBase iro)

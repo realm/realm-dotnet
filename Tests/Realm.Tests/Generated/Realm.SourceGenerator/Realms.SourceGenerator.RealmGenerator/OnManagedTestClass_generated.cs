@@ -25,7 +25,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(OnManagedTestClassObjectHelper))]
+    [Woven(typeof(OnManagedTestClassObjectHelper)), Preserve(AllMembers = true)]
     public partial class OnManagedTestClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OnManagedTestClass", ObjectSchema.ObjectType.RealmObject)
@@ -215,7 +215,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class OnManagedTestClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IOnManagedTestClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -244,7 +244,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IList<Realms.Tests.Database.OnManagedTestClass> RelatedCollection { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class OnManagedTestClassManagedAccessor : Realms.ManagedAccessor, IOnManagedTestClassAccessor
         {
             public int Id
@@ -274,7 +274,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class OnManagedTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IOnManagedTestClassAccessor
         {
             public override ObjectSchema ObjectSchema => OnManagedTestClass.RealmSchema;

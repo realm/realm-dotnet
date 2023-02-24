@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(AllTypesObjectObjectHelper))]
+    [Woven(typeof(AllTypesObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class AllTypesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesObject", ObjectSchema.ObjectType.RealmObject)
@@ -293,7 +293,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class AllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -312,7 +312,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IAllTypesObjectAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -384,7 +384,7 @@ namespace Realms.Tests
             Realms.RealmValue RealmValueProperty { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AllTypesObjectManagedAccessor : Realms.ManagedAccessor, IAllTypesObjectAccessor
         {
             public char CharProperty
@@ -592,7 +592,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AllTypesObject.RealmSchema;

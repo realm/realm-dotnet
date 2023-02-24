@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(BacklinkObjectObjectHelper))]
+    [Woven(typeof(BacklinkObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class BacklinkObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
@@ -205,7 +205,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class BacklinkObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -224,7 +224,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IBacklinkObjectAccessor : Realms.IRealmAccessor
         {
             string? BeforeBacklinks { get; set; }
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
             string? AfterBacklinks { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class BacklinkObjectManagedAccessor : Realms.ManagedAccessor, IBacklinkObjectAccessor
         {
             public string? BeforeBacklinks
@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class BacklinkObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBacklinkObjectAccessor
         {
             public override ObjectSchema ObjectSchema => BacklinkObject.RealmSchema;

@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(EmbeddedAllTypesObjectObjectHelper))]
+    [Woven(typeof(EmbeddedAllTypesObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class EmbeddedAllTypesObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedAllTypesObject", ObjectSchema.ObjectType.EmbeddedObject)
@@ -297,7 +297,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class EmbeddedAllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -316,7 +316,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IEmbeddedAllTypesObjectAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -390,7 +390,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.ObjectWithEmbeddedProperties> ContainersObjects { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedAllTypesObjectManagedAccessor : Realms.ManagedAccessor, IEmbeddedAllTypesObjectAccessor
         {
             public char CharProperty
@@ -612,7 +612,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedAllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedAllTypesObject.RealmSchema;

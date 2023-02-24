@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(IntPropertyObjectObjectHelper))]
+    [Woven(typeof(IntPropertyObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class IntPropertyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IntPropertyObject", ObjectSchema.ObjectType.RealmObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class IntPropertyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IIntPropertyObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -234,7 +234,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.SyncCollectionsObject> ContainingCollections { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class IntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IIntPropertyObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -270,7 +270,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class IntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPropertyObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IntPropertyObject.RealmSchema;

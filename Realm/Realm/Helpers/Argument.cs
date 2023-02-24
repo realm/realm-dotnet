@@ -74,7 +74,7 @@ namespace Realms.Helpers
             }
         }
 
-        [return: NotNullIfNotNull(nameof(value))]
+        [return: NotNullIfNotNull("value")]
         public static T ValidateNotNull<T>(T value, string paramName)
         {
             if (value is null)

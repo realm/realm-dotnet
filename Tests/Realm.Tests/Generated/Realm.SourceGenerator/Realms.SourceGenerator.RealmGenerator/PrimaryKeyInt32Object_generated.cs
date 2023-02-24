@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyInt32ObjectObjectHelper))]
+    [Woven(typeof(PrimaryKeyInt32ObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrimaryKeyInt32Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyInt32Object", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrimaryKeyInt32ObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrimaryKeyInt32ObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyInt32ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyInt32ObjectAccessor
         {
             public int Id
@@ -235,7 +235,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyInt32ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt32ObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyInt32Object.RealmSchema;

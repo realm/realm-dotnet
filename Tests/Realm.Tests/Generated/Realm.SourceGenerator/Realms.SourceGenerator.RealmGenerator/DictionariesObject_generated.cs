@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(DictionariesObjectObjectHelper))]
+    [Woven(typeof(DictionariesObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DictionariesObject", ObjectSchema.ObjectType.RealmObject)
@@ -295,7 +295,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class DictionariesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -314,7 +314,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IDictionariesObjectAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IDictionary<string, char> CharDictionary { get; }
@@ -382,7 +382,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
         {
             private System.Collections.Generic.IDictionary<string, char> _charDictionary = null!;
@@ -834,7 +834,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DictionariesObject.RealmSchema;

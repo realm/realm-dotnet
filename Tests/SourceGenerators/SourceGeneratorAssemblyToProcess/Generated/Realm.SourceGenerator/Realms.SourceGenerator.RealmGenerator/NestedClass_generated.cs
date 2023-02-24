@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     public partial class OuterClass
     {
         [Generated]
-        [Woven(typeof(NestedClassObjectHelper))]
+        [Woven(typeof(NestedClassObjectHelper)), Realms.Preserve(AllMembers = true)]
         private partial class NestedClass : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NestedClass", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace SourceGeneratorPlayground
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class NestedClassObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface INestedClassAccessor : Realms.IRealmAccessor
             {
                 int Id { get; set; }
@@ -229,7 +229,7 @@ namespace SourceGeneratorPlayground
                 SourceGeneratorPlayground.OuterClass.NestedClass? Link { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NestedClassManagedAccessor : Realms.ManagedAccessor, INestedClassAccessor
             {
                 public int Id
@@ -245,7 +245,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NestedClassUnmanagedAccessor : Realms.UnmanagedAccessor, INestedClassAccessor
             {
                 public override ObjectSchema ObjectSchema => NestedClass.RealmSchema;

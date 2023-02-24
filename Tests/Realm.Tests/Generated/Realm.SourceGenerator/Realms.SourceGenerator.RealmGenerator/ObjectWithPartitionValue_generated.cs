@@ -31,7 +31,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(ObjectWithPartitionValueObjectHelper))]
+    [Woven(typeof(ObjectWithPartitionValueObjectHelper)), Preserve(AllMembers = true)]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class ObjectWithPartitionValueObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -241,7 +241,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -253,7 +253,7 @@ namespace Realms.Tests.Sync
             System.Guid Guid { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
             public string? Id
@@ -281,7 +281,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;

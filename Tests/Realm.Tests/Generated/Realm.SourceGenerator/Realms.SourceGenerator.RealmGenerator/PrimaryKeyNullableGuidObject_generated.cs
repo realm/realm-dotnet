@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyNullableGuidObjectObjectHelper))]
+    [Woven(typeof(PrimaryKeyNullableGuidObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableGuidObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyNullableGuidObject", ObjectSchema.ObjectType.RealmObject)
@@ -197,7 +197,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrimaryKeyNullableGuidObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -216,13 +216,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrimaryKeyNullableGuidObjectAccessor : Realms.IRealmAccessor
         {
             System.Guid? Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableGuidObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableGuidObjectAccessor
         {
             public System.Guid? Id
@@ -232,7 +232,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableGuidObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableGuidObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableGuidObject.RealmSchema;

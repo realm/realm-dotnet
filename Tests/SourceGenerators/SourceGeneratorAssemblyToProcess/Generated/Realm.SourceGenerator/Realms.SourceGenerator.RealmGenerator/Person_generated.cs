@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorPlayground
 {
     [Generated]
-    [Woven(typeof(PersonObjectHelper))]
+    [Woven(typeof(PersonObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
@@ -197,7 +197,7 @@ namespace SourceGeneratorPlayground
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -216,7 +216,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPersonAccessor : Realms.IRealmAccessor
         {
             System.Guid Id { get; set; }
@@ -226,7 +226,7 @@ namespace SourceGeneratorPlayground
             System.Linq.IQueryable<SourceGeneratorPlayground.Dog> Dogs { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
             public System.Guid Id
@@ -256,7 +256,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
         {
             public override ObjectSchema ObjectSchema => Person.RealmSchema;

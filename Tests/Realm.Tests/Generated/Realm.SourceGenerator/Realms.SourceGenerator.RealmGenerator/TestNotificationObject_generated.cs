@@ -18,7 +18,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(TestNotificationObjectObjectHelper))]
+    [Woven(typeof(TestNotificationObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class TestNotificationObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TestNotificationObject", ObjectSchema.ObjectType.RealmObject)
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class TestNotificationObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -249,7 +249,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface ITestNotificationObjectAccessor : Realms.IRealmAccessor
         {
             string? StringProperty { get; set; }
@@ -273,7 +273,7 @@ namespace Realms.Tests.Database
             System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class TestNotificationObjectManagedAccessor : Realms.ManagedAccessor, ITestNotificationObjectAccessor
         {
             public string? StringProperty
@@ -393,7 +393,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class TestNotificationObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITestNotificationObjectAccessor
         {
             public override ObjectSchema ObjectSchema => TestNotificationObject.RealmSchema;

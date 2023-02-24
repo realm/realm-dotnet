@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrivatePrimaryKeyObjectObjectHelper))]
+    [Woven(typeof(PrivatePrimaryKeyObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrivatePrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrivatePrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
@@ -205,7 +205,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrivatePrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -224,7 +224,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrivatePrimaryKeyObjectAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -232,7 +232,7 @@ namespace Realms.Tests
             string? Value { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrivatePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
             public string? Id
@@ -248,7 +248,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrivatePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrivatePrimaryKeyObject.RealmSchema;

@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(NoListPropertiesObjectHelper))]
+    [Woven(typeof(NoListPropertiesObjectHelper)), Preserve(AllMembers = true)]
     public partial class NoListProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoListProperties", ObjectSchema.ObjectType.RealmObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class NoListPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface INoListPropertiesAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
             int Age { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class NoListPropertiesManagedAccessor : Realms.ManagedAccessor, INoListPropertiesAccessor
         {
             public string? Name
@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class NoListPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, INoListPropertiesAccessor
         {
             public override ObjectSchema ObjectSchema => NoListProperties.RealmSchema;

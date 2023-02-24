@@ -31,7 +31,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper))]
+    [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper)), Preserve(AllMembers = true)]
     public partial class SyncObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
@@ -215,7 +215,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class SyncObjectWithRequiredStringListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -234,7 +234,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -242,7 +242,7 @@ namespace Realms.Tests.Sync
             System.Collections.Generic.IList<string> Strings { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public string? Id
@@ -266,7 +266,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;

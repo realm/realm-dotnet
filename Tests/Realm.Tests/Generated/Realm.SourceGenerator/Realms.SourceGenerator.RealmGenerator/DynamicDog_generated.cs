@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(DynamicDogObjectHelper))]
+    [Woven(typeof(DynamicDogObjectHelper)), Preserve(AllMembers = true)]
     public partial class DynamicDog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicDog", ObjectSchema.ObjectType.RealmObject)
@@ -209,7 +209,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class DynamicDogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -228,7 +228,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IDynamicDogAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -240,7 +240,7 @@ namespace Realms.Tests.Database
             System.Linq.IQueryable<Realms.Tests.Database.DynamicOwner> Owners { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DynamicDogManagedAccessor : Realms.ManagedAccessor, IDynamicDogAccessor
         {
             public string? Name
@@ -276,7 +276,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DynamicDogUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicDogAccessor
         {
             public override ObjectSchema ObjectSchema => DynamicDog.RealmSchema;

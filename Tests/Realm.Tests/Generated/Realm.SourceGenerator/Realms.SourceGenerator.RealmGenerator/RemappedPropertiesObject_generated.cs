@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RemappedPropertiesObjectObjectHelper))]
+    [Woven(typeof(RemappedPropertiesObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class RemappedPropertiesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RemappedPropertiesObject", ObjectSchema.ObjectType.RealmObject)
@@ -205,7 +205,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class RemappedPropertiesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -224,7 +224,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IRemappedPropertiesObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -232,7 +232,7 @@ namespace Realms.Tests
             string? Name { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RemappedPropertiesObjectManagedAccessor : Realms.ManagedAccessor, IRemappedPropertiesObjectAccessor
         {
             public int Id
@@ -248,7 +248,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RemappedPropertiesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedPropertiesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RemappedPropertiesObject.RealmSchema;

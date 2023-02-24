@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RecursiveBacklinksObjectObjectHelper))]
+    [Woven(typeof(RecursiveBacklinksObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
@@ -207,7 +207,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class RecursiveBacklinksObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -226,7 +226,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IRecursiveBacklinksObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -236,7 +236,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RecursiveBacklinksObjectManagedAccessor : Realms.ManagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public int Id
@@ -266,7 +266,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RecursiveBacklinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RecursiveBacklinksObject.RealmSchema;

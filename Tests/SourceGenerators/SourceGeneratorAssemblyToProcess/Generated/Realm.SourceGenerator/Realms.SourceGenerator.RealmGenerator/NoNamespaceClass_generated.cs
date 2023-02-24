@@ -14,7 +14,7 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 [Generated]
-[Woven(typeof(NoNamespaceClassObjectHelper))]
+[Woven(typeof(NoNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
 {
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoNamespaceClass", ObjectSchema.ObjectType.RealmObject)
@@ -191,7 +191,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     public override string? ToString() => Accessor.ToString();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class NoNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -210,13 +210,13 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface INoNamespaceClassAccessor : Realms.IRealmAccessor
     {
         string? Name { get; set; }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class NoNamespaceClassManagedAccessor : Realms.ManagedAccessor, INoNamespaceClassAccessor
     {
         public string? Name
@@ -226,7 +226,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class NoNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, INoNamespaceClassAccessor
     {
         public override ObjectSchema ObjectSchema => NoNamespaceClass.RealmSchema;

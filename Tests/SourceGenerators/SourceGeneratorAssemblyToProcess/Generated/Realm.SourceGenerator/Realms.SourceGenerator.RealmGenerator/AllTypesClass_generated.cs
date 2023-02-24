@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(AllTypesClassObjectHelper))]
+    [Woven(typeof(AllTypesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
@@ -330,7 +330,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AllTypesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -349,7 +349,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAllTypesClassAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -445,7 +445,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassManagedAccessor : Realms.ManagedAccessor, IAllTypesClassAccessor
         {
             public char CharProperty
@@ -805,7 +805,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesClassAccessor
         {
             public override ObjectSchema ObjectSchema => AllTypesClass.RealmSchema;

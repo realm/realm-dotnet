@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(ParentObjectHelper))]
+        [Woven(typeof(ParentObjectHelper)), Preserve(AllMembers = true)]
         public partial class Parent : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Parent", ObjectSchema.ObjectType.RealmObject)
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
             private class ParentObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -229,7 +229,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
             internal interface IParentAccessor : Realms.IRealmAccessor
             {
                 long Id { get; set; }
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
                 Realms.Tests.Database.AddOrUpdateTests.Child? Child { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
             internal class ParentManagedAccessor : Realms.ManagedAccessor, IParentAccessor
             {
                 public long Id
@@ -261,7 +261,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
             internal class ParentUnmanagedAccessor : Realms.UnmanagedAccessor, IParentAccessor
             {
                 public override ObjectSchema ObjectSchema => Parent.RealmSchema;

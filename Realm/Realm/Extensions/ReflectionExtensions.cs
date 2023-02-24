@@ -44,7 +44,7 @@ namespace Realms
             where T : Attribute
             => member.CustomAttributes.Any(a => a.AttributeType == typeof(T));
 
-        [return: NotNullIfNotNull(nameof(member))]
+        [return: NotNullIfNotNull("member")]
         public static string? GetMappedOrOriginalName(this MemberInfo? member) => member?.GetCustomAttribute<MapToAttribute>()?.Mapping ?? member?.Name;
 
         public static bool IsEmbeddedObject(this Type type) => typeof(IEmbeddedObject).IsAssignableFrom(type);

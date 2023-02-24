@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(ClassWithoutParameterlessConstructorObjectHelper))]
+    [Woven(typeof(ClassWithoutParameterlessConstructorObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ClassWithoutParameterlessConstructor : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ClassWithoutParameterlessConstructor", ObjectSchema.ObjectType.RealmObject)
@@ -196,7 +196,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ClassWithoutParameterlessConstructorObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -215,13 +215,13 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IClassWithoutParameterlessConstructorAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ClassWithoutParameterlessConstructorManagedAccessor : Realms.ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
             public string? Name
@@ -231,7 +231,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ClassWithoutParameterlessConstructorUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
             public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;

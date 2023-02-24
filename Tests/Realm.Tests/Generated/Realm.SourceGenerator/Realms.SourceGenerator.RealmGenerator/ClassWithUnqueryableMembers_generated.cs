@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ClassWithUnqueryableMembersObjectHelper))]
+    [Woven(typeof(ClassWithUnqueryableMembersObjectHelper)), Preserve(AllMembers = true)]
     public partial class ClassWithUnqueryableMembers : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ClassWithUnqueryableMembers", ObjectSchema.ObjectType.RealmObject)
@@ -219,7 +219,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class ClassWithUnqueryableMembersObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -238,7 +238,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IClassWithUnqueryableMembersAccessor : Realms.IRealmAccessor
         {
             string? RealPropertyToSatisfyWeaver { get; set; }
@@ -252,7 +252,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.UnqueryableBacklinks> BacklinkProperty { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ClassWithUnqueryableMembersManagedAccessor : Realms.ManagedAccessor, IClassWithUnqueryableMembersAccessor
         {
             public string? RealPropertyToSatisfyWeaver
@@ -302,7 +302,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ClassWithUnqueryableMembersUnmanagedAccessor : Realms.UnmanagedAccessor, IClassWithUnqueryableMembersAccessor
         {
             public override ObjectSchema ObjectSchema => ClassWithUnqueryableMembers.RealmSchema;

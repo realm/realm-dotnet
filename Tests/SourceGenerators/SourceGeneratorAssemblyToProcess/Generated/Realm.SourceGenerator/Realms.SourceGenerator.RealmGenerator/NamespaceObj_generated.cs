@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(NamespaceObjObjectHelper))]
+    [Woven(typeof(NamespaceObjObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class NamespaceObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NamespaceObj", ObjectSchema.ObjectType.RealmObject)
@@ -201,7 +201,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class NamespaceObjObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -220,7 +220,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface INamespaceObjAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -228,7 +228,7 @@ namespace SourceGeneratorAssemblyToProcess
             OtherNamespace.OtherNamespaceObj? OtherNamespaceObj { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NamespaceObjManagedAccessor : Realms.ManagedAccessor, INamespaceObjAccessor
         {
             public int Id
@@ -244,7 +244,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, INamespaceObjAccessor
         {
             public override ObjectSchema ObjectSchema => NamespaceObj.RealmSchema;

@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RealmValueObjectObjectHelper))]
+    [Woven(typeof(RealmValueObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class RealmValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RealmValueObject", ObjectSchema.ObjectType.RealmObject)
@@ -218,7 +218,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class RealmValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -237,7 +237,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IRealmValueObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -253,7 +253,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, int> TestDict { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RealmValueObjectManagedAccessor : Realms.ManagedAccessor, IRealmValueObjectAccessor
         {
             public int Id
@@ -325,7 +325,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class RealmValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRealmValueObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RealmValueObject.RealmSchema;

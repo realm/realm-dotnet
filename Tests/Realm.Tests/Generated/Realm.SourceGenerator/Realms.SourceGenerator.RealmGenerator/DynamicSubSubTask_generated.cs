@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(DynamicSubSubTaskObjectHelper))]
+    [Woven(typeof(DynamicSubSubTaskObjectHelper)), Preserve(AllMembers = true)]
     public partial class DynamicSubSubTask : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicSubSubTask", ObjectSchema.ObjectType.EmbeddedObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class DynamicSubSubTaskObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IDynamicSubSubTaskAccessor : Realms.IRealmAccessor
         {
             string? Summary { get; set; }
@@ -232,7 +232,7 @@ namespace Realms.Tests.Database
             System.Linq.IQueryable<Realms.Tests.Database.DynamicTask> ParentTask { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DynamicSubSubTaskManagedAccessor : Realms.ManagedAccessor, IDynamicSubSubTaskAccessor
         {
             public string? Summary
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DynamicSubSubTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicSubSubTaskAccessor
         {
             public override ObjectSchema ObjectSchema => DynamicSubSubTask.RealmSchema;

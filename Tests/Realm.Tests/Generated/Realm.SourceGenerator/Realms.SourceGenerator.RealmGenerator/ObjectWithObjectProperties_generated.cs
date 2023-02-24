@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ObjectWithObjectPropertiesObjectHelper))]
+    [Woven(typeof(ObjectWithObjectPropertiesObjectHelper)), Preserve(AllMembers = true)]
     public partial class ObjectWithObjectProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithObjectProperties", ObjectSchema.ObjectType.RealmObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class ObjectWithObjectPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
         {
             Realms.Tests.IntPropertyObject? StandaloneObject { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests
             Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public Realms.Tests.IntPropertyObject? StandaloneObject
@@ -246,7 +246,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;

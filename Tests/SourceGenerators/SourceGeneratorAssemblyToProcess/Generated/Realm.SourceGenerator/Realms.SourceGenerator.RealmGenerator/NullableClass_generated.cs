@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(NullableClassObjectHelper))]
+    [Woven(typeof(NullableClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class NullableClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullableClass", ObjectSchema.ObjectType.RealmObject)
@@ -248,7 +248,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class NullableClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -267,7 +267,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface INullableClassAccessor : Realms.IRealmAccessor
         {
             int NonNullableInt { get; set; }
@@ -307,7 +307,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.NullableClass> Backlink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NullableClassManagedAccessor : Realms.ManagedAccessor, INullableClassAccessor
         {
             public int NonNullableInt
@@ -483,7 +483,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NullableClassUnmanagedAccessor : Realms.UnmanagedAccessor, INullableClassAccessor
         {
             public override ObjectSchema ObjectSchema => NullableClass.RealmSchema;

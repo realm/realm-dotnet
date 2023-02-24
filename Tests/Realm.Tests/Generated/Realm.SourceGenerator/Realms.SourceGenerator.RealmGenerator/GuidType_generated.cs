@@ -24,7 +24,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(GuidTypeObjectHelper))]
+    [Woven(typeof(GuidTypeObjectHelper)), Preserve(AllMembers = true)]
     public partial class GuidType : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("GuidType", ObjectSchema.ObjectType.RealmObject)
@@ -243,7 +243,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class GuidTypeObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -262,7 +262,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IGuidTypeAccessor : Realms.IRealmAccessor
         {
             System.Guid Id { get; set; }
@@ -296,7 +296,7 @@ namespace Realms.Tests.Database
             Realms.Tests.Database.EmbeddedGuidType? EmbeddedProperty { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class GuidTypeManagedAccessor : Realms.ManagedAccessor, IGuidTypeAccessor
         {
             public System.Guid Id
@@ -462,7 +462,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class GuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IGuidTypeAccessor
         {
             public override ObjectSchema ObjectSchema => GuidType.RealmSchema;

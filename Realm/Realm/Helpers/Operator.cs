@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -381,7 +381,7 @@ namespace Realms.Helpers
         /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
         /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
-        [return: NotNullIfNotNull(nameof(value))]
+        [return: NotNullIfNotNull("value")]
         public static TResult? Convert<TFrom, TResult>(TFrom value)
         {
             if (value is TResult result)
@@ -428,7 +428,7 @@ namespace Realms.Helpers
         /// <typeparam name="TResult">The type to which <paramref name="value"/> will be converted.</typeparam>
         /// <param name="value">The value to convert to <typeparamref name="TResult"/>.</param>
         /// <returns>The value of <paramref name="value"/> represented as <typeparamref name="TResult"/>.</returns>
-        [return: NotNullIfNotNull(nameof(value))]
+        [return: NotNullIfNotNull("value")]
         public static TResult? Convert<TResult>(object? value)
         {
             if (value is TResult result)
@@ -497,7 +497,7 @@ namespace Realms.Helpers
         {
             private static readonly ISpecializedConverter<TSource, TTarget> _converter;
 
-            [return: NotNullIfNotNull(nameof(value))]
+            [return: NotNullIfNotNull("value")]
             public static TTarget? Convert(TSource? value) => _converter.Convert(value);
 
             static GenericOperator()
@@ -541,7 +541,7 @@ namespace Realms.Helpers
         {
             Type SourceType { get; }
 
-            [return: NotNullIfNotNull(nameof(obj))]
+            [return: NotNullIfNotNull("obj")]
             TTarget? Convert(object? obj);
         }
 
@@ -555,7 +555,7 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private interface ISpecializedConverter<TSource, TTarget> : IGenericConverter<TTarget>
         {
-            [return: NotNullIfNotNull(nameof(source))]
+            [return: NotNullIfNotNull("source")]
             TTarget? Convert(TSource? source);
         }
 
@@ -563,10 +563,10 @@ namespace Realms.Helpers
         {
             public Type SourceType { get; } = typeof(TSource);
 
-            [return: NotNullIfNotNull(nameof(source))]
+            [return: NotNullIfNotNull("source")]
             public abstract TTarget? Convert(TSource? source);
 
-            [return: NotNullIfNotNull(nameof(obj))]
+            [return: NotNullIfNotNull("obj")]
             public virtual TTarget? Convert(object? obj) => Convert((TSource?)obj);
         }
 
@@ -590,7 +590,7 @@ namespace Realms.Helpers
         /// <typeparam name="T">The type of both the source and the target.</typeparam>
         private class UnaryConverter<T> : SpecializedConverterBase<T, T>
         {
-            [return: NotNullIfNotNull(nameof(source))]
+            [return: NotNullIfNotNull("source")]
             public override T? Convert(T? source) => source;
         }
 
@@ -603,10 +603,10 @@ namespace Realms.Helpers
         /// <typeparam name="TTarget">The type to which <typeparamref name="TSource"/> will be converted.</typeparam>
         private class InheritanceConverter<TSource, TTarget> : SpecializedConverterBase<TSource, TTarget>
         {
-            [return: NotNullIfNotNull(nameof(source))]
+            [return: NotNullIfNotNull("source")]
             public override TTarget? Convert(TSource? source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {typeof(TSource).FullName} to {typeof(TTarget).FullName}");
 
-            [return: NotNullIfNotNull(nameof(source))]
+            [return: NotNullIfNotNull("source")]
             public override TTarget? Convert(object? source) => source is TTarget obj ? obj : throw new InvalidCastException($"No conversion exists from {source?.GetType().FullName} to {typeof(TTarget).FullName}");
         }
 

@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ObjectV2ObjectHelper))]
+    [Woven(typeof(ObjectV2ObjectHelper)), Preserve(AllMembers = true)]
     public partial class ObjectV2 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Object", ObjectSchema.ObjectType.RealmObject)
@@ -203,7 +203,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class ObjectV2ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IObjectV2Accessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
             string? Value { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectV2ManagedAccessor : Realms.ManagedAccessor, IObjectV2Accessor
         {
             public string? Id
@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ObjectV2UnmanagedAccessor : Realms.UnmanagedAccessor, IObjectV2Accessor
         {
             public override ObjectSchema ObjectSchema => ObjectV2.RealmSchema;

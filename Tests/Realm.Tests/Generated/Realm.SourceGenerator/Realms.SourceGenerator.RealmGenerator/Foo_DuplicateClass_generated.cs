@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Foo
 {
     [Generated]
-    [Woven(typeof(DuplicateClassObjectHelper))]
+    [Woven(typeof(DuplicateClassObjectHelper)), Preserve(AllMembers = true)]
     public partial class DuplicateClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
@@ -199,7 +199,7 @@ namespace Foo
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class DuplicateClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -218,13 +218,13 @@ namespace Foo
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IDuplicateClassAccessor : Realms.IRealmAccessor
         {
             int IntValue { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DuplicateClassManagedAccessor : Realms.ManagedAccessor, IDuplicateClassAccessor
         {
             public int IntValue
@@ -234,7 +234,7 @@ namespace Foo
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class DuplicateClassUnmanagedAccessor : Realms.UnmanagedAccessor, IDuplicateClassAccessor
         {
             public override ObjectSchema ObjectSchema => DuplicateClass.RealmSchema;

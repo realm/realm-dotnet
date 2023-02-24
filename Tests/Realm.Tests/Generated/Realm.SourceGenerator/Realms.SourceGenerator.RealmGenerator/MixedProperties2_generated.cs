@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(MixedProperties2ObjectHelper))]
+    [Woven(typeof(MixedProperties2ObjectHelper)), Preserve(AllMembers = true)]
     public partial class MixedProperties2 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("MixedProperties2", ObjectSchema.ObjectType.RealmObject)
@@ -213,7 +213,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class MixedProperties2ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -232,7 +232,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IMixedProperties2Accessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
@@ -244,7 +244,7 @@ namespace Realms.Tests.Database
             string? Name { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class MixedProperties2ManagedAccessor : Realms.ManagedAccessor, IMixedProperties2Accessor
         {
             private System.Collections.Generic.IList<Realms.Tests.Database.Person> _friends = null!;
@@ -288,7 +288,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class MixedProperties2UnmanagedAccessor : Realms.UnmanagedAccessor, IMixedProperties2Accessor
         {
             public override ObjectSchema ObjectSchema => MixedProperties2.RealmSchema;

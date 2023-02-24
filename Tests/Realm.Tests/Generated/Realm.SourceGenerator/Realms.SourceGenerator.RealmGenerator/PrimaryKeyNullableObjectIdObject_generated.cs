@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyNullableObjectIdObjectObjectHelper))]
+    [Woven(typeof(PrimaryKeyNullableObjectIdObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableObjectIdObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyNullableObjectIdObject", ObjectSchema.ObjectType.RealmObject)
@@ -197,7 +197,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class PrimaryKeyNullableObjectIdObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -216,13 +216,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IPrimaryKeyNullableObjectIdObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId? Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableObjectIdObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
         {
             public MongoDB.Bson.ObjectId? Id
@@ -232,7 +232,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableObjectIdObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableObjectIdObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableObjectIdObject.RealmSchema;

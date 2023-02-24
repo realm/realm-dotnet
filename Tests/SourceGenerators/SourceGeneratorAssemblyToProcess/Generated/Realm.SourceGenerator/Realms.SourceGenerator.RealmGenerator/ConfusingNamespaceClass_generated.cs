@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess.Realm
 {
     [Generated]
-    [Woven(typeof(ConfusingNamespaceClassObjectHelper))]
+    [Woven(typeof(ConfusingNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ConfusingNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ConfusingNamespaceClass", ObjectSchema.ObjectType.RealmObject)
@@ -194,7 +194,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ConfusingNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IConfusingNamespaceClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ConfusingNamespaceClassManagedAccessor : Realms.ManagedAccessor, IConfusingNamespaceClassAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ConfusingNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IConfusingNamespaceClassAccessor
         {
             public override ObjectSchema ObjectSchema => ConfusingNamespaceClass.RealmSchema;

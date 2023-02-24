@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(UnqueryableBacklinksObjectHelper))]
+    [Woven(typeof(UnqueryableBacklinksObjectHelper)), Preserve(AllMembers = true)]
     public partial class UnqueryableBacklinks : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("UnqueryableBacklinks", ObjectSchema.ObjectType.RealmObject)
@@ -201,7 +201,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class UnqueryableBacklinksObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -220,13 +220,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IUnqueryableBacklinksAccessor : Realms.IRealmAccessor
         {
             Realms.Tests.ClassWithUnqueryableMembers? Parent { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class UnqueryableBacklinksManagedAccessor : Realms.ManagedAccessor, IUnqueryableBacklinksAccessor
         {
             public Realms.Tests.ClassWithUnqueryableMembers? Parent
@@ -236,7 +236,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class UnqueryableBacklinksUnmanagedAccessor : Realms.UnmanagedAccessor, IUnqueryableBacklinksAccessor
         {
             public override ObjectSchema ObjectSchema => UnqueryableBacklinks.RealmSchema;

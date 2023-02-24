@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(CollectionsObjectObjectHelper))]
+    [Woven(typeof(CollectionsObjectObjectHelper)), Preserve(AllMembers = true)]
     public partial class CollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CollectionsObject", ObjectSchema.ObjectType.RealmObject)
@@ -472,7 +472,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class CollectionsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -491,7 +491,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface ICollectionsObjectAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.ISet<char> CharSet { get; }
@@ -677,7 +677,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class CollectionsObjectManagedAccessor : Realms.ManagedAccessor, ICollectionsObjectAccessor
         {
             private System.Collections.Generic.ISet<char> _charSet = null!;
@@ -1955,7 +1955,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class CollectionsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICollectionsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => CollectionsObject.RealmSchema;

@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(EmbeddedLevel2ObjectHelper))]
+    [Woven(typeof(EmbeddedLevel2ObjectHelper)), Preserve(AllMembers = true)]
     public partial class EmbeddedLevel2 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedLevel2", ObjectSchema.ObjectType.EmbeddedObject)
@@ -212,7 +212,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class EmbeddedLevel2ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -231,7 +231,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IEmbeddedLevel2Accessor : Realms.IRealmAccessor
         {
             string? String { get; set; }
@@ -241,7 +241,7 @@ namespace Realms.Tests
             System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel3> Children { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedLevel2ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel2Accessor
         {
             public string? String
@@ -271,7 +271,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class EmbeddedLevel2UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel2Accessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel2.RealmSchema;

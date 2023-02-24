@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ReportObjectHelper))]
+    [Woven(typeof(ReportObjectHelper)), Preserve(AllMembers = true)]
     public partial class Report : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Report", ObjectSchema.ObjectType.RealmObject)
@@ -214,7 +214,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class ReportObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -233,7 +233,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IReportAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -245,7 +245,7 @@ namespace Realms.Tests.Database
             Realms.Tests.Database.Product? Parent { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ReportManagedAccessor : Realms.ManagedAccessor, IReportAccessor
         {
             public int Id
@@ -273,7 +273,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class ReportUnmanagedAccessor : Realms.UnmanagedAccessor, IReportAccessor
         {
             public override ObjectSchema ObjectSchema => Report.RealmSchema;

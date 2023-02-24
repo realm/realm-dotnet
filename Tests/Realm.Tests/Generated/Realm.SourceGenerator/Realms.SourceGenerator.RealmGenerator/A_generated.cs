@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(AObjectHelper))]
+    [Woven(typeof(AObjectHelper)), Preserve(AllMembers = true)]
     public partial class A : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("A", ObjectSchema.ObjectType.RealmObject)
@@ -204,7 +204,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         private class AObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -223,7 +223,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal interface IAAccessor : Realms.IRealmAccessor
         {
             bool Value { get; set; }
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             Realms.Tests.Database.B? B { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AManagedAccessor : Realms.ManagedAccessor, IAAccessor
         {
             public bool Value
@@ -247,7 +247,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
         internal class AUnmanagedAccessor : Realms.UnmanagedAccessor, IAAccessor
         {
             public override ObjectSchema ObjectSchema => A.RealmSchema;
