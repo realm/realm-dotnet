@@ -55,7 +55,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes(realm =>
             {
-                var tasks = (IQueryable<IRealmObject>)realm.DynamicApi.All(nameof(DynamicTask));
+                var tasks = realm.DynamicApi.All(nameof(DynamicTask));
                 Assert.That(tasks.Count(), Is.EqualTo(0));
             });
         }
