@@ -7,6 +7,22 @@
   * `RealmObjectBase.DynamicApi.CreateObject(string)` can be used to create an object without a primary key.
   * `RealmObjectBase.DynamicApi.CreateObject(string, string/long?/ObjectId?/Guid?)` can be used to create an object with a primary key of the corresponding type.
 * The API exposed by `Realm.DynamicApi` no longer return `dynamic`, instead opting to return concrete types, such as `IRealmObject`, `IEmbeddedObject`, and so on. You can still cast the returned objects to `dynamic` and go through the dynamic API, but that's generally less performant than using the string-based API, such as `IRealmObjectBase.DynamicApi.Get/Set`, especially on AOT platforms such as iOS or Unity. (Issue [#2391](https://github.com/realm/realm-dotnet/issues/2391))
+* Removed `Realm.WriteAsync(Action<Realm>)` in favor of `Realm.WriteAsync(Action)`. The new `WriteAsync` method introduced in 10.14.0 is more efficient and doesn't require reopening the Realm on a background thread. While not recommended, if you prefer to get the old behavior, you can write an extension method like:
+  ```csharp
+  public static async Task WriteAsync(this Realm realm, Action<Realm> writeAction)
+  {
+    await Task.Run(() =>
+    {
+      using var bgRealm = Realm.GetInstance(realm.Config);
+      bgRealm.Write(() =>
+      {
+        writeAction(bgRealm);
+      });
+    });
+
+    await realm.RefreshAsync();
+  }
+  ```
 
 ### Enhancements
 

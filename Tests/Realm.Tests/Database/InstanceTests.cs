@@ -550,7 +550,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
+        [Test]
         public void UsingDisposedRealm_ShouldThrowObjectDisposedException()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -575,7 +575,8 @@ namespace Realms.Tests.Database
                 Assert.That(() => realm.RemoveAll<Person>(), Throws.TypeOf<ObjectDisposedException>());
                 Assert.That(() => realm.Write(() => { }), Throws.TypeOf<ObjectDisposedException>());
 
-                await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.WriteAsync(_ => { }));
+                await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.WriteAsync(() => { }));
+                await TestHelpers.AssertThrows<ObjectDisposedException>(() => realm.RefreshAsync());
 
                 other.Dispose();
             });
