@@ -1160,7 +1160,8 @@ namespace Realms.Tests.Database
                 propInfo.SetValue(matchingObj, boxedMatch);
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue), $"Unsupported comparison between type {propInfo.PropertyType.Name} and type {data.NonMatchingValue.GetType().Name}");
+            var ex = Assert.Throws<ArgumentException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue));
+            Assert.That(ex.Message, Does.Contain($"Unsupported comparison"));
         }
 
         [Test]
@@ -1450,7 +1451,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property 'Foo'"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("'A' has no property 'Foo'"));
         }
 
         [Test]

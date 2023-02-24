@@ -44,7 +44,7 @@ namespace binding {
         {
         }
 
-        MarshaledAppError(AppError err)
+        MarshaledAppError(AppError& err)
         {
             is_null = false;
 
@@ -135,7 +135,8 @@ namespace binding {
     inline auto get_string_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](const std::string* response, util::Optional<AppError> err) {
             if (err) {
-                MarshaledAppError app_error(*err);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_string_callback(tcs_ptr, realm_value_t{}, app_error);
             } else if (response) {
@@ -150,7 +151,8 @@ namespace binding {
     inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
-                MarshaledAppError app_error(*err);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_user_callback(tcs_ptr, nullptr, app_error);
             }
@@ -163,7 +165,8 @@ namespace binding {
     inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
-                MarshaledAppError app_error(*err);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_void_callback(tcs_ptr, app_error);
             }
@@ -175,7 +178,8 @@ namespace binding {
 
     inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
         if (err) {
-            MarshaledAppError app_error(*err);
+            auto& err_copy = *err;
+            MarshaledAppError app_error(err_copy);
 
             s_api_keys_callback(tcs_ptr, nullptr, 0, app_error);
         }
