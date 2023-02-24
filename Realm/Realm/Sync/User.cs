@@ -221,20 +221,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="serviceName">The name of the service as configured on the server.</param>
         /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
-        public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
-
-        /// <summary>
-        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in Atlas App Services.
-        /// </summary>
-        /// <remarks>
-        /// The FCM service needs to be configured and enabled in the App Services UI before devices can register
-        /// and receive push notifications.
-        /// </remarks>
-        /// <param name="serviceName">The name of the service as configured in the App Services UI.</param>
-        /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification">Send Mobile Push Notifications Docs</seealso>
-        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
-        public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
+        public MongoClient GetMongoClient(string serviceName) => new(this, serviceName);
 
         /// <summary>
         /// Links the current user with a new user identity represented by the given credentials.
@@ -457,54 +444,6 @@ namespace Realms.Sync
                 var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args, serviceName);
 
                 return BsonSerializer.Deserialize<T>(response);
-            }
-        }
-
-        /// <summary>
-        /// The Push client exposes an API to register/deregister for push notifications from a client app.
-        /// </summary>
-        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
-        public class PushClient
-        {
-            private readonly User _user;
-            private readonly string _service;
-
-            internal PushClient(User user, string service)
-            {
-                _user = user;
-                _service = service;
-            }
-
-            /// <summary>
-            /// Registers the given Firebase Cloud Messaging registration token with the user's device on Atlas App Services.
-            /// </summary>
-            /// <param name="token">The FCM registration token.</param>
-            /// <returns>
-            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
-            /// by Atlas App Services and this device can now receive push notifications.
-            /// </returns>
-            public Task RegisterDeviceAsync(string token)
-            {
-                Argument.NotNullOrEmpty(token, nameof(token));
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.RegisterPushToken(_user.App.Handle, _service, token, tcs);
-
-                return tcs.Task;
-            }
-
-            /// <summary>
-            /// Deregister the user's device from Firebase Cloud Messaging.
-            /// </summary>
-            /// <returns>
-            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the device's registration token
-            /// was removed from Atlas App Services and it will no longer receive push notifications.
-            /// </returns>
-            public Task DeregisterDeviceAsync()
-            {
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DeregisterPushToken(_user.App.Handle, _service, tcs);
-
-                return tcs.Task;
             }
         }
     }

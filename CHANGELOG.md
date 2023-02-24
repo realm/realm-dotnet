@@ -30,11 +30,12 @@
 * Removed `DiscardLocalResetHandler` - use `DiscardUnsyncedChangedHandler` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
 * Removed `Session.SimulateClientReset` extensions. These didn't work with automatic reset handlers and were more confusing than helpful. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
 * Removed `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` - use `Logger.Default` and `Logger.LogLevel` instead. (PR [#3238](https://github.com/realm/realm-dotnet/pull/3238))
-* Removed `RealmConfigurationBase.ObjectClasses` - use `RealmConfigurationBase.Schema` instead. (PR [#3239](https://github.com/realm/realm-dotnet/pull/3239))
-* Removed `ObjectSchema.IsEmbedded` - use `ObjectSchema.BaseType` instead. (PR [#3239](https://github.com/realm/realm-dotnet/pull/3239))
-* Removed `ObjectSchema.Builder.IsEmbedded` - use `ObjectSchema.Builder.RealmSchemaType` instead. (PR [#3239](https://github.com/realm/realm-dotnet/pull/3239))
-* Removed `ObjectSchema.Builder(string name, bool isEmbedded = false)` - use `Builder(string name, ObjectSchemaType schemaType)` instead. (PR [#3239](https://github.com/realm/realm-dotnet/pull/3239))
-* Removed `RealmSchema.Find` - use `RealmSchema.TryFindObjectSchema` instead. (PR [#3239](https://github.com/realm/realm-dotnet/pull/3239))
+* Removed `RealmConfigurationBase.ObjectClasses` - use `RealmConfigurationBase.Schema` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.IsEmbedded` - use `ObjectSchema.BaseType` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.Builder.IsEmbedded` - use `ObjectSchema.Builder.RealmSchemaType` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.Builder(string name, bool isEmbedded = false)` - use `Builder(string name, ObjectSchemaType schemaType)` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `RealmSchema.Find` - use `RealmSchema.TryFindObjectSchema` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `User.GetPushClient` as it has been deprecated in Atlas App Services - see https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3241))
 
 ### Enhancements
 
