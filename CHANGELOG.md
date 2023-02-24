@@ -29,6 +29,7 @@
 * Removed `Realm.GetSession` - use `Realm.SyncSession` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
 * Removed `DiscardLocalResetHandler` - use `DiscardUnsyncedChangedHandler` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
 * Removed `Session.SimulateClientReset` extensions. These didn't work with automatic reset handlers and were more confusing than helpful. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
+* Removed `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` - use `Logger.Default` and `Logger.LogLevel` instead. (PR [#3238](https://github.com/realm/realm-dotnet/pull/3238))
 
 ### Enhancements
 

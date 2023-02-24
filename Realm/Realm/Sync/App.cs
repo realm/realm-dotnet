@@ -166,26 +166,13 @@ namespace Realms.Sync
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),
-#pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
-                log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
                 sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
                 sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
                 sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
                 sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
                 sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
+                managed_logger = Logger.Default != null ? GCHandle.ToIntPtr(Logger.Default.GCHandle) : IntPtr.Zero,
             };
-
-            if (config.CustomLogger != null)
-            {
-                var logger = Logger.Function((level, message) => config.CustomLogger(message, level));
-                logger._logLevel = nativeConfig.log_level;
-                nativeConfig.managed_logger = GCHandle.ToIntPtr(logger.GCHandle);
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-            else if (Logger.Default != null)
-            {
-                nativeConfig.managed_logger = GCHandle.ToIntPtr(Logger.Default.GCHandle);
-            }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
             return new App(handle);
