@@ -291,16 +291,7 @@ namespace Realms.Sync
                     var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
                     var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
 
-                    if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
-                        syncConfig.ClientResetHandler.ManualClientReset != null)
-                    {
-                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
-                    }
-                    else
-                    {
-                        Session.RaiseError(session, clientResetEx);
-                    }
-
+                    syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
                     return;
                 }
 
@@ -317,15 +308,7 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, errorCode);
                 }
 
-                if (syncConfig.OnSessionError != null)
-                {
-                    syncConfig.OnSessionError?.Invoke(session, exception);
-                }
-                else
-                {
-                    // after deprecation: this will need to go when Session.Error is fully deprecated
-                    Session.RaiseError(session, exception);
-                }
+                syncConfig.OnSessionError?.Invoke(session, exception);
             }
             catch (Exception ex)
             {

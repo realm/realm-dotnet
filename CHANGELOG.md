@@ -36,6 +36,8 @@
 * Removed `ObjectSchema.Builder(string name, bool isEmbedded = false)` - use `Builder(string name, ObjectSchemaType schemaType)` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
 * Removed `RealmSchema.Find` - use `RealmSchema.TryFindObjectSchema` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
 * Removed `User.GetPushClient` as it has been deprecated in Atlas App Services - see https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3241))
+* Removed `SyncSession.Error` event - use `SyncConfigurationBase.OnSessionError` when opening a Realm instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
+* Removed the parameterless constructor for `ManualRecoveryHandler` - use the one that takes a callback instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
 
 ### Enhancements
 

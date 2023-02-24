@@ -38,7 +38,7 @@ namespace Realms.Sync.Testing
         /// <remarks>
         /// Use this method to test your error handling code without connecting to Atlas Device Sync.
         /// Some error codes, such as <see cref="ErrorCode.OtherSessionError"/> will be ignored and will not be reported
-        /// to <see cref="Session.Error"/> subscribers.
+        /// to the <see cref="SyncConfigurationBase.OnSessionError"/> callback.
         /// </remarks>
         public static void SimulateError(this Session session, ErrorCode errorCode, string message, bool isFatal = false)
         {
