@@ -85,14 +85,14 @@ namespace RealmWeaver
 
         public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
 
-        public static string GetTargetCpuArchitecture(ModuleDefinition module, Config config)
+        public static string GetTargetCpuArchitecture(Config config)
         {
             if (config.UnityInfo != null)
             {
                 return config.UnityInfo.TargetArchitecture;
             }
 
-            return ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
+            return Unknown();
         }
 
         public static string GetHostOsName() =>

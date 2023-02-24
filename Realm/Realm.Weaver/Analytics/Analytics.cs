@@ -241,7 +241,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.TargetOsVersion] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(module, _config);
+                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(_config);
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
