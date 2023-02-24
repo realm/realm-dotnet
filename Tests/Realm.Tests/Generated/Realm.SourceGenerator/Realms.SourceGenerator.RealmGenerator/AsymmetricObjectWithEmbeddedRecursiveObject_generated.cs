@@ -216,7 +216,7 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithEmbeddedRecursiveObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IAsymmetricObjectWithEmbeddedRecursiveObjectAccessor)instance.Accessor).Id;
                 return true;

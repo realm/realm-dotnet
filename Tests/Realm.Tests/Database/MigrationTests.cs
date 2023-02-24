@@ -78,7 +78,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
@@ -151,7 +151,7 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = realm.DynamicApi.CreateObject("Person");
                     person.DynamicApi.Set("Name", "Foo");
                 });
             }
@@ -175,7 +175,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var person = (IRealmObject)(object)realm.DynamicApi.CreateObject("Person", null);
+                    var person = realm.DynamicApi.CreateObject("Person");
                     person.DynamicApi.Set("Name", 123);
                 });
             }
@@ -191,7 +191,7 @@ namespace Realms.Tests.Database
                 {
                     migration.RenameProperty(nameof(Person), "TriggersSchema", nameof(Person.OptionalAddress));
 
-                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var newPeople = migration.NewRealm.All<Person>();
 
                     for (var i = 0; i < newPeople.Count(); i++)
@@ -362,7 +362,7 @@ namespace Realms.Tests.Database
                     Assert.That(migrationResult, Is.True);
 
                     // Removed type in oldRealm is still available for the duration of the migration
-                    var oldPeople = (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Person");
+                    var oldPeople = migration.OldRealm.DynamicApi.All("Person");
                     var oldPerson = oldPeople.First();
 
                     Assert.That(oldPeople.Count(), Is.EqualTo(1));
@@ -670,7 +670,7 @@ namespace Realms.Tests.Database
                 Schema = new[] { typeof(ObjectV2) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    foreach (var oldObj in (IQueryable<IRealmObject>)migration.OldRealm.DynamicApi.All("Object"))
+                    foreach (var oldObj in migration.OldRealm.DynamicApi.All("Object"))
                     {
                         var newObj = (ObjectV2)migration.NewRealm.ResolveReference(ThreadSafeReference.Create(oldObj));
                         newObj.Id = oldObj.DynamicApi.Get<int>("Id").ToString();

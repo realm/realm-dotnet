@@ -214,7 +214,7 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new ThrowsBeforeInitializer();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IThrowsBeforeInitializerAccessor)instance.Accessor).Id;
                 return true;

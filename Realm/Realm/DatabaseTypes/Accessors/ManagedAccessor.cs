@@ -243,15 +243,6 @@ namespace Realms
             _onNotifyPropertyChanged(propertyName);
         }
 
-        /// <summary>
-        /// Returns all the objects that link to this object in the specified relationship.
-        /// </summary>
-        /// <param name="objectType">The type of the object that is on the other end of the relationship.</param>
-        /// <param name="property">The property that is on the other end of the relationship.</param>
-        /// <returns>A queryable collection containing all objects of <c>objectType</c> that link to the current object via <c>property</c>.</returns>
-        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property) => DynamicApi.GetBacklinksFromType(objectType, property);
-
         /// <inheritdoc/>
         public TypeInfo GetTypeInfo(IRealmObjectBase obj)
         {

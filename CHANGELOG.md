@@ -1,7 +1,12 @@
 ## 11.0.0 (TBD)
 
 ### Breaking changes
-* The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
+* The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` used in `*collection*.SubscribeForNotifications` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
+* Removed `RealmObjectBase.GetBacklinks` - instead `RealmObjectBase.DynamicApi.GetBacklinksFromType` should be used. (Issue [#2391](https://github.com/realm/realm-dotnet/issues/2391))
+* Removed `Realm.DynamicApi.CreateObject(string, object)` and replaced it with more specialized overloads:
+  * `RealmObjectBase.DynamicApi.CreateObject(string)` can be used to create an object without a primary key.
+  * `RealmObjectBase.DynamicApi.CreateObject(string, string/long?/ObjectId?/Guid?)` can be used to create an object with a primary key of the corresponding type.
+* The API exposed by `Realm.DynamicApi` no longer return `dynamic`, instead opting to return concrete types, such as `IRealmObject`, `IEmbeddedObject`, and so on. You can still cast the returned objects to `dynamic` and go through the dynamic API, but that's generally less performant than using the string-based API, such as `IRealmObjectBase.DynamicApi.Get/Set`, especially on AOT platforms such as iOS or Unity. (Issue [#2391](https://github.com/realm/realm-dotnet/issues/2391))
 
 ### Enhancements
 

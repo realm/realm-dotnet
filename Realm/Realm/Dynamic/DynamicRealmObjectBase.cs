@@ -51,13 +51,6 @@ namespace Realms.Dynamic
             _accessor = accessor;
         }
 
-        // Kept for compatibility
-        [Obsolete("Use realmObject.DynamicApi.GetBacklinksFromType() instead.")]
-        public IQueryable<dynamic> GetBacklinks(string objectType, string property)
-        {
-            return (_accessor as ManagedAccessor).GetBacklinks(objectType, property);
-        }
-
         public override bool Equals(object obj)
         {
             if (obj is null)

@@ -227,7 +227,7 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new SyncObjectWithRequiredStringList();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((ISyncObjectWithRequiredStringListAccessor)instance.Accessor).Id;
                 return true;

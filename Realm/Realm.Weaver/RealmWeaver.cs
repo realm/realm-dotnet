@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -951,13 +952,7 @@ Analytics payload
                     convertType = _references.RealmObjectBase;
                 }
 
-                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
-                {
-                    Parameters = { new ParameterDefinition(convertType) },
-                    HasThis = false
-                };
-
-                il.Append(il.Create(OpCodes.Call, convertMethod));
+                il.Append(il.Create(OpCodes.Call, _references.RealmValue_op_Implicit(convertType)));
             }
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
@@ -1225,44 +1220,32 @@ Analytics payload
                 var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.IRealmObjectBase);
                 getPrimaryKeyValue.Parameters.Add(instanceParameter);
 
-                var valueParameter = new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(_moduleDefinition.TypeSystem.Object))
+                var valueParameter = new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(_references.RealmValue))
                 {
                     IsOut = true
                 };
                 getPrimaryKeyValue.Parameters.Add(valueParameter);
-
-                getPrimaryKeyValue.Body.Variables.Add(new VariableDefinition(_moduleDefinition.ImportReference(realmObjectType)));
 
                 var il = getPrimaryKeyValue.Body.GetILProcessor();
                 var pkProperty = properties.FirstOrDefault(p => p.IsPrimaryKey);
 
                 if (pkProperty != null)
                 {
-                    getPrimaryKeyValue.Body.InitLocals = true;
-
+                    il.Emit(OpCodes.Ldarg_2);
                     il.Emit(OpCodes.Ldarg_1);
                     il.Emit(OpCodes.Castclass, _moduleDefinition.ImportReference(realmObjectType));
-                    il.Emit(OpCodes.Stloc_0);
-                    il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldloc_0);
                     il.Emit(OpCodes.Callvirt, _moduleDefinition.ImportReference(pkProperty.Property.GetMethod));
-                    if (!pkProperty.Property.IsString())
-                    {
-                        il.Emit(OpCodes.Box, pkProperty.Property.PropertyType);
-                    }
-
-                    il.Emit(OpCodes.Stind_Ref);
-                    il.Emit(OpCodes.Ldc_I4_1);
-                    il.Emit(OpCodes.Ret);
+                    il.Emit(OpCodes.Call, _references.RealmValue_op_Implicit(pkProperty.Property.PropertyType));
                 }
                 else
                 {
                     il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldnull);
-                    il.Emit(OpCodes.Stind_Ref);
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Ret);
+                    il.Emit(OpCodes.Call, _references.RealmValue_GetNull);
                 }
+
+                il.Emit(OpCodes.Stobj, _references.RealmValue);
+                il.Emit(pkProperty != null ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+                il.Emit(OpCodes.Ret);
             }
 
             getPrimaryKeyValue.CustomAttributes.Add(new CustomAttribute(_references.PreserveAttribute_Constructor));

@@ -476,7 +476,7 @@ $@"public override string? ToString() => Accessor.ToString();")}";
         private string GenerateClassObjectHelper()
         {
             var primaryKeyProperty = _classInfo.PrimaryKey;
-            var valueAccessor = primaryKeyProperty == null ? "null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
+            var valueAccessor = primaryKeyProperty == null ? "RealmValue.Null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
             return $@"[EditorBrowsable(EditorBrowsableState.Never)]
 private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
@@ -490,7 +490,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 
     public Realms.IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
 
-    public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+    public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
     {{
         value = {valueAccessor};
         return {BoolToString(primaryKeyProperty != null)};
