@@ -1,3 +1,18 @@
+## 11.0.0 (TBD)
+
+### Breaking changes
+* The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
+
+### Enhancements
+
+### Fixed
+
+### Compatibility
+* Realm Studio: 12.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
 ## vNext (TBD)
 
 ### Enhancements

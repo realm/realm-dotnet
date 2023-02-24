@@ -367,7 +367,7 @@ namespace Realms.Tests.Database
             var oldDogs = joe.ListOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
-            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            var token = oldDogs.SubscribeForNotifications((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -681,7 +681,7 @@ namespace Realms.Tests.Database
             var oldDogs = joe.SetOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
-            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            var token = oldDogs.SubscribeForNotifications((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -913,7 +913,7 @@ namespace Realms.Tests.Database
             });
 
             var notifications = new List<ChangeSet>();
-            var token = container.Items.SubscribeForNotifications((sender, changes, error) =>
+            var token = container.Items.SubscribeForNotifications((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1373,7 +1373,7 @@ namespace Realms.Tests.Database
 
             Assert.That(objects.Count(), Is.EqualTo(4));
 
-            void CallbackHandler(IRealmCollection<A> sender, ChangeSet changes, Exception error)
+            void CallbackHandler(IRealmCollection<A> sender, ChangeSet changes)
             {
                 if (changes != null)
                 {

@@ -188,7 +188,7 @@ namespace Realms
             }
             else if (_deliveredInitialKeyNotification)
             {
-                callback(this, null, null);
+                callback(this, null);
             }
 
             _keyCallbacks.Add(callback);
@@ -269,7 +269,7 @@ namespace Realms
 
             foreach (var callback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset, null);
+                callback(this, changeset);
             }
         }
     }

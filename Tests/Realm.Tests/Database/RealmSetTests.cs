@@ -1468,10 +1468,8 @@ namespace Realms.Tests.Database
                 target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<ChangeSet>();
-                using var token = target.SubscribeForNotifications((collection, changes, error) =>
+                using var token = target.SubscribeForNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         callbacks.Add(changes);
