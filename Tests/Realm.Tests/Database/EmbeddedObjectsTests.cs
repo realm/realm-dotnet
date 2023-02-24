@@ -854,7 +854,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Uses and tests for the obsoleted RealmObjectBase.GetBacklinks")]
         public void DynamicBacklinks()
         {
             TestHelpers.IgnoreOnUnity();
