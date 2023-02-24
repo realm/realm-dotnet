@@ -64,7 +64,7 @@ namespace RealmWeaver
                 return OperatingSystem.Linux;
             }
 
-            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("netframework"))
+            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("net4"))
             {
                 return OperatingSystem.Windows;
             }
@@ -110,54 +110,60 @@ namespace RealmWeaver
             {
                 return (config.UnityInfo.Type, config.UnityInfo.Version);
             }
-            else
+
+            // the order in the array matters as we first need to look at the libraries (maui and forms)
+            // and then at the frameworks (xamarin native, Catalyst and UWP)
+            var possibleFrameworks = new string[]
             {
-                // the order in the array matters as all xamarin platforms share Xamarin.Forms.Platform
-                // but only Xamarin.Forms has only Xamarin.Forms.Platform
-                var possibleFrameworks = new string[]
-                {
-                    "Xamarin.Forms.Platform.UAP", "Microsoft.Maui",
-                    "Xamarin.Forms.Platform.Android", "Xamarin.Forms.Platform.iOS",
-                    "Xamarin.Forms.Platform.tvOS", "Xamarin.Mac",
-                    "Xamarin.Forms.Platform"
-                };
+                "Microsoft.Maui", // MAUI
+                "Xamarin.Forms.Core", // Xamarin.Forms
+                "Xamarin.iOS", // Xamarin
+                "Xamarin.tvOS", // Xamarin
+                "Xamarin.Mac", // Xamarin
+                "Mono.Android", // Xamarin
+                "Microsoft.MacCatalyst", // Catalyst
+                "Windows.Foundation.UniversalApiContract" // UWP
+            };
 
-                AssemblyNameReference frameworkUsedInConjunction = null;
-                foreach (var toSearch in possibleFrameworks)
-                {
-                    frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == toSearch).SingleOrDefault();
-                    if (frameworkUsedInConjunction != null)
-                    {
-                        break;
-                    }
-                }
-
-                var framework = "No framework of interest";
+            AssemblyNameReference frameworkUsedInConjunction = null;
+            foreach (var toSearch in possibleFrameworks)
+            {
+                frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == toSearch).SingleOrDefault();
                 if (frameworkUsedInConjunction != null)
                 {
-                    var name = frameworkUsedInConjunction.Name;
-
-                    if (name.ContainsIgnoreCase("uap"))
-                    {
-                        framework = Framework.Uwp;
-                    }
-                    else if (name.ContainsIgnoreCase("ios") || name.ContainsIgnoreCase("android") ||
-                        name.ContainsIgnoreCase("mac") || name.ContainsIgnoreCase("tv"))
-                    {
-                        framework = Framework.Xamarin;
-                    }
-                    else if (name == "Xamarin.Forms.Platform")
-                    {
-                        framework = Framework.XamarinForms;
-                    }
-                    else if (name.ContainsIgnoreCase("maui"))
-                    {
-                        framework = Framework.Maui;
-                    }
+                    break;
                 }
-
-                return (framework, frameworkUsedInConjunction?.Version.ToString());
             }
+
+            var framework = "No framework of interest";
+            if (frameworkUsedInConjunction != null)
+            {
+                var name = frameworkUsedInConjunction.Name;
+
+                if (name.ContainsIgnoreCase("UniversalApiContract"))
+                {
+                    framework = Framework.Uwp;
+                }
+                else if (name.ContainsIgnoreCase("ios") || name.ContainsIgnoreCase("android") ||
+                    name.ContainsIgnoreCase("mac") || name.ContainsIgnoreCase("tv"))
+                {
+                    framework = Framework.Xamarin;
+                }
+                else if (name == "Xamarin.Forms.Core")
+                {
+                    framework = Framework.XamarinForms;
+                }
+                else if (name.ContainsIgnoreCase("Maui"))
+                {
+                    framework = Framework.Maui;
+                }
+                else if (name.ContainsIgnoreCase("MacCatalyst"))
+                {
+                    framework = Framework.MacCatalyst;
+                }
+            }
+
+            return (framework, frameworkUsedInConjunction?.Version.ToString());
         }
 
         public static string GetLanguageVersion(string netFramework, string netFrameworkVersion)

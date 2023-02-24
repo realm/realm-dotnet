@@ -66,6 +66,7 @@ namespace RealmWeaver
             public const string Xamarin = "Xamarin";
             public const string XamarinForms = "Xamarin Forms";
             public const string Uwp = "UWP";
+            public const string MacCatalyst = "MacCatalyst";
         }
 
         public static class Environment

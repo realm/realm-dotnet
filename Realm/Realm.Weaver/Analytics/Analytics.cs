@@ -231,9 +231,9 @@ namespace RealmWeaver
 
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
-                _realmEnvMetrics[UserEnvironment.RealmSdk] = ".NET";
-                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();//module.FindReference("Realm")?.Version.ToString();
-                _realmEnvMetrics[UserEnvironment.Language] = "C#";
+                _realmEnvMetrics[UserEnvironment.RealmSdk] = "dotnet";
+                _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                _realmEnvMetrics[UserEnvironment.Language] = "c#";
                 _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.NetFrameworkTarget, _config.NetFrameworkTargetVersion);
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
