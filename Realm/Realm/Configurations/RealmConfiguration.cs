@@ -93,6 +93,16 @@ namespace Realms
         /// </value>
         public ShouldCompactDelegate ShouldCompactOnLaunch { get; set; }
 
+        /// <summary>
+        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
+        /// </summary>
+        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
+        public new byte[] EncryptionKey
+        {
+            get => base.EncryptionKey;
+            set => base.EncryptionKey = value;
+        }
+
         private static RealmConfigurationBase _defaultConfiguration;
 
         /// <summary>
@@ -101,15 +111,7 @@ namespace Realms
         /// <value>The default configuration.</value>
         public static RealmConfigurationBase DefaultConfiguration
         {
-            get
-            {
-                if (_defaultConfiguration == null)
-                {
-                    _defaultConfiguration = new RealmConfiguration();
-                }
-
-                return _defaultConfiguration;
-            }
+            get => _defaultConfiguration ??= new RealmConfiguration();
 
             set
             {
