@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(IgnoreObjectNullabilityClassObjectHelper))]
+    [Woven(typeof(IgnoreObjectNullabilityClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IgnoreObjectNullabilityClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IgnoreObjectNullabilityClass", ObjectSchema.ObjectType.RealmObject)
@@ -225,7 +225,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IgnoreObjectNullabilityClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -244,7 +244,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IIgnoreObjectNullabilityClassAccessor : Realms.IRealmAccessor
         {
             SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject { get; set; }
@@ -268,7 +268,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> BacklinkNonNullableObject { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IgnoreObjectNullabilityClassManagedAccessor : Realms.ManagedAccessor, IIgnoreObjectNullabilityClassAccessor
         {
             public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject
@@ -396,7 +396,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IgnoreObjectNullabilityClassUnmanagedAccessor : Realms.UnmanagedAccessor, IIgnoreObjectNullabilityClassAccessor
         {
             public override ObjectSchema ObjectSchema => IgnoreObjectNullabilityClass.RealmSchema;
