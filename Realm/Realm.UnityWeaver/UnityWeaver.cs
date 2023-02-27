@@ -116,12 +116,12 @@ namespace RealmWeaver
                     return;
                 }
 
-                var netFrameworkInfo = GetNetFrameworkInfo();
+                var unityFrameworkInfo = GetFrameworkInfo();
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences,
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, unityFrameworkInfo.Compiler,
                     Metric.Framework.UnityEditor, Application.unityVersion,
-                    GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
-                    netFrameworkInfo.Name, netFrameworkInfo.Version);
+                    GetTargetOSName(Application.platform), unityFrameworkInfo.TargetArchitecture,
+                    unityFrameworkInfo.NetFramework, unityFrameworkInfo.NetFrameworkVersion);
             };
         }
 
@@ -204,19 +204,19 @@ namespace RealmWeaver
                 var assembliesToWeave = GetAssemblies();
                 var weaveResults = new List<string>();
 
-                // GetNetFrameworkInfo must be called on the main thread
+                // GetFrameworkInfo must be called on the main thread
                 // as the info that it extracts can only be extracted by the main thread
-                var netFrameworkInfo = GetNetFrameworkInfo();
+                var unityFrameworkInfo = GetFrameworkInfo();
                 var unityVersion = Application.unityVersion;
 
                 await Task.Run(() =>
                 {
                     foreach (var assembly in assembliesToWeave)
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences,
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, unityFrameworkInfo.Compiler,
                             Metric.Framework.UnityEditor, unityVersion,
-                            GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
-                            netFrameworkInfo.Name, netFrameworkInfo.Version))
+                            GetTargetOSName(Application.platform), unityFrameworkInfo.TargetArchitecture,
+                            unityFrameworkInfo.NetFramework, unityFrameworkInfo.NetFrameworkVersion))
                         {
                             continue;
                         }
@@ -254,6 +254,7 @@ namespace RealmWeaver
         }
 
         private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references,
+            string compiler,
             string unityType, string unityVersion,
             string targetOSName, string targetArchitecture,
             string netFrameworkTarget, string netFrameworkTargetVersion)
@@ -284,6 +285,7 @@ namespace RealmWeaver
                     var analyticsConfig = new Config
                     {
                         TargetOSName = targetOSName,
+                        Compiler = compiler,
                         NetFrameworkTarget = netFrameworkTarget,
                         NetFrameworkTargetVersion = netFrameworkTargetVersion,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
@@ -336,15 +338,15 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            var netFrameworkInfo = GetNetFrameworkInfo();
+            var unityFrameworkInfo = GetFrameworkInfo();
             var targetOSName = GetTargetOSName(report.summary.platform);
 
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths,
+                WeaveAssemblyCore(file.path, referencePaths, unityFrameworkInfo.Compiler,
                     Metric.Framework.Unity, Application.unityVersion,
-                    targetOSName, netFrameworkInfo.TargetArchitecture,
-                    netFrameworkInfo.Name, netFrameworkInfo.Version);
+                    targetOSName, unityFrameworkInfo.TargetArchitecture,
+                    unityFrameworkInfo.NetFramework, unityFrameworkInfo.NetFrameworkVersion);
             }
 
             if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
@@ -467,12 +469,55 @@ namespace RealmWeaver
             };
         }
 
-        private static (string Name, string Version, string TargetArchitecture) GetNetFrameworkInfo()
+        private static (string NetFramework, string NetFrameworkVersion, string Compiler, string TargetArchitecture) GetFrameworkInfo()
         {
             var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
-            return (PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
-                PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString(),
+            var targetFramework = ConvertUnityToNetFramework(PlayerSettings.GetApiCompatibilityLevel(targetGroup));
+
+            return (targetFramework.TargetFramework, targetFramework.TargetFrameworkVersion,
+                PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
                 AnalyticsUtils.ConvertUnityArchitectureToMetricsVersion(PlayerSettings.GetArchitecture(targetGroup)));
+        }
+
+        // This is necessary as Unity has its own naming scheme when it comes to .NET frameworks
+        // but we want to have consistency with the standard Microsoft naming scheme
+        private static (string TargetFramework, string TargetFrameworkVersion) ConvertUnityToNetFramework(ApiCompatibilityLevel apiTarget)
+        {
+            // these consts are exactly mapped to what .NET reports in any .NET application, in our case Xamarin
+            const string netStandardApi = ".NETStandard";
+            const string netFrameworkApi = ".NETFramework";
+
+            var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
+
+            // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
+            // are deprecated in favour of entry NET_Unity_4_8 and NET_Standard
+            // We need to report the proper meaning of enum 3 and 6
+            // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
+            if (unityVersion >= new Version("2021.2"))
+            {
+                if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+                {
+                    return (netStandardApi, "2.1");
+                }
+
+                if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+                {
+                    return (netFrameworkApi, "4.8");
+                }
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+            {
+                return (netStandardApi, "2.0");
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+            {
+                return (netFrameworkApi, "4.6");
+            }
+
+            // this should really never be the case
+            return (apiTarget.ToString(), "");
         }
 
         private class UnityLogger : ILogger

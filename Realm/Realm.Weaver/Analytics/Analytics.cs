@@ -250,6 +250,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.IdeUsedVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.NetFrameworkTarget;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.NetFrameworkTargetVersion;
+                _realmEnvMetrics[UserEnvironment.Compiler] = _config.Compiler ?? string.Empty;
 
                 foreach (var type in module.Types.ToArray())
                 {
@@ -442,6 +443,7 @@ namespace RealmWeaver
                 }
             }
 
+            //_config.AnalyticsLogPath = "C:\\Users\\Andrea\\Development\\AnalyticsResults\\UnityAnalytics.json";
             if (!string.IsNullOrEmpty(_config.AnalyticsLogPath))
             {
                 File.WriteAllText(_config.AnalyticsLogPath, payload);
@@ -515,6 +517,8 @@ namespace RealmWeaver
             public string AnalyticsLogPath { get; set; }
 
             public string TargetOSName { get; set; }
+
+            public string Compiler { get; set; }
 
             public string NetFrameworkTarget { get; set; }
 

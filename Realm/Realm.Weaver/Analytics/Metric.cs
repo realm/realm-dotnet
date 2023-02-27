@@ -93,6 +93,7 @@ namespace RealmWeaver
             public const string IdeUsedVersion = "IDE Version"; // this holds info about the msbuild version
             public const string NetFramework = "Net Framework";
             public const string NetFrameworkVersion = "Net Framework Version";
+            public const string Compiler = "Compiler";
         }
 
         public static class Feature
