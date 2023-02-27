@@ -31,6 +31,7 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static RealmWeaver.Analytics;
+using CpuArchitecture = RealmWeaver.Metric.CpuArchitecture;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
@@ -120,7 +121,7 @@ namespace RealmWeaver
 
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences,
                     Metric.Framework.UnityEditor, Application.unityVersion,
-                    GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
+                    GetTargetOSName(Application.platform), GetHostCpuArchitecture(),
                     netFrameworkInfo.Name, netFrameworkInfo.Version);
             };
         }
@@ -215,13 +216,13 @@ namespace RealmWeaver
                     {
                         if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences,
                             Metric.Framework.UnityEditor, unityVersion,
-                            GetTargetOSName(Application.platform), netFrameworkInfo.TargetArchitecture,
+                            GetTargetOSName(Application.platform), GetHostCpuArchitecture(),
                             netFrameworkInfo.Name, netFrameworkInfo.Version))
                         {
                             continue;
                         }
 
-                        string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
+                        var sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
                             continue;
@@ -288,11 +289,11 @@ namespace RealmWeaver
                         NetFrameworkTargetVersion = netFrameworkTargetVersion,
                         AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
                         InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                        TargetArchitecture = targetArchitecture,
                         UnityInfo = new()
                         {
                             Type = unityType,
                             Version = unityVersion,
-                            TargetArchitecture = targetArchitecture
                         }
                     };
 
@@ -343,7 +344,7 @@ namespace RealmWeaver
             {
                 WeaveAssemblyCore(file.path, referencePaths,
                     Metric.Framework.Unity, Application.unityVersion,
-                    targetOSName, netFrameworkInfo.TargetArchitecture,
+                    targetOSName, GetTargetCpuArchitecture(report.summary.platform),
                     netFrameworkInfo.Name, netFrameworkInfo.Version);
             }
 
@@ -467,12 +468,50 @@ namespace RealmWeaver
             };
         }
 
-        private static (string Name, string Version, string TargetArchitecture) GetNetFrameworkInfo()
+        private static (string Name, string Version) GetNetFrameworkInfo()
         {
             var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
             return (PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
-                PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString(),
-                AnalyticsUtils.ConvertUnityArchitectureToMetricsVersion(PlayerSettings.GetArchitecture(targetGroup)));
+                PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString());
+        }
+
+        private static string GetTargetCpuArchitecture(BuildTarget buildTarget)
+        {
+            return buildTarget switch
+            {
+                BuildTarget.iOS or BuildTarget.tvOS => CpuArchitecture.Arm64,
+                BuildTarget.StandaloneOSX => EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(buildTarget), "Architecture") switch
+                {
+                    "ARM64" => CpuArchitecture.Arm64,
+                    "x64" => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows => CpuArchitecture.X86,
+                BuildTarget.Android => PlayerSettings.Android.targetArchitectures switch
+                {
+                    AndroidArchitecture.ARMv7 => CpuArchitecture.Arm,
+                    AndroidArchitecture.ARM64 => CpuArchitecture.Arm64,
+
+                    // These two don't have enum values in our Unity reference dll, but exist in newer versions
+                    // See https://github.com/Unity-Technologies/UnityCsReference/blob/70abf502c521c169ee8a302aa48c5600fc7c39fc/Editor/Mono/PlayerSettingsAndroid.bindings.cs#L14
+                    (AndroidArchitecture)(1 << 2) => CpuArchitecture.X86,
+                    (AndroidArchitecture)(1 << 3) => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => CpuArchitecture.X64,
+                _ => Metric.Unknown(),
+            };
+        }
+
+        private static string GetHostCpuArchitecture()
+        {
+            if (SystemInfo.processorType.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                return Environment.Is64BitProcess ? CpuArchitecture.Arm64 : CpuArchitecture.Arm;
+            }
+
+            // Must be in the x86 family.
+            return Environment.Is64BitProcess ? CpuArchitecture.X64 : CpuArchitecture.X86;
         }
 
         private class UnityLogger : ILogger
