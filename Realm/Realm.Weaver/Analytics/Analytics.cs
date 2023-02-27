@@ -443,7 +443,6 @@ namespace RealmWeaver
                 }
             }
 
-            //_config.AnalyticsLogPath = "C:\\Users\\Andrea\\Development\\AnalyticsResults\\UnityAnalytics.json";
             if (!string.IsNullOrEmpty(_config.AnalyticsLogPath))
             {
                 File.WriteAllText(_config.AnalyticsLogPath, payload);
