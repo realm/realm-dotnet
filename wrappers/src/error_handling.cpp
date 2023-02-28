@@ -20,10 +20,8 @@
 #include <cassert>
 #include <realm/object-store/shared_realm.hpp>
 #include <realm/object-store/object_store.hpp>
-#include "wrapper_exceptions.hpp"
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
-#include "realm_error_type.hpp"
 #include "shared_realm_cs.hpp"
 
 // core headers for exception types
@@ -49,127 +47,28 @@ namespace realm {
             }
 
         }
-        catch (const RealmFileException& e) {
-
-            switch (e.kind()) {
-            case RealmFileException::Kind::AccessError:
-                return { RealmErrorType::RealmFileAccessError, e.what() };
-            case RealmFileException::Kind::PermissionDenied:
-                return { RealmErrorType::RealmPermissionDenied, e.what() };
-            case RealmFileException::Kind::Exists:
-                return { RealmErrorType::RealmFileExists, e.what() };
-            case RealmFileException::Kind::NotFound:
-                return { RealmErrorType::RealmFileNotFound, e.what() };
-            case RealmFileException::Kind::IncompatibleLockFile:
-                return { RealmErrorType::RealmIncompatibleLockFile, e.what() };
-            case RealmFileException::Kind::FormatUpgradeRequired:
-                return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
-            default:
-                return { RealmErrorType::RealmError, e.what() };
-            }
-        }
-        catch (const SchemaValidationException& e) {
-            return { RealmErrorType::RealmSchemaValidation, e.what() };
-        }
-        catch (const InvalidSchemaException& e) {
-            return { RealmErrorType::RealmSchemaValidation, e.what() };
-        }
-        catch (const MismatchedConfigException& e) {
-            return { RealmErrorType::RealmMismatchedConfig, e.what() };
-        }
-        catch (const InvalidTransactionException& e) {
-            return { RealmErrorType::RealmInvalidTransaction, e.what() };
-        }
-        catch (const IncorrectThreadException& e) {
-            return { RealmErrorType::RealmIncorrectThread, e.what() };
-        }
-        catch (const UninitializedRealmException& e) {
-            return { RealmErrorType::RealmUnitializedRealm, e.what() };
-        }
-        catch (const SchemaMismatchException& e) {
-          // typically shared_realm_open failing because same schemaVersion but changed
-          return { RealmErrorType::RealmSchemaMismatch, e.what() };
-        }
-        //catch (const util::DecryptionFailed& e) {
-        //    return { RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
-        //}
-        catch (const InvalidDatabase& e) {
-            return { RealmErrorType::RealmInvalidDatabase, e.what() };
-        }
-        catch (const IndexOutOfRangeException& e) {
-            return { RealmErrorType::StdIndexOutOfRange, e.what() };
-        }
-        catch (const RowDetachedException& e) {
-            return { RealmErrorType::RealmRowDetached, e.what() };
-        }
-        catch (const MissingPrimaryKeyException& e) {
-            return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
+        catch (const CustomException& e) {
+            return NativeException(e, e.custom_error);
         }
         catch (const ManagedExceptionDuringCallback& e) {
-            return { e.what(), e.m_managed_error };
-        }
-        catch (const DuplicatePrimaryKeyValueException& e) {
-            return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };
-        }
-        catch (const SetDuplicatePrimaryKeyValueException& e) {
-            return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };  // map to same as DuplicatePrimaryKeyValueException
-        }
-        catch (const RealmClosedException& e) {
-            return { RealmErrorType::RealmClosed, e.what() };
-        }
-        catch (const ObjectManagedByAnotherRealmException& e) {
-            return { RealmErrorType::ObjectManagedByAnotherRealm, e.what() };
-        }
-        catch (const NotNullableException& e) {
-            return { RealmErrorType::NotNullableProperty, e.what() };
-        }
-        catch (const PropertyTypeMismatchException& e) {
-            return { RealmErrorType::PropertyMismatch, e.what() };
-        }
-        catch (const KeyAlreadyExistsException& e) {
-            return { RealmErrorType::KeyAlreadyExists, e.what() };
-        }
-        catch (const DuplicateSubscriptionException& e) {
-            return { RealmErrorType::DuplicateSubscription, e.what() };
+            return NativeException(e, CustomError::None, e.m_managed_error);
         }
         catch (const AppError& e) {
-            if (e.is_client_error()) {
-                return { RealmErrorType::AppClientError, e.message };
-            }
+            REALM_ASSERT_DEBUG(e.additional_status_code == util::none);
+            REALM_ASSERT_DEBUG(e.link_to_server_logs == "");
 
-            if (e.is_custom_error()) {
-                return { RealmErrorType::AppCustomError, e.message };
-            }
-
-            if (e.is_http_error()) {
-                return { RealmErrorType::AppHttpError, e.message };
-            }
-
-            if (e.is_json_error()) {
-                return { RealmErrorType::AppJsonError, e.message };
-            }
-
-            if (e.is_service_error()) {
-                return { RealmErrorType::AppCustomError, e.message };
-            }
-
-            return { RealmErrorType::AppUnknownError, e.message };
+            return NativeException(e);
         }
-        catch (const DeleteOnOpenRealmException& e) {
-            return { RealmErrorType::RealmInUseException, e.what() };
+        catch (const SyncError& e) {
+            REALM_ASSERT_DEBUG(false);
+
+            return NativeException(e);
         }
-        catch (const std::bad_alloc& e) {
-            return { RealmErrorType::RealmOutOfMemory, e.what() };
-        }
-        catch (const std::system_error& e) {
-            const std::error_code& ec = e.code();
-            return { RealmErrorType::SessionError, ec.message(), std::to_string(ec.value()) };
-        }
-        catch (const std::exception& e) {
-            return { RealmErrorType::RealmError, e.what() };
+        catch (const Exception& e) {
+            return NativeException(e);
         }
         catch (...) {
-            return { RealmErrorType::RealmError, "Unknown exception caught which doesn't descend from std::exception" };
+            return NativeException(ErrorCodes::Error::UnknownError, "Unknown exception caught which doesn't descend from std::exception");
         }
     }
 

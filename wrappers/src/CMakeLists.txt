@@ -27,7 +27,6 @@ set(HEADERS
     filter.hpp
     marshalling.hpp
     object_cs.hpp
-    realm_error_type.hpp
     realm_export_decls.hpp
     schema_cs.hpp
     shared_realm_cs.hpp

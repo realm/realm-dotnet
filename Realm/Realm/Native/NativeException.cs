@@ -26,22 +26,16 @@ namespace Realms
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct NativeException
     {
-        public RealmExceptionCodes type;
+        public RealmExceptionCodes code;
+        public RealmExceptionCategories categories;
         public byte* messageBytes;
         public IntPtr messageLength;
-        public IntPtr detail;
-        public IntPtr detailLength;
+        public IntPtr managedException;
 
-        internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
+        internal Exception Convert()
         {
             try
             {
-                var overridden = overrider?.Invoke(type);
-                if (overridden != null)
-                {
-                    return overridden;
-                }
-
                 var message = (messageLength != IntPtr.Zero) ?
                     Encoding.UTF8.GetString(messageBytes, (int)messageLength)
                     : "No further information available";
@@ -52,24 +46,19 @@ namespace Realms
                     return new AggregateException(message, innerException);
                 }
 
-                var detailMessage = detail != IntPtr.Zero ? Encoding.UTF8.GetString((byte*)detail, (int)detailLength) : null;
-                return RealmException.Create(type, message, detailMessage);
+                return RealmException.Create(code, message, categories);
             }
             finally
             {
                 NativeCommon.delete_pointer(messageBytes);
-                if (type != RealmExceptionCodes.RealmDotNetExceptionDuringCallback && detail != IntPtr.Zero)
-                {
-                    NativeCommon.delete_pointer((byte*)detail);
-                }
             }
         }
 
         private Exception GetInnerException()
         {
-            if (type == RealmExceptionCodes.RealmDotNetExceptionDuringCallback)
+            if (managedException != IntPtr.Zero)
             {
-                var handle = GCHandle.FromIntPtr(detail);
+                var handle = GCHandle.FromIntPtr(managedException);
                 var result = (Exception)handle.Target;
                 handle.Free();
                 return result;
@@ -78,14 +67,14 @@ namespace Realms
             return null;
         }
 
-        internal void ThrowIfNecessary(Func<RealmExceptionCodes, Exception> overrider = null)
+        internal void ThrowIfNecessary()
         {
-            if (type == RealmExceptionCodes.NoError)
+            if (code == RealmExceptionCodes.RLM_ERR_NONE)
             {
                 return;
             }
 
-            throw Convert(overrider);
+            throw Convert();
         }
     }
 }

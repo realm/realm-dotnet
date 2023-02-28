@@ -28,8 +28,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -567,7 +565,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.ListOfDogs.Filter(string.Empty),
-                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Invalid predicate"));
         }
 
         [Test]
@@ -582,7 +580,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.ListOfDogs.Filter("Name = $0"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
         [Test]
@@ -881,7 +879,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.SetOfDogs.Filter(string.Empty),
-                Throws.TypeOf<RealmException>().And.Message.Contains("Invalid predicate"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Invalid predicate"));
         }
 
         [Test]
@@ -896,7 +894,7 @@ namespace Realms.Tests.Database
 
             Assert.That(
                 () => joe.SetOfDogs.Filter("Name = $0"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("no arguments are provided"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("Request for argument at index 0 but no arguments are provided"));
         }
 
         [Test]
@@ -1162,7 +1160,8 @@ namespace Realms.Tests.Database
                 propInfo.SetValue(matchingObj, boxedMatch);
             });
 
-            Assert.Throws<RealmException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue), $"Unsupported comparison between type {propInfo.PropertyType.Name} and type {data.NonMatchingValue.GetType().Name}");
+            var ex = Assert.Throws<ArgumentException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue));
+            Assert.That(ex.Message, Does.Contain($"Unsupported comparison"));
         }
 
         [Test]
@@ -1452,7 +1451,7 @@ namespace Realms.Tests.Database
         {
             Assert.That(
                 () => _realm.All<A>().Filter("Foo == 5"),
-                Throws.TypeOf<RealmException>().And.Message.Contains("'A' has no property 'Foo'"));
+                Throws.TypeOf<ArgumentException>().And.Message.Contains("'A' has no property 'Foo'"));
         }
 
         [Test]

@@ -1766,7 +1766,7 @@ namespace Realms.Tests.Sync
 
                 realm.Subscriptions.Update(() =>
                 {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
+                    realm.Subscriptions.Add(realm.All<SyncCollectionsObject>().Filter("SUBQUERY(ObjectList, $obj, $obj.Int > 10).@count > 0"));
                 });
 
                 try
@@ -1776,11 +1776,11 @@ namespace Realms.Tests.Sync
                 }
                 catch (SubscriptionException ex)
                 {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                    Assert.That(ex.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
                 }
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error), "State should be 'Error' when querying unqueryable field");
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                Assert.That(realm.Subscriptions.Error.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
 
                 var testGuid = Guid.NewGuid();
 
