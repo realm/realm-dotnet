@@ -12,6 +12,7 @@
 
 ### Internal
 * Using Core x.y.z.
+* Cancel existing builds when a new commit is pushed to a PR. (PR [#3260](https://github.com/realm/realm-dotnet/pull/3260))
 
 ## 10.20.0 (2023-02-10)
 
