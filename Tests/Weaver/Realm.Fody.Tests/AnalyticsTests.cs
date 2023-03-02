@@ -83,7 +83,7 @@ namespace Analytics
                 try
                 {
                     CompileAnalyticsProject(kvp.Value);
-                    ValidateSdkApiAnalyticsPayload(Metric.SdkFeatures[kvp.Key]);
+                    ValidateAnalyticsPayloadAllFrameworks(new[] {(featureName: Metric.SdkFeatures[kvp.Key], expectedValue: "1") });
                 }
                 catch (Exception e)
                 {
@@ -104,19 +104,38 @@ namespace Analytics
             }
         }
 
-        private void ValidateAnalyticsPayload<T>(string featureName, T expectedResult)
+        [Test]
+        public void ValidateHostOS()
+        {
+            var currentOs = Environment.OSVersion;
+            CompileAnalyticsProject();
+            ValidateAnalyticsPayloadAllFrameworks(new[] {
+                (featureName: Metric.Environment.HostOsType, expectedValue: ConvertToMetricOS(currentOs.Platform)),
+                (featureName: Metric.Environment.HostOsVersion, expectedValue: currentOs.Version.ToString()) });
+        }
+
+        private static string ConvertToMetricOS(PlatformID platformID) =>
+            platformID switch
+            {
+                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => Metric.OperatingSystem.Windows,
+                PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
+                PlatformID.Unix => Metric.OperatingSystem.Linux,
+                _ => platformID.ToString()
+            };
+
+        private void ValidateAnalyticsPayloadAllFrameworks((string featureName, string expectedValue)[] payloadFeatures)
         {
             foreach (var framework in _frameworks.Value)
             {
                 var response = WeaveRealm(framework, "DryRun");
                 var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
-                Assert.That(payload[featureName].AsString, Is.EqualTo(expectedResult.ToString()), $"Feature {featureName} was not reported as used: {expectedResult} in {framework}");
+                
+                foreach (var entry in payloadFeatures)
+                {
+                    Assert.That(payload[entry.featureName].AsString, Is.EqualTo(entry.expectedValue),
+                        $"For framework {framework}, field \"{entry.expectedValue}\" doesn't match the expected value \"{entry.expectedValue}\"");
+                }
             }
-        }
-
-        private void ValidateSdkApiAnalyticsPayload(string featureName, byte expectedUsed = 1)
-        {
-            ValidateAnalyticsPayload(featureName, expectedUsed);
         }
 
         private string WeaveRealm(string framework, string collectionType)

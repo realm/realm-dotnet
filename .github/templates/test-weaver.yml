@@ -11,12 +11,21 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   run-tests-weaver:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-latest
+          runtime: osx-x64
+    runs-on: ${{ matrix.os.runner }}
     name: Weaver
     timeout-minutes: 15
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "netcoreapp3.1", "win-x64"))
+      - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
       - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
