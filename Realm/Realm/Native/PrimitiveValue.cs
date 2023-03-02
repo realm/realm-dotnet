@@ -323,7 +323,7 @@ namespace Realms.Native
         public byte* data;
         public IntPtr size;
 
-        public string AsString() => Encoding.UTF8.GetString(data, (int)size);
+        public string AsString() => data == null ? null : Encoding.UTF8.GetString(data, (int)size);
 
         public static implicit operator string(StringValue value) => value.AsString();
     }
