@@ -166,9 +166,8 @@ REALM_EXPORT void realm_syncsession_unregister_property_changed_callback(const S
 REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        auto waiter = [task_completion_source](std::error_code error) {
-            std::string message = error.message();
-            s_wait_callback(task_completion_source, error.value(), to_capi_value(message));
+        auto waiter = [task_completion_source](realm::Status status) {
+            s_wait_callback(task_completion_source, status.code(), to_capi_value(status.reason()));
         };
 
         if (direction == CSharpNotifierType::Upload) {

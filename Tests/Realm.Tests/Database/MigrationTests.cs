@@ -28,8 +28,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -227,7 +225,7 @@ namespace Realms.Tests.Database
 
             TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
 
-            var ex = Assert.Throws<RealmException>(() => GetRealm(configuration));
+            var ex = Assert.Throws<ArgumentException>(() => GetRealm(configuration));
             Assert.That(ex.Message, Does.Contain("Renamed property 'Person.PropertyNotInNewSchema' does not exist"));
 
             configuration = new RealmConfiguration(configuration.DatabasePath)
@@ -715,7 +713,7 @@ namespace Realms.Tests.Database
                 }
             };
 
-            var ex = Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() => GetRealm(newRealmConfig));
+            var ex = Assert.Throws<RealmMigrationException>(() => GetRealm(newRealmConfig));
             Assert.That(ex.Message, Does.Contain($"{nameof(IntPrimaryKeyWithValueObject)}._id"));
 
             // Ensure we haven't messed up the data

@@ -839,7 +839,7 @@ namespace Realms.Tests.Database
                 {
                     _realm.Add(new RequiredStringObject());
                 });
-            }, Throws.TypeOf<RealmException>());
+            }, Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
