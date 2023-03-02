@@ -105,6 +105,29 @@ typedef struct realm_value {
     }
 } realm_value_t;
 
+typedef struct realm_sync_error_compensating_write_info {
+    realm_value_t reason;
+    realm_value_t object_name;
+    realm_value_t primary_key;
+} realm_sync_error_compensating_write_info_t;
+
+typedef struct realm_sync_error {
+    int32_t error_code;
+    realm_value_t message;
+    realm_value_t log_url;
+    bool is_client_reset;
+
+    struct {
+        std::pair<char*, char*>* data;
+        size_t count;
+    } user_info_pairs;
+
+    struct {
+        realm_sync_error_compensating_write_info_t* data;
+        size_t count;
+    } compensating_writes;
+} realm_sync_error_t;
+
 static inline realm_string_t to_capi(StringData data)
 {
     return realm_string_t{ data.data(), data.size() };

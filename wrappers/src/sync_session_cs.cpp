@@ -35,7 +35,7 @@ using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
+using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error_t error, void* managed_sync_config);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
 using PropertyChangedCallbackT = void(void* managed_session_handle, NotifiableProperty property);
 

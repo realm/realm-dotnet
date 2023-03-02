@@ -1974,6 +1974,43 @@ namespace Realms.Tests.Sync
             });
         }
 
+        [Test]
+        public void Integration_WriteData_WhenOutsideOfSubscriptions_GetsRevertedByServer()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var errorTcs = new TaskCompletionSource<SessionException>();
+
+                var testGuid = Guid.NewGuid();
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    r.Subscriptions.Add(r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                };
+
+                config.OnSessionError = (_, e) => errorTcs.TrySetResult(e);
+                using var realm = await GetRealmAsync(config);
+
+                var obj = realm.Write(() => realm.Add(new SyncAllTypesObject()));
+                var id = obj.Id;
+
+                var error = await errorTcs.Task;
+
+                Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
+                Assert.That(error.HelpLink, Does.Contain("logs?co_id="));
+
+                var compensatingError = error as CompensatingWriteException;
+
+                Assert.That(compensatingError, Is.Not.Null);
+                Assert.That(compensatingError.CompensatingWrites.Count(), Is.EqualTo(1));
+
+                var errorInfo = compensatingError.CompensatingWrites.Single();
+                Assert.That(errorInfo.ObjectType, Is.EqualTo(nameof(SyncAllTypesObject)));
+                Assert.That(errorInfo.PrimaryKey.AsObjectId(), Is.EqualTo(id));
+                Assert.That(errorInfo.Reason, Does.Contain("object is outside of the current query view"));
+            });
+        }
+
         private async Task<Realm> AddSomeData(Guid testGuid)
         {
             var writerRealm = await GetFLXIntegrationRealmAsync();
