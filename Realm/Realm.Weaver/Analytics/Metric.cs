@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Realm.Fody.Tests")]
@@ -56,6 +55,7 @@ namespace RealmWeaver
             public const string X64 = "x64";
             public const string Arm = "Arm";
             public const string Arm64 = "Arm64";
+            public const string Universal = "Universal";
         }
 
         public static class Framework

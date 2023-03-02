@@ -37,7 +37,7 @@ namespace RealmWeaver
     {
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
-            string targetOs = frameworkName.Identifier;
+            var targetOs = frameworkName.Identifier;
 
             if (targetOs.ContainsIgnoreCase("android"))
             {
@@ -83,17 +83,14 @@ namespace RealmWeaver
             return BitConverter.ToString(sha256.ComputeHash(bytes));
         }
 
-        public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
-
-        public static string GetTargetCpuArchitecture(Config config)
+        public static string GetHostCpuArchitecture() => RuntimeInformation.OSArchitecture switch
         {
-            if (config.UnityInfo != null)
-            {
-                return config.UnityInfo.TargetArchitecture;
-            }
-
-            return Unknown();
-        }
+            Architecture.X86 => CpuArchitecture.X86,
+            Architecture.Arm => CpuArchitecture.Arm,
+            Architecture.Arm64 => CpuArchitecture.Arm64,
+            Architecture.X64 => CpuArchitecture.X64,
+            _ => Unknown(RuntimeInformation.OSArchitecture.ToString())
+        };
 
         public static string GetHostOsName() =>
             System.Environment.OSVersion.Platform switch
@@ -218,38 +215,38 @@ namespace RealmWeaver
                 {
                     case PlatformID.Win32S or PlatformID.Win32Windows or
                         PlatformID.Win32NT or PlatformID.WinCE:
-                    {
-                        var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                        var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
-                        var match = regex.Match(machineIdToParse);
-
-                        if (match?.Groups.Count > 1)
                         {
-                            id = match.Groups[1].Value;
-                        }
+                            var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                            var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                            var match = regex.Match(machineIdToParse);
 
-                        break;
-                    }
+                            if (match?.Groups.Count > 1)
+                            {
+                                id = match.Groups[1].Value;
+                            }
+
+                            break;
+                        }
 
                     case PlatformID.MacOSX:
-                    {
-                        var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                        var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                        var match = regex.Match(machineIdToParse);
-
-                        if (match?.Groups.Count > 1)
                         {
-                            id = match.Groups[1].Value;
+                            var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                            var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                            var match = regex.Match(machineIdToParse);
+
+                            if (match?.Groups.Count > 1)
+                            {
+                                id = match.Groups[1].Value;
+                            }
+
+                            break;
                         }
 
-                        break;
-                    }
-
                     case PlatformID.Unix:
-                    {
-                        id = File.ReadAllText("/etc/machine-id");
-                        break;
-                    }
+                        {
+                            id = File.ReadAllText("/etc/machine-id");
+                            break;
+                        }
                 }
 
                 if (id.Length == 0)
@@ -270,45 +267,6 @@ namespace RealmWeaver
             {
                 return Unknown();
             }
-        }
-
-        // This is just a placeholder, until we figure out how to extract the proper info from Unity
-        public static string ConvertUnityArchitectureToMetricsVersion(int unityArchitecture)
-        {
-            var convertedValue = unityArchitecture switch
-            {
-                0 => "None",
-                1 => CpuArchitecture.Arm64,
-                2 => "Unity_Universal",
-                _ => Unknown(System.Environment.OSVersion.Platform.ToString())
-            };
-
-            return Unknown(convertedValue);
-        }
-
-        private static string ConvertArchitectureToMetricsVersion(string arch)
-        {
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)))
-            {
-                return CpuArchitecture.Arm;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)))
-            {
-                return CpuArchitecture.Arm64;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) || arch.ContainsIgnoreCase("amd64"))
-            {
-                return CpuArchitecture.X64;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) || arch.ContainsIgnoreCase("i386"))
-            {
-                return CpuArchitecture.X86;
-            }
-
-            return Unknown(arch);
         }
 
         private static bool ContainsIgnoreCase(this string @this, string strCompare) =>

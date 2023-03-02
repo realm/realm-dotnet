@@ -241,7 +241,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.TargetOsVersion] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = GetTargetCpuArchitecture(_config);
+                _realmEnvMetrics[UserEnvironment.TargetCpuArch] = _config.TargetArchitecture;
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
@@ -525,6 +525,8 @@ namespace RealmWeaver
 
             public string InstallationMethod { get; set; }
 
+            public string TargetArchitecture { get; set; } = Metric.Unknown();
+
             // This is going to be null when we're not using Unity
             public UnityInfoData UnityInfo { get; set; }
 
@@ -534,8 +536,6 @@ namespace RealmWeaver
                 public string Type { get; set; }
 
                 public string Version { get; set; }
-
-                public string TargetArchitecture { get; set; }
             }
         }
 
