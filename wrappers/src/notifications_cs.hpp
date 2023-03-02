@@ -29,7 +29,7 @@ using namespace realm::binding;
 namespace realm {
 struct MarshallableCollectionChangeSet {
     struct MarshallableIndexSet {
-        size_t* indices;
+        int32_t* indices;
         size_t count;
     };
 
@@ -85,13 +85,13 @@ inline size_t get_property_index(const ObjectSchema* schema, const ColKey column
     return -1;
 }
 
-inline std::vector<size_t> get_indexes_vector(const IndexSet& indexSet)
+inline std::vector<int32_t> get_indexes_vector(const IndexSet& indexSet)
 {
     if (indexSet.count() < (size_t)-1) {
-        return std::vector<size_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
+        return std::vector<int32_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
     }
 
-    return std::vector<size_t>();
+    return std::vector<int32_t>();
 }
 
 static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed>& keySet)
@@ -116,7 +116,7 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
         auto modifications = get_indexes_vector(changes.modifications);
         auto modifications_new = get_indexes_vector(changes.modifications_new);
 
-        std::vector<size_t> properties;
+        std::vector<int32_t> properties;
 
         for (auto& pair : changes.columns) {
             if (!pair.second.empty()) {

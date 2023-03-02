@@ -203,7 +203,7 @@ namespace Realms
         {
             if (changes.HasValue)
             {
-                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
+                foreach (int propertyIndex in changes.Value.Properties)
                 {
                     // Due to a yet another Mono compiler bug, using LINQ fails here :/
                     var i = 0;
@@ -225,7 +225,7 @@ namespace Realms
                     }
                 }
 
-                if (changes.Value.Deletions.AsEnumerable().Any())
+                if (changes.Value.Deletions.Count > 0)
                 {
                     RaisePropertyChanged(nameof(IsValid));
 

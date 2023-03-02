@@ -283,10 +283,17 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct StringValue
+        public unsafe struct StringValue
         {
             public byte* data;
             public IntPtr size;
+
+            public override string ToString()
+            {
+                return Encoding.UTF8.GetString(data, (int)size);
+            }
+
+            public static implicit operator string(StringValue s) => s.ToString();
         }
 
         [StructLayout(LayoutKind.Sequential)]

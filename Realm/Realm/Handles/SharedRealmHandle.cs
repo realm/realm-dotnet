@@ -243,7 +243,7 @@ namespace Realms
             NativeCommon.Initialize();
         }
 
-        public static void Initialize()
+        public static unsafe void Initialize()
         {
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;

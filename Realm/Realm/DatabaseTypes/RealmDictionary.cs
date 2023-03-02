@@ -258,9 +258,9 @@ namespace Realms
             {
                 var actualChanges = changes.Value;
                 changeset = new DictionaryChangeSet(
-                    deletedKeys: actualChanges.Deletions.AsEnumerable().Select(v => v.AsString()).ToArray(),
-                    insertedKeys: actualChanges.Insertions.AsEnumerable().Select(v => v.AsString()).ToArray(),
-                    modifiedKeys: actualChanges.Modifications.AsEnumerable().Select(v => v.AsString()).ToArray());
+                    deletedKeys: actualChanges.Deletions.ToEnumerable().Select(v => v.AsString()).ToArray(),
+                    insertedKeys: actualChanges.Insertions.ToEnumerable().Select(v => v.AsString()).ToArray(),
+                    modifiedKeys: actualChanges.Modifications.ToEnumerable().Select(v => v.AsString()).ToArray());
             }
             else
             {

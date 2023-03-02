@@ -18,29 +18,81 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MarshaledVector<T>
-        where T : struct
+    internal unsafe readonly struct MarshaledVector<T>
+        where T : unmanaged
     {
-        private IntPtr items;
-        private IntPtr count;
+        private readonly T* items;
 
-        internal IEnumerable<T> AsEnumerable()
+        public readonly nint Count;
+
+        public ref readonly T this[nint index]
         {
-            return Enumerable.Range(0, (int)count).Select(MarshalElement);
+            get
+            {
+                if (index >= Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                return ref Unsafe.Add(ref *items, index);
+            }
         }
 
-        private unsafe T MarshalElement(int elementIndex)
+        public ref struct Enumerator
         {
-            var @struct = default(T);
-            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
-            return @struct;
+            private readonly MarshaledVector<T> _vector;
+            private nint _index;
+
+            public Enumerator(MarshaledVector<T> vector)
+            {
+                _vector = vector;
+                _index = -1;
+            }
+
+            public ref readonly T Current => ref _vector[_index];
+
+            public bool MoveNext()
+            {
+                var index = _index + 1;
+                if (index < _vector.Count)
+                {
+                    _index = index;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
+        public IEnumerable<T> ToEnumerable()
+        {
+            for (nint index = 0; index < Count; index++)
+            {
+                yield return this[index];
+            }
+        }
+
+        public T[] ToArray()
+        {
+            var ret = new T[Count];
+            fixed(T* destination = ret)
+            {
+                var byteSize = sizeof(T) * Count;
+                Buffer.MemoryCopy(items, destination, byteSize, byteSize);
+            }
+
+            return ret;
         }
     }
 }

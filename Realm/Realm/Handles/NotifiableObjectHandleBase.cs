@@ -27,25 +27,26 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
         {
-            public MarshaledVector<IntPtr> Deletions;
-            public MarshaledVector<IntPtr> Insertions;
-            public MarshaledVector<IntPtr> Modifications;
-            public MarshaledVector<IntPtr> Modifications_New;
+            public MarshaledVector<int> Deletions;
+            public MarshaledVector<int> Insertions;
+            public MarshaledVector<int> Modifications;
+            public MarshaledVector<int> Modifications_New;
 
             [StructLayout(LayoutKind.Sequential)]
             public struct Move
             {
-                public IntPtr From;
-                public IntPtr To;
+                public nint From;
+                public nint To;
             }
 
             public MarshaledVector<Move> Moves;
+            [MarshalAs(UnmanagedType.U1)]
             public bool Cleared;
-            public MarshaledVector<IntPtr> Properties;
+            public MarshaledVector<int> Properties;
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void NotificationCallback(IntPtr managedHandle, IntPtr changes, bool shallow);
+        public unsafe delegate void NotificationCallback(IntPtr managedHandle, CollectionChangeSet* changes, bool shallow);
 
         protected NotifiableObjectHandleBase(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
@@ -54,11 +55,11 @@ namespace Realms
         public abstract ThreadSafeReferenceHandle GetThreadSafeReference();
 
         [MonoPInvokeCallback(typeof(NotificationCallback))]
-        public static void NotifyObjectChanged(IntPtr managedHandle, IntPtr changes, bool shallow)
+        public static unsafe void NotifyObjectChanged(IntPtr managedHandle, CollectionChangeSet* changes, bool shallow)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<CollectionChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(new PtrTo<CollectionChangeSet>(changes).Value, shallow);
+                notifiable.NotifyCallbacks(changes == null ? null : *changes, shallow);
             }
         }
     }
