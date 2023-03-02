@@ -287,7 +287,7 @@ namespace Realms.Sync
 
                 if (error.is_client_reset)
                 {
-                    var userInfo = error.user_info_pairs.AsEnumerable().ToDictionary(p => p.Key, p => p.Value);
+                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
                     var clientResetEx = new ClientResetException(session.User.App, messageString, error.error_code, userInfo);
 
                     if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
