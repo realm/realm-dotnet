@@ -37,13 +37,13 @@ namespace Realms.Native
         public MarshaledVector<StringStringPair> user_info_pairs;
 
         public MarshaledVector<CompensatingWriteInfo> compensating_writes;
-    }
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct CompensatingWriteInfo
-    {
-        public StringValue reason;
-        public StringValue object_name;
-        public PrimitiveValue primary_key;
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CompensatingWriteInfo
+        {
+            public StringValue reason;
+            public StringValue object_name;
+            public PrimitiveValue primary_key;
+        }
     }
 }

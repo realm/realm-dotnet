@@ -28,7 +28,6 @@ using Realms.Native;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
-using CompensatingWriteInfo = Realms.Sync.Exceptions.CompensatingWriteInfo;
 
 namespace Realms.Sync
 {
