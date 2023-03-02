@@ -67,6 +67,9 @@ namespace realm {
         catch (const Exception& e) {
             return NativeException(e);
         }
+        catch (const std::exception& e) {
+            return NativeException(ErrorCodes::Error::UnknownError, e.what());
+        }
         catch (...) {
             return NativeException(ErrorCodes::Error::UnknownError, "Unknown exception caught which doesn't descend from std::exception");
         }
