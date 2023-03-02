@@ -27,9 +27,9 @@ namespace Realms.Native
     {
         public ErrorCode error_code;
 
-        public PrimitiveValue message;
+        public StringValue message;
 
-        public PrimitiveValue log_url;
+        public StringValue log_url;
 
         [MarshalAs(UnmanagedType.U1)]
         public bool is_client_reset;
@@ -42,8 +42,8 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct CompensatingWriteInfo
     {
-        public PrimitiveValue reason;
-        public PrimitiveValue object_name;
+        public StringValue reason;
+        public StringValue object_name;
         public PrimitiveValue primary_key;
     }
 }

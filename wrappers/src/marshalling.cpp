@@ -24,7 +24,7 @@
 #include "shared_realm_cs.hpp"
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error_t error, void* managed_sync_config);
+using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 
 namespace realm {
 namespace binding {

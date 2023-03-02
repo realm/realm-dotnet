@@ -18,9 +18,8 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Realms.Sync.Exceptions;
 
-namespace Realms.Exceptions
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception class that indicates that one more object changes have been reverted

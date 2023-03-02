@@ -28,7 +28,7 @@ using Realms.Native;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
-using CompensatingWriteInfo = Realms.Exceptions.CompensatingWriteInfo;
+using CompensatingWriteInfo = Realms.Sync.Exceptions.CompensatingWriteInfo;
 
 namespace Realms.Sync
 {
@@ -315,7 +315,7 @@ namespace Realms.Sync
                 {
                     var compensatingWrites = error.compensating_writes
                         .AsEnumerable()
-                        .Select(c => new CompensatingWriteInfo(c.object_name.AsString(), c.reason.AsString(), new RealmValue(c.primary_key)))
+                        .Select(c => new CompensatingWriteInfo(c.object_name, c.reason, new RealmValue(c.primary_key)))
                         .ToArray();
                     exception = new CompensatingWriteException(messageString, compensatingWrites);
                 }

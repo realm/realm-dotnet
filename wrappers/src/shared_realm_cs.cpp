@@ -50,7 +50,7 @@ using LogMessageT = void(realm_value_t message, util::Logger::Level level);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error_t error, void* managed_sync_config);
+using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
 using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
 
@@ -134,16 +134,16 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
         for (const auto& cw : error.compensating_writes_info) {
             compensating_writes.push_back(realm_sync_error_compensating_write_info_t{
-                to_capi_value(cw.reason),
-                to_capi_value(cw.object_name),
+                to_capi(cw.reason),
+                to_capi(cw.object_name),
                 to_capi(cw.primary_key)
             });
         }
 
-        realm_sync_error_t marshaled_error{
+        realm_sync_error marshaled_error{
             error.get_system_error().value(),
-            to_capi_value(error.simple_message),
-            to_capi_value(error.logURL),
+            to_capi(error.simple_message),
+            to_capi(error.logURL),
             error.is_client_reset_requested(),
             { user_info_pairs.data(), user_info_pairs.size() },
             { compensating_writes.data(), compensating_writes.size() },
