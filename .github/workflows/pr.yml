@@ -18,6 +18,9 @@ name: PR Build
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
