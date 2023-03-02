@@ -117,7 +117,6 @@ namespace RealmWeaver
                     return;
                 }
 
-                var netFrameworkInfo = GetNetFrameworkInfo();
                 var config = GetAnalyticsConfig();
                 WeaveAssemblyCore(assemblyPath, assembly.allReferences, config);
             };
@@ -437,7 +436,7 @@ namespace RealmWeaver
 
         private static Config GetAnalyticsConfig(BuildTarget? target = null)
         {
-            var netFrameworkInfo = GetNetFrameworkInfo();
+            var netFrameworkInfo = GetNetFrameworkInfo(target);
             var targetOSName = GetTargetOSName(target);
             var compiler = PlayerSettings.GetScriptingBackend(BuildPipeline.GetBuildTargetGroup(target ?? EditorUserBuildSettings.activeBuildTarget)).ToString();
 
@@ -453,7 +452,7 @@ namespace RealmWeaver
                 NetFrameworkTargetVersion = netFrameworkInfo.Version,
                 AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
                 InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
-                TargetArchitecture = GetTargetCpuArchitecture(target),
+                TargetArchitecture = GetCpuArchitecture(target),
                 UnityInfo = new()
                 {
                     Type = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
@@ -462,14 +461,49 @@ namespace RealmWeaver
             };
         }
 
-        private static (string Name, string Version) GetNetFrameworkInfo()
+        private static (string Name, string Version) GetNetFrameworkInfo(BuildTarget? buildTarget)
         {
-            var targetGroup = BuildPipeline.GetBuildTargetGroup(EditorUserBuildSettings.activeBuildTarget);
-            return (PlayerSettings.GetScriptingBackend(targetGroup).ToString(),
-                PlayerSettings.GetApiCompatibilityLevel(targetGroup).ToString());
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget ?? EditorUserBuildSettings.activeBuildTarget);
+            var apiTarget = PlayerSettings.GetApiCompatibilityLevel(targetGroup);
+
+            // these consts are exactly mapped to what .NET reports in any .NET application, in our case Xamarin
+            const string netStandardApi = ".NETStandard";
+            const string netFrameworkApi = ".NETFramework";
+
+            var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
+
+            // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
+            // are deprecated in favour of entry NET_Unity_4_8 and NET_Standard
+            // We need to report the proper meaning of enum 3 and 6
+            // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
+            if (unityVersion >= new Version("2021.2"))
+            {
+                if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+                {
+                    return (netStandardApi, "2.1");
+                }
+
+                if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+                {
+                    return (netFrameworkApi, "4.8");
+                }
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+            {
+                return (netStandardApi, "2.0");
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+            {
+                return (netFrameworkApi, "4.6");
+            }
+
+            // this should really never be the case
+            return (apiTarget.ToString(), "");
         }
 
-        private static string GetTargetCpuArchitecture(BuildTarget? buildTarget)
+        private static string GetCpuArchitecture(BuildTarget? buildTarget)
         {
             // buildTarget is null when we're building for the editor
             if (buildTarget == null)
@@ -507,47 +541,6 @@ namespace RealmWeaver
                 BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => CpuArchitecture.X64,
                 _ => Metric.Unknown(),
             };
-        }
-
-        // This is necessary as Unity has its own naming scheme when it comes to .NET frameworks
-        // but we want to have consistency with the standard Microsoft naming scheme
-        private static (string TargetFramework, string TargetFrameworkVersion) ConvertUnityToNetFramework(ApiCompatibilityLevel apiTarget)
-        {
-            // these consts are exactly mapped to what .NET reports in any .NET application, in our case Xamarin
-            const string netStandardApi = ".NETStandard";
-            const string netFrameworkApi = ".NETFramework";
-
-            var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
-
-            // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
-            // are deprecated in favour of entry NET_Unity_4_8 and NET_Standard
-            // We need to report the proper meaning of enum 3 and 6
-            // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
-            if (unityVersion >= new Version("2021.2"))
-            {
-                if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
-                {
-                    return (netStandardApi, "2.1");
-                }
-
-                if (apiTarget == ApiCompatibilityLevel.NET_4_6)
-                {
-                    return (netFrameworkApi, "4.8");
-                }
-            }
-
-            if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
-            {
-                return (netStandardApi, "2.0");
-            }
-
-            if (apiTarget == ApiCompatibilityLevel.NET_4_6)
-            {
-                return (netFrameworkApi, "4.6");
-            }
-
-            // this should really never be the case
-            return (apiTarget.ToString(), "");
         }
 
         private class UnityLogger : ILogger
