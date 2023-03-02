@@ -34,20 +34,6 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 using namespace realm;
 using namespace realm::binding;
 
-class ManagedExceptionDuringCallback : public std::runtime_error {
-public:
-    ManagedExceptionDuringCallback(std::string message, void* managed_error) : std::runtime_error(message), m_managed_error(managed_error) {
-    }
-
-    void* m_managed_error;
-};
-
-class ManagedExceptionDuringClientReset : public std::runtime_error {
-public:
-    ManagedExceptionDuringClientReset() : std::runtime_error("Managed exception happened during client reset") {
-    }
-};
-
 struct Configuration
 {
     uint16_t* path;
@@ -92,6 +78,8 @@ struct SyncConfiguration
     bool is_flexible_sync;
 
     ClientResyncMode client_resync_mode;
+
+    bool cancel_waits_on_nonfatal_error;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

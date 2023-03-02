@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Sync;
@@ -75,6 +76,8 @@ namespace Realms
                 HttpClientTransport.Initialize();
                 AppHandle.Initialize();
                 SubscriptionSetHandle.Initialize();
+
+                SerializationHelper.Initialize();
             }
         }
 

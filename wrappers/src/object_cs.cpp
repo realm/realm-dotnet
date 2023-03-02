@@ -27,6 +27,7 @@
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/exceptions.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -148,7 +149,7 @@ extern "C" {
 
             if (value.is_null() && !is_nullable(prop.type)) {
                 auto& schema = object.get_object_schema();
-                throw NotNullableException(schema.name, prop.name);
+                throw NotNullable(schema.name, prop.name);
             }
 
             if (!value.is_null() && (prop.type & ~PropertyType::Flags) != PropertyType::Mixed &&
@@ -205,7 +206,7 @@ extern "C" {
             const Property& source_property = source_object_schema.persisted_properties[source_property_ndx];
 
             if (source_property.object_type != object.get_object_schema().name) {
-                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
+                throw InvalidArgument(ErrorCodes::InvalidProperty, util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
 
             TableView backlink_view = object.obj().get_backlink_view(source_table, source_property.column_key);

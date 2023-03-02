@@ -20,12 +20,12 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/parser/query_parser.hpp>
+#include <realm/exceptions.hpp>
 
 #include "error_handling.hpp"
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 #include "schema_cs.hpp"
 
@@ -35,7 +35,7 @@ using namespace realm::binding;
 namespace {
     inline static void ensure_types(object_store::Set& set, realm_value_t value) {
         if (value.is_null() && !is_nullable(set.get_type())) {
-            throw NotNullableException();
+            throw NotNullable("Attempted to add null to a set of required values");
         }
 
         if (!value.is_null() && set.get_type() != PropertyType::Mixed && to_capi(set.get_type()) != value.type) {

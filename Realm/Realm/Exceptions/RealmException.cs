@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using Realms.Sync.Exceptions;
 
 namespace Realms.Exceptions
@@ -27,16 +26,6 @@ namespace Realms.Exceptions
     /// </summary>
     public class RealmException : Exception
     {
-        private static readonly IDictionary<RealmExceptionCodes, Func<string, string, Exception>> _overriders = new Dictionary<RealmExceptionCodes, Func<string, string, Exception>>();
-
-        internal static void AddOverrider(RealmExceptionCodes code, Func<string, string, Exception> handler)
-        {
-            if (!_overriders.ContainsKey(code))
-            {
-                _overriders.Add(code, handler);
-            }
-        }
-
         internal RealmException(string detailMessage) : base(detailMessage)
         {
         }
@@ -45,83 +34,59 @@ namespace Realms.Exceptions
         {
         }
 
-        internal static Exception Create(RealmExceptionCodes exceptionCode, string message, string detail)
+        internal static Exception Create(RealmExceptionCodes exceptionCode, string message, RealmExceptionCategories categories)
         {
-            if (_overriders.TryGetValue(exceptionCode, out var handler))
-            {
-                return handler(message, detail);
-            }
-
             // these are increasing enum value order
             switch (exceptionCode)
             {
-                case RealmExceptionCodes.RealmError:
-                    return new RealmException(message);
-
-                case RealmExceptionCodes.RealmFileAccessError:
-                    return new RealmFileAccessErrorException(message);
-
-                case RealmExceptionCodes.RealmDecryptionFailed:
+                case RealmExceptionCodes.RLM_ERR_DECRYPTION_FAILED:
                     return new RealmDecryptionFailedException(message);
 
-                case RealmExceptionCodes.RealmFileExists:
+                case RealmExceptionCodes.RLM_ERR_FILE_ALREADY_EXISTS:
                     return new RealmFileExistsException(message);
 
-                case RealmExceptionCodes.RealmFileNotFound:
+                case RealmExceptionCodes.RLM_ERR_FILE_NOT_FOUND:
                     return new RealmFileNotFoundException(message);
 
-                case RealmExceptionCodes.RealmInvalidDatabase:
+                case RealmExceptionCodes.RLM_ERR_INVALID_DATABASE:
                     return new RealmInvalidDatabaseException(message);
 
-                case RealmExceptionCodes.RealmOutOfMemory:
+                case RealmExceptionCodes.RLM_ERR_OUT_OF_MEMORY:
                     return new RealmOutOfMemoryException(message);
 
-                case RealmExceptionCodes.RealmPermissionDenied:
+                case RealmExceptionCodes.RLM_ERR_FILE_PERMISSION_DENIED:
                     return new RealmPermissionDeniedException(message);
 
-                case RealmExceptionCodes.RealmMismatchedConfig:
+                case RealmExceptionCodes.RLM_ERR_MISMATCHED_CONFIG:
                     return new RealmMismatchedConfigException(message);
 
-                case RealmExceptionCodes.RealmInvalidTransaction:
+                case RealmExceptionCodes.RLM_ERR_WRONG_TRANSACTION_STATE:
                     return new RealmInvalidTransactionException(message);
 
-                case RealmExceptionCodes.RealmFormatUpgradeRequired:
-                case RealmExceptionCodes.RealmSchemaMismatch:
+                case RealmExceptionCodes.RLM_ERR_FILE_FORMAT_UPGRADE_REQUIRED:
+                case RealmExceptionCodes.RLM_ERR_SCHEMA_MISMATCH:
                     return new RealmMigrationNeededException(message);
 
-                case RealmExceptionCodes.RealmRowDetached:
+                case RealmExceptionCodes.RowDetached:
                     return new RealmInvalidObjectException(message);
 
-                case RealmExceptionCodes.RealmTableHasNoPrimaryKey:
+                case RealmExceptionCodes.RLM_ERR_MISSING_PRIMARY_KEY:
                     return new RealmClassLacksPrimaryKeyException(message);
 
-                case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue:
+                case RealmExceptionCodes.DuplicatePrimaryKey:
                     return new RealmDuplicatePrimaryKeyValueException(message);
 
                 case RealmExceptionCodes.RealmClosed:
                     return new RealmClosedException(message);
 
-                case RealmExceptionCodes.RealmSchemaValidation:
+                case RealmExceptionCodes.RLM_ERR_SCHEMA_VALIDATION_FAILED:
                     return new RealmSchemaValidationException(message);
 
-                case RealmExceptionCodes.NotNullableProperty:
-                case RealmExceptionCodes.PropertyMismatch:
+                case RealmExceptionCodes.PropertyTypeMismatch:
                     return new RealmException(message);
 
-                case RealmExceptionCodes.AppClientError:
-                case RealmExceptionCodes.AppCustomError:
-                case RealmExceptionCodes.AppHttpError:
-                case RealmExceptionCodes.AppJsonError:
-                case RealmExceptionCodes.AppServiceError:
-                case RealmExceptionCodes.AppUnknownError:
-                    return new AppException(message, helpLink: null, httpStatusCode: 0);
-
-                case RealmExceptionCodes.StdArgumentOutOfRange:
-                case RealmExceptionCodes.StdIndexOutOfRange:
+                case RealmExceptionCodes.IndexOutOfRange:
                     return new ArgumentOutOfRangeException(message);
-
-                case RealmExceptionCodes.StdInvalidOperation:
-                    return new InvalidOperationException(message);
 
                 case RealmExceptionCodes.ObjectManagedByAnotherRealm:
                     return new RealmObjectManagedByAnotherRealmException(message);
@@ -130,16 +95,29 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.DuplicateSubscription:
                     return new ArgumentException(message);
 
-                case RealmExceptionCodes.SessionError:
-                    var code = int.TryParse(detail, out var intCode) ? (ErrorCode)intCode : ErrorCode.Unknown;
-
-                    return new SessionException(message, code);
-                case RealmExceptionCodes.RealmInUseException:
+                case RealmExceptionCodes.RLM_ERR_DELETE_OPENED_REALM:
                     return new RealmInUseException(message);
 
-                default:
-                    return new Exception(message);
+                case RealmExceptionCodes.RLM_ERR_MIGRATION_FAILED:
+                    return new RealmMigrationException(message);
             }
+
+            if (categories.HasFlag(RealmExceptionCategories.RLM_ERR_CAT_APP_ERROR))
+            {
+                return new AppException(message, helpLink: null, httpStatusCode: 0);
+            }
+
+            if (categories.HasFlag(RealmExceptionCategories.RLM_ERR_CAT_FILE_ACCESS))
+            {
+                return new RealmFileAccessErrorException(message);
+            }
+
+            if (categories.HasFlag(RealmExceptionCategories.RLM_ERR_CAT_INVALID_ARG))
+            {
+                return new ArgumentException(message);
+            }
+
+            return new RealmException(message);
         }
     }
 }

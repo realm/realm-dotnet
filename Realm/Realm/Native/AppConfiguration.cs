@@ -111,5 +111,15 @@ namespace Realms.Sync.Native
         internal IntPtr managed_logger;
 
         internal IntPtr managed_http_client;
+
+        internal UInt64 sync_connect_timeout_ms;
+
+        internal UInt64 sync_connection_linger_time_ms;
+
+        internal UInt64 sync_ping_keep_alive_period_ms;
+
+        internal UInt64 sync_pong_keep_alive_timeout_ms;
+
+        internal UInt64 sync_fast_reconnect_limit;
     }
 }

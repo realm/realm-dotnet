@@ -34,7 +34,7 @@ namespace Realms.Tests
 {
     public static class TestHelpers
     {
-        public static readonly Random Random = new Random();
+        public static readonly Random Random = new();
 
         public static TextWriter Output { get; set; } = Console.Out;
 
@@ -218,7 +218,7 @@ namespace Realms.Tests
             };
         }
 
-        public static ObjectId GenerateRepetitiveObjectId(byte value) => new ObjectId(Enumerable.Range(0, 12).Select(_ => value).ToArray());
+        public static ObjectId GenerateRepetitiveObjectId(byte value) => new(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
         public static RealmInteger<T>[] ToInteger<T>(this T[] values)
             where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
@@ -297,19 +297,23 @@ namespace Realms.Tests
             });
         }
 
-        public static async Task<T> AssertThrows<T>(Func<Task> function)
+        public static async Task<T> AssertThrows<T>(Func<Task> function, int timeout = 5000)
             where T : Exception
         {
             try
             {
-                await function().Timeout(5000);
+                await function().Timeout(timeout);
             }
             catch (T ex)
             {
                 return ex;
             }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Exception of type {typeof(T)} expected. Got {ex.GetType()}: {ex}");
+            }
 
-            Assert.Fail($"Exception of type {typeof(T)} expected.");
+            Assert.Fail($"Exception of type {typeof(T)} expected but method didn't throw.");
             return null;
         }
 

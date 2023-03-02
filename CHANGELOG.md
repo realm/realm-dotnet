@@ -1,16 +1,19 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added `SyncConfiguration.CancelAsyncOperationsOnNonFatalErrors` which controls whether async operations (such as `Realm.GetInstanceAsync`, `Session.WaitForUploadAsync` and so on) should throw an exception whenever a non-fatal session error occurs. (Issue [#3222](https://github.com/realm/realm-dotnet/issues/3222))
+* Added `AppConfiguration.SyncTimeoutOptions` which has a handful of properties that control sync timeouts, such as the connection timeout, ping-pong intervals, and others. (Issue [#3223](https://github.com/realm/realm-dotnet/issues/3223))
+* Updated some of the exceptions being thrown by the SDK to align them better with system exceptions and include more information - for example, we'll now throw `ArgumentException` when invalid arguments are provided rather than `RealmException`. (Issue [#2796](https://github.com/realm/realm-dotnet/issues/2796))
 
 ### Fixed
-* None
+* Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.5.0.
+* Cancel existing builds when a new commit is pushed to a PR. (PR [#3260](https://github.com/realm/realm-dotnet/pull/3260))
 
 ## 10.20.0 (2023-02-10)
 
