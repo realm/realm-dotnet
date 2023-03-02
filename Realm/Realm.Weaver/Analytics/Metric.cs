@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Realm.Fody.Tests")]
@@ -29,7 +28,7 @@ namespace RealmWeaver
         public static string Unknown(string clarifier = null)
         {
             var result = "Unknown";
-            if (string.IsNullOrEmpty(clarifier))
+            if (!string.IsNullOrEmpty(clarifier))
             {
                 result += $" ({clarifier})";
             }
@@ -42,8 +41,8 @@ namespace RealmWeaver
             public const string Linux = "Linux";
             public const string MacOS = "macOS";
             public const string Windows = "Windows";
+            public const string CrossPlatform = "Cross Platform";
             public const string Android = "Android";
-            public const string Uwp = "UWP";
             public const string Ios = "iOS";
             public const string IpadOs = "iPadOS";
             public const string WatchOs = "watchOS";
@@ -56,6 +55,7 @@ namespace RealmWeaver
             public const string X64 = "x64";
             public const string Arm = "Arm";
             public const string Arm64 = "Arm64";
+            public const string Universal = "Universal";
         }
 
         public static class Framework
@@ -64,6 +64,9 @@ namespace RealmWeaver
             public const string UnityEditor = "Unity Editor";
             public const string Maui = "MAUI";
             public const string Xamarin = "Xamarin";
+            public const string XamarinForms = "Xamarin Forms";
+            public const string Uwp = "UWP";
+            public const string MacCatalyst = "MacCatalyst";
         }
 
         public static class Environment
@@ -71,6 +74,7 @@ namespace RealmWeaver
             public const string UserId = "distinct_id";
             public const string ProjectId = "Anonymized Bundle ID";
             public const string RealmSdk = "Binding";
+            public const string RealmSdkVersion = "Realm Version";
             public const string Language = "Language";
             public const string LanguageVersion = "Language Version";
             public const string HostOsType = "Host OS Type";
@@ -80,7 +84,6 @@ namespace RealmWeaver
             public const string TargetOsMinimumVersion = "Target OS Minimum Version";
             public const string TargetOsVersion = "Target OS Version";
             public const string TargetCpuArch = "Target CPU Arch";
-            public const string RealmSdkVersion = "Realm Version";
             public const string CoreVersion = "Core Version";
             public const string IsSyncEnabled = "Sync Enabled";
             public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
@@ -90,6 +93,7 @@ namespace RealmWeaver
             public const string IdeUsedVersion = "IDE Version"; // this holds info about the msbuild version
             public const string NetFramework = "Net Framework";
             public const string NetFrameworkVersion = "Net Framework Version";
+            public const string Compiler = "Compiler";
         }
 
         public static class Feature

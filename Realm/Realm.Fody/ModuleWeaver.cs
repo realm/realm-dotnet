@@ -87,8 +87,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             InstallationMethod = "Nuget",
         };
 
-        config.TargetFramework = frameworkName.Identifier;
-        config.TargetFrameworkVersion = frameworkName.Version.ToString();
+        config.NetFrameworkTarget = frameworkName.Identifier;
+        config.NetFrameworkTargetVersion = frameworkName.Version.ToString();
         config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
         return config;
     }

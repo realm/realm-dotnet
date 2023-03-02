@@ -179,8 +179,15 @@ namespace RealmWeaver
         {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
+            var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
+
+            // This is necessary because some framworks, e.g. xamarin, have the models in one assembly and the platform
+            // specific code in another assembly, but we still want to report what target the user is building for
             if (_references.WovenAssemblyAttribute == null)
             {
+                // Don't wait for submission
+                _ = analytics.SubmitAnalytics();
+
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             }
 
@@ -189,8 +196,6 @@ namespace RealmWeaver
             {
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
-
-            var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
 
             var matchingTypes = GetMatchingTypes().ToArray();
 

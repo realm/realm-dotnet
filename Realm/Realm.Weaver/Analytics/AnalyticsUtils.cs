@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -36,7 +38,7 @@ namespace RealmWeaver
     {
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
-            string targetOs = frameworkName.Identifier;
+            var targetOs = frameworkName.Identifier;
 
             if (targetOs.ContainsIgnoreCase("android"))
             {
@@ -63,14 +65,16 @@ namespace RealmWeaver
                 return OperatingSystem.Linux;
             }
 
-            if (targetOs.ContainsIgnoreCase("win") || targetOs == ".NETFramework")
+            if (targetOs.ContainsIgnoreCase("win") || targetOs.ContainsIgnoreCase("net4"))
             {
                 return OperatingSystem.Windows;
             }
 
-            if (targetOs.ContainsIgnoreCase("uap"))
+            if (targetOs.ContainsIgnoreCase("core") ||
+                targetOs.ContainsIgnoreCase("standard") ||
+                targetOs.ContainsIgnoreCase("net"))
             {
-                return OperatingSystem.Uwp;
+                return OperatingSystem.CrossPlatform;
             }
 
             return Unknown(frameworkName.Identifier);
@@ -82,9 +86,14 @@ namespace RealmWeaver
             return BitConverter.ToString(sha256.ComputeHash(bytes));
         }
 
-        public static string GetHostCpuArchitecture() => ConvertArchitectureToMetricsVersion(RuntimeInformation.OSArchitecture.ToString());
-
-        public static string GetTargetCpuArchitecture(ModuleDefinition module) => ConvertArchitectureToMetricsVersion(module.Architecture.ToString());
+        public static string GetHostCpuArchitecture() => RuntimeInformation.OSArchitecture switch
+        {
+            Architecture.X86 => CpuArchitecture.X86,
+            Architecture.Arm => CpuArchitecture.Arm,
+            Architecture.Arm64 => CpuArchitecture.Arm64,
+            Architecture.X64 => CpuArchitecture.X64,
+            _ => Unknown(RuntimeInformation.OSArchitecture.ToString())
+        };
 
         public static string GetHostOsName() =>
             System.Environment.OSVersion.Platform switch
@@ -97,73 +106,72 @@ namespace RealmWeaver
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
-            if (config.TargetFramework.ContainsIgnoreCase("unity"))
+            if (config.UnityInfo != null)
             {
-                return config.TargetFramework.ContainsIgnoreCase("editor") ?
-                    (Framework.UnityEditor, config.TargetFrameworkVersion) :
-                    (Framework.Unity, config.TargetFrameworkVersion);
+                return (config.UnityInfo.Type, config.UnityInfo.Version);
             }
-            else
-            {
-                // TODO andrea: the correctness of these names need to be verified in projects that use each of the packages
-                // I didn't have any handy one.
-                var possibleFrameworks = new string[] { "Xamarin.Forms", "Mono.Android", "Xamarin.iOS", "Microsoft.Maui.Sdk" };
-                AssemblyNameReference frameworkUsedInConjunction = null;
-                foreach (var toSearch in possibleFrameworks)
-                {
-                    frameworkUsedInConjunction = module.FindReference(toSearch);
-                    if (frameworkUsedInConjunction != null)
-                    {
-                        break;
-                    }
-                }
 
-                var framework = "No framework of interest";
+            // the order in the array matters as we first need to look at the libraries (maui and forms)
+            // and then at the frameworks (xamarin native, Catalyst and UWP)
+            var possibleFrameworks = new Dictionary<string, string>
+            {
+                { "Microsoft.Maui", Framework.Maui },
+                { "Xamarin.Forms.Core", Framework.XamarinForms },
+                { "Xamarin.iOS", Framework.Xamarin },
+                { "Xamarin.tvOS", Framework.Xamarin },
+                { "Xamarin.Mac", Framework.Xamarin },
+                { "Mono.Android", Framework.Xamarin },
+                { "Microsoft.MacCatalyst", Framework.MacCatalyst },
+                { "Windows.Foundation.UniversalApiContract", Framework.Uwp },
+            };
+
+            AssemblyNameReference frameworkUsedInConjunction = null;
+            foreach (var kvp in possibleFrameworks)
+            {
+                frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == kvp.Key).SingleOrDefault();
                 if (frameworkUsedInConjunction != null)
                 {
-                    var name = frameworkUsedInConjunction.Name;
-                    if (name.ContainsIgnoreCase("xamarin") || name.ContainsIgnoreCase("android"))
-                    {
-                        framework = Framework.Xamarin;
-                    }
-                    else if (name.ContainsIgnoreCase("maui"))
-                    {
-                        framework = Framework.Maui;
-                    }
+                    return (kvp.Value, frameworkUsedInConjunction.Version.ToString());
                 }
-
-                return (framework, frameworkUsedInConjunction?.Version.ToString());
             }
+
+            return ("No framework of interest", "0.0.0");
         }
 
-        public static string GetLanguageVersion(string targetFramework)
+        public static string GetLanguageVersion(string netFramework, string netFrameworkVersion)
         {
             // We don't have a reliable way to get the version in the weaver so we're using the default version
             // associated with the framework.
             // Values taken from https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/configure-language-version
-            if (targetFramework.ContainsIgnoreCase("netcoreapp2") ||
-                targetFramework.ContainsIgnoreCase("netframework"))
+            if (!netFramework.ContainsIgnoreCase("net"))
+            {
+                // Likely this isn't the model assembly, but the platform specific one
+                return Unknown(netFramework);
+            }
+
+            if (netFrameworkVersion.ContainsIgnoreCase("2.0") ||
+                netFrameworkVersion.ContainsIgnoreCase("4."))
             {
                 return "7.3";
             }
 
-            if (targetFramework.ContainsIgnoreCase("netstandard2.1") ||
-                targetFramework.ContainsIgnoreCase("netcoreapp3.1"))
+            if (netFrameworkVersion.ContainsIgnoreCase("2.1") ||
+                netFrameworkVersion.ContainsIgnoreCase("3.1"))
             {
                 return "8";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net5.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("5.0"))
             {
                 return "9";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net6.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("6.0"))
             {
                 return "10";
             }
 
-            if (targetFramework.ContainsIgnoreCase("net7.0"))
+            if (netFrameworkVersion.ContainsIgnoreCase("7.0"))
             {
                 return "11";
             }
@@ -182,38 +190,38 @@ namespace RealmWeaver
                 {
                     case PlatformID.Win32S or PlatformID.Win32Windows or
                         PlatformID.Win32NT or PlatformID.WinCE:
-                    {
-                        var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                        var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
-                        var match = regex.Match(machineIdToParse);
-
-                        if (match?.Groups.Count > 1)
                         {
-                            id = match.Groups[1].Value;
-                        }
+                            var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                            var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                            var match = regex.Match(machineIdToParse);
 
-                        break;
-                    }
+                            if (match?.Groups.Count > 1)
+                            {
+                                id = match.Groups[1].Value;
+                            }
+
+                            break;
+                        }
 
                     case PlatformID.MacOSX:
-                    {
-                        var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                        var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                        var match = regex.Match(machineIdToParse);
-
-                        if (match?.Groups.Count > 1)
                         {
-                            id = match.Groups[1].Value;
+                            var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                            var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                            var match = regex.Match(machineIdToParse);
+
+                            if (match?.Groups.Count > 1)
+                            {
+                                id = match.Groups[1].Value;
+                            }
+
+                            break;
                         }
 
-                        break;
-                    }
-
                     case PlatformID.Unix:
-                    {
-                        id = File.ReadAllText("/etc/machine-id");
-                        break;
-                    }
+                        {
+                            id = File.ReadAllText("/etc/machine-id");
+                            break;
+                        }
                 }
 
                 if (id.Length == 0)
@@ -234,31 +242,6 @@ namespace RealmWeaver
             {
                 return Unknown();
             }
-        }
-
-        private static string ConvertArchitectureToMetricsVersion(string arch)
-        {
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm)))
-            {
-                return CpuArchitecture.Arm;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.Arm64)))
-            {
-                return CpuArchitecture.Arm64;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X64)) || arch.ContainsIgnoreCase("amd64"))
-            {
-                return CpuArchitecture.X64;
-            }
-
-            if (arch.ContainsIgnoreCase(nameof(CpuArchitecture.X86)) || arch.ContainsIgnoreCase("i386"))
-            {
-                return CpuArchitecture.X86;
-            }
-
-            return Unknown(arch);
         }
 
         private static bool ContainsIgnoreCase(this string @this, string strCompare) =>

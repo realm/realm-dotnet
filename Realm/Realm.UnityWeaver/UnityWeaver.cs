@@ -31,6 +31,7 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using static RealmWeaver.Analytics;
+using CpuArchitecture = RealmWeaver.Metric.CpuArchitecture;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 namespace RealmWeaver
@@ -116,7 +117,8 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
+                var config = GetAnalyticsConfig();
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, config);
             };
         }
 
@@ -198,16 +200,19 @@ namespace RealmWeaver
                 EditorApplication.LockReloadAssemblies();
                 var assembliesToWeave = GetAssemblies();
                 var weaveResults = new List<string>();
+
+                var config = GetAnalyticsConfig();
+
                 await Task.Run(() =>
                 {
                     foreach (var assembly in assembliesToWeave)
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, config))
                         {
                             continue;
                         }
 
-                        string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
+                        var sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
                             continue;
@@ -239,7 +244,7 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string targetOSName)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, Config analyticsConfig)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -259,19 +264,6 @@ namespace RealmWeaver
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
-
-                    var analyticsEnabled = AnalyticsEnabled &&
-                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
-                        Environment.GetEnvironmentVariable("CI") == null;
-
-                    var analyticsConfig = new Config
-                    {
-                        TargetOSName = targetOSName,
-                        TargetFrameworkVersion = Application.unityVersion,
-                        TargetFramework = framework,
-                        AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                        InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown()
-                    };
 
                     var results = weaver.Execute(analyticsConfig);
 
@@ -313,10 +305,11 @@ namespace RealmWeaver
                 .ToArray();
 
             var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            var targetOS = GetTargetOSName(report.summary.platform);
+            var config = GetAnalyticsConfig(report.summary.platform);
+
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
+                WeaveAssemblyCore(file.path, referencePaths, config);
             }
 
             if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
@@ -413,8 +406,21 @@ namespace RealmWeaver
             return CompilationPipeline.GetAssemblies(AssembliesType.Player);
         }
 
-        private static string GetTargetOSName(BuildTarget target)
+        private static string GetTargetOSName(BuildTarget? target)
         {
+            // target is null for editor builds - in that case, we return the current OS
+            // as target.
+            if (target == null)
+            {
+                return Application.platform switch
+                {
+                    RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
+                    RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
+                    RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
+                    _ => Metric.Unknown(Application.platform.ToString()),
+                };
+            }
+
             // These have to match Analytics.GetConfig(FrameworkName)
             return target switch
             {
@@ -428,14 +434,112 @@ namespace RealmWeaver
             };
         }
 
-        private static string GetTargetOSName(RuntimePlatform target)
+        private static Config GetAnalyticsConfig(BuildTarget? target = null)
         {
-            return target switch
+            var netFrameworkInfo = GetNetFrameworkInfo(target);
+            var targetOSName = GetTargetOSName(target);
+            var compiler = PlayerSettings.GetScriptingBackend(BuildPipeline.GetBuildTargetGroup(target ?? EditorUserBuildSettings.activeBuildTarget)).ToString();
+
+            var analyticsEnabled = AnalyticsEnabled &&
+                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
+                        Environment.GetEnvironmentVariable("CI") == null;
+
+            return new Config
             {
-                RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
-                RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
-                RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
-                _ => Metric.Unknown(target.ToString()),
+                TargetOSName = targetOSName,
+                Compiler = compiler,
+                NetFrameworkTarget = netFrameworkInfo.Name,
+                NetFrameworkTargetVersion = netFrameworkInfo.Version,
+                AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
+                InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                TargetArchitecture = GetCpuArchitecture(target),
+                UnityInfo = new()
+                {
+                    Type = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
+                    Version = Application.unityVersion,
+                }
+            };
+        }
+
+        private static (string Name, string Version) GetNetFrameworkInfo(BuildTarget? buildTarget)
+        {
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget ?? EditorUserBuildSettings.activeBuildTarget);
+            var apiTarget = PlayerSettings.GetApiCompatibilityLevel(targetGroup);
+
+            // these consts are exactly mapped to what .NET reports in any .NET application, in our case Xamarin
+            const string netStandardApi = ".NETStandard";
+            const string netFrameworkApi = ".NETFramework";
+
+            var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
+
+            // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
+            // are deprecated in favour of entry NET_Unity_4_8 and NET_Standard
+            // We need to report the proper meaning of enum 3 and 6
+            // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
+            if (unityVersion >= new Version("2021.2"))
+            {
+                if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+                {
+                    return (netStandardApi, "2.1");
+                }
+
+                if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+                {
+                    return (netFrameworkApi, "4.8");
+                }
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+            {
+                return (netStandardApi, "2.0");
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+            {
+                return (netFrameworkApi, "4.6");
+            }
+
+            // this should really never be the case
+            return (apiTarget.ToString(), "");
+        }
+
+        private static string GetCpuArchitecture(BuildTarget? buildTarget)
+        {
+            // buildTarget is null when we're building for the editor
+            if (buildTarget == null)
+            {
+                if (SystemInfo.processorType.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    return Environment.Is64BitProcess ? CpuArchitecture.Arm64 : CpuArchitecture.Arm;
+                }
+
+                // Must be in the x86 family.
+                return Environment.Is64BitProcess ? CpuArchitecture.X64 : CpuArchitecture.X86;
+            }
+
+            return buildTarget switch
+            {
+                BuildTarget.iOS or BuildTarget.tvOS => CpuArchitecture.Arm64,
+                BuildTarget.StandaloneOSX => EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(buildTarget.Value), "Architecture") switch
+                {
+                    "ARM64" => CpuArchitecture.Arm64,
+                    "x64" => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows => CpuArchitecture.X86,
+                BuildTarget.Android => PlayerSettings.Android.targetArchitectures switch
+                {
+                    AndroidArchitecture.ARMv7 => CpuArchitecture.Arm,
+                    AndroidArchitecture.ARM64 => CpuArchitecture.Arm64,
+
+                    // These two don't have enum values in our Unity reference dll, but exist in newer versions
+                    // See https://github.com/Unity-Technologies/UnityCsReference/blob/70abf502c521c169ee8a302aa48c5600fc7c39fc/Editor/Mono/PlayerSettingsAndroid.bindings.cs#L14
+                    (AndroidArchitecture)(1 << 2) => CpuArchitecture.X86,
+                    (AndroidArchitecture)(1 << 3) => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => CpuArchitecture.X64,
+                _ => Metric.Unknown(),
             };
         }
 
