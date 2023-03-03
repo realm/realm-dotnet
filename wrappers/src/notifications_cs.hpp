@@ -65,7 +65,7 @@ inline int32_t get_property_index(const ObjectSchema* schema, const ColKey colum
     auto const& props = schema->persisted_properties;
     for (size_t i = 0; i < props.size(); ++i) {
         if (props[i].column_key == column_key) {
-            return i;
+            return int32_t(i);
         }
     }
 
@@ -117,7 +117,7 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
             { modifications.data(), modifications.size() },
             { modifications_new.data(), modifications_new.size() },
             { changes.moves.data(), changes.moves.size() },
-            { changes.collection_was_cleared },
+            changes.collection_was_cleared,
             { properties.data(), properties.size() }
         };
 
