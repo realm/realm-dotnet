@@ -2,6 +2,11 @@ name: Prepare Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Use this to provide a version, instead of deriving it from the changelog.
+        required: false
+        type: string
 
 jobs:
   main:
@@ -14,6 +19,7 @@ jobs:
         uses: realm/ci-actions/update-changelog@187889c026eb16673dba3152906a46ed87406e30
         with:
           changelog: ${{ github.workspace }}/CHANGELOG.md
+          version: ${{ inputs.version }}
       - name: Update package.json
         uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:

@@ -44,15 +44,14 @@ namespace binding {
         {
         }
 
-        MarshaledAppError(const std::string& message_str, const std::string& error_category_str, const std::string& logs_link_str, util::Optional<int> http_code)
+        MarshaledAppError(AppError& err)
         {
             is_null = false;
 
-            message = to_capi_value(message_str);
-            error_category = to_capi_value(error_category_str);
-            logs_link = to_capi_value(logs_link_str);
-
-            http_status_code = http_code.value_or(0);
+            message = to_capi_value(err.reason());
+            error_category = to_capi_value(err.code_string());
+            logs_link = to_capi_value(err.link_to_server_logs);
+            http_status_code = err.additional_status_code.value_or(0);
         }
     };
 
@@ -136,8 +135,8 @@ namespace binding {
     inline auto get_string_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](const std::string* response, util::Optional<AppError> err) {
             if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_string_callback(tcs_ptr, realm_value_t{}, app_error);
             } else if (response) {
@@ -152,8 +151,8 @@ namespace binding {
     inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_user_callback(tcs_ptr, nullptr, app_error);
             }
@@ -166,8 +165,9 @@ namespace binding {
     inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
+
                 s_void_callback(tcs_ptr, app_error);
             }
             else {
@@ -178,8 +178,8 @@ namespace binding {
 
     inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
         if (err) {
-            std::string error_category = err->error_code.message();
-            MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+            auto& err_copy = *err;
+            MarshaledAppError app_error(err_copy);
 
             s_api_keys_callback(tcs_ptr, nullptr, 0, app_error);
         }

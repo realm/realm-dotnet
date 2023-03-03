@@ -1740,7 +1740,7 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
-        public void Integration_SubscriptionOnUnqueryableField_ShouldError()
+        public void Integration_SubscriptionOnUnqueryableField_ShouldAddThemAutomatically()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1751,18 +1751,9 @@ namespace Realms.Tests.Sync
                     realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
                 });
 
-                try
-                {
-                    await WaitForSubscriptionsAsync(realm);
-                    Assert.Fail("Expected an error to be thrown.");
-                }
-                catch (SubscriptionException ex)
-                {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
-                }
+                await WaitForSubscriptionsAsync(realm);
 
-                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error), "State should be 'Error' when querying unqueryable field");
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete));
             });
         }
 
@@ -1775,7 +1766,7 @@ namespace Realms.Tests.Sync
 
                 realm.Subscriptions.Update(() =>
                 {
-                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.StringProperty == "foo"));
+                    realm.Subscriptions.Add(realm.All<SyncCollectionsObject>().Filter("SUBQUERY(ObjectList, $obj, $obj.Int > 10).@count > 0"));
                 });
 
                 try
@@ -1785,11 +1776,11 @@ namespace Realms.Tests.Sync
                 }
                 catch (SubscriptionException ex)
                 {
-                    Assert.That(ex.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                    Assert.That(ex.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
                 }
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error), "State should be 'Error' when querying unqueryable field");
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain(nameof(SyncAllTypesObject.StringProperty)).And.Contains(nameof(SyncAllTypesObject)));
+                Assert.That(realm.Subscriptions.Error.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
 
                 var testGuid = Guid.NewGuid();
 
@@ -1980,6 +1971,43 @@ namespace Realms.Tests.Sync
                 // We failed the first time, we should not see PopulateInitialSubscriptions get invoked the second time
                 using var realm = openAsync ? await GetRealmAsync(config) : GetRealm(config);
                 Assert.That(realm.Subscriptions.Count, Is.Zero);
+            });
+        }
+
+        [Test]
+        public void Integration_WriteData_WhenOutsideOfSubscriptions_GetsRevertedByServer()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var errorTcs = new TaskCompletionSource<SessionException>();
+
+                var testGuid = Guid.NewGuid();
+                var config = await GetFLXIntegrationConfigAsync();
+                config.PopulateInitialSubscriptions = (r) =>
+                {
+                    r.Subscriptions.Add(r.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                };
+
+                config.OnSessionError = (_, e) => errorTcs.TrySetResult(e);
+                using var realm = await GetRealmAsync(config);
+
+                var obj = realm.Write(() => realm.Add(new SyncAllTypesObject()));
+                var id = obj.Id;
+
+                var error = await errorTcs.Task;
+
+                Assert.That(error.ErrorCode, Is.EqualTo(ErrorCode.CompensatingWrite));
+                Assert.That(error.HelpLink, Does.Contain("logs?co_id="));
+
+                var compensatingError = error as CompensatingWriteException;
+
+                Assert.That(compensatingError, Is.Not.Null);
+                Assert.That(compensatingError.CompensatingWrites.Count(), Is.EqualTo(1));
+
+                var errorInfo = compensatingError.CompensatingWrites.Single();
+                Assert.That(errorInfo.ObjectType, Is.EqualTo(nameof(SyncAllTypesObject)));
+                Assert.That(errorInfo.PrimaryKey.AsObjectId(), Is.EqualTo(id));
+                Assert.That(errorInfo.Reason, Does.Contain("object is outside of the current query view"));
             });
         }
 

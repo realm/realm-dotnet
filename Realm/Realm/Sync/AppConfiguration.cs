@@ -151,6 +151,13 @@ namespace Realms.Sync
         public HttpMessageHandler HttpClientHandler { get; set; }
 
         /// <summary>
+        /// Gets or sets the options for the assorted types of connection timeouts for sync connections
+        /// opened for this app.
+        /// </summary>
+        /// <value>The sync timeout options applied to synchronized Realms.</value>
+        public SyncTimeoutOptions SyncTimeoutOptions { get; set; } = new();
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
         /// </summary>
         /// <param name="appId">The Atlas App Services App id.</param>

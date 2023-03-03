@@ -28,35 +28,22 @@ using namespace realm::binding;
 
 namespace realm {
 struct MarshallableCollectionChangeSet {
-    struct MarshallableIndexSet {
-        int32_t* indices;
-        size_t count;
-    };
+    marshaled_vector<int32_t> deletions;
+    marshaled_vector<int32_t> insertions;
+    marshaled_vector<int32_t> modifications;
+    marshaled_vector<int32_t> modifications_new;
 
-    MarshallableIndexSet deletions;
-    MarshallableIndexSet insertions;
-    MarshallableIndexSet modifications;
-    MarshallableIndexSet modifications_new;
-
-    struct {
-        CollectionChangeSet::Move* moves;
-        size_t count;
-    } moves;
+    marshaled_vector<CollectionChangeSet::Move> moves;
 
     bool cleared;
 
-    MarshallableIndexSet properties;
+    marshaled_vector<int32_t> properties;
 };
 
 struct MarshallableDictionaryChangeSet {
-    struct MarshallableKeySet {
-        realm_value_t* keys;
-        size_t count;
-    };
-
-    MarshallableKeySet deletions;
-    MarshallableKeySet insertions;
-    MarshallableKeySet modifications;
+    marshaled_vector<realm_value_t> deletions;
+    marshaled_vector<realm_value_t> insertions;
+    marshaled_vector<realm_value_t> modifications;
 };
 
 struct ManagedNotificationTokenContext {
@@ -71,7 +58,7 @@ using DictionaryNotificationCallbackT = void(void* managed_results, Marshallable
 extern std::function<ObjectNotificationCallbackT> s_object_notification_callback;
 extern std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
 
-inline size_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
+inline int32_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
     if (!schema)
         return 0;
 

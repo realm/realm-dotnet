@@ -35,7 +35,7 @@ using namespace realm;
 using namespace realm::binding;
 
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
+using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
 using PropertyChangedCallbackT = void(void* managed_session_handle, NotifiableProperty property);
 
@@ -166,9 +166,8 @@ REALM_EXPORT void realm_syncsession_unregister_property_changed_callback(const S
 REALM_EXPORT void realm_syncsession_wait(const SharedSyncSession& session, void* task_completion_source, CSharpNotifierType direction, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&] {
-        auto waiter = [task_completion_source](std::error_code error) {
-            std::string message = error.message();
-            s_wait_callback(task_completion_source, error.value(), to_capi_value(message));
+        auto waiter = [task_completion_source](realm::Status status) {
+            s_wait_callback(task_completion_source, status.code(), to_capi_value(status.reason()));
         };
 
         if (direction == CSharpNotifierType::Upload) {

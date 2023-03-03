@@ -81,6 +81,19 @@ namespace Realms.Sync
         /// </remarks>
         public SessionErrorCallback OnSessionError { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether async operations, such as <see cref="Realm.GetInstanceAsync"/>,
+        /// <see cref="Session.WaitForUploadAsync"/>, or <see cref="Session.WaitForDownloadAsync"/> should throw an
+        /// error whenever a non-fatal error, such as timeout occurs.
+        /// </summary>
+        /// <remarks>
+        /// If set to <c>false</c>, non-fatal session errors will be ignored and sync will continue retrying the
+        /// connection under in the background. This means that in cases where the devie is offline, these operations
+        /// may take an indeterminate time to complete.
+        /// </remarks>
+        /// <value><c>true</c> to throw an error if a non-fatal session error occurs, <c>false</c> otherwise.</value>
+        public bool CancelAsyncOperationsOnNonFatalErrors { get; set; }
+
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
         /// <summary>
@@ -141,6 +154,7 @@ namespace Realms.Sync
                 session_stop_policy = SessionStopPolicy,
                 schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
+                cancel_waits_on_nonfatal_error = CancelAsyncOperationsOnNonFatalErrors,
             };
         }
     }
