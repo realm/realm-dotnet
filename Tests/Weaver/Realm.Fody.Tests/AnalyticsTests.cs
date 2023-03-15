@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -37,16 +36,16 @@ namespace Analytics
     [TestFixture]
     internal class Tests : WeaverTestBase
     {
-        private readonly Dictionary<string, string> _featureMap = Metric.SdkFeatures.Keys.ToDictionary(c => c, c => ConvertToUpperCase(c));
+        public static object[] Features = Metric.SdkFeatures.Keys.Select(f => new object[] { f, ConvertToUpperCase(f) }).ToArray();
 
-        private static readonly Lazy<string[]> _frameworks = new Lazy<string[]>(() =>
+        private static readonly Lazy<string[]> _frameworks = new(() =>
         {
             var targetProject = Path.Combine(_analyticsAssemblyLocation.Value, "AnalyticsAssembly.csproj");
             var doc = XDocument.Parse(File.ReadAllText(targetProject));
             return doc.Descendants("TargetFrameworks").Single().Value.Split(';');
         });
 
-        private static readonly Lazy<string> _analyticsAssemblyLocation = new Lazy<string>(() =>
+        private static readonly Lazy<string> _analyticsAssemblyLocation = new(() =>
         {
             var folder = Directory.GetCurrentDirectory();
             while (folder != null && !Directory.GetFiles(folder, "Realm.sln").Any())
@@ -75,21 +74,11 @@ namespace Analytics
             return strBuilder.ToString();
         }
 
-        [Test]
-        public void ValidateFeatureUsage()
+        [TestCaseSource(nameof(Features))]
+        public void ValidateFeatureUsage(string feature, string constant)
         {
-            foreach (var kvp in _featureMap)
-            {
-                try
-                {
-                    CompileAnalyticsProject(kvp.Value);
-                    ValidateAnalyticsPayloadAllFrameworks(new[] {(featureName: Metric.SdkFeatures[kvp.Key], expectedValue: "1") });
-                }
-                catch (Exception e)
-                {
-                    Assert.Fail($"An error occurred validating {kvp.Key}: {e.Message}");
-                }
-            }
+            CompileAnalyticsProject(constant);
+            ValidateAnalyticsPayloadAllFrameworks(new[] { (featureName: Metric.SdkFeatures[feature], expectedValue: "1") });
         }
 
         [Test]
@@ -129,11 +118,11 @@ namespace Analytics
             {
                 var response = WeaveRealm(framework, "DryRun");
                 var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
-                
-                foreach (var entry in payloadFeatures)
+
+                foreach (var (featureName, expectedValue) in payloadFeatures)
                 {
-                    Assert.That(payload[entry.featureName].AsString, Is.EqualTo(entry.expectedValue),
-                        $"For framework {framework}, field \"{entry.expectedValue}\" doesn't match the expected value \"{entry.expectedValue}\"");
+                    Assert.That(payload[featureName].AsString, Is.EqualTo(expectedValue),
+                        $"For framework {framework}, field \"{expectedValue}\" doesn't match the expected value \"{expectedValue}\"");
                 }
             }
         }

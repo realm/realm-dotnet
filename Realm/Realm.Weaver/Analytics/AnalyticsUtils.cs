@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Security.Cryptography;
@@ -80,10 +81,11 @@ namespace RealmWeaver
             return Unknown(frameworkName.Identifier);
         }
 
-        public static string SHA256Hash(byte[] bytes)
+        public static string SHA256Hash(byte[] bytes, bool useLegacyEncoding = false)
         {
             using var sha256 = SHA256.Create();
-            return BitConverter.ToString(sha256.ComputeHash(bytes));
+            var hash = sha256.ComputeHash(bytes);
+            return useLegacyEncoding ? BitConverter.ToString(hash) : Convert.ToBase64String(hash);
         }
 
         public static string GetHostCpuArchitecture() => RuntimeInformation.OSArchitecture switch
@@ -138,7 +140,7 @@ namespace RealmWeaver
             return ("No framework of interest", "0.0.0");
         }
 
-        public static string GetLanguageVersion(string netFramework, string netFrameworkVersion)
+        public static string InferLanguageVersion(string netFramework, string netFrameworkVersion)
         {
             // We don't have a reliable way to get the version in the weaver so we're using the default version
             // associated with the framework.
@@ -232,11 +234,24 @@ namespace RealmWeaver
                 // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
                 // unrelated projects that use the same mechanics to obtain a machine's ID
                 var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
-                var byteId = Encoding.ASCII.GetBytes(id);
-                var saltedId = new byte[byteId.Length + salt.Length];
-                Buffer.BlockCopy(byteId, 0, saltedId, 0, byteId.Length);
-                Buffer.BlockCopy(salt, 0, saltedId, byteId.Length, salt.Length);
+                var saltedId = Encoding.ASCII.GetBytes(id).Concat(salt).ToArray();
                 return SHA256Hash(saltedId);
+            }
+            catch
+            {
+                return Unknown();
+            }
+        }
+
+        public static string GetLegacyAnonymizedUserId()
+        {
+            try
+            {
+                var id = NetworkInterface.GetAllNetworkInterfaces()
+                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
+                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
+                                   .First();
+                return SHA256Hash(id, useLegacyEncoding: true);
             }
             catch
             {

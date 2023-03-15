@@ -27,7 +27,7 @@ using RealmWeaver;
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class TypeReferenceExtensions
 {
-    private static readonly Regex NullableRegex = new Regex("^System.Nullable`1<(?<typeName>.*)>$");
+    private static readonly Regex NullableRegex = new("^System.Nullable`1<(?<typeName>.*)>$");
 
     public static SequencePoint GetSequencePoint(this TypeDefinition @this)
     {
@@ -48,6 +48,10 @@ internal static class TypeReferenceExtensions
                 .FirstOrDefault(sp => sp != null);
         }
     }
+
+    public static bool IsAnyRealmObject(this TypeReference @this, ImportedReferences references)
+        => @this.IsIRealmObjectBaseImplementor(references)
+        || @this.IsRealmObjectDescendant(references);
 
     public static bool IsRealmObjectDescendant(this TypeReference @this, ImportedReferences references) =>
         IsDescendantOf(@this, references.RealmObject, references.EmbeddedObject, references.AsymmetricObject);

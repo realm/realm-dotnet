@@ -132,7 +132,7 @@ public class Program
     }
 #endif
 
-#if PROPERTY_CHANGED
+#if OBJECT_NOTIFICATION
     public static void PropertyChangedMethod()
     {
         new RootRealmClass().PropertyChanged += (sender, e) => { };
@@ -291,6 +291,13 @@ public class Program
     }
 #endif
 
+#if CONNECTION_NOTIFICATION
+    public static void ConnectionNotificationMethod()
+    {
+        Realm.GetInstance().SyncSession.PropertyChanged += (sender, args) => { };
+    }
+#endif
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 }
 
@@ -310,44 +317,44 @@ public partial class RootRealmClass : TestRealmObject
 {
 
 #if REALM_OBJECT_REFERENCE
-    JustForObjectReference JustForRef { get; set; }
+    private JustForObjectReference JustForRef { get; set; }
 #endif
 
 #if REFERENCE_LIST
-    IList<JustForObjectReference> ReferenceList { get; }
+    private IList<JustForObjectReference> ReferenceList { get; }
 #endif
 
 #if PRIMITIVE_LIST
-    IList<int> PrimitiveList { get; }
+    private IList<int> PrimitiveList { get; }
 #endif
 
 #if REFERENCE_DICTIONARY
-    IDictionary<string, JustForObjectReference> ReferenceDictionary { get; }
+    private IDictionary<string, JustForObjectReference> ReferenceDictionary { get; }
 #endif
 
 #if PRIMITIVE_DICTIONARY
-    IDictionary<string, int> PrimitiveDictionary { get; }
+    private IDictionary<string, int> PrimitiveDictionary { get; }
 #endif
 
 #if REFERENCE_SET
-    ISet<JustForObjectReference> ReferenceSet { get; }
+    private ISet<JustForObjectReference> ReferenceSet { get; }
 #endif
 
 #if PRIMITIVE_SET
-    ISet<int> PrimitiveSet { get; }
+    private ISet<int> PrimitiveSet { get; }
 #endif
 
 #if REALM_INTEGER
-    RealmInteger<int> Counter { get; set; }
+    private RealmInteger<int> Counter { get; set; }
 #endif
 
 #if REALM_VALUE
-    RealmValue RealmValue { get; set; }
+    private RealmValue RealmValue { get; set; }
 #endif
 
 #if BACKLINK_ATTRIBUTE
     [Backlink(nameof(JustForObjectReference.UseAsBacklink))]
-    IQueryable<JustForObjectReference> JustBackLink { get; }
+    private IQueryable<JustForObjectReference> JustBackLink { get; }
 #endif
 }
 

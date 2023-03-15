@@ -71,7 +71,8 @@ namespace RealmWeaver
 
         public static class Environment
         {
-            public const string UserId = "distinct_id";
+            public const string LegacyUserId = "distinct_id";
+            public const string UserId = "builder_id";
             public const string ProjectId = "Anonymized Bundle ID";
             public const string RealmSdk = "Binding";
             public const string RealmSdkVersion = "Realm Version";
@@ -81,19 +82,21 @@ namespace RealmWeaver
             public const string HostOsVersion = "Host OS Version";
             public const string HostCpuArch = "Host CPU Arch";
             public const string TargetOsType = "Target OS Type";
-            public const string TargetOsMinimumVersion = "Target OS Minimum Version";
-            public const string TargetOsVersion = "Target OS Version";
             public const string TargetCpuArch = "Target CPU Arch";
             public const string CoreVersion = "Core Version";
             public const string IsSyncEnabled = "Sync Enabled";
             public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
             public const string FrameworkUsedInConjunctionVersion = "Framework Version";
             public const string SdkInstallationMethod = "Installation Method";
-            public const string IdeUsed = "IDE";
-            public const string IdeUsedVersion = "IDE Version"; // this holds info about the msbuild version
             public const string NetFramework = "Net Framework";
             public const string NetFrameworkVersion = "Net Framework Version";
             public const string Compiler = "Compiler";
+
+            // These are not currently supported
+            public const string _TargetOsMinimumVersion = "Target OS Minimum Version";
+            public const string _TargetOsVersion = "Target OS Version";
+            public const string _IdeUsed = "IDE";
+            public const string _IdeUsedVersion = "IDE Version"; // this holds info about the msbuild version
         }
 
         public static class Feature
@@ -123,7 +126,6 @@ namespace RealmWeaver
             public const string SetSubscribeForNotifications = nameof(SetSubscribeForNotifications);
             public const string DictionarySubscribeForNotifications = nameof(DictionarySubscribeForNotifications);
             public const string ResultSubscribeForNotifications = nameof(ResultSubscribeForNotifications);
-            public const string PropertyChanged = nameof(PropertyChanged);
             public const string RecoverOrDiscardUnsyncedChangesHandler = nameof(RecoverOrDiscardUnsyncedChangesHandler);
             public const string RecoverUnsyncedChangesHandler = nameof(RecoverUnsyncedChangesHandler);
             public const string DiscardUnsyncedChangesHandler = nameof(DiscardUnsyncedChangesHandler);
@@ -138,11 +140,12 @@ namespace RealmWeaver
             public const string Apple = nameof(Apple);
             public const string JWT = nameof(JWT);
             public const string ApiKey = nameof(ApiKey);
-            public const string ServerApiKey = nameof(ServerApiKey);
             public const string Function = nameof(Function);
             public const string CallAsync = nameof(CallAsync);
             public const string GetMongoClient = nameof(GetMongoClient);
             public const string DynamicApi = nameof(DynamicApi);
+            public const string ConnectionNotification = nameof(ConnectionNotification);
+            public const string ObjectNotification = nameof(ObjectNotification);
         }
 
         // This holds a mapping from Feature -> the name we send to DW.
@@ -150,52 +153,53 @@ namespace RealmWeaver
         {
             [Feature.IEmbeddedObject] = "Embedded_Object",
             [Feature.IAsymmetricObject] = "Asymmetric_Object",
-            [Feature.ReferenceList] = "Reference_List",
+            [Feature.ReferenceList] = "Object_List",
             [Feature.PrimitiveList] = "Primitive_List",
-            [Feature.ReferenceDictionary] = "Reference_Dictionary",
-            [Feature.PrimitiveDictionary] = "Primitive_Dictionary",
-            [Feature.ReferenceSet] = "Reference_Set",
+            [Feature.ReferenceDictionary] = "Object_Dict",
+            [Feature.PrimitiveDictionary] = "Primitive_Dict",
+            [Feature.ReferenceSet] = "Object_Set",
             [Feature.PrimitiveSet] = "Primitive_Set",
-            [Feature.RealmInteger] = "Realm_Integer",
-            [Feature.RealmObjectReference] = "Reference_Link",
+            [Feature.RealmInteger] = "Counter",
+            [Feature.RealmObjectReference] = "Object_Link",
             [Feature.RealmValue] = "Mixed",
             [Feature.BacklinkAttribute] = "Backlink",
 
-            [Feature.GetInstanceAsync] = "Asynchronous_Realm_Open",
-            [Feature.GetInstance] = "Synchronous_Realm_Open",
+            [Feature.GetInstanceAsync] = "Async_Open",
+            [Feature.GetInstance] = "Sync_Open",
 
-            // ["NOT_SUPPORTED_YET"] = "Query_Async",
-            [Feature.Find] = "Query_Primary_Key",
+            [Feature.Find] = "Find_PK",
             [Feature.WriteAsync] = "Write_Async",
             [Feature.ThreadSafeReference] = "Thread_Safe_Reference",
             [Feature.Add] = "Insert_Modified",
             [Feature.ShouldCompactOnLaunch] = "Compact_On_Launch",
-            [Feature.MigrationCallback] = "Schema_Migration_Block",
-            [Feature.RealmChanged] = "Realm_Change_Listener",
-            [Feature.ListSubscribeForNotifications] = "List_Change_Listener",
-            [Feature.SetSubscribeForNotifications] = "Set_Change_Listener",
-            [Feature.DictionarySubscribeForNotifications] = "Dictionary_Change_Listener",
-            [Feature.ResultSubscribeForNotifications] = "Result_Change_Listener",
-            [Feature.PropertyChanged] = "Object_Change_Listener",
-            [Feature.RecoverOrDiscardUnsyncedChangesHandler] = "Client_Reset_Recover_Or_Discard",
-            [Feature.RecoverUnsyncedChangesHandler] = "Client_Reset_Recover",
-            [Feature.DiscardUnsyncedChangesHandler] = "Client_Reset_Discard",
-            [Feature.ManualRecoveryHandler] = "Client_Reset_Manual",
+            [Feature.MigrationCallback] = "Migration_Block",
+            [Feature.RealmChanged] = "Realm_Notifications",
+            [Feature.ListSubscribeForNotifications] = "List_Notifications",
+            [Feature.SetSubscribeForNotifications] = "Set_Notifications",
+            [Feature.DictionarySubscribeForNotifications] = "Dict_Notifications",
+            [Feature.ResultSubscribeForNotifications] = "Results_Notifications",
+            [Feature.ObjectNotification] = "Object_Notifications",
+            [Feature.RecoverOrDiscardUnsyncedChangesHandler] = "CR_Recover_Discard",
+            [Feature.RecoverUnsyncedChangesHandler] = "CR_Recover",
+            [Feature.DiscardUnsyncedChangesHandler] = "CR_Discard",
+            [Feature.ManualRecoveryHandler] = "CR_Manual",
             [Feature.GetProgressObservable] = "Progress_Notification",
             [Feature.PartitionSyncConfiguration] = "Pbs_Sync",
-            [Feature.FlexibleSyncConfiguration] = "Flexible_Sync",
-            [Feature.Anonymous] = "Auth_Anonymous",
-            [Feature.EmailPassword] = "Auth_Email_Password",
+            [Feature.FlexibleSyncConfiguration] = "Flx_Sync",
+            [Feature.Anonymous] = "Auth_Anon",
+            [Feature.EmailPassword] = "Auth_Email",
             [Feature.Facebook] = "Auth_Facebook",
             [Feature.Google] = "Auth_Google",
             [Feature.Apple] = "Auth_Apple",
-            [Feature.JWT] = "Auth_Custom_JWT",
+            [Feature.JWT] = "Auth_JWT",
             [Feature.ApiKey] = "Auth_API_Key",
-            [Feature.ServerApiKey] = "Auth_Server_API_Key",
             [Feature.Function] = "Auth_Function",
             [Feature.CallAsync] = "Remote_Function",
-            [Feature.GetMongoClient] = "MongoDB_Data_Access",
+            [Feature.GetMongoClient] = "Remote_Mongo",
             [Feature.DynamicApi] = "Dynamic_API",
+            [Feature.ConnectionNotification] = "Connection_Notification",
+
+            // ["NOT_SUPPORTED_YET"] = "Query_Async",
         };
     }
 }

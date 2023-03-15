@@ -156,6 +156,8 @@ namespace RealmWeaver
 
         public MethodReference CollectionExtensions_PopulateDictionary { get; private set; }
 
+        public TypeReference SyncSession { get; private set; }
+
         protected ModuleDefinition Module { get; }
 
         public TypeSystem Types { get; }
@@ -383,6 +385,7 @@ namespace RealmWeaver
             }
 
             SyncConfiguration = new TypeReference("Realms.Sync", "SyncConfiguration", Module, realmAssembly);
+            SyncSession = new TypeReference("Realms.Sync", "Session", Module, realmAssembly);
 
             var collectionExtensions = new TypeReference("Realms", "CollectionExtensions", Module, realmAssembly);
             CollectionExtensions_PopulateCollection = new MethodReference("PopulateCollection", Types.Void, collectionExtensions) { HasThis = false };

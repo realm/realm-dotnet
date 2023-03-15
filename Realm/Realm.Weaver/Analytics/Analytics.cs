@@ -98,9 +98,7 @@ namespace RealmWeaver
             _classAnalysisSetters = new()
             {
                 ["Class"] = member =>
-                    member is PropertyDefinition property &&
-                    (property.PropertyType.IsIRealmObjectBaseImplementor(_references) ||
-                    property.PropertyType.IsRealmObjectDescendant(_references)) ?
+                    member is PropertyDefinition property && property.PropertyType.IsAnyRealmObject(_references) ?
                     new(true, Feature.RealmObjectReference) : default,
                 [Feature.RealmValue] = member => new(true, Feature.RealmValue),
                 ["IList`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveList, Feature.ReferenceList),
@@ -155,7 +153,29 @@ namespace RealmWeaver
 
                     return new(shouldDelete, key);
                 },
-                [Feature.PropertyChanged] = instruction => new(true, Feature.PropertyChanged),
+                ["PropertyChanged"] = instruction =>
+                {
+                    string key = null;
+                    if (instruction.Operand is MemberReference reference)
+                    {
+                        if (reference.DeclaringType.IsAnyRealmObject(_references))
+                        {
+                            key = Feature.ObjectNotification;
+                        }
+                        else if (reference.DeclaringType.IsSameAs(_references.SyncSession))
+                        {
+                            key = Feature.ConnectionNotification;
+                        }
+                    }
+
+                    if (key == null)
+                    {
+                        return default;
+                    }
+
+                    var shouldDelete = ContainsAllRelatedFeatures(key, Feature.ObjectNotification, Feature.ConnectionNotification);
+                    return new(shouldDelete, key);
+                },
                 [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
                 [Feature.RecoverUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverUnsyncedChangesHandler),
                 [Feature.DiscardUnsyncedChangesHandler] = instruction => new(true, Feature.DiscardUnsyncedChangesHandler),
@@ -170,7 +190,6 @@ namespace RealmWeaver
                 [Feature.Apple] = instruction => AnalyzeRealmApi(instruction, Feature.Apple),
                 [Feature.JWT] = instruction => AnalyzeRealmApi(instruction, Feature.JWT),
                 [Feature.ApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ApiKey),
-                [Feature.ServerApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ServerApiKey),
                 [Feature.Function] = instruction => AnalyzeRealmApi(instruction, Feature.Function),
                 [Feature.CallAsync] = instruction => AnalyzeRealmApi(instruction, Feature.CallAsync),
                 [Feature.GetMongoClient] = instruction => new(true, Feature.GetMongoClient),
@@ -230,24 +249,21 @@ namespace RealmWeaver
                 var frameworkInfo = GetFrameworkAndVersion(module, _config);
 
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
+                _realmEnvMetrics[UserEnvironment.LegacyUserId] = GetLegacyAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = "dotnet";
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 _realmEnvMetrics[UserEnvironment.Language] = "c#";
-                _realmEnvMetrics[UserEnvironment.LanguageVersion] = GetLanguageVersion(_config.NetFrameworkTarget, _config.NetFrameworkTargetVersion);
+                _realmEnvMetrics[UserEnvironment.LanguageVersion] = InferLanguageVersion(_config.NetFrameworkTarget, _config.NetFrameworkTargetVersion);
                 _realmEnvMetrics[UserEnvironment.HostOsType] = GetHostOsName();
                 _realmEnvMetrics[UserEnvironment.HostOsVersion] = Environment.OSVersion.Version.ToString();
                 _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
-                _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.TargetOsVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = _config.TargetArchitecture;
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
-                _realmEnvMetrics[UserEnvironment.IdeUsed] = string.Empty;
-                _realmEnvMetrics[UserEnvironment.IdeUsedVersion] = string.Empty;
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.NetFrameworkTarget;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.NetFrameworkTargetVersion;
                 _realmEnvMetrics[UserEnvironment.Compiler] = _config.Compiler ?? string.Empty;
@@ -422,14 +438,8 @@ namespace RealmWeaver
 
                 try
                 {
-                    var pretty = false;
-
-                    var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/metric_webhook/metric?data=";
-#if DEBUG
-                    pretty = true;
-#endif
-
-                    payload = GetJsonPayload(pretty);
+                    var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/v2/metric?data=";
+                    payload = GetJsonPayload();
 
                     if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
                     {
@@ -449,46 +459,37 @@ namespace RealmWeaver
             }
         }
 
-        private string GetJsonPayload(bool pretty)
+        private string GetJsonPayload()
         {
             var jsonPayload = new StringBuilder();
 
             jsonPayload.Append('{');
-            if (pretty)
-            {
-                jsonPayload.AppendLine();
-            }
 
-            foreach (var kvp in _realmEnvMetrics)
-            {
-                AppendKeyValue(kvp.Key, kvp.Value);
-            }
-
-            foreach (var kvp in _realmFeaturesToAnalyze)
-            {
-                AppendKeyValue(Metric.SdkFeatures[kvp.Key], kvp.Value);
-            }
-
-            var trailingCommaIndex = pretty ? Environment.NewLine.Length + 1 : 1;
-            jsonPayload.Remove(jsonPayload.Length - trailingCommaIndex, 1);
-
+            AppendKeyValues(_realmEnvMetrics);
+            jsonPayload.Append(',');
+            AppendKeyValues(_realmFeaturesToAnalyze, Metric.SdkFeatures);
             jsonPayload.Append('}');
 
             return jsonPayload.ToString();
 
-            void AppendKeyValue<Tkey, Tvalue>(Tkey key, Tvalue value)
+            void AppendKeyValues<Tvalue>(IDictionary<string, Tvalue> dict, IDictionary<string, string> keyMapping = null)
             {
-                if (pretty)
-                {
-                    jsonPayload.Append('\t');
-                }
+                var mapping = dict
+                    .Select(kvp =>
+                    {
+                        if ((kvp.Value is byte b && b == 0) ||
+                            (kvp.Value is string s && string.IsNullOrEmpty(s)))
+                        {
+                            // skip empty strings/0
+                            return null;
+                        }
 
-                jsonPayload.Append($"\"{key}\": \"{value}\",");
+                        var key = keyMapping == null ? kvp.Key : keyMapping[kvp.Key];
+                        return $"\"{key}\":\"{kvp.Value}\"";
+                    })
+                    .Where(s => s != null);
 
-                if (pretty)
-                {
-                    jsonPayload.AppendLine();
-                }
+                jsonPayload.Append(string.Join(",", mapping));
             }
         }
 
