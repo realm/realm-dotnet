@@ -10,11 +10,15 @@ namespace SimpleToDo.ViewModels;
 public partial class ToDoListViewModel : ViewModelBase
 {
     private readonly Realm _realm = null!;
-    [ObservableProperty] private IEnumerable<Item> _checkedItems = null!;
 
-    [ObservableProperty] private ToDoList _currentList = null!;
+    [ObservableProperty]
+    private IEnumerable<Item> _checkedItems = null!;
 
-    [ObservableProperty] private IEnumerable<Item> _uncheckedItems = null!;
+    [ObservableProperty]
+    private ToDoList _currentList = null!;
+
+    [ObservableProperty]
+    private IEnumerable<Item> _uncheckedItems = null!;
 
     public ToDoListViewModel()
     {
@@ -24,7 +28,7 @@ public partial class ToDoListViewModel : ViewModelBase
         }
         else
         {
-            //This sets example data for the UI preview
+            // This sets example data for the UI preview
             UncheckedItems = new[]
             {
                 new Item { Description = "Uncheck1" },

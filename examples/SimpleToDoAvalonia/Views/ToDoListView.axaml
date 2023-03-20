@@ -27,6 +27,7 @@
                                         RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
                                     CommandParameter="{Binding .}" />
                             <TextBox Text="{Binding Description}"
+                                     Watermark="Description"
                                      VerticalAlignment="Center"
                                      BorderThickness="0"
                                      Margin="0,0,10,0" />

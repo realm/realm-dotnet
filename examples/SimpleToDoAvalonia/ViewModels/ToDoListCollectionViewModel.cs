@@ -12,10 +12,13 @@ public partial class ToDoListCollectionViewModel : ViewModelBase
 {
     private readonly Realm _realm = null!;
 
-    [ObservableProperty] private IEnumerable<ToDoList> _list = null!;
-    [ObservableProperty] private ToDoList _selectedList = null!;
+    [ObservableProperty]
+    private IEnumerable<ToDoList> _list = null!;
 
-    public event EventHandler<ToDoList> SelectedItemEvent = delegate { };
+    [ObservableProperty]
+    private ToDoList _selectedList = null!;
+
+    public event EventHandler<ToDoList>? SelectedItemEvent;
 
     public ToDoListCollectionViewModel()
     {
@@ -26,7 +29,7 @@ public partial class ToDoListCollectionViewModel : ViewModelBase
         }
         else
         {
-            //This sets example data for the UI preview
+            // This sets example data for the UI preview
             var list1 = new ToDoList
             {
                 Name = "List1",
@@ -62,7 +65,7 @@ public partial class ToDoListCollectionViewModel : ViewModelBase
 
     partial void OnSelectedListChanged(ToDoList value)
     {
-        SelectedItemEvent(this, value);
+        SelectedItemEvent?.Invoke(this, value);
     }
 
     public void AddList()
@@ -77,6 +80,6 @@ public partial class ToDoListCollectionViewModel : ViewModelBase
 
     public void DeleteList(ToDoList listToDelete)
     {
-        _realm.Write(() => { _realm.Remove(listToDelete); });
+        _realm.Write(() => _realm.Remove(listToDelete));
     }
 }
