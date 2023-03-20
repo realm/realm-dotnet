@@ -97,14 +97,25 @@ namespace RealmWeaver
             _ => Unknown(RuntimeInformation.OSArchitecture.ToString())
         };
 
-        public static string GetHostOsName() =>
-            System.Environment.OSVersion.Platform switch
+        public static string GetHostOsName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => OperatingSystem.Windows,
-                PlatformID.MacOSX => OperatingSystem.MacOS,
-                PlatformID.Unix => OperatingSystem.Linux,
-                _ => Unknown(System.Environment.OSVersion.Platform.ToString())
-            };
+                return OperatingSystem.Windows;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return OperatingSystem.Linux;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return OperatingSystem.MacOS;
+            }
+
+            return Unknown(System.Environment.OSVersion.Platform.ToString());
+        }
 
         public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
         {
@@ -185,45 +196,33 @@ namespace RealmWeaver
         public static string GetAnonymizedUserId()
         {
             var id = string.Empty;
-            var currentOs = System.Environment.OSVersion.Platform;
             try
             {
-                switch (currentOs)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    case PlatformID.Win32S or PlatformID.Win32Windows or
-                        PlatformID.Win32NT or PlatformID.WinCE:
-                        {
-                            var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                            var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
-                            var match = regex.Match(machineIdToParse);
+                    var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                    var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                    var match = regex.Match(machineIdToParse);
 
-                            if (match?.Groups.Count > 1)
-                            {
-                                id = match.Groups[1].Value;
-                            }
+                    if (match?.Groups.Count > 1)
+                    {
+                        id = match.Groups[1].Value;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                    var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                    var match = regex.Match(machineIdToParse);
 
-                            break;
-                        }
-
-                    case PlatformID.MacOSX:
-                        {
-                            var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                            var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                            var match = regex.Match(machineIdToParse);
-
-                            if (match?.Groups.Count > 1)
-                            {
-                                id = match.Groups[1].Value;
-                            }
-
-                            break;
-                        }
-
-                    case PlatformID.Unix:
-                        {
-                            id = File.ReadAllText("/etc/machine-id");
-                            break;
-                        }
+                    if (match?.Groups.Count > 1)
+                    {
+                        id = match.Groups[1].Value;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    id = File.ReadAllText("/etc/machine-id");
                 }
 
                 if (id.Length == 0)
@@ -233,8 +232,8 @@ namespace RealmWeaver
 
                 // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
                 // unrelated projects that use the same mechanics to obtain a machine's ID
-                var salt = new byte[] { 82, 101, 97, 108, 109, 32, 105, 115, 32, 103, 114, 101, 97, 116 };
-                var saltedId = Encoding.ASCII.GetBytes(id).Concat(salt).ToArray();
+                var salt = "realm is great";
+                var saltedId = Encoding.UTF8.GetBytes(id + salt);
                 return SHA256Hash(saltedId);
             }
             catch
