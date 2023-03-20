@@ -14,6 +14,7 @@
         <Button DockPanel.Dock="Bottom"
                 HorizontalAlignment="Center"
                 Content="Add a ToDo list"
+                Margin="0,10"
                 Command="{Binding AddList}" />
         <ListBox Items="{Binding List}" Background="Transparent"
                  SelectedItem="{Binding SelectedList}">

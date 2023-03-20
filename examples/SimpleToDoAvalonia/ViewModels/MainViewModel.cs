@@ -5,9 +5,11 @@ namespace SimpleToDo.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    [ObservableProperty] private ToDoListViewModel _content = null!;
+    [ObservableProperty]
+    private ToDoListViewModel _content = null!;
 
-    [ObservableProperty] private ToDoListCollectionViewModel _pane = null!;
+    [ObservableProperty]
+    private ToDoListCollectionViewModel _pane = null!;
 
     public MainViewModel()
     {
