@@ -20,11 +20,12 @@ if(ANDROID)
 endif()
 
 option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
-if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
-    set(REALM_BUILD_LIB_ONLY ON)
-    set(REALM_ENABLE_SYNC ON)
 
-    add_subdirectory(realm-core EXCLUDE_FROM_ALL)
+if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
+  set(REALM_BUILD_LIB_ONLY ON)
+  set(REALM_ENABLE_SYNC ON)
+
+  add_subdirectory(realm-core EXCLUDE_FROM_ALL)
 endif()
 
 # Build as a .framework instead of .dylib
@@ -32,13 +33,14 @@ set(BUILD_APPLE_FRAMEWORK OFF)
 
 if(APPLE)
   set(CMAKE_VISIBILITY_INLINES_HIDDEN TRUE)
-  if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(BUILD_APPLE_FRAMEWORK TRUE)
   endif()
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(/DWIN32_LEAN_AND_MEAN)
   add_compile_options(
-      /MP # Enable multi-processor compilation
+    /MP # Enable multi-processor compilation
   )
 
   # always produce a PDB
@@ -47,6 +49,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
 
   if(NOT WINDOWS_STORE)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  endif()
+elseif(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+  if(LINUX_ARCH STREQUAL "arm")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vendor/realm-core/tools/cmake/armhf.toolchain.cmake")
+    set(CMAKE_IGNORE_PATH "/usr/lib/x86_64-linux-gnu")
+  elseif(LINUX_ARCH STREQUAL "arm64")
+    set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vendor/realm-core/tools/cmake/aarch64.toolchain.cmake")
+    set(CMAKE_IGNORE_PATH "/usr/lib/x86_64-linux-gnu")
   endif()
 endif()
 
