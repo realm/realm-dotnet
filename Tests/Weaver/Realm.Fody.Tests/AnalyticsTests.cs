@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -101,6 +102,42 @@ namespace Analytics
             ValidateAnalyticsPayloadAllFrameworks(new[] {
                 (featureName: Metric.Environment.HostOsType, expectedValue: ConvertToMetricOS(currentOs.Platform)),
                 (featureName: Metric.Environment.HostOsVersion, expectedValue: currentOs.Version.ToString()) });
+        }
+
+        [Test]
+        public void ValidateEnvironmentMetrics()
+        {
+            // This test validates that all environment metrics (Metric.Environment) are set. It doesn't validate
+            // the actual values, just that they exist in the payload.
+            CompileAnalyticsProject();
+            foreach (var framework in _frameworks.Value)
+            {
+                var response = WeaveRealm(framework, "DryRun");
+                var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
+
+                var environmentMetrics = typeof(Metric.Environment).GetFields(BindingFlags.Static | BindingFlags.Public)
+                    .Select(f => (string)f.GetValue(null))
+                    .ToArray();
+
+                foreach (var metric in environmentMetrics)
+                {
+                    Assert.That(payload.Contains(metric), Is.True, $"Metric: {metric} not found in document: {response}");
+                }
+            }
+        }
+
+        [Test]
+        public void Metirc_SdkFeatures_ContainsAllFeatureConstants()
+        {
+            var sdkFeatures = Metric.SdkFeatures;
+            var featureConstants = typeof(Metric.Feature).GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Select(f => (string)f.GetValue(null))
+                .ToArray();
+
+            foreach (var constant in featureConstants)
+            {
+                Assert.That(sdkFeatures.ContainsKey(constant), Is.True, $"Constant: {constant} is not present as a key in Metric.SdkFeatures");
+            }
         }
 
         private static string ConvertToMetricOS(PlatformID platformID) =>

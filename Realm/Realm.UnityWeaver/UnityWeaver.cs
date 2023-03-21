@@ -126,28 +126,22 @@ namespace RealmWeaver
         {
             if (_listRequest.IsCompleted)
             {
+                EditorApplication.update -= OnEditorApplicationUpdate;
+
                 var installMethod = Metric.Unknown();
 
                 if (_listRequest.Status == StatusCode.Success)
                 {
-                    foreach (var package in _listRequest.Result)
+                    var realmPackage = _listRequest.Result.FirstOrDefault(p => p.name == UnityPackageName);
+                    installMethod = realmPackage?.source switch
                     {
-                        if (package.name == UnityPackageName)
-                        {
-                            installMethod = package.source switch
-                            {
-                                PackageSource.LocalTarball => "Manual",
-                                PackageSource.Registry => "NPM",
-                                _ => Metric.Unknown(package.source.ToString()),
-                            };
-
-                            break;
-                        }
-                    }
+                        PackageSource.LocalTarball => "Manual",
+                        PackageSource.Registry => "NPM",
+                        _ => Metric.Unknown(realmPackage?.source.ToString()),
+                    };
                 }
 
                 _installMethodTask.SetResult(installMethod);
-                EditorApplication.update -= OnEditorApplicationUpdate;
             }
         }
 
@@ -425,19 +419,55 @@ namespace RealmWeaver
             return target switch
             {
                 BuildTarget.StandaloneOSX => OperatingSystem.MacOS,
-                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 => OperatingSystem.Windows,
+                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.WSAPlayer => OperatingSystem.Windows,
                 BuildTarget.iOS => OperatingSystem.Ios,
                 BuildTarget.Android => OperatingSystem.Android,
                 BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
                 BuildTarget.tvOS => OperatingSystem.TvOs,
+                BuildTarget.XboxOne => OperatingSystem.XboxOne,
                 _ => Metric.Unknown(target.ToString()),
+            };
+        }
+
+        private static string GetTargetOsVersion(BuildTarget? target)
+        {
+            // target is null for editor builds - in that case, we return the host OS
+            // version.
+            if (target == null)
+            {
+                return Environment.OSVersion.Version.ToString();
+            }
+
+            return target switch
+            {
+                BuildTarget.Android => ((int)PlayerSettings.Android.targetSdkVersion).ToString(),
+                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
+                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
+                _ => Metric.Unknown(),
+            };
+        }
+
+        private static string GetMinimumOsVersion(BuildTarget? target)
+        {
+            // target is null for editor builds - in that case, we return the host OS
+            // version.
+            if (target == null)
+            {
+                return Environment.OSVersion.Version.ToString();
+            }
+
+            return target switch
+            {
+                BuildTarget.Android => ((int)PlayerSettings.Android.minSdkVersion).ToString(),
+                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
+                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
+                _ => Metric.Unknown(),
             };
         }
 
         private static Config GetAnalyticsConfig(BuildTarget? target = null)
         {
             var netFrameworkInfo = GetNetFrameworkInfo(target);
-            var targetOSName = GetTargetOSName(target);
             var compiler = PlayerSettings.GetScriptingBackend(BuildPipeline.GetBuildTargetGroup(target ?? EditorUserBuildSettings.activeBuildTarget)).ToString();
 
             var analyticsEnabled = AnalyticsEnabled &&
@@ -446,18 +476,17 @@ namespace RealmWeaver
 
             return new Config
             {
-                TargetOSName = targetOSName,
+                TargetOSName = GetTargetOSName(target),
                 Compiler = compiler,
                 NetFrameworkTarget = netFrameworkInfo.Name,
                 NetFrameworkTargetVersion = netFrameworkInfo.Version,
                 AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
                 InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                FrameworkName = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
+                FrameworkVersion = Application.unityVersion,
                 TargetArchitecture = GetCpuArchitecture(target),
-                UnityInfo = new()
-                {
-                    Type = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
-                    Version = Application.unityVersion,
-                }
+                TargetOsVersion = GetTargetOsVersion(target),
+                TargetOsMinimumVersion = GetMinimumOsVersion(target),
             };
         }
 

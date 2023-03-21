@@ -56,7 +56,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         yield return "System.Threading";
     }
 
-    private Config GetAnalyticsConfig(FrameworkName frameworkName)
+    private Config GetAnalyticsConfig(FrameworkName netFramework)
     {
         AnalyticsCollection analyticsCollection;
         if (Enum.TryParse<AnalyticsCollection>(Config.Attribute("AnalyticsCollection")?.Value, out var collection))
@@ -80,17 +80,19 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 #endif
         }
 
-        var config = new Config
+        var (frameworkName, frameworkVersion) = AnalyticsUtils.GetFrameworkAndVersion(ModuleDefinition);
+
+        return new()
         {
             AnalyticsCollection = analyticsCollection,
             AnalyticsLogPath = Config.Attribute("AnalyticsLogPath")?.Value,
             InstallationMethod = "Nuget",
+            NetFrameworkTarget = netFramework.Identifier,
+            NetFrameworkTargetVersion = netFramework.Version.ToString(),
+            TargetOSName = AnalyticsUtils.GetTargetOsName(netFramework),
+            FrameworkName = frameworkName,
+            FrameworkVersion = frameworkVersion,
         };
-
-        config.NetFrameworkTarget = frameworkName.Identifier;
-        config.NetFrameworkTargetVersion = frameworkName.Version.ToString();
-        config.TargetOSName = AnalyticsUtils.GetTargetOsName(frameworkName);
-        return config;
     }
 
     void ILogger.Debug(string message)

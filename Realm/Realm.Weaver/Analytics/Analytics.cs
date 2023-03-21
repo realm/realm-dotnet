@@ -246,8 +246,6 @@ namespace RealmWeaver
             try
             {
                 // collect environment details
-                var frameworkInfo = GetFrameworkAndVersion(module, _config);
-
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.LegacyUserId] = GetLegacyAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
@@ -260,13 +258,15 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.HostCpuArch] = GetHostCpuArchitecture();
                 _realmEnvMetrics[UserEnvironment.TargetOsType] = _config.TargetOSName;
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = _config.TargetArchitecture;
+                _realmEnvMetrics[UserEnvironment.TargetOsVersion] = _config.TargetOsVersion;
+                _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = _config.TargetOsMinimumVersion;
                 _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
-                _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = frameworkInfo.Name;
-                _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = frameworkInfo.Version;
+                _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = _config.FrameworkName;
+                _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = _config.FrameworkVersion;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
                 _realmEnvMetrics[UserEnvironment.NetFramework] = _config.NetFrameworkTarget;
                 _realmEnvMetrics[UserEnvironment.NetFrameworkVersion] = _config.NetFrameworkTargetVersion;
-                _realmEnvMetrics[UserEnvironment.Compiler] = _config.Compiler ?? string.Empty;
+                _realmEnvMetrics[UserEnvironment.Compiler] = _config.Compiler;
 
                 foreach (var type in module.Types.ToArray())
                 {
@@ -518,26 +518,24 @@ namespace RealmWeaver
 
             public string TargetOSName { get; set; }
 
-            public string Compiler { get; set; }
-
             public string NetFrameworkTarget { get; set; }
 
             public string NetFrameworkTargetVersion { get; set; }
 
             public string InstallationMethod { get; set; }
 
+            public string FrameworkName { get; set; }
+
+            public string FrameworkVersion { get; set; }
+
+            // These are only available on Unity for now.
+            public string Compiler { get; set; } = Metric.Unknown();
+
             public string TargetArchitecture { get; set; } = Metric.Unknown();
 
-            // This is going to be null when we're not using Unity
-            public UnityInfoData UnityInfo { get; set; }
+            public string TargetOsVersion { get; set; } = Metric.Unknown();
 
-            public class UnityInfoData
-            {
-                // Type is player or editor
-                public string Type { get; set; }
-
-                public string Version { get; set; }
-            }
+            public string TargetOsMinimumVersion { get; set; } = Metric.Unknown();
         }
 
         public enum AnalyticsCollection

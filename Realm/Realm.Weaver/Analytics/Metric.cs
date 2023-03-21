@@ -17,9 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Realm.Fody.Tests")]
+using System.Diagnostics.CodeAnalysis;
 
 namespace RealmWeaver
 {
@@ -47,6 +45,7 @@ namespace RealmWeaver
             public const string IpadOs = "iPadOS";
             public const string WatchOs = "watchOS";
             public const string TvOs = "tvOS";
+            public const string XboxOne = "XboxOne";
         }
 
         public static class CpuArchitecture
@@ -83,6 +82,8 @@ namespace RealmWeaver
             public const string HostCpuArch = "Host CPU Arch";
             public const string TargetOsType = "Target OS Type";
             public const string TargetCpuArch = "Target CPU Arch";
+            public const string TargetOsMinimumVersion = "Target OS Minimum Version";
+            public const string TargetOsVersion = "Target OS Version";
             public const string CoreVersion = "Core Version";
             public const string IsSyncEnabled = "Sync Enabled";
             public const string FrameworkUsedInConjunction = "Framework"; // this refers to UI frameworks and similar Realm is used together with
@@ -93,10 +94,13 @@ namespace RealmWeaver
             public const string Compiler = "Compiler";
 
             // These are not currently supported
-            public const string _TargetOsMinimumVersion = "Target OS Minimum Version";
-            public const string _TargetOsVersion = "Target OS Version";
-            public const string _IdeUsed = "IDE";
-            public const string _IdeUsedVersion = "IDE Version"; // this holds info about the msbuild version
+            [SuppressMessage("Performance", "CA1823:Avoid unused private fields", Justification = "Placeholder")]
+            [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Placeholder")]
+            private const string _IdeUsed = "IDE";
+
+            [SuppressMessage("Performance", "CA1823:Avoid unused private fields", Justification = "Placeholder")]
+            [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Placeholder")]
+            private const string _IdeUsedVersion = "IDE Version";
         }
 
         public static class Feature

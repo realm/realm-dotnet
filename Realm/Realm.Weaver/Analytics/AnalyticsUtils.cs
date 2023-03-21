@@ -28,8 +28,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
-
-using static RealmWeaver.Analytics;
 using static RealmWeaver.Metric;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
@@ -81,6 +79,35 @@ namespace RealmWeaver
             return Unknown(frameworkName.Identifier);
         }
 
+        public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module)
+        {
+            // the order in the array matters as we first need to look at the libraries (maui and forms)
+            // and then at the frameworks (xamarin native, Catalyst and UWP)
+            var possibleFrameworks = new Dictionary<string, string>
+            {
+                { "Microsoft.Maui", Framework.Maui },
+                { "Xamarin.Forms.Core", Framework.XamarinForms },
+                { "Xamarin.iOS", Framework.Xamarin },
+                { "Xamarin.tvOS", Framework.Xamarin },
+                { "Xamarin.Mac", Framework.Xamarin },
+                { "Mono.Android", Framework.Xamarin },
+                { "Microsoft.MacCatalyst", Framework.MacCatalyst },
+                { "Windows.Foundation.UniversalApiContract", Framework.Uwp },
+            };
+
+            AssemblyNameReference frameworkUsedInConjunction = null;
+            foreach (var kvp in possibleFrameworks)
+            {
+                frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == kvp.Key).SingleOrDefault();
+                if (frameworkUsedInConjunction != null)
+                {
+                    return (kvp.Value, frameworkUsedInConjunction.Version.ToString());
+                }
+            }
+
+            return ("No framework of interest", "0.0.0");
+        }
+
         public static string SHA256Hash(byte[] bytes, bool useLegacyEncoding = false)
         {
             using var sha256 = SHA256.Create();
@@ -115,40 +142,6 @@ namespace RealmWeaver
             }
 
             return Unknown(System.Environment.OSVersion.Platform.ToString());
-        }
-
-        public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module, Config config)
-        {
-            if (config.UnityInfo != null)
-            {
-                return (config.UnityInfo.Type, config.UnityInfo.Version);
-            }
-
-            // the order in the array matters as we first need to look at the libraries (maui and forms)
-            // and then at the frameworks (xamarin native, Catalyst and UWP)
-            var possibleFrameworks = new Dictionary<string, string>
-            {
-                { "Microsoft.Maui", Framework.Maui },
-                { "Xamarin.Forms.Core", Framework.XamarinForms },
-                { "Xamarin.iOS", Framework.Xamarin },
-                { "Xamarin.tvOS", Framework.Xamarin },
-                { "Xamarin.Mac", Framework.Xamarin },
-                { "Mono.Android", Framework.Xamarin },
-                { "Microsoft.MacCatalyst", Framework.MacCatalyst },
-                { "Windows.Foundation.UniversalApiContract", Framework.Uwp },
-            };
-
-            AssemblyNameReference frameworkUsedInConjunction = null;
-            foreach (var kvp in possibleFrameworks)
-            {
-                frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == kvp.Key).SingleOrDefault();
-                if (frameworkUsedInConjunction != null)
-                {
-                    return (kvp.Value, frameworkUsedInConjunction.Version.ToString());
-                }
-            }
-
-            return ("No framework of interest", "0.0.0");
         }
 
         public static string InferLanguageVersion(string netFramework, string netFrameworkVersion)
