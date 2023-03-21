@@ -516,14 +516,14 @@ jobs:
     - name: Build Docker image
       uses: docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7
       with:
-        tags: wrappers-${{ matrix.arch }}:latest
+        tags: wrappers-linux-${{ matrix.arch }}:latest
         file: ./wrappers/${{ matrix.arch == 'x64' && 'centos' || 'debian-multiarch-arm' }}.Dockerfile
         push: false
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
       uses: addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609
       with:
-        image: wrappers-centos:latest
+        image: wrappers-linux-${{ matrix.arch }}:latest
         shell: bash
         options: -v ${{ github.workspace }}:/work
         run: /work/wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'

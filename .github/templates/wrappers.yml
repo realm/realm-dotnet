@@ -119,14 +119,14 @@ jobs:
       - name: Build Docker image
         uses: #@ actionDockerBuild
         with:
-          tags: wrappers-${{ matrix.arch }}:latest
+          tags: wrappers-linux-${{ matrix.arch }}:latest
           file: ./wrappers/${{ matrix.arch == 'x64' && 'centos' || 'debian-multiarch-arm' }}.Dockerfile
           push: false
         if: #@ wrappersCacheCondition
       - name: Build wrappers
         uses: #@ actionDockerRun
         with:
-          image: wrappers-centos:latest
+          image: wrappers-linux-${{ matrix.arch }}:latest
           shell: bash
           options: -v ${{ github.workspace }}:/work
           run: #@ getWrapperBuildCommand("/work/wrappers/build-linux.sh -a=${{ matrix.arch }}")
