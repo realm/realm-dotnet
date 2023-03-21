@@ -92,6 +92,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             TargetOSName = AnalyticsUtils.GetTargetOsName(netFramework),
             FrameworkName = frameworkName,
             FrameworkVersion = frameworkVersion,
+            Compiler = "msbuild",
         };
     }
 

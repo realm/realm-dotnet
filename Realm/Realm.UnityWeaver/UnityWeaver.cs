@@ -495,15 +495,14 @@ namespace RealmWeaver
             var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget ?? EditorUserBuildSettings.activeBuildTarget);
             var apiTarget = PlayerSettings.GetApiCompatibilityLevel(targetGroup);
 
-            // these consts are exactly mapped to what .NET reports in any .NET application, in our case Xamarin
+            // these consts are exactly mapped to what .NET reports in any .NET application
             const string netStandardApi = ".NETStandard";
             const string netFrameworkApi = ".NETFramework";
 
             var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
 
             // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
-            // are deprecated in favour of entry NET_Unity_4_8 and NET_Standard
-            // We need to report the proper meaning of enum 3 and 6
+            // are actually representing .NET 4.8 and .NET Standard 2.1
             // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
             if (unityVersion >= new Version("2021.2"))
             {

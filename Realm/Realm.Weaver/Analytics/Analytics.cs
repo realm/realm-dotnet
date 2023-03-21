@@ -528,9 +528,9 @@ namespace RealmWeaver
 
             public string FrameworkVersion { get; set; }
 
-            // These are only available on Unity for now.
-            public string Compiler { get; set; } = Metric.Unknown();
+            public string Compiler { get; set; }
 
+            // These are only available on Unity for now.
             public string TargetArchitecture { get; set; } = Metric.Unknown();
 
             public string TargetOsVersion { get; set; } = Metric.Unknown();
