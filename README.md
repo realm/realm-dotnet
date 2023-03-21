@@ -47,7 +47,7 @@ Instructions:
 
 1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
 1. Open the `Realm.sln` in `Visual Studio`
-1. Build 'Realm`, `Realm.Fody` and `Realm.SourceGenerator`
+1. Build `Realm`, `Realm.Fody` and `Realm.SourceGenerator`
 1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
