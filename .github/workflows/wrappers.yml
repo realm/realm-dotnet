@@ -509,7 +509,7 @@ jobs:
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
     - uses: jpribyl/action-docker-layer-caching@c632825d12ec837065f49726ea27ddd40bcc7894
       continue-on-error: true
       if: steps.check-cache.outputs.cache-hit != 'true'
@@ -528,10 +528,10 @@ jobs:
         options: -v ${{ github.workspace }}:/work
         run: /work/wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
-    - name: Store artifacts for wrappers-linux
+    - name: Store artifacts for wrappers-linux-${{ matrix.arch }}
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-linux
+        name: wrappers-linux-${{ matrix.arch }}
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error

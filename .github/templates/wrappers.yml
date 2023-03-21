@@ -112,7 +112,7 @@ jobs:
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-linux-" + x + " != 'true'" for x in linuxArchs ])
     steps:
       - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux")
+      - #@ checkCache("wrappers-linux-${{ matrix.arch }}")
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
         if: #@ wrappersCacheCondition
@@ -131,7 +131,7 @@ jobs:
           options: -v ${{ github.workspace }}:/work
           run: #@ getWrapperBuildCommand("/work/wrappers/build-linux.sh -a=${{ matrix.arch }}")
         if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
+      - #@ uploadArtifacts("wrappers-linux-${{ matrix.arch }}", "wrappers/build/**", 1)
   android:
     runs-on: ubuntu-20.04
     name: Android
