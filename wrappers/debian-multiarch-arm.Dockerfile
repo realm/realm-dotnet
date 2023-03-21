@@ -26,4 +26,4 @@ ENV PATH "/opt/cmake/bin:$PATH"
 
 VOLUME /source
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/source/build-linux.sh"]
