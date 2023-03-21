@@ -45,7 +45,7 @@
     <None Include="..\..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\..\wrappers\build\Linux\$(Configuration)-64\librealm-wrappers.so" Condition="Exists('..\..\..\wrappers\build\Linux\$(Configuration)-x64\librealm-wrappers.so')">
+    <None Include="..\..\..\wrappers\build\Linux\$(Configuration)-x64\librealm-wrappers.so" Condition="Exists('..\..\..\wrappers\build\Linux\$(Configuration)-x64\librealm-wrappers.so')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll')">

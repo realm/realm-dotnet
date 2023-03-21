@@ -113,9 +113,6 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux-${{ matrix.arch }}")
-      - uses: #@ actionDockerLayerCaching
-        continue-on-error: true
-        if: #@ wrappersCacheCondition
       - name: Build Docker image
         uses: #@ actionDockerBuild
         with:

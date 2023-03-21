@@ -1,4 +1,4 @@
-FROM centos:7
+FROM --platform=linux/amd64 centos:7
 
 # Install EPEL & devtoolset
 RUN yum install -y \
