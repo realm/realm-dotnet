@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode", "linuxArchs")
 
 #@ wrappersTimeout = 90
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -103,21 +103,24 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     name: Linux
+    strategy:
+      matrix:
+        arch: #@ linuxArchs
     timeout-minutes: #@ wrappersTimeout
     needs:
       - check-cache
-    if: needs.check-cache.outputs.wrappers-linux != 'true'
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-linux-" + x + " != 'true'" for x in linuxArchs ])
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux")
       - uses: #@ actionDockerLayerCaching
         continue-on-error: true
         if: #@ wrappersCacheCondition
-      - name: Build CentOS image
+      - name: Build Docker image
         uses: #@ actionDockerBuild
         with:
-          tags: wrappers-centos:latest
-          file: ./wrappers/centos.Dockerfile
+          tags: wrappers-${{ matrix.arch }}:latest
+          file: ./wrappers/${{ matrix.arch == 'x64' && 'centos' || 'debian-multiarch-arm' }}.Dockerfile
           push: false
         if: #@ wrappersCacheCondition
       - name: Build wrappers
@@ -126,7 +129,7 @@ jobs:
           image: wrappers-centos:latest
           shell: bash
           options: -v ${{ github.workspace }}:/work
-          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
+          run: #@ getWrapperBuildCommand("/work/wrappers/build-linux.sh -a=${{ matrix.arch }}")
         if: #@ wrappersCacheCondition
       - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
   android:

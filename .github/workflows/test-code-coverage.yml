@@ -53,10 +53,20 @@ jobs:
       with:
         name: wrappers-catalyst
         path: wrappers/build
-    - name: Fetch artifacts for linux
+    - name: Fetch artifacts for linux-x64
       uses: actions/download-artifact@v3
       with:
-        name: wrappers-linux
+        name: wrappers-linux-x64
+        path: wrappers/build
+    - name: Fetch artifacts for linux-arm
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-linux-arm
+        path: wrappers/build
+    - name: Fetch artifacts for linux-arm64
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-linux-arm64
         path: wrappers/build
     - name: Fetch artifacts for iOS-Device
       uses: actions/download-artifact@v3

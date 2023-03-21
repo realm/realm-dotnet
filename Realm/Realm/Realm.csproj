@@ -88,9 +88,19 @@
       <Link>wrappers\Darwin\librealm-wrappers.dylib</Link>
     </None>
     <!-- Linux -->
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x64\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
+      <Link>wrappers\Linux\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-arm\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm\native</PackagePath>
+      <Link>wrappers\Linux\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-arm64\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm64\native</PackagePath>
       <Link>wrappers\Linux\librealm-wrappers.so</Link>
     </None>
     <!-- Android -->
