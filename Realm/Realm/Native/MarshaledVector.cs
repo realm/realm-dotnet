@@ -28,18 +28,18 @@ namespace Realms
     internal struct MarshaledVector<T>
         where T : struct
     {
-        private IntPtr items;
-        private IntPtr count;
+        public IntPtr Items;
+        public IntPtr Count;
 
         internal IEnumerable<T> AsEnumerable()
         {
-            return Enumerable.Range(0, (int)count).Select(MarshalElement);
+            return Enumerable.Range(0, (int)Count).Select(MarshalElement);
         }
 
         private unsafe T MarshalElement(int elementIndex)
         {
             var @struct = default(T);
-            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
+            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(Items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
             return @struct;
         }
     }

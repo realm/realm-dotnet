@@ -55,7 +55,7 @@ namespace Realms.Tests.Database
             config.IsReadOnly = true;
 
             realm = GetRealm(config);
-            Assert.Throws<RealmException>(() => realm.Refresh(), "Can't refresh a read-only Realm.");
+            Assert.That(() => realm.Refresh(), Throws.TypeOf<RealmInvalidTransactionException>().And.Message.Contains("Can't refresh an immutable Realm."));
         }
 
         [Test]
@@ -670,7 +670,7 @@ namespace Realms.Tests.Database
                         EncryptionKey = originalConfig.EncryptionKey
                     };
 
-                    Assert.That(() => GetRealm(invalidConfig), Throws.TypeOf<RealmFileAccessErrorException>());
+                    Assert.That(() => GetRealm(invalidConfig), Throws.TypeOf<RealmInvalidDatabaseException>());
                 }
             });
         }

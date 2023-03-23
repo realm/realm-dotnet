@@ -623,7 +623,7 @@ namespace Realms
 
         public ObjectHandle CreateObject(TableKey tableKey)
         {
-            var result = NativeMethods.create_object(this, tableKey.Value, out NativeException ex);
+            var result = NativeMethods.create_object(this, tableKey.Value, out var ex);
             ex.ThrowIfNecessary();
             return new ObjectHandle(this, result);
         }
@@ -862,7 +862,7 @@ namespace Realms
             var handleTcs = GCHandle.FromIntPtr(tcsPtr);
             var tcs = (TaskCompletionSource<T>)handleTcs.Target;
 
-            if (ex.type == RealmExceptionCodes.NoError)
+            if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
             {
                 tcs.TrySetResult(resultBuilder());
             }
@@ -886,7 +886,7 @@ namespace Realms
                 if (asyncTransactionHandle.HasValue &&
                     NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
                 {
-                    if (innerNativeException.type != RealmExceptionCodes.NoError)
+                    if (innerNativeException.code != RealmExceptionCodes.RLM_ERR_NONE)
                     {
                         tcs.TrySetException(innerNativeException.Convert());
                     }

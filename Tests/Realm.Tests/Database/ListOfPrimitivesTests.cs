@@ -22,7 +22,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
-using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
@@ -482,7 +481,7 @@ namespace Realms.Tests.Database
             var obj = new ObjectWithRequiredStringList();
             _realm.Write(() => _realm.Add(obj));
 
-            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => obj.Strings.Add(null)));
+            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => obj.Strings.Add(null)));
             Assert.That(ex.Message, Does.Contain("Attempted to add null to a list of required values"));
         }
 
@@ -505,7 +504,7 @@ namespace Realms.Tests.Database
             var obj = new ObjectWithRequiredStringList();
             obj.Strings.Add(null);
             obj.Strings.Add("strings.NonEmpty");
-            var ex = Assert.Throws<RealmException>(() => _realm.Write(() => _realm.Add(obj)));
+            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => _realm.Add(obj)));
             Assert.That(ex.Message, Does.Contain("Attempted to add null to a list of required values"));
         }
 
@@ -734,7 +733,7 @@ namespace Realms.Tests.Database
 
         public class ListTestCaseData<T>
         {
-            private readonly List<T> referenceList = new List<T>();
+            private readonly List<T> referenceList = new();
 
             public ListTestCaseData(params T[] listData)
             {
@@ -752,7 +751,7 @@ namespace Realms.Tests.Database
                 {
                     list.Clear();
 
-                    for (int i = 0; i < referenceList.Count; i++)
+                    for (var i = 0; i < referenceList.Count; i++)
                     {
                         list.Add(referenceList[i]);
                     }
@@ -770,7 +769,7 @@ namespace Realms.Tests.Database
 
             public void AssertAccessByIndex(IList<T> list)
             {
-                for (int i = 0; i < referenceList.Count; i++)
+                for (var i = 0; i < referenceList.Count; i++)
                 {
                     Assert.That(list[i], Is.EqualTo(referenceList[i]));
                 }
@@ -794,7 +793,7 @@ namespace Realms.Tests.Database
 
             public void AssertContains(IList<T> list)
             {
-                for (int i = 0; i < referenceList.Count; i++)
+                for (var i = 0; i < referenceList.Count; i++)
                 {
                     var rv = referenceList[i];
                     Assert.That(list.Contains(rv), Is.True);

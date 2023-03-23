@@ -21,15 +21,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
 #if TEST_WEAVER
 using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -131,7 +128,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey = null;
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]
@@ -145,7 +142,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]
@@ -161,7 +158,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]

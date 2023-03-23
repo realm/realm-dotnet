@@ -23,7 +23,6 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/binding_context.hpp>
 
-#include "wrapper_exceptions.hpp"
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
 #include "shared_realm_cs.hpp"
@@ -105,6 +104,28 @@ typedef struct realm_value {
         return integer == 1;
     }
 } realm_value_t;
+
+typedef struct realm_sync_error_compensating_write_info {
+    realm_string_t reason;
+    realm_string_t object_name;
+    realm_value_t primary_key;
+} realm_sync_error_compensating_write_info_t;
+
+template <typename T>
+struct marshaled_vector {
+    T* data;
+    size_t count;
+};
+
+struct realm_sync_error {
+    int32_t error_code;
+    realm_string_t message;
+    realm_string_t log_url;
+    bool is_client_reset;
+
+    marshaled_vector<std::pair<char*, char*>> user_info_pairs;
+    marshaled_vector<realm_sync_error_compensating_write_info_t> compensating_writes;
+};
 
 static inline realm_string_t to_capi(StringData data)
 {

@@ -25,7 +25,7 @@ namespace Realms.Exceptions
     {
         internal RealmClassLacksPrimaryKeyException(string message) : base(message)
         {
-            HelpLink = "https://docs.mongodb.com/realm/dotnet/objects/#primary-key";
+            HelpLink = "https://www.mongodb.com/docs/realm/sdk/dotnet/model-data/define-object-model/#primary-key";
         }
     }
 }
