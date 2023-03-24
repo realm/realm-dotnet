@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 10.21.0 (2023-03-24)
 
 ### Enhancements
 * Added `SyncConfiguration.CancelAsyncOperationsOnNonFatalErrors` which controls whether async operations (such as `Realm.GetInstanceAsync`, `Session.WaitForUploadAsync` and so on) should throw an exception whenever a non-fatal session error occurs. (Issue [#3222](https://github.com/realm/realm-dotnet/issues/3222))
