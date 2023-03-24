@@ -24,14 +24,14 @@ using Realms;
 
 namespace PerformanceTests
 {
-    public abstract class WriteTests : BenchmarkBase
+    public abstract partial class WriteTests : BenchmarkBase
     {
         [Params(10, 100)]
         public int ObjectCount { get; set; }
 
         protected const int MaxObjectCount = 100;
 
-        protected IDictionary<int, InsertClass[]> _testObjects;
+        protected IDictionary<int, InsertClass[]> _testObjects = null!;
 
         protected abstract int[] ObjectSizes { get; }
 
@@ -53,9 +53,9 @@ namespace PerformanceTests
             });
         }
 
-        protected class InsertClass : RealmObject
+        protected partial class InsertClass : IRealmObject
         {
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
             public bool BoolValue { get; set; }
 
@@ -63,7 +63,7 @@ namespace PerformanceTests
 
             public DateTimeOffset DateValue { get; set; }
 
-            public byte[] Bytes { get; set; }
+            public byte[]? Bytes { get; set; }
         }
     }
 

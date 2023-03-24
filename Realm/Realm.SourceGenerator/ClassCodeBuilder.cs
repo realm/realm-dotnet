@@ -235,7 +235,10 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
             var objectTypeString = $"ObjectSchema.ObjectType.{_classInfo.ObjectType}";
 
-            var schema = @$"public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
+            var schema = @$"/// <summary>
+/// Defines the schema for the <see cref=""{_classInfo.Name}""/> class.
+/// </summary>
+public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
@@ -243,7 +246,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
             var baseInterface = $"I{_classInfo.ObjectType}";
             var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
 
-            string helperString = string.Empty;
+            var helperString = string.Empty;
 
             if (!string.IsNullOrEmpty(skipDefaults) || copyToRealm.Length > 0)
             {
@@ -276,29 +279,37 @@ Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
 internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsManaged => Accessor.IsManaged;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsValid => Accessor.IsValid;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsFrozen => Accessor.IsFrozen;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public Realms.Realm? Realm => Accessor.Realm;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
-$@"[IgnoreDataMember, XmlIgnore]
+$@"/// <inheritdoc />
+[IgnoreDataMember, XmlIgnore]
 public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
 void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
@@ -332,6 +343,7 @@ partial void OnManaged();
 {(_classInfo.HasPropertyChangedEvent ? string.Empty :
 $@"private event PropertyChangedEventHandler? _propertyChanged;
 
+/// <inheritdoc />
 public event PropertyChangedEventHandler? PropertyChanged
 {{
     add
@@ -400,15 +412,27 @@ private void UnsubscribeFromNotifications()
     Accessor.UnsubscribeFromNotifications();
 }}")}
 
+/// <summary>
+/// Converts a <see cref=""Realms.RealmValue""/> to <see cref=""{_classInfo.Name}""/>. Equivalent to <see cref=""Realms.RealmValue.AsNullableRealmObject{{T}}""/>.
+/// </summary>
+/// <param name=""val"">The <see cref=""Realms.RealmValue""/> to convert.</param>
+/// <returns>The <see cref=""{_classInfo.Name}""/> stored in the <see cref=""Realms.RealmValue""/>.</returns>
 public static explicit operator {_classInfo.Name}?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<{_classInfo.Name}>();
 
+/// <summary>
+/// Implicitly constructs a <see cref=""Realms.RealmValue""/> from <see cref=""{_classInfo.Name}""/>.
+/// </summary>
+/// <param name=""val"">The value to store in the <see cref=""Realms.RealmValue""/>.</param>
+/// <returns>A <see cref=""Realms.RealmValue""/> containing the supplied <paramref name=""val""/>.</returns>
 public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+/// <inheritdoc />
 [EditorBrowsable(EditorBrowsableState.Never)]
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
 {(_classInfo.OverridesEquals ? string.Empty :
-$@"public override bool Equals(object? obj)
+$@"/// <inheritdoc />
+public override bool Equals(object? obj)
 {{
     if (obj is null)
     {{
@@ -434,10 +458,12 @@ $@"public override bool Equals(object? obj)
 }}")}
 
 {(_classInfo.OverridesGetHashCode ? string.Empty :
-$@"public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
+$@"/// <inheritdoc />
+public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
 
 {(_classInfo.OverridesToString ? string.Empty :
-$@"public override string? ToString() => Accessor.ToString();")}";
+$@"/// <inheritdoc />
+public override string? ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
 [Woven(typeof({_helperClassName})), Realms.Preserve(AllMembers = true)]

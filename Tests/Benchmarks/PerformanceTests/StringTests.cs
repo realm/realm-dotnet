@@ -23,16 +23,16 @@ using Realms;
 
 namespace PerformanceTests
 {
-    public class StringTests : BenchmarkBase
+    public partial class StringTests : BenchmarkBase
     {
         private const int ObjectCount = 100;
 
-        private StringClass _robject;
-        private string[] _newPropertyValues;
-        private string[] _primaryKeys;
-        private Transaction _transaction;
-        private string _temp;
-        private RealmObject _tempObj;
+        private StringClass _robject = null!;
+        private string[] _newPropertyValues = null!;
+        private string[] _primaryKeys = null!;
+        private Transaction _transaction = null!;
+        private string _temp = null!;
+        private IRealmObject? _tempObj;
 
         [Params(20, 100, 1000)]
         public int StringSize { get; set; }
@@ -95,8 +95,8 @@ namespace PerformanceTests
             _newPropertyValues = new string[32];
             for (var i = 0; i < _newPropertyValues.Length; i++)
             {
-                var prop = typeof(StringClass).GetProperty($"Value{i}", BindingFlags.Public | BindingFlags.Instance);
-                _newPropertyValues[i] = (string)prop.GetValue(_robject);
+                var prop = typeof(StringClass).GetProperty($"Value{i}", BindingFlags.Public | BindingFlags.Instance)!;
+                _newPropertyValues[i] = (string)prop.GetValue(_robject)!;
             }
 
             _transaction = _realm.BeginWrite();
@@ -183,7 +183,7 @@ namespace PerformanceTests
         }
 
         [Benchmark(OperationsPerInvoke = 32, Description = "Time to lookup an object with a String PK")]
-        public RealmObject LookupByPK()
+        public IRealmObject? LookupByPK()
         {
             _tempObj = _realm.Find<StringClass>(_primaryKeys[0]);
             _tempObj = _realm.Find<StringClass>(_primaryKeys[1]);
@@ -221,74 +221,74 @@ namespace PerformanceTests
             return _tempObj;
         }
 
-        private class StringClass : RealmObject
+        private partial class StringClass : IRealmObject
         {
             [PrimaryKey]
-            public string Value { get; set; }
+            public string Value { get; set; } = null!;
 
-            public string Value0 { get; set; }
+            public string Value0 { get; set; } = null!;
 
-            public string Value1 { get; set; }
+            public string Value1 { get; set; } = null!;
 
-            public string Value2 { get; set; }
+            public string Value2 { get; set; } = null!;
 
-            public string Value3 { get; set; }
+            public string Value3 { get; set; } = null!;
 
-            public string Value4 { get; set; }
+            public string Value4 { get; set; } = null!;
 
-            public string Value5 { get; set; }
+            public string Value5 { get; set; } = null!;
 
-            public string Value6 { get; set; }
+            public string Value6 { get; set; } = null!;
 
-            public string Value7 { get; set; }
+            public string Value7 { get; set; } = null!;
 
-            public string Value8 { get; set; }
+            public string Value8 { get; set; } = null!;
 
-            public string Value9 { get; set; }
+            public string Value9 { get; set; } = null!;
 
-            public string Value10 { get; set; }
+            public string Value10 { get; set; } = null!;
 
-            public string Value11 { get; set; }
+            public string Value11 { get; set; } = null!;
 
-            public string Value12 { get; set; }
+            public string Value12 { get; set; } = null!;
 
-            public string Value13 { get; set; }
+            public string Value13 { get; set; } = null!;
 
-            public string Value14 { get; set; }
+            public string Value14 { get; set; } = null!;
 
-            public string Value15 { get; set; }
+            public string Value15 { get; set; } = null!;
 
-            public string Value16 { get; set; }
+            public string Value16 { get; set; } = null!;
 
-            public string Value17 { get; set; }
+            public string Value17 { get; set; } = null!;
 
-            public string Value18 { get; set; }
+            public string Value18 { get; set; } = null!;
 
-            public string Value19 { get; set; }
+            public string Value19 { get; set; } = null!;
 
-            public string Value20 { get; set; }
+            public string Value20 { get; set; } = null!;
 
-            public string Value21 { get; set; }
+            public string Value21 { get; set; } = null!;
 
-            public string Value22 { get; set; }
+            public string Value22 { get; set; } = null!;
 
-            public string Value23 { get; set; }
+            public string Value23 { get; set; } = null!;
 
-            public string Value24 { get; set; }
+            public string Value24 { get; set; } = null!;
 
-            public string Value25 { get; set; }
+            public string Value25 { get; set; } = null!;
 
-            public string Value26 { get; set; }
+            public string Value26 { get; set; } = null!;
 
-            public string Value27 { get; set; }
+            public string Value27 { get; set; } = null!;
 
-            public string Value28 { get; set; }
+            public string Value28 { get; set; } = null!;
 
-            public string Value29 { get; set; }
+            public string Value29 { get; set; } = null!;
 
-            public string Value30 { get; set; }
+            public string Value30 { get; set; } = null!;
 
-            public string Value31 { get; set; }
+            public string Value31 { get; set; } = null!;
         }
     }
 }
