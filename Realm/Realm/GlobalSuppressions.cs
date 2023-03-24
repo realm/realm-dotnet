@@ -37,3 +37,4 @@
 [assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "The message handler is disposed by the http client", Scope = "type", Target = "~T:Realms.Sync.AppConfiguration")]
 [assembly: SuppressMessage("Naming", "CA1720:Identifier contains type name", Justification = "The method creates and object, so the name is convenient.", Scope = "member", Target = "~M:Realms.RealmValue.Object(Realms.IRealmObjectBase)~Realms.RealmValue")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "The method is not supposed to be used by users", Scope = "member", Target = "~M:Realms.RealmValue.Object(Realms.IRealmObjectBase)~Realms.RealmValue")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "This is a private event proxied through the public one", Scope = "member", Target = "~E:Realms.Sync.Session._propertyChanged")]

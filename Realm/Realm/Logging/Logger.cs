@@ -87,9 +87,6 @@ namespace Realms.Logging
         /// <summary>
         /// Gets or sets the verbosity of log messages.
         /// </summary>
-        /// <remarks>
-        /// This replaces the deprecated <see cref="AppConfiguration.LogLevel"/>.
-        /// </remarks>
         /// <value>The log level for Realm-originating messages.</value>
         public static LogLevel LogLevel { get; set; } = LogLevel.Info;
 
@@ -97,10 +94,6 @@ namespace Realms.Logging
         /// Gets or sets a custom <see cref="Logger"/> implementation that will be used by
         /// Realm whenever information must be logged.
         /// </summary>
-        /// <remarks>
-        /// This is the logger that will be used to log diagnostic messages from Sync. It
-        /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
-        /// </remarks>
         /// <value>The logger to be used for Realm-originating messages.</value>
         public static Logger Default
         {
@@ -109,11 +102,6 @@ namespace Realms.Logging
         }
 
         internal GCHandle GCHandle => _gcHandle.Value;
-
-        // This is only needed for backward compatibility - the App logger sets its own level separately
-        // Once that is removed, we should use Logger.LogLevel across the board.
-        [Obsolete("Remove when we remove the AppConfiguration.CustomLogger")]
-        internal LogLevel? _logLevel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logger"/> class.
@@ -132,9 +120,7 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (level < (_logLevel ?? LogLevel))
-#pragma warning restore CS0618 // Type or member is obsolete
+            if (level < LogLevel)
             {
                 return;
             }

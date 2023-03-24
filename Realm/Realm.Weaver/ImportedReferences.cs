@@ -112,6 +112,8 @@ namespace RealmWeaver
 
         public TypeReference RealmValue { get; private set; }
 
+        public MethodReference RealmValue_GetNull { get; private set; }
+
         public MethodReference RealmObject_GetValue { get; private set; }
 
         public MethodReference RealmObject_SetValue { get; private set; }
@@ -209,6 +211,15 @@ namespace RealmWeaver
             };
         }
 
+        public MethodReference RealmValue_op_Implicit(TypeReference targetType)
+        {
+            return new MethodReference("op_Implicit", RealmValue, RealmValue)
+            {
+                Parameters = { new ParameterDefinition(targetType) },
+                HasThis = false
+            };
+        }
+
         private void InitializeFrameworkMethods()
         {
             ICollectionOfT_Add = new MethodReference("Add", Types.Void, ICollectionOfT)
@@ -260,6 +271,7 @@ namespace RealmWeaver
             AsymmetricObject = new TypeReference("Realms", "AsymmetricObject", Module, realmAssembly);
             RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
             RealmValue = new TypeReference("Realms", "RealmValue", Module, realmAssembly, valueType: true);
+            RealmValue_GetNull = new MethodReference("get_Null", RealmValue, RealmValue) { HasThis = false };
 
             {
                 Realm_Add = new MethodReference("Add", Types.Void, Realm) { HasThis = true };

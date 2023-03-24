@@ -730,7 +730,7 @@ namespace Realms
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            if (!(obj is RealmValue val))
+            if (obj is not RealmValue val)
             {
                 return false;
             }
@@ -922,7 +922,7 @@ namespace Realms
             }
         }
 
-        internal struct HandlesToCleanup
+        internal readonly struct HandlesToCleanup
         {
             private readonly GCHandle _handle;
             private readonly byte[] _buffer;

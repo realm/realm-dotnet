@@ -53,10 +53,10 @@ namespace Realms.Tests.Database
                 using var realm = GetRealm(config);
                 realm.Write(() =>
                 {
-                    var ownerTim = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
+                    var ownerTim = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicOwner));
                     ownerTim.DynamicApi.Set(nameof(DynamicOwner.Name), "Tim");
 
-                    var dogBilbo = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var dogBilbo = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     dogBilbo.DynamicApi.Set(nameof(DynamicDog.Name), BilbosName);
                     dogBilbo.DynamicApi.Set(nameof(DynamicDog.Color), "Black");
 
@@ -67,7 +67,7 @@ namespace Realms.Tests.Database
                     ownerTim.DynamicApi.GetSet<IRealmObject>(nameof(DynamicOwner.DogsSet)).Add(dogBilbo);
                     ownerTim.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet)).Add("responsible");
 
-                    var dogEarl = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var dogEarl = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     dogEarl.DynamicApi.Set(nameof(DynamicDog.Name), EarlsName);
                     dogEarl.DynamicApi.Set(nameof(DynamicDog.Color), "White");
 
@@ -78,10 +78,10 @@ namespace Realms.Tests.Database
                     ownerTim.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet)).Add("coffee lover");
 
                     // lonely people and dogs
-                    var ownerDani = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicOwner), null);
+                    var ownerDani = realm.DynamicApi.CreateObject(nameof(DynamicOwner));
                     ownerDani.DynamicApi.Set(nameof(DynamicOwner.Name), "Dani");  // the dog-less
 
-                    var dogMaggie = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);  // will remain unassigned
+                    var dogMaggie = realm.DynamicApi.CreateObject(nameof(DynamicDog));  // will remain unassigned
                     dogMaggie.DynamicApi.Set(nameof(DynamicDog.Name), MaggiesName);
                     dogMaggie.DynamicApi.Set(nameof(DynamicDog.Color), "Grey");
                 });
@@ -98,10 +98,10 @@ namespace Realms.Tests.Database
         }
 
         private static IRealmObject FindOwner(Realm realm, string name = "Tim")
-            => ((IQueryable<IRealmObject>)realm.DynamicApi.All(nameof(DynamicOwner))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicOwner.Name)) == name);
+            => realm.DynamicApi.All(nameof(DynamicOwner)).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicOwner.Name)) == name);
 
         private static IRealmObject FindDog(Realm realm, string name = MaggiesName)
-            => ((IQueryable<IRealmObject>)realm.DynamicApi.All(nameof(DynamicDog))).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicDog.Name)) == name);
+            => realm.DynamicApi.All(nameof(DynamicDog)).ToArray().Single(o => o.DynamicApi.Get<string>(nameof(DynamicDog.Name)) == name);
 
         private static IList<IRealmObject> GetDogs(IRealmObject owner)
             => owner.DynamicApi.GetList<IRealmObject>(nameof(DynamicOwner.Dogs));
@@ -870,7 +870,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var pipi = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     pipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -909,7 +909,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    dynamic pipi = realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     pipi.Name = PipilottasName;
                     pipi.Color = "Orange";
 
@@ -946,7 +946,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var pipi = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     pipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     pipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -1007,7 +1007,7 @@ namespace Realms.Tests.Database
 
                 realm.Write(() =>
                 {
-                    var pipi = realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    dynamic pipi = realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     pipi.Name = PipilottasName;
                     pipi.Color = "Orange";
 
@@ -1254,7 +1254,7 @@ namespace Realms.Tests.Database
 
                 var pipi = realm.Write(() =>
                 {
-                    var innerPipi = (IRealmObject)(object)realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    var innerPipi = (IRealmObject)realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     innerPipi.DynamicApi.Set(nameof(DynamicDog.Name), PipilottasName);
                     innerPipi.DynamicApi.Set(nameof(DynamicDog.Color), "Orange");
 
@@ -1298,7 +1298,7 @@ namespace Realms.Tests.Database
 
                 var pipi = realm.Write(() =>
                 {
-                    var innerPipi = realm.DynamicApi.CreateObject(nameof(DynamicDog), null);
+                    dynamic innerPipi = realm.DynamicApi.CreateObject(nameof(DynamicDog));
                     innerPipi.Name = PipilottasName;
                     innerPipi.Color = "Orange";
 

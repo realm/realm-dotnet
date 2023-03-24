@@ -628,23 +628,26 @@ namespace Realms
             return new ObjectHandle(this, result);
         }
 
-        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, object primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
+        public ObjectHandle CreateObjectWithPrimaryKey(Property pkProperty, in RealmValue primaryKey, TableKey tableKey, string parentType, bool update, out bool isNew)
         {
-            if (primaryKey == null && !pkProperty.Type.IsNullable())
+            if (primaryKey.Type == RealmValueType.Null)
             {
-                throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
+                // If passed primary key value is null, validate that the property is nullable
+                if (!pkProperty.Type.IsNullable())
+                {
+                    throw new ArgumentException($"{parentType}'s primary key is defined as non-nullable, but the value passed is null");
+                }
+            }
+            else
+            {
+                // If passed primary key value is not null, we should validate that the types match
+                if (primaryKey.Type != pkProperty.Type.ToRealmValueType())
+                {
+                    throw new ArgumentException($"{parentType}'s primary key is defined as {pkProperty.Type.ToRealmValueType()}, but the value passed is of type {pkProperty.Type}");
+                }
             }
 
-            RealmValue pkValue = pkProperty.Type.ToRealmValueType() switch
-            {
-                RealmValueType.String => (string)primaryKey,
-                RealmValueType.Int => primaryKey == null ? (long?)null : Convert.ToInt64(primaryKey),
-                RealmValueType.ObjectId => (ObjectId?)primaryKey,
-                RealmValueType.Guid => (Guid?)primaryKey,
-                _ => throw new NotSupportedException($"Primary key of type {pkProperty.Type} is not supported"),
-            };
-
-            var (primitiveValue, handles) = pkValue.ToNative();
+            var (primitiveValue, handles) = primaryKey.ToNative();
             var result = NativeMethods.create_object_unique(this, tableKey.Value, primitiveValue, update, out isNew, out var ex);
             handles?.Dispose();
             ex.ThrowIfNecessary();

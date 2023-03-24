@@ -66,7 +66,7 @@ namespace Realms.Tests.Database
         {
             var query = _realm.All<Person>();
             ChangeSet changes = null;
-            void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e) => changes = c;
+            void OnNotification(IRealmCollection<Person> s, ChangeSet c) => changes = c;
 
             using (query.SubscribeForNotifications(OnNotification))
             {
@@ -84,7 +84,7 @@ namespace Realms.Tests.Database
             var container = new OrderedContainer();
             _realm.Write(() => _realm.Add(container));
             ChangeSet changes = null;
-            void OnNotification(IRealmCollection<OrderedObject> s, ChangeSet c, Exception e) => changes = c;
+            void OnNotification(IRealmCollection<OrderedObject> s, ChangeSet c) => changes = c;
 
             using (container.Items.SubscribeForNotifications(OnNotification))
             {
@@ -149,7 +149,7 @@ namespace Realms.Tests.Database
             var (token, container) = _realm.Write(() =>
             {
                 var container = _realm.Add(new OrderedContainer());
-                var token = container.ItemsDictionary.SubscribeForKeyNotifications((dict, changes, error) =>
+                var token = container.ItemsDictionary.SubscribeForKeyNotifications((dict, changes) =>
                 {
                     notificationsCount++;
                 });
@@ -1094,13 +1094,9 @@ namespace Realms.Tests.Database
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
                 var query = _realm.All<Person>();
-                void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e)
+                void OnNotification(IRealmCollection<Person> s, ChangeSet c)
                 {
-                    if (e != null)
-                    {
-                        tcs.TrySetException(e);
-                    }
-                    else if (c != null)
+                    if (c != null)
                     {
                         tcs.TrySetResult(c);
                     }
@@ -1125,7 +1121,7 @@ namespace Realms.Tests.Database
             {
                 var initCalls = 0;
                 var updateCalls = 0;
-                void OnNotification(IRealmCollection<Person> _, ChangeSet changes, Exception __)
+                void OnNotification(IRealmCollection<Person> _, ChangeSet changes)
                 {
                     if (changes == null)
                     {
@@ -1166,7 +1162,7 @@ namespace Realms.Tests.Database
         public void ModifiedIndices_ReportCorrectlyForOldAndNewVersions()
         {
             ChangeSet changes = null;
-            void cb(IRealmCollection<IntPrimaryKeyWithValueObject> s, ChangeSet c, Exception e) => changes = c;
+            void cb(IRealmCollection<IntPrimaryKeyWithValueObject> s, ChangeSet c) => changes = c;
 
             var toDelete = new IntPrimaryKeyWithValueObject { Id = 1 };
             var toModify = new IntPrimaryKeyWithValueObject { Id = 2 };
@@ -1262,7 +1258,7 @@ namespace Realms.Tests.Database
             // This is testing using the internal API because we're not exposing the shallow/keypath functionality publicly yet.
             var results = (RealmResults<TestNotificationObject>)_realm.All<TestNotificationObject>();
 
-            using var token = results.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = results.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1300,7 +1296,7 @@ namespace Realms.Tests.Database
 
             var list = (RealmList<IntPropertyObject>)testObject.ObjectList;
 
-            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = list.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1361,7 +1357,7 @@ namespace Realms.Tests.Database
 
             var list = (RealmList<int>)testObject.Int32List;
 
-            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = list.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1415,7 +1411,7 @@ namespace Realms.Tests.Database
 
             var set = (RealmSet<IntPropertyObject>)testObject.ObjectSet;
 
-            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = set.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1461,7 +1457,7 @@ namespace Realms.Tests.Database
 
             var set = (RealmSet<int>)testObject.Int32Set;
 
-            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = set.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1500,7 +1496,7 @@ namespace Realms.Tests.Database
 
             var dict = (RealmDictionary<IntPropertyObject>)testObject.ObjectDict;
 
-            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1553,7 +1549,7 @@ namespace Realms.Tests.Database
 
             var dict = (RealmDictionary<int>)testObject.Int32Dict;
 
-            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {

@@ -121,10 +121,7 @@ namespace Realms
         /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the work.</param>
         public static Task<Realm> GetInstanceAsync(RealmConfigurationBase config = null, CancellationToken cancellationToken = default)
         {
-            if (config == null)
-            {
-                config = RealmConfiguration.DefaultConfiguration;
-            }
+            config ??= RealmConfiguration.DefaultConfiguration;
 
             return config.CreateRealmAsync(cancellationToken);
         }
@@ -186,7 +183,7 @@ namespace Realms
         /// </summary>
         /// <value>A <see cref="Dynamic"/> instance that wraps this Realm.</value>
         [Preserve]
-        public Dynamic DynamicApi { get; }
+        public Dynamic DynamicApi => new(this);
 
         /// <summary>
         /// Gets a value indicating whether there is an active write transaction associated
@@ -327,7 +324,6 @@ namespace Realms
             Metadata = metadata ?? new RealmMetadata(schema.Select(CreateRealmObjectMetadata));
             Schema = schema;
             IsFrozen = SharedRealmHandle.IsFrozen;
-            DynamicApi = new Dynamic(this);
         }
 
         private Metadata CreateRealmObjectMetadata(ObjectSchema schema)
@@ -892,54 +888,6 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
-        /// the <see cref="Transaction"/> will be committed.
-        /// </summary>
-        /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="action"/> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
-        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
-        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// await realm.WriteAsync(tempRealm =&gt;
-        /// {
-        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
-        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
-        ///     for (var i = 0; i &lt; 15; i++)
-        ///     {
-        ///         tempRealm.Add(new Dog
-        ///         {
-        ///             Breed = "Dalmatian",
-        ///             Mum = missis,
-        ///             Dad = pongo
-        ///         });
-        ///     }
-        /// });
-        /// </code>
-        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
-        /// </example>
-        /// <param name="action">
-        /// Action to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
-        /// </param>
-        /// <returns>An awaitable <see cref="Task"/>.</returns>
-        [Obsolete("Use Realm.WriteAsync(Action action) instead.")]
-        public Task WriteAsync(Action<Realm> action)
-        {
-            ThrowIfDisposed();
-
-            Argument.NotNull(action, nameof(action));
-
-            return WriteAsync(tempRealm =>
-            {
-                action(tempRealm);
-                return true;
-            });
-        }
-
-        /// <summary>
         /// Execute an action inside a temporary <see cref="Transaction"/>. If no exception is thrown, the <see cref="Transaction"/> will be committed.
         /// <b>If</b> the method is not called from a thread with a <see cref="SynchronizationContext"/> (like the UI thread), it behaves synchronously.
         /// </summary>
@@ -972,70 +920,6 @@ namespace Realms
                 action();
                 return true;
             }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
-        /// the <see cref="Transaction"/> will be committed.
-        /// </summary>
-        /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
-        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
-        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var dog = await realm.WriteAsync(tempRealm =&gt;
-        /// {
-        ///     return tempRealm.Add(new Dog
-        ///     {
-        ///         Breed = "Dalmatian",
-        ///     });
-        /// });
-        /// </code>
-        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
-        /// </example>
-        /// <param name="function">
-        /// Delegate with one return value to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
-        /// </param>
-        /// <typeparam name="T">The type returned by the input delegate.</typeparam>
-        /// <returns>An awaitable <see cref="Task"/> with return type <typeparamref name="T"/>.</returns>
-        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
-        public async Task<T> WriteAsync<T>(Func<Realm, T> function)
-        {
-            ThrowIfDisposed();
-
-            Argument.NotNull(function, nameof(function));
-
-            // If running on background thread, execute synchronously.
-            if (!AsyncHelper.TryGetValidContext(out _))
-            {
-                return Write(() => function(this));
-            }
-
-            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            var result = await Task.Run(() =>
-            {
-                using var realm = GetInstance(Config);
-                var writeAction = realm.Write(() => function(realm));
-                if (writeAction is IRealmObjectBase rob && rob.IsManaged && rob.IsValid)
-                {
-                    return (object)ThreadSafeReference.Create(rob);
-                }
-
-                return writeAction;
-            });
-
-            await RefreshAsync();
-
-            if (result is ThreadSafeReference.Object<IRealmObjectBase> tsr)
-            {
-                return (T)(object)ResolveReference(tsr);
-            }
-
-            return (T)result;
         }
 
         /// <summary>
@@ -1082,151 +966,6 @@ namespace Realms
 
             await transaction.CommitAsync(CancellationToken.None);
             return result;
-        }
-
-        /// <summary>
-        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
-        /// the <see cref="Transaction"/> will be committed.
-        /// </summary>
-        /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
-        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
-        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var dogs = await realm.WriteAsync(tempRealm =&gt;
-        /// {
-        ///     tempRealm.Add(new Dog
-        ///     {
-        ///         Breed = "Dalmatian",
-        ///     });
-        ///
-        ///     tempRealm.Add(new Dog
-        ///     {
-        ///         Breed = "Poddle",
-        ///     });
-        ///
-        ///     return tempRealm.All&lt;Dog&gt;();
-        /// });
-        /// </code>
-        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
-        /// </example>
-        /// <param name="function">
-        /// Delegate with return type <see cref="IQueryable{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
-        /// </param>
-        /// <typeparam name="T">The type of data in the <see cref="IQueryable{T}"/>.</typeparam>
-        /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IQueryable{T}"/>.</returns>
-        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
-        public async Task<IQueryable<T>> WriteAsync<T>(Func<Realm, IQueryable<T>> function)
-            where T : IRealmObjectBase
-        {
-            ThrowIfDisposed();
-
-            Argument.NotNull(function, nameof(function));
-
-            // If running on background thread, execute synchronously.
-            if (!AsyncHelper.TryGetValidContext(out _))
-            {
-                return Write(() => function(this));
-            }
-
-            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            var result = await Task.Run(() =>
-            {
-                using var realm = GetInstance(Config);
-                var writeResult = realm.Write(() => function(realm));
-                if (writeResult is RealmResults<T> rr && rr.IsValid && rr.IsManaged)
-                {
-                    return (object)ThreadSafeReference.Create(writeResult);
-                }
-
-                return writeResult;
-            });
-
-            await RefreshAsync();
-
-            if (result is ThreadSafeReference.Query<T> tsr)
-            {
-                return ResolveReference(tsr);
-            }
-
-            return (IQueryable<T>)result;
-        }
-
-        /// <summary>
-        /// Execute a delegate inside a temporary <see cref="Transaction"/> on a worker thread, <b>if</b> called from UI thread. If no exception is thrown,
-        /// the <see cref="Transaction"/> will be committed.
-        /// </summary>
-        /// <remarks>
-        /// Opens a new instance of this Realm on a worker thread and executes <paramref name="function"/> inside a write <see cref="Transaction"/>.
-        /// <see cref="Realm"/>s and <see cref="RealmObject"/>s/<see cref="EmbeddedObject"/>s are thread-affine, so capturing any such objects in
-        /// the <c>action</c> delegate will lead to errors if they're used on the worker thread. Note that it checks the
-        /// <see cref="SynchronizationContext"/> to determine if <c>Current</c> is null, as a test to see if you are on the UI thread
-        /// and will otherwise just call Write without starting a new thread. So if you know you are invoking from a worker thread, just call Write instead.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var markDogs = await realm.WriteAsync(tempRealm =&gt;
-        /// {
-        ///     var mark = tempRealm.All&lt;Person&gt;().Single(d =&gt; d.Name == "Mark");
-        ///
-        ///     mark.Dogs.Add(new Dog
-        ///     {
-        ///         Breed = "Dalmatian",
-        ///     });
-        ///
-        ///     mark.Dogs.Add(new Dog
-        ///     {
-        ///         Breed = "Poodle",
-        ///     });
-        ///
-        ///     return mark.Dogs;
-        /// });
-        /// </code>
-        /// <b>Note</b> that inside the action, we use <c>tempRealm</c>.
-        /// </example>
-        /// <param name="function">
-        /// Delegate with return type <see cref="IList{T}"/> to execute inside a <see cref="Transaction"/>, creating, updating, or removing objects.
-        /// </param>
-        /// <typeparam name="T">The type of data in the <see cref="IList{T}"/>.</typeparam>
-        /// <returns>An awaitable <see cref="Task"/> with return type <see cref="IList{T}"/>.</returns>
-        [Obsolete("Use Realm.WriteAsync(Func<T> function) instead.")]
-        public async Task<IList<T>> WriteAsync<T>(Func<Realm, IList<T>> function)
-        {
-            ThrowIfDisposed();
-
-            Argument.NotNull(function, nameof(function));
-
-            // If running on background thread, execute synchronously.
-            if (!AsyncHelper.TryGetValidContext(out _))
-            {
-                return Write(() => function(this));
-            }
-
-            // If we are on UI thread the SynchronizationContext will be set (often also set on long-lived workers to use Post back to UI thread).
-            var result = await Task.Run(() =>
-            {
-                using var realm = GetInstance(Config);
-                var writeResult = realm.Write(() => function(realm));
-                if (writeResult is RealmList<T> rl && rl.IsValid && rl.IsManaged)
-                {
-                    return (object)ThreadSafeReference.Create(writeResult);
-                }
-
-                return writeResult;
-            });
-
-            await RefreshAsync();
-
-            if (result is ThreadSafeReference.List<T> tsr)
-            {
-                return ResolveReference(tsr);
-            }
-
-            return (IList<T>)result;
         }
 
         /// <summary>
@@ -1364,7 +1103,7 @@ namespace Realms
                 return (T)MakeObject(metadata, objectHandle);
             }
 
-            return default(T);
+            return default;
         }
 
         #endregion Quick Find using primary key
@@ -1392,7 +1131,7 @@ namespace Realms
             if (!objectHandle.IsValid)
             {
                 objectHandle.Dispose();
-                return default(T);
+                return default;
             }
 
             if (!Metadata.TryGetValue(reference.Metadata.Schema.Name, out var metadata))
@@ -1673,9 +1412,9 @@ namespace Realms
 
         internal class State
         {
-            private readonly List<WeakReference<Realm>> _weakRealms = new List<WeakReference<Realm>>();
+            private readonly List<WeakReference<Realm>> _weakRealms = new();
 
-            public readonly Queue<Action> AfterTransactionQueue = new Queue<Action>();
+            public readonly Queue<Action> AfterTransactionQueue = new();
 
             internal void NotifyChanged(EventArgs e)
             {
@@ -1759,7 +1498,7 @@ namespace Realms
         /// A class that exposes the dynamic API for a <see cref="Realm"/> instance.
         /// </summary>
         [Preserve(AllMembers = true)]
-        public class Dynamic
+        public readonly struct Dynamic
         {
             private readonly Realm _realm;
 
@@ -1769,14 +1508,10 @@ namespace Realms
             }
 
             /// <summary>
-            /// Factory for a managed object in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
             /// </summary>
             /// <returns>A dynamically-accessed Realm object.</returns>
             /// <param name="className">The type of object to create as defined in the schema.</param>
-            /// <param name="primaryKey">
-            /// The primary key of object to be created. If the object doesn't have primary key defined, this argument
-            /// is ignored.
-            /// </param>
             /// <exception cref="RealmInvalidTransactionException">
             /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
             /// </exception>
@@ -1784,7 +1519,7 @@ namespace Realms
             /// If you pass <c>null</c> for an object with string primary key.
             /// </exception>
             /// <exception cref="ArgumentException">
-            /// If you pass <c>primaryKey</c> with type that is different from the type, defined in the schema.
+            /// If you use this method on an object that has primary key defined.
             /// </exception>
             /// <remarks>
             /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
@@ -1792,23 +1527,99 @@ namespace Realms
             /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
             /// object will be an instance of a user-defined class.
             /// </remarks>
-            public dynamic CreateObject(string className, object primaryKey)
-            {
-                _realm.ThrowIfDisposed();
+            public IRealmObjectBase CreateObject(string className) => CreateObjectCore(className, primaryKey: null);
 
-                Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
+            /// <summary>
+            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// </summary>
+            /// <returns>A dynamically-accessed Realm object.</returns>
+            /// <param name="className">The type of object to create as defined in the schema.</param>
+            /// <param name="primaryKey">The primary key of the object to create.</param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentNullException">
+            /// If you pass <c>null</c> for an object with string primary key.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
+            /// </exception>
+            /// <remarks>
+            /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
+            /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
+            /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
+            /// object will be an instance of a user-defined class.
+            /// </remarks>
+            public IRealmObjectBase CreateObject(string className, long? primaryKey) => CreateObjectCore(className, primaryKey);
 
-                var result = metadata.Helper.CreateInstance();
+            /// <summary>
+            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// </summary>
+            /// <returns>A dynamically-accessed Realm object.</returns>
+            /// <param name="className">The type of object to create as defined in the schema.</param>
+            /// <param name="primaryKey">The primary key of the object to create.</param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentNullException">
+            /// If you pass <c>null</c> for an object with string primary key.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
+            /// </exception>
+            /// <remarks>
+            /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
+            /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
+            /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
+            /// object will be an instance of a user-defined class.
+            /// </remarks>
+            public IRealmObjectBase CreateObject(string className, string primaryKey) => CreateObjectCore(className, primaryKey);
 
-                var pkProperty = metadata.Schema.PrimaryKeyProperty;
-                var objectHandle = pkProperty.HasValue
-                    ? _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey, metadata.TableKey, className, update: false, isNew: out var _)
-                    : _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
+            /// <summary>
+            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// </summary>
+            /// <returns>A dynamically-accessed Realm object.</returns>
+            /// <param name="className">The type of object to create as defined in the schema.</param>
+            /// <param name="primaryKey">The primary key of the object to create.</param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentNullException">
+            /// If you pass <c>null</c> for an object with string primary key.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
+            /// </exception>
+            /// <remarks>
+            /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
+            /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
+            /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
+            /// object will be an instance of a user-defined class.
+            /// </remarks>
+            public IRealmObjectBase CreateObject(string className, ObjectId? primaryKey) => CreateObjectCore(className, primaryKey);
 
-                result.CreateAndSetAccessor(objectHandle, _realm, metadata);
-
-                return result;
-            }
+            /// <summary>
+            /// Factory for a managed object without a primary key in a realm. Only valid within a write <see cref="Transaction"/>.
+            /// </summary>
+            /// <returns>A dynamically-accessed Realm object.</returns>
+            /// <param name="className">The type of object to create as defined in the schema.</param>
+            /// <param name="primaryKey">The primary key of the object to create.</param>
+            /// <exception cref="RealmInvalidTransactionException">
+            /// If you invoke this when there is no write <see cref="Transaction"/> active on the <see cref="Realm"/>.
+            /// </exception>
+            /// <exception cref="ArgumentNullException">
+            /// If you pass <c>null</c> for an object with string primary key.
+            /// </exception>
+            /// <exception cref="ArgumentException">
+            /// If the type of the <paramref name="primaryKey"/> is different from the one specified in the schema.
+            /// </exception>
+            /// <remarks>
+            /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version
+            /// of a realm) the returned object will be purely dynamic. If the realm has been created from a typed schema as
+            /// is the default case when calling <see cref="GetInstance(RealmConfigurationBase)"/> the returned
+            /// object will be an instance of a user-defined class.
+            /// </remarks>
+            public IRealmObjectBase CreateObject(string className, Guid? primaryKey) => CreateObjectCore(className, primaryKey);
 
             /// <summary>
             /// Factory for a managed embedded object in a realm. Only valid within a write <see cref="Transaction"/>.
@@ -1820,7 +1631,7 @@ namespace Realms
             /// </param>
             /// <param name="propertyName">The property to which the newly created embedded object will be assigned.</param>
             /// <returns>A dynamically-accessed embedded object.</returns>
-            public dynamic CreateEmbeddedObjectForProperty(IRealmObjectBase parent, string propertyName)
+            public IEmbeddedObject CreateEmbeddedObjectForProperty(IRealmObjectBase parent, string propertyName)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1831,7 +1642,7 @@ namespace Realms
                 Argument.Ensure(_realm.Metadata.TryGetValue(property.ObjectType, out var metadata), $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not in the limited set of classes for this realm", nameof(propertyName));
                 Argument.Ensure(metadata.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject, $"The class {property.ObjectType} linked to by {parent.GetType().Name}.{propertyName} is not embedded", nameof(propertyName));
 
-                var obj = metadata.Helper.CreateInstance();
+                var obj = (IEmbeddedObject)metadata.Helper.CreateInstance();
                 var handle = parent.GetObjectHandle().CreateEmbeddedObjectForProperty(propertyName, parent.GetObjectMetadata());
 
                 obj.CreateAndSetAccessor(handle, _realm, metadata);
@@ -1852,7 +1663,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToList(object list)
+            public IEmbeddedObject AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
             }
@@ -1871,7 +1682,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic InsertEmbeddedObjectInList(object list, int index)
+            public IEmbeddedObject InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1898,7 +1709,7 @@ namespace Realms
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInList(object list, int index)
+            public IEmbeddedObject SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
                 {
@@ -1921,7 +1732,7 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic AddEmbeddedObjectToDictionary(object dictionary, string key)
+            public IEmbeddedObject AddEmbeddedObjectToDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
@@ -1941,7 +1752,7 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
             [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
-            public dynamic SetEmbeddedObjectInDictionary(object dictionary, string key)
+            public IEmbeddedObject SetEmbeddedObjectInDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
 
@@ -1954,7 +1765,7 @@ namespace Realms
             /// <param name="className">The type of the objects as defined in the schema.</param>
             /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
             /// <returns>A queryable collection that without further filtering, allows iterating all objects of className, in this realm.</returns>
-            public IQueryable<dynamic> All(string className)
+            public IQueryable<IRealmObject> All(string className)
             {
                 _realm.ThrowIfDisposed();
 
@@ -1995,7 +1806,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, long? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject Find(string className, long? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2006,7 +1817,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, string primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject Find(string className, string primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2019,7 +1830,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject Find(string className, ObjectId? primaryKey) => FindCore(className, primaryKey);
 
             /// <summary>
             /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -2032,7 +1843,7 @@ namespace Realms
             /// <exception cref="RealmClassLacksPrimaryKeyException">
             /// If the <see cref="RealmObject"/> class T lacks <see cref="PrimaryKeyAttribute"/>.
             /// </exception>
-            public dynamic Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
+            public IRealmObject Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
             [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
             internal IRealmObject FindCore(string className, RealmValue primaryKey)
@@ -2048,13 +1859,42 @@ namespace Realms
                 return null;
             }
 
+            private IRealmObjectBase CreateObjectCore(string className, RealmValue? primaryKey)
+            {
+                _realm.ThrowIfDisposed();
+
+                Argument.Ensure(_realm.Metadata.TryGetValue(className, out var metadata), $"The class {className} is not in the limited set of classes for this realm", nameof(className));
+
+                var result = metadata.Helper.CreateInstance();
+
+                var pkProperty = metadata.Schema.PrimaryKeyProperty;
+
+                ObjectHandle objectHandle;
+                if (pkProperty.HasValue)
+                {
+                    Argument.Ensure(primaryKey.HasValue, $"The class {className} has primary key defined, but you didn't pass one.", nameof(primaryKey));
+
+                    objectHandle = _realm.SharedRealmHandle.CreateObjectWithPrimaryKey(pkProperty.Value, primaryKey.Value, metadata.TableKey, className, update: false, isNew: out var _);
+                }
+                else
+                {
+                    Argument.Ensure(!primaryKey.HasValue, $"The class {className} doesn't have a primary key defined, but you passed {primaryKey}.", nameof(primaryKey));
+
+                    objectHandle = _realm.SharedRealmHandle.CreateObject(metadata.TableKey);
+                }
+
+                result.CreateAndSetAccessor(objectHandle, _realm, metadata);
+
+                return result;
+            }
+
             private IEmbeddedObject PerformEmbeddedListOperation(object list, Func<ListHandle, ObjectHandle> getHandle)
             {
                 _realm.ThrowIfDisposed();
 
                 Argument.NotNull(list, nameof(list));
 
-                if (!(list is IRealmCollectionBase<ListHandle> realmList))
+                if (list is not IRealmCollectionBase<ListHandle> realmList)
                 {
                     throw new ArgumentException($"Expected list to be IList<EmbeddedObject> but was ${list.GetType().FullName} instead.", nameof(list));
                 }
@@ -2072,7 +1912,7 @@ namespace Realms
 
                 Argument.NotNull(dictionary, nameof(dictionary));
 
-                if (!(dictionary is IRealmCollectionBase<DictionaryHandle> realmDict))
+                if (dictionary is not IRealmCollectionBase<DictionaryHandle> realmDict)
                 {
                     throw new ArgumentException($"Expected dictionary to be IDictionary<string, EmbeddedObject> but was ${dictionary.GetType().FullName} instead.", nameof(dictionary));
                 }

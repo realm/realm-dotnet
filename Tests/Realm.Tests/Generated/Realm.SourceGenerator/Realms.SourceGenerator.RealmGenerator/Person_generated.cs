@@ -13,8 +13,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -263,9 +261,9 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new Person();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }

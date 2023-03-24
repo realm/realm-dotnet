@@ -115,21 +115,6 @@ namespace Realms.Schema
         }
 
         /// <summary>
-        /// Finds the definition of a class in this schema.
-        /// </summary>
-        /// <param name="name">A valid class name which may be in this schema.</param>
-        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
-        /// <returns>An <see cref="ObjectSchema"/> or <c>null</c> to indicate not found.</returns>
-        [Obsolete("This method is obsolete. Use TryFindObjectSchema instead.")]
-        public ObjectSchema Find(string name)
-        {
-            Argument.NotNullOrEmpty(name, nameof(name));
-
-            _objects.TryGetValue(name, out var obj);
-            return obj;
-        }
-
-        /// <summary>
         /// Attempts to find the definition of a class in this schema.
         /// </summary>
         /// <param name="name">A valid class name which may be in this schema.</param>

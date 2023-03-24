@@ -330,12 +330,6 @@ namespace Baas
                 new AuthMetadataField("maxAge", "max_age"),
             });
 
-            await CreateService(app, "gcm", "gcm", new
-            {
-                senderId = "gcm",
-                apiKey = "gcm",
-            });
-
             return app;
         }
 

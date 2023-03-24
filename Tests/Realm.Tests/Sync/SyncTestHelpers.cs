@@ -68,7 +68,7 @@ namespace Realms.Tests.Sync
 
         public static string RemoteMongoDBName(string prefix = "Schema") => $"{prefix}_{_baasClient?.Differentiator}";
 
-        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
+        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
             if (_baseUri == null)
             {
@@ -80,30 +80,7 @@ namespace Realms.Tests.Sync
                 await CreateBaasAppsAsync();
             });
 
-            if (ensureNoSessionErrors)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                var tcs = new TaskCompletionSource<object>();
-                Session.Error += HandleSessionError;
-                try
-                {
-                    TestHelpers.RunAsyncTest(testFunc, timeout, tcs.Task);
-                }
-                finally
-                {
-                    Session.Error -= HandleSessionError;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                void HandleSessionError(object _, ErrorEventArgs errorArgs)
-                {
-                    tcs.TrySetException(errorArgs.Exception);
-                }
-            }
-            else
-            {
-                TestHelpers.RunAsyncTest(testFunc, timeout);
-            }
+            TestHelpers.RunAsyncTest(testFunc, timeout);
 
             // TODO: remove when https://github.com/realm/realm-core/issues/6052 is fixed
             Task.Delay(1000).Wait();

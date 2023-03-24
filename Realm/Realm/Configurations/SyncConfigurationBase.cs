@@ -94,6 +94,16 @@ namespace Realms.Sync
         /// <value><c>true</c> to throw an error if a non-fatal session error occurs, <c>false</c> otherwise.</value>
         public bool CancelAsyncOperationsOnNonFatalErrors { get; set; }
 
+        /// <summary>
+        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
+        /// </summary>
+        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
+        public new byte[] EncryptionKey
+        {
+            get => base.EncryptionKey;
+            set => base.EncryptionKey = value;
+        }
+
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
         /// <summary>

@@ -300,7 +300,7 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithAllTypes();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IAsymmetricObjectWithAllTypesAccessor)instance.Accessor).Id;
                 return true;
