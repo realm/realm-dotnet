@@ -71,8 +71,13 @@ namespace Realms
             _customStorageFolder = value;
         }
 
-        public static void AddPotentialStorageFolder(string folder)
+        public static void AddPotentialStorageFolder(string? folder)
         {
+            if (folder == null)
+            {
+                return;
+            }
+
 #if DEBUG
             if (_defaultStorageFolder.IsValueCreated)
             {

@@ -277,8 +277,7 @@ namespace Realms.Sync
 
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
-                var messageString = error.message.AsString();
-                var logUrlString = error.log_url.AsString();
+                string messageString = error.message!;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
@@ -296,7 +295,7 @@ namespace Realms.Sync
                 {
                     var compensatingWrites = error.compensating_writes
                         .AsEnumerable()
-                        .Select(c => new CompensatingWriteInfo(c.object_name, c.reason, new RealmValue(c.primary_key)))
+                        .Select(c => new CompensatingWriteInfo(c.object_name!, c.reason!, new RealmValue(c.primary_key)))
                         .ToArray();
                     exception = new CompensatingWriteException(messageString, compensatingWrites);
                 }
@@ -305,7 +304,7 @@ namespace Realms.Sync
                     exception = new SessionException(messageString, error.error_code);
                 }
 
-                exception.HelpLink = logUrlString;
+                exception.HelpLink = error.log_url;
                 syncConfig.OnSessionError?.Invoke(session, exception);
             }
             catch (Exception ex)
