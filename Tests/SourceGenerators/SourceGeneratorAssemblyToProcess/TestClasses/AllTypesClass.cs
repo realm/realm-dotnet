@@ -51,15 +51,13 @@ namespace SourceGeneratorAssemblyToProcess
 
         public Guid GuidProperty { get; set; }
 
-        [Required]
-        public string RequiredStringProperty { get; set; }
+        public string RequiredStringProperty { get; set; } = "";
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        [Required]
-        public byte[] RequiredByteArrayProperty { get; set; }
+        public byte[] RequiredByteArrayProperty { get; set; } = Array.Empty<byte>();
 
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[]? ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
@@ -97,30 +95,26 @@ namespace SourceGeneratorAssemblyToProcess
 
         public RealmValue RealmValueProperty { get; set; }
 
-        public AllTypesClass ObjectProperty { get; set; }
+        public AllTypesClass? ObjectProperty { get; set; }
 
-        public IList<AllTypesClass> ObjectCollectionProperty { get; }
+        public IList<AllTypesClass> ObjectCollectionProperty { get; } = null!;
 
-        public IList<int> IntCollectionProperty { get; }
+        public IList<int> IntCollectionProperty { get; } = null!;
 
-        public IList<int?> NullableIntCollectionProperty { get; }
+        public IList<int?> NullableIntCollectionProperty { get; } = null!;
 
-        public IList<string> StringCollectionProperty { get; }
+        public IList<string> StringCollectionProperty { get; } = null!;
 
-        [Required]
-        public IList<string> RequiredStringListProperty { get; }
+        public IList<string> RequiredStringListProperty { get; } = null!;
 
-        [Required]
-        public ISet<string> RequiredStringSetProperty { get; }
+        public ISet<string> RequiredStringSetProperty { get; } = null!;
 
-        [Required]
-        public IDictionary<string, string> RequiredStringDictionaryProperty { get; }
+        public IDictionary<string, string> RequiredStringDictionaryProperty { get; } = null!;
 
-        public IList<string> NonRequiredStringListProperty { get; }
+        public IList<string?> NonRequiredStringListProperty { get; } = null!;
 
-        public ISet<string> NonRequiredStringSetProperty { get; }
+        public ISet<string?> NonRequiredStringSetProperty { get; } = null!;
 
-        public IDictionary<string, string> NonRequiredStringDictionaryProperty { get; }
-
+        public IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; } = null!;
     }
 }

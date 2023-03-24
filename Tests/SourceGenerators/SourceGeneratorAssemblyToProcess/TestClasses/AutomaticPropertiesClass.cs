@@ -24,6 +24,6 @@ namespace SourceGeneratorAssemblyToProcess
     {
         public int Id { get; set; }
 
-        public string NonAutomaticProp => null;
+        public string NonAutomaticProp => "abc";
     }
 }

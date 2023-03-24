@@ -21,6 +21,9 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(AllTypesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="AllTypesClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("CharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
@@ -62,7 +65,7 @@ namespace SourceGeneratorAssemblyToProcess
             Realms.Schema.Property.ObjectList("ObjectCollectionProperty", "AllTypesClass", managedName: "ObjectCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("IntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "IntCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("NullableIntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableIntCollectionProperty"),
-            Realms.Schema.Property.PrimitiveList("StringCollectionProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "StringCollectionProperty"),
+            Realms.Schema.Property.PrimitiveList("StringCollectionProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("RequiredStringListProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringListProperty"),
             Realms.Schema.Property.PrimitiveSet("RequiredStringSetProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringSetProperty"),
             Realms.Schema.Property.PrimitiveDictionary("RequiredStringDictionaryProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringDictionaryProperty"),
@@ -79,24 +82,31 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal IAllTypesClassAccessor Accessor => _accessor ??= new AllTypesClassUnmanagedAccessor(typeof(AllTypesClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -159,16 +169,16 @@ namespace SourceGeneratorAssemblyToProcess
                 newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
-                if (!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.RequiredStringProperty != default(string))
                 {
-                    newAccessor.StringProperty = oldAccessor.StringProperty;
+                    newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
                 }
-                newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
-                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                newAccessor.StringProperty = oldAccessor.StringProperty;
+                if (!skipDefaults || oldAccessor.RequiredByteArrayProperty != default(byte[]))
                 {
-                    newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                    newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
                 }
+                newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
                 newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
                 newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
@@ -226,6 +236,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -294,13 +305,25 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="AllTypesClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="AllTypesClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
         public static explicit operator AllTypesClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AllTypesClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="AllTypesClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(AllTypesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -326,8 +349,10 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -430,7 +455,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; }
 
-            System.Collections.Generic.IList<string?> StringCollectionProperty { get; }
+            System.Collections.Generic.IList<string> StringCollectionProperty { get; }
 
             System.Collections.Generic.IList<string> RequiredStringListProperty { get; }
 
@@ -706,14 +731,14 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private System.Collections.Generic.IList<string?> _stringCollectionProperty = null!;
-            public System.Collections.Generic.IList<string?> StringCollectionProperty
+            private System.Collections.Generic.IList<string> _stringCollectionProperty = null!;
+            public System.Collections.Generic.IList<string> StringCollectionProperty
             {
                 get
                 {
                     if (_stringCollectionProperty == null)
                     {
-                        _stringCollectionProperty = GetListValue<string?>("StringCollectionProperty");
+                        _stringCollectionProperty = GetListValue<string>("StringCollectionProperty");
                     }
 
                     return _stringCollectionProperty;
@@ -953,7 +978,7 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string _requiredStringProperty = null!;
+            private string _requiredStringProperty = "";
             public string RequiredStringProperty
             {
                 get => _requiredStringProperty;
@@ -975,7 +1000,7 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private byte[] _requiredByteArrayProperty = null!;
+            private byte[] _requiredByteArrayProperty = Array.Empty<byte>();
             public byte[] RequiredByteArrayProperty
             {
                 get => _requiredByteArrayProperty;
@@ -1212,7 +1237,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; } = new List<int?>();
 
-            public System.Collections.Generic.IList<string?> StringCollectionProperty { get; } = new List<string?>();
+            public System.Collections.Generic.IList<string> StringCollectionProperty { get; } = new List<string>();
 
             public System.Collections.Generic.IList<string> RequiredStringListProperty { get; } = new List<string>();
 

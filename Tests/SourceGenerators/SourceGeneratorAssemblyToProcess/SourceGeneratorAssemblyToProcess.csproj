@@ -1,25 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
-	</PropertyGroup>
-	<Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
-		<ProjectReference Include="..\..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Realm\Realm\Realm.csproj" />
+    <ProjectReference Include="..\..\..\Realm\Realm.Fody\Realm.Fody.csproj" />
 
-		<ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
-		<!-- Removing the generated files from compilation, adding them back as non-content files -->
-		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
-		<None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+    <!-- Removing the generated files from compilation, adding them back as non-content files -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+    <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
 
-		<!-- Useful for testing, so we don't get all the unnecessary compiler errors -->
-		<Compile Remove="ErrorClasses/*.cs" />
-	</ItemGroup>
+    <!-- Useful for testing, so we don't get all the unnecessary compiler errors -->
+    <Compile Remove="ErrorClasses/*.cs" />
+  </ItemGroup>
 </Project>
 

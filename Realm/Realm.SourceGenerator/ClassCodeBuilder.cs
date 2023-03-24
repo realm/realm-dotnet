@@ -244,7 +244,11 @@ public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectS
 }}.Build();";
 
             var baseInterface = $"I{_classInfo.ObjectType}";
-            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
+            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor
+                ? string.Empty
+                : @$"#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+private {_classInfo.Name}() {{}}
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.";
 
             var helperString = string.Empty;
 
