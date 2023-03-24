@@ -878,6 +878,50 @@ namespace Realms.Tests.Database
             Assert.That(args.NewItems, Is.EquivalentTo(new[] { movedObject }));
         }
 
+        [Test]
+        public void ListReplace_RaisesReplaceNotifications()
+        {
+            var container = new OrderedContainer();
+            for (var i = 0; i < 5; i++)
+            {
+                container.Items.Add(new OrderedObject
+                {
+                    Order = i
+                });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+
+            var oldItem = container.Items[1];
+            _realm.Write(() => container.Items[1] = container.Items[4]);
+
+            _realm.Refresh();
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Replace));
+            Assert.That(eventArgs[0].OldStartingIndex, Is.EqualTo(1));
+            Assert.That(eventArgs[0].NewStartingIndex, Is.EqualTo(1));
+            Assert.That(eventArgs[0].OldItems, Is.EquivalentTo(new[] { InvalidObject.Instance }));
+            Assert.That(eventArgs[0].NewItems, Is.EquivalentTo(new[] { container.Items[4] }));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+            // Verify that modifying an object doesn't raise notifications
+            _realm.Write(() => container.Items[2].Order = 999);
+            _realm.Refresh();
+
+            // No notifications should have arrived
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+        }
+
         // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
         private NotifyCollectionChangedEventArgs TestMoves(Action<IList<OrderedObject>> moveAction, NotifyCollectionChangedAction expectedAction)
         {
