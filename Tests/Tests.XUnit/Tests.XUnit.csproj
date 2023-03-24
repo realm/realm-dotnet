@@ -1,60 +1,56 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CodeAnalysisRuleSet>../../global.ruleset</CodeAnalysisRuleSet>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
-		<PackageReference Include="xunit" Version="2.4.1" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GitHubActionsTestLogger" Version="1.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
-	<ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
-		<ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
-		<None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="Exists('..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so')">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Include="..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-Win32\realm-wrappers.dll')">
-			<Link>lib\win32\x86\realm-wrappers.dll</Link>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="Exists('..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll')">
-			<Link>lib\win32\x64\realm-wrappers.dll</Link>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Include="$(MSBuildProgramFiles32)\Windows Kits\10\bin\x64\ucrt\ucrtbased.dll" Condition="'$(Configuration)' == 'Debug' AND '$(OS)' == 'Windows_NT'">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
-	<ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
-		<PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
-        <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
-    </ItemGroup>
-	<ItemGroup>
-		<AdditionalFiles Include="..\..\stylecop.json" />
-	</ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX')) AND Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
+    <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+    <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json" />
+  </ItemGroup>
 
 </Project>
