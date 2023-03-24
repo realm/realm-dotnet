@@ -18,7 +18,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -293,14 +292,7 @@ namespace Realms.Sync
                 }
 
                 SessionException exception;
-                if (error.error_code == ErrorCode.PermissionDenied)
-                {
-                    var userInfo = error.user_info_pairs.AsEnumerable().ToDictionary(p => p.Key, p => p.Value);
-#pragma warning disable CS0618 // Type or member is obsolete
-                    exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-                else if (error.error_code == ErrorCode.CompensatingWrite)
+                if (error.error_code == ErrorCode.CompensatingWrite)
                 {
                     var compensatingWrites = error.compensating_writes
                         .AsEnumerable()
