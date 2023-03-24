@@ -43,6 +43,8 @@
 * `RealmValue.AsRealmObject` will now throw an exception if the value contains `null`. If you want to get a nullable string, use `AsNullableRealmObject`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
 * `Realm.SyncSession` will now throw an error if the Realm is not opened with a `PartitionSyncConfiguration` or `FlexibleSyncConfiguration` - before it used to return `null`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
 * `Realm.Subscriptions` will now throw an error if the Realm is not opened with a `FlexibleSyncConfiguration` - before it used to return `null`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
+* Removed `PermissionDeniedException` as it was no longer possible to get it. (Issue [#3272](https://github.com/realm/realm-dotnet/issues/3272))
+* Removed some obsolete error codes from the `ErrorCode` enum. All codes removed were obsolete and no longer emitted by the server. (PR [3273](https://github.com/realm/realm-dotnet/issues/3273))
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
