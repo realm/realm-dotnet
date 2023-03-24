@@ -1,3 +1,17 @@
+## vNext (TBD)
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
 ## 10.21.0 (2023-03-24)
 
 ### Enhancements
