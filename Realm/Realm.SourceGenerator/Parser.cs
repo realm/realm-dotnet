@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -64,7 +65,7 @@ namespace Realms.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.ClassNotPartial(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
 
-                    if (classSymbol.BaseType.SpecialType != SpecialType.System_Object)
+                    if (classSymbol.BaseType?.SpecialType != SpecialType.System_Object)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.ClassWithBaseType(classSymbol.Name, firstClassDeclarationSyntax.GetIdentifierLocation()));
                     }
@@ -77,9 +78,9 @@ namespace Realms.SourceGenerator
                     }
 
                     // General info
-                    classInfo.NamespaceInfo = GetNamespaceInfo(classSymbol);
                     classInfo.Name = classSymbol.Name;
-                    classInfo.MapTo = (string)classSymbol.GetAttributeArgument("MapToAttribute");
+                    classInfo.NamespaceInfo = GetNamespaceInfo(classSymbol);
+                    classInfo.MapTo = (string?)classSymbol.GetAttributeArgument("MapToAttribute");
                     classInfo.Accessibility = classSymbol.DeclaredAccessibility;
                     classInfo.TypeSymbol = classSymbol;
                     classInfo.ObjectType = implementingObjectTypes.First();
@@ -151,22 +152,21 @@ namespace Realms.SourceGenerator
         {
             foreach (var propSyntax in propertyDeclarationSyntaxes)
             {
-                var propSymbol = model.GetDeclaredSymbol(propSyntax);
+                var propSymbol = model.GetDeclaredSymbol(propSyntax)!;
 
                 if (propSymbol.HasAttribute("IgnoredAttribute") || propSymbol.IsStatic)
                 {
                     continue;
                 }
 
-                var info = new PropertyInfo
+                var info = new PropertyInfo(propSymbol.Name)
                 {
-                    Name = propSymbol.Name,
                     Accessibility = propSymbol.DeclaredAccessibility,
                     IsIndexed = propSymbol.HasAttribute("IndexedAttribute"),
                     IsRequired = propSymbol.HasAttribute("RequiredAttribute"),
                     IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute"),
-                    MapTo = (string)propSymbol.GetAttributeArgument("MapToAttribute"),
-                    Backlink = (string)propSymbol.GetAttributeArgument("BacklinkAttribute"),
+                    MapTo = (string?)propSymbol.GetAttributeArgument("MapToAttribute"),
+                    Backlink = (string?)propSymbol.GetAttributeArgument("BacklinkAttribute"),
                     Initializer = propSyntax.Initializer?.ToString(),
                 };
 
@@ -202,18 +202,20 @@ namespace Realms.SourceGenerator
                     if (!info.TypeInfo.IsBacklink)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.BacklinkNotQueryable(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                        continue;
                     }
 
                     var backlinkType = info.TypeInfo.InternalType.TypeSymbol;
                     var inversePropertyName = info.Backlink;
+
                     var inverseProperty = backlinkType.GetMembers(inversePropertyName).FirstOrDefault() as IPropertySymbol;
                     var inversePropertyTypeInfo = inverseProperty == null ? null : GetSingleLevelPropertyTypeInfo(inverseProperty.Type);
 
-                    info.BacklinkMapTo = (string)inverseProperty?.GetAttributeArgument("MapToAttribute");
+                    info.BacklinkMapTo = (string?)inverseProperty?.GetAttributeArgument("MapToAttribute");
 
                     if (inversePropertyTypeInfo?.IsListOrSet == true)
                     {
-                        inversePropertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(inverseProperty.Type.AsNamed().TypeArguments.Single());
+                        inversePropertyTypeInfo.InternalType = GetSingleLevelPropertyTypeInfo(inverseProperty!.Type.AsNamed().TypeArguments.Single());
                     }
 
                     var isSameType = SymbolEqualityComparer.Default.Equals(inversePropertyTypeInfo?.TypeSymbol, classInfo.TypeSymbol);
@@ -403,7 +405,7 @@ namespace Realms.SourceGenerator
             {
                 if (typeSymbol.Name == "Nullable")
                 {
-                    typeSymbol = (typeSymbol as INamedTypeSymbol).TypeArguments.First();
+                    typeSymbol = ((INamedTypeSymbol)typeSymbol).TypeArguments.First();
                 }
                 else
                 {
@@ -412,7 +414,7 @@ namespace Realms.SourceGenerator
                 }
             }
 
-            PropertyTypeInfo propInfo = typeSymbol switch
+            var propInfo = typeSymbol switch
             {
                 INamedTypeSymbol when typeSymbol.IsRealmInteger() => PropertyTypeInfo.RealmInteger,
                 INamedTypeSymbol when typeSymbol.IsValidIntegerType() => PropertyTypeInfo.Int,
@@ -442,7 +444,7 @@ namespace Realms.SourceGenerator
             if (propInfo.ScalarType == ScalarType.Object)
             {
                 propInfo.ObjectType = typeSymbol.ImplementingObjectTypes().First();
-                propInfo.MapTo = (string)typeSymbol.GetAttributeArgument("MapToAttribute");
+                propInfo.MapTo = (string?)typeSymbol.GetAttributeArgument("MapToAttribute");
             }
 
             return propInfo;
@@ -467,11 +469,7 @@ namespace Realms.SourceGenerator
                     classInfo.Diagnostics.Add(Diagnostics.ParentOfNestedClassIsNotPartial(classSymbol.Name, ts.Name, cs.GetIdentifierLocation()));
                 }
 
-                var enclosingClassinfo = new EnclosingClassInfo
-                {
-                    Name = ts.Name,
-                    Accessibility = ts.DeclaredAccessibility
-                };
+                var enclosingClassinfo = new EnclosingClassInfo(ts.Name, ts.DeclaredAccessibility);
                 enclosingClassList.Add(enclosingClassinfo);
 
                 currentSymbol = ts;
@@ -485,15 +483,15 @@ namespace Realms.SourceGenerator
         {
             if (classSymbol.ContainingNamespace.IsGlobalNamespace)
             {
-                return new NamespaceInfo { IsGlobal = true };
+                return NamespaceInfo.Global();
             }
 
-            return new NamespaceInfo { OriginalName = classSymbol.ContainingNamespace.ToDisplayString() };
+            return NamespaceInfo.Local(classSymbol.ContainingNamespace.ToDisplayString());
         }
 
         private static string RemoveUsingKeyword(UsingDirectiveSyntax syntax)
         {
-            var components = new object[] { syntax.StaticKeyword, syntax.Alias, syntax.Name }
+            var components = new object?[] { syntax.StaticKeyword, syntax.Alias, syntax.Name }
                 .Select(o => o?.ToString())
                 .Where(o => !string.IsNullOrEmpty(o));
             return string.Join(" ", components);

@@ -47,12 +47,12 @@ namespace Realms.SourceGenerator
 
         public static bool HasAttribute(this ISymbol symbol, string attributeName)
         {
-            return symbol.GetAttributes().Any(a => a.AttributeClass.Name == attributeName);
+            return symbol.GetAttributes().Any(a => a.AttributeClass?.Name == attributeName);
         }
 
-        public static object GetAttributeArgument(this ISymbol symbol, string attributeName)
+        public static object? GetAttributeArgument(this ISymbol symbol, string attributeName)
         {
-            var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass.Name == attributeName);
+            var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == attributeName);
             return attribute?.ConstructorArguments[0].Value;
         }
 
@@ -183,7 +183,7 @@ namespace Realms.SourceGenerator
 
         private static bool IsObjectMethodOverride(IMethodSymbol method)
         {
-            IMethodSymbol overriddenMethod = method.OverriddenMethod;
+            var overriddenMethod = method.OverriddenMethod;
             while (overriddenMethod != null)
             {
                 if (overriddenMethod.ContainingType.SpecialType == SpecialType.System_Object)

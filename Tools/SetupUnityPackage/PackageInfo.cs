@@ -27,9 +27,9 @@ namespace SetupUnityPackage
     {
         private readonly IDictionary<string, string> _paths;
 
-        public IEnumerable<DependencyInfo> Dependencies { get; }
+        public IEnumerable<DependencyInfo>? Dependencies { get; }
 
-        public PackageInfo(string id, IDictionary<string, string> paths, IEnumerable<DependencyInfo> dependencies = null) : base(id)
+        public PackageInfo(string id, IDictionary<string, string> paths, IEnumerable<DependencyInfo>? dependencies = null) : base(id)
         {
             Dependencies = dependencies;
             _paths = paths;
