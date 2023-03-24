@@ -20,7 +20,7 @@ using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 [Generated]
-[Woven(typeof(AsymmetricTestClassObjectHelper))]
+[Woven(typeof(AsymmetricTestClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
 {
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricTestClass", ObjectSchema.ObjectType.AsymmetricObject)
@@ -46,10 +46,10 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
     public bool IsFrozen => Accessor.IsFrozen;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Realm Realm => Accessor.Realm;
+    public Realms.Realm? Realm => Accessor.Realm;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -57,7 +57,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
-    public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+    void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
     {
         var newAccessor = (IAsymmetricTestClassAccessor)managedAccessor;
         var oldAccessor = _accessor;
@@ -65,7 +65,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
 
         if (helper != null && oldAccessor != null)
         {
-            if(!skipDefaults || oldAccessor.Int32Property != default(int))
+            if (!skipDefaults || oldAccessor.Int32Property != default(int))
             {
                 newAccessor.Int32Property = oldAccessor.Int32Property;
             }
@@ -161,7 +161,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
         Accessor.UnsubscribeFromNotifications();
     }
 
-    public static explicit operator AsymmetricTestClass(Realms.RealmValue val) => val.AsRealmObject<AsymmetricTestClass>();
+    public static explicit operator AsymmetricTestClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AsymmetricTestClass>();
 
     public static implicit operator Realms.RealmValue(AsymmetricTestClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -197,7 +197,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
 
     public override string? ToString() => Accessor.ToString();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class AsymmetricTestClassObjectHelper : Realms.Weaving.IRealmObjectHelper
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -209,20 +209,20 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
 
         public Realms.IRealmObjectBase CreateInstance() => new AsymmetricTestClass();
 
-        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
         {
-            value = null;
+            value = RealmValue.Null;
             return false;
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface IAsymmetricTestClassAccessor : Realms.IRealmAccessor
     {
         int Int32Property { get; set; }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class AsymmetricTestClassManagedAccessor : Realms.ManagedAccessor, IAsymmetricTestClassAccessor
     {
         public int Int32Property
@@ -232,7 +232,7 @@ public partial class AsymmetricTestClass : IAsymmetricObject, INotifyPropertyCha
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class AsymmetricTestClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricTestClassAccessor
     {
         public override ObjectSchema ObjectSchema => AsymmetricTestClass.RealmSchema;

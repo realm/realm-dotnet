@@ -20,7 +20,7 @@ using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 [Generated]
-[Woven(typeof(JustForObjectReferenceObjectHelper))]
+[Woven(typeof(JustForObjectReferenceObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class JustForObjectReference : IRealmObject, INotifyPropertyChanged, IReflectableType
 {
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("JustForObjectReference", ObjectSchema.ObjectType.RealmObject)
@@ -46,10 +46,10 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
     public bool IsFrozen => Accessor.IsFrozen;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Realm Realm => Accessor.Realm;
+    public Realms.Realm? Realm => Accessor.Realm;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -57,7 +57,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
-    public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+    void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
     {
         var newAccessor = (IJustForObjectReferenceAccessor)managedAccessor;
         var oldAccessor = _accessor;
@@ -65,7 +65,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
 
         if (helper != null && oldAccessor != null)
         {
-            if(oldAccessor.UseAsBacklink != null)
+            if (oldAccessor.UseAsBacklink != null && newAccessor.Realm != null)
             {
                 newAccessor.Realm.Add(oldAccessor.UseAsBacklink, update);
             }
@@ -162,7 +162,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
         Accessor.UnsubscribeFromNotifications();
     }
 
-    public static explicit operator JustForObjectReference(Realms.RealmValue val) => val.AsRealmObject<JustForObjectReference>();
+    public static explicit operator JustForObjectReference?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<JustForObjectReference>();
 
     public static implicit operator Realms.RealmValue(JustForObjectReference? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -198,7 +198,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
 
     public override string? ToString() => Accessor.ToString();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class JustForObjectReferenceObjectHelper : Realms.Weaving.IRealmObjectHelper
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -210,20 +210,20 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
 
         public Realms.IRealmObjectBase CreateInstance() => new JustForObjectReference();
 
-        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
         {
-            value = null;
+            value = RealmValue.Null;
             return false;
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface IJustForObjectReferenceAccessor : Realms.IRealmAccessor
     {
         RootRealmClass? UseAsBacklink { get; set; }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class JustForObjectReferenceManagedAccessor : Realms.ManagedAccessor, IJustForObjectReferenceAccessor
     {
         public RootRealmClass? UseAsBacklink
@@ -233,7 +233,7 @@ public partial class JustForObjectReference : IRealmObject, INotifyPropertyChang
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class JustForObjectReferenceUnmanagedAccessor : Realms.UnmanagedAccessor, IJustForObjectReferenceAccessor
     {
         public override ObjectSchema ObjectSchema => JustForObjectReference.RealmSchema;

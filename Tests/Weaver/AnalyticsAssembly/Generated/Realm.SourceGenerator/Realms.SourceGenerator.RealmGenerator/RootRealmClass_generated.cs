@@ -20,7 +20,7 @@ using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 [Generated]
-[Woven(typeof(RootRealmClassObjectHelper))]
+[Woven(typeof(RootRealmClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IReflectableType
 {
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RootRealmClass", ObjectSchema.ObjectType.RealmObject)
@@ -55,10 +55,10 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
     public bool IsFrozen => Accessor.IsFrozen;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Realm Realm => Accessor.Realm;
+    public Realms.Realm? Realm => Accessor.Realm;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -66,7 +66,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
-    public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+    void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
     {
         var newAccessor = (IRootRealmClassAccessor)managedAccessor;
         var oldAccessor = _accessor;
@@ -84,7 +84,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
                 newAccessor.PrimitiveSet.Clear();
             }
 
-            if(oldAccessor.JustForRef != null)
+            if (oldAccessor.JustForRef != null && newAccessor.Realm != null)
             {
                 newAccessor.Realm.Add(oldAccessor.JustForRef, update);
             }
@@ -189,7 +189,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         Accessor.UnsubscribeFromNotifications();
     }
 
-    public static explicit operator RootRealmClass(Realms.RealmValue val) => val.AsRealmObject<RootRealmClass>();
+    public static explicit operator RootRealmClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RootRealmClass>();
 
     public static implicit operator Realms.RealmValue(RootRealmClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -225,7 +225,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
     public override string? ToString() => Accessor.ToString();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class RootRealmClassObjectHelper : Realms.Weaving.IRealmObjectHelper
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -237,14 +237,14 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
         public Realms.IRealmObjectBase CreateInstance() => new RootRealmClass();
 
-        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+        public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
         {
-            value = null;
+            value = RealmValue.Null;
             return false;
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface IRootRealmClassAccessor : Realms.IRealmAccessor
     {
         JustForObjectReference? JustForRef { get; set; }
@@ -268,7 +268,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         System.Linq.IQueryable<JustForObjectReference> JustBackLink { get; }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class RootRealmClassManagedAccessor : Realms.ManagedAccessor, IRootRealmClassAccessor
     {
         public JustForObjectReference? JustForRef
@@ -388,7 +388,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class RootRealmClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRootRealmClassAccessor
     {
         public override ObjectSchema ObjectSchema => RootRealmClass.RealmSchema;
@@ -482,23 +482,21 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         public override IList<T> GetListValue<T>(string propertyName)
         {
             return propertyName switch
-                        {
-            "ReferenceList" => (IList<T>)ReferenceList,
-            "PrimitiveList" => (IList<T>)PrimitiveList,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                        };
+            {
+                "ReferenceList" => (IList<T>)ReferenceList,
+                "PrimitiveList" => (IList<T>)PrimitiveList,
+                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+            };
         }
 
         public override ISet<T> GetSetValue<T>(string propertyName)
         {
             return propertyName switch
-                        {
-            "ReferenceSet" => (ISet<T>)ReferenceSet,
-            "PrimitiveSet" => (ISet<T>)PrimitiveSet,
-
-                            _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                        };
+            {
+                "ReferenceSet" => (ISet<T>)ReferenceSet,
+                "PrimitiveSet" => (ISet<T>)PrimitiveSet,
+                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+            };
         }
 
         public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

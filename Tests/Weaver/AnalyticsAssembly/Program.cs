@@ -107,28 +107,28 @@ public class Program
 #if LIST_SUBSCRIBE_FOR_NOTIFICATIONS
     public static void ListSubscribeForNotificationsMethod()
     {
-        _ = new List<RootRealmClass>().SubscribeForNotifications((sender, changes, error) => { });
+        _ = new List<RootRealmClass>().SubscribeForNotifications((sender, changes) => { });
     }
 #endif
 
 #if SET_SUBSCRIBE_FOR_NOTIFICATIONS
     public static void SetSubscribeForNotificationsMethod()
     {
-        _ = new HashSet<RootRealmClass>().SubscribeForNotifications((sender, changes, error) => { });
+        _ = new HashSet<RootRealmClass>().SubscribeForNotifications((sender, changes) => { });
     }
 #endif
 
 #if DICTIONARY_SUBSCRIBE_FOR_NOTIFICATIONS
     public static void DictionarySubscribeForNotificationsMethod()
     {
-        _ = new Dictionary<string, RootRealmClass>().SubscribeForNotifications((sender, changes, error) => { });
+        _ = new Dictionary<string, RootRealmClass>().SubscribeForNotifications((sender, changes) => { });
     }
 #endif
 
 #if RESULT_SUBSCRIBE_FOR_NOTIFICATIONS
     public static void ResultSubscribeForNotificationsMethod()
     {
-        _ = Enumerable.Empty<RootRealmClass>().AsQueryable().SubscribeForNotifications((sender, changes, error) => { });
+        _ = Enumerable.Empty<RootRealmClass>().AsQueryable().SubscribeForNotifications((sender, changes) => { });
     }
 #endif
 
