@@ -18,7 +18,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(TestNotificationObjectObjectHelper))]
+    [Woven(typeof(TestNotificationObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class TestNotificationObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TestNotificationObject", ObjectSchema.ObjectType.RealmObject)
@@ -53,10 +53,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -64,7 +64,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ITestNotificationObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -82,14 +82,14 @@ namespace Realms.Tests.Database
                     newAccessor.DictionaryDifferentType.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListSameType, newAccessor.ListSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetSameType, newAccessor.SetSameType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionarySameType, newAccessor.DictionarySameType, update, skipDefaults);
-                if(oldAccessor.LinkSameType != null)
+                if (oldAccessor.LinkSameType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkSameType, update);
                 }
@@ -97,7 +97,7 @@ namespace Realms.Tests.Database
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.ListDifferentType, newAccessor.ListDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.SetDifferentType, newAccessor.SetDifferentType, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.DictionaryDifferentType, newAccessor.DictionaryDifferentType, update, skipDefaults);
-                if(oldAccessor.LinkDifferentType != null)
+                if (oldAccessor.LinkDifferentType != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkDifferentType, update);
                 }
@@ -194,7 +194,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator TestNotificationObject(Realms.RealmValue val) => val.AsRealmObject<TestNotificationObject>();
+        public static explicit operator TestNotificationObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<TestNotificationObject>();
 
         public static implicit operator Realms.RealmValue(TestNotificationObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class TestNotificationObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -249,7 +249,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ITestNotificationObjectAccessor : Realms.IRealmAccessor
         {
             string? StringProperty { get; set; }
@@ -273,7 +273,7 @@ namespace Realms.Tests.Database
             System.Linq.IQueryable<Realms.Tests.Database.TestNotificationObject> Backlink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class TestNotificationObjectManagedAccessor : Realms.ManagedAccessor, ITestNotificationObjectAccessor
         {
             public string? StringProperty
@@ -393,7 +393,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class TestNotificationObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITestNotificationObjectAccessor
         {
             public override ObjectSchema ObjectSchema => TestNotificationObject.RealmSchema;
@@ -487,23 +487,21 @@ namespace Realms.Tests.Database
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "ListSameType" => (IList<T>)ListSameType,
-                "ListDifferentType" => (IList<T>)ListDifferentType,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "ListSameType" => (IList<T>)ListSameType,
+                    "ListDifferentType" => (IList<T>)ListDifferentType,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "SetSameType" => (ISet<T>)SetSameType,
-                "SetDifferentType" => (ISet<T>)SetDifferentType,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "SetSameType" => (ISet<T>)SetSameType,
+                    "SetDifferentType" => (ISet<T>)SetDifferentType,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorPlayground
 {
     [Generated]
-    [Woven(typeof(DogObjectHelper))]
+    [Woven(typeof(DogObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
@@ -44,10 +44,10 @@ namespace SourceGeneratorPlayground
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -55,7 +55,7 @@ namespace SourceGeneratorPlayground
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IDogAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -63,11 +63,11 @@ namespace SourceGeneratorPlayground
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(oldAccessor.Owner != null)
+                if (oldAccessor.Owner != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Owner, update);
                 }
@@ -164,7 +164,7 @@ namespace SourceGeneratorPlayground
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
+        public static explicit operator Dog?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Dog>();
 
         public static implicit operator Realms.RealmValue(Dog? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -200,7 +200,7 @@ namespace SourceGeneratorPlayground
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,7 +219,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -227,7 +227,7 @@ namespace SourceGeneratorPlayground
             SourceGeneratorPlayground.Person? Owner { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
             public string? Name
@@ -243,7 +243,7 @@ namespace SourceGeneratorPlayground
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;

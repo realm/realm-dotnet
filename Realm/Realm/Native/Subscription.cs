@@ -40,7 +40,7 @@ namespace Realms.Sync.Native
         [MarshalAs(UnmanagedType.I1)]
         private bool has_value;
 
-        public ManagedSubscription ManagedSubscription
+        public ManagedSubscription? ManagedSubscription
         {
             get
             {
@@ -49,15 +49,12 @@ namespace Realms.Sync.Native
                     return null;
                 }
 
-                return new()
-                {
-                    Id = id.AsObjectId(),
-                    Name = name.AsString(),
-                    Query = query.AsString(),
-                    ObjectType = object_type.AsString(),
-                    CreatedAt = created_at.AsDate(),
-                    UpdatedAt = updated_at.AsDate()
-                };
+                return new(id: id.AsObjectId(),
+                    name: name.Type == RealmValueType.Null ? null : name.AsString(),
+                    objectType: object_type.AsString(),
+                    query: query.AsString(),
+                    createdAt: created_at.AsDate(),
+                    updatedAt: updated_at.AsDate());
             }
         }
     }

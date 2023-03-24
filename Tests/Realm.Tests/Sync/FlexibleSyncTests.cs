@@ -34,20 +34,20 @@ namespace Realms.Tests.Sync
     public class FlexibleSyncTests : SyncTestBase
     {
         [Test]
-        public void Realm_Subscriptions_WhenLocalRealm_ReturnsNull()
+        public void Realm_Subscriptions_WhenLocalRealm_Throws()
         {
             var realm = GetRealm();
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
-        public void Realm_Subscriptions_WhenPBS_ReturnsNull()
+        public void Realm_Subscriptions_WhenPBS_Throws()
         {
             var config = GetFakeConfig();
             var realm = GetRealm(config);
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
@@ -612,10 +612,7 @@ namespace Realms.Tests.Sync
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
             var sub = realm.Subscriptions[0];
-            var nonExistent = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var nonExistent = new Subscription(ObjectId.GenerateNewId(), "a", nameof(SyncAllTypesObject), "TRUEPREDICATE", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             realm.Subscriptions.Update(() =>
             {
@@ -641,10 +638,7 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Remove_Subscription_OutsideUpdate_Throws()
         {
             var realm = GetFakeFLXRealm();
-            var sub = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var sub = new Subscription(ObjectId.GenerateNewId(), "a", "b", "c", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.Remove(sub));
         }

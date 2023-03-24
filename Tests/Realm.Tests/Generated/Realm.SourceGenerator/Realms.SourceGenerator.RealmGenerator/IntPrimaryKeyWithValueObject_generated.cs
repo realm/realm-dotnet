@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(IntPrimaryKeyWithValueObjectObjectHelper))]
+    [Woven(typeof(IntPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IntPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IntPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IIntPrimaryKeyWithValueObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -69,11 +69,11 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                if (!skipDefaults || oldAccessor.StringValue != default(string))
                 {
                     newAccessor.StringValue = oldAccessor.StringValue;
                 }
@@ -169,7 +169,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IntPrimaryKeyWithValueObject(Realms.RealmValue val) => val.AsRealmObject<IntPrimaryKeyWithValueObject>();
+        public static explicit operator IntPrimaryKeyWithValueObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<IntPrimaryKeyWithValueObject>();
 
         public static implicit operator Realms.RealmValue(IntPrimaryKeyWithValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -205,7 +205,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IntPrimaryKeyWithValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -224,7 +224,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IIntPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -232,7 +232,7 @@ namespace Realms.Tests
             string? StringValue { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IntPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
         {
             public int Id
@@ -248,7 +248,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IntPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIntPrimaryKeyWithValueObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IntPrimaryKeyWithValueObject.RealmSchema;

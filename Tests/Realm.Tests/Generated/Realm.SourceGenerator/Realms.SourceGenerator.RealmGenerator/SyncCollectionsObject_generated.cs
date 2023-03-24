@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(SyncCollectionsObjectObjectHelper))]
+    [Woven(typeof(SyncCollectionsObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SyncCollectionsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncCollectionsObject", ObjectSchema.ObjectType.RealmObject)
@@ -100,10 +100,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -111,7 +111,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ISyncCollectionsObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -317,7 +317,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SyncCollectionsObject(Realms.RealmValue val) => val.AsRealmObject<SyncCollectionsObject>();
+        public static explicit operator SyncCollectionsObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<SyncCollectionsObject>();
 
         public static implicit operator Realms.RealmValue(SyncCollectionsObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -353,7 +353,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SyncCollectionsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -372,7 +372,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ISyncCollectionsObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -480,7 +480,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDict { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SyncCollectionsObjectManagedAccessor : Realms.ManagedAccessor, ISyncCollectionsObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -1196,7 +1196,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SyncCollectionsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncCollectionsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => SyncCollectionsObject.RealmSchema;
@@ -1364,52 +1364,50 @@ namespace Realms.Tests
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharList" => (IList<T>)CharList,
-                "ByteList" => (IList<T>)ByteList,
-                "Int16List" => (IList<T>)Int16List,
-                "Int32List" => (IList<T>)Int32List,
-                "Int64List" => (IList<T>)Int64List,
-                "FloatList" => (IList<T>)FloatList,
-                "DoubleList" => (IList<T>)DoubleList,
-                "BooleanList" => (IList<T>)BooleanList,
-                "DecimalList" => (IList<T>)DecimalList,
-                "Decimal128List" => (IList<T>)Decimal128List,
-                "ObjectIdList" => (IList<T>)ObjectIdList,
-                "StringList" => (IList<T>)StringList,
-                "ByteArrayList" => (IList<T>)ByteArrayList,
-                "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
-                "ObjectList" => (IList<T>)ObjectList,
-                "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
-                "RealmValueList" => (IList<T>)RealmValueList,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "CharList" => (IList<T>)CharList,
+                    "ByteList" => (IList<T>)ByteList,
+                    "Int16List" => (IList<T>)Int16List,
+                    "Int32List" => (IList<T>)Int32List,
+                    "Int64List" => (IList<T>)Int64List,
+                    "FloatList" => (IList<T>)FloatList,
+                    "DoubleList" => (IList<T>)DoubleList,
+                    "BooleanList" => (IList<T>)BooleanList,
+                    "DecimalList" => (IList<T>)DecimalList,
+                    "Decimal128List" => (IList<T>)Decimal128List,
+                    "ObjectIdList" => (IList<T>)ObjectIdList,
+                    "StringList" => (IList<T>)StringList,
+                    "ByteArrayList" => (IList<T>)ByteArrayList,
+                    "DateTimeOffsetList" => (IList<T>)DateTimeOffsetList,
+                    "ObjectList" => (IList<T>)ObjectList,
+                    "EmbeddedObjectList" => (IList<T>)EmbeddedObjectList,
+                    "RealmValueList" => (IList<T>)RealmValueList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CharSet" => (ISet<T>)CharSet,
-                "ByteSet" => (ISet<T>)ByteSet,
-                "Int16Set" => (ISet<T>)Int16Set,
-                "Int32Set" => (ISet<T>)Int32Set,
-                "Int64Set" => (ISet<T>)Int64Set,
-                "FloatSet" => (ISet<T>)FloatSet,
-                "DoubleSet" => (ISet<T>)DoubleSet,
-                "BooleanSet" => (ISet<T>)BooleanSet,
-                "DecimalSet" => (ISet<T>)DecimalSet,
-                "Decimal128Set" => (ISet<T>)Decimal128Set,
-                "ObjectIdSet" => (ISet<T>)ObjectIdSet,
-                "StringSet" => (ISet<T>)StringSet,
-                "ByteArraySet" => (ISet<T>)ByteArraySet,
-                "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
-                "ObjectSet" => (ISet<T>)ObjectSet,
-                "RealmValueSet" => (ISet<T>)RealmValueSet,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "CharSet" => (ISet<T>)CharSet,
+                    "ByteSet" => (ISet<T>)ByteSet,
+                    "Int16Set" => (ISet<T>)Int16Set,
+                    "Int32Set" => (ISet<T>)Int32Set,
+                    "Int64Set" => (ISet<T>)Int64Set,
+                    "FloatSet" => (ISet<T>)FloatSet,
+                    "DoubleSet" => (ISet<T>)DoubleSet,
+                    "BooleanSet" => (ISet<T>)BooleanSet,
+                    "DecimalSet" => (ISet<T>)DecimalSet,
+                    "Decimal128Set" => (ISet<T>)Decimal128Set,
+                    "ObjectIdSet" => (ISet<T>)ObjectIdSet,
+                    "StringSet" => (ISet<T>)StringSet,
+                    "ByteArraySet" => (ISet<T>)ByteArraySet,
+                    "DateTimeOffsetSet" => (ISet<T>)DateTimeOffsetSet,
+                    "ObjectSet" => (ISet<T>)ObjectSet,
+                    "RealmValueSet" => (ISet<T>)RealmValueSet,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

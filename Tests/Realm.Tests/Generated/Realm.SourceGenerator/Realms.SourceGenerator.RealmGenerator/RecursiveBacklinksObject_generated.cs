@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RecursiveBacklinksObjectObjectHelper))]
+    [Woven(typeof(RecursiveBacklinksObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RecursiveBacklinksObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
@@ -51,10 +51,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -62,7 +62,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IRecursiveBacklinksObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -70,11 +70,11 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(oldAccessor.Parent != null)
+                if (oldAccessor.Parent != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Parent, update);
                 }
@@ -171,7 +171,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RecursiveBacklinksObject(Realms.RealmValue val) => val.AsRealmObject<RecursiveBacklinksObject>();
+        public static explicit operator RecursiveBacklinksObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RecursiveBacklinksObject>();
 
         public static implicit operator Realms.RealmValue(RecursiveBacklinksObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -207,7 +207,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RecursiveBacklinksObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -226,7 +226,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRecursiveBacklinksObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -236,7 +236,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.RecursiveBacklinksObject> Children { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RecursiveBacklinksObjectManagedAccessor : Realms.ManagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public int Id
@@ -266,7 +266,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RecursiveBacklinksObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRecursiveBacklinksObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RecursiveBacklinksObject.RealmSchema;

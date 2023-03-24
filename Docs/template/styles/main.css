@@ -2,3 +2,17 @@ svg
 {
 	pointer-events:none;
 }
+
+.affix {
+	height: auto;
+}
+
+.sideaffix {
+	width: 250px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.affix > ul.level1 {
+	overflow: inherit;
+}

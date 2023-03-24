@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper))]
+    [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectIdPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectIdPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IObjectIdPrimaryKeyWithValueObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -70,7 +70,7 @@ namespace Realms.Tests
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
-                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                if (!skipDefaults || oldAccessor.StringValue != default(string))
                 {
                     newAccessor.StringValue = oldAccessor.StringValue;
                 }
@@ -166,7 +166,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectIdPrimaryKeyWithValueObject(Realms.RealmValue val) => val.AsRealmObject<ObjectIdPrimaryKeyWithValueObject>();
+        public static explicit operator ObjectIdPrimaryKeyWithValueObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectIdPrimaryKeyWithValueObject>();
 
         public static implicit operator Realms.RealmValue(ObjectIdPrimaryKeyWithValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectIdPrimaryKeyWithValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectIdPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -229,7 +229,7 @@ namespace Realms.Tests
             string? StringValue { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectIdPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectIdPrimaryKeyWithValueObject.RealmSchema;

@@ -65,7 +65,7 @@ namespace Realms.Sync.Exceptions
         /// </summary>
         /// <param name="encryptionKey">Optional encryption key that was used to encrypt the original Realm file.</param>
         /// <returns>A configuration object for the backup Realm.</returns>
-        public RealmConfigurationBase GetBackupRealmConfig(byte[] encryptionKey = null)
+        public RealmConfigurationBase GetBackupRealmConfig(byte[]? encryptionKey = null)
         {
             return new RealmConfiguration(_path)
             {

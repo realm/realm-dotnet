@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(SomeClassObjectHelper))]
+    [Woven(typeof(SomeClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SomeClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SomeClass", ObjectSchema.ObjectType.RealmObject)
@@ -48,10 +48,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -59,7 +59,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ISomeClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -67,7 +67,7 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if(oldAccessor.BacklinkObject != null)
+                if (oldAccessor.BacklinkObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.BacklinkObject, update);
                 }
@@ -164,7 +164,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator SomeClass(Realms.RealmValue val) => val.AsRealmObject<SomeClass>();
+        public static explicit operator SomeClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<SomeClass>();
 
         public static implicit operator Realms.RealmValue(SomeClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -200,7 +200,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SomeClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ISomeClassAccessor : Realms.IRealmAccessor
         {
             Realms.Tests.Database.BacklinkObject? BacklinkObject { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SomeClassManagedAccessor : Realms.ManagedAccessor, ISomeClassAccessor
         {
             public Realms.Tests.Database.BacklinkObject? BacklinkObject
@@ -235,7 +235,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SomeClassUnmanagedAccessor : Realms.UnmanagedAccessor, ISomeClassAccessor
         {
             public override ObjectSchema ObjectSchema => SomeClass.RealmSchema;

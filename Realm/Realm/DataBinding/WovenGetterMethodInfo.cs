@@ -29,13 +29,13 @@ namespace Realms.DataBinding
 
         public override MethodAttributes Attributes => _mi.Attributes;
 
-        public override Type DeclaringType => _mi.DeclaringType;
+        public override Type? DeclaringType => _mi.DeclaringType;
 
         public override RuntimeMethodHandle MethodHandle => _mi.MethodHandle;
 
         public override string Name => _mi.Name;
 
-        public override Type ReflectedType => _mi.ReflectedType;
+        public override Type? ReflectedType => _mi.ReflectedType;
 
         public override ICustomAttributeProvider ReturnTypeCustomAttributes => _mi.ReturnTypeCustomAttributes;
 
@@ -57,7 +57,7 @@ namespace Realms.DataBinding
 
         public override ParameterInfo[] GetParameters() => _mi.GetParameters();
 
-        public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
+        public override object? Invoke(object? obj, BindingFlags invokeAttr, Binder? binder, object?[]? parameters, CultureInfo? culture)
         {
             var ro = obj as IRealmObjectBase;
             if (ro == null || ro.IsValid)

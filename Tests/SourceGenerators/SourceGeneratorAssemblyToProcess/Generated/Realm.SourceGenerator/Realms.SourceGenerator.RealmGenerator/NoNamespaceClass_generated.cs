@@ -14,7 +14,7 @@ using System.Runtime.Serialization;
 using System.Xml.Serialization;
 
 [Generated]
-[Woven(typeof(NoNamespaceClassObjectHelper))]
+[Woven(typeof(NoNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
 {
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoNamespaceClass", ObjectSchema.ObjectType.RealmObject)
@@ -40,10 +40,10 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     public bool IsFrozen => Accessor.IsFrozen;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Realm Realm => Accessor.Realm;
+    public Realms.Realm? Realm => Accessor.Realm;
 
     [IgnoreDataMember, XmlIgnore]
-    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+    public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -51,7 +51,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
-    public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+    void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
     {
         var newAccessor = (INoNamespaceClassAccessor)managedAccessor;
         var oldAccessor = _accessor;
@@ -59,7 +59,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
         if (helper != null && oldAccessor != null)
         {
-            if(!skipDefaults || oldAccessor.Name != default(string))
+            if (!skipDefaults || oldAccessor.Name != default(string))
             {
                 newAccessor.Name = oldAccessor.Name;
             }
@@ -155,7 +155,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         Accessor.UnsubscribeFromNotifications();
     }
 
-    public static explicit operator NoNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<NoNamespaceClass>();
+    public static explicit operator NoNamespaceClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NoNamespaceClass>();
 
     public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -191,7 +191,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
 
     public override string? ToString() => Accessor.ToString();
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     private class NoNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
     {
         public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -210,13 +210,13 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal interface INoNamespaceClassAccessor : Realms.IRealmAccessor
     {
         string? Name { get; set; }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class NoNamespaceClassManagedAccessor : Realms.ManagedAccessor, INoNamespaceClassAccessor
     {
         public string? Name
@@ -226,7 +226,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
         }
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
     internal class NoNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, INoNamespaceClassAccessor
     {
         public override ObjectSchema ObjectSchema => NoNamespaceClass.RealmSchema;

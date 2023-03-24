@@ -24,7 +24,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(EmbeddedGuidTypeObjectHelper))]
+    [Woven(typeof(EmbeddedGuidTypeObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedGuidType : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
@@ -62,10 +62,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -74,9 +74,9 @@ namespace Realms.Tests.Database
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IEmbeddedGuidTypeAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -105,7 +105,7 @@ namespace Realms.Tests.Database
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalList, newAccessor.OptionalList, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalSet, newAccessor.OptionalSet, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalDict, newAccessor.OptionalDict, update, skipDefaults);
-                if(oldAccessor.LinkProperty != null)
+                if (oldAccessor.LinkProperty != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.LinkProperty, update);
                 }
@@ -206,7 +206,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator EmbeddedGuidType(Realms.RealmValue val) => val.AsRealmObject<EmbeddedGuidType>();
+        public static explicit operator EmbeddedGuidType?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<EmbeddedGuidType>();
 
         public static implicit operator Realms.RealmValue(EmbeddedGuidType? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -242,7 +242,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedGuidTypeObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -261,7 +261,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IEmbeddedGuidTypeAccessor : Realms.IRealmAccessor
         {
             System.Guid RegularProperty { get; set; }
@@ -291,7 +291,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedGuidTypeManagedAccessor : Realms.ManagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public System.Guid RegularProperty
@@ -445,7 +445,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedGuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedGuidType.RealmSchema;
@@ -557,25 +557,23 @@ namespace Realms.Tests.Database
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "GuidList" => (IList<T>)GuidList,
-                "OptionalList" => (IList<T>)OptionalList,
-                "MixedList" => (IList<T>)MixedList,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "GuidList" => (IList<T>)GuidList,
+                    "OptionalList" => (IList<T>)OptionalList,
+                    "MixedList" => (IList<T>)MixedList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "GuidSet" => (ISet<T>)GuidSet,
-                "OptionalSet" => (ISet<T>)OptionalSet,
-                "MixedSet" => (ISet<T>)MixedSet,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "GuidSet" => (ISet<T>)GuidSet,
+                    "OptionalSet" => (ISet<T>)OptionalSet,
+                    "MixedSet" => (ISet<T>)MixedSet,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

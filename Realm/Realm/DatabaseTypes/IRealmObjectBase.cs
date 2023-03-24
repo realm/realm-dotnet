@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Schema;
 using Realms.Weaving;
 
@@ -37,6 +39,7 @@ namespace Realms
         /// <see cref="Realm.Add{T}(T, bool)"/>.
         /// </summary>
         /// <value><c>true</c> if object belongs to a Realm; <c>false</c> if standalone.</value>
+        [MemberNotNullWhen(true, nameof(Realm), nameof(ObjectSchema))]
         bool IsManaged { get; }
 
         /// <summary>
@@ -61,13 +64,13 @@ namespace Realms
         /// Gets the <see cref="Realm"/> instance this object belongs to, or <c>null</c> if it is unmanaged.
         /// </summary>
         /// <value>The <see cref="Realm"/> instance this object belongs to.</value>
-        Realm Realm { get; }
+        Realm? Realm { get; }
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
         /// </summary>
         /// <value>A collection of properties describing the underlying schema of this object.</value>
-        ObjectSchema ObjectSchema { get; }
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets an object encompassing the dynamic API for this Realm object instance.
@@ -85,6 +88,18 @@ namespace Realms
     /// <summary>
     /// Base interface for any object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
+    /// <remarks>
+    /// This interface will be implemented automatically by the Realm source generator as long as your
+    /// model class is declared as <c>partial</c>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// public partial class Person : IRealmObject
+    /// {
+    ///     public string Name { get; set; } = "";
+    /// }
+    /// </code>
+    /// </example>
     public interface IRealmObject : IRealmObjectBase
     {
     }
@@ -93,11 +108,24 @@ namespace Realms
     /// Base interface for any asymmetric object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
     /// <remarks>
-    /// The benefit of using <see cref="AsymmetricObject"/> is that the performance of each sync operation is much higher.
-    /// The drawback is that an <see cref="AsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
+    /// The benefit of using <see cref="IAsymmetricObject"/> is that the performance of each sync operation is much higher.
+    /// The drawback is that an <see cref="IAsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
     /// You should use this base when you have a write-heavy use case.
-    /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
+    /// If, instead you want to persist an object that you can also query against, use <see cref="IRealmObject"/> instead.
+    /// <br/>
+    /// This interface will be implemented automatically by the Realm source generator as long as your
+    /// model class is declared as <c>partial</c>.
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// public partial class SensorReading : IAsymmetricObject
+    /// {
+    ///     public DateTimeOffset TimeStamp { get; set; } = DateTimeOffset.UtcNow;
+    ///
+    ///     public double Value { get; set; }
+    /// }
+    /// </code>
+    /// </example>
     /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
     public interface IAsymmetricObject : IRealmObjectBase
     {
@@ -106,6 +134,20 @@ namespace Realms
     /// <summary>
     /// Base interface for any embedded object that can be persisted in a <see cref="Realm"/>.
     /// </summary>
+    /// <remarks>
+    /// This interface will be implemented automatically by the Realm source generator as long as your
+    /// model class is declared as <c>partial</c>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// public partial class Address : IEmbeddedObject
+    /// {
+    ///     public string? City { get; set; }
+    ///
+    ///     public string? Country { get; set; }
+    /// }
+    /// </code>
+    /// </example>
     public interface IEmbeddedObject : IRealmObjectBase
     {
         /// <summary>
@@ -113,13 +155,15 @@ namespace Realms
         /// <see cref="IEmbeddedObject">embedded object</see>, a standalone <see cref="IRealmObject">realm object</see>,
         /// or an <see cref="IAsymmetricObject">asymmetric object</see>.
         /// </summary>
-        public IRealmObjectBase Parent { get; }
+        /// <value>The parent object that owns this <see cref="IEmbeddedObject"/>.</value>
+        public IRealmObjectBase? Parent { get; }
     }
 
     /// <summary>
     /// Represents an object whose managed accessor can be set.
     /// This interface is used only internally for now.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public interface ISettableManagedAccessor
     {
         /// <summary>
@@ -132,6 +176,6 @@ namespace Realms
         /// If set to <c>true</c> will not invoke the setters of properties that have default values.
         /// Generally, should be <c>true</c> for newly created objects and <c>false</c> when updating existing ones.
         /// </param>
-        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper helper = null, bool update = false, bool skipDefaults = false);
+        void SetManagedAccessor(IRealmAccessor accessor, IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false);
     }
 }

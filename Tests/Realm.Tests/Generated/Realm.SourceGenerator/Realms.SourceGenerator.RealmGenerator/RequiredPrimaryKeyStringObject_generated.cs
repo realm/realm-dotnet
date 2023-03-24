@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RequiredPrimaryKeyStringObjectObjectHelper))]
+    [Woven(typeof(RequiredPrimaryKeyStringObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RequiredPrimaryKeyStringObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPrimaryKeyStringObject", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IRequiredPrimaryKeyStringObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -70,7 +70,7 @@ namespace Realms.Tests
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
-                if(!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
@@ -166,7 +166,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RequiredPrimaryKeyStringObject(Realms.RealmValue val) => val.AsRealmObject<RequiredPrimaryKeyStringObject>();
+        public static explicit operator RequiredPrimaryKeyStringObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RequiredPrimaryKeyStringObject>();
 
         public static implicit operator Realms.RealmValue(RequiredPrimaryKeyStringObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RequiredPrimaryKeyStringObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRequiredPrimaryKeyStringObjectAccessor : Realms.IRealmAccessor
         {
             string Id { get; set; }
@@ -229,12 +229,12 @@ namespace Realms.Tests
             string? Value { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPrimaryKeyStringObjectManagedAccessor : Realms.ManagedAccessor, IRequiredPrimaryKeyStringObjectAccessor
         {
             public string Id
             {
-                get => (string)GetValue("_id");
+                get => (string)GetValue("_id")!;
                 set => SetValueUnique("_id", value);
             }
 
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPrimaryKeyStringObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPrimaryKeyStringObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RequiredPrimaryKeyStringObject.RealmSchema;
@@ -307,7 +307,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string)val;
+                Id = (string)val!;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

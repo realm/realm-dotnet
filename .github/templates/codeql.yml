@@ -48,7 +48,7 @@ env:
 jobs:
   analyze-csharp:
     name: Analyze C#
-    runs-on: windows-2019
+    runs-on: windows-latest
     permissions:
       actions: read
       contents: read

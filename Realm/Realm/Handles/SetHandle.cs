@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -140,7 +139,7 @@ namespace Realms
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new(Root!, result);
         }
 
         public override int Count()
@@ -159,7 +158,7 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ThreadSafeReferenceHandle(result);
+            return new(result);
         }
 
         public ResultsHandle ToResults()
@@ -169,7 +168,7 @@ namespace Realms
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, ptr);
+            return new(Root!, ptr);
         }
 
         protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
@@ -190,7 +189,7 @@ namespace Realms
 
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return new RealmValue(result, realm);
+            return new(result, realm);
         }
 
         public bool Add(in RealmValue value)

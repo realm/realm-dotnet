@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 internal static class TaskExtensions
 {
-    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout, string detail = null)
+    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout, string? detail = null)
     {
         return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
         {
@@ -39,14 +39,14 @@ internal static class TaskExtensions
 
             if (task.IsFaulted)
             {
-                throw task.Exception.InnerException;
+                throw task.Exception!.InnerException ?? task.Exception;
             }
 
             return task.Result;
         });
     }
 
-    public static async Task Timeout(this Task task, int millisecondTimeout, Task errorTask = null, string detail = null)
+    public static async Task Timeout(this Task task, int millisecondTimeout, Task? errorTask = null, string? detail = null)
     {
         var tasks = new List<Task> { task, Task.Delay(millisecondTimeout) };
         if (errorTask != null)

@@ -24,7 +24,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(OrderedObjectObjectHelper))]
+    [Woven(typeof(OrderedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OrderedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OrderedObject", ObjectSchema.ObjectType.RealmObject)
@@ -51,10 +51,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -62,7 +62,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IOrderedObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -70,11 +70,11 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Order != default(int))
+                if (!skipDefaults || oldAccessor.Order != default(int))
                 {
                     newAccessor.Order = oldAccessor.Order;
                 }
-                if(!skipDefaults || oldAccessor.IsPartOfResults != default(bool))
+                if (!skipDefaults || oldAccessor.IsPartOfResults != default(bool))
                 {
                     newAccessor.IsPartOfResults = oldAccessor.IsPartOfResults;
                 }
@@ -170,7 +170,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator OrderedObject(Realms.RealmValue val) => val.AsRealmObject<OrderedObject>();
+        public static explicit operator OrderedObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<OrderedObject>();
 
         public static implicit operator Realms.RealmValue(OrderedObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -204,7 +204,7 @@ namespace Realms.Tests.Database
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OrderedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -223,7 +223,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IOrderedObjectAccessor : Realms.IRealmAccessor
         {
             int Order { get; set; }
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             bool IsPartOfResults { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OrderedObjectManagedAccessor : Realms.ManagedAccessor, IOrderedObjectAccessor
         {
             public int Order
@@ -247,7 +247,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OrderedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IOrderedObjectAccessor
         {
             public override ObjectSchema ObjectSchema => OrderedObject.RealmSchema;

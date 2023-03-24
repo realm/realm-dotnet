@@ -63,7 +63,7 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_add_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern void add(SubscriptionSetHandle handle, ResultsHandle results,
-                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr name_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string? name, IntPtr name_len,
                 [MarshalAs(UnmanagedType.I1)] bool update_existing, IntPtr callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_subscriptionset_remove", CallingConvention = CallingConvention.Cdecl)]
@@ -154,7 +154,7 @@ namespace Realms.Sync
             return result;
         }
 
-        public string GetErrorMessage()
+        public string? GetErrorMessage()
         {
             EnsureIsOpen();
 
@@ -168,7 +168,7 @@ namespace Realms.Sync
 
             var result = NativeMethods.begin_write(this, out var ex);
             ex.ThrowIfNecessary();
-            return new SubscriptionSetHandle(Root, result, isReadonly: false);
+            return new SubscriptionSetHandle(Root!, result, isReadonly: false);
         }
 
         public SubscriptionSetHandle CommitWrite()
@@ -178,7 +178,7 @@ namespace Realms.Sync
             var result = NativeMethods.commit_write(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new SubscriptionSetHandle(Root, result, isReadonly: true);
+            return new SubscriptionSetHandle(Root!, result, isReadonly: true);
         }
 
         public Subscription GetAtIndex(int index)
@@ -281,7 +281,7 @@ namespace Realms.Sync
 
         private static Subscription GetSubscriptionCore(GetSubscriptionBase getter)
         {
-            Subscription result = null;
+            Subscription? result = null;
             Action<Native.Subscription> callback = sub => result = sub.ManagedSubscription;
             var callbackHandle = GCHandle.Alloc(callback);
             try
@@ -294,7 +294,7 @@ namespace Realms.Sync
                 callbackHandle.Free();
             }
 
-            return result;
+            return result!;
         }
 
         public override void Unbind()
@@ -315,7 +315,7 @@ namespace Realms.Sync
         private static void OnGetSubscription(IntPtr managedCallbackPtr, Native.Subscription subscription)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
-            var callback = (Action<Native.Subscription>)handle.Target;
+            var callback = (Action<Native.Subscription>)handle.Target!;
             callback(subscription);
         }
 
@@ -323,7 +323,7 @@ namespace Realms.Sync
         private static void HandleStateWaitCallback(IntPtr taskCompletionSource, SubscriptionSetState state, PrimitiveValue message)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target;
+            var tcs = (TaskCompletionSource<SubscriptionSetState>)handle.Target!;
 
             switch (message.Type)
             {

@@ -109,7 +109,7 @@ namespace Realms.SourceGenerator
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
@@ -178,7 +178,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
-                        copyToRealm.AppendLine(@$"if(oldAccessor.{property.Name} != null)
+                        copyToRealm.AppendLine(@$"if (oldAccessor.{property.Name} != null && newAccessor.Realm != null)
 {{
     newAccessor.Realm.Add(oldAccessor.{property.Name}, update);
 }}");
@@ -214,7 +214,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     }
                     else
                     {
-                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
+                        copyToRealm.AppendLine(@$"if (!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
 {{
     newAccessor.{property.Name} = oldAccessor.{property.Name};
 }}");
@@ -286,10 +286,10 @@ public bool IsValid => Accessor.IsValid;
 public bool IsFrozen => Accessor.IsFrozen;
 
 [IgnoreDataMember, XmlIgnore]
-public Realms.Realm Realm => Accessor.Realm;
+public Realms.Realm? Realm => Accessor.Realm;
 
 [IgnoreDataMember, XmlIgnore]
-public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
 [IgnoreDataMember, XmlIgnore]
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -299,9 +299,9 @@ public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
 $@"[IgnoreDataMember, XmlIgnore]
-public Realms.IRealmObjectBase Parent => Accessor.GetParent();")}
+public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
-public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;
     var oldAccessor = _accessor;
@@ -400,7 +400,7 @@ private void UnsubscribeFromNotifications()
     Accessor.UnsubscribeFromNotifications();
 }}")}
 
-public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+public static explicit operator {_classInfo.Name}?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<{_classInfo.Name}>();
 
 public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -440,7 +440,7 @@ $@"public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : bas
 $@"public override string? ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
-[Woven(typeof({_helperClassName}))]
+[Woven(typeof({_helperClassName})), Realms.Preserve(AllMembers = true)]
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{
 {contents.Indent()}
@@ -478,7 +478,7 @@ $@"public override string? ToString() => Accessor.ToString();")}";
             var primaryKeyProperty = _classInfo.PrimaryKey;
             var valueAccessor = primaryKeyProperty == null ? "RealmValue.Null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 {{
     public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -594,6 +594,8 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"case ""{stringName}"":");
 
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
                     if (property.IsPrimaryKey)
                     {
                         setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
@@ -603,11 +605,11 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
     throw new InvalidOperationException($""Cannot set the value of non primary key property ({{propertyName}}) with SetValueUnique"");
 }}
 
-{name} = ({type})val;");
+{name} = ({type})val{forceNotNullable};");
                     }
                     else
                     {
-                        setValueLines.AppendLine(@$"{name} = ({type})val;
+                        setValueLines.AppendLine(@$"{name} = ({type})val{forceNotNullable};
 return;".Indent());
                     }
                 }
@@ -662,10 +664,10 @@ return;".Indent());
             else
             {
                 getListValueBody = $@"return propertyName switch
-            {{
-{getListValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
-            }};";
+{{
+{getListValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
+}};";
             }
 
             // GetSetValue
@@ -678,10 +680,10 @@ return;".Indent());
             else
             {
                 getSetValueBody = $@"return propertyName switch
-            {{
-{getSetValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
-            }};";
+{{
+{getSetValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
+}};";
             }
 
             // GetDictionaryValue
@@ -695,12 +697,12 @@ return;".Indent());
             {
                 getDictionaryValueBody = $@"return propertyName switch
 {{
-{getDictionaryValueLines.Indent(1, trimNewLines: true)}
+{getDictionaryValueLines.Indent(trimNewLines: true)}
     _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
 }};";
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
 {{
     public override ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
@@ -792,7 +794,9 @@ public {type} {name}
                 }
                 else
                 {
-                    var getterString = $@"get => ({type})GetValue(""{stringName}"");";
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
+                    var getterString = $@"get => ({type})GetValue(""{stringName}""){forceNotNullable};";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
                     var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
@@ -807,7 +811,7 @@ public {type} {name}
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}

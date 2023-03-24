@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(OwnerObjectHelper))]
+    [Woven(typeof(OwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Owner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Owner", ObjectSchema.ObjectType.RealmObject)
@@ -53,10 +53,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -64,7 +64,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IOwnerAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -79,11 +79,11 @@ namespace Realms.Tests
                     newAccessor.DictOfDogs.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(oldAccessor.TopDog != null)
+                if (oldAccessor.TopDog != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
@@ -183,7 +183,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Owner(Realms.RealmValue val) => val.AsRealmObject<Owner>();
+        public static explicit operator Owner?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Owner>();
 
         public static implicit operator Realms.RealmValue(Owner? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -219,7 +219,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OwnerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -238,7 +238,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IOwnerAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -252,7 +252,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, Realms.Tests.Dog?> DictOfDogs { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OwnerManagedAccessor : Realms.ManagedAccessor, IOwnerAccessor
         {
             public string? Name
@@ -310,7 +310,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IOwnerAccessor
         {
             public override ObjectSchema ObjectSchema => Owner.RealmSchema;
@@ -380,21 +380,19 @@ namespace Realms.Tests
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "ListOfDogs" => (IList<T>)ListOfDogs,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "ListOfDogs" => (IList<T>)ListOfDogs,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "SetOfDogs" => (ISet<T>)SetOfDogs,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "SetOfDogs" => (ISet<T>)SetOfDogs,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

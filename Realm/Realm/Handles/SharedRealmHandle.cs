@@ -18,11 +18,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
@@ -85,21 +85,21 @@ namespace Realms
             public static extern IntPtr open(Configuration configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
-                byte[] encryptionKey,
+                byte[]? encryptionKey,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
-                byte[] encryptionKey,
+                byte[]? encryptionKey,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync_async(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
-                byte[] encryptionKey,
+                byte[]? encryptionKey,
                 IntPtr task_completion_source,
                 out NativeException ex);
 
@@ -168,7 +168,7 @@ namespace Realms
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, [MarshalAs(UnmanagedType.U1)] bool useSync, byte[] encryptionKey, out NativeException ex);
+            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, [MarshalAs(UnmanagedType.U1)] bool useSync, byte[]? encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
@@ -389,7 +389,7 @@ namespace Realms
             }
         }
 
-        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle Open(Configuration configuration, RealmSchema schema, byte[]? encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
@@ -398,7 +398,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[]? encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
@@ -408,7 +408,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey, IntPtr tcsHandle)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[]? encryptionKey, IntPtr tcsHandle)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
             var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, tcsHandle, out var nativeException);
@@ -475,7 +475,7 @@ namespace Realms
 
         public async Task BeginTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
             ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
@@ -509,7 +509,7 @@ namespace Realms
 
         public async Task CommitTransactionAsync(SynchronizationContext synchronizationContext, CancellationToken ct)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
             ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
@@ -605,7 +605,7 @@ namespace Realms
 
         public RealmSchema GetSchema()
         {
-            RealmSchema result = null;
+            RealmSchema? result = null;
             Action<Native.Schema> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
             var callbackHandle = GCHandle.Alloc(callback);
             try
@@ -618,7 +618,7 @@ namespace Realms
                 callbackHandle.Free();
             }
 
-            return result;
+            return result!;
         }
 
         public ObjectHandle CreateObject(TableKey tableKey)
@@ -661,7 +661,7 @@ namespace Realms
             return new SharedRealmHandle(result);
         }
 
-        public bool TryFindObject(TableKey tableKey, in RealmValue id, out ObjectHandle objectHandle)
+        public bool TryFindObject(TableKey tableKey, in RealmValue id, [MaybeNullWhen(false)] out ObjectHandle objectHandle)
         {
             var (primitiveValue, handles) = id.ToNative();
             var result = NativeMethods.get_object_for_primary_key(this, tableKey.Value, primitiveValue, out var ex);
@@ -729,7 +729,7 @@ namespace Realms
 
         public async Task<bool> RefreshAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -753,7 +753,7 @@ namespace Realms
         private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
-            var callback = (Action<Native.Schema>)handle.Target;
+            var callback = (Action<Native.Schema>)handle.Target!;
             callback(schema);
         }
 
@@ -761,13 +761,26 @@ namespace Realms
         public static void NotifyRealmChanged(IntPtr stateHandle)
         {
             var gch = GCHandle.FromIntPtr(stateHandle);
-            ((Realm.State)gch.Target).NotifyChanged(EventArgs.Empty);
+            ((Realm.State)gch.Target!).NotifyChanged(EventArgs.Empty);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
+        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Realm will be owned by the creator of the tcs")]
         private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
-            HandleTaskCompletion(taskCompletionSource, () => new ThreadSafeReferenceHandle(realm_reference), ex);
+            var handleTcs = GCHandle.FromIntPtr(taskCompletionSource);
+            var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handleTcs.Target!;
+
+            if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
+            {
+                tcs.TrySetResult(new(realm_reference));
+            }
+            else
+            {
+                var inner = ex.Convert();
+                const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
+                tcs.TrySetException(new RealmException(outerMessage, inner));
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.DisposeGCHandleCallback))]
@@ -788,11 +801,11 @@ namespace Realms
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
         private static IntPtr OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedConfigHandle)
         {
-            Migration migration = null;
+            Migration? migration = null;
             try
             {
                 var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
-                var config = (RealmConfiguration)configHandle.Target;
+                var config = (RealmConfiguration)configHandle.Target!;
 
                 var oldRealmHandle = new UnownedRealmHandle(oldRealmPtr);
                 var oldConfiguration = new RealmConfiguration(config.DatabasePath)
@@ -804,10 +817,10 @@ namespace Realms
                 using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
                 var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
-                using var newRealm = new Realm(newRealmHandle, config, config.GetSchema(), isInMigration: true);
+                using var newRealm = new Realm(newRealmHandle, config, config.Schema, isInMigration: true);
                 migration = new Migration(oldRealm, newRealm, migrationSchema);
 
-                config.MigrationCallback.Invoke(migration, schemaVersion);
+                config.MigrationCallback!.Invoke(migration, schemaVersion);
                 return IntPtr.Zero;
             }
             catch (Exception ex)
@@ -827,9 +840,9 @@ namespace Realms
             try
             {
                 var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
-                var config = (RealmConfiguration)configHandle.Target;
+                var config = (RealmConfiguration)configHandle.Target!;
 
-                shouldCompact = config.ShouldCompactOnLaunch.Invoke(totalSize, dataSize);
+                shouldCompact = config.ShouldCompactOnLaunch!.Invoke(totalSize, dataSize);
                 return IntPtr.Zero;
             }
             catch (Exception ex)
@@ -846,35 +859,35 @@ namespace Realms
             {
                 // There are situations where we want to let the native function exit before dispatching the continuation.
                 // One example is Realm::run_writes which needs to complete before we can start writing to the Realm.
-                SynchronizationContext.Current.Post(_ =>
+                SynchronizationContext.Current!.Post(_ =>
                 {
-                    HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+                    SetResult();
                 }, null);
             }
             else
             {
-                HandleTaskCompletion<object>(tcs_ptr, () => null, ex);
+                SetResult();
+            }
+
+            void SetResult()
+            {
+                var handleTcs = GCHandle.FromIntPtr(tcs_ptr);
+                var tcs = (TaskCompletionSource)handleTcs.Target!;
+
+                if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
+                {
+                    tcs.TrySetResult();
+                }
+                else
+                {
+                    var inner = ex.Convert();
+                    const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
+                    tcs.TrySetException(new RealmException(outerMessage, inner));
+                }
             }
         }
 
-        private static void HandleTaskCompletion<T>(IntPtr tcsPtr, Func<T> resultBuilder, NativeException ex)
-        {
-            var handleTcs = GCHandle.FromIntPtr(tcsPtr);
-            var tcs = (TaskCompletionSource<T>)handleTcs.Target;
-
-            if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
-            {
-                tcs.TrySetResult(resultBuilder());
-            }
-            else
-            {
-                var inner = ex.Convert();
-                const string outerMessage = "A system error occurred while operating on a Realm. See InnerException for more details.";
-                tcs.TrySetException(new RealmException(outerMessage, inner));
-            }
-        }
-
-        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource<object> tcs, SynchronizationContext synchronizationContext)
+        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource tcs, SynchronizationContext synchronizationContext)
         {
             // We need to post on the original SynchronizationContext where the lock was acquired because
             // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation
@@ -902,11 +915,11 @@ namespace Realms
             try
             {
                 var configHandle = GCHandle.FromIntPtr(managedConfigHandle);
-                var config = (RealmConfigurationBase)configHandle.Target;
+                var config = (RealmConfigurationBase)configHandle.Target!;
 
                 var realmHandle = new UnownedRealmHandle(realmPtr);
                 using var realm = config.GetRealm(realmHandle);
-                config.PopulateInitialData.Invoke(realm);
+                config.PopulateInitialData!.Invoke(realm);
                 return IntPtr.Zero;
             }
             catch (Exception ex)

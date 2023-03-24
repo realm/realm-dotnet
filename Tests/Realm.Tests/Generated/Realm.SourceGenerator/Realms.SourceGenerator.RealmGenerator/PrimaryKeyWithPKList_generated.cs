@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(PrimaryKeyWithPKListObjectHelper))]
+        [Woven(typeof(PrimaryKeyWithPKListObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class PrimaryKeyWithPKList : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyWithPKList", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests.Database
             public bool IsFrozen => Accessor.IsFrozen;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Realm Realm => Accessor.Realm;
+            public Realms.Realm? Realm => Accessor.Realm;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
             [IgnoreDataMember, XmlIgnore]
             public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
             [IgnoreDataMember, XmlIgnore]
             public int BacklinksCount => Accessor.BacklinksCount;
 
-            public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+            void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
             {
                 var newAccessor = (IPrimaryKeyWithPKListAccessor)managedAccessor;
                 var oldAccessor = _accessor;
@@ -74,11 +74,11 @@ namespace Realms.Tests.Database
                         newAccessor.ListValue.Clear();
                     }
 
-                    if(!skipDefaults || oldAccessor.Id != default(long))
+                    if (!skipDefaults || oldAccessor.Id != default(long))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if(!skipDefaults || oldAccessor.StringValue != default(string))
+                    if (!skipDefaults || oldAccessor.StringValue != default(string))
                     {
                         newAccessor.StringValue = oldAccessor.StringValue;
                     }
@@ -175,7 +175,7 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator PrimaryKeyWithPKList(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithPKList>();
+            public static explicit operator PrimaryKeyWithPKList?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PrimaryKeyWithPKList>();
 
             public static implicit operator Realms.RealmValue(PrimaryKeyWithPKList? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -211,7 +211,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class PrimaryKeyWithPKListObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface IPrimaryKeyWithPKListAccessor : Realms.IRealmAccessor
             {
                 long Id { get; set; }
@@ -240,7 +240,7 @@ namespace Realms.Tests.Database
                 System.Collections.Generic.IList<Realms.Tests.Database.AddOrUpdateTests.PrimaryKeyObject> ListValue { get; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithPKListManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyWithPKListAccessor
             {
                 public long Id
@@ -270,7 +270,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithPKListUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithPKListAccessor
             {
                 public override ObjectSchema ObjectSchema => PrimaryKeyWithPKList.RealmSchema;
@@ -340,11 +340,10 @@ namespace Realms.Tests.Database
                 public override IList<T> GetListValue<T>(string propertyName)
                 {
                     return propertyName switch
-                                {
-                    "ListValue" => (IList<T>)ListValue,
-
-                                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                                };
+                    {
+                        "ListValue" => (IList<T>)ListValue,
+                        _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                    };
                 }
 
                 public override ISet<T> GetSetValue<T>(string propertyName)

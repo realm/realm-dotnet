@@ -180,10 +180,7 @@ extern "C" {
             config.device_info.device_version = s_device_version;
 
             config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
-
-            if (app_config.base_url != nullptr) {
-                config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
-            }
+            config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
 
             if (app_config.local_app_name != nullptr) {
                 config.local_app_name = Utf16StringAccessor(app_config.local_app_name, app_config.local_app_name_len).to_string();
@@ -317,30 +314,6 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             app->delete_user(user, get_callback_handler(tcs_ptr));
-        });
-    }
-
-    REALM_EXPORT size_t shared_app_sync_get_path_for_realm(SharedApp& app, SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            std::string path;
-            if (partition_buf) {
-                Utf16StringAccessor partition(partition_buf, partition_len);
-                auto sync_config = SyncConfig(user, partition);
-                path = app->sync_manager()->path_for_realm(std::move(sync_config));
-            }
-            else {
-                // We're using flx, so we don't have a partition. However, the default
-                // path in core is flx_sync_default while the .NET SDK has been using
-                // `default`. To avoid losing users' data, we're passing `default` as
-                // custom_file_name. We're passing a dummy partition to the SyncConfig
-                // because Core asserts that the name when using FLX config is flx_sync_default.
-                // TODO: revisit once https://github.com/realm/realm-core/issues/5473 is addressed.
-                auto sync_config = SyncConfig(user, "\"\"");
-                path = app->sync_manager()->path_for_realm(std::move(sync_config), util::Optional<std::string>("default"));
-            }
-
-            return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
         });
     }
 

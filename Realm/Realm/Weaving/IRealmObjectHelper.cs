@@ -52,6 +52,6 @@ namespace Realms.Weaving
         /// Creates an instance of a ManagedAccessor.
         /// </summary>
         /// <returns>The ManagedAccessor.</returns>
-        ManagedAccessor CreateAccessor();
+        ManagedAccessor? CreateAccessor();
     }
 }

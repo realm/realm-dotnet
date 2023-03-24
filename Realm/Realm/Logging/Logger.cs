@@ -22,22 +22,20 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Sync;
 
 namespace Realms.Logging
 {
     /// <summary>
     /// A logger that logs messages originating from Realm. The default logger can be replaced by setting <see cref="Default"/>.
+    /// <br/>
+    /// A few built-in implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>,
+    /// but you can implement your own.
     /// </summary>
-    /// <remarks>
-    /// A few default implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>, but you
-    /// can implement your own.
-    /// </remarks>
     public abstract class Logger
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
-        private static Logger _defaultLogger;
+        private static Logger? _defaultLogger;
 
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
@@ -57,7 +55,7 @@ namespace Realms.Logging
         /// <returns>
         /// A <see cref="Logger"/> instance that will save log messages to a file.
         /// </returns>
-        public static Logger File(string filePath, Encoding encoding = null) => new FileLogger(filePath, encoding);
+        public static Logger File(string filePath, Encoding? encoding = null) => new FileLogger(filePath, encoding);
 
         /// <summary>
         /// Gets a <see cref="NullLogger"/> that ignores all messages.
@@ -158,7 +156,7 @@ namespace Realms.Logging
             private readonly string _filePath;
             private readonly Encoding _encoding;
 
-            public FileLogger(string filePath, Encoding encoding = null)
+            public FileLogger(string filePath, Encoding? encoding = null)
             {
                 _filePath = filePath;
                 _encoding = encoding ?? Encoding.UTF8;
@@ -225,7 +223,7 @@ namespace Realms.Logging
             private readonly Task _runner;
             private volatile bool _isFlushing;
 
-            public AsyncFileLogger(string filePath, Encoding encoding = null)
+            public AsyncFileLogger(string filePath, Encoding? encoding = null)
             {
                 _filePath = filePath;
                 _encoding = encoding ?? Encoding.UTF8;

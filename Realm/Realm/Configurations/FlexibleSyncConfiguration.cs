@@ -20,8 +20,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Helpers;
-using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
 {
@@ -49,11 +47,9 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the base ctor.")]
-        public FlexibleSyncConfiguration(User user, string optionalPath = null)
-            : base(user)
+        public FlexibleSyncConfiguration(User user, string? optionalPath = null)
+            : base(user, GetPathToRealm(optionalPath ?? user?.Handle.GetRealmPath()))
         {
-            DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User));
         }
 
         /// <summary>
@@ -86,7 +82,7 @@ namespace Realms.Sync
         /// The <see cref="InitialSubscriptionsDelegate"/> that will be invoked the first time
         /// a Realm is opened.
         /// </value>
-        public InitialSubscriptionsDelegate PopulateInitialSubscriptions { get; set; }
+        public InitialSubscriptionsDelegate? PopulateInitialSubscriptions { get; set; }
 
         internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
@@ -182,9 +178,10 @@ namespace Realms.Sync
         // was invoked, which means we need to then update subscriptions.
         private class InitialDataTracker
         {
-            public bool PopulateInitialDataInvoked;
+            [MemberNotNullWhen(returnValue: true, nameof(Callback))]
+            public bool PopulateInitialDataInvoked { get; set; }
 
-            public InitialSubscriptionsDelegate Callback;
+            public InitialSubscriptionsDelegate? Callback { get; set; }
         }
     }
 }

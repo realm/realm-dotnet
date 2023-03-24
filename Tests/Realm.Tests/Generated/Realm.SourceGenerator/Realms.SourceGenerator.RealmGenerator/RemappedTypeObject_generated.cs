@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RemappedTypeObjectObjectHelper))]
+    [Woven(typeof(RemappedTypeObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("__RemappedTypeObject", ObjectSchema.ObjectType.RealmObject)
@@ -56,10 +56,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -67,7 +67,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IRemappedTypeObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -81,20 +81,20 @@ namespace Realms.Tests
                     newAccessor.MappedList.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.StringValue != default(string))
+                if (!skipDefaults || oldAccessor.StringValue != default(string))
                 {
                     newAccessor.StringValue = oldAccessor.StringValue;
                 }
-                if(oldAccessor.NormalLink != null)
+                if (oldAccessor.NormalLink != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NormalLink, update);
                 }
                 newAccessor.NormalLink = oldAccessor.NormalLink;
-                if(oldAccessor.MappedLink != null)
+                if (oldAccessor.MappedLink != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.MappedLink, update);
                 }
@@ -193,7 +193,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator RemappedTypeObject(Realms.RealmValue val) => val.AsRealmObject<RemappedTypeObject>();
+        public static explicit operator RemappedTypeObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RemappedTypeObject>();
 
         public static implicit operator Realms.RealmValue(RemappedTypeObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -229,7 +229,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RemappedTypeObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -248,7 +248,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRemappedTypeObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -268,7 +268,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> MappedBacklink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RemappedTypeObjectManagedAccessor : Realms.ManagedAccessor, IRemappedTypeObjectAccessor
         {
             public int Id
@@ -352,7 +352,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RemappedTypeObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedTypeObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RemappedTypeObject.RealmSchema;
@@ -460,12 +460,11 @@ namespace Realms.Tests
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "NormalList" => (IList<T>)NormalList,
-                "__mappedList" => (IList<T>)MappedList,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "NormalList" => (IList<T>)NormalList,
+                    "__mappedList" => (IList<T>)MappedList,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)

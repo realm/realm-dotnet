@@ -27,16 +27,16 @@ namespace Realms.DataBinding
     internal class RealmObjectTypeDelegator : TypeDelegator
     {
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
-        private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
+        private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new();
 
-        private readonly ObjectSchema _schema;
+        private readonly ObjectSchema? _schema;
 
-        internal RealmObjectTypeDelegator(Type type, ObjectSchema schema) : base(type)
+        internal RealmObjectTypeDelegator(Type type, ObjectSchema? schema) : base(type)
         {
             _schema = schema;
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        protected override PropertyInfo? GetPropertyImpl(string name, BindingFlags bindingAttr, Binder? binder, Type? returnType, Type[]? types, ParameterModifier[]? modifiers)
         {
             var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);
 

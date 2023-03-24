@@ -37,8 +37,8 @@ namespace Realms.Native
 
         public ObjectId Id => ObjectId.Parse(id.AsString());
 
-        public string Key => key.Type == RealmValueType.Null ? null : key.AsString();
+        public string? Key => key.Type == RealmValueType.Null ? null : key.AsString();
 
-        public string Name => name.Type == RealmValueType.Null ? null : name.AsString();
+        public string Name => name.AsString();
     }
 }

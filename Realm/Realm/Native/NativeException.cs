@@ -54,12 +54,12 @@ namespace Realms
             }
         }
 
-        private Exception GetInnerException()
+        private Exception? GetInnerException()
         {
             if (managedException != IntPtr.Zero)
             {
                 var handle = GCHandle.FromIntPtr(managedException);
-                var result = (Exception)handle.Target;
+                var result = (Exception?)handle.Target;
                 handle.Free();
                 return result;
             }

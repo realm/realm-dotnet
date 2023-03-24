@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ReportObjectHelper))]
+    [Woven(typeof(ReportObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Report : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Report", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IReportAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -69,19 +69,19 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.Ref != default(string))
+                if (!skipDefaults || oldAccessor.Ref != default(string))
                 {
                     newAccessor.Ref = oldAccessor.Ref;
                 }
-                if(!skipDefaults || oldAccessor.Date != default(string))
+                if (!skipDefaults || oldAccessor.Date != default(string))
                 {
                     newAccessor.Date = oldAccessor.Date;
                 }
-                if(oldAccessor.Parent != null)
+                if (oldAccessor.Parent != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Parent, update);
                 }
@@ -178,7 +178,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Report(Realms.RealmValue val) => val.AsRealmObject<Report>();
+        public static explicit operator Report?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Report>();
 
         public static implicit operator Realms.RealmValue(Report? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -214,7 +214,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ReportObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -233,7 +233,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IReportAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -245,7 +245,7 @@ namespace Realms.Tests.Database
             Realms.Tests.Database.Product? Parent { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ReportManagedAccessor : Realms.ManagedAccessor, IReportAccessor
         {
             public int Id
@@ -273,7 +273,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ReportUnmanagedAccessor : Realms.UnmanagedAccessor, IReportAccessor
         {
             public override ObjectSchema ObjectSchema => Report.RealmSchema;

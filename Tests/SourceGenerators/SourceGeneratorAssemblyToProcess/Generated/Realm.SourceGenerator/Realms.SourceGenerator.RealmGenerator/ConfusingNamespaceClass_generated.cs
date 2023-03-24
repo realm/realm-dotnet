@@ -17,7 +17,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess.Realm
 {
     [Generated]
-    [Woven(typeof(ConfusingNamespaceClassObjectHelper))]
+    [Woven(typeof(ConfusingNamespaceClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ConfusingNamespaceClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ConfusingNamespaceClass", ObjectSchema.ObjectType.RealmObject)
@@ -43,10 +43,10 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -54,7 +54,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IConfusingNamespaceClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -62,7 +62,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
@@ -158,7 +158,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ConfusingNamespaceClass(Realms.RealmValue val) => val.AsRealmObject<ConfusingNamespaceClass>();
+        public static explicit operator ConfusingNamespaceClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ConfusingNamespaceClass>();
 
         public static implicit operator Realms.RealmValue(ConfusingNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -194,7 +194,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ConfusingNamespaceClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -213,13 +213,13 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IConfusingNamespaceClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ConfusingNamespaceClassManagedAccessor : Realms.ManagedAccessor, IConfusingNamespaceClassAccessor
         {
             public int Id
@@ -229,7 +229,7 @@ namespace SourceGeneratorAssemblyToProcess.Realm
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ConfusingNamespaceClassUnmanagedAccessor : Realms.UnmanagedAccessor, IConfusingNamespaceClassAccessor
         {
             public override ObjectSchema ObjectSchema => ConfusingNamespaceClass.RealmSchema;

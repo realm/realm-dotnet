@@ -19,14 +19,15 @@
 namespace Realms
 {
     /// <summary>
-    /// Base for any object that can be persisted in a <see cref="Realm"/> but that cannot retrieved, hence cannot modified.
+    /// Base for any object that can be persisted in a <see cref="Realm"/> but that cannot be retrieved, hence cannot be modified.
     /// </summary>
     /// <remarks>
     /// The benefit of using <see cref="AsymmetricObject"/> is that the performance of each sync operation is much higher.
-    /// The drawback is that an <see cref="AsymmetricObject"/> is synced unidirectionally, so it cannot be queried.
-    /// You should use this base when you have a write-heavy use case.
-    /// If, instead you want to persist an object that you can also query against, use <see cref="RealmObject"/> instead.
-    /// RealmObjects and EmbeddedObjects can't link (or backlink) to AsymmetricObjects. AsymmetricObjects can only link to EmbeddedObjects.
+    /// The drawback is that an <see cref="AsymmetricObject"/> is synced unidirectionally, so it cannot be queried. You should
+    /// use this base when you have a write-heavy use case. If, instead you want to persist an object that you can also query
+    /// against, use <see cref="RealmObject"/> instead. <see cref="RealmObject">RealmObjects</see> and
+    /// <see cref="EmbeddedObject">EmbeddedObjects</see> can't link (or backlink) to <see cref="AsymmetricObject">AsymmetricObjects</see>.
+    /// <see cref="AsymmetricObject">AsymmetricObjects</see> can only link to <see cref="EmbeddedObject">EmbeddedObjects</see>.
     /// </remarks>
     /// <seealso href="https://www.mongodb.com/docs/realm/sdk/dotnet/data-types/asymmetric-objects/"/>
     public class AsymmetricObject : RealmObjectBase, IAsymmetricObject
