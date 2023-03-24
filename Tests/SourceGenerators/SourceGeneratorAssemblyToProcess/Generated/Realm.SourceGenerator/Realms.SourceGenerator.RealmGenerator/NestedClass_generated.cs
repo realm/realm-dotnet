@@ -19,7 +19,7 @@ namespace SourceGeneratorPlayground
     public partial class OuterClass
     {
         [Generated]
-        [Woven(typeof(NestedClassObjectHelper))]
+        [Woven(typeof(NestedClassObjectHelper)), Realms.Preserve(AllMembers = true)]
         private partial class NestedClass : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NestedClass", ObjectSchema.ObjectType.RealmObject)
@@ -46,10 +46,10 @@ namespace SourceGeneratorPlayground
             public bool IsFrozen => Accessor.IsFrozen;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Realm Realm => Accessor.Realm;
+            public Realms.Realm? Realm => Accessor.Realm;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
             [IgnoreDataMember, XmlIgnore]
             public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -57,7 +57,7 @@ namespace SourceGeneratorPlayground
             [IgnoreDataMember, XmlIgnore]
             public int BacklinksCount => Accessor.BacklinksCount;
 
-            public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+            void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
             {
                 var newAccessor = (INestedClassAccessor)managedAccessor;
                 var oldAccessor = _accessor;
@@ -65,11 +65,11 @@ namespace SourceGeneratorPlayground
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if(!skipDefaults || oldAccessor.Id != default(int))
+                    if (!skipDefaults || oldAccessor.Id != default(int))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if(oldAccessor.Link != null)
+                    if (oldAccessor.Link != null && newAccessor.Realm != null)
                     {
                         newAccessor.Realm.Add(oldAccessor.Link, update);
                     }
@@ -166,7 +166,7 @@ namespace SourceGeneratorPlayground
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator NestedClass(Realms.RealmValue val) => val.AsRealmObject<NestedClass>();
+            public static explicit operator NestedClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NestedClass>();
 
             public static implicit operator Realms.RealmValue(NestedClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -202,7 +202,7 @@ namespace SourceGeneratorPlayground
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class NestedClassObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface INestedClassAccessor : Realms.IRealmAccessor
             {
                 int Id { get; set; }
@@ -229,7 +229,7 @@ namespace SourceGeneratorPlayground
                 SourceGeneratorPlayground.OuterClass.NestedClass? Link { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NestedClassManagedAccessor : Realms.ManagedAccessor, INestedClassAccessor
             {
                 public int Id
@@ -245,7 +245,7 @@ namespace SourceGeneratorPlayground
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NestedClassUnmanagedAccessor : Realms.UnmanagedAccessor, INestedClassAccessor
             {
                 public override ObjectSchema ObjectSchema => NestedClass.RealmSchema;

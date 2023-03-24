@@ -240,23 +240,10 @@ namespace Realms.Native
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        public string AsString()
-        {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
-            return string_value;
-        }
+        public string AsString() => string_value!;
 
         public byte[] AsBinary()
         {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
             var bytes = new byte[(int)data_value.size];
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -323,8 +310,6 @@ namespace Realms.Native
         public byte* data;
         public IntPtr size;
 
-        public string AsString() => data == null ? null : Encoding.UTF8.GetString(data, (int)size);
-
-        public static implicit operator string(StringValue value) => value.AsString();
+        public static implicit operator string?(StringValue value) => value.data == null ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

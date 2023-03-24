@@ -28,7 +28,8 @@ namespace Realms
     /// <summary>
     /// A class that exposes a set of API to access the data in a managed RealmObject dynamically.
     /// </summary>
-    public struct DynamicObjectApi
+    /// <see cref="RealmObjectBase.DynamicApi"/>
+    public readonly struct DynamicObjectApi
     {
         private readonly ManagedAccessor _managedAccessor;
 
@@ -49,7 +50,7 @@ namespace Realms
         /// use <see cref="ObjectSchema"/>.
         /// <br/>
         /// Casting to <see cref="RealmValue"/> is always valid. When the property is of type
-        /// object, casting to <see cref="RealmObjectBase"/> is always valid.
+        /// object, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
         public T Get<T>(string propertyName)
         {
@@ -107,7 +108,7 @@ namespace Realms
 
             if (!property.Type.IsRealmValue() && value.Type != RealmValueType.Null && property.Type.ToRealmValueType() != value.Type)
             {
-                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny().GetType().Name} ({value}).");
+                throw new ArgumentException($"{_managedAccessor.ObjectSchema.Name}.{propertyName} is {property.GetDotnetTypeName()} but the supplied value is {value.AsAny()?.GetType().Name} ({value}).");
             }
 
             if (property.IsPrimaryKey)
@@ -135,7 +136,7 @@ namespace Realms
 
             var resultsHandle = _managedAccessor.ObjectHandle.GetBacklinks(propertyName, _managedAccessor.Metadata);
 
-            var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType];
+            var relatedMeta = _managedAccessor.Realm.Metadata[property.ObjectType!];
             if (relatedMeta.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject)
             {
                 return new RealmResults<IEmbeddedObject>(_managedAccessor.Realm, resultsHandle, relatedMeta);
@@ -177,7 +178,7 @@ namespace Realms
         /// use <see cref="ObjectSchema"/>.
         /// <br/>
         /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
-        /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+        /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
         public IList<T> GetList<T>(string propertyName)
         {
@@ -199,7 +200,7 @@ namespace Realms
         /// use <see cref="ObjectSchema"/>.
         /// <br/>
         /// Casting the elements to <see cref="RealmValue"/> is always valid. When the collection
-        /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+        /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
         public ISet<T> GetSet<T>(string propertyName)
         {
@@ -221,7 +222,7 @@ namespace Realms
         /// use <see cref="ObjectSchema"/>.
         /// <br/>
         /// Casting the values to <see cref="RealmValue"/> is always valid. When the collection
-        /// contains objects, casting to <see cref="RealmObjectBase"/> is always valid.
+        /// contains objects, casting to <see cref="IRealmObjectBase"/> is always valid.
         /// </remarks>
         public IDictionary<string, T> GetDictionary<T>(string propertyName)
         {
@@ -244,7 +245,7 @@ namespace Realms
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = null)
+        private Property GetProperty(string propertyName, Func<PropertyType, bool> typeCheck, [CallerMemberName] string methodName = "")
         {
             Argument.NotNull(propertyName, nameof(propertyName));
 

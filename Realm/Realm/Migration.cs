@@ -55,8 +55,8 @@ namespace Realms
 
         internal void Free()
         {
-            OldRealm = null;
-            NewRealm = null;
+            OldRealm = null!;
+            NewRealm = null!;
 
             _migrationSchema = IntPtr.Zero;
         }

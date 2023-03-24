@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(PrimaryKeyWithNonPKRelationObjectHelper))]
+        [Woven(typeof(PrimaryKeyWithNonPKRelationObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class PrimaryKeyWithNonPKRelation : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyWithNonPKRelation", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests.Database
             public bool IsFrozen => Accessor.IsFrozen;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Realm Realm => Accessor.Realm;
+            public Realms.Realm? Realm => Accessor.Realm;
 
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
             [IgnoreDataMember, XmlIgnore]
             public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
             [IgnoreDataMember, XmlIgnore]
             public int BacklinksCount => Accessor.BacklinksCount;
 
-            public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+            void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
             {
                 var newAccessor = (IPrimaryKeyWithNonPKRelationAccessor)managedAccessor;
                 var oldAccessor = _accessor;
@@ -69,15 +69,15 @@ namespace Realms.Tests.Database
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if(!skipDefaults || oldAccessor.Id != default(long))
+                    if (!skipDefaults || oldAccessor.Id != default(long))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if(!skipDefaults || oldAccessor.StringValue != default(string))
+                    if (!skipDefaults || oldAccessor.StringValue != default(string))
                     {
                         newAccessor.StringValue = oldAccessor.StringValue;
                     }
-                    if(oldAccessor.OtherObject != null)
+                    if (oldAccessor.OtherObject != null && newAccessor.Realm != null)
                     {
                         newAccessor.Realm.Add(oldAccessor.OtherObject, update);
                     }
@@ -174,7 +174,7 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator PrimaryKeyWithNonPKRelation(Realms.RealmValue val) => val.AsRealmObject<PrimaryKeyWithNonPKRelation>();
+            public static explicit operator PrimaryKeyWithNonPKRelation?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PrimaryKeyWithNonPKRelation>();
 
             public static implicit operator Realms.RealmValue(PrimaryKeyWithNonPKRelation? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class PrimaryKeyWithNonPKRelationObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -229,7 +229,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface IPrimaryKeyWithNonPKRelationAccessor : Realms.IRealmAccessor
             {
                 long Id { get; set; }
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
                 Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? OtherObject { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithNonPKRelationManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyWithNonPKRelationAccessor
             {
                 public long Id
@@ -261,7 +261,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithNonPKRelationUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithNonPKRelationAccessor
             {
                 public override ObjectSchema ObjectSchema => PrimaryKeyWithNonPKRelation.RealmSchema;

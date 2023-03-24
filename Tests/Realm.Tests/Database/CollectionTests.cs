@@ -37,7 +37,7 @@ namespace Realms.Tests.Database
     public class CollectionTests : RealmInstanceTest
     {
         [Test]
-        public void Insert_WhenIndexIsNegative_ShouldThrow()
+        public void ListInsert_WhenIndexIsNegative_ShouldThrow()
         {
             var container = new ContainerObject();
             _realm.Write(() => _realm.Add(container));
@@ -49,7 +49,7 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Insert_WhenIndexIsMoreThanCount_ShouldThrow()
+        public void ListInsert_WhenIndexIsMoreThanCount_ShouldThrow()
         {
             var container = new ContainerObject();
             _realm.Write(() => _realm.Add(container));
@@ -64,6 +64,45 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() => container.Items.Insert(2, new IntPropertyObject()));
             }, Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        public void ListAdd_WhenValueIsNull_ShouldThrow()
+        {
+            var container = new ContainerObject();
+            _realm.Write(() => _realm.Add(container));
+
+            _realm.Write(() =>
+            {
+                Assert.That(() => container.Items.Insert(0, null), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.Items.Add(null), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.Items[0] = null, Throws.TypeOf<ArgumentNullException>());
+            });
+        }
+
+        [Test]
+        public void ListOfEmbeddedAdd_WhenValueIsNull_ShouldThrow()
+        {
+            var container = _realm.Write(() => _realm.Add(new CollectionsObject()));
+
+            _realm.Write(() =>
+            {
+                Assert.That(() => container.EmbeddedObjectList.Insert(0, null), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.EmbeddedObjectList.Add(null), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.EmbeddedObjectList[0] = null, Throws.TypeOf<ArgumentNullException>());
+            });
+        }
+
+        [Test]
+        public void SetAdd_WhenValueIsNull_ShouldThrow()
+        {
+            var container = _realm.Write(() => _realm.Add(new CollectionsObject()));
+
+            _realm.Write(() =>
+            {
+                Assert.That(() => container.ObjectSet.Add(null), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.ObjectSet.UnionWith(new IntPropertyObject[] { null }), Throws.TypeOf<ArgumentNullException>());
+            });
         }
 
         [Test]

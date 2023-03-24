@@ -20,6 +20,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Helpers;
@@ -30,18 +31,17 @@ namespace Realms.Schema
     /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or,
     /// dynamically, by evaluating a Realm from disk. To construct a new <see cref="RealmSchema"/> instance, use the
     /// <see cref="Builder">RealmSchema.Builder</see> API.
-    /// </summary>
-    /// <remarks>
-    /// By default this will be all the <see cref="RealmObject"/>s, <see cref="EmbeddedObject"/>s and <see cref="AsymmetricObject"/>s
+    /// <br/>
+    /// By default this will be all the <see cref="IRealmObject"/>s, <see cref="IEmbeddedObject"/>s and <see cref="IAsymmetricObject"/>s
     /// in all your assemblies. Unless you restrict with <see cref="RealmConfigurationBase.Schema"/>. Just because a given class <em>may</em>
     /// be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata but objects only start to
     /// take up space once written.
-    /// </remarks>
+    /// </summary>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
-        private static readonly HashSet<Type> _defaultTypes = new HashSet<Type>();
+        private static readonly HashSet<Type> _defaultTypes = new();
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(() =>
+        private static readonly Lazy<RealmSchema> _default = new(() =>
         {
             if (_defaultTypes.Count == 0)
             {
@@ -55,7 +55,7 @@ namespace Realms.Schema
 
                     foreach (var moduleInitializer in moduleInitializers)
                     {
-                        moduleInitializer.Invoke(null, null);
+                        moduleInitializer!.Invoke(null, null);
                     }
                 }
                 catch
@@ -123,7 +123,7 @@ namespace Realms.Schema
         /// <returns>
         /// <c>true</c> if this <see cref="RealmSchema"/> contains a class definition with the supplied <paramref name="name"/>; <c>false</c> otherwise.
         /// </returns>
-        public bool TryFindObjectSchema(string name, out ObjectSchema schema)
+        public bool TryFindObjectSchema(string name, [MaybeNullWhen(false)] out ObjectSchema schema)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
@@ -185,7 +185,8 @@ namespace Realms.Schema
         /// <returns>
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
-        public static implicit operator RealmSchema(ObjectSchema[] objects) => objects == null ? null : new Builder(objects).Build();
+        [return: NotNullIfNotNull("objects")]
+        public static implicit operator RealmSchema?(ObjectSchema[]? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a list of <see cref="ObjectSchema"/> instances.
@@ -197,7 +198,8 @@ namespace Realms.Schema
         /// <returns>
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
-        public static implicit operator RealmSchema(List<ObjectSchema> objects) => objects == null ? null : new Builder(objects).Build();
+        [return: NotNullIfNotNull("objects")]
+        public static implicit operator RealmSchema?(List<ObjectSchema>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="Type"/> instances.
@@ -207,7 +209,8 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        public static implicit operator RealmSchema(Type[] objects) => objects == null ? null : new Builder(objects).Build();
+        [return: NotNullIfNotNull("objects")]
+        public static implicit operator RealmSchema?(Type[]? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a List of <see cref="Type"/> instances.
@@ -217,7 +220,8 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        public static implicit operator RealmSchema(List<Type> objects) => objects == null ? null : new Builder(objects).Build();
+        [return: NotNullIfNotNull("objects")]
+        public static implicit operator RealmSchema?(List<Type>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a HashSet of <see cref="Type"/> instances.
@@ -227,7 +231,8 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
-        public static implicit operator RealmSchema(HashSet<Type> objects) => objects == null ? null : new Builder(objects).Build();
+        [return: NotNullIfNotNull("objects")]
+        public static implicit operator RealmSchema?(HashSet<Type>? objects) => objects == null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// A convenience operator to construct a <see cref="RealmSchema"/> from a <see cref="Builder"/> by calling the
@@ -235,7 +240,8 @@ namespace Realms.Schema
         /// </summary>
         /// <param name="builder">The builder that describes the newly created schema.</param>
         /// <returns><c>null</c> if <paramref name="builder"/> is <c>null</c>; the result of <see cref="Builder.Build"/> otherwise.</returns>
-        public static implicit operator RealmSchema(Builder builder) => builder?.Build();
+        [return: NotNullIfNotNull("builder")]
+        public static implicit operator RealmSchema?(Builder? builder) => builder?.Build();
 
         /// <summary>
         /// A mutable builder that allows you to construct a <see cref="RealmSchema"/> instance.
@@ -273,7 +279,7 @@ namespace Realms.Schema
             /// Constructs a <see cref="RealmSchema"/> from the properties added to this <see cref="Builder"/>.
             /// </summary>
             /// <returns>An immutable <see cref="RealmSchema"/> instance that contains the properties added to the <see cref="Builder"/>.</returns>
-            public RealmSchema Build() => new RealmSchema(_values);
+            public RealmSchema Build() => new(_values);
 
             /// <summary>
             /// Adds a new <see cref="ObjectSchema"/> to this <see cref="Builder"/>.
@@ -328,7 +334,7 @@ namespace Realms.Schema
                 if (_values.TryGetValue(objectSchema.Name, out var existingOS) && existingOS.Type != null)
                 {
                     var duplicateType = existingOS.Type;
-                    if (objectSchema.Type.FullName != duplicateType.FullName)
+                    if (objectSchema.Type!.FullName != duplicateType.FullName)
                     {
                         var errorMessage = "The names (without namespace) of objects persisted in Realm must be unique." +
                             $"The duplicate types are {type.FullName} and {duplicateType.FullName}. Either rename one" +
@@ -344,7 +350,7 @@ namespace Realms.Schema
                 return this;
             }
 
-            protected override string GetKey(ObjectSchema item) => item?.Name;
+            protected override string GetKey(ObjectSchema item) => Argument.ValidateNotNull(item, nameof(item)).Name;
         }
     }
 }

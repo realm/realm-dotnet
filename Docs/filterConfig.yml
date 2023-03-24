@@ -74,6 +74,33 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\..*GetEnumerator$
     type: Method
+- exclude:
+    uidRegex: ^Realms\.IRealmAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.IRealmObjectBase\.Accessor$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.ManagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.UnmanagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.ISettableManagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.Schema\.SchemaBuilderBase`1\.Add
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.SchemaBuilderBase`1\.GetKey
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.ObjectSchema\.Builder\.GetKey
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.RealmSchema\.Builder\.GetKey
+    type: Method
 - include:
     hasAttribute:
       uid: System.ComponentModel.EditorBrowsableAttribute

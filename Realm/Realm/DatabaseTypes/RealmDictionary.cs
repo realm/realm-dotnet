@@ -46,7 +46,7 @@ namespace Realms
         private readonly DictionaryHandle _dictionaryHandle;
 
         private bool _deliveredInitialKeyNotification;
-        private NotificationTokenHandle _keyNotificationToken;
+        private NotificationTokenHandle? _keyNotificationToken;
 
         public TValue this[string key]
         {
@@ -113,7 +113,7 @@ namespace Realms
 
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata? metadata)
             : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;
@@ -166,7 +166,9 @@ namespace Realms
             return _dictionaryHandle.Remove(item.Key, realmValue);
         }
 
-        public bool TryGetValue(string key, out TValue value)
+#pragma warning disable CS8767 // .NET Standard's definition of TryGetValue doesn't have [MaybeNullWhen]
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value)
+#pragma warning restore CS8767
         {
             if (key != null && _dictionaryHandle.TryGet(key, Realm, out var realmValue))
             {
@@ -253,7 +255,7 @@ namespace Realms
         {
             Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
 
-            DictionaryChangeSet changeset = null;
+            DictionaryChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;

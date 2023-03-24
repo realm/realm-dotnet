@@ -28,12 +28,14 @@ namespace Realms
 {
     /// <summary>
     /// Base class for specifying configuration settings that affect the Realm's behavior.
-    /// </summary>
-    /// <remarks>
+    /// <br/>
     /// Its main role is generating a canonical path from whatever absolute, relative subdirectory, or just filename the user supplies.
-    /// </remarks>
+    /// </summary>
     public abstract class RealmConfigurationBase
     {
+        private protected RealmSchema? _schema;
+        private byte[]? _encryptionKey;
+
         internal delegate void InitialDataDelegate(Realm realm);
 
         /// <summary>
@@ -43,10 +45,10 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Gets or sets the full path of the Realms opened with this Configuration. May be overridden by passing in a separate name.
+        /// Gets the full path of the Realms opened with this Configuration. May be overridden by passing in a separate name.
         /// </summary>
         /// <value>The absolute path to the Realm.</value>
-        public string DatabasePath { get; protected set; }
+        public string DatabasePath { get; private protected set; }
 
         /// <summary>
         /// Gets or sets the path where the named pipes used by Realm can be placed.
@@ -57,7 +59,7 @@ namespace Realms
         /// In this case the path should point to a location on a filesystem where the pipes can be created.
         /// </remarks>
         /// <value>The path where named pipes can be created.</value>
-        public string FallbackPipePath { get; set; }
+        public string? FallbackPipePath { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the Realm will be open in dynamic mode. If opened in dynamic mode,
@@ -72,7 +74,8 @@ namespace Realms
         /// Gets or sets the schema of the Realm opened with this configuration.
         /// </summary>
         /// <remarks>
-        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
+        /// Typically left null so by default all <see cref="IRealmObject"/> and <see cref="IEmbeddedObject"/> instance will be able to
+        /// be stored in all Realms.
         /// <br />
         /// If specifying the schema explicitly, you can either use the implicit conversion operator from <c>Type[]</c> to <see cref="RealmSchema"/>
         /// or construct it using the <see cref="RealmSchema.Builder"/> API.
@@ -103,14 +106,32 @@ namespace Realms
         /// </code>
         /// </example>
         /// <value>The schema of the types that can be persisted in the Realm.</value>
-        public RealmSchema Schema { get; set; }
+        public RealmSchema Schema
+        {
+            get
+            {
+                if (_schema != null)
+                {
+                    return _schema;
+                }
+
+                if (IsDynamic)
+                {
+                    return RealmSchema.Empty;
+                }
+
+                return RealmSchema.Default;
+            }
+
+            set => _schema = value;
+        }
 
         /// <summary>
         /// Utility to build a path in which a Realm will be created so can consistently use filenames and relative paths.
         /// </summary>
         /// <param name="optionalPath">Path to the Realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <returns>A full path including name of Realm file.</returns>
-        public static string GetPathToRealm(string optionalPath = null)
+        public static string GetPathToRealm(string? optionalPath = null)
         {
             const string errorMessage = "Could not determine a writable folder to store the Realm file. When constructing the RealmConfiguration, provide an absolute optionalPath where writes are allowed.";
             if (string.IsNullOrEmpty(optionalPath))
@@ -123,7 +144,9 @@ namespace Realms
                 optionalPath = Path.Combine(InteropConfig.GetDefaultStorageFolder(errorMessage), optionalPath);
             }
 
-            if (optionalPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
+            // optionalPath is guaranteed to be non-null here, but .NET Standard 2.0 doesn't have correct annotations for
+            // string.IsNullOrEmpty.
+            if (optionalPath!.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);
             }
@@ -137,9 +160,7 @@ namespace Realms
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
         public ulong SchemaVersion { get; set; }
 
-        private byte[] _encryptionKey;
-
-        internal byte[] EncryptionKey
+        internal byte[]? EncryptionKey
         {
             get
             {
@@ -163,13 +184,9 @@ namespace Realms
         /// <seealso cref="Realm.Freeze"/>
         public ulong MaxNumberOfActiveVersions { get; set; } = ulong.MaxValue;
 
-        internal InitialDataDelegate PopulateInitialData { get; set; }
+        internal InitialDataDelegate? PopulateInitialData { get; set; }
 
-        internal RealmConfigurationBase()
-        {
-        }
-
-        internal RealmConfigurationBase(string optionalPath)
+        internal RealmConfigurationBase(string? optionalPath)
         {
             DatabasePath = GetPathToRealm(optionalPath);
         }
@@ -181,14 +198,14 @@ namespace Realms
 
         internal virtual Realm CreateRealm()
         {
-            var schema = GetSchema();
+            var schema = Schema;
             var sharedRealmHandle = CreateHandle(schema);
             return GetRealm(sharedRealmHandle, schema);
         }
 
         internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
-            var schema = GetSchema();
+            var schema = Schema;
             var sharedRealmHandle = await CreateHandleAsync(schema, cancellationToken);
             return GetRealm(sharedRealmHandle, schema);
         }
@@ -214,12 +231,9 @@ namespace Realms
             return config;
         }
 
-        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema schema = null)
+        internal Realm GetRealm(SharedRealmHandle sharedRealmHandle, RealmSchema? schema = null)
         {
-            if (schema == null)
-            {
-                schema = GetSchema();
-            }
+            schema ??= Schema;
 
             if (IsDynamic && !schema.Any())
             {
@@ -235,25 +249,6 @@ namespace Realms
             }
 
             return new Realm(sharedRealmHandle, this, schema);
-        }
-
-        /// <summary>
-        /// Method to use when opening a Realm with this configuration. It takes care of dynamic mode
-        /// as well as explicitly defined user schema.
-        /// </summary>
-        internal RealmSchema GetSchema()
-        {
-            if (Schema != null)
-            {
-                return Schema;
-            }
-
-            if (IsDynamic)
-            {
-                return RealmSchema.Empty;
-            }
-
-            return RealmSchema.Default;
         }
 
         internal abstract SharedRealmHandle CreateHandle(RealmSchema schema);

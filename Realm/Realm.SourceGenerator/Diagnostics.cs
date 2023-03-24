@@ -151,7 +151,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.PrimaryKeyWrongType,
                 "[PrimaryKey] is only allowed on specific types",
-                $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {propertyType}.",
+                $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on {propertyType}.",
                 location);
         }
 

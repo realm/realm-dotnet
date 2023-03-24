@@ -37,13 +37,18 @@ namespace Realms
     public abstract class ManagedAccessor
         : IRealmAccessor, IThreadConfined, INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>
     {
-        private Lazy<int> _hashCode;
+        private readonly Lazy<int> _hashCode;
 
-        private NotificationTokenHandle _notificationToken;
+        private NotificationTokenHandle? _notificationToken;
 
-        private Action<string> _onNotifyPropertyChanged;
+        private Action<string>? _onNotifyPropertyChanged;
 
         internal ObjectHandle ObjectHandle { get; private set; }
+
+        /// <inheritdoc/>
+        public Realm Realm { get; private set; }
+
+        internal Metadata Metadata { get; private set; }
 
         /// <inheritdoc/>
         public bool IsManaged => true;
@@ -52,13 +57,10 @@ namespace Realms
         public bool IsValid => ObjectHandle?.IsValid != false;
 
         /// <inheritdoc/>
-        public bool IsFrozen => Realm?.IsFrozen == true;
+        public bool IsFrozen => Realm.IsFrozen;
 
         /// <inheritdoc/>
-        public Realm Realm { get; private set; }
-
-        /// <inheritdoc/>
-        public ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema ObjectSchema => Metadata.Schema;
 
         /// <inheritdoc/>
         public int BacklinksCount => ObjectHandle?.GetBacklinkCount() ?? 0;
@@ -66,14 +68,23 @@ namespace Realms
         /// <inheritdoc/>
         IThreadConfinedHandle IThreadConfined.Handle => ObjectHandle;
 
-        internal Metadata Metadata { get; private set; }
-
         /// <inheritdoc/>
         public DynamicObjectApi DynamicApi => new(this);
 
         /// <inheritdoc/>
         Metadata IMetadataObject.Metadata => Metadata;
 
+#pragma warning disable CS8618 // These fields are set by Initialize which is called immediately after creating the instance
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ManagedAccessor"/> class.
+        /// </summary>
+        protected ManagedAccessor()
+#pragma warning restore CS8618
+        {
+            _hashCode = new(() => ObjectHandle!.GetObjHash());
+        }
+
+        [MemberNotNull(nameof(Realm), nameof(ObjectHandle), nameof(Metadata))]
         internal void Initialize(Realm realm,
             ObjectHandle objectHandle,
             Metadata metadata)
@@ -81,7 +92,6 @@ namespace Realms
             Realm = realm;
             ObjectHandle = objectHandle;
             Metadata = metadata;
-            _hashCode = new Lazy<int>(() => ObjectHandle.GetObjHash());
         }
 
         /// <summary>
@@ -150,7 +160,7 @@ namespace Realms
             where T : IRealmObjectBase
         {
             Metadata.Schema.TryFindProperty(propertyName, out var property);
-            var relatedMeta = Realm.Metadata[property.ObjectType];
+            var relatedMeta = Realm.Metadata[property.ObjectType!];
 
             return new RealmResults<T>(Realm, resultsHandle, relatedMeta);
         }
@@ -203,7 +213,7 @@ namespace Realms
         {
             if (changes.HasValue)
             {
-                foreach (int propertyIndex in changes.Value.Properties.AsEnumerable())
+                foreach (var propertyIndex in changes.Value.Properties.AsEnumerable().Select(i => (int)i))
                 {
                     // Due to a yet another Mono compiler bug, using LINQ fails here :/
                     var i = 0;
@@ -238,9 +248,9 @@ namespace Realms
             }
         }
 
-        private void RaisePropertyChanged(string propertyName = null)
+        private void RaisePropertyChanged(string propertyName)
         {
-            _onNotifyPropertyChanged(propertyName);
+            _onNotifyPropertyChanged?.Invoke(propertyName);
         }
 
         /// <inheritdoc/>
@@ -258,9 +268,9 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string? ToString()
         {
-            var typeName = Metadata.Schema.Type.Name;
+            var typeName = Metadata.Schema.Type!.Name;
 
             if (!IsValid)
             {
@@ -278,7 +288,7 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not ManagedAccessor ma)
             {

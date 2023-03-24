@@ -79,7 +79,7 @@ namespace Realms.Sync
         /// <remarks>
         /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
         /// </remarks>
-        public SessionErrorCallback OnSessionError { get; set; }
+        public SessionErrorCallback? OnSessionError { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether async operations, such as <see cref="Realm.GetInstanceAsync"/>,
@@ -98,7 +98,7 @@ namespace Realms.Sync
         /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
-        public new byte[] EncryptionKey
+        public new byte[]? EncryptionKey
         {
             get => base.EncryptionKey;
             set => base.EncryptionKey = value;
@@ -106,13 +106,8 @@ namespace Realms.Sync
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfigurationBase"/> class.
-        /// </summary>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        protected SyncConfigurationBase(User user)
+        private protected SyncConfigurationBase(User user, string databasePath)
+            : base(databasePath)
         {
             Argument.NotNull(user, nameof(user));
 
@@ -154,7 +149,7 @@ namespace Realms.Sync
             }
         }
 
-        internal virtual IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
+        internal virtual IDisposable? OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
@@ -162,7 +157,7 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
-                schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                schema_mode = _schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
                 cancel_waits_on_nonfatal_error = CancelAsyncOperationsOnNonFatalErrors,
             };

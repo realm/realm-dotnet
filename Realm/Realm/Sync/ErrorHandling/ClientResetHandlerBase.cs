@@ -68,7 +68,7 @@ namespace Realms.Sync.ErrorHandling
 
         internal abstract ClientResyncMode ClientResetMode { get; }
 
-        internal ClientResetCallback ManualClientReset { get; set; }
+        internal ClientResetCallback? ManualClientReset { get; set; }
 
         internal ClientResetHandlerBase()
         {

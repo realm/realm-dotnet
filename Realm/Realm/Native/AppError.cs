@@ -35,10 +35,10 @@ namespace Realms.Sync.Native
 
         public int http_status_code;
 
-        public string Message => message.Type == RealmValueType.Null ? null : message.AsString();
+        public string? Message => message.Type == RealmValueType.Null ? null : message.AsString();
 
-        public string ErrorCategory => error_category.Type == RealmValueType.Null ? null : error_category.AsString();
+        public string? ErrorCategory => error_category.Type == RealmValueType.Null ? null : error_category.AsString();
 
-        public string LogsLink => logs_link.Type == RealmValueType.Null ? null : logs_link.AsString();
+        public string? LogsLink => logs_link.Type == RealmValueType.Null ? null : logs_link.AsString();
     }
 }

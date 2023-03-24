@@ -27,7 +27,7 @@ namespace Realms
     {
         public delegate IntPtr NativeCollectionGetter(IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex);
 
-        public static string GetString(NativeCollectionGetter getter)
+        public static string? GetString(NativeCollectionGetter getter)
         {
             // TODO: rework to use GetCollection
             var bufferSize = 128;

@@ -600,14 +600,14 @@ namespace Realms.Tests.Sync
 
         private static async Task WaitForPropertyChangedAsync(IRealmObject realmObject, int timeout = 10 * 1000)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             (realmObject as INotifyPropertyChanged).PropertyChanged += RealmObject_PropertyChanged;
 
-            void RealmObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+            void RealmObject_PropertyChanged(object sender, PropertyChangedEventArgs e)
             {
                 if (e != null)
                 {
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                 }
             }
 

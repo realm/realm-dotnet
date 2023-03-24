@@ -16,9 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace System.Runtime.CompilerServices
+namespace System.Threading.Tasks
 {
-    internal static class IsExternalInit
+#if NETSTANDARD2_0
+
+    internal class TaskCompletionSource : TaskCompletionSource<object?>
     {
+        public void TrySetResult() => TrySetResult(null);
     }
+
+#endif
 }

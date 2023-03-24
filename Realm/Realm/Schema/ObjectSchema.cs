@@ -74,7 +74,7 @@ namespace Realms.Schema
 
         internal Property? PrimaryKeyProperty { get; }
 
-        internal Type Type { get; private set; }
+        internal Type? Type { get; private set; }
 
         /// <summary>
         /// Gets a <see cref="ObjectType"/> indicating whether this <see cref="ObjectSchema"/> describes
@@ -155,7 +155,7 @@ namespace Realms.Schema
         /// </summary>
         public class Builder : SchemaBuilderBase<Property>
         {
-            internal Type Type;
+            internal Type? Type;
 
             /// <summary>
             /// Gets or sets the name of the class described by the builder.
@@ -241,7 +241,7 @@ namespace Realms.Schema
                 var schemaField = type.GetField("RealmSchema", BindingFlags.Public | BindingFlags.Static);
                 if (schemaField != null)
                 {
-                    var objectSchema = (ObjectSchema)schemaField.GetValue(null);
+                    var objectSchema = (ObjectSchema)schemaField.GetValue(null)!;
                     Name = objectSchema.Name;
 
                     foreach (var prop in objectSchema)

@@ -35,7 +35,7 @@ namespace Realms
             return ienum.GetGenericArguments()[0];
         }
 
-        private static Type FindIEnumerable(Type seqType)
+        private static Type? FindIEnumerable(Type seqType)
         {
             if (seqType == null || seqType == typeof(string))
             {
@@ -44,7 +44,7 @@ namespace Realms
 
             if (seqType.IsArray)
             {
-                return typeof(IEnumerable<>).MakeGenericType(seqType.GetElementType());
+                return typeof(IEnumerable<>).MakeGenericType(seqType.GetElementType()!);
             }
 
             if (seqType.IsGenericType)

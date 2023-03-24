@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(AllTypesClassObjectHelper))]
+    [Woven(typeof(AllTypesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
@@ -89,10 +89,10 @@ namespace SourceGeneratorAssemblyToProcess
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -100,7 +100,7 @@ namespace SourceGeneratorAssemblyToProcess
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IAllTypesClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -122,35 +122,35 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.NonRequiredStringDictionaryProperty.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.CharProperty != default(char))
+                if (!skipDefaults || oldAccessor.CharProperty != default(char))
                 {
                     newAccessor.CharProperty = oldAccessor.CharProperty;
                 }
-                if(!skipDefaults || oldAccessor.ByteProperty != default(byte))
+                if (!skipDefaults || oldAccessor.ByteProperty != default(byte))
                 {
                     newAccessor.ByteProperty = oldAccessor.ByteProperty;
                 }
-                if(!skipDefaults || oldAccessor.Int16Property != default(short))
+                if (!skipDefaults || oldAccessor.Int16Property != default(short))
                 {
                     newAccessor.Int16Property = oldAccessor.Int16Property;
                 }
-                if(!skipDefaults || oldAccessor.Int32Property != default(int))
+                if (!skipDefaults || oldAccessor.Int32Property != default(int))
                 {
                     newAccessor.Int32Property = oldAccessor.Int32Property;
                 }
-                if(!skipDefaults || oldAccessor.Int64Property != default(long))
+                if (!skipDefaults || oldAccessor.Int64Property != default(long))
                 {
                     newAccessor.Int64Property = oldAccessor.Int64Property;
                 }
-                if(!skipDefaults || oldAccessor.SingleProperty != default(float))
+                if (!skipDefaults || oldAccessor.SingleProperty != default(float))
                 {
                     newAccessor.SingleProperty = oldAccessor.SingleProperty;
                 }
-                if(!skipDefaults || oldAccessor.DoubleProperty != default(double))
+                if (!skipDefaults || oldAccessor.DoubleProperty != default(double))
                 {
                     newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
                 }
-                if(!skipDefaults || oldAccessor.BooleanProperty != default(bool))
+                if (!skipDefaults || oldAccessor.BooleanProperty != default(bool))
                 {
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
@@ -160,12 +160,12 @@ namespace SourceGeneratorAssemblyToProcess
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
                 newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
                 newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
-                if(!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
                 {
                     newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 }
@@ -187,7 +187,7 @@ namespace SourceGeneratorAssemblyToProcess
                 newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
                 newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
-                if(oldAccessor.ObjectProperty != null)
+                if (oldAccessor.ObjectProperty != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.ObjectProperty, update);
                 }
@@ -294,7 +294,7 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AllTypesClass(Realms.RealmValue val) => val.AsRealmObject<AllTypesClass>();
+        public static explicit operator AllTypesClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AllTypesClass>();
 
         public static implicit operator Realms.RealmValue(AllTypesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -330,7 +330,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AllTypesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -349,7 +349,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAllTypesClassAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -445,7 +445,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassManagedAccessor : Realms.ManagedAccessor, IAllTypesClassAccessor
         {
             public char CharProperty
@@ -528,7 +528,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public string RequiredStringProperty
             {
-                get => (string)GetValue("RequiredStringProperty");
+                get => (string)GetValue("RequiredStringProperty")!;
                 set => SetValue("RequiredStringProperty", value);
             }
 
@@ -540,7 +540,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public byte[] RequiredByteArrayProperty
             {
-                get => (byte[])GetValue("RequiredByteArrayProperty");
+                get => (byte[])GetValue("RequiredByteArrayProperty")!;
                 set => SetValue("RequiredByteArrayProperty", value);
             }
 
@@ -805,7 +805,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesClassAccessor
         {
             public override ObjectSchema ObjectSchema => AllTypesClass.RealmSchema;
@@ -1318,13 +1318,13 @@ namespace SourceGeneratorAssemblyToProcess
                         GuidProperty = (System.Guid)val;
                         return;
                     case "RequiredStringProperty":
-                        RequiredStringProperty = (string)val;
+                        RequiredStringProperty = (string)val!;
                         return;
                     case "StringProperty":
                         StringProperty = (string?)val;
                         return;
                     case "RequiredByteArrayProperty":
-                        RequiredByteArrayProperty = (byte[])val;
+                        RequiredByteArrayProperty = (byte[])val!;
                         return;
                     case "ByteArrayProperty":
                         ByteArrayProperty = (byte[]?)val;
@@ -1399,27 +1399,25 @@ namespace SourceGeneratorAssemblyToProcess
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "ObjectCollectionProperty" => (IList<T>)ObjectCollectionProperty,
-                "IntCollectionProperty" => (IList<T>)IntCollectionProperty,
-                "NullableIntCollectionProperty" => (IList<T>)NullableIntCollectionProperty,
-                "StringCollectionProperty" => (IList<T>)StringCollectionProperty,
-                "RequiredStringListProperty" => (IList<T>)RequiredStringListProperty,
-                "NonRequiredStringListProperty" => (IList<T>)NonRequiredStringListProperty,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "ObjectCollectionProperty" => (IList<T>)ObjectCollectionProperty,
+                    "IntCollectionProperty" => (IList<T>)IntCollectionProperty,
+                    "NullableIntCollectionProperty" => (IList<T>)NullableIntCollectionProperty,
+                    "StringCollectionProperty" => (IList<T>)StringCollectionProperty,
+                    "RequiredStringListProperty" => (IList<T>)RequiredStringListProperty,
+                    "NonRequiredStringListProperty" => (IList<T>)NonRequiredStringListProperty,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "RequiredStringSetProperty" => (ISet<T>)RequiredStringSetProperty,
-                "NonRequiredStringSetProperty" => (ISet<T>)NonRequiredStringSetProperty,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "RequiredStringSetProperty" => (ISet<T>)RequiredStringSetProperty,
+                    "NonRequiredStringSetProperty" => (ISet<T>)NonRequiredStringSetProperty,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

@@ -111,11 +111,13 @@ namespace Realms
             }
         }
 
+#if !NET5_0_OR_GREATER
+
         private static void AddWindowsWrappersToPath(string relativePath, bool isUnityTarget = false)
         {
             try
             {
-                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location)!;
 
                 // Unity doesn't support arm/arm64 builds for windows - only through UWP, so we're not
                 // special-casing the naming there.
@@ -135,5 +137,6 @@ namespace Realms
             {
             }
         }
+#endif
     }
 }

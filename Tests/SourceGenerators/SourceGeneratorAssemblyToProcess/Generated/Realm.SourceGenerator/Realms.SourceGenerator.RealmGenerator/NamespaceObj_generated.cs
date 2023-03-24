@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(NamespaceObjObjectHelper))]
+    [Woven(typeof(NamespaceObjObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class NamespaceObj : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NamespaceObj", ObjectSchema.ObjectType.RealmObject)
@@ -45,10 +45,10 @@ namespace SourceGeneratorAssemblyToProcess
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -56,7 +56,7 @@ namespace SourceGeneratorAssemblyToProcess
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (INamespaceObjAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -64,11 +64,11 @@ namespace SourceGeneratorAssemblyToProcess
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(oldAccessor.OtherNamespaceObj != null)
+                if (oldAccessor.OtherNamespaceObj != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.OtherNamespaceObj, update);
                 }
@@ -165,7 +165,7 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator NamespaceObj(Realms.RealmValue val) => val.AsRealmObject<NamespaceObj>();
+        public static explicit operator NamespaceObj?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NamespaceObj>();
 
         public static implicit operator Realms.RealmValue(NamespaceObj? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -201,7 +201,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class NamespaceObjObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -220,7 +220,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface INamespaceObjAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -228,7 +228,7 @@ namespace SourceGeneratorAssemblyToProcess
             OtherNamespace.OtherNamespaceObj? OtherNamespaceObj { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NamespaceObjManagedAccessor : Realms.ManagedAccessor, INamespaceObjAccessor
         {
             public int Id
@@ -244,7 +244,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NamespaceObjUnmanagedAccessor : Realms.UnmanagedAccessor, INamespaceObjAccessor
         {
             public override ObjectSchema ObjectSchema => NamespaceObj.RealmSchema;

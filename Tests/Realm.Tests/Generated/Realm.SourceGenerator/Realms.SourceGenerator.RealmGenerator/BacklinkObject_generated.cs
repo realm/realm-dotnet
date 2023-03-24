@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(BacklinkObjectObjectHelper))]
+    [Woven(typeof(BacklinkObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class BacklinkObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BacklinkObject", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IBacklinkObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -69,11 +69,11 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.BeforeBacklinks != default(string))
+                if (!skipDefaults || oldAccessor.BeforeBacklinks != default(string))
                 {
                     newAccessor.BeforeBacklinks = oldAccessor.BeforeBacklinks;
                 }
-                if(!skipDefaults || oldAccessor.AfterBacklinks != default(string))
+                if (!skipDefaults || oldAccessor.AfterBacklinks != default(string))
                 {
                     newAccessor.AfterBacklinks = oldAccessor.AfterBacklinks;
                 }
@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator BacklinkObject(Realms.RealmValue val) => val.AsRealmObject<BacklinkObject>();
+        public static explicit operator BacklinkObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<BacklinkObject>();
 
         public static implicit operator Realms.RealmValue(BacklinkObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -205,7 +205,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class BacklinkObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -224,7 +224,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IBacklinkObjectAccessor : Realms.IRealmAccessor
         {
             string? BeforeBacklinks { get; set; }
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
             string? AfterBacklinks { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BacklinkObjectManagedAccessor : Realms.ManagedAccessor, IBacklinkObjectAccessor
         {
             public string? BeforeBacklinks
@@ -264,7 +264,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BacklinkObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBacklinkObjectAccessor
         {
             public override ObjectSchema ObjectSchema => BacklinkObject.RealmSchema;

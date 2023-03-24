@@ -24,6 +24,6 @@ namespace Realms
     public class EmbeddedObject : RealmObjectBase, IEmbeddedObject
     {
         /// <inheritdoc/>
-        public IRealmObjectBase Parent => ((IRealmObjectBase)this).Accessor.GetParent();
+        public IRealmObjectBase? Parent => ((IRealmObjectBase)this).Accessor.GetParent();
     }
 }

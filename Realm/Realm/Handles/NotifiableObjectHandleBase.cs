@@ -47,7 +47,7 @@ namespace Realms
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void NotificationCallback(IntPtr managedHandle, IntPtr changes, bool shallow);
 
-        protected NotifiableObjectHandleBase(SharedRealmHandle root, IntPtr handle) : base(root, handle)
+        protected NotifiableObjectHandleBase(SharedRealmHandle? root, IntPtr handle) : base(root, handle)
         {
         }
 

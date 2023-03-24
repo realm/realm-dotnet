@@ -26,8 +26,7 @@ namespace Realms.Schema
 {
     internal static class PropertyTypeEx
     {
-        private static readonly HashSet<Type> _integerTypes =
-            new HashSet<Type> { typeof(char), typeof(byte), typeof(short), typeof(int), typeof(long) };
+        private static readonly HashSet<Type> _integerTypes = new() { typeof(char), typeof(byte), typeof(short), typeof(int), typeof(long) };
 
         public static bool IsRealmInteger(this Type type)
         {
@@ -39,7 +38,7 @@ namespace Realms.Schema
             return _integerTypes.Contains(type);
         }
 
-        public static PropertyType ToPropertyType(this Type type, out Type objectType)
+        public static PropertyType ToPropertyType(this Type type, out Type? objectType)
         {
             Argument.NotNull(type, nameof(type));
 

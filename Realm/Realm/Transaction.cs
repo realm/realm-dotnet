@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -52,11 +53,12 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private Realm _realm;
+        private Realm? _realm;
 
         /// <summary>
         /// Gets the state of this transaction.
         /// </summary>
+        /// <value>The state of the transaction.</value>
         public TransactionState State { get; private set; }
 
         internal Transaction(Realm realm)
@@ -133,6 +135,7 @@ namespace Realms
             FinishTransaction(TransactionState.Committed);
         }
 
+        [MemberNotNull(nameof(_realm))]
         private void EnsureActionFeasibility(string executingAction)
         {
             if (_realm == null)
@@ -144,8 +147,8 @@ namespace Realms
         private void FinishTransaction(TransactionState state)
         {
             State = state;
-            _realm.DrainTransactionQueue();
-            _realm = null;
+            _realm!.DrainTransactionQueue();
+            _realm = null!;
         }
     }
 }

@@ -444,7 +444,7 @@ jobs:
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-    if: needs.check-cache.outputs.wrappers-iOS-Device != 'true' || needs.check-cache.outputs.wrappers-tvOS-Device != 'true'
+    if: needs.check-cache.outputs.wrappers-iOS-Device != 'true' || needs.check-cache.outputs.wrappers-tvOS-Device != 'true' || needs.check-cache.outputs.wrappers-iOS-Simulator != 'true' || needs.check-cache.outputs.wrappers-tvOS-Simulator != 'true'
   linux:
     runs-on: ubuntu-latest
     name: Linux

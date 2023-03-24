@@ -528,7 +528,7 @@ namespace RealmWeaver
             var isPrimaryKey = prop.IsPrimaryKey(_references);
             if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on {prop.PropertyType.FullName}.");
             }
 
             var isRequired = prop.IsRequired(_references);

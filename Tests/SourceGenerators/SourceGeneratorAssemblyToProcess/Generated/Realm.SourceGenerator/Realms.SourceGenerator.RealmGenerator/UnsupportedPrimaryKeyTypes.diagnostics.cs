@@ -2,7 +2,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.RealmIntegerProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmInteger<int>.",
+    "Message": "UnsupportedPrimaryKeyTypes.RealmIntegerProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on RealmInteger<int>.",
     "Location": {
       "Path": null,
       "StartLine": 25,
@@ -14,7 +14,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.BoolProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on bool.",
+    "Message": "UnsupportedPrimaryKeyTypes.BoolProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on bool.",
     "Location": {
       "Path": null,
       "StartLine": 28,
@@ -26,7 +26,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.ByteArrayProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on byte[].",
+    "Message": "UnsupportedPrimaryKeyTypes.ByteArrayProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on byte[].",
     "Location": {
       "Path": null,
       "StartLine": 31,
@@ -38,7 +38,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.DateProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on DateTimeOffset.",
+    "Message": "UnsupportedPrimaryKeyTypes.DateProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on DateTimeOffset.",
     "Location": {
       "Path": null,
       "StartLine": 34,
@@ -50,7 +50,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.FloatProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on float.",
+    "Message": "UnsupportedPrimaryKeyTypes.FloatProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on float.",
     "Location": {
       "Path": null,
       "StartLine": 37,
@@ -62,7 +62,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.DoubleProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on double.",
+    "Message": "UnsupportedPrimaryKeyTypes.DoubleProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on double.",
     "Location": {
       "Path": null,
       "StartLine": 40,
@@ -74,7 +74,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.ObjectProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmObj.",
+    "Message": "UnsupportedPrimaryKeyTypes.ObjectProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on RealmObj.",
     "Location": {
       "Path": null,
       "StartLine": 43,
@@ -86,7 +86,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.RealmvalueProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on RealmValue.",
+    "Message": "UnsupportedPrimaryKeyTypes.RealmvalueProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on RealmValue.",
     "Location": {
       "Path": null,
       "StartLine": 46,
@@ -98,7 +98,7 @@
   {
     "Id": "RLM011",
     "Severity": 3,
-    "Message": "UnsupportedPrimaryKeyTypes.DecimalProp is marked as [PrimaryKey] which is only allowed on integral and string types, not on decimal.",
+    "Message": "UnsupportedPrimaryKeyTypes.DecimalProp is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on decimal.",
     "Location": {
       "Path": null,
       "StartLine": 49,

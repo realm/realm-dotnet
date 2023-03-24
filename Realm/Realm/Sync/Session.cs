@@ -34,7 +34,7 @@ namespace Realms.Sync
         private readonly SessionHandle _handle;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
+        private event PropertyChangedEventHandler? _propertyChanged;
 
         private SessionHandle Handle
         {
@@ -56,7 +56,7 @@ namespace Realms.Sync
         /// <summary>
         /// Occurs when a property value changes.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -95,8 +95,7 @@ namespace Realms.Sync
         /// Gets the <see cref="User"/> defined by the <see cref="SyncConfigurationBase"/> that is used to connect to MongoDB Atlas.
         /// </summary>
         /// <value>The <see cref="User"/> that was used to create the <see cref="Realm"/>'s <see cref="SyncConfigurationBase"/>.</value>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public User User => Handle.TryGetUser(out var userHandle) ? new User(userHandle) : null;
+        public User User => new(Handle.GetUser());
 
         /// <summary>
         /// Gets the on-disk path of the Realm file backing the <see cref="Realm"/> this Session represents.
@@ -184,7 +183,7 @@ namespace Realms.Sync
         public void Start() => Handle.Start();
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => obj is Session other &&
                Handle.GetRawPointer() == other.Handle.GetRawPointer();
 
@@ -215,7 +214,7 @@ namespace Realms.Sync
 
         internal void RaisePropertyChanged(string propertyName)
         {
-            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _propertyChanged?.Invoke(this, new(propertyName));
         }
     }
 }

@@ -499,7 +499,7 @@ namespace Realms
         public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
-        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object?> valueGetter)
         {
             Argument.NotNull(target, nameof(target));
 

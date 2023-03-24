@@ -58,7 +58,7 @@ namespace Realms
             }
         }
 
-        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata metadata)
+        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata? metadata)
             : base(realm, metadata)
         {
             _setHandle = adoptedSet;
@@ -66,6 +66,11 @@ namespace Realms
 
         public bool Add(T value)
         {
+            if (Metadata is not null && value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
             AddToRealmIfNecessary(realmValue);
@@ -84,11 +89,11 @@ namespace Realms
             return _setHandle.Remove(realmValue);
         }
 
-        public override int IndexOf(T value) => throw new NotSupportedException();
+        public override int IndexOf([AllowNull] T value) => throw new NotSupportedException();
 
-        public override bool Contains(T value)
+        public override bool Contains([AllowNull] T value)
         {
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = Operator.Convert<T?, RealmValue>(value);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
@@ -353,7 +358,7 @@ namespace Realms
 
         private class BinaryEqualityComparer : EqualityComparer<byte[]>
         {
-            public override bool Equals(byte[] x, byte[] y)
+            public override bool Equals(byte[]? x, byte[]? y)
             {
                 if (x == null || y == null)
                 {

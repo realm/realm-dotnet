@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ObjectWithObjectPropertiesObjectHelper))]
+    [Woven(typeof(ObjectWithObjectPropertiesObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithObjectProperties : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithObjectProperties", ObjectSchema.ObjectType.RealmObject)
@@ -50,10 +50,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -61,7 +61,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IObjectWithObjectPropertiesAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -69,7 +69,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(oldAccessor.StandaloneObject != null)
+                if (oldAccessor.StandaloneObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.StandaloneObject, update);
                 }
@@ -167,7 +167,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithObjectProperties(Realms.RealmValue val) => val.AsRealmObject<ObjectWithObjectProperties>();
+        public static explicit operator ObjectWithObjectProperties?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectWithObjectProperties>();
 
         public static implicit operator Realms.RealmValue(ObjectWithObjectProperties? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -203,7 +203,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithObjectPropertiesObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithObjectPropertiesAccessor : Realms.IRealmAccessor
         {
             Realms.Tests.IntPropertyObject? StandaloneObject { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests
             Realms.Tests.EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithObjectPropertiesManagedAccessor : Realms.ManagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public Realms.Tests.IntPropertyObject? StandaloneObject
@@ -246,7 +246,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithObjectPropertiesUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithObjectPropertiesAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithObjectProperties.RealmSchema;

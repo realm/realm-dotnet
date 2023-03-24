@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(CompletionReportObjectHelper))]
+    [Woven(typeof(CompletionReportObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class CompletionReport : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
@@ -48,10 +48,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -60,9 +60,9 @@ namespace Realms.Tests.Database
         public int BacklinksCount => Accessor.BacklinksCount;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.IRealmObjectBase Parent => Accessor.GetParent();
+        public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ICompletionReportAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -71,7 +71,7 @@ namespace Realms.Tests.Database
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.CompletionDate = oldAccessor.CompletionDate;
-                if(!skipDefaults || oldAccessor.Remarks != default(string))
+                if (!skipDefaults || oldAccessor.Remarks != default(string))
                 {
                     newAccessor.Remarks = oldAccessor.Remarks;
                 }
@@ -167,7 +167,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator CompletionReport(Realms.RealmValue val) => val.AsRealmObject<CompletionReport>();
+        public static explicit operator CompletionReport?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<CompletionReport>();
 
         public static implicit operator Realms.RealmValue(CompletionReport? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -203,7 +203,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CompletionReportObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,7 +222,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ICompletionReportAccessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset CompletionDate { get; set; }
@@ -230,7 +230,7 @@ namespace Realms.Tests.Database
             string? Remarks { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CompletionReportManagedAccessor : Realms.ManagedAccessor, ICompletionReportAccessor
         {
             public System.DateTimeOffset CompletionDate
@@ -246,7 +246,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CompletionReportUnmanagedAccessor : Realms.UnmanagedAccessor, ICompletionReportAccessor
         {
             public override ObjectSchema ObjectSchema => CompletionReport.RealmSchema;

@@ -18,7 +18,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(PersonObjectHelper))]
+    [Woven(typeof(PersonObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
@@ -56,10 +56,10 @@ namespace Realms.Tests.Database
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -67,7 +67,7 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IPersonAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -80,45 +80,45 @@ namespace Realms.Tests.Database
                     newAccessor.Friends.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.FirstName != default(string))
+                if (!skipDefaults || oldAccessor.FirstName != default(string))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }
-                if(!skipDefaults || oldAccessor.LastName != default(string))
+                if (!skipDefaults || oldAccessor.LastName != default(string))
                 {
                     newAccessor.LastName = oldAccessor.LastName;
                 }
-                if(!skipDefaults || oldAccessor.Score != default(float))
+                if (!skipDefaults || oldAccessor.Score != default(float))
                 {
                     newAccessor.Score = oldAccessor.Score;
                 }
-                if(!skipDefaults || oldAccessor.Latitude != default(double))
+                if (!skipDefaults || oldAccessor.Latitude != default(double))
                 {
                     newAccessor.Latitude = oldAccessor.Latitude;
                 }
-                if(!skipDefaults || oldAccessor.Longitude != default(double))
+                if (!skipDefaults || oldAccessor.Longitude != default(double))
                 {
                     newAccessor.Longitude = oldAccessor.Longitude;
                 }
-                if(!skipDefaults || oldAccessor.Salary != default(long))
+                if (!skipDefaults || oldAccessor.Salary != default(long))
                 {
                     newAccessor.Salary = oldAccessor.Salary;
                 }
                 newAccessor.IsAmbivalent = oldAccessor.IsAmbivalent;
                 newAccessor.Birthday = oldAccessor.Birthday;
-                if(!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
+                if (!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
                 {
                     newAccessor.PublicCertificateBytes = oldAccessor.PublicCertificateBytes;
                 }
-                if(!skipDefaults || oldAccessor.OptionalAddress != default(string))
+                if (!skipDefaults || oldAccessor.OptionalAddress != default(string))
                 {
                     newAccessor.OptionalAddress = oldAccessor.OptionalAddress;
                 }
-                if(!skipDefaults || oldAccessor.Email_ != default(string))
+                if (!skipDefaults || oldAccessor.Email_ != default(string))
                 {
                     newAccessor.Email_ = oldAccessor.Email_;
                 }
-                if(!skipDefaults || oldAccessor.IsInteresting != default(bool))
+                if (!skipDefaults || oldAccessor.IsInteresting != default(bool))
                 {
                     newAccessor.IsInteresting = oldAccessor.IsInteresting;
                 }
@@ -215,7 +215,7 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Person(Realms.RealmValue val) => val.AsRealmObject<Person>();
+        public static explicit operator Person?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Person>();
 
         public static implicit operator Realms.RealmValue(Person? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -249,7 +249,7 @@ namespace Realms.Tests.Database
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -268,7 +268,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPersonAccessor : Realms.IRealmAccessor
         {
             string? FirstName { get; set; }
@@ -298,7 +298,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
             public string? FirstName
@@ -388,7 +388,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
         {
             public override ObjectSchema ObjectSchema => Person.RealmSchema;
@@ -604,11 +604,10 @@ namespace Realms.Tests.Database
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "Friends" => (IList<T>)Friends,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "Friends" => (IList<T>)Friends,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)

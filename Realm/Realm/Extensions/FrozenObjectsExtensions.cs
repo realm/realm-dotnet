@@ -44,8 +44,8 @@ namespace Realms
         /// Note: Keeping a large number of frozen objects with different versions alive can have a negative impact on the filesize
         /// of the Realm. In order to avoid such a situation it is possible to set <see cref="RealmConfigurationBase.MaxNumberOfActiveVersions"/>.
         /// </summary>
-        /// <param name="realmObj">The <see cref="RealmObject"/> or <see cref="EmbeddedObject"/> instance that you want to create a frozen version of.</param>
-        /// <typeparam name="T">The type of the <see cref="RealmObject"/>/<see cref="EmbeddedObject"/>.</typeparam>
+        /// <param name="realmObj">The <see cref="IRealmObject"/>, <see cref="IEmbeddedObject"/>, or <see cref="IAsymmetricObject"/> instance that you want to create a frozen version of.</param>
+        /// <typeparam name="T">The type of the <see cref="IRealmObject"/>/<see cref="IEmbeddedObject"/>/<see cref="IAsymmetricObject"/>.</typeparam>
         /// <returns>A new frozen instance of the passed in object or the object itself if it was already frozen.</returns>
         public static T Freeze<T>(this T realmObj)
             where T : IRealmObjectBase
@@ -63,8 +63,8 @@ namespace Realms
             }
 
             var frozenRealm = realmObj.Realm.Freeze();
-            var frozenHandle = realmObj.GetObjectHandle().Freeze(frozenRealm.SharedRealmHandle);
-            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata(), frozenHandle);
+            var frozenHandle = realmObj.GetObjectHandle()!.Freeze(frozenRealm.SharedRealmHandle);
+            return (T)frozenRealm.MakeObject(realmObj.GetObjectMetadata()!, frozenHandle);
         }
 
         /// <summary>

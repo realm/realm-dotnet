@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(AllTypesObjectObjectHelper))]
+    [Woven(typeof(AllTypesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesObject", ObjectSchema.ObjectType.RealmObject)
@@ -82,10 +82,10 @@ namespace Realms.Tests
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -93,7 +93,7 @@ namespace Realms.Tests
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IAllTypesObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -101,35 +101,35 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.CharProperty != default(char))
+                if (!skipDefaults || oldAccessor.CharProperty != default(char))
                 {
                     newAccessor.CharProperty = oldAccessor.CharProperty;
                 }
-                if(!skipDefaults || oldAccessor.ByteProperty != default(byte))
+                if (!skipDefaults || oldAccessor.ByteProperty != default(byte))
                 {
                     newAccessor.ByteProperty = oldAccessor.ByteProperty;
                 }
-                if(!skipDefaults || oldAccessor.Int16Property != default(short))
+                if (!skipDefaults || oldAccessor.Int16Property != default(short))
                 {
                     newAccessor.Int16Property = oldAccessor.Int16Property;
                 }
-                if(!skipDefaults || oldAccessor.Int32Property != default(int))
+                if (!skipDefaults || oldAccessor.Int32Property != default(int))
                 {
                     newAccessor.Int32Property = oldAccessor.Int32Property;
                 }
-                if(!skipDefaults || oldAccessor.Int64Property != default(long))
+                if (!skipDefaults || oldAccessor.Int64Property != default(long))
                 {
                     newAccessor.Int64Property = oldAccessor.Int64Property;
                 }
-                if(!skipDefaults || oldAccessor.SingleProperty != default(float))
+                if (!skipDefaults || oldAccessor.SingleProperty != default(float))
                 {
                     newAccessor.SingleProperty = oldAccessor.SingleProperty;
                 }
-                if(!skipDefaults || oldAccessor.DoubleProperty != default(double))
+                if (!skipDefaults || oldAccessor.DoubleProperty != default(double))
                 {
                     newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
                 }
-                if(!skipDefaults || oldAccessor.BooleanProperty != default(bool))
+                if (!skipDefaults || oldAccessor.BooleanProperty != default(bool))
                 {
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
@@ -139,11 +139,11 @@ namespace Realms.Tests
                 newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
                 newAccessor.GuidProperty = oldAccessor.GuidProperty;
                 newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
-                if(!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
                 {
                     newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 }
@@ -257,7 +257,7 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AllTypesObject(Realms.RealmValue val) => val.AsRealmObject<AllTypesObject>();
+        public static explicit operator AllTypesObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AllTypesObject>();
 
         public static implicit operator Realms.RealmValue(AllTypesObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -293,7 +293,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AllTypesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -312,7 +312,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAllTypesObjectAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -384,7 +384,7 @@ namespace Realms.Tests
             Realms.RealmValue RealmValueProperty { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesObjectManagedAccessor : Realms.ManagedAccessor, IAllTypesObjectAccessor
         {
             public char CharProperty
@@ -467,7 +467,7 @@ namespace Realms.Tests
 
             public string RequiredStringProperty
             {
-                get => (string)GetValue("RequiredStringProperty");
+                get => (string)GetValue("RequiredStringProperty")!;
                 set => SetValue("RequiredStringProperty", value);
             }
 
@@ -592,7 +592,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AllTypesObject.RealmSchema;
@@ -1061,7 +1061,7 @@ namespace Realms.Tests
                         GuidProperty = (System.Guid)val;
                         return;
                     case "RequiredStringProperty":
-                        RequiredStringProperty = (string)val;
+                        RequiredStringProperty = (string)val!;
                         return;
                     case "StringProperty":
                         StringProperty = (string?)val;

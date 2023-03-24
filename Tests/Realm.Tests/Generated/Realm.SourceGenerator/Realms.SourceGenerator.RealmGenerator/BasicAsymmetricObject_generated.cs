@@ -28,7 +28,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(BasicAsymmetricObjectObjectHelper))]
+    [Woven(typeof(BasicAsymmetricObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class BasicAsymmetricObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BasicAsymmetricObject", ObjectSchema.ObjectType.AsymmetricObject)
@@ -55,10 +55,10 @@ namespace Realms.Tests.Sync
         public bool IsFrozen => Accessor.IsFrozen;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
@@ -66,7 +66,7 @@ namespace Realms.Tests.Sync
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IBasicAsymmetricObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -75,7 +75,7 @@ namespace Realms.Tests.Sync
             if (helper != null && oldAccessor != null)
             {
                 newAccessor.Id = oldAccessor.Id;
-                if(!skipDefaults || oldAccessor.PartitionLike != default(string))
+                if (!skipDefaults || oldAccessor.PartitionLike != default(string))
                 {
                     newAccessor.PartitionLike = oldAccessor.PartitionLike;
                 }
@@ -171,7 +171,7 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator BasicAsymmetricObject(Realms.RealmValue val) => val.AsRealmObject<BasicAsymmetricObject>();
+        public static explicit operator BasicAsymmetricObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<BasicAsymmetricObject>();
 
         public static implicit operator Realms.RealmValue(BasicAsymmetricObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
@@ -207,7 +207,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class BasicAsymmetricObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -226,7 +226,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IBasicAsymmetricObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -234,7 +234,7 @@ namespace Realms.Tests.Sync
             string? PartitionLike { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BasicAsymmetricObjectManagedAccessor : Realms.ManagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -250,7 +250,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BasicAsymmetricObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public override ObjectSchema ObjectSchema => BasicAsymmetricObject.RealmSchema;

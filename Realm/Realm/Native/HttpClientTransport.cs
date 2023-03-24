@@ -116,7 +116,7 @@ namespace Realms.Native
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_http_transport_respond", CallingConvention = CallingConvention.Cdecl)]
         private static extern void respond(
             HttpClientResponse response,
-            [MarshalAs(UnmanagedType.LPArray), In] StringStringPair[] headers, int headers_len,
+            [MarshalAs(UnmanagedType.LPArray), In] StringStringPair[]? headers, int headers_len,
             IntPtr callback_ptr);
 
 #pragma warning restore SA1300 // Element should begin with upper-case letter
