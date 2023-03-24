@@ -23,7 +23,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MongoDB.Bson;
 using Realms.Exceptions;
 using Realms.Logging;
 using Realms.Native;
@@ -772,7 +771,7 @@ namespace Realms
             var handleTcs = GCHandle.FromIntPtr(taskCompletionSource);
             var tcs = (TaskCompletionSource<ThreadSafeReferenceHandle>)handleTcs.Target!;
 
-            if (ex.type == RealmExceptionCodes.NoError)
+            if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
             {
                 tcs.TrySetResult(new(realm_reference));
             }
@@ -875,7 +874,7 @@ namespace Realms
                 var handleTcs = GCHandle.FromIntPtr(tcs_ptr);
                 var tcs = (TaskCompletionSource)handleTcs.Target!;
 
-                if (ex.type == RealmExceptionCodes.RLM_ERR_NONE)
+                if (ex.code == RealmExceptionCodes.RLM_ERR_NONE)
                 {
                     tcs.TrySetResult();
                 }
