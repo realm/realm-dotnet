@@ -20,6 +20,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="PolySharp" Version="1.12.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -55,10 +59,6 @@
 
     <ItemGroup>
         <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Include="..\Realm\NullableAttributes.cs" Link="NullableAttributes.cs" />
     </ItemGroup>
 
     <ItemGroup>
