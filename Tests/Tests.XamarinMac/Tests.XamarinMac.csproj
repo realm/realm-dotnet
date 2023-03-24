@@ -13,6 +13,8 @@
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
