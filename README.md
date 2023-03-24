@@ -47,7 +47,7 @@ Instructions:
 
 1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
 1. Open the `Realm.sln` in `Visual Studio`
-1. Build 'Realm`, `Realm.Fody` and `Realm.SourceGenerator`
+1. Build `Realm`, `Realm.Fody` and `Realm.SourceGenerator`
 1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
@@ -56,7 +56,8 @@ If you are actively testing code against the Realm source, see also the unit tes
 
 Some minimal examples of Realm use can be found in the `examples` folder:
 
-* [QuickJournal](examples/QuickJournal): a simple Xamarin.Forms application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+* [QuickJournal](examples/QuickJournal): a quick journaling [MAUI](https://github.com/dotnet/maui) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+* [SimpleToDo](examples/SimpleToDoAvalonia): a simple to-do list [Avalonia](https://github.com/AvaloniaUI/Avalonia) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
 
 ## Contributing
 

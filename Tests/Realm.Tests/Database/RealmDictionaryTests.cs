@@ -1084,7 +1084,7 @@ namespace Realms.Tests.Database
             var oldDogs = joe.DictOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
-            var token = oldDogs.SubscribeForNotifications((sender, changes, error) =>
+            var token = oldDogs.SubscribeForNotifications((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1649,10 +1649,8 @@ namespace Realms.Tests.Database
                 target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<DictionaryChangeSet>();
-                using var token = target.SubscribeForKeyNotifications((collection, changes, error) =>
+                using var token = target.SubscribeForKeyNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         callbacks.Add(changes);
@@ -1730,10 +1728,8 @@ namespace Realms.Tests.Database
                 target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<ChangeSet>();
-                using var token = target.SubscribeForNotifications((collection, changes, error) =>
+                using var token = target.SubscribeForNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         callbacks.Add(changes);

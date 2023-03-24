@@ -254,13 +254,9 @@ namespace Realms
 
         #region INotifyCollectionChanged
 
-        private void OnChange(IRealmCollection<T> sender, ChangeSet change, Exception error)
+        private void OnChange(IRealmCollection<T> sender, ChangeSet change)
         {
-            if (error != null)
-            {
-                Realm.NotifyError(error);
-            }
-            else if (!sender.IsValid)
+            if (!sender.IsValid)
             {
                 RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
@@ -611,7 +607,7 @@ namespace Realms
                 {
                     // If Core already delivered the initial notification, we need to manually invoke the callback as it won't be invoked by Core.
                     // It's part of the SubscribeForNotifications API contract that an initial callback with `null` changes is always delivered.
-                    callback(_parent, null, null);
+                    callback(_parent, null);
                 }
 
                 // If we have a subscription already, we just add the callback to the list we're managing
@@ -663,7 +659,7 @@ namespace Realms
 
                 foreach (var callback in subscription.Callbacks.ToArray())
                 {
-                    callback(_parent, changes, null);
+                    callback(_parent, changes);
                 }
             }
         }

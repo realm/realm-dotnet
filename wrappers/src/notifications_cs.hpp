@@ -28,35 +28,22 @@ using namespace realm::binding;
 
 namespace realm {
 struct MarshallableCollectionChangeSet {
-    struct MarshallableIndexSet {
-        size_t* indices;
-        size_t count;
-    };
+    marshaled_vector<size_t> deletions;
+    marshaled_vector<size_t> insertions;
+    marshaled_vector<size_t> modifications;
+    marshaled_vector<size_t> modifications_new;
 
-    MarshallableIndexSet deletions;
-    MarshallableIndexSet insertions;
-    MarshallableIndexSet modifications;
-    MarshallableIndexSet modifications_new;
-
-    struct {
-        CollectionChangeSet::Move* moves;
-        size_t count;
-    } moves;
+    marshaled_vector<CollectionChangeSet::Move> moves;
 
     bool cleared;
 
-    MarshallableIndexSet properties;
+    marshaled_vector<size_t> properties;
 };
 
 struct MarshallableDictionaryChangeSet {
-    struct MarshallableKeySet {
-        realm_value_t* keys;
-        size_t count;
-    };
-
-    MarshallableKeySet deletions;
-    MarshallableKeySet insertions;
-    MarshallableKeySet modifications;
+    marshaled_vector<realm_value_t> deletions;
+    marshaled_vector<realm_value_t> insertions;
+    marshaled_vector<realm_value_t> modifications;
 };
 
 struct ManagedNotificationTokenContext {

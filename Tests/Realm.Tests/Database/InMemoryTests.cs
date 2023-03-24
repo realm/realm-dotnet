@@ -70,15 +70,11 @@ namespace Realms.Tests.Database
                 using var realm = GetRealm(_config);
 
                 var query = realm.All<IntPropertyObject>();
-                using var token = query.SubscribeForNotifications((sender, changes, error) =>
+                using var token = query.SubscribeForNotifications((sender, changes) =>
                 {
                     if (changes != null)
                     {
                         tcs.TrySetResult(changes);
-                    }
-                    else if (error != null)
-                    {
-                        tcs.TrySetException(error);
                     }
                 });
 
@@ -149,16 +145,6 @@ namespace Realms.Tests.Database
 
                 using var realm2 = GetRealm(_config);
                 Assert.That(realm2.All<IntPropertyObject>(), Is.Empty);
-            });
-        }
-
-        [Test]
-        [Obsolete("Tests obsolete functionality")]
-        public void InMemoryRealm_WhenEncrypted_Throws()
-        {
-            Assert.Throws<NotSupportedException>(() => _ = new InMemoryConfiguration(_config.Identifier)
-            {
-                EncryptionKey = TestHelpers.GetEncryptionKey(23)
             });
         }
 

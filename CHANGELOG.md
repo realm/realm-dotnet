@@ -1,18 +1,85 @@
-## vNext (TBD)
+## 11.0.0 (TBD)
+
+### Breaking changes
+* The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` used in `*collection*.SubscribeForNotifications` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
+* Removed `RealmObjectBase.GetBacklinks` - instead `RealmObjectBase.DynamicApi.GetBacklinksFromType` should be used. (Issue [#2391](https://github.com/realm/realm-dotnet/issues/2391))
+* Removed `Realm.DynamicApi.CreateObject(string, object)` and replaced it with more specialized overloads:
+  * `RealmObjectBase.DynamicApi.CreateObject(string)` can be used to create an object without a primary key.
+  * `RealmObjectBase.DynamicApi.CreateObject(string, string/long?/ObjectId?/Guid?)` can be used to create an object with a primary key of the corresponding type.
+* The API exposed by `Realm.DynamicApi` no longer return `dynamic`, instead opting to return concrete types, such as `IRealmObject`, `IEmbeddedObject`, and so on. You can still cast the returned objects to `dynamic` and go through the dynamic API, but that's generally less performant than using the string-based API, such as `IRealmObjectBase.DynamicApi.Get/Set`, especially on AOT platforms such as iOS or Unity. (Issue [#2391](https://github.com/realm/realm-dotnet/issues/2391))
+* Removed `Realm.WriteAsync(Action<Realm>)` in favor of `Realm.WriteAsync(Action)`. The new `WriteAsync` method introduced in 10.14.0 is more efficient and doesn't require reopening the Realm on a background thread. While not recommended, if you prefer to get the old behavior, you can write an extension method like:
+  ```csharp
+  public static async Task WriteAsync(this Realm realm, Action<Realm> writeAction)
+  {
+    await Task.Run(() =>
+    {
+      using var bgRealm = Realm.GetInstance(realm.Config);
+      bgRealm.Write(() =>
+      {
+        writeAction(bgRealm);
+      });
+    });
+
+    await realm.RefreshAsync();
+  }
+  ```
+  (PR [#3234](https://github.com/realm/realm-dotnet/pull/3234))
+* Removed `InMemoryConfiguration.EncryptionKey`. It was never possible to encrypt in-memory Realms and setting that property would have resulted in runtime errors. (PR [#3236](https://github.com/realm/realm-dotnet/pull/3236))
+* Removed `SyncConfiguration` - use `PartitionSyncConfiguration` or `FlexibleSyncConfiguration` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
+* Removed `Realm.GetSession` - use `Realm.SyncSession` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
+* Removed `DiscardLocalResetHandler` - use `DiscardUnsyncedChangedHandler` instead. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
+* Removed `Session.SimulateClientReset` extensions. These didn't work with automatic reset handlers and were more confusing than helpful. (PR [#3237](https://github.com/realm/realm-dotnet/pull/3237))
+* Removed `AppConfiguration.CustomLogger` and `AppConfiguration.LogLevel` - use `Logger.Default` and `Logger.LogLevel` instead. (PR [#3238](https://github.com/realm/realm-dotnet/pull/3238))
+* Removed `RealmConfigurationBase.ObjectClasses` - use `RealmConfigurationBase.Schema` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.IsEmbedded` - use `ObjectSchema.BaseType` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.Builder.IsEmbedded` - use `ObjectSchema.Builder.RealmSchemaType` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `ObjectSchema.Builder(string name, bool isEmbedded = false)` - use `Builder(string name, ObjectSchemaType schemaType)` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `RealmSchema.Find` - use `RealmSchema.TryFindObjectSchema` instead. (PR [#3240](https://github.com/realm/realm-dotnet/pull/3240))
+* Removed `User.GetPushClient` as it has been deprecated in Atlas App Services - see https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3241))
+* Removed `SyncSession.Error` event - use `SyncConfigurationBase.OnSessionError` when opening a Realm instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
+* Removed the parameterless constructor for `ManualRecoveryHandler` - use the one that takes a callback instead. (PR [#3241](https://github.com/realm/realm-dotnet/pull/3242))
 
 ### Enhancements
-* Added `SyncConfiguration.CancelAsyncOperationsOnNonFatalErrors` which controls whether async operations (such as `Realm.GetInstanceAsync`, `Session.WaitForUploadAsync` and so on) should throw an exception whenever a non-fatal session error occurs. (Issue [#3222](https://github.com/realm/realm-dotnet/issues/3222))
-* Added `AppConfiguration.SyncTimeoutOptions` which has a handful of properties that control sync timeouts, such as the connection timeout, ping-pong intervals, and others. (Issue [#3223](https://github.com/realm/realm-dotnet/issues/3223))
-* Updated some of the exceptions being thrown by the SDK to align them better with system exceptions and include more information - for example, we'll now throw `ArgumentException` when invalid arguments are provided rather than `RealmException`. (Issue [#2796](https://github.com/realm/realm-dotnet/issues/2796))
 
 ### Fixed
-* Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
 
 ### Compatibility
 * Realm Studio: 12.0.0 or later.
 
 ### Internal
-* Using Core 13.5.0.
+* Using Core x.y.z.
+
+## vNext (TBD)
+
+### Enhancements
+* None
+
+### Fixed
+* None
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 10.21.0 (2023-03-24)
+
+### Enhancements
+* Added `SyncConfiguration.CancelAsyncOperationsOnNonFatalErrors` which controls whether async operations (such as `Realm.GetInstanceAsync`, `Session.WaitForUploadAsync` and so on) should throw an exception whenever a non-fatal session error occurs. (Issue [#3222](https://github.com/realm/realm-dotnet/issues/3222))
+* Added `AppConfiguration.SyncTimeoutOptions` which has a handful of properties that control sync timeouts, such as the connection timeout, ping-pong intervals, and others. (Issue [#3223](https://github.com/realm/realm-dotnet/issues/3223))
+* Updated some of the exceptions being thrown by the SDK to align them better with system exceptions and include more information - for example, we'll now throw `ArgumentException` when invalid arguments are provided rather than `RealmException`. (Issue [#2796](https://github.com/realm/realm-dotnet/issues/2796))
+* Added a new exception - `CompensatingWriteException` that contains information about the writes that have been reverted by the server due to permissions. It will be passed to the supplied `FlexibleSyncConfiguration.OnSessionError` callback similarly to other session errors. (Issue [#3258](https://github.com/realm/realm-dotnet/issues/3258))
+
+### Fixed
+* Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
+* Creating subscriptions with queries having unicode parameters causes a server error. (Core 13.6.0)
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.6.0.
 * Cancel existing builds when a new commit is pushed to a PR. (PR [#3260](https://github.com/realm/realm-dotnet/pull/3260))
 
 ## 10.20.0 (2023-02-10)

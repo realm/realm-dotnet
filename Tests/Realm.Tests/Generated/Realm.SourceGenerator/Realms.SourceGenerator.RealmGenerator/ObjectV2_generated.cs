@@ -215,7 +215,7 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new ObjectV2();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IObjectV2Accessor)instance.Accessor).Id;
                 return true;

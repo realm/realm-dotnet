@@ -66,13 +66,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Remove when we remove RealmSchema.Find")]
-        public void Class_WhenExplicit_ShouldNotBeInDefaultSchema_Legacy()
-        {
-            Assert.That(RealmSchema.Default.Find(nameof(ExplicitClass)), Is.Null);
-        }
-
-        [Test]
         public void Class_WhenExplicit_ShouldNotBeInDefaultSchema()
         {
             var isInSchema = RealmSchema.Default.TryFindObjectSchema(nameof(ExplicitClass), out var schema);
@@ -560,26 +553,6 @@ namespace Realms.Tests.Database
             Assert.That(schema.Count, Is.Zero);
             Assert.That(schema.Name, Is.EqualTo("MyClass"));
             Assert.That(builder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
-        }
-
-        [Test, Obsolete("Testing depreccated ObjectSchema.Builder API")]
-        public void ObjectSchemaBuilder_ObsoleteAPIKeepsWorking()
-        {
-            var myClassBuilder = new ObjectSchema.Builder("myClass");
-            myClassBuilder.Add(Property.FromType<int>("Foo"));
-            var myClassSchema = myClassBuilder.Build();
-
-            Assert.That(myClassSchema.Count, Is.EqualTo(1));
-            Assert.That(myClassSchema.Name, Is.EqualTo("myClass"));
-            Assert.That(myClassBuilder["Foo"].Type, Is.EqualTo(PropertyType.Int));
-            Assert.That(myClassBuilder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.RealmObject));
-
-            var myOtherClassBuilder = new ObjectSchema.Builder("myOtherClass", isEmbedded: true);
-            var myOtherClassSchema = myOtherClassBuilder.Build();
-
-            Assert.That(myOtherClassSchema.Count, Is.EqualTo(0));
-            Assert.That(myOtherClassSchema.Name, Is.EqualTo("myOtherClass"));
-            Assert.That(myOtherClassBuilder.RealmSchemaType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
         }
 
         [Test]

@@ -112,26 +112,6 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets or sets a custom log function that will be invoked for each log message emitted by sync.
-        /// </summary>
-        /// <remarks>
-        /// The first argument of the action is the log message itself, while the second one is the <see cref="LogLevel"/>
-        /// at which the log message was emitted.
-        /// </remarks>
-        /// <value>The custom logger.</value>
-        /// <seealso cref="Logger.Default"/>
-        [Obsolete("Configure the global Realms.Logging.Logger.Default instead")]
-        public Action<string, LogLevel> CustomLogger { get; set; }
-
-        /// <summary>
-        /// Gets or sets the log level for sync operations.
-        /// </summary>
-        /// <value>The sync log level.</value>
-        /// <seealso cref="Logger.LogLevel"/>
-        [Obsolete("Configure the global Realms.Logging.Logger.LogLevel instead")]
-        public LogLevel LogLevel { get; set; } = LogLevel.Info;
-
-        /// <summary>
         /// Gets or sets the default request timeout for HTTP requests to MongoDB Atlas.
         /// </summary>
         /// <value>The default HTTP request timeout.</value>

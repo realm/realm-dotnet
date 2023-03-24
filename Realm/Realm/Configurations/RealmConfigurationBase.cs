@@ -69,29 +69,6 @@ namespace Realms
         internal bool EnableCache = true;
 
         /// <summary>
-        /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
-        /// </summary>
-        /// <remarks>
-        /// Typically left null so by default all <see cref="RealmObject"/>s and <see cref="EmbeddedObject"/>s will be able to be stored in all Realms.
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// config.ObjectClasses = new Type[]
-        /// {
-        ///     typeof(CommonClass),
-        ///     typeof(RareClass)
-        /// };
-        /// </code>
-        /// </example>
-        /// <value>The classes that can be persisted in the Realm.</value>
-        [Obsolete("Use Schema = new[] { typeof(...) } instead.")]
-        public Type[] ObjectClasses
-        {
-            get => Schema?.Select(s => s.Type).Where(t => t != null).ToArray();
-            set => Schema = value;
-        }
-
-        /// <summary>
         /// Gets or sets the schema of the Realm opened with this configuration.
         /// </summary>
         /// <remarks>
@@ -162,11 +139,7 @@ namespace Realms
 
         private byte[] _encryptionKey;
 
-        /// <summary>
-        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
-        /// </summary>
-        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
-        public virtual byte[] EncryptionKey
+        internal byte[] EncryptionKey
         {
             get
             {

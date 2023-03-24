@@ -306,7 +306,7 @@ namespace Realms.SourceGenerator
         #endregion
 
         private static Diagnostic CreateDiagnostic(Id id, string title, string messageFormat, DiagnosticSeverity severity,
-            Location location, string category, string description)
+            Location location, string category, string? description)
         {
             var reportedId = $"RLM{(int)id:000}";
             DiagnosticDescriptor descriptor = new(reportedId, title, messageFormat, category, severity, isEnabledByDefault: true, description: description);
@@ -315,11 +315,11 @@ namespace Realms.SourceGenerator
         }
 
         private static Diagnostic CreateDiagnosticError(Id id, string title, string messageFormat,
-            Location location, string category = "RealmClassGeneration", string description = null)
+            Location location, string category = "RealmClassGeneration", string? description = null)
             => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Error, location, category, description);
 
         private static Diagnostic CreateDiagnosticWarning(Id id, string title, string messageFormat,
-            Location location, string category = "RealmClassGeneration", string description = null)
+            Location location, string category = "RealmClassGeneration", string? description = null)
             => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Warning, location, category, description);
     }
 }

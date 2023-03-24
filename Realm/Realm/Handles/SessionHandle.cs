@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -36,11 +37,7 @@ namespace Realms.Sync
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionErrorCallback(IntPtr session_handle_ptr,
-                                                      ErrorCode error_code,
-                                                      PrimitiveValue message,
-                                                      IntPtr user_info_pairs,
-                                                      IntPtr user_info_pairs_len,
-                                                      [MarshalAs(UnmanagedType.U1)] bool is_client_reset,
+                                                      SyncError error,
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -270,62 +267,55 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset, IntPtr managedSyncConfigurationBaseHandle)
+        private static void HandleSessionError(IntPtr sessionHandlePtr, SyncError error, IntPtr managedSyncConfigurationBaseHandle)
         {
             try
             {
                 // Filter out end of input, which the client seems to have started reporting
-                if (errorCode == (ErrorCode)1)
+                if (error.error_code == (ErrorCode)1)
                 {
                     return;
                 }
 
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
-                var messageString = message.AsString();
+                var messageString = error.message.AsString();
+                var logUrlString = error.log_url.AsString();
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
                 var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-                if (isClientReset)
+                if (error.is_client_reset)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
+                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
+                    var clientResetEx = new ClientResetException(session.User.App, messageString, error.error_code, userInfo);
 
-                    if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
-                        syncConfig.ClientResetHandler.ManualClientReset != null)
-                    {
-                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
-                    }
-                    else
-                    {
-                        Session.RaiseError(session, clientResetEx);
-                    }
-
+                    syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
                     return;
                 }
 
                 SessionException exception;
-                if (errorCode == ErrorCode.PermissionDenied)
+                if (error.error_code == ErrorCode.PermissionDenied)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
+                    var userInfo = error.user_info_pairs.AsEnumerable().ToDictionary(p => p.Key, p => p.Value);
 #pragma warning disable CS0618 // Type or member is obsolete
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
 #pragma warning restore CS0618 // Type or member is obsolete
                 }
+                else if (error.error_code == ErrorCode.CompensatingWrite)
+                {
+                    var compensatingWrites = error.compensating_writes
+                        .AsEnumerable()
+                        .Select(c => new CompensatingWriteInfo(c.object_name, c.reason, new RealmValue(c.primary_key)))
+                        .ToArray();
+                    exception = new CompensatingWriteException(messageString, compensatingWrites);
+                }
                 else
                 {
-                    exception = new SessionException(messageString, errorCode);
+                    exception = new SessionException(messageString, error.error_code);
                 }
 
-                if (syncConfig.OnSessionError != null)
-                {
-                    syncConfig.OnSessionError?.Invoke(session, exception);
-                }
-                else
-                {
-                    // after deprecation: this will need to go when Session.Error is fully deprecated
-                    Session.RaiseError(session, exception);
-                }
+                exception.HelpLink = logUrlString;
+                syncConfig.OnSessionError?.Invoke(session, exception);
             }
             catch (Exception ex)
             {
@@ -343,18 +333,13 @@ namespace Realms.Sync
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
-                    DiscardLocalResetHandler handler => handler.OnBeforeReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (cb != null)
                 {
@@ -385,18 +370,13 @@ namespace Realms.Sync
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
                 syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnAfterReset,
-                    DiscardLocalResetHandler handler => handler.OnAfterReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnAfterReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => didRecover ? handler.OnAfterRecovery : handler.OnAfterDiscard,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (cb != null)
                 {

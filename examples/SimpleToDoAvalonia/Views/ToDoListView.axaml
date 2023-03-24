@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SimpleToDo.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="550"
+             x:Class="SimpleToDo.Views.ToDoListView">
+    <Design.DataContext>
+        <vm:ToDoListViewModel />
+    </Design.DataContext>
+    <ScrollViewer>
+        <StackPanel Spacing="10"
+                    Margin="10"
+                    IsVisible="{Binding CurrentList, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <TextBox Text="{Binding CurrentList.Name}"
+                     Watermark="Name"
+                     FontSize="24"
+                     BorderThickness="0" />
+            <ItemsControl Items="{Binding UncheckedItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="10">
+                            <CheckBox DockPanel.Dock="Left"
+                                      IsChecked="{Binding IsDone}" />
+                            <Button DockPanel.Dock="Right" Content="X"
+                                    Command="{Binding DataContext.DeleteItem, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    CommandParameter="{Binding .}" />
+                            <TextBox Text="{Binding Description}"
+                                     Watermark="Description"
+                                     VerticalAlignment="Center"
+                                     BorderThickness="0"
+                                     Margin="0,0,10,0" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Content="Add Item"
+                    Command="{Binding AddItem}"
+                    HorizontalAlignment="Center" />
+            <Rectangle Fill="Gray" Height="1.5" />
+            <TextBlock Text="{Binding CheckedItems.Count, StringFormat='{}{0} ticked'}" />
+            <ItemsControl Items="{Binding CheckedItems}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="10">
+                            <CheckBox DockPanel.Dock="Left"
+                                      IsChecked="{Binding IsDone}" />
+                            <Button DockPanel.Dock="Right" Content="X"
+                                    Command="{Binding DataContext.DeleteItem, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                    CommandParameter="{Binding .}" />
+                            <TextBox Text="{Binding Description}"
+                                     Foreground="Gray"
+                                     VerticalAlignment="Center"
+                                     BorderThickness="0"
+                                     Margin="0,0,10,0" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

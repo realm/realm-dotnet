@@ -68,12 +68,12 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public RealmValueType Type;
 
-        public static PrimitiveValue Null() => new PrimitiveValue
+        public static PrimitiveValue Null() => new()
         {
             Type = RealmValueType.Null,
         };
 
-        public static PrimitiveValue Bool(bool value) => new PrimitiveValue
+        public static PrimitiveValue Bool(bool value) => new()
         {
             Type = RealmValueType.Bool,
             int_value = value ? 1 : 0,
@@ -81,7 +81,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableBool(bool? value) => value.HasValue ? Bool(value.Value) : Null();
 
-        public static PrimitiveValue Int(long value) => new PrimitiveValue
+        public static PrimitiveValue Int(long value) => new()
         {
             Type = RealmValueType.Int,
             int_value = value
@@ -89,7 +89,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableInt(long? value) => value.HasValue ? Int(value.Value) : Null();
 
-        public static PrimitiveValue Float(float value) => new PrimitiveValue
+        public static PrimitiveValue Float(float value) => new()
         {
             Type = RealmValueType.Float,
             float_value = value
@@ -97,7 +97,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableFloat(float? value) => value.HasValue ? Float(value.Value) : Null();
 
-        public static PrimitiveValue Double(double value) => new PrimitiveValue
+        public static PrimitiveValue Double(double value) => new()
         {
             Type = RealmValueType.Double,
             double_value = value
@@ -105,7 +105,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableDouble(double? value) => value.HasValue ? Double(value.Value) : Null();
 
-        public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
+        public static PrimitiveValue Date(DateTimeOffset value) => new()
         {
             Type = RealmValueType.Date,
             timestamp_value = new TimestampValue(value.ToUniversalTime().Ticks)
@@ -212,7 +212,7 @@ namespace Realms.Native
 
         public double AsDouble() => double_value;
 
-        public DateTimeOffset AsDate() => new DateTimeOffset(timestamp_value.ToTicks(), TimeSpan.Zero);
+        public DateTimeOffset AsDate() => new(timestamp_value.ToTicks(), TimeSpan.Zero);
 
         public Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
@@ -247,7 +247,7 @@ namespace Realms.Native
                 return null;
             }
 
-            return Encoding.UTF8.GetString(string_value.data, (int)string_value.size);
+            return string_value;
         }
 
         public byte[] AsBinary()
@@ -283,13 +283,6 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct StringValue
-        {
-            public byte* data;
-            public IntPtr size;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         private unsafe struct BinaryValue
         {
             public byte* data;
@@ -322,5 +315,16 @@ namespace Realms.Native
 
             public long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct StringValue
+    {
+        public byte* data;
+        public IntPtr size;
+
+        public string AsString() => data == null ? null : Encoding.UTF8.GetString(data, (int)size);
+
+        public static implicit operator string(StringValue value) => value.AsString();
     }
 }

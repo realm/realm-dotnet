@@ -635,7 +635,7 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    var asymmetricObj = (IAsymmetricObject)(object)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
+                    var asymmetricObj = (IAsymmetricObject)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
 
                     if (isDynamic)
                     {
