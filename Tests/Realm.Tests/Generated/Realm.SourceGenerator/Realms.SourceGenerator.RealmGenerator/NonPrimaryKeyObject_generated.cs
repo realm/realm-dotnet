@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(NonPrimaryKeyObjectObjectHelper)), Preserve(AllMembers = true)]
+        [Woven(typeof(NonPrimaryKeyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class NonPrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NonPrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
@@ -199,7 +199,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class NonPrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -218,13 +218,13 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface INonPrimaryKeyObjectAccessor : Realms.IRealmAccessor
             {
                 string? StringValue { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NonPrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, INonPrimaryKeyObjectAccessor
             {
                 public string? StringValue
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NonPrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, INonPrimaryKeyObjectAccessor
             {
                 public override ObjectSchema ObjectSchema => NonPrimaryKeyObject.RealmSchema;

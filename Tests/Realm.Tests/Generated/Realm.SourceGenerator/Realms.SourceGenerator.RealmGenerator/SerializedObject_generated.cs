@@ -25,7 +25,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(SerializedObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(SerializedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SerializedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
@@ -220,7 +220,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SerializedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ISerializedObjectAccessor : Realms.IRealmAccessor
         {
             int IntValue { get; set; }
@@ -253,7 +253,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.ISet<string?> Set { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SerializedObjectManagedAccessor : Realms.ManagedAccessor, ISerializedObjectAccessor
         {
             public int IntValue
@@ -311,7 +311,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SerializedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ISerializedObjectAccessor
         {
             public override ObjectSchema ObjectSchema => SerializedObject.RealmSchema;

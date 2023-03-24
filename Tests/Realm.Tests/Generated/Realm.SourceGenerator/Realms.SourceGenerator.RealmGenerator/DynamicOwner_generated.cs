@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(DynamicOwnerObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(DynamicOwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicOwner", ObjectSchema.ObjectType.RealmObject)
@@ -226,7 +226,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicOwnerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -245,7 +245,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDynamicOwnerAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -265,7 +265,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.ISet<string?> TagsSet { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicOwnerManagedAccessor : Realms.ManagedAccessor, IDynamicOwnerAccessor
         {
             public string? Name
@@ -365,7 +365,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicOwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicOwnerAccessor
         {
             public override ObjectSchema ObjectSchema => DynamicOwner.RealmSchema;

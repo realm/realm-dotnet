@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(EmbeddedIntPropertyObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(EmbeddedIntPropertyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedIntPropertyObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedIntPropertyObject", ObjectSchema.ObjectType.EmbeddedObject)
@@ -201,7 +201,7 @@ namespace Realms.Tests
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedIntPropertyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -220,13 +220,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IEmbeddedIntPropertyObjectAccessor : Realms.IRealmAccessor
         {
             int Int { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedIntPropertyObjectManagedAccessor : Realms.ManagedAccessor, IEmbeddedIntPropertyObjectAccessor
         {
             public int Int
@@ -236,7 +236,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedIntPropertyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedIntPropertyObjectAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedIntPropertyObject.RealmSchema;

@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(SomeClassObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(SomeClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SomeClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SomeClass", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SomeClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ISomeClassAccessor : Realms.IRealmAccessor
         {
             Realms.Tests.Database.BacklinkObject? BacklinkObject { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SomeClassManagedAccessor : Realms.ManagedAccessor, ISomeClassAccessor
         {
             public Realms.Tests.Database.BacklinkObject? BacklinkObject
@@ -235,7 +235,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SomeClassUnmanagedAccessor : Realms.UnmanagedAccessor, ISomeClassAccessor
         {
             public override ObjectSchema ObjectSchema => SomeClass.RealmSchema;

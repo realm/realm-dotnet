@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(DynamicTaskObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(DynamicTaskObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DynamicTask : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicTask", ObjectSchema.ObjectType.RealmObject)
@@ -218,7 +218,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicTaskObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -237,7 +237,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDynamicTaskAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -253,7 +253,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicSubTask?> SubTasksDictionary { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicTaskManagedAccessor : Realms.ManagedAccessor, IDynamicTaskAccessor
         {
             public string? Id
@@ -317,7 +317,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicTaskUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicTaskAccessor
         {
             public override ObjectSchema ObjectSchema => DynamicTask.RealmSchema;

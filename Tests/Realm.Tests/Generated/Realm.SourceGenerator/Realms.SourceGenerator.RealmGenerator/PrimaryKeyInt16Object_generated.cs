@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyInt16ObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(PrimaryKeyInt16ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyInt16Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyInt16Object", ObjectSchema.ObjectType.RealmObject)
@@ -200,7 +200,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PrimaryKeyInt16ObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -219,13 +219,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPrimaryKeyInt16ObjectAccessor : Realms.IRealmAccessor
         {
             short Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PrimaryKeyInt16ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyInt16ObjectAccessor
         {
             public short Id
@@ -235,7 +235,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PrimaryKeyInt16ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyInt16ObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyInt16Object.RealmSchema;

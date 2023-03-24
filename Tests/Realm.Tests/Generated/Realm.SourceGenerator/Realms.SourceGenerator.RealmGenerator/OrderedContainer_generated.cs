@@ -24,7 +24,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(OrderedContainerObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(OrderedContainerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OrderedContainer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OrderedContainer", ObjectSchema.ObjectType.RealmObject)
@@ -206,7 +206,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OrderedContainerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -225,7 +225,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IOrderedContainerAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> Items { get; }
@@ -233,7 +233,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.OrderedObject?> ItemsDictionary { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OrderedContainerManagedAccessor : Realms.ManagedAccessor, IOrderedContainerAccessor
         {
             private System.Collections.Generic.IList<Realms.Tests.Database.OrderedObject> _items = null!;
@@ -265,7 +265,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OrderedContainerUnmanagedAccessor : Realms.UnmanagedAccessor, IOrderedContainerAccessor
         {
             public override ObjectSchema ObjectSchema => OrderedContainer.RealmSchema;

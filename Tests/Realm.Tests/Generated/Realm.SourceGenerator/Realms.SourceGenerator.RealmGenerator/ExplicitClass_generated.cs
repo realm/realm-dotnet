@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ExplicitClassObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ExplicitClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ExplicitClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ExplicitClass", ObjectSchema.ObjectType.RealmObject)
@@ -199,7 +199,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ExplicitClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -218,13 +218,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IExplicitClassAccessor : Realms.IRealmAccessor
         {
             int Foo { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ExplicitClassManagedAccessor : Realms.ManagedAccessor, IExplicitClassAccessor
         {
             public int Foo
@@ -234,7 +234,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ExplicitClassUnmanagedAccessor : Realms.UnmanagedAccessor, IExplicitClassAccessor
         {
             public override ObjectSchema ObjectSchema => ExplicitClass.RealmSchema;

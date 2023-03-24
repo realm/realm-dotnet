@@ -18,7 +18,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(PersonObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(PersonObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Person : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
@@ -249,7 +249,7 @@ namespace Realms.Tests.Database
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PersonObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -268,7 +268,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPersonAccessor : Realms.IRealmAccessor
         {
             string? FirstName { get; set; }
@@ -298,7 +298,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IList<Realms.Tests.Database.Person> Friends { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonManagedAccessor : Realms.ManagedAccessor, IPersonAccessor
         {
             public string? FirstName
@@ -388,7 +388,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PersonUnmanagedAccessor : Realms.UnmanagedAccessor, IPersonAccessor
         {
             public override ObjectSchema ObjectSchema => Person.RealmSchema;

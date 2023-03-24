@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(Level3ObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(Level3ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Level3 : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Level3", ObjectSchema.ObjectType.RealmObject)
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class Level3ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -215,13 +215,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ILevel3Accessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset DateValue { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class Level3ManagedAccessor : Realms.ManagedAccessor, ILevel3Accessor
         {
             public System.DateTimeOffset DateValue
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class Level3UnmanagedAccessor : Realms.UnmanagedAccessor, ILevel3Accessor
         {
             public override ObjectSchema ObjectSchema => Level3.RealmSchema;

@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(PrimaryKeyNullableInt32ObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(PrimaryKeyNullableInt32ObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PrimaryKeyNullableInt32Object : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyNullableInt32Object", ObjectSchema.ObjectType.RealmObject)
@@ -197,7 +197,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class PrimaryKeyNullableInt32ObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -216,13 +216,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPrimaryKeyNullableInt32ObjectAccessor : Realms.IRealmAccessor
         {
             int? Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableInt32ObjectManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
         {
             public int? Id
@@ -232,7 +232,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PrimaryKeyNullableInt32ObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyNullableInt32ObjectAccessor
         {
             public override ObjectSchema ObjectSchema => PrimaryKeyNullableInt32Object.RealmSchema;

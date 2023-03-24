@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(PrimaryKeyWithNonPKChildWithPKGrandChildObjectHelper)), Preserve(AllMembers = true)]
+        [Woven(typeof(PrimaryKeyWithNonPKChildWithPKGrandChildObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyWithNonPKChildWithPKGrandChild", ObjectSchema.ObjectType.RealmObject)
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class PrimaryKeyWithNonPKChildWithPKGrandChildObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -229,7 +229,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface IPrimaryKeyWithNonPKChildWithPKGrandChildAccessor : Realms.IRealmAccessor
             {
                 long Id { get; set; }
@@ -239,7 +239,7 @@ namespace Realms.Tests.Database
                 Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyWithPKRelation? NonPKChild { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithNonPKChildWithPKGrandChildManagedAccessor : Realms.ManagedAccessor, IPrimaryKeyWithNonPKChildWithPKGrandChildAccessor
             {
                 public long Id
@@ -261,7 +261,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class PrimaryKeyWithNonPKChildWithPKGrandChildUnmanagedAccessor : Realms.UnmanagedAccessor, IPrimaryKeyWithNonPKChildWithPKGrandChildAccessor
             {
                 public override ObjectSchema ObjectSchema => PrimaryKeyWithNonPKChildWithPKGrandChild.RealmSchema;

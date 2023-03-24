@@ -22,7 +22,7 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(NullablePrimaryKeyObjectObjectHelper)), Preserve(AllMembers = true)]
+        [Woven(typeof(NullablePrimaryKeyObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class NullablePrimaryKeyObject : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullablePrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
@@ -201,7 +201,7 @@ namespace Realms.Tests.Database
 
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class NullablePrimaryKeyObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -220,7 +220,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface INullablePrimaryKeyObjectAccessor : Realms.IRealmAccessor
             {
                 long? Id { get; set; }
@@ -228,7 +228,7 @@ namespace Realms.Tests.Database
                 string? StringValue { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NullablePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, INullablePrimaryKeyObjectAccessor
             {
                 public long? Id
@@ -244,7 +244,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class NullablePrimaryKeyObjectUnmanagedAccessor : Realms.UnmanagedAccessor, INullablePrimaryKeyObjectAccessor
             {
                 public override ObjectSchema ObjectSchema => NullablePrimaryKeyObject.RealmSchema;

@@ -16,7 +16,6 @@ using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 using static Realms.Tests.TestHelpers;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -31,7 +30,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(SyncObjectWithRequiredStringListObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class SyncObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
@@ -215,7 +214,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class SyncObjectWithRequiredStringListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -234,7 +233,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ISyncObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -242,7 +241,7 @@ namespace Realms.Tests.Sync
             System.Collections.Generic.IList<string> Strings { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SyncObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public string? Id
@@ -266,7 +265,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class SyncObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, ISyncObjectWithRequiredStringListAccessor
         {
             public override ObjectSchema ObjectSchema => SyncObjectWithRequiredStringList.RealmSchema;

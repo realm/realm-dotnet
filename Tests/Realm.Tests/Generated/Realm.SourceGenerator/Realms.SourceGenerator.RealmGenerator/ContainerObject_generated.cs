@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ContainerObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ContainerObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ContainerObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ContainerObject", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ContainerObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,13 +221,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IContainerObjectAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> Items { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ContainerObjectManagedAccessor : Realms.ManagedAccessor, IContainerObjectAccessor
         {
             private System.Collections.Generic.IList<Realms.Tests.IntPropertyObject> _items = null!;
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ContainerObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IContainerObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ContainerObject.RealmSchema;

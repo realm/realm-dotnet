@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(InternalObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(InternalObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class InternalObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("InternalObject", ObjectSchema.ObjectType.RealmObject)
@@ -177,7 +177,7 @@ namespace Realms.Tests.Database
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class InternalObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IInternalObjectAccessor : Realms.IRealmAccessor
         {
             int IntProperty { get; set; }
@@ -204,7 +204,7 @@ namespace Realms.Tests.Database
             string? StringProperty { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class InternalObjectManagedAccessor : Realms.ManagedAccessor, IInternalObjectAccessor
         {
             public int IntProperty
@@ -220,7 +220,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class InternalObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IInternalObjectAccessor
         {
             public override ObjectSchema ObjectSchema => InternalObject.RealmSchema;

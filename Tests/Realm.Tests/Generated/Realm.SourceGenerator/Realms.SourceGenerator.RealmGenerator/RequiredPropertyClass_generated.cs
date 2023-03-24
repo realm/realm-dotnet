@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(RequiredPropertyClassObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(RequiredPropertyClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RequiredPropertyClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPropertyClass", ObjectSchema.ObjectType.RealmObject)
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RequiredPropertyClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -215,13 +215,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRequiredPropertyClassAccessor : Realms.IRealmAccessor
         {
             string FooRequired { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPropertyClassManagedAccessor : Realms.ManagedAccessor, IRequiredPropertyClassAccessor
         {
             public string FooRequired
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPropertyClassUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPropertyClassAccessor
         {
             public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;

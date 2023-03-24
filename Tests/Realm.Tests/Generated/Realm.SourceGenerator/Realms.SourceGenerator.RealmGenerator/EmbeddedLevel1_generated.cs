@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(EmbeddedLevel1ObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(EmbeddedLevel1ObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedLevel1 : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedLevel1", ObjectSchema.ObjectType.EmbeddedObject)
@@ -212,7 +212,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedLevel1ObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -231,7 +231,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IEmbeddedLevel1Accessor : Realms.IRealmAccessor
         {
             string? String { get; set; }
@@ -241,7 +241,7 @@ namespace Realms.Tests
             System.Collections.Generic.IList<Realms.Tests.EmbeddedLevel2> Children { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedLevel1ManagedAccessor : Realms.ManagedAccessor, IEmbeddedLevel1Accessor
         {
             public string? String
@@ -271,7 +271,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedLevel1UnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedLevel1Accessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedLevel1.RealmSchema;

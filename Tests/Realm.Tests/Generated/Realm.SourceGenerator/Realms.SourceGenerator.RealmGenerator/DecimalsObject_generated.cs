@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(DecimalsObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(DecimalsObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DecimalsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
@@ -199,7 +199,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DecimalsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -218,7 +218,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDecimalsObjectAccessor : Realms.IRealmAccessor
         {
             decimal DecimalValue { get; set; }
@@ -226,7 +226,7 @@ namespace Realms.Tests
             MongoDB.Bson.Decimal128 Decimal128Value { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DecimalsObjectManagedAccessor : Realms.ManagedAccessor, IDecimalsObjectAccessor
         {
             public decimal DecimalValue
@@ -242,7 +242,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DecimalsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDecimalsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DecimalsObject.RealmSchema;

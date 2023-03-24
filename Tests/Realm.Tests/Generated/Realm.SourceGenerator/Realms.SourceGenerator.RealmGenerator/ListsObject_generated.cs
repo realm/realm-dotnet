@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ListsObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ListsObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ListsObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ListsObject", ObjectSchema.ObjectType.RealmObject)
@@ -292,7 +292,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ListsObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -311,7 +311,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IListsObjectAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<char> CharList { get; }
@@ -377,7 +377,7 @@ namespace Realms.Tests
             System.Collections.Generic.IList<Realms.RealmValue> RealmValueList { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ListsObjectManagedAccessor : Realms.ManagedAccessor, IListsObjectAccessor
         {
             private System.Collections.Generic.IList<char> _charList = null!;
@@ -815,7 +815,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ListsObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IListsObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ListsObject.RealmSchema;

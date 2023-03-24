@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ObjectIdPrimaryKeyWithValueObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectIdPrimaryKeyWithValueObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectIdPrimaryKeyWithValueObject", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectIdPrimaryKeyWithValueObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectIdPrimaryKeyWithValueObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -229,7 +229,7 @@ namespace Realms.Tests
             string? StringValue { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectIdPrimaryKeyWithValueObjectManagedAccessor : Realms.ManagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectIdPrimaryKeyWithValueObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectIdPrimaryKeyWithValueObjectAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectIdPrimaryKeyWithValueObject.RealmSchema;

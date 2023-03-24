@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -730,7 +729,7 @@ namespace Realms.Tests.Sync
                 {
                     Assert.That(sender, Is.InstanceOf<Session>());
                     Assert.That(e, Is.InstanceOf<SessionException>());
-                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.NoSuchRealm));
+                    Assert.That(e.ErrorCode, Is.EqualTo(ErrorCode.TooManySessions));
                     Assert.That(e.Message, Is.EqualTo(errorMsg));
                     Assert.That(e.InnerException, Is.Null);
                     Assert.That(sessionErrorTriggered, Is.False);
@@ -740,7 +739,7 @@ namespace Realms.Tests.Sync
 
                 using var realm = await GetRealmAsync(config, waitForSync: true);
                 var session = GetSession(realm);
-                session.SimulateError(ErrorCode.NoSuchRealm, errorMsg);
+                session.SimulateError(ErrorCode.TooManySessions, errorMsg);
 
                 await tcs.Task;
 

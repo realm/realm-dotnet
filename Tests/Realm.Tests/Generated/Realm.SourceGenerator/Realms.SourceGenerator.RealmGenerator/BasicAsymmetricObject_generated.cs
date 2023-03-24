@@ -28,7 +28,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(BasicAsymmetricObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(BasicAsymmetricObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class BasicAsymmetricObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("BasicAsymmetricObject", ObjectSchema.ObjectType.AsymmetricObject)
@@ -207,7 +207,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class BasicAsymmetricObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -226,7 +226,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IBasicAsymmetricObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -234,7 +234,7 @@ namespace Realms.Tests.Sync
             string? PartitionLike { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BasicAsymmetricObjectManagedAccessor : Realms.ManagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -250,7 +250,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class BasicAsymmetricObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IBasicAsymmetricObjectAccessor
         {
             public override ObjectSchema ObjectSchema => BasicAsymmetricObject.RealmSchema;

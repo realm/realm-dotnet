@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(CounterObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(CounterObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CounterObject", ObjectSchema.ObjectType.RealmObject)
@@ -214,7 +214,7 @@ namespace Realms.Tests
 
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CounterObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -233,7 +233,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ICounterObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -255,7 +255,7 @@ namespace Realms.Tests
             Realms.RealmInteger<long>? NullableInt64Property { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CounterObjectManagedAccessor : Realms.ManagedAccessor, ICounterObjectAccessor
         {
             public int Id
@@ -313,7 +313,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CounterObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICounterObjectAccessor
         {
             public override ObjectSchema ObjectSchema => CounterObject.RealmSchema;

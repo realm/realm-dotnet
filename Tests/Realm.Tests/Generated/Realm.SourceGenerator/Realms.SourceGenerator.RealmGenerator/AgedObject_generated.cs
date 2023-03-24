@@ -22,7 +22,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(AgedObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(AgedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AgedObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AgedObject", ObjectSchema.ObjectType.RealmObject)
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AgedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -215,13 +215,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAgedObjectAccessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset Birthday { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AgedObjectManagedAccessor : Realms.ManagedAccessor, IAgedObjectAccessor
         {
             public System.DateTimeOffset Birthday
@@ -231,7 +231,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AgedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAgedObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AgedObject.RealmSchema;

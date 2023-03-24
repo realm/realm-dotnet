@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RequiredPrimaryKeyStringObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(RequiredPrimaryKeyStringObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RequiredPrimaryKeyStringObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPrimaryKeyStringObject", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RequiredPrimaryKeyStringObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,7 +221,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRequiredPrimaryKeyStringObjectAccessor : Realms.IRealmAccessor
         {
             string Id { get; set; }
@@ -229,7 +229,7 @@ namespace Realms.Tests
             string? Value { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPrimaryKeyStringObjectManagedAccessor : Realms.ManagedAccessor, IRequiredPrimaryKeyStringObjectAccessor
         {
             public string Id
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RequiredPrimaryKeyStringObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRequiredPrimaryKeyStringObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RequiredPrimaryKeyStringObject.RealmSchema;

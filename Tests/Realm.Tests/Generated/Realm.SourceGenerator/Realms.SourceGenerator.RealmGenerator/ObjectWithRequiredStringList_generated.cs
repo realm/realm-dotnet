@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(ObjectWithRequiredStringListObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ObjectWithRequiredStringListObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithRequiredStringList : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithRequiredStringListObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,13 +221,13 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithRequiredStringListAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IList<string> Strings { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithRequiredStringListManagedAccessor : Realms.ManagedAccessor, IObjectWithRequiredStringListAccessor
         {
             private System.Collections.Generic.IList<string> _strings = null!;
@@ -245,7 +245,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithRequiredStringListUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithRequiredStringListAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithRequiredStringList.RealmSchema;

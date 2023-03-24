@@ -28,7 +28,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AsymmetricObjectWithEmbeddedDictionaryObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedDictionaryObject", ObjectSchema.ObjectType.AsymmetricObject)
@@ -209,7 +209,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -228,7 +228,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -236,7 +236,7 @@ namespace Realms.Tests.Sync
             System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedDictionaryObject { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedDictionaryObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -260,7 +260,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedDictionaryObject.RealmSchema;

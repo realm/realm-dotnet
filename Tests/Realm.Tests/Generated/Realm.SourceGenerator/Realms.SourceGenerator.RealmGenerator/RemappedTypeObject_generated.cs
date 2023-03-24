@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(RemappedTypeObjectObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(RemappedTypeObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class RemappedTypeObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("__RemappedTypeObject", ObjectSchema.ObjectType.RealmObject)
@@ -229,7 +229,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class RemappedTypeObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -248,7 +248,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IRemappedTypeObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -268,7 +268,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.RemappedTypeObject> MappedBacklink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RemappedTypeObjectManagedAccessor : Realms.ManagedAccessor, IRemappedTypeObjectAccessor
         {
             public int Id
@@ -352,7 +352,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class RemappedTypeObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IRemappedTypeObjectAccessor
         {
             public override ObjectSchema ObjectSchema => RemappedTypeObject.RealmSchema;

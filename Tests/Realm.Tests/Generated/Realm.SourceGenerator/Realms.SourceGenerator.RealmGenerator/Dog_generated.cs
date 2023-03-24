@@ -23,7 +23,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(DogObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(DogObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
@@ -216,7 +216,7 @@ namespace Realms.Tests
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -235,7 +235,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -249,7 +249,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.Owner> Owners { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
             public string? Name
@@ -291,7 +291,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;

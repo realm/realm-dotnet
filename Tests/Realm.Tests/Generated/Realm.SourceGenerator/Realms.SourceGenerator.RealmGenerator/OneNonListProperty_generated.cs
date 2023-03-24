@@ -21,7 +21,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(OneNonListPropertyObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(OneNonListPropertyObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class OneNonListProperty : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("OneNonListProperty", ObjectSchema.ObjectType.RealmObject)
@@ -198,7 +198,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class OneNonListPropertyObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -217,13 +217,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IOneNonListPropertyAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OneNonListPropertyManagedAccessor : Realms.ManagedAccessor, IOneNonListPropertyAccessor
         {
             public string? Name
@@ -233,7 +233,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class OneNonListPropertyUnmanagedAccessor : Realms.UnmanagedAccessor, IOneNonListPropertyAccessor
         {
             public override ObjectSchema ObjectSchema => OneNonListProperty.RealmSchema;

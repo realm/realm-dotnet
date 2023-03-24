@@ -25,7 +25,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ThrowsBeforeInitializerObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ThrowsBeforeInitializerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ThrowsBeforeInitializer : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ThrowsBeforeInitializer", ObjectSchema.ObjectType.RealmObject)
@@ -202,7 +202,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ThrowsBeforeInitializerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,13 +221,13 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IThrowsBeforeInitializerAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ThrowsBeforeInitializerManagedAccessor : Realms.ManagedAccessor, IThrowsBeforeInitializerAccessor
         {
             public int Id
@@ -237,7 +237,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ThrowsBeforeInitializerUnmanagedAccessor : Realms.UnmanagedAccessor, IThrowsBeforeInitializerAccessor
         {
             public override ObjectSchema ObjectSchema => ThrowsBeforeInitializer.RealmSchema;

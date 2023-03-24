@@ -24,7 +24,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(EmbeddedGuidTypeObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(EmbeddedGuidTypeObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class EmbeddedGuidType : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
@@ -242,7 +242,7 @@ namespace Realms.Tests.Database
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class EmbeddedGuidTypeObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -261,7 +261,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IEmbeddedGuidTypeAccessor : Realms.IRealmAccessor
         {
             System.Guid RegularProperty { get; set; }
@@ -291,7 +291,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> MixedDict { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedGuidTypeManagedAccessor : Realms.ManagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public System.Guid RegularProperty
@@ -445,7 +445,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class EmbeddedGuidTypeUnmanagedAccessor : Realms.UnmanagedAccessor, IEmbeddedGuidTypeAccessor
         {
             public override ObjectSchema ObjectSchema => EmbeddedGuidType.RealmSchema;

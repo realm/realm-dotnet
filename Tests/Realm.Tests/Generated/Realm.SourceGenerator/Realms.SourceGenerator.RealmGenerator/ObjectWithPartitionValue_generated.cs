@@ -16,7 +16,6 @@ using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 using static Realms.Tests.TestHelpers;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -31,7 +30,7 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(ObjectWithPartitionValueObjectHelper)), Preserve(AllMembers = true)]
+    [Woven(typeof(ObjectWithPartitionValueObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
@@ -222,7 +221,7 @@ namespace Realms.Tests.Sync
 
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithPartitionValueObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -241,7 +240,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -253,7 +252,7 @@ namespace Realms.Tests.Sync
             System.Guid Guid { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
             public string? Id
@@ -281,7 +280,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never), Preserve(AllMembers = true)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;
