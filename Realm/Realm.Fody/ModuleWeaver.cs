@@ -80,7 +80,7 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 #endif
         }
 
-        var (frameworkName, frameworkVersion) = AnalyticsUtils.GetFrameworkAndVersion(ModuleDefinition);
+        var framework = AnalyticsUtils.GetFrameworkAndVersion(ModuleDefinition);
 
         return new()
         {
@@ -90,8 +90,8 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
             NetFrameworkTarget = netFramework.Identifier,
             NetFrameworkTargetVersion = netFramework.Version.ToString(),
             TargetOSName = AnalyticsUtils.GetTargetOsName(netFramework),
-            FrameworkName = frameworkName,
-            FrameworkVersion = frameworkVersion,
+            FrameworkName = framework.Name,
+            FrameworkVersion = framework.Version,
             Compiler = "msbuild",
         };
     }

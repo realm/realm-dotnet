@@ -79,7 +79,7 @@ namespace RealmWeaver
             return Unknown(frameworkName.Identifier);
         }
 
-        public static (string Name, string Version) GetFrameworkAndVersion(ModuleDefinition module)
+        public static FrameworkInfo GetFrameworkAndVersion(ModuleDefinition module)
         {
             // the order in the array matters as we first need to look at the libraries (maui and forms)
             // and then at the frameworks (xamarin native, Catalyst and UWP)
@@ -101,11 +101,11 @@ namespace RealmWeaver
                 frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == kvp.Key).SingleOrDefault();
                 if (frameworkUsedInConjunction != null)
                 {
-                    return (kvp.Value, frameworkUsedInConjunction.Version.ToString());
+                    return new(kvp.Value, frameworkUsedInConjunction.Version.ToString());
                 }
             }
 
-            return ("No framework of interest", "0.0.0");
+            return new("No framework of interest", "0.0.0");
         }
 
         public static string SHA256Hash(byte[] bytes, bool useLegacyEncoding = false)
@@ -287,6 +287,19 @@ namespace RealmWeaver
 #endif
 
             return stdout.ToString();
+        }
+
+        public readonly struct FrameworkInfo
+        {
+            public string Name { get; }
+
+            public string Version { get; }
+
+            public FrameworkInfo(string name, string version)
+            {
+                Name = name;
+                Version = version;
+            }
         }
     }
 }
