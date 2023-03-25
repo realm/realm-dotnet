@@ -807,7 +807,7 @@ namespace Baas
 #if !NETCOREAPP2_1_OR_GREATER
     internal static class DictionaryExtensions
     {
-        [return: NotNullIfNotNull(nameof(defaultValue))]
+        [return: NotNullIfNotNull("defaultValue")]
         public static T? GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T? defaultValue = default)
         {
             if (dictionary.TryGetValue(key, out var value))
