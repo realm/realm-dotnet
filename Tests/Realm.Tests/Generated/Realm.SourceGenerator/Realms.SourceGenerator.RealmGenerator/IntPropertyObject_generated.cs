@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -81,12 +80,18 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 if (!skipDefaults || oldAccessor.Int != default(int))
                 {
                     newAccessor.Int = oldAccessor.Int;
                 }
-                newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                if (!skipDefaults || oldAccessor.GuidProperty != default(System.Guid))
+                {
+                    newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                }
             }
 
             if (_propertyChanged != null)

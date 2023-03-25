@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -79,8 +78,14 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.DecimalValue = oldAccessor.DecimalValue;
-                newAccessor.Decimal128Value = oldAccessor.Decimal128Value;
+                if (!skipDefaults || oldAccessor.DecimalValue != default(decimal))
+                {
+                    newAccessor.DecimalValue = oldAccessor.DecimalValue;
+                }
+                if (!skipDefaults || oldAccessor.Decimal128Value != default(MongoDB.Bson.Decimal128))
+                {
+                    newAccessor.Decimal128Value = oldAccessor.Decimal128Value;
+                }
             }
 
             if (_propertyChanged != null)

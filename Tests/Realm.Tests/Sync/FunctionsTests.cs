@@ -211,7 +211,7 @@ namespace Realms.Tests.Sync
                 AssertDateTimeEquals(result.Date, second.Date);
                 Assert.That(result.ObjectId, Is.EqualTo(first.ObjectId));
                 Assert.That(result.Arr, Is.EquivalentTo(new[] { 1, 4 }));
-                Assert.That(result.Child.IntValue, Is.EqualTo(5));
+                Assert.That(result.Child!.IntValue, Is.EqualTo(5));
             });
         }
 
@@ -302,7 +302,7 @@ namespace Realms.Tests.Sync
             {
                 var user = await GetUserAsync();
 
-                string str = null;
+                string? str = null;
                 var result = await user.Functions.CallAsync<string>("mirror", str);
 
                 Assert.That(result, Is.Null);
@@ -452,7 +452,7 @@ namespace Realms.Tests.Sync
                 }
                 else
                 {
-                    Assert.That(result.ToString().ToLower(), Is.EqualTo(val.ToString().ToLower()));
+                    Assert.That(result.ToString()!.ToLower(), Is.EqualTo(val!.ToString()!.ToLower()));
                 }
 
                 var arr = new[] { val };
@@ -479,8 +479,8 @@ namespace Realms.Tests.Sync
                 else
                 {
                     Assert.That(
-                        arrResult.AsBsonArray.Select(a => a.ToString().ToLower()),
-                        Is.EquivalentTo(arr.Select(a => a.ToString().ToLower())));
+                        arrResult.AsBsonArray.Select(a => a.ToString()!.ToLower()),
+                        Is.EquivalentTo(arr.Select(a => a!.ToString()!.ToLower())));
                 }
             });
         }
@@ -523,13 +523,13 @@ namespace Realms.Tests.Sync
 
             public double FloatValue { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
             public ObjectId ObjectId { get; set; }
 
-            public int[] Arr { get; set; }
+            public int[]? Arr { get; set; }
 
-            public Child Child { get; set; }
+            public Child? Child { get; set; }
 
             public DateTime Date { get; set; }
         }

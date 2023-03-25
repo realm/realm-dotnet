@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -87,7 +86,7 @@ namespace Realms.Tests
                     newAccessor.RealmListProperty.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string))
+                if (!skipDefaults || oldAccessor.RealPropertyToSatisfyWeaver != default(string?))
                 {
                     newAccessor.RealPropertyToSatisfyWeaver = oldAccessor.RealPropertyToSatisfyWeaver;
                 }
@@ -97,7 +96,7 @@ namespace Realms.Tests
                 }
                 newAccessor.RealmObjectProperty = oldAccessor.RealmObjectProperty;
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.RealmListProperty, newAccessor.RealmListProperty, update, skipDefaults);
-                if (!skipDefaults || oldAccessor.FirstName != default(string))
+                if (!skipDefaults || oldAccessor.FirstName != default(string?))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }

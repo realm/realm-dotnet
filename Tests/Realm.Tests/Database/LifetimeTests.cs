@@ -42,7 +42,7 @@ namespace Realms.Tests.Database
                 }, x =>
                 {
                     Assert.That(x.Reference.IsAlive);
-                    Assert.That(((Realm)x.Reference.Target).IsClosed, Is.False);
+                    Assert.That(((Realm)x.Reference.Target!).IsClosed, Is.False);
                     Assert.That(x.Preserver.IsValid);
                 });
             });
@@ -55,7 +55,7 @@ namespace Realms.Tests.Database
             {
                 using var realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration.DatabasePath);
 
-                Person person = null;
+                Person? person = null;
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     var secondRealm = Realm.GetInstance(realm.Config);
@@ -71,7 +71,7 @@ namespace Realms.Tests.Database
                 });
 
                 // Assert
-                Assert.That(person.IsValid);
+                Assert.That(person?.IsValid, Is.True);
             });
         }
 

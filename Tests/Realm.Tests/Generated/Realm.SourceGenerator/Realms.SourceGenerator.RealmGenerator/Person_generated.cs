@@ -90,11 +90,11 @@ namespace Realms.Tests.Database
                     newAccessor.Friends.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.FirstName != default(string))
+                if (!skipDefaults || oldAccessor.FirstName != default(string?))
                 {
                     newAccessor.FirstName = oldAccessor.FirstName;
                 }
-                if (!skipDefaults || oldAccessor.LastName != default(string))
+                if (!skipDefaults || oldAccessor.LastName != default(string?))
                 {
                     newAccessor.LastName = oldAccessor.LastName;
                 }
@@ -114,17 +114,20 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Salary = oldAccessor.Salary;
                 }
-                newAccessor.IsAmbivalent = oldAccessor.IsAmbivalent;
+                if (!skipDefaults || oldAccessor.IsAmbivalent != default(bool?))
+                {
+                    newAccessor.IsAmbivalent = oldAccessor.IsAmbivalent;
+                }
                 newAccessor.Birthday = oldAccessor.Birthday;
-                if (!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]))
+                if (!skipDefaults || oldAccessor.PublicCertificateBytes != default(byte[]?))
                 {
                     newAccessor.PublicCertificateBytes = oldAccessor.PublicCertificateBytes;
                 }
-                if (!skipDefaults || oldAccessor.OptionalAddress != default(string))
+                if (!skipDefaults || oldAccessor.OptionalAddress != default(string?))
                 {
                     newAccessor.OptionalAddress = oldAccessor.OptionalAddress;
                 }
-                if (!skipDefaults || oldAccessor.Email_ != default(string))
+                if (!skipDefaults || oldAccessor.Email_ != default(string?))
                 {
                     newAccessor.Email_ = oldAccessor.Email_;
                 }

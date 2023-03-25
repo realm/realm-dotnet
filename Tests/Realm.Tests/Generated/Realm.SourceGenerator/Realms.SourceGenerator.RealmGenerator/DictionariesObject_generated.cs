@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -44,7 +43,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("ObjectIdDictionary", Realms.RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("StringDictionary", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableStringDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NullableStringDictionary"),
-            Realms.Schema.Property.PrimitiveDictionary("ByteArrayDictionary", Realms.RealmValueType.Data, areElementsNullable: true, managedName: "ByteArrayDictionary"),
+            Realms.Schema.Property.PrimitiveDictionary("ByteArrayDictionary", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("DateTimeOffsetDictionary", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableCharDictionary", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableCharDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableByteDictionary", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableByteDictionary"),
@@ -368,7 +367,7 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; }
+            System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; }
 
             System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; }
 
@@ -592,14 +591,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, byte[]?> _byteArrayDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary
+            private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary
             {
                 get
                 {
                     if (_byteArrayDictionary == null)
                     {
-                        _byteArrayDictionary = GetDictionaryValue<byte[]?>("ByteArrayDictionary");
+                        _byteArrayDictionary = GetDictionaryValue<byte[]>("ByteArrayDictionary");
                     }
 
                     return _byteArrayDictionary;
@@ -890,7 +889,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; } = new Dictionary<string, string?>();
 
-            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; } = new Dictionary<string, byte[]?>();
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; } = new Dictionary<string, byte[]>();
 
             public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; } = new Dictionary<string, System.DateTimeOffset>();
 

@@ -14,8 +14,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -32,7 +30,7 @@ namespace Realms.Tests.Database
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
             Realms.Schema.Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
-            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: true, managedName: "Tags"),
+            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Tags"),
             Realms.Schema.Property.ObjectDictionary("DogsDictionary", "DynamicDog", managedName: "DogsDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("TagsDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "TagsDictionary"),
             Realms.Schema.Property.ObjectSet("DogsSet", "DynamicDog", managedName: "DogsSet"),
@@ -93,7 +91,7 @@ namespace Realms.Tests.Database
                     newAccessor.TagsSet.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string?))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
@@ -279,7 +277,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; }
 
-            System.Collections.Generic.IList<string?> Tags { get; }
+            System.Collections.Generic.IList<string> Tags { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; }
 
@@ -319,14 +317,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IList<string?> _tags = null!;
-            public System.Collections.Generic.IList<string?> Tags
+            private System.Collections.Generic.IList<string> _tags = null!;
+            public System.Collections.Generic.IList<string> Tags
             {
                 get
                 {
                     if (_tags == null)
                     {
-                        _tags = GetListValue<string?>("Tags");
+                        _tags = GetListValue<string>("Tags");
                     }
 
                     return _tags;
@@ -419,7 +417,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; } = new List<Realms.Tests.Database.DynamicDog>();
 
-            public System.Collections.Generic.IList<string?> Tags { get; } = new List<string?>();
+            public System.Collections.Generic.IList<string> Tags { get; } = new List<string>();
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicDog?>();
 

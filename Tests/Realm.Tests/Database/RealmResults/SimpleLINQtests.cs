@@ -198,15 +198,15 @@ namespace Realms.Tests.Database
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Smith"));
 
-            var contains = _realm.All<Person>().Where(p => p.FirstName.Contains("et")).ToArray();
+            var contains = _realm.All<Person>().Where(p => p.FirstName!.Contains("et")).ToArray();
             Assert.That(contains.Length, Is.EqualTo(1));
             Assert.That(contains[0].FullName, Is.EqualTo("Peter Jameson"));
 
-            var startsWith = _realm.All<Person>().Where(p => p.Email.StartsWith("john@")).ToArray();
+            var startsWith = _realm.All<Person>().Where(p => p.Email!.StartsWith("john@")).ToArray();
             Assert.That(startsWith.Length, Is.EqualTo(2));
             Assert.That(startsWith.All(p => p.FirstName == "John"), Is.True);
 
-            var endsWith = _realm.All<Person>().Where(p => p.Email.EndsWith(".net")).ToArray();
+            var endsWith = _realm.All<Person>().Where(p => p.Email!.EndsWith(".net")).ToArray();
             Assert.That(endsWith.Length, Is.EqualTo(1));
             Assert.That(endsWith[0].FullName, Is.EqualTo("Peter Jameson"));
 
@@ -612,35 +612,35 @@ namespace Realms.Tests.Database
             Assert.That(notequal_patrick, Is.EqualTo(1));
 
             // case sensitive
-            var equals_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick")).Count();
+            var equals_patrick = _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick")).Count();
             Assert.That(equals_patrick, Is.EqualTo(2));
 
             // case sensitive
-            var notequals_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick")).Count();
+            var notequals_patrick = _realm.All<Person>().Where(p => !p.FirstName!.Equals("patrick")).Count();
             Assert.That(notequals_patrick, Is.EqualTo(1));
 
             // ignore case
-            var equals_ignorecase_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
+            var equals_ignorecase_patrick = _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
             Assert.That(equals_ignorecase_patrick, Is.EqualTo(3));
 
             // ignore case
-            var notequals_ignorecase_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
+            var notequals_ignorecase_patrick = _realm.All<Person>().Where(p => !p.FirstName!.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
             Assert.That(notequals_ignorecase_patrick, Is.EqualTo(0));
 
             // case sensitive
-            var equals_ordinal_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.Ordinal)).Count();
+            var equals_ordinal_patrick = _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.Ordinal)).Count();
             Assert.That(equals_ordinal_patrick, Is.EqualTo(2));
 
             // case sensitive
-            var equals_ordinal_Patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("Patrick", StringComparison.Ordinal)).Count();
+            var equals_ordinal_Patrick = _realm.All<Person>().Where(p => p.FirstName!.Equals("Patrick", StringComparison.Ordinal)).Count();
             Assert.That(equals_ordinal_Patrick, Is.EqualTo(0));
 
             // case sensitive
-            var equals_ordinal_patRick = _realm.All<Person>().Where(p => p.FirstName.Equals("patRick", StringComparison.Ordinal)).Count();
+            var equals_ordinal_patRick = _realm.All<Person>().Where(p => p.FirstName!.Equals("patRick", StringComparison.Ordinal)).Count();
             Assert.That(equals_ordinal_patRick, Is.EqualTo(1));
 
             // case sensitive
-            var notequals_ordinal_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick", StringComparison.Ordinal)).Count();
+            var notequals_ordinal_patrick = _realm.All<Person>().Where(p => !p.FirstName!.Equals("patrick", StringComparison.Ordinal)).Count();
             Assert.That(notequals_ordinal_patrick, Is.EqualTo(1));
         }
 
@@ -650,15 +650,15 @@ namespace Realms.Tests.Database
             MakeThreePatricks();
 
             // case sensitive
-            var startswith_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr")).Count();
+            var startswith_patr = _realm.All<Person>().Where(p => p.FirstName!.StartsWith("patr")).Count();
             Assert.That(startswith_patr, Is.EqualTo(2));
 
             // case sensitive
-            var startswith_ordinal_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr", StringComparison.Ordinal)).Count();
+            var startswith_ordinal_patr = _realm.All<Person>().Where(p => p.FirstName!.StartsWith("patr", StringComparison.Ordinal)).Count();
             Assert.That(startswith_ordinal_patr, Is.EqualTo(2));
 
             // ignore case
-            var startswith_ignorecase_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr", StringComparison.OrdinalIgnoreCase)).Count();
+            var startswith_ignorecase_patr = _realm.All<Person>().Where(p => p.FirstName!.StartsWith("patr", StringComparison.OrdinalIgnoreCase)).Count();
             Assert.That(startswith_ignorecase_patr, Is.EqualTo(3));
         }
 
@@ -668,15 +668,15 @@ namespace Realms.Tests.Database
             MakeThreePatricks();
 
             // case sensitive
-            var endswith_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick")).Count();
+            var endswith_rick = _realm.All<Person>().Where(p => p.FirstName!.EndsWith("rick")).Count();
             Assert.That(endswith_rick, Is.EqualTo(2));
 
             // case sensitive
-            var endswith_ordinal_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.Ordinal)).Count();
+            var endswith_ordinal_rick = _realm.All<Person>().Where(p => p.FirstName!.EndsWith("rick", StringComparison.Ordinal)).Count();
             Assert.That(endswith_ordinal_rick, Is.EqualTo(2));
 
             // ignore case
-            var endswith_ignorecase_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.OrdinalIgnoreCase)).Count();
+            var endswith_ignorecase_rick = _realm.All<Person>().Where(p => p.FirstName!.EndsWith("rick", StringComparison.OrdinalIgnoreCase)).Count();
             Assert.That(endswith_ignorecase_rick, Is.EqualTo(3));
         }
 
@@ -686,16 +686,16 @@ namespace Realms.Tests.Database
             MakeThreePatricks();
 
             // case sensitive
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri")).Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri")).ToArray().Length, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri")).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri")).ToArray().Length, Is.EqualTo(2));
 
             // case sensitive
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
 
             // ignore case
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
         }
 
         [Test]
@@ -706,16 +706,16 @@ namespace Realms.Tests.Database
             var searchString = "atri";
 
             // case sensitive
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString)).Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString)).ToArray().Length, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString)).ToArray().Length, Is.EqualTo(2));
 
             // case sensitive
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.Ordinal)).Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
 
             // ignore case
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
         }
 
         [Test]
@@ -725,37 +725,37 @@ namespace Realms.Tests.Database
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCulture)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.CurrentCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.InvariantCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.StartsWith("pat", StringComparison.CurrentCulture)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.StartsWith("pat", StringComparison.CurrentCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.CurrentCulture)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.EndsWith("rick", StringComparison.CurrentCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
 
             Assert.That(() =>
             {
-                _realm.All<Person>().Where(p => p.FirstName.Contains("atri", StringComparison.CurrentCulture)).Count();
+                _realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.CurrentCulture)).Count();
             }, Throws.TypeOf<NotSupportedException>());
         }
 
@@ -764,8 +764,8 @@ namespace Realms.Tests.Database
         {
             _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject { Id = 1, StringValue = str }));
 
-            var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue.Like(pattern, caseSensitive));
-            var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue.Like(pattern, caseSensitive));
+            var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue!.Like(pattern, caseSensitive));
+            var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue!.Like(pattern, caseSensitive));
 
             if (expected)
             {
@@ -783,48 +783,48 @@ namespace Realms.Tests.Database
             }
         }
 
-        public static object[] LikeTestValues =
+        public static object?[] LikeTestValues =
         {
-            new object[] { "abc", "ab", false, false },
-            new object[] { "abc", string.Empty, false, false },
-            new object[] { string.Empty, string.Empty, true, true },
-            new object[] { string.Empty, string.Empty, false, true },
-            new object[] { null, string.Empty, true, false },
-            new object[] { null, string.Empty, false, false },
-            new object[] { string.Empty, null, true, false },
-            new object[] { string.Empty, null, false, false },
-            new object[] { null, null, true, true },
-            new object[] { null, null, false, true },
-            new object[] { null, "*", true, false },
-            new object[] { null, "*", false, false },
-            new object[] { string.Empty, "*", true, true },
-            new object[] { string.Empty, "*", false, true },
-            new object[] { string.Empty, "?", true, false },
-            new object[] { string.Empty, "?", false, false },
+            new object?[] { "abc", "ab", false, false },
+            new object?[] { "abc", string.Empty, false, false },
+            new object?[] { string.Empty, string.Empty, true, true },
+            new object?[] { string.Empty, string.Empty, false, true },
+            new object?[] { null, string.Empty, true, false },
+            new object?[] { null, string.Empty, false, false },
+            new object?[] { string.Empty, null, true, false },
+            new object?[] { string.Empty, null, false, false },
+            new object?[] { null, null, true, true },
+            new object?[] { null, null, false, true },
+            new object?[] { null, "*", true, false },
+            new object?[] { null, "*", false, false },
+            new object?[] { string.Empty, "*", true, true },
+            new object?[] { string.Empty, "*", false, true },
+            new object?[] { string.Empty, "?", true, false },
+            new object?[] { string.Empty, "?", false, false },
 
-            new object[] { "abc", "*a*", true, true },
-            new object[] { "abc", "*b*", true, true },
-            new object[] { "abc", "*c", true, true },
-            new object[] { "abc", "ab*", true, true },
-            new object[] { "abc", "*bc", true, true },
-            new object[] { "abc", "a*bc", true, true },
-            new object[] { "abc", "*abc*", true, true },
-            new object[] { "abc", "*d*", true, false },
-            new object[] { "abc", "aabc", true, false },
-            new object[] { "abc", "b*bc", true, false },
+            new object?[] { "abc", "*a*", true, true },
+            new object?[] { "abc", "*b*", true, true },
+            new object?[] { "abc", "*c", true, true },
+            new object?[] { "abc", "ab*", true, true },
+            new object?[] { "abc", "*bc", true, true },
+            new object?[] { "abc", "a*bc", true, true },
+            new object?[] { "abc", "*abc*", true, true },
+            new object?[] { "abc", "*d*", true, false },
+            new object?[] { "abc", "aabc", true, false },
+            new object?[] { "abc", "b*bc", true, false },
 
-            new object[] { "abc", "a??", true, true },
-            new object[] { "abc", "?b?", true, true },
-            new object[] { "abc", "*?c", true, true },
-            new object[] { "abc", "ab?", true, true },
-            new object[] { "abc", "?bc", true, true },
-            new object[] { "abc", "?d?", true, false },
-            new object[] { "abc", "?abc", true, false },
-            new object[] { "abc", "b?bc", true, false },
+            new object?[] { "abc", "a??", true, true },
+            new object?[] { "abc", "?b?", true, true },
+            new object?[] { "abc", "*?c", true, true },
+            new object?[] { "abc", "ab?", true, true },
+            new object?[] { "abc", "?bc", true, true },
+            new object?[] { "abc", "?d?", true, false },
+            new object?[] { "abc", "?abc", true, false },
+            new object?[] { "abc", "b?bc", true, false },
 
-            new object[] { "abc", "*C*", true, false },
-            new object[] { "abc", "*c*", false, true },
-            new object[] { "abc", "*C*", false, true },
+            new object?[] { "abc", "*C*", true, false },
+            new object?[] { "abc", "*c*", false, true },
+            new object?[] { "abc", "*C*", false, true },
         };
 
         [Test]
@@ -877,13 +877,13 @@ namespace Realms.Tests.Database
         [Test]
         public void SingleOrDefaultWorks()
         {
-            var s0 = _realm.All<Person>().SingleOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            var s0 = _realm.All<Person>().SingleOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0)!;
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
-            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).SingleOrDefault();
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).SingleOrDefault()!;
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
-            var s2 = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Peter");
+            var s2 = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Peter")!;
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
         }
 
@@ -921,13 +921,13 @@ namespace Realms.Tests.Database
         [Test]
         public void FirstOrDefaultWorks()
         {
-            var s0 = _realm.All<Person>().FirstOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            var s0 = _realm.All<Person>().FirstOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0)!;
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
-            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).FirstOrDefault();
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).FirstOrDefault()!;
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
-            var s2 = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "John");
+            var s2 = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "John")!;
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
@@ -972,13 +972,13 @@ namespace Realms.Tests.Database
         [Test]
         public void LastOrDefaultWorks()
         {
-            var s0 = _realm.All<Person>().LastOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            var s0 = _realm.All<Person>().LastOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0)!;
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));  // Last same as First when one match
 
-            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).LastOrDefault();
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).LastOrDefault()!;
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
-            var s2 = _realm.All<Person>().LastOrDefault(p => p.FirstName == "John");
+            var s2 = _realm.All<Person>().LastOrDefault(p => p.FirstName == "John")!;
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
@@ -1021,16 +1021,16 @@ namespace Realms.Tests.Database
         [Test]
         public void ElementAtOrDefaultInRange()
         {
-            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAtOrDefault(0);
+            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAtOrDefault(0)!;
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
-            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAtOrDefault(0);
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAtOrDefault(0)!;
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
-            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAtOrDefault(1);
+            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAtOrDefault(1)!;
             Assert.That(s2.FirstName, Is.EqualTo("John"));
 
-            var s3 = _realm.All<Person>().ElementAtOrDefault(2);
+            var s3 = _realm.All<Person>().ElementAtOrDefault(2)!;
             Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
 
@@ -1120,7 +1120,7 @@ namespace Realms.Tests.Database
         {
             var objs = MakeThreeMappedObjects();
 
-            Assert.That(objs.Count(o => o.Name.StartsWith("p", StringComparison.OrdinalIgnoreCase)), Is.EqualTo(2));
+            Assert.That(objs.Count(o => o.Name!.StartsWith("p", StringComparison.OrdinalIgnoreCase)), Is.EqualTo(2));
             Assert.That(objs.Count(o => o.Id > 2), Is.EqualTo(1));
         }
 
@@ -1141,10 +1141,9 @@ namespace Realms.Tests.Database
         [Test]
         public void Where_WhenTypeIsMappedTo_FiltersCorrectly()
         {
-            RemappedTypeObject first = null;
-            _realm.Write(() =>
+            var first = _realm.Write(() =>
             {
-                first = _realm.Add(new RemappedTypeObject
+                var result = _realm.Add(new RemappedTypeObject
                 {
                     Id = 1,
                     StringValue = "1"
@@ -1154,17 +1153,19 @@ namespace Realms.Tests.Database
                 {
                     Id = 2,
                     StringValue = "2",
-                    MappedLink = first,
-                    NormalLink = first
+                    MappedLink = result,
+                    NormalLink = result
                 });
 
                 _realm.Add(new RemappedTypeObject
                 {
                     Id = 3,
                     StringValue = "3",
-                    MappedLink = first,
-                    NormalLink = first
+                    MappedLink = result,
+                    NormalLink = result
                 });
+
+                return result;
             });
 
             var normalLinks = _realm.All<RemappedTypeObject>()
@@ -1180,19 +1181,19 @@ namespace Realms.Tests.Database
             Assert.That(mappedLinks, Is.EquivalentTo(new[] { 2, 3 }));
 
             var mappedLinksAndStringValue = _realm.All<RemappedTypeObject>()
-                                                  .Where(o => o.MappedLink == first && o.StringValue.StartsWith("2"))
+                                                  .Where(o => o.MappedLink == first && o.StringValue!.StartsWith("2"))
                                                   .ToArray()
                                                   .Select(n => n.Id);
             Assert.That(mappedLinksAndStringValue, Is.EquivalentTo(new[] { 2 }));
 
             var normalBacklinks = first.NormalBacklink
-                                       .Where(m => m.StringValue.StartsWith("2"))
+                                       .Where(m => m.StringValue!.StartsWith("2"))
                                        .ToArray()
                                        .Select(n => n.Id);
             Assert.That(normalBacklinks, Is.EquivalentTo(new[] { 2 }));
 
             var mappedBacklinks = first.MappedBacklink
-                                       .Where(m => m.StringValue.StartsWith("3"))
+                                       .Where(m => m.StringValue!.StartsWith("3"))
                                        .ToArray()
                                        .Select(n => n.Id);
             Assert.That(mappedBacklinks, Is.EquivalentTo(new[] { 3 }));

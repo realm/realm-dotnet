@@ -93,7 +93,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertOneAsync(null));
+                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertOneAsync(null!));
             });
         }
 
@@ -172,7 +172,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertManyAsync(null));
+                await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.InsertManyAsync(null!));
             });
         }
 
@@ -189,7 +189,7 @@ namespace Realms.Tests.Sync
                     null
                 };
 
-                var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos));
+                var ex = await TestHelpers.AssertThrows<ArgumentException>(() => collection.InsertManyAsync(foos!))!;
                 Assert.That(ex.ParamName, Is.EqualTo("docs"));
                 Assert.That(ex.Message, Does.Contain("null elements"));
             });
@@ -411,7 +411,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateOneAsync(filter: null, updateDocument: null));
+                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateOneAsync(filter: null, updateDocument: null!));
                 Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
             });
         }
@@ -568,7 +568,7 @@ namespace Realms.Tests.Sync
             {
                 var collection = await GetCollection();
 
-                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(filter: null, updateDocument: null));
+                var ex = await TestHelpers.AssertThrows<ArgumentNullException>(() => collection.UpdateManyAsync(filter: null, updateDocument: null!));
                 Assert.That(ex.ParamName, Is.EqualTo("updateDocument"));
             });
         }
@@ -2204,24 +2204,24 @@ namespace Realms.Tests.Sync
             [Preserve]
             public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
             public long LongValue { get; set; }
 
-            public Foo(string stringValue, long longValue)
+            public Foo(string? stringValue, long longValue)
             {
                 StringValue = stringValue;
                 LongValue = longValue;
             }
 
-            public static Foo WithoutId(string stringValue, long longValue)
+            public static Foo WithoutId(string? stringValue, long longValue)
             {
                 var result = new Foo(stringValue, longValue);
                 result.Id = default;
                 return result;
             }
 
-            public override bool Equals(object obj) =>
+            public override bool Equals(object? obj) =>
                 (obj is Foo foo) &&
                 foo.Id == Id &&
                 foo.StringValue == StringValue &&
@@ -2265,7 +2265,7 @@ namespace Realms.Tests.Sync
         {
             [Preserve]
             [BsonElement("_id")]
-            public IdResult Id { get; set; }
+            public IdResult Id { get; set; } = null!;
 
             [Preserve]
             public decimal TotalAmount { get; set; }

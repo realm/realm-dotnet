@@ -891,12 +891,12 @@ namespace Realms.Tests.Sync
                 Assert.That(session.ConnectionState, Is.EqualTo(ConnectionState.Disconnected));
                 session.PropertyChanged -= NotificationChanged;
 
-                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                void NotificationChanged(object? sender, PropertyChangedEventArgs? e)
                 {
                     try
                     {
                         Assert.That(sender is Session, Is.True);
-                        Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
+                        Assert.That(e!.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
                         stateChanged++;
 
@@ -951,7 +951,7 @@ namespace Realms.Tests.Sync
                 internalNotificationToken = GetNotificationToken(session);
                 Assert.That(internalNotificationToken, Is.Null);
 
-                static void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                static void NotificationChanged(object? sender, PropertyChangedEventArgs? e)
                 {
                 }
             });
@@ -986,14 +986,14 @@ namespace Realms.Tests.Sync
                 session.PropertyChanged -= NotificationChangedA;
                 session.PropertyChanged -= NotificationChangedB;
 
-                void NotificationChangedA(object sender, PropertyChangedEventArgs e)
+                void NotificationChangedA(object? sender, PropertyChangedEventArgs? e)
                 {
                     Assert.That(subscriberATriggered, Is.False);
                     subscriberATriggered = true;
                     completionTCSA.TrySetResult();
                 }
 
-                void NotificationChangedB(object sender, PropertyChangedEventArgs e)
+                void NotificationChangedB(object? sender, PropertyChangedEventArgs? e)
                 {
                     Assert.That(subscriberBTriggered, Is.False);
                     subscriberBTriggered = true;
@@ -1005,7 +1005,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_Free_Instance_Even_With_PropertyChanged_Subscribers()
         {
-            WeakReference weakSessionRef = null;
+            WeakReference weakSessionRef = null!;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1024,7 +1024,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Session_NotificationToken_Freed_When_Close_Realm()
         {
-            WeakReference weakNotificationTokenRef = null;
+            WeakReference weakNotificationTokenRef = null!;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -1038,7 +1038,7 @@ namespace Realms.Tests.Sync
                 weakNotificationTokenRef = new WeakReference(internalNotificationToken);
                 Assert.That(weakNotificationTokenRef.IsAlive, Is.True);
 
-                static void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                static void NotificationChanged(object? sender, PropertyChangedEventArgs? e)
                 {
                 }
             });
@@ -1074,12 +1074,12 @@ namespace Realms.Tests.Sync
 
                 sessionB.PropertyChanged -= NotificationChanged;
 
-                void NotificationChanged(object sender, PropertyChangedEventArgs e)
+                void NotificationChanged(object? sender, PropertyChangedEventArgs? e)
                 {
                     try
                     {
                         Assert.That(sender is Session, Is.True);
-                        Assert.That(e.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
+                        Assert.That(e!.PropertyName, Is.EqualTo(nameof(Session.ConnectionState)));
 
                         stateChanged++;
 
@@ -1193,15 +1193,15 @@ namespace Realms.Tests.Sync
 
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
-            BeforeResetCallback beforeCb = null,
-            AfterResetCallback afterCb = null,
-            ClientResetCallback manualCb = null)
+            BeforeResetCallback? beforeCb = null,
+            AfterResetCallback? afterCb = null,
+            ClientResetCallback? manualCb = null)
         {
-            var handler = (ClientResetHandlerBase)Activator.CreateInstance(type);
+            var handler = (ClientResetHandlerBase)Activator.CreateInstance(type)!;
 
             if (beforeCb != null)
             {
-                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.OnBeforeReset)).SetValue(handler, beforeCb);
+                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.OnBeforeReset))!.SetValue(handler, beforeCb);
             }
 
             if (afterCb != null)
@@ -1209,12 +1209,12 @@ namespace Realms.Tests.Sync
                 var prop = type.GetProperty(nameof(DiscardUnsyncedChangesHandler.OnAfterReset))
                     ?? type.GetProperty(nameof(RecoverOrDiscardUnsyncedChangesHandler.OnAfterRecovery));
 
-                prop.SetValue(handler, afterCb);
+                prop!.SetValue(handler, afterCb);
             }
 
             if (manualCb != null)
             {
-                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.ManualResetFallback)).SetValue(handler, manualCb);
+                type.GetProperty(nameof(DiscardUnsyncedChangesHandler.ManualResetFallback))!.SetValue(handler, manualCb);
             }
 
             return handler;
@@ -1310,9 +1310,9 @@ namespace Realms.Tests.Sync
 
         private static SessionNotificationToken? GetNotificationToken(Session session)
         {
-            var sessionHandle = (SessionHandle)typeof(Session).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(session);
+            var sessionHandle = (SessionHandle?)typeof(Session).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(session);
             return sessionHandle != null ?
-                (SessionNotificationToken?)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(sessionHandle) :
+                (SessionNotificationToken?)typeof(SessionHandle).GetField("_notificationToken", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(sessionHandle)! :
                 null;
         }
     }
@@ -1322,12 +1322,12 @@ namespace Realms.Tests.Sync
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string Id { get; private set; } = Guid.NewGuid().ToString();
+        public string? Id { get; private set; } = Guid.NewGuid().ToString();
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         [MapTo("realm_id")]
-        public string Partition { get; set; }
+        public string? Partition { get; set; }
 
         public Guid Guid { get; private set; }
 
@@ -1347,9 +1347,11 @@ namespace Realms.Tests.Sync
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
+#if TEST_WEAVER
         [Required]
-        public IList<string> Strings { get; }
+#endif
+        public IList<string> Strings { get; } = null!;
     }
 }

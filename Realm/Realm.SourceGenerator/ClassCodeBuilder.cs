@@ -201,12 +201,9 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
                     var shouldSetAlways = property.IsRequired ||
-                        property.TypeInfo.NullableAnnotation == NullableAnnotation.Annotated ||
-                        property.TypeInfo.IsRealmInteger ||
-                        property.TypeInfo.ScalarType == ScalarType.Date ||
-                        property.TypeInfo.ScalarType == ScalarType.Decimal ||
-                        property.TypeInfo.ScalarType == ScalarType.ObjectId ||
-                        property.TypeInfo.ScalarType == ScalarType.Guid;
+                        (property.TypeInfo.ScalarType == ScalarType.String && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||
+                        (property.TypeInfo.ScalarType == ScalarType.Data && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||
+                        property.TypeInfo.ScalarType == ScalarType.Date;
 
                     if (shouldSetAlways)
                     {
@@ -850,7 +847,7 @@ internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorI
 
         private static string GetBackingFieldName(string propertyName)
         {
-            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
+            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName[1..];
         }
 
         private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)

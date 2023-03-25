@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -90,14 +89,38 @@ namespace Realms.Tests
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                newAccessor.ByteProperty = oldAccessor.ByteProperty;
-                newAccessor.Int16Property = oldAccessor.Int16Property;
-                newAccessor.Int32Property = oldAccessor.Int32Property;
-                newAccessor.Int64Property = oldAccessor.Int64Property;
-                newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
-                newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
-                newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
-                newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                if (!skipDefaults || oldAccessor.ByteProperty != default(Realms.RealmInteger<byte>))
+                {
+                    newAccessor.ByteProperty = oldAccessor.ByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int16Property != default(Realms.RealmInteger<short>))
+                {
+                    newAccessor.Int16Property = oldAccessor.Int16Property;
+                }
+                if (!skipDefaults || oldAccessor.Int32Property != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.Int32Property = oldAccessor.Int32Property;
+                }
+                if (!skipDefaults || oldAccessor.Int64Property != default(Realms.RealmInteger<long>))
+                {
+                    newAccessor.Int64Property = oldAccessor.Int64Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteProperty != default(Realms.RealmInteger<byte>?))
+                {
+                    newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16Property != default(Realms.RealmInteger<short>?))
+                {
+                    newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32Property != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64Property != default(Realms.RealmInteger<long>?))
+                {
+                    newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                }
             }
 
             if (_propertyChanged != null)

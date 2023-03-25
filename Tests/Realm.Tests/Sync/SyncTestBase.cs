@@ -37,7 +37,7 @@ namespace Realms.Tests.Sync
 
         protected App DefaultApp => CreateApp();
 
-        protected App CreateApp(AppConfiguration config = null)
+        protected App CreateApp(AppConfiguration? config = null)
         {
             config ??= SyncTestHelpers.GetAppConfig();
 
@@ -91,15 +91,15 @@ namespace Realms.Tests.Sync
             await WaitForDownloadAsync(realm);
         }
 
-        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2, string message = null)
+        protected static async Task<T> WaitForObjectAsync<T>(T obj, Realm realm2, string? message = null)
             where T : IRealmObject
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message);
+            return (await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message))!;
         }
 
-        protected async Task<User> GetUserAsync(App app = null, string username = null, string password = null)
+        protected async Task<User> GetUserAsync(App? app = null, string? username = null, string? password = null)
         {
             app ??= DefaultApp;
             username ??= SyncTestHelpers.GetVerifiedUsername();
@@ -121,7 +121,7 @@ namespace Realms.Tests.Sync
             throw new Exception("Could not login user after 5 attempts.");
         }
 
-        protected User GetFakeUser(App app = null, string id = null, string refreshToken = null, string accessToken = null)
+        protected User GetFakeUser(App? app = null, string? id = null, string? refreshToken = null, string? accessToken = null)
         {
             app ??= DefaultApp;
             id ??= Guid.NewGuid().ToString();
@@ -131,13 +131,13 @@ namespace Realms.Tests.Sync
             return new User(handle, app);
         }
 
-        protected async Task<Realm> GetIntegrationRealmAsync(string partition = null, App app = null, int timeout = 10000)
+        protected async Task<Realm> GetIntegrationRealmAsync(string? partition = null, App? app = null, int timeout = 10000)
         {
             var config = await GetIntegrationConfigAsync(partition, app);
             return await GetRealmAsync(config, timeout);
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string partition = null, App app = null, string optionalPath = null, User user = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(string? partition = null, App? app = null, string? optionalPath = null, User? user = null)
         {
             app ??= DefaultApp;
             partition ??= Guid.NewGuid().ToString();
@@ -146,7 +146,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(long? partition, App? app = null, string? optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.IntPartitionKey));
 
@@ -154,13 +154,13 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected static PartitionSyncConfiguration GetIntegrationConfig(User user, string partition = null, string optionalPath = null)
+        protected static PartitionSyncConfiguration GetIntegrationConfig(User user, string? partition = null, string? optionalPath = null)
         {
             partition ??= Guid.NewGuid().ToString();
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(ObjectId? partition, App? app = null, string? optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.ObjectIdPartitionKey));
 
@@ -168,7 +168,7 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App app = null, string optionalPath = null)
+        protected async Task<PartitionSyncConfiguration> GetIntegrationConfigAsync(Guid? partition, App? app = null, string? optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.UUIDPartitionKey));
 
@@ -176,19 +176,19 @@ namespace Realms.Tests.Sync
             return UpdateConfig(new PartitionSyncConfiguration(partition, user, optionalPath));
         }
 
-        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App app = null, string optionalPath = null)
+        protected async Task<FlexibleSyncConfiguration> GetFLXIntegrationConfigAsync(App? app = null, string? optionalPath = null)
         {
             app ??= App.Create(SyncTestHelpers.GetAppConfig(AppConfigType.FlexibleSync));
             var user = await GetUserAsync(app);
             return GetFLXIntegrationConfig(user, optionalPath);
         }
 
-        protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string optionalPath = null)
+        protected static FlexibleSyncConfiguration GetFLXIntegrationConfig(User user, string? optionalPath = null)
         {
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));
         }
 
-        protected async Task<Realm> GetFLXIntegrationRealmAsync(App app = null)
+        protected async Task<Realm> GetFLXIntegrationRealmAsync(App? app = null)
         {
             var config = await GetFLXIntegrationConfigAsync(app);
             return await GetRealmAsync(config);
@@ -220,13 +220,13 @@ namespace Realms.Tests.Sync
             return config;
         }
 
-        protected PartitionSyncConfiguration GetFakeConfig(App app = null, string userId = null, string optionalPath = null)
+        protected PartitionSyncConfiguration GetFakeConfig(App? app = null, string? userId = null, string? optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new PartitionSyncConfiguration(Guid.NewGuid().ToString(), user, optionalPath));
         }
 
-        protected FlexibleSyncConfiguration GetFakeFLXConfig(App app = null, string userId = null, string optionalPath = null)
+        protected FlexibleSyncConfiguration GetFakeFLXConfig(App? app = null, string? userId = null, string? optionalPath = null)
         {
             var user = GetFakeUser(app, userId);
             return UpdateConfig(new FlexibleSyncConfiguration(user, optionalPath));

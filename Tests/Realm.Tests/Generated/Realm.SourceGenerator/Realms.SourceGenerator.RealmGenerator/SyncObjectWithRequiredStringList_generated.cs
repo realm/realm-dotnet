@@ -91,7 +91,7 @@ namespace Realms.Tests.Sync
                     newAccessor.Strings.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.Id != default(string))
+                if (!skipDefaults || oldAccessor.Id != default(string?))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }

@@ -9,7 +9,6 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
-using Realms.Sync.Exceptions;
 using Realms.Tests.Sync;
 using Realms.Weaving;
 using System;
@@ -22,8 +21,6 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
 {
@@ -84,7 +81,10 @@ namespace Realms.Tests.Sync
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 newAccessor.RecursiveObject = oldAccessor.RecursiveObject;
             }
 

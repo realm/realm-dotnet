@@ -92,7 +92,7 @@ namespace Realms.Tests.Database
                     newAccessor.DictionaryDifferentType.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }

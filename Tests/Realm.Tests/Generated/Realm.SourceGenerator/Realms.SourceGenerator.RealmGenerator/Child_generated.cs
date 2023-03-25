@@ -83,7 +83,7 @@ namespace Realms.Tests.Database
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if (!skipDefaults || oldAccessor.Name != default(string))
+                    if (!skipDefaults || oldAccessor.Name != default(string?))
                     {
                         newAccessor.Name = oldAccessor.Name;
                     }

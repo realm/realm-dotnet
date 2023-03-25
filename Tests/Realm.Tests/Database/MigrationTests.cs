@@ -24,8 +24,6 @@ using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Schema;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestRealmObject = Realms.IRealmObject;
@@ -124,7 +122,7 @@ namespace Realms.Tests.Database
 
             TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
 
-            var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration));
+            var ex = Assert.Throws<AggregateException>(() => GetRealm(configuration))!;
             Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
         }
 
@@ -225,7 +223,7 @@ namespace Realms.Tests.Database
 
             TestHelpers.CopyBundledFileToDocuments(FileToMigrate, configuration.DatabasePath);
 
-            var ex = Assert.Throws<ArgumentException>(() => GetRealm(configuration));
+            var ex = Assert.Throws<ArgumentException>(() => GetRealm(configuration))!;
             Assert.That(ex.Message, Does.Contain("Renamed property 'Person.PropertyNotInNewSchema' does not exist"));
 
             configuration = new RealmConfiguration(configuration.DatabasePath)
@@ -237,8 +235,8 @@ namespace Realms.Tests.Database
                 }
             };
 
-            var ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
-            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.PropertyNotInOldSchema' because it does not exist"));
+            var ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration))!;
+            Assert.That(ex2.Flatten().InnerException!.Message, Does.Contain("Cannot rename property 'Person.PropertyNotInOldSchema' because it does not exist"));
 
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
@@ -249,8 +247,8 @@ namespace Realms.Tests.Database
                 }
             };
 
-            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
-            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename properties for type 'NonExistingType' because it does not exist"));
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration))!;
+            Assert.That(ex2.Flatten().InnerException!.Message, Does.Contain("Cannot rename properties for type 'NonExistingType' because it does not exist"));
 
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
@@ -261,8 +259,8 @@ namespace Realms.Tests.Database
                 }
             };
 
-            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
-            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.TriggersSchema' to 'Birthday' because it would change from type 'string' to 'date'."));
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration))!;
+            Assert.That(ex2.Flatten().InnerException!.Message, Does.Contain("Cannot rename property 'Person.TriggersSchema' to 'Birthday' because it would change from type 'string' to 'date'."));
 
             configuration = new RealmConfiguration(configuration.DatabasePath)
             {
@@ -273,8 +271,8 @@ namespace Realms.Tests.Database
                 }
             };
 
-            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration));
-            Assert.That(ex2.Flatten().InnerException.Message, Does.Contain("Cannot rename property 'Person.Latitude' to 'Longitude' because the source property still exists."));
+            ex2 = Assert.Throws<AggregateException>(() => GetRealm(configuration))!;
+            Assert.That(ex2.Flatten().InnerException!.Message, Does.Contain("Cannot rename property 'Person.Latitude' to 'Longitude' because the source property still exists."));
         }
 
         [Test]
@@ -285,9 +283,9 @@ namespace Realms.Tests.Database
                 SchemaVersion = 100,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty(null, "TriggersSchema", "OptionalAddress"));
-                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", null, "OptionalAddress"));
-                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", "TriggersSchema", null));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty(null!, "TriggersSchema", "OptionalAddress"));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", null!, "OptionalAddress"));
+                    Assert.Throws<ArgumentNullException>(() => migration.RenameProperty("Person", "TriggersSchema", null!));
 
                     Assert.Throws<ArgumentException>(() => migration.RenameProperty(string.Empty, "TriggersSchema", "OptionalAddress"));
                     Assert.Throws<ArgumentException>(() => migration.RenameProperty("Person", string.Empty, "OptionalAddress"));
@@ -323,8 +321,8 @@ namespace Realms.Tests.Database
                 }
             };
 
-            var ex = Assert.Throws<AggregateException>(() => GetRealm(newRealmConfig));
-            Assert.That(ex.Flatten().InnerException.Message, Does.Contain("Attempted to remove type 'Person', that is present in the current schema"));
+            var ex = Assert.Throws<AggregateException>(() => GetRealm(newRealmConfig))!;
+            Assert.That(ex.Flatten().InnerException!.Message, Does.Contain("Attempted to remove type 'Person', that is present in the current schema"));
         }
 
         [Test]
@@ -407,7 +405,7 @@ namespace Realms.Tests.Database
                 Schema = new[] { typeof(PrimaryKeyObjectIdObject), typeof(Person) },
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    Assert.Throws<ArgumentNullException>(() => migration.RemoveType(null));
+                    Assert.Throws<ArgumentNullException>(() => migration.RemoveType(null!));
                     Assert.Throws<ArgumentException>(() => migration.RemoveType(string.Empty));
                 }
             };
@@ -423,12 +421,12 @@ namespace Realms.Tests.Database
             {
             }
 
-            AllTypesObject standaloneObject = null;
-            EmbeddedAllTypesObject embeddedObject = null;
-            RealmList<string> list = null;
-            RealmSet<string> set = null;
-            RealmDictionary<string> dict = null;
-            RealmResults<AllTypesObject> query = null;
+            AllTypesObject standaloneObject = null!;
+            EmbeddedAllTypesObject embeddedObject = null!;
+            RealmList<string> list = null!;
+            RealmSet<string> set = null!;
+            RealmDictionary<string> dict = null!;
+            RealmResults<AllTypesObject> query = null!;
 
             var newConfig = new RealmConfiguration(config.DatabasePath)
             {
@@ -483,12 +481,12 @@ namespace Realms.Tests.Database
                 Assert.That(standaloneObject.IsValid, Is.False);
                 Assert.That(standaloneObject.IsManaged);
                 Assert.Throws<RealmClosedException>(() => _ = standaloneObject.Int32Property);
-                Assert.That(standaloneObject.GetObjectHandle().IsClosed);
+                Assert.That(standaloneObject.GetObjectHandle()!.IsClosed);
 
                 Assert.That(embeddedObject.IsValid, Is.False);
                 Assert.That(embeddedObject.IsManaged);
                 Assert.Throws<RealmClosedException>(() => _ = embeddedObject.Int32Property);
-                Assert.That(embeddedObject.GetObjectHandle().IsClosed);
+                Assert.That(embeddedObject.GetObjectHandle()!.IsClosed);
 
                 Assert.That(list.IsValid, Is.False);
                 Assert.Throws<RealmClosedException>(() => _ = list[0]);
@@ -585,7 +583,7 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var value = (IRealmObjectBase)migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123);
+                    var value = migration.NewRealm.DynamicApi.Find(nameof(IntPrimaryKeyWithValueObject), 123)!;
                     value.DynamicApi.Set("_id", 456);
                 }
             };
@@ -597,7 +595,7 @@ namespace Realms.Tests.Database
 
             Assert.That(obj123, Is.Null);
             Assert.That(obj456, Is.Not.Null);
-            Assert.That(obj456.StringValue, Is.EqualTo("123"));
+            Assert.That(obj456!.StringValue, Is.EqualTo("123"));
         }
 
         [Test]
@@ -621,7 +619,7 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(123);
+                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(123)!;
                     value.Id = 456;
                 }
             };
@@ -633,7 +631,7 @@ namespace Realms.Tests.Database
 
             Assert.That(obj123, Is.Null);
             Assert.That(obj456, Is.Not.Null);
-            Assert.That(obj456.StringValue, Is.EqualTo("123"));
+            Assert.That(obj456!.StringValue, Is.EqualTo("123"));
         }
 
         [Test]
@@ -670,7 +668,7 @@ namespace Realms.Tests.Database
                 {
                     foreach (var oldObj in migration.OldRealm.DynamicApi.All("Object"))
                     {
-                        var newObj = (ObjectV2)migration.NewRealm.ResolveReference(ThreadSafeReference.Create(oldObj));
+                        var newObj = (ObjectV2)migration.NewRealm.ResolveReference(ThreadSafeReference.Create(oldObj))!;
                         newObj.Id = oldObj.DynamicApi.Get<int>("Id").ToString();
                     }
                 }
@@ -708,19 +706,19 @@ namespace Realms.Tests.Database
                 SchemaVersion = 1,
                 MigrationCallback = (migration, oldSchemaVersion) =>
                 {
-                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1);
+                    var value = migration.NewRealm.Find<IntPrimaryKeyWithValueObject>(1)!;
                     value.Id = 2;
                 }
             };
 
-            var ex = Assert.Throws<RealmMigrationException>(() => GetRealm(newRealmConfig));
+            var ex = Assert.Throws<RealmMigrationException>(() => GetRealm(newRealmConfig))!;
             Assert.That(ex.Message, Does.Contain($"{nameof(IntPrimaryKeyWithValueObject)}._id"));
 
             // Ensure we haven't messed up the data
             using var oldRealmAgain = GetRealm(oldRealmConfig);
 
-            var obj1 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(1);
-            var obj2 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(2);
+            var obj1 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(1)!;
+            var obj2 = oldRealmAgain.Find<IntPrimaryKeyWithValueObject>(2)!;
 
             Assert.That(obj1.StringValue, Is.EqualTo("1"));
             Assert.That(obj2.StringValue, Is.EqualTo("2"));
@@ -734,7 +732,7 @@ namespace Realms.Tests.Database
         [PrimaryKey]
         public int Id { get; set; }
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 
     [Explicit]
@@ -742,8 +740,8 @@ namespace Realms.Tests.Database
     public partial class ObjectV2 : TestRealmObject
     {
         [PrimaryKey]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }

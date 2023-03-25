@@ -92,19 +92,22 @@ namespace Realms.Tests.Sync
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(string))
+                if (!skipDefaults || oldAccessor.Id != default(string?))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if (!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string?))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
-                if (!skipDefaults || oldAccessor.Partition != default(string))
+                if (!skipDefaults || oldAccessor.Partition != default(string?))
                 {
                     newAccessor.Partition = oldAccessor.Partition;
                 }
-                newAccessor.Guid = oldAccessor.Guid;
+                if (!skipDefaults || oldAccessor.Guid != default(System.Guid))
+                {
+                    newAccessor.Guid = oldAccessor.Guid;
+                }
             }
 
             if (_propertyChanged != null)

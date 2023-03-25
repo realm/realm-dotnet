@@ -78,7 +78,7 @@ namespace Realms.Tests.Database
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if (!skipDefaults || oldAccessor.StringValue != default(string))
+                    if (!skipDefaults || oldAccessor.StringValue != default(string?))
                     {
                         newAccessor.StringValue = oldAccessor.StringValue;
                     }
@@ -289,7 +289,7 @@ namespace Realms.Tests.Database
                     }
                 }
 
-                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? _otherObject;
+                private Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? _otherObject = null!;
                 public Realms.Tests.Database.AddOrUpdateTests.NonPrimaryKeyObject? OtherObject
                 {
                     get => _otherObject;

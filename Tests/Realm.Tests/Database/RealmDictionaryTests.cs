@@ -747,17 +747,17 @@ namespace Realms.Tests.Database
             yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("zero", "lorem ipsum"), ("one", "-1234567890"), ("z", "lololo"));
         }
 
-        public static IEnumerable<TestCaseData<string>> NullableStringTestValues()
+        public static IEnumerable<TestCaseData<string?>> NullableStringTestValues()
         {
-            yield return new TestCaseData<string>(string.Empty);
-            yield return new TestCaseData<string>(null, ("123", "abc"));
-            yield return new TestCaseData<string>(string.Empty, ("123", "ced"));
-            yield return new TestCaseData<string>(string.Empty, ("null", null));
-            yield return new TestCaseData<string>(string.Empty, ("null1", null), ("null2", null));
-            yield return new TestCaseData<string>(string.Empty, ("a", "AbCdEfG"), ("b", null), ("c", "OpQrStU"));
-            yield return new TestCaseData<string>(null, ("a", "vwxyz"), ("b", null), ("c", string.Empty), ("d", " "));
-            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("m", null), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
-            yield return new TestCaseData<string>(string.Empty, ("a", string.Empty), ("zero", "lorem ipsum"), ("null", null), ("one", "-1234567890"), ("z", "lololo"));
+            yield return new TestCaseData<string?>(string.Empty);
+            yield return new TestCaseData<string?>(null, ("123", "abc"));
+            yield return new TestCaseData<string?>(string.Empty, ("123", "ced"));
+            yield return new TestCaseData<string?>(string.Empty, ("null", null));
+            yield return new TestCaseData<string?>(string.Empty, ("null1", null), ("null2", null));
+            yield return new TestCaseData<string?>(string.Empty, ("a", "AbCdEfG"), ("b", null), ("c", "OpQrStU"));
+            yield return new TestCaseData<string?>(null, ("a", "vwxyz"), ("b", null), ("c", string.Empty), ("d", " "));
+            yield return new TestCaseData<string?>(string.Empty, ("a", string.Empty), ("m", null), ("z", "aa bb cc dd ee ff gg hh ii jj kk ll mm nn oo pp qq rr ss tt uu vv ww xx yy zz"));
+            yield return new TestCaseData<string?>(string.Empty, ("a", string.Empty), ("zero", "lorem ipsum"), ("null", null), ("one", "-1234567890"), ("z", "lololo"));
         }
 
         [TestCaseSource(nameof(StringTestValues))]
@@ -767,7 +767,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void NullableString_Unmanaged(TestCaseData<string> testData)
+        public void NullableString_Unmanaged(TestCaseData<string?> testData)
         {
             RunUnmanagedTests(o => o.NullableStringDictionary, testData);
         }
@@ -779,7 +779,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void NullableString_Managed(TestCaseData<string> testData)
+        public void NullableString_Managed(TestCaseData<string?> testData)
         {
             RunManagedTests(o => o.NullableStringDictionary, testData);
         }
@@ -811,17 +811,17 @@ namespace Realms.Tests.Database
             yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("zero", new byte[] { byte.MinValue }), ("one", new byte[] { byte.MaxValue }), ("z", new byte[] { 99, 77, 55, 33, 128 }));
         }
 
-        public static IEnumerable<TestCaseData<byte[]>> NullableBinaryTestValues()
+        public static IEnumerable<TestCaseData<byte[]?>> NullableBinaryTestValues()
         {
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>());
-            yield return new TestCaseData<byte[]>(null, ("123", new byte[] { 1, 2, 3 }));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("123", new byte[] { 4, 5, 6 }));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("null", null));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("null1", null), ("null2", null));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", new byte[] { byte.MinValue, byte.MaxValue, 0 }), ("b", null), ("c", new byte[] { 1, 1, 1 }));
-            yield return new TestCaseData<byte[]>(null, ("a", new byte[] { 1 }), ("b", null), ("c", Array.Empty<byte>()), ("d", new byte[] { 0 }));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("m", null), ("z", new byte[] { 11, 22, 33, 44, 55, 66, 77, 88, 99 }));
-            yield return new TestCaseData<byte[]>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("zero", new byte[] { byte.MinValue }), ("null", null), ("one", new byte[] { byte.MaxValue }), ("z", new byte[] { 99, 77, 55, 33, 128 }));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>());
+            yield return new TestCaseData<byte[]?>(null, ("123", new byte[] { 1, 2, 3 }));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("123", new byte[] { 4, 5, 6 }));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("null", null));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("a", new byte[] { byte.MinValue, byte.MaxValue, 0 }), ("b", null), ("c", new byte[] { 1, 1, 1 }));
+            yield return new TestCaseData<byte[]?>(null, ("a", new byte[] { 1 }), ("b", null), ("c", Array.Empty<byte>()), ("d", new byte[] { 0 }));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("m", null), ("z", new byte[] { 11, 22, 33, 44, 55, 66, 77, 88, 99 }));
+            yield return new TestCaseData<byte[]?>(Array.Empty<byte>(), ("a", Array.Empty<byte>()), ("zero", new byte[] { byte.MinValue }), ("null", null), ("one", new byte[] { byte.MaxValue }), ("z", new byte[] { 99, 77, 55, 33, 128 }));
         }
 
         [TestCaseSource(nameof(BinaryTestValues))]
@@ -831,7 +831,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void NullableBinary_Unmanaged(TestCaseData<byte[]> testData)
+        public void NullableBinary_Unmanaged(TestCaseData<byte[]?> testData)
         {
             RunUnmanagedTests(o => o.NullableBinaryDictionary, testData);
         }
@@ -843,7 +843,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void NullableBinary_Managed(TestCaseData<byte[]> testData)
+        public void NullableBinary_Managed(TestCaseData<byte[]?> testData)
         {
             RunManagedTests(o => o.NullableBinaryDictionary, testData);
         }
@@ -864,26 +864,26 @@ namespace Realms.Tests.Database
 
         #region Objects
 
-        public static IEnumerable<TestCaseData<IntPropertyObject>> ObjectTestValues()
+        public static IEnumerable<TestCaseData<IntPropertyObject?>> ObjectTestValues()
         {
-            yield return new TestCaseData<IntPropertyObject>(null);
-            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new IntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("123", new IntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null", null));
-            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<IntPropertyObject?>(null);
+            yield return new TestCaseData<IntPropertyObject?>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject?>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("123", new IntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<IntPropertyObject?>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null", null));
+            yield return new TestCaseData<IntPropertyObject?>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("null1", null), ("null2", null));
 
             var sameObject = new IntPropertyObject();
-            yield return new TestCaseData<IntPropertyObject>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("a", sameObject), ("b", null), ("c", sameObject));
+            yield return new TestCaseData<IntPropertyObject?>(obj => obj == null ? null : new IntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new IntPropertyObject(), ("a", sameObject), ("b", null), ("c", sameObject));
         }
 
         [TestCaseSource(nameof(ObjectTestValues))]
-        public void Object_Unmanaged(TestCaseData<IntPropertyObject> testData)
+        public void Object_Unmanaged(TestCaseData<IntPropertyObject?> testData)
         {
             RunUnmanagedTests(o => o.ObjectDictionary, testData);
         }
 
         [TestCaseSource(nameof(ObjectTestValues))]
-        public void Object_Managed(TestCaseData<IntPropertyObject> testData)
+        public void Object_Managed(TestCaseData<IntPropertyObject?> testData)
         {
             RunManagedTests(o => o.ObjectDictionary, testData);
         }
@@ -898,24 +898,24 @@ namespace Realms.Tests.Database
 
         #region Embedded Objects
 
-        public static IEnumerable<TestCaseData<EmbeddedIntPropertyObject>> EmbeddedObjectTestValues()
+        public static IEnumerable<TestCaseData<EmbeddedIntPropertyObject?>> EmbeddedObjectTestValues()
         {
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(null);
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new EmbeddedIntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("123", new EmbeddedIntPropertyObject { Int = 1 }));
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null", null));
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null1", null), ("null2", null));
-            yield return new TestCaseData<EmbeddedIntPropertyObject>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("a", new EmbeddedIntPropertyObject { Int = 1 }), ("b", null), ("c", new EmbeddedIntPropertyObject { Int = 2 }));
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(null);
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, null, ("123", new EmbeddedIntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("123", new EmbeddedIntPropertyObject { Int = 1 }));
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null", null));
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("null1", null), ("null2", null));
+            yield return new TestCaseData<EmbeddedIntPropertyObject?>(obj => obj == null ? null : new EmbeddedIntPropertyObject { Int = obj.Int }, (x, y) => x?.Int == y?.Int, new EmbeddedIntPropertyObject(), ("a", new EmbeddedIntPropertyObject { Int = 1 }), ("b", null), ("c", new EmbeddedIntPropertyObject { Int = 2 }));
         }
 
         [TestCaseSource(nameof(EmbeddedObjectTestValues))]
-        public void EmbeddedObject_Unmanaged(TestCaseData<EmbeddedIntPropertyObject> testData)
+        public void EmbeddedObject_Unmanaged(TestCaseData<EmbeddedIntPropertyObject?> testData)
         {
             RunUnmanagedTests(o => o.EmbeddedObjectDictionary, testData);
         }
 
         [TestCaseSource(nameof(EmbeddedObjectTestValues))]
-        public void EmbeddedObject_Managed(TestCaseData<EmbeddedIntPropertyObject> testData)
+        public void EmbeddedObject_Managed(TestCaseData<EmbeddedIntPropertyObject?> testData)
         {
             RunManagedTests(o => o.EmbeddedObjectDictionary, testData);
         }
@@ -1021,9 +1021,9 @@ namespace Realms.Tests.Database
             _realm.Write(() =>
             {
                 var dict = _realm.Add(new DictionariesObject()).StringDictionary;
-                Assert.That(() => dict[null] = "abc", Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => dict.Add(null, "abc"), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => dict.Add(new KeyValuePair<string, string>(null, "abc")), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict[null!] = "abc", Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(null!, "abc"), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => dict.Add(new KeyValuePair<string, string>(null!, "abc")), Throws.TypeOf<ArgumentNullException>());
             });
         }
 
@@ -1081,7 +1081,7 @@ namespace Realms.Tests.Database
                 return _realm.Add(new Owner { Name = "Joe" });
             });
 
-            var oldDogs = joe.DictOfDogs.AsRealmQueryable().Where(d => d.Age >= 5);
+            var oldDogs = joe.DictOfDogs.AsRealmQueryable().Where(d => d!.Age >= 5);
 
             var changeSets = new List<ChangeSet>();
             var token = oldDogs.SubscribeForNotifications((sender, changes) =>
@@ -1106,7 +1106,7 @@ namespace Realms.Tests.Database
                     Assert.That(insertionSet.DeletedIndices, Is.Empty);
                     Assert.That(insertionSet.ModifiedIndices, Is.Empty);
 
-                    Assert.That(oldDogs.ElementAt(insertionSet.InsertedIndices[0]).Age, Is.EqualTo(i));
+                    Assert.That(oldDogs.ElementAt(insertionSet.InsertedIndices[0])!.Age, Is.EqualTo(i));
                 }
             }
 
@@ -1115,17 +1115,17 @@ namespace Realms.Tests.Database
                 // Direct insertion
                 joe.DictOfDogs["dog10"] = new Dog { Age = 99 };
 
-                // Indirect insertion: making age fit the iflter
-                joe.DictOfDogs["dog3"].Age = 8;
+                // Indirect insertion: making age fit the filter
+                joe.DictOfDogs["dog3"]!.Age = 8;
 
                 // Direct deletion
                 joe.DictOfDogs.Remove("dog9");
 
                 // Indirect deletion: making age no longer fit the filter
-                joe.DictOfDogs["dog8"].Age = 3;
+                joe.DictOfDogs["dog8"]!.Age = 3;
 
                 // Modification
-                joe.DictOfDogs["dog7"].Name = "foo";
+                joe.DictOfDogs["dog7"]!.Name = "foo";
             });
             _realm.Refresh();
 
@@ -1133,7 +1133,7 @@ namespace Realms.Tests.Database
             Assert.That(changeSet.InsertedIndices.Length, Is.EqualTo(2));
             Assert.That(changeSet.DeletedIndices.Length, Is.EqualTo(2));
             Assert.That(changeSet.ModifiedIndices.Length, Is.EqualTo(1));
-            Assert.That(oldDogs.ElementAt(changeSet.NewModifiedIndices[0]).Name, Is.EqualTo("foo"));
+            Assert.That(oldDogs.ElementAt(changeSet.NewModifiedIndices[0])!.Name, Is.EqualTo("foo"));
         }
 
         [Test]
@@ -1154,7 +1154,7 @@ namespace Realms.Tests.Database
                 return _realm.Add(new Owner { Name = "Joe" });
             });
 
-            var oldDogs = joe.DictOfDogs.Filter("Age >= 5").OrderBy(d => d.Age);
+            var oldDogs = joe.DictOfDogs.Filter("Age >= 5").OrderBy(d => d!.Age);
 
             _realm.Write(() =>
             {
@@ -1166,7 +1166,7 @@ namespace Realms.Tests.Database
 
             for (var i = 0; i < 5; i++)
             {
-                var dog = oldDogs.ElementAt(i);
+                var dog = oldDogs.ElementAt(i)!;
                 Assert.That(dog.Age, Is.EqualTo(i + 5));
             }
         }
@@ -1191,7 +1191,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(fiDogs.Count(), Is.EqualTo(2));
-            Assert.That(fiDogs.ToArray().Select(d => d.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
+            Assert.That(fiDogs.ToArray().Select(d => d!.Name), Is.EquivalentTo(new[] { "Fido", "Fifi" }));
         }
 
         [Test]
@@ -1213,8 +1213,8 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(fiDogs.Count(), Is.EqualTo(2));
-            Assert.That(fiDogs.ElementAt(0).Name, Is.EqualTo("Fifi"));
-            Assert.That(fiDogs.ElementAt(1).Name, Is.EqualTo("Fido"));
+            Assert.That(fiDogs.ElementAt(0)!.Name, Is.EqualTo("Fifi"));
+            Assert.That(fiDogs.ElementAt(1)!.Name, Is.EqualTo("Fido"));
         }
 
         [Test]
@@ -1239,12 +1239,12 @@ namespace Realms.Tests.Database
 
             Assert.That(rDogs.Count(), Is.EqualTo(4));
 
-            rDogs = rDogs.Where(d => d.Vaccinated).OrderBy(d => d.Age);
+            rDogs = rDogs.Where(d => d!.Vaccinated).OrderBy(d => d!.Age);
 
             Assert.That(rDogs.Count(), Is.EqualTo(3));
-            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
-            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
-            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+            Assert.That(rDogs.ElementAt(0)!.Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1)!.Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2)!.Name, Is.EqualTo("Rick"));
         }
 
         [Test]
@@ -1272,9 +1272,9 @@ namespace Realms.Tests.Database
             rDogs = rDogs.Filter("Vaccinated = true SORT(Age asc)");
 
             Assert.That(rDogs.Count(), Is.EqualTo(3));
-            Assert.That(rDogs.ElementAt(0).Name, Is.EqualTo("Robert"));
-            Assert.That(rDogs.ElementAt(1).Name, Is.EqualTo("Rory"));
-            Assert.That(rDogs.ElementAt(2).Name, Is.EqualTo("Rick"));
+            Assert.That(rDogs.ElementAt(0)!.Name, Is.EqualTo("Robert"));
+            Assert.That(rDogs.ElementAt(1)!.Name, Is.EqualTo("Rory"));
+            Assert.That(rDogs.ElementAt(2)!.Name, Is.EqualTo("Rick"));
         }
 
         [Test]
@@ -1403,7 +1403,7 @@ namespace Realms.Tests.Database
         public class TestCaseData<T>
         {
             private readonly Func<T, T> _cloneFunc;
-            private readonly Func<T, T, bool> _equalityFunc;
+            private readonly Func<T, T, bool>? _equalityFunc;
 
             private T _sampleValue;
 
@@ -1418,7 +1418,7 @@ namespace Realms.Tests.Database
             {
             }
 
-            public TestCaseData(Func<T, T> cloneFunc, Func<T, T, bool> equalityFunc, T sampleValue, params (string Key, T Value)[] initialValues)
+            public TestCaseData(Func<T, T> cloneFunc, Func<T, T, bool>? equalityFunc, T sampleValue, params (string Key, T Value)[] initialValues)
             {
                 _cloneFunc = cloneFunc;
                 _equalityFunc = equalityFunc;
@@ -1428,7 +1428,7 @@ namespace Realms.Tests.Database
                 _initialValues = initialValues.ToArray();
             }
 
-            public override string ToString()
+            public override string? ToString()
             {
                 if (typeof(T) == typeof(byte[]))
                 {
@@ -1781,24 +1781,24 @@ namespace Realms.Tests.Database
                 await AssertNotificationsCore(target, callbacks, changes =>
                 {
                     Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-                    Assert.That(changes.NewItems.Count, Is.EqualTo(1));
+                    Assert.That(changes.NewItems!.Count, Is.EqualTo(1));
 
                     return changes.NewStartingIndex;
                 }, changes =>
                 {
                     Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
-                    Assert.That(changes.OldItems.Count, Is.EqualTo(1));
+                    Assert.That(changes.OldItems!.Count, Is.EqualTo(1));
 
                     return changes.OldStartingIndex;
                 }, assertModification: null);
 
                 target.AsRealmCollection().CollectionChanged -= HandleCollectionChanged;
 
-                void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs? e)
                 {
                     Assert.That(sender, Is.EqualTo(target));
 
-                    callbacks.Add(e);
+                    callbacks.Add(e!);
                 }
             }
 
@@ -1807,7 +1807,7 @@ namespace Realms.Tests.Database
                 List<TArgs> callbacks,
                 Func<TArgs, int> assertInsertion,
                 Func<TArgs, int> assertDeletion,
-                Func<TArgs, (int OldIndex, int NewIndex)> assertModification)
+                Func<TArgs, (int OldIndex, int NewIndex)>? assertModification)
             {
                 var newKey = Guid.NewGuid().ToString();
                 WriteIfNecessary(target, () =>
@@ -1941,21 +1941,21 @@ namespace Realms.Tests.Database
             {
                 Assert.That(target, Is.TypeOf<RealmDictionary<T>>());
 
-                Assert.Throws<KeyNotFoundException>(() => _ = target[null], "The given key 'null' was not present in the dictionary.");
-                Assert.Throws<ArgumentNullException>(() => target[null] = SampleValue, "A persisted dictionary cannot store null keys.");
-                Assert.Throws<ArgumentNullException>(() => target.Add(null, SampleValue), "A persisted dictionary cannot store null keys.");
-                Assert.Throws<ArgumentNullException>(() => target.Add(new KeyValuePair<string, T>(null, SampleValue)), "A persisted dictionary cannot store null keys.");
+                Assert.Throws<KeyNotFoundException>(() => _ = target[null!], "The given key 'null' was not present in the dictionary.");
+                Assert.Throws<ArgumentNullException>(() => target[null!] = SampleValue, "A persisted dictionary cannot store null keys.");
+                Assert.Throws<ArgumentNullException>(() => target.Add(null!, SampleValue), "A persisted dictionary cannot store null keys.");
+                Assert.Throws<ArgumentNullException>(() => target.Add(new KeyValuePair<string, T>(null!, SampleValue)), "A persisted dictionary cannot store null keys.");
 
-                Assert.That(target.ContainsKey(null), Is.False);
-                Assert.That(target.Remove(null), Is.False);
-                Assert.That(target.Remove(new KeyValuePair<string, T>(null, SampleValue)), Is.False);
+                Assert.That(target.ContainsKey(null!), Is.False);
+                Assert.That(target.Remove(null!), Is.False);
+                Assert.That(target.Remove(new KeyValuePair<string, T>(null!, SampleValue)), Is.False);
 
-                var hasKey = target.TryGetValue(null, out var foundValue);
+                var hasKey = target.TryGetValue(null!, out var foundValue);
                 Assert.That(hasKey, Is.False);
                 Assert.That(foundValue, Is.EqualTo(default(T)));
             }
 
-            public void Seed(IDictionary<string, T> target, IEnumerable<(string Key, T Value)> values = null)
+            public void Seed(IDictionary<string, T> target, IEnumerable<(string Key, T Value)>? values = null)
             {
                 WriteIfNecessary(target, () =>
                 {
@@ -2003,7 +2003,7 @@ namespace Realms.Tests.Database
 
             private static void WriteIfNecessary(IDictionary<string, T> collection, Action writeAction)
             {
-                Transaction transaction = null;
+                Transaction? transaction = null;
                 try
                 {
                     if (collection is RealmDictionary<T> realmDictionary)
@@ -2024,7 +2024,7 @@ namespace Realms.Tests.Database
 
             private static TResult WriteIfNecessary<TResult>(IDictionary<string, T> collection, Func<TResult> writeFunc)
             {
-                Transaction transaction = null;
+                Transaction? transaction = null;
 
                 try
                 {
@@ -2075,7 +2075,7 @@ namespace Realms.Tests.Database
                     index++;
                 }
 
-                result = (-1, null, default);
+                result = default;
                 return false;
             }
 

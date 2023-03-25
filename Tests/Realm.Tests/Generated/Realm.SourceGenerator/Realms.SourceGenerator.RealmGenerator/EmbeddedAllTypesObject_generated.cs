@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -144,42 +143,108 @@ namespace Realms.Tests
                 {
                     newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
                 }
-                newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
-                newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
+                if (!skipDefaults || oldAccessor.DecimalProperty != default(decimal))
+                {
+                    newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.Decimal128Property != default(MongoDB.Bson.Decimal128))
+                {
+                    newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
+                }
                 if (!skipDefaults || oldAccessor.BooleanProperty != default(bool))
                 {
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
-                if (!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
-                newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
-                newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.GuidProperty != default(System.Guid))
+                {
+                    newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                }
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]?))
                 {
                     newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 }
-                newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
-                newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
-                newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
-                newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
-                newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
-                newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
-                newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
-                newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
-                newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
-                newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
+                if (!skipDefaults || oldAccessor.NullableCharProperty != default(char?))
+                {
+                    newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteProperty != default(byte?))
+                {
+                    newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16Property != default(short?))
+                {
+                    newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32Property != default(int?))
+                {
+                    newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64Property != default(long?))
+                {
+                    newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableSingleProperty != default(float?))
+                {
+                    newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDoubleProperty != default(double?))
+                {
+                    newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableBooleanProperty != default(bool?))
+                {
+                    newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDecimalProperty != default(decimal?))
+                {
+                    newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDecimal128Property != default(MongoDB.Bson.Decimal128?))
+                {
+                    newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
+                }
                 newAccessor.NullableDateTimeOffsetProperty = oldAccessor.NullableDateTimeOffsetProperty;
-                newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
-                newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
-                newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
-                newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
-                newAccessor.NullableByteCounterProperty = oldAccessor.NullableByteCounterProperty;
-                newAccessor.NullableInt16CounterProperty = oldAccessor.NullableInt16CounterProperty;
-                newAccessor.NullableInt32CounterProperty = oldAccessor.NullableInt32CounterProperty;
-                newAccessor.NullableInt64CounterProperty = oldAccessor.NullableInt64CounterProperty;
+                if (!skipDefaults || oldAccessor.ByteCounterProperty != default(Realms.RealmInteger<byte>))
+                {
+                    newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int16CounterProperty != default(Realms.RealmInteger<short>))
+                {
+                    newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int32CounterProperty != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int64CounterProperty != default(Realms.RealmInteger<long>))
+                {
+                    newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteCounterProperty != default(Realms.RealmInteger<byte>?))
+                {
+                    newAccessor.NullableByteCounterProperty = oldAccessor.NullableByteCounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16CounterProperty != default(Realms.RealmInteger<short>?))
+                {
+                    newAccessor.NullableInt16CounterProperty = oldAccessor.NullableInt16CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32CounterProperty != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableInt32CounterProperty = oldAccessor.NullableInt32CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64CounterProperty != default(Realms.RealmInteger<long>?))
+                {
+                    newAccessor.NullableInt64CounterProperty = oldAccessor.NullableInt64CounterProperty;
+                }
             }
 
             if (_propertyChanged != null)

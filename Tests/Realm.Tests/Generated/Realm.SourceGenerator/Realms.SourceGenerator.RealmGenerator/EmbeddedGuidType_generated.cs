@@ -17,7 +17,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -108,11 +107,17 @@ namespace Realms.Tests.Database
                     newAccessor.MixedDict.Clear();
                 }
 
-                newAccessor.RegularProperty = oldAccessor.RegularProperty;
+                if (!skipDefaults || oldAccessor.RegularProperty != default(System.Guid))
+                {
+                    newAccessor.RegularProperty = oldAccessor.RegularProperty;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.GuidList, newAccessor.GuidList, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.GuidSet, newAccessor.GuidSet, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.GuidDict, newAccessor.GuidDict, update, skipDefaults);
-                newAccessor.OptionalProperty = oldAccessor.OptionalProperty;
+                if (!skipDefaults || oldAccessor.OptionalProperty != default(System.Guid?))
+                {
+                    newAccessor.OptionalProperty = oldAccessor.OptionalProperty;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalList, newAccessor.OptionalList, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalSet, newAccessor.OptionalSet, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.OptionalDict, newAccessor.OptionalDict, update, skipDefaults);

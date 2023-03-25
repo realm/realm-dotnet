@@ -15,8 +15,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -261,7 +259,7 @@ namespace Realms.Tests.Database
         {
             public override ObjectSchema ObjectSchema => RequiredPropertyClass.RealmSchema;
 
-            private string _fooRequired = null!;
+            private string _fooRequired = string.Empty;
             public string FooRequired
             {
                 get => _fooRequired;

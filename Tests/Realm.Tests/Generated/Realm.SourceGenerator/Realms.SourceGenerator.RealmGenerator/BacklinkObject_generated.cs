@@ -15,8 +15,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -79,11 +77,11 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.BeforeBacklinks != default(string))
+                if (!skipDefaults || oldAccessor.BeforeBacklinks != default(string?))
                 {
                     newAccessor.BeforeBacklinks = oldAccessor.BeforeBacklinks;
                 }
-                if (!skipDefaults || oldAccessor.AfterBacklinks != default(string))
+                if (!skipDefaults || oldAccessor.AfterBacklinks != default(string?))
                 {
                     newAccessor.AfterBacklinks = oldAccessor.AfterBacklinks;
                 }

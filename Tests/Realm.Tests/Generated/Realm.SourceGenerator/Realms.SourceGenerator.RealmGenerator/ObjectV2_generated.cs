@@ -77,11 +77,11 @@ namespace Realms.Tests.Database
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(string))
+                if (!skipDefaults || oldAccessor.Id != default(string?))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if (!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string?))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }

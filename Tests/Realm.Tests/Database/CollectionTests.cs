@@ -74,9 +74,9 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                Assert.That(() => container.Items.Insert(0, null), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => container.Items.Add(null), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => container.Items[0] = null, Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.Items.Insert(0, null!), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.Items.Add(null!), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.Items[0] = null!, Throws.TypeOf<ArgumentNullException>());
             });
         }
 
@@ -87,9 +87,9 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                Assert.That(() => container.EmbeddedObjectList.Insert(0, null), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => container.EmbeddedObjectList.Add(null), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => container.EmbeddedObjectList[0] = null, Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.EmbeddedObjectList.Insert(0, null!), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.EmbeddedObjectList.Add(null!), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.EmbeddedObjectList[0] = null!, Throws.TypeOf<ArgumentNullException>());
             });
         }
 
@@ -100,8 +100,8 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                Assert.That(() => container.ObjectSet.Add(null), Throws.TypeOf<ArgumentNullException>());
-                Assert.That(() => container.ObjectSet.UnionWith(new IntPropertyObject[] { null }), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.ObjectSet.Add(null!), Throws.TypeOf<ArgumentNullException>());
+                Assert.That(() => container.ObjectSet.UnionWith(new IntPropertyObject[] { null! }), Throws.TypeOf<ArgumentNullException>());
             });
         }
 
@@ -1023,14 +1023,14 @@ namespace Realms.Tests.Database
             public override string ToString() => $"{PropertyName}, match: '{MatchingValue}' non-match: '{NonMatchingValue}'";
         }
 
-        private static object BoxValue(RealmValue val, Type targetType)
+        private static object? BoxValue(RealmValue val, Type targetType)
         {
             var boxed = val.AsAny();
             if (boxed != null && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(RealmInteger<>))
             {
                 var wrappedType = targetType.GetGenericArguments().Single();
                 boxed = Convert.ChangeType(boxed, wrappedType);
-                return Activator.CreateInstance(targetType, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { boxed }, null);
+                return Activator.CreateInstance(targetType, BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { boxed }, null)!;
             }
 
             if (boxed != null && boxed.GetType() != targetType)
@@ -1117,7 +1117,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(StringQuery_AllTypes))]
         public void QueryFilter_WithAnyArguments_ShouldMatch(StringQueryTestData data)
         {
-            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName)!;
             var boxedMatch = BoxValue(data.MatchingValue, propInfo.PropertyType);
             var boxedNonMatch = BoxValue(data.NonMatchingValue, propInfo.PropertyType);
 
@@ -1138,7 +1138,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(StringQuery_NumericValues))]
         public void QueryFilter_WithNumericArguments(StringQueryNumericData data)
         {
-            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName)!;
             var boxedMatch = BoxValue(data.ValueToAddToRealm, propInfo.PropertyType);
 
             _realm.Write(() =>
@@ -1162,8 +1162,8 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(StringQuery_AllTypes))]
         public void QueryFilter_WithAnyEmbeddedObjectArguments_ShouldMatch(StringQueryTestData data)
         {
-            var propInfoObjWithEmbedded = typeof(ObjectWithEmbeddedProperties).GetProperty("AllTypesObject");
-            var propInfoEmbeddedAllTypes = typeof(EmbeddedAllTypesObject).GetProperty(data.PropertyName);
+            var propInfoObjWithEmbedded = typeof(ObjectWithEmbeddedProperties).GetProperty("AllTypesObject")!;
+            var propInfoEmbeddedAllTypes = typeof(EmbeddedAllTypesObject).GetProperty(data.PropertyName)!;
 
             var boxedMatch = BoxValue(data.MatchingValue, propInfoEmbeddedAllTypes.PropertyType);
             var embeddedAllTypesMatch = new EmbeddedAllTypesObject();
@@ -1190,7 +1190,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(StringQuery_MismatchingTypes_ToThrow))]
         public void QueryFilter_WithWrongArguments_ShouldThrow(StringQueryTestData data)
         {
-            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName);
+            var propInfo = typeof(AllTypesObject).GetProperty(data.PropertyName)!;
             var boxedMatch = BoxValue(data.MatchingValue, propInfo.PropertyType);
 
             _realm.Write(() =>
@@ -1199,7 +1199,7 @@ namespace Realms.Tests.Database
                 propInfo.SetValue(matchingObj, boxedMatch);
             });
 
-            var ex = Assert.Throws<ArgumentException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue));
+            var ex = Assert.Throws<ArgumentException>(() => _realm.All<AllTypesObject>().Filter($"{data.PropertyName} = $0", data.NonMatchingValue))!;
             Assert.That(ex.Message, Does.Contain($"Unsupported comparison"));
         }
 
@@ -1260,7 +1260,7 @@ namespace Realms.Tests.Database
             var matches = _realm.All<AllTypesObject>().Filter("NullableInt32Property = $0", (int?)null);
             Assert.AreEqual(matches.Single(), nullableObjMatch);
 
-            RealmValue[] argumentsArray = null;
+            RealmValue[] argumentsArray = null!;
             Assert.Throws<ArgumentNullException>(() => _realm.All<Dog>().Filter("Name = $0", argumentsArray));
         }
 
@@ -1381,7 +1381,7 @@ namespace Realms.Tests.Database
 
             var objects = _realm.All<A>().Filter("B.C.Int < 5");
             Assert.That(objects.Count(), Is.EqualTo(5));
-            Assert.That(objects.ToArray().All(o => o.B.C.Int < 5));
+            Assert.That(objects.ToArray().All(o => o.B!.C!.Int < 5));
         }
 
         [Test]
@@ -1411,7 +1411,7 @@ namespace Realms.Tests.Database
 
             Assert.That(objects.Count(), Is.EqualTo(4));
 
-            void CallbackHandler(IRealmCollection<A> sender, ChangeSet changes)
+            void CallbackHandler(IRealmCollection<A> sender, ChangeSet? changes)
             {
                 if (changes != null)
                 {
@@ -1431,7 +1431,7 @@ namespace Realms.Tests.Database
 
             objects = objects.Where(a => a.Value);
             Assert.That(objects.Count(), Is.EqualTo(3));
-            Assert.That(objects.ToArray().All(o => o.Value && o.B.C.Int < 6));
+            Assert.That(objects.ToArray().All(o => o.Value && o.B!.C!.Int < 6));
         }
 
         [Test]
@@ -1444,7 +1444,7 @@ namespace Realms.Tests.Database
 
             objects = objects.Filter("B.C.Int < 6");
             Assert.That(objects.Count(), Is.EqualTo(3));
-            Assert.That(objects.ToArray().All(o => o.Value && o.B.C.Int < 6));
+            Assert.That(objects.ToArray().All(o => o.Value && o.B!.C!.Int < 6));
         }
 
         [Test]
@@ -1459,7 +1459,7 @@ namespace Realms.Tests.Database
                 var obj = objects[i];
                 Assert.That(obj.Value, Is.EqualTo(i >= 5));
 
-                Assert.That(obj.B.C.Int, Is.EqualTo(expectedOrder[i]));
+                Assert.That(obj.B!.C!.Int, Is.EqualTo(expectedOrder[i]));
             }
         }
 
@@ -1539,7 +1539,7 @@ namespace Realms.Tests.Database
             Assert.That(obj.IsValid);
             Assert.That(obj.IsFrozen, Is.False);
             Assert.That(obj.ListOfDogs.AsRealmCollection().IsFrozen, Is.False);
-            Assert.That(obj.Realm.IsFrozen, Is.False);
+            Assert.That(obj.Realm!.IsFrozen, Is.False);
 
             Assert.That(frozenDogs.AsRealmCollection().IsFrozen);
             Assert.That(frozenDogs.AsRealmCollection().IsValid);
@@ -1585,7 +1585,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "Betazaurus" });
             });
 
-            var query = _realm.All<Dog>().Where(d => d.Name.StartsWith("B"));
+            var query = _realm.All<Dog>().Where(d => d.Name!.StartsWith("B"));
             var frozenQuery = Freeze(query);
 
             Assert.That(query.AsRealmCollection().IsValid);
@@ -1766,7 +1766,7 @@ namespace Realms.Tests.Database
                 _realm.Add(new Dog { Name = "Lasse" });
             });
 
-            var frozenQuery = Freeze(_realm.All<Dog>().Where(d => d.Name.StartsWith("R")));
+            var frozenQuery = Freeze(_realm.All<Dog>().Where(d => d.Name!.StartsWith("R")));
             Assert.That(frozenQuery.Count(), Is.EqualTo(2));
 
             _realm.Write(() =>
@@ -1866,11 +1866,11 @@ namespace Realms.Tests.Database
     {
         public bool Value { get; set; }
 
-        public B B { get; set; }
+        public B? B { get; set; }
     }
 
     public partial class B : TestRealmObject
     {
-        public IntPropertyObject C { get; set; }
+        public IntPropertyObject? C { get; set; }
     }
 }

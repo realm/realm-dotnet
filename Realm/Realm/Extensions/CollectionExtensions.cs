@@ -41,7 +41,7 @@ namespace Realms
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             Argument.NotNull(query, nameof(query));
 
@@ -60,7 +60,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -294,7 +294,7 @@ namespace Realms
         /// </example>
         /// <exception cref="ArgumentException">Thrown if the dictionary is not managed by Realm.</exception>
         public static IQueryable<T> AsRealmQueryable<T>(this IDictionary<string, T> dictionary)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             Argument.NotNull(dictionary, nameof(dictionary));
 
@@ -478,7 +478,7 @@ namespace Realms
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
         public static IQueryable<T> Filter<T>(this IDictionary<string, T> dictionary, string predicate, params RealmValue[] arguments)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));

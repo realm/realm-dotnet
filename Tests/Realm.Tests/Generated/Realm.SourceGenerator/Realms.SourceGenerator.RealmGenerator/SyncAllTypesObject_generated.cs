@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -96,7 +95,10 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 if (!skipDefaults || oldAccessor.CharProperty != default(char))
                 {
                     newAccessor.CharProperty = oldAccessor.CharProperty;
@@ -130,15 +132,27 @@ namespace Realms.Tests
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
-                newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
-                newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
-                newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
-                newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                if (!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.DecimalProperty != default(decimal))
+                {
+                    newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.Decimal128Property != default(MongoDB.Bson.Decimal128))
+                {
+                    newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
+                }
+                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.GuidProperty != default(System.Guid))
+                {
+                    newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                }
+                if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
-                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]?))
                 {
                     newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 }

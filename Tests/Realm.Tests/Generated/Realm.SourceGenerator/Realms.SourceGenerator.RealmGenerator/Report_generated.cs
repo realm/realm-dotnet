@@ -14,8 +14,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -83,11 +81,11 @@ namespace Realms.Tests.Database
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if (!skipDefaults || oldAccessor.Ref != default(string))
+                if (!skipDefaults || oldAccessor.Ref != default(string?))
                 {
                     newAccessor.Ref = oldAccessor.Ref;
                 }
-                if (!skipDefaults || oldAccessor.Date != default(string))
+                if (!skipDefaults || oldAccessor.Date != default(string?))
                 {
                     newAccessor.Date = oldAccessor.Date;
                 }

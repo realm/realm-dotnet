@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -82,7 +81,7 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.String != default(string))
+                if (!skipDefaults || oldAccessor.String != default(string?))
                 {
                     newAccessor.String = oldAccessor.String;
                 }

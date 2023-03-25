@@ -16,9 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using NUnit.Framework;
-using Realms;
+
+#if !NETCOREAPP2_1_OR_GREATER
+using System;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -61,10 +63,10 @@ namespace Realms.Tests.Database
             Assert.That(result, Is.EqualTo(expected));
         }
 
-        public static object[] InvalidContainsTestCases =
+        public static object?[] InvalidContainsTestCases =
         {
-            new object[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
-            new object[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
+            new object?[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
+            new object?[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
         };
 
         [TestCaseSource(nameof(InvalidContainsTestCases))]
@@ -81,39 +83,39 @@ namespace Realms.Tests.Database
             Assert.That(result, Is.EqualTo(expected));
         }
 
-        public static object[] LikeTestValues =
+        public static object?[] LikeTestValues =
         {
-            new object[] { string.Empty, string.Empty, true, true },
-            new object[] { string.Empty, string.Empty, false, true },
-            new object[] { null, null, true, true },
-            new object[] { null, null, false, true },
-            new object[] { "abc", string.Empty, true, false },
-            new object[] { string.Empty, "abc", true, false },
-            new object[] { "abcd", "abc", true, false },
+            new object?[] { string.Empty, string.Empty, true, true },
+            new object?[] { string.Empty, string.Empty, false, true },
+            new object?[] { null, null, true, true },
+            new object?[] { null, null, false, true },
+            new object?[] { "abc", string.Empty, true, false },
+            new object?[] { string.Empty, "abc", true, false },
+            new object?[] { "abcd", "abc", true, false },
 
-            new object[] { "abc", "*a*", true, true },
-            new object[] { "abc", "*b*", true, true },
-            new object[] { "abc", "*c", true, true },
-            new object[] { "abc", "ab*", true, true },
-            new object[] { "abc", "*bc", true, true },
-            new object[] { "abc", "a*bc", true, true },
-            new object[] { "abc", "*abc*", true, true },
-            new object[] { "abc", "*d*", true, false },
-            new object[] { "abc", "aabc", true, false },
-            new object[] { "abc", "b*bc", true, false },
+            new object?[] { "abc", "*a*", true, true },
+            new object?[] { "abc", "*b*", true, true },
+            new object?[] { "abc", "*c", true, true },
+            new object?[] { "abc", "ab*", true, true },
+            new object?[] { "abc", "*bc", true, true },
+            new object?[] { "abc", "a*bc", true, true },
+            new object?[] { "abc", "*abc*", true, true },
+            new object?[] { "abc", "*d*", true, false },
+            new object?[] { "abc", "aabc", true, false },
+            new object?[] { "abc", "b*bc", true, false },
 
-            new object[] { "abc", "a??", true, true },
-            new object[] { "abc", "?b?", true, true },
-            new object[] { "abc", "*?c", true, true },
-            new object[] { "abc", "ab?", true, true },
-            new object[] { "abc", "?bc", true, true },
-            new object[] { "abc", "?d?", true, false },
-            new object[] { "abc", "?abc", true, false },
-            new object[] { "abc", "b?bc", true, false },
+            new object?[] { "abc", "a??", true, true },
+            new object?[] { "abc", "?b?", true, true },
+            new object?[] { "abc", "*?c", true, true },
+            new object?[] { "abc", "ab?", true, true },
+            new object?[] { "abc", "?bc", true, true },
+            new object?[] { "abc", "?d?", true, false },
+            new object?[] { "abc", "?abc", true, false },
+            new object?[] { "abc", "b?bc", true, false },
 
-            new object[] { "abc", "*C*", true, false },
-            new object[] { "abc", "*c*", false, true },
-            new object[] { "abc", "*C*", false, true },
+            new object?[] { "abc", "*C*", true, false },
+            new object?[] { "abc", "*c*", false, true },
+            new object?[] { "abc", "*C*", false, true },
         };
     }
 }

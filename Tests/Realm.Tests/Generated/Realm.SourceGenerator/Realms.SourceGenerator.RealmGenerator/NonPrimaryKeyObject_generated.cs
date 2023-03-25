@@ -77,7 +77,7 @@ namespace Realms.Tests.Database
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if (!skipDefaults || oldAccessor.StringValue != default(string))
+                    if (!skipDefaults || oldAccessor.StringValue != default(string?))
                     {
                         newAccessor.StringValue = oldAccessor.StringValue;
                     }

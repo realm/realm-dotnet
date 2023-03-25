@@ -25,7 +25,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
@@ -65,7 +64,7 @@ namespace Realms.Tests.Database
         {
             RunTestInAllModes(realm =>
             {
-                var ex = Assert.Throws<ArgumentException>(() => realm.DynamicApi.All(nameof(DynamicSubTask)));
+                var ex = Assert.Throws<ArgumentException>(() => realm.DynamicApi.All(nameof(DynamicSubTask)))!;
                 Assert.That(ex.Message, Does.Contain("The class DynamicSubTask represents an embedded object and thus cannot be queried directly."));
             });
         }
@@ -87,7 +86,7 @@ namespace Realms.Tests.Database
                     parent.DynamicApi.Get<IEmbeddedObject>(nameof(DynamicTask.CompletionReport)).DynamicApi.Set(nameof(CompletionReport.Remarks), "success!");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
 
                 Assert.That(addedParent, Is.Not.Null);
                 Assert.That(addedParent.DynamicApi.Get<string>(nameof(DynamicTask.Summary)), Is.EqualTo("do great stuff!"));
@@ -110,7 +109,7 @@ namespace Realms.Tests.Database
                     parent.CompletionReport.Remarks = "success!";
                 });
 
-                dynamic addedDynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic addedDynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
 
                 Assert.That(addedDynamicParent, Is.Not.Null);
                 Assert.That(addedDynamicParent.Summary, Is.EqualTo("do great stuff!"));
@@ -134,7 +133,7 @@ namespace Realms.Tests.Database
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                         subTasks.Add(new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToList)}"));
 
@@ -146,7 +145,7 @@ namespace Realms.Tests.Database
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         parent.SubTasks.Add(new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToList)}"));
 #endif
@@ -168,7 +167,7 @@ namespace Realms.Tests.Database
 
                         subTasksDictionary.Add("foo", new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToDictionary)}"));
 
@@ -180,7 +179,7 @@ namespace Realms.Tests.Database
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         parent.SubTasksDictionary.Add("foo", new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.AddEmbeddedObjectToDictionary)}"));
 #endif
@@ -200,7 +199,7 @@ namespace Realms.Tests.Database
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                         subTasks.Insert(0, new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.InsertEmbeddedObjectInList)}"));
 
@@ -212,7 +211,7 @@ namespace Realms.Tests.Database
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         parent.SubTasks.Insert(0, new DynamicSubTask());
                     });
-                });
+                })!;
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.InsertEmbeddedObjectInList)}"));
 #endif
@@ -232,7 +231,7 @@ namespace Realms.Tests.Database
                         var subTasks = parent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                         subTasks[0] = new DynamicSubTask();
                     });
-                });
+                })!;
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInList)}"));
 
@@ -244,7 +243,7 @@ namespace Realms.Tests.Database
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         parent.SubTasks[0] = new DynamicSubTask();
                     });
-                });
+                })!;
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInList)}"));
 #endif
@@ -264,7 +263,7 @@ namespace Realms.Tests.Database
                         var subTasksDictionary = parent.DynamicApi.GetDictionary<IEmbeddedObject>(nameof(DynamicTask.SubTasksDictionary));
                         subTasksDictionary["foo"] = new DynamicSubTask();
                     });
-                });
+                })!;
 
                 Assert.That(ex.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInDictionary)}"));
 
@@ -276,7 +275,7 @@ namespace Realms.Tests.Database
                         dynamic parent = realm.DynamicApi.CreateObject(nameof(DynamicTask), Guid.NewGuid().ToString());
                         parent.SubTasksDictionary["foo"] = new DynamicSubTask();
                     });
-                });
+                })!;
 
                 Assert.That(dynamicEx.Message, Does.Contain($"{nameof(realm.DynamicApi)}.{nameof(realm.DynamicApi.SetEmbeddedObjectInDictionary)}"));
 #endif
@@ -298,7 +297,7 @@ namespace Realms.Tests.Database
                     subTask.DynamicApi.Set(nameof(DynamicSubTask.Summary), "This is subtask level 1");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var addedSubTasks = addedParent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                 Assert.That(addedSubTasks, Is.Not.Null);
                 Assert.That(addedSubTasks.Count, Is.EqualTo(1));
@@ -334,7 +333,7 @@ namespace Realms.Tests.Database
                     subTask.Summary = "This is subtask level 1";
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasks, Is.Not.Null);
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(1));
                 Assert.That(dynamicParent.SubTasks[0].Summary, Is.EqualTo("This is subtask level 1"));
@@ -376,7 +375,7 @@ namespace Realms.Tests.Database
                     subTask.DynamicApi.Set(nameof(DynamicSubTask.Summary), "This is subtask level 1");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var addedDict = addedParent.DynamicApi.GetDictionary<IEmbeddedObject>(nameof(DynamicTask.SubTasksDictionary));
                 Assert.That(addedDict, Is.Not.Null);
                 Assert.That(addedDict.Count, Is.EqualTo(1));
@@ -407,7 +406,7 @@ namespace Realms.Tests.Database
                     subTask.Summary = "This is subtask level 1";
                 });
 
-                dynamic dynamicAddedParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicAddedParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicAddedParent.SubTasksDictionary, Is.Not.Null);
                 Assert.That(dynamicAddedParent.SubTasksDictionary.Count, Is.EqualTo(1));
                 Assert.That(dynamicAddedParent.SubTasksDictionary["foo"].Summary, Is.EqualTo("This is subtask level 1"));
@@ -441,7 +440,7 @@ namespace Realms.Tests.Database
                     subTask.DynamicApi.Set(nameof(DynamicSubTask.Summary), "first");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var subTasks = addedParent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
 
                 Assert.That(subTasks, Is.Not.Null);
@@ -475,7 +474,7 @@ namespace Realms.Tests.Database
                     subTask.Summary = "first";
                 });
 
-                dynamic dynamicAddedParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicAddedParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicAddedParent.SubTasks, Is.Not.Null);
                 Assert.That(dynamicAddedParent.SubTasks.Count, Is.EqualTo(1));
                 Assert.That(dynamicAddedParent.SubTasks[0].Summary, Is.EqualTo("first"));
@@ -521,7 +520,7 @@ namespace Realms.Tests.Database
                     task2.DynamicApi.Set(nameof(DynamicSubTask.Summary), "initial at 2");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var addedSubTasks = addedParent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
 
                 Assert.That(addedSubTasks.Count, Is.EqualTo(3));
@@ -556,7 +555,7 @@ namespace Realms.Tests.Database
                     task2.Summary = "initial at 2";
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(3));
                 Assert.That(dynamicParent.SubTasks[0].Summary, Is.EqualTo("initial at 0"));
                 Assert.That(dynamicParent.SubTasks[1].Summary, Is.EqualTo("initial at 1"));
@@ -597,7 +596,7 @@ namespace Realms.Tests.Database
                     task2.DynamicApi.Set(nameof(DynamicSubTask.Summary), "initial at c");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var subTasks = addedParent.DynamicApi.GetDictionary<IEmbeddedObject>(nameof(DynamicTask.SubTasksDictionary));
                 Assert.That(subTasks.Count, Is.EqualTo(3));
 
@@ -637,7 +636,7 @@ namespace Realms.Tests.Database
                     task2.Summary = "initial at c";
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasksDictionary.Count, Is.EqualTo(3));
 
                 Assert.That(dynamicParent.SubTasksDictionary["a"].Summary, Is.EqualTo("initial at a"));
@@ -806,7 +805,7 @@ namespace Realms.Tests.Database
                     second.DynamicApi.Set(nameof(DynamicSubTask.Summary), "second");
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var list = addedParent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                 Assert.That(list.Count, Is.EqualTo(2));
 
@@ -831,7 +830,7 @@ namespace Realms.Tests.Database
                     second.Summary = "second";
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(2));
 
                 realm.Write(() =>
@@ -865,7 +864,7 @@ namespace Realms.Tests.Database
                     return second;
                 });
 
-                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedParent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var subTasks = addedParent.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks));
                 Assert.That(subTasks.Count, Is.EqualTo(2));
 
@@ -899,7 +898,7 @@ namespace Realms.Tests.Database
                     return second;
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasks.Count, Is.EqualTo(2));
 
                 realm.Write(() =>
@@ -942,7 +941,7 @@ namespace Realms.Tests.Database
                     return second;
                 });
 
-                var parent = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var parent = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var dict = parent.DynamicApi.GetDictionary<IEmbeddedObject>(nameof(DynamicTask.SubTasksDictionary));
                 Assert.That(dict.Count, Is.EqualTo(2));
 
@@ -976,7 +975,7 @@ namespace Realms.Tests.Database
                     return second;
                 });
 
-                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicParent = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 Assert.That(dynamicParent.SubTasksDictionary.Count, Is.EqualTo(2));
 
                 realm.Write(() =>
@@ -1019,7 +1018,7 @@ namespace Realms.Tests.Database
                     var subSubtask2 = realm.DynamicApi.AddEmbeddedObjectToList(subTaskSubSubTasks);
                 });
 
-                var addedTask = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedTask = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var addedSubTask = addedTask.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubTasks))[0];
                 var addedSubSubTask1 = addedTask.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicTask.SubSubTasks))[0];
                 var addedSubSubTask2 = addedSubTask.DynamicApi.GetList<IEmbeddedObject>(nameof(DynamicSubTask.SubSubTasks))[0];
@@ -1050,7 +1049,7 @@ namespace Realms.Tests.Database
                     dynamic subSubtask2 = realm.DynamicApi.AddEmbeddedObjectToList(subTask.SubSubTasks);
                 });
 
-                dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 dynamic dynamicSubTask = dynamicTask.SubTasks[0];
                 dynamic dynamicSubSubTask1 = dynamicTask.SubSubTasks[0];
                 dynamic dynamicSubSubTask2 = dynamicSubTask.SubSubTasks[0];
@@ -1081,7 +1080,7 @@ namespace Realms.Tests.Database
                     report.DynamicApi.Set(nameof(CompletionReport.Remarks), "ok");
                 });
 
-                var addedTask = realm.DynamicApi.Find(nameof(DynamicTask), id);
+                var addedTask = realm.DynamicApi.Find(nameof(DynamicTask), id)!;
                 var addedReport = addedTask.DynamicApi.Get<IEmbeddedObject>(nameof(DynamicTask.CompletionReport));
 
                 var reportParents = addedReport.DynamicApi.GetBacklinksFromType(nameof(DynamicTask), nameof(CompletionReport));
@@ -1099,7 +1098,7 @@ namespace Realms.Tests.Database
                     report.Remarks = "ok";
                 });
 
-                dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId);
+                dynamic dynamicTask = realm.DynamicApi.Find(nameof(DynamicTask), dynamicId)!;
                 dynamic dynamicReport = dynamicTask.CompletionReport;
 
                 IQueryable<dynamic> dynamicParents = dynamicReport.DynamicApi.GetBacklinksFromType(nameof(DynamicTask), nameof(CompletionReport));
@@ -1113,44 +1112,44 @@ namespace Realms.Tests.Database
     public partial class DynamicTask : TestRealmObject
     {
         [PrimaryKey]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string Summary { get; set; }
+        public string? Summary { get; set; }
 
-        public CompletionReport CompletionReport { get; set; }
+        public CompletionReport? CompletionReport { get; set; }
 
-        public IList<DynamicSubTask> SubTasks { get; }
+        public IList<DynamicSubTask> SubTasks { get; } = null!;
 
-        public IList<DynamicSubSubTask> SubSubTasks { get; }
+        public IList<DynamicSubSubTask> SubSubTasks { get; } = null!;
 
-        public IDictionary<string, DynamicSubTask> SubTasksDictionary { get; }
+        public IDictionary<string, DynamicSubTask?> SubTasksDictionary { get; } = null!;
     }
 
     public partial class DynamicSubTask : TestEmbeddedObject
     {
-        public string Summary { get; set; }
+        public string? Summary { get; set; }
 
-        public CompletionReport CompletionReport { get; set; }
+        public CompletionReport? CompletionReport { get; set; }
 
-        public IList<DynamicSubSubTask> SubSubTasks { get; }
+        public IList<DynamicSubSubTask> SubSubTasks { get; } = null!;
     }
 
     public partial class DynamicSubSubTask : TestEmbeddedObject
     {
-        public string Summary { get; set; }
+        public string? Summary { get; set; }
 
         // Singular because we only expect 1
         [Backlink(nameof(DynamicSubTask.SubSubTasks))]
-        public IQueryable<DynamicSubTask> ParentSubTask { get; }
+        public IQueryable<DynamicSubTask> ParentSubTask { get; } = null!;
 
         [Backlink(nameof(DynamicTask.SubSubTasks))]
-        public IQueryable<DynamicTask> ParentTask { get; }
+        public IQueryable<DynamicTask> ParentTask { get; } = null!;
     }
 
     public partial class CompletionReport : TestEmbeddedObject
     {
         public DateTimeOffset CompletionDate { get; set; }
 
-        public string Remarks { get; set; }
+        public string? Remarks { get; set; }
     }
 }

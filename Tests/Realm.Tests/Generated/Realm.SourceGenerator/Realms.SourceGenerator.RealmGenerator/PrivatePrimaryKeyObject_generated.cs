@@ -16,7 +16,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
@@ -31,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrivatePrimaryKeyObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
         }.Build();
 
@@ -79,11 +78,8 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(string))
-                {
-                    newAccessor.Id = oldAccessor.Id;
-                }
-                if (!skipDefaults || oldAccessor.Value != default(string))
+                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Value != default(string?))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
@@ -252,7 +248,7 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IPrivatePrimaryKeyObjectAccessor : Realms.IRealmAccessor
         {
-            string? Id { get; set; }
+            string Id { get; set; }
 
             string? Value { get; set; }
         }
@@ -260,9 +256,9 @@ namespace Realms.Tests
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class PrivatePrimaryKeyObjectManagedAccessor : Realms.ManagedAccessor, IPrivatePrimaryKeyObjectAccessor
         {
-            public string? Id
+            public string Id
             {
-                get => (string?)GetValue("_id");
+                get => (string)GetValue("_id")!;
                 set => SetValueUnique("_id", value);
             }
 
@@ -278,8 +274,8 @@ namespace Realms.Tests
         {
             public override ObjectSchema ObjectSchema => PrivatePrimaryKeyObject.RealmSchema;
 
-            private string? _id = ObjectId.GenerateNewId().ToString();
-            public string? Id
+            private string _id = ObjectId.GenerateNewId().ToString();
+            public string Id
             {
                 get => _id;
                 set
@@ -335,7 +331,7 @@ namespace Realms.Tests
                     throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
                 }
 
-                Id = (string?)val;
+                Id = (string)val!;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

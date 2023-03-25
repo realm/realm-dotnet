@@ -25,8 +25,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -106,8 +104,8 @@ namespace Realms.Tests.Database
         private static IList<IRealmObject> GetDogs(IRealmObject owner)
             => owner.DynamicApi.GetList<IRealmObject>(nameof(DynamicOwner.Dogs));
 
-        private static IDictionary<string, IRealmObject> GetDogsDict(IRealmObject owner)
-            => owner.DynamicApi.GetDictionary<IRealmObject>(nameof(DynamicOwner.DogsDictionary));
+        private static IDictionary<string, IRealmObject?> GetDogsDict(IRealmObject owner)
+            => owner.DynamicApi.GetDictionary<IRealmObject?>(nameof(DynamicOwner.DogsDictionary));
 
         private static ISet<IRealmObject> GetDogsSet(IRealmObject owner)
             => owner.DynamicApi.GetSet<IRealmObject>(nameof(DynamicOwner.DogsSet));
@@ -115,8 +113,8 @@ namespace Realms.Tests.Database
         private static IList<string> GetTags(IRealmObject owner)
             => owner.DynamicApi.GetList<string>(nameof(DynamicOwner.Tags));
 
-        private static IDictionary<string, string> GetTagsDict(IRealmObject owner)
-            => owner.DynamicApi.GetDictionary<string>(nameof(DynamicOwner.TagsDictionary));
+        private static IDictionary<string, string?> GetTagsDict(IRealmObject owner)
+            => owner.DynamicApi.GetDictionary<string?>(nameof(DynamicOwner.TagsDictionary));
 
         private static ISet<string> GetTagsSet(IRealmObject owner)
             => owner.DynamicApi.GetSet<string>(nameof(DynamicOwner.TagsSet));
@@ -170,7 +168,7 @@ namespace Realms.Tests.Database
                 //// using foreach here is deliberately testing that syntax
                 foreach (var dog in tim.Dogs)
                 {
-                    dogNames.Add(dog.Name);
+                    dogNames.Add(dog!.Name);
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -207,7 +205,7 @@ namespace Realms.Tests.Database
                 var dogList = Enumerable.ToList<dynamic>(tim.Dogs);  // this used to crash - issue 299
                 foreach (var dog in dogList)
                 {
-                    dogNames.Add(dog.Name);
+                    dogNames.Add(dog!.Name);
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -648,7 +646,7 @@ namespace Realms.Tests.Database
                 dynamic tim = FindOwner(realm);
                 foreach (var dog in tim.Dogs)
                 {
-                    Assert.That(dog.Owners, Is.EquivalentTo(new[] { tim }));
+                    Assert.That(dog!.Owners, Is.EquivalentTo(new[] { tim }));
                 }
 
                 dynamic dani = FindOwner(realm, "Dani");
@@ -828,7 +826,7 @@ namespace Realms.Tests.Database
             {
                 var tim = FindOwner(realm);
 
-                var bilbo = GetDogsDict(tim)[BilbosName];
+                var bilbo = GetDogsDict(tim)[BilbosName]!;
                 Assert.That(bilbo, Is.Not.Null);
                 Assert.That(bilbo.DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(BilbosName));
 
@@ -879,7 +877,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(GetDogsDict(tim).Count, Is.EqualTo(3));
-                Assert.That(GetDogsDict(tim)[PipilottasName].DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(PipilottasName));
+                Assert.That(GetDogsDict(tim)[PipilottasName]!.DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(PipilottasName));
 
                 Assert.That(GetTagsDict(tim).Count, Is.EqualTo(3));
                 Assert.That(GetTagsDict(tim)[PipilottasName], Is.EqualTo("cheerful"));
@@ -955,7 +953,7 @@ namespace Realms.Tests.Database
                 });
 
                 Assert.That(GetDogsDict(tim).Count, Is.EqualTo(3));
-                Assert.That(GetDogsDict(tim)[PipilottasName].DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(PipilottasName));
+                Assert.That(GetDogsDict(tim)[PipilottasName]!.DynamicApi.Get<string>(nameof(DynamicDog.Name)), Is.EqualTo(PipilottasName));
 
                 Assert.That(GetTagsDict(tim).Count, Is.EqualTo(3));
                 Assert.That(GetTagsDict(tim)[PipilottasName], Is.EqualTo("cheerful"));
@@ -1090,7 +1088,7 @@ namespace Realms.Tests.Database
 
                 foreach (var dog in GetDogsDict(tim).Values)
                 {
-                    dogNames.Add(dog.DynamicApi.Get<string>(nameof(DynamicDog.Name)));
+                    dogNames.Add(dog!.DynamicApi.Get<string>(nameof(DynamicDog.Name)));
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -1109,7 +1107,7 @@ namespace Realms.Tests.Database
 
                 foreach (var dog in tim.DogsDictionary.Values)
                 {
-                    dogNames.Add(dog.Name);
+                    dogNames.Add(dog!.Name);
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -1129,7 +1127,7 @@ namespace Realms.Tests.Database
                 foreach (var kvp in GetDogsDict(tim))
                 {
                     dogNames.Add(kvp.Key);
-                    dogColors.Add(kvp.Value.DynamicApi.Get<string>(nameof(DynamicDog.Color)));
+                    dogColors.Add(kvp.Value!.DynamicApi.Get<string>(nameof(DynamicDog.Color)));
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -1141,7 +1139,7 @@ namespace Realms.Tests.Database
                 foreach (var kvp in GetTagsDict(tim))
                 {
                     dogNames.Add(kvp.Key);
-                    tags.Add(kvp.Value);
+                    tags.Add(kvp.Value!);
                 }
 
                 Assert.That(dogNames, Is.EquivalentTo(new[] { BilbosName, EarlsName }));
@@ -1160,7 +1158,7 @@ namespace Realms.Tests.Database
 
                 foreach (var kvp in tim.DogsDictionary)
                 {
-                    dogNames.Add(kvp.Key);
+                    dogNames.Add(kvp!.Key);
                     dogColors.Add(kvp.Value.Color);
                 }
 
@@ -1172,7 +1170,7 @@ namespace Realms.Tests.Database
 
                 foreach (var kvp in tim.TagsDictionary)
                 {
-                    dogNames.Add(kvp.Key);
+                    dogNames.Add(kvp!.Key);
                     tags.Add(kvp.Value);
                 }
 
@@ -1373,7 +1371,7 @@ namespace Realms.Tests.Database
 
                 foreach (var dog in tim.DogsSet)
                 {
-                    dogNames.Add(dog.Name);
+                    dogNames.Add(dog!.Name);
                     dogColors.Add(dog.Color);
                 }
 
@@ -1440,10 +1438,10 @@ namespace Realms.Tests.Database
         }
 
         // Suggested https://stackoverflow.com/a/10021436/1649102
-        private static TValue TryGetValue<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey value, out bool found)
+        private static TValue? TryGetValue<TKey, TValue>(IDictionary<TKey, TValue> dict, TKey value, out bool found)
+            where TKey : notnull
         {
-            TValue result;
-            found = dict.TryGetValue(value, out result);
+            found = dict.TryGetValue(value, out var result);
             return result;
         }
 
@@ -1452,32 +1450,32 @@ namespace Realms.Tests.Database
 
     public partial class DynamicDog : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Color { get; set; }
+        public string? Color { get; set; }
 
         public bool Vaccinated { get; set; }
 
         [Backlink(nameof(DynamicOwner.Dogs))]
-        public IQueryable<DynamicOwner> Owners { get; }
+        public IQueryable<DynamicOwner> Owners { get; } = null!;
     }
 
     public partial class DynamicOwner : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public DynamicDog TopDog { get; set; }
+        public DynamicDog? TopDog { get; set; }
 
-        public IList<DynamicDog> Dogs { get; }
+        public IList<DynamicDog> Dogs { get; } = null!;
 
-        public IList<string> Tags { get; }
+        public IList<string> Tags { get; } = null!;
 
-        public IDictionary<string, DynamicDog> DogsDictionary { get; }
+        public IDictionary<string, DynamicDog?> DogsDictionary { get; } = null!;
 
-        public IDictionary<string, string> TagsDictionary { get; }
+        public IDictionary<string, string?> TagsDictionary { get; } = null!;
 
-        public ISet<DynamicDog> DogsSet { get; }
+        public ISet<DynamicDog> DogsSet { get; } = null!;
 
-        public ISet<string> TagsSet { get; }
+        public ISet<string?> TagsSet { get; } = null!;
     }
 }
