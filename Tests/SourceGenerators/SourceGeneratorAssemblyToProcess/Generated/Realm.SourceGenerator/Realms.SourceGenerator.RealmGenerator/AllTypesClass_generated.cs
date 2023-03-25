@@ -165,37 +165,97 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
-                newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
-                newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
-                newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
-                newAccessor.GuidProperty = oldAccessor.GuidProperty;
-                if (!skipDefaults || oldAccessor.RequiredStringProperty != default(string))
+                if (!skipDefaults || oldAccessor.DecimalProperty != default(decimal))
                 {
-                    newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
+                    newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
                 }
-                newAccessor.StringProperty = oldAccessor.StringProperty;
-                if (!skipDefaults || oldAccessor.RequiredByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.Decimal128Property != default(MongoDB.Bson.Decimal128))
                 {
-                    newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
+                    newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
                 }
-                newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
-                newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
-                newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
-                newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
-                newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
-                newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
-                newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
-                newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
-                newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
+                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.GuidProperty != default(System.Guid))
+                {
+                    newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                }
+                newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
+                if (!skipDefaults || oldAccessor.StringProperty != default(string?))
+                {
+                    newAccessor.StringProperty = oldAccessor.StringProperty;
+                }
+                newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]?))
+                {
+                    newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableCharProperty != default(char?))
+                {
+                    newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteProperty != default(byte?))
+                {
+                    newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16Property != default(short?))
+                {
+                    newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32Property != default(int?))
+                {
+                    newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64Property != default(long?))
+                {
+                    newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableSingleProperty != default(float?))
+                {
+                    newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDoubleProperty != default(double?))
+                {
+                    newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableBooleanProperty != default(bool?))
+                {
+                    newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
+                }
                 newAccessor.NullableDateTimeOffsetProperty = oldAccessor.NullableDateTimeOffsetProperty;
-                newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
-                newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
-                newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
-                newAccessor.NullableGuidProperty = oldAccessor.NullableGuidProperty;
-                newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
-                newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
-                newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
-                newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
+                if (!skipDefaults || oldAccessor.NullableDecimalProperty != default(decimal?))
+                {
+                    newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDecimal128Property != default(MongoDB.Bson.Decimal128?))
+                {
+                    newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableObjectIdProperty != default(MongoDB.Bson.ObjectId?))
+                {
+                    newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableGuidProperty != default(System.Guid?))
+                {
+                    newAccessor.NullableGuidProperty = oldAccessor.NullableGuidProperty;
+                }
+                if (!skipDefaults || oldAccessor.ByteCounterProperty != default(Realms.RealmInteger<byte>))
+                {
+                    newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int16CounterProperty != default(Realms.RealmInteger<short>))
+                {
+                    newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int32CounterProperty != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int64CounterProperty != default(Realms.RealmInteger<long>))
+                {
+                    newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
+                }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
                 if (oldAccessor.ObjectProperty != null && newAccessor.Realm != null)
                 {

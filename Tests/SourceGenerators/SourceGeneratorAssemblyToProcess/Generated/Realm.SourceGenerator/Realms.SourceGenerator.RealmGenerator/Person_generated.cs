@@ -74,8 +74,14 @@ namespace SourceGeneratorPlayground
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.Id = oldAccessor.Id;
-                newAccessor.Name = oldAccessor.Name;
+                if (!skipDefaults || oldAccessor.Id != default(System.Guid))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
+                if (!skipDefaults || oldAccessor.Name != default(string?))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
             }
 
             if (_propertyChanged != null)

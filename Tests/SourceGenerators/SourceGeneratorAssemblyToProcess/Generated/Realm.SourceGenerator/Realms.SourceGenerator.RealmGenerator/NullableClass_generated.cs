@@ -104,23 +104,32 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.NonNullableInt = oldAccessor.NonNullableInt;
                 }
-                newAccessor.NullableInt = oldAccessor.NullableInt;
-                if (!skipDefaults || oldAccessor.NonNullableString != default(string))
+                if (!skipDefaults || oldAccessor.NullableInt != default(int?))
                 {
-                    newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                    newAccessor.NullableInt = oldAccessor.NullableInt;
                 }
-                newAccessor.NullableString = oldAccessor.NullableString;
-                if (!skipDefaults || oldAccessor.NonNullableData != default(byte[]))
+                newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                if (!skipDefaults || oldAccessor.NullableString != default(string?))
                 {
-                    newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                    newAccessor.NullableString = oldAccessor.NullableString;
                 }
-                newAccessor.NullableData = oldAccessor.NullableData;
+                newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                if (!skipDefaults || oldAccessor.NullableData != default(byte[]?))
+                {
+                    newAccessor.NullableData = oldAccessor.NullableData;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableInt, newAccessor.CollectionOfNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableInt, newAccessor.CollectionOfNonNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableString, newAccessor.CollectionOfNullableString, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableString, newAccessor.CollectionOfNonNullableString, update, skipDefaults);
-                newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
-                newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
+                if (!skipDefaults || oldAccessor.NonNullableRealmInt != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
+                }
+                if (!skipDefaults || oldAccessor.NullableRealmInt != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
+                }
                 if (oldAccessor.NullableObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);

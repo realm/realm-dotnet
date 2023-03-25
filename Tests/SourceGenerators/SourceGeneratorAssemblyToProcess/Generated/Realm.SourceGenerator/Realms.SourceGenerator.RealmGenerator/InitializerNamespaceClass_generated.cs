@@ -73,10 +73,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(string))
-                {
-                    newAccessor.Id = oldAccessor.Id;
-                }
+                newAccessor.Id = oldAccessor.Id;
             }
 
             if (_propertyChanged != null)

@@ -200,6 +200,12 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
                     schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
+                    // The rules for determining whether to always set the property value are:
+                    // 1. If the property has [Required], always set it - this is only the case for string and byte[] properties.
+                    // 2. If the property is a string or byte[], and it's not nullable, always set it. This is because Core's default
+                    //    for these properties is "" and byte[0], which is different from the C# default (null).
+                    // 3. If the property is a DateTimeOffset, always set it. This is because Core's default for this property is
+                    //    1970-01-01T00:00:00Z, which is different from the C# default (0000-00-00T00:00:00Z).
                     var shouldSetAlways = property.IsRequired ||
                         (property.TypeInfo.ScalarType == ScalarType.String && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||
                         (property.TypeInfo.ScalarType == ScalarType.Data && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||

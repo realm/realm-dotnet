@@ -73,7 +73,10 @@ namespace SourceGeneratorPlayground
 
             if (helper != null && oldAccessor != null)
             {
-                newAccessor.Name = oldAccessor.Name;
+                if (!skipDefaults || oldAccessor.Name != default(string?))
+                {
+                    newAccessor.Name = oldAccessor.Name;
+                }
                 if (oldAccessor.Owner != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.Owner, update);
