@@ -1456,7 +1456,7 @@ namespace Realms.Tests.Database
             var expectedOrder = new[] { 9, 7, 5, 3, 1, 8, 6, 4, 2, 0 };
             for (var i = 0; i < 10; i++)
             {
-                var obj = objects[i];
+                var obj = objects[i]!;
                 Assert.That(obj.Value, Is.EqualTo(i >= 5));
 
                 Assert.That(obj.B!.C!.Int, Is.EqualTo(expectedOrder[i]));
@@ -1470,8 +1470,8 @@ namespace Realms.Tests.Database
             var objects = _realm.All<A>().Filter("TRUEPREDICATE SORT(Value ASC) DISTINCT(Value)").AsRealmCollection();
 
             Assert.That(objects.Count, Is.EqualTo(2));
-            Assert.That(objects[0].Value, Is.False);
-            Assert.That(objects[1].Value, Is.True);
+            Assert.That(objects[0]!.Value, Is.False);
+            Assert.That(objects[1]!.Value, Is.True);
         }
 
         [Test]

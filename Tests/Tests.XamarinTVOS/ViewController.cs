@@ -192,7 +192,7 @@ namespace Realms.Tests.XamarinTVOS
 
         public UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
         {
-            var cell = tableView.DequeueReusableCell("LogCell", indexPath) as LogCell;
+            var cell = (LogCell)tableView.DequeueReusableCell("LogCell", indexPath);
             var text = _logs[indexPath.Row];
             cell.SetText(text);
             return cell;

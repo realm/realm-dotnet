@@ -24,7 +24,7 @@ namespace Realms.Tests.XamarinTVOS
 {
     public class Application
     {
-        public static string[] Args { get; private set; }
+        public static string[] Args { get; private set; } = Array.Empty<string>();
 
         static void Main(string[] args)
         {

@@ -147,7 +147,7 @@ namespace Realms.Tests.Database
 
             Assert.That(person.ObjectSchema, Is.Not.Null);
 
-            Assert.That(person.ObjectSchema.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
+            Assert.That(person.ObjectSchema!.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
             Assert.That(property.Type, Is.EqualTo(PropertyType.NullableString));
         }
 
