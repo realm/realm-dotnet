@@ -1280,7 +1280,7 @@ namespace Realms.Tests.Database
         [Test]
         public void DictionaryFilter_WhenNotRealmList_Throws()
         {
-            var dict = new Dictionary<string, Dog>();
+            var dict = new Dictionary<string, Dog?>();
 
             Assert.That(
                 () => dict.Filter(string.Empty),
