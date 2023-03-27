@@ -31,7 +31,7 @@ namespace Realms.Tests.Android
     [Activity(Label = "Realm Tests", MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
     {
-        public Action<Result> OnFinished { get; set; }
+        public Action<Result>? OnFinished { get; set; }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -59,7 +59,7 @@ namespace Realms.Tests.Android
                 {
                     TestHelpers.TransformTestResults(options.ResultFilePath);
                     Console.WriteLine("Activity finished...");
-                    OnFinished(Result.Ok);
+                    OnFinished?.Invoke(Result.Ok);
                     Finish();
                     return Task.CompletedTask;
                 };
