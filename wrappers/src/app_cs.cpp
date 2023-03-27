@@ -39,7 +39,6 @@ using namespace app;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
-using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
 using StringCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
@@ -56,7 +55,6 @@ namespace realm {
         std::string s_device_name;
         std::string s_device_version;
 
-        std::function<LogMessageCallbackT> s_log_message_callback;
         std::function<UserCallbackT> s_user_callback;
         std::function<VoidCallbackT> s_void_callback;
         std::function<StringCallbackT> s_string_callback;
@@ -85,10 +83,6 @@ namespace realm {
 
             bool metadata_mode_has_value;
 
-            util::Logger::Level log_level;
-
-            void* managed_logger;
-
             void* managed_http_client;
 
             uint64_t sync_connect_timeout_ms;
@@ -100,20 +94,6 @@ namespace realm {
             uint64_t sync_pong_keep_alive_timeout_ms;
 
             uint64_t sync_fast_reconnect_limit;
-        };
-
-        class SyncLogger : public util::Logger {
-        public:
-            SyncLogger(void* delegate)
-                : managed_logger(delegate)
-            {
-            }
-        protected:
-            void do_log(util::Logger::Level level, const std::string& message) override final {
-                s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
-            }
-        private:
-            void* managed_logger;
         };
     }
 }
@@ -129,7 +109,6 @@ extern "C" {
         UserCallbackT* user_callback,
         VoidCallbackT* void_callback,
         StringCallbackT* string_callback,
-        LogMessageCallbackT* log_message_callback,
         ApiKeysCallbackT* api_keys_callback)
     {
         s_framework = Utf16StringAccessor(framework, framework_len);
@@ -157,7 +136,6 @@ extern "C" {
         s_user_callback = wrap_managed_callback(user_callback);
         s_void_callback = wrap_managed_callback(void_callback);
         s_string_callback = wrap_managed_callback(string_callback);
-        s_log_message_callback = wrap_managed_callback(log_message_callback);
         s_api_keys_callback = wrap_managed_callback(api_keys_callback);
 
         realm::binding::s_can_call_managed = true;
@@ -195,7 +173,6 @@ extern "C" {
             }
 
             SyncClientConfig sync_client_config;
-            sync_client_config.log_level = app_config.log_level;
             sync_client_config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
             sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
             sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
@@ -217,15 +194,6 @@ extern "C" {
             if (encryption_key) {
                 auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
-            }
-
-            void* managed_logger = app_config.managed_logger;
-            if (managed_logger) {
-                sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
-                    auto logger = std::make_shared<SyncLogger>(managed_logger);
-                    logger->set_level_threshold(level);
-                    return logger;
-                };
             }
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));

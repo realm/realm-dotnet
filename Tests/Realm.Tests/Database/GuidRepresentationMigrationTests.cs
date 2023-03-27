@@ -83,7 +83,7 @@ namespace Realms.Tests.Database
 
             if (useLegacyRepresentation)
             {
-                Assert.That(logger.GetLog(), Is.Empty);
+                Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
             }
             else
             {
@@ -123,7 +123,7 @@ namespace Realms.Tests.Database
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
 
-            Assert.That(logger.GetLog(), Is.Empty);
+            Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
         }
 
         [Test]
@@ -200,7 +200,7 @@ namespace Realms.Tests.Database
                 Assert.That(realm.Find<GuidType>(flippedId), Is.EqualTo(actualObj));
             }
 
-            Assert.That(logger.GetLog(), Does.Contain("may contain legacy guid values but is opened as readonly so it cannot be migrated"));
+            Assert.That(logger.GetLog(), Does.Contain("may contain legacy Guid values but is opened as readonly so it cannot be migrated"));
         }
 
         [Test]
@@ -235,7 +235,7 @@ namespace Realms.Tests.Database
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
 
-            Assert.That(logger.GetLog(), Is.Empty);
+            Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
         }
 
         [Test]

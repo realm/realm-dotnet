@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Logging;
 
 namespace Realms.Sync.Native
 {
@@ -105,10 +104,6 @@ namespace Realms.Sync.Native
                 metadata_persistence_has_value = value.HasValue;
             }
         }
-
-        internal LogLevel log_level;
-
-        internal IntPtr managed_logger;
 
         internal IntPtr managed_http_client;
 

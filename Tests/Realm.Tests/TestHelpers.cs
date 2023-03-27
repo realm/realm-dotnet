@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -372,6 +373,11 @@ namespace Realms.Tests
         public static string GetResultsPath(string[] args)
             => args.FirstOrDefault(a => a.StartsWith("--result="))?.Replace("--result=", string.Empty) ??
                 throw new Exception("You must provide path to store test results with --result path/to/results.xml");
+
+        public static void AssertRegex(string testString, Regex regex)
+        {
+            Assert.That(regex.IsMatch(testString), $"Expected {testString} to match {regex}");
+        }
 
         private class FunctionObserver<T> : IObserver<T>
         {
