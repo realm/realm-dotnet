@@ -38,7 +38,7 @@ namespace Realms.Tests.Database
                 await Task.Run(() =>
                 {
                     using var otherRealm = GetRealm(_realm.Config);
-                    var otherObj = otherRealm.ResolveReference(objReference);
+                    var otherObj = otherRealm.ResolveReference(objReference)!;
 
                     Assert.That(otherObj.IsManaged);
                     Assert.That(otherObj.IsValid);
@@ -63,7 +63,7 @@ namespace Realms.Tests.Database
                 await Task.Run(() =>
                 {
                     using var otherRealm = GetRealm(_realm.Config);
-                    var otherList = otherRealm.ResolveReference(listReference);
+                    var otherList = otherRealm.ResolveReference(listReference)!;
 
                     Assert.That(otherList, Is.InstanceOf(typeof(RealmList<Dog>)));
                     var dogNames = otherList.Select(d => d.Name);
@@ -122,7 +122,7 @@ namespace Realms.Tests.Database
             var objReference = SetupObjectReference();
 
             using var otherRealm = GetRealm(_realm.Config);
-            var otherObj = otherRealm.ResolveReference(objReference);
+            var otherObj = otherRealm.ResolveReference(objReference)!;
 
             Assert.That(otherObj.IsManaged);
             Assert.That(otherObj.IsValid);
@@ -134,7 +134,7 @@ namespace Realms.Tests.Database
         {
             var objReference = SetupObjectReference();
 
-            var otherObj = _realm.ResolveReference(objReference);
+            var otherObj = _realm.ResolveReference(objReference)!;
 
             Assert.That(otherObj.IsManaged);
             Assert.That(otherObj.IsValid);
@@ -225,7 +225,7 @@ namespace Realms.Tests.Database
                     using var otherRealm = GetRealm(_realm.Config);
                     otherRealm.Write(() =>
                     {
-                        var otherObj = otherRealm.ResolveReference(objReference);
+                        var otherObj = otherRealm.ResolveReference(objReference)!;
 
                         Assert.That(otherObj.IsManaged);
                         Assert.That(otherObj.IsValid);
@@ -240,7 +240,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                ThreadSafeReference.Object<IntPropertyObject> objRef = null;
+                ThreadSafeReference.Object<IntPropertyObject> objRef = null!;
 
                 _realm.Write(() =>
                 {
@@ -251,7 +251,7 @@ namespace Realms.Tests.Database
                 await Task.Run(() =>
                 {
                     using var otherRealm = GetRealm(_realm.Config);
-                    var otherObj = otherRealm.ResolveReference(objRef);
+                    var otherObj = otherRealm.ResolveReference(objRef)!;
 
                     Assert.That(otherObj.IsManaged);
                     Assert.That(otherObj.IsValid);

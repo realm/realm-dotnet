@@ -29,7 +29,7 @@ namespace PerformanceTests
     {
         protected readonly Faker _faker = new Faker();
 
-        protected Realm _realm;
+        protected Realm _realm = null!;
 
         static BenchmarkBase()
         {

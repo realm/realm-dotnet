@@ -53,7 +53,7 @@ namespace Realms.Tests
                 throw new Exception($"Couldn't find embedded resource '{filename}' in the RealmTests assembly");
             }
 
-            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var stream = assembly.GetManifestResourceStream(resourceName)!;
             using var destination = new FileStream(destPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
             stream.CopyTo(destination);
         }

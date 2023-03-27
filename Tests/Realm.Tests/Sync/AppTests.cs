@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -94,7 +93,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                App app = null;
+                App app = null!;
                 var gcTask = TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     var handler = new HttpClientHandler();
@@ -126,7 +125,7 @@ namespace Realms.Tests.Sync
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                Requests.Add((request.Method, request.RequestUri.AbsoluteUri));
+                Requests.Add((request.Method, request.RequestUri!.AbsoluteUri));
                 return base.SendAsync(request, cancellationToken);
             }
         }

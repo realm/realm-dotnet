@@ -22,7 +22,6 @@ using Realms;
 
 namespace SourceGeneratorAssemblyToProcess
 {
-#nullable enable
     public partial class NullableErrorClass : IRealmObject
     {
         public IList<string>? NullableCollection { get; } = null!;
@@ -44,7 +43,5 @@ namespace SourceGeneratorAssemblyToProcess
 
         [Realms.Backlink(nameof(NullableObject))]
         public IQueryable<NullableErrorClass?> BacklinkOfNullableObject { get; } = null!;
-
     }
-#nullable disable
 }

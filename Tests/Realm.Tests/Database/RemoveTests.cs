@@ -31,7 +31,7 @@ namespace Realms.Tests.Database
         public void RemoveSucceedsTest()
         {
             // Arrange
-            Person p1 = null, p2 = null, p3 = null;
+            Person p1 = null!, p2 = null!, p3 = null!;
             _realm.Write(() =>
             {
                 p1 = _realm.Add(new Person { FirstName = "A" });
@@ -51,8 +51,7 @@ namespace Realms.Tests.Database
         public void RemoveOutsideTransactionShouldFail()
         {
             // Arrange
-            Person p = null;
-            _realm.Write(() => p = _realm.Add(new Person()));
+            var p = _realm.Write(() => _realm.Add(new Person()));
 
             // Act and assert
             Assert.That(() => _realm.Remove(p), Throws.TypeOf<RealmInvalidTransactionException>());
@@ -189,11 +188,7 @@ namespace Realms.Tests.Database
         {
             PerformWithOtherRealm(null, other =>
             {
-                Person otherPerson = null;
-                other.Write(() =>
-                {
-                    otherPerson = other.Add(new Person());
-                });
+                var otherPerson = other.Write(() => other.Add(new Person()));
 
                 Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)),
                             Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
@@ -227,11 +222,7 @@ namespace Realms.Tests.Database
         {
             PerformWithOtherRealm(_realm.Config.DatabasePath, other =>
             {
-                Person otherPerson = null;
-                other.Write(() =>
-                {
-                    otherPerson = other.Add(new Person());
-                });
+                var otherPerson = other.Write(() => other.Add(new Person()));
 
                 Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)), Throws.Nothing);
             });
@@ -250,7 +241,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        private void PerformWithOtherRealm(string path, Action<Realm> action)
+        private void PerformWithOtherRealm(string? path, Action<Realm> action)
         {
             Realm otherRealm;
             using (otherRealm = GetRealm(path ?? Guid.NewGuid().ToString()))

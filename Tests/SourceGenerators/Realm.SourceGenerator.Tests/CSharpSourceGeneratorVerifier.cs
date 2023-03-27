@@ -20,8 +20,8 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Testing.Verifiers;
 using MongoDB.Bson;
 
 namespace SourceGeneratorTests
@@ -44,10 +44,10 @@ namespace SourceGeneratorTests
 
             protected override CompilationOptions CreateCompilationOptions()
             {
-                var compilationOptions = base.CreateCompilationOptions();
+                var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                    allowUnsafe: true, nullableContextOptions: NullableContextOptions.Enable);
 
-                return compilationOptions.WithSpecificDiagnosticOptions(
-                     compilationOptions.SpecificDiagnosticOptions.SetItems(GetNullableWarningsFromCompiler()));
+                return compilationOptions.WithSpecificDiagnosticOptions(GetNullableWarningsFromCompiler());
             }
 
             public LanguageVersion LanguageVersion { get; set; } = LanguageVersion.Default;

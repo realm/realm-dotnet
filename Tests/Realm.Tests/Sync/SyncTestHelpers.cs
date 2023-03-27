@@ -39,15 +39,19 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = new(string.Empty, DummyAppId, AppConfigType.Default),
         };
 
-        private static Uri _baseUri;
-        private static BaasClient _baasClient;
+        private static Uri? _baseUri;
+        private static BaasClient? _baasClient;
 
         static SyncTestHelpers()
         {
 #if !UNITY
             try
             {
-                _baseUri = new Uri(ConfigHelpers.GetSetting("BaasUrl"));
+                var uri = ConfigHelpers.GetSetting("BaasUrl");
+                if (uri != null)
+                {
+                    _baseUri = new Uri(uri);
+                }
             }
             catch
             {
@@ -95,8 +99,7 @@ namespace Realms.Tests.Sync
 
             if (config is FlexibleSyncConfiguration)
             {
-                _apps.TryGetValue(AppConfigType.FlexibleSync, out var app);
-                appId = app.AppId;
+                appId = _apps[AppConfigType.FlexibleSync].AppId;
             }
 
             var result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
@@ -123,7 +126,7 @@ namespace Realms.Tests.Sync
             return remainingArgs;
         }
 
-        public static (string[] RemainingArgs, IDisposable Logger) SetLoggerFromArgs(string[] args)
+        public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
         {
             var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
 
@@ -134,7 +137,7 @@ namespace Realms.Tests.Sync
                 Logger.LogLevel = logLevel;
             }
 
-            Logger.AsyncFileLogger logger = null;
+            Logger.AsyncFileLogger? logger = null;
             if (extracted.TryGetValue("realmlogfile", out var logFile))
             {
                 if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
@@ -174,10 +177,10 @@ namespace Realms.Tests.Sync
 #if !UNITY
             try
             {
-                var cluster = ConfigHelpers.GetSetting("Cluster");
-                var apiKey = ConfigHelpers.GetSetting("ApiKey");
-                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey");
-                var groupId = ConfigHelpers.GetSetting("GroupId");
+                var cluster = ConfigHelpers.GetSetting("Cluster")!;
+                var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
+                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
+                var groupId = ConfigHelpers.GetSetting("GroupId")!;
                 var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
 
                 _baasClient ??= await BaasClient.Atlas(_baseUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
@@ -195,7 +198,7 @@ namespace Realms.Tests.Sync
         public static Task SetRecoveryModeOnServer(string appConfigType, bool enabled)
         {
             var app = _apps[appConfigType];
-            return _baasClient.SetAutomaticRecoveryEnabled(app, enabled);
+            return _baasClient!.SetAutomaticRecoveryEnabled(app, enabled);
         }
     }
 }

@@ -24,15 +24,15 @@ namespace SourceGeneratorPlayground
 {
     public partial class Person : IRealmObject
     {
-        private string surname;
+        private string surname = "";
 
         [PrimaryKey]
         public Guid Id { set; get; } = Guid.NewGuid();
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [Realms.Backlink(nameof(Dog.Owner))]
-        public IQueryable<Dog> Dogs { get; }
+        public IQueryable<Dog> Dogs { get; } = null!;
 
         //Ignored properties
         public string Supername => $"Super{Name}";
@@ -42,8 +42,8 @@ namespace SourceGeneratorPlayground
 
     public partial class Dog : IRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public Person Owner { get; set; }
+        public Person? Owner { get; set; }
     }
 }

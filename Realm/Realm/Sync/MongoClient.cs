@@ -207,7 +207,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/"/>
-            public async Task<UpdateResult> UpdateOneAsync(object filter, object updateDocument, bool upsert = false)
+            public async Task<UpdateResult> UpdateOneAsync(object? filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -237,7 +237,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/"/>
-            public async Task<UpdateResult> UpdateManyAsync(object filter, object updateDocument, bool upsert = false)
+            public async Task<UpdateResult> UpdateManyAsync(object? filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -336,7 +336,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndUpdate/"/>
-            public async Task<TDocument> FindOneAndUpdateAsync(object filter, object updateDocument, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
+            public async Task<TDocument> FindOneAndUpdateAsync(object? filter, object updateDocument, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -374,7 +374,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndReplace/"/>
-            public async Task<TDocument> FindOneAndReplaceAsync(object filter, TDocument replacementDoc, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
+            public async Task<TDocument> FindOneAndReplaceAsync(object? filter, TDocument replacementDoc, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 

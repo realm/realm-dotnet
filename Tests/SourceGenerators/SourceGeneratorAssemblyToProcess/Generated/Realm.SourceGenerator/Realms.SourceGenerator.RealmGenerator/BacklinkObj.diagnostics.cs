@@ -8,7 +8,7 @@
       "StartLine": 39,
       "StartColumn": 9,
       "EndLine": 40,
-      "EndColumn": 61
+      "EndColumn": 62
     }
   }
 ]

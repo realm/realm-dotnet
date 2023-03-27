@@ -312,28 +312,37 @@ namespace Realms
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
-                if (raiseAdded || raiseRemoved)
-                {
-                    if ((raiseAdded && raiseRemoved) ||
-                        (raiseAdded && addedItems == null) ||
-                        (raiseRemoved && removedItems == null))
-                    {
-                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                        RaisePropertyChanged();
-                        return;
-                    }
+                var raiseReplaced = TryGetConsecutive(change.NewModifiedIndices, i => this[i], out var replacedItems, out var replacedStartIndex);
 
+                // Only raise specialized notifications if we have exactly one change type to report
+                if (raiseAdded + raiseReplaced + raiseRemoved == 1)
+                {
                     if (removedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, removedStartIndex));
                         RaisePropertyChanged();
                     }
-
-                    if (addedItems != null)
+                    else if (addedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems, addedStartIndex));
                         RaisePropertyChanged();
                     }
+                    else if (replacedItems != null)
+                    {
+                        // Until we get a snapshot of the old collection, we won't be able to provide meaningful value for old items.
+                        var oldItems = Enumerable.Range(0, replacedItems.Count).Select(_ => InvalidObject.Instance).ToList();
+                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, replacedItems, oldItems, replacedStartIndex));
+                        RaisePropertyChanged();
+                    }
+                    else
+                    {
+                        Debug.Assert(false, "This should never happen");
+                    }
+                }
+                else
+                {
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    RaisePropertyChanged();
                 }
             }
         }
@@ -349,7 +358,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, object?> getter, out IList? items, out int startIndex)
+        private static int TryGetConsecutive(int[] indices, Func<int, object?> getter, out IList? items, out int startIndex)
         {
             items = null;
 
@@ -361,13 +370,13 @@ namespace Realms
                     items = Enumerable.Range(startIndex, indices.Length)
                                       .Select(getter)
                                       .ToList();
-                }
 
-                return true;
+                    return 1;
+                }
             }
 
             startIndex = -1;
-            return false;
+            return 0;
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is called when subscribing to events and the dispose token is retained by the collection.")]

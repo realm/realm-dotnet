@@ -23,7 +23,7 @@ using Realms;
 
 namespace PerformanceTests
 {
-    public class QueryTests : BenchmarkBase
+    public partial class QueryTests : BenchmarkBase
     {
         [Params(10, 100, 1000)]
         public int ObjectCount { get; set; }
@@ -58,9 +58,9 @@ namespace PerformanceTests
             return _realm.All<QueryClass>().Where(c => c.BoolValue == expectedBool).ToArray();
         }
 
-        private class QueryClass : RealmObject
+        private partial class QueryClass : IRealmObject
         {
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
             public bool BoolValue { get; set; }
 

@@ -28,25 +28,25 @@ namespace Realms.Tests.Database
 {
     public partial class TestNotificationObject : TestRealmObject
     {
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public IList<TestNotificationObject> ListSameType { get; }
+        public IList<TestNotificationObject> ListSameType { get; } = null!;
 
-        public ISet<TestNotificationObject> SetSameType { get; }
+        public ISet<TestNotificationObject> SetSameType { get; } = null!;
 
-        public IDictionary<string, TestNotificationObject> DictionarySameType { get; }
+        public IDictionary<string, TestNotificationObject?> DictionarySameType { get; } = null!;
 
-        public TestNotificationObject LinkSameType { get; set; }
+        public TestNotificationObject? LinkSameType { get; set; }
 
-        public IList<Person> ListDifferentType { get; }
+        public IList<Person> ListDifferentType { get; } = null!;
 
-        public ISet<Person> SetDifferentType { get; }
+        public ISet<Person> SetDifferentType { get; } = null!;
 
-        public IDictionary<string, Person> DictionaryDifferentType { get; }
+        public IDictionary<string, Person?> DictionaryDifferentType { get; } = null!;
 
-        public Person LinkDifferentType { get; set; }
+        public Person? LinkDifferentType { get; set; }
 
         [Backlink(nameof(LinkSameType))]
-        public IQueryable<TestNotificationObject> Backlink { get; }
+        public IQueryable<TestNotificationObject> Backlink { get; } = null!;
     }
 }

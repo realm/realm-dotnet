@@ -37,10 +37,9 @@ namespace Realms.Tests.Database
             {
                 Assert.That(SynchronizationContext.Current != null);
 
-                IntPrimaryKeyWithValueObject obj = null;
-                _realm.Write(() =>
+                var obj = _realm.Write(() =>
                 {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject());
+                    return _realm.Add(new IntPrimaryKeyWithValueObject());
                 });
 
                 var reference = ThreadSafeReference.Create(obj);
@@ -48,7 +47,7 @@ namespace Realms.Tests.Database
                 Task.Run(() =>
                 {
                     using var realm = GetRealm(_realm.Config);
-                    var bgObj = realm.ResolveReference(reference);
+                    var bgObj = realm.ResolveReference(reference)!;
                     realm.Write(() =>
                     {
                         bgObj.StringValue = "123";
@@ -223,7 +222,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                Exception ex = null;
+                Exception? ex = null;
                 try
                 {
                     await _realm.WriteAsync(() =>
@@ -236,7 +235,7 @@ namespace Realms.Tests.Database
                     ex = e;
                 }
 
-                Assert.That(ex.Message, Is.EqualTo("User exception"));
+                Assert.That(ex!.Message, Is.EqualTo("User exception"));
             });
         }
 

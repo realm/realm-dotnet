@@ -20,7 +20,7 @@ namespace Tests.Maui;
 
 public static class MauiProgram
 {
-    public static string[] Args { get; private set; }
+    public static string[] Args { get; private set; } = null!;
 
     public static MauiApp CreateMauiApp(params string[] args)
     {

@@ -20,6 +20,9 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(NullableClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class NullableClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="NullableClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullableClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("NonNullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableInt"),
@@ -50,24 +53,31 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal INullableClassAccessor Accessor => _accessor ??= new NullableClassUnmanagedAccessor(typeof(NullableClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -94,23 +104,32 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.NonNullableInt = oldAccessor.NonNullableInt;
                 }
-                newAccessor.NullableInt = oldAccessor.NullableInt;
-                if (!skipDefaults || oldAccessor.NonNullableString != default(string))
+                if (!skipDefaults || oldAccessor.NullableInt != default(int?))
                 {
-                    newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                    newAccessor.NullableInt = oldAccessor.NullableInt;
                 }
-                newAccessor.NullableString = oldAccessor.NullableString;
-                if (!skipDefaults || oldAccessor.NonNullableData != default(byte[]))
+                newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                if (!skipDefaults || oldAccessor.NullableString != default(string?))
                 {
-                    newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                    newAccessor.NullableString = oldAccessor.NullableString;
                 }
-                newAccessor.NullableData = oldAccessor.NullableData;
+                newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                if (!skipDefaults || oldAccessor.NullableData != default(byte[]?))
+                {
+                    newAccessor.NullableData = oldAccessor.NullableData;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableInt, newAccessor.CollectionOfNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableInt, newAccessor.CollectionOfNonNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableString, newAccessor.CollectionOfNullableString, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableString, newAccessor.CollectionOfNonNullableString, update, skipDefaults);
-                newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
-                newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
+                if (!skipDefaults || oldAccessor.NonNullableRealmInt != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
+                }
+                if (!skipDefaults || oldAccessor.NullableRealmInt != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
+                }
                 if (oldAccessor.NullableObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
@@ -144,6 +163,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -212,13 +232,25 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="NullableClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="NullableClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
         public static explicit operator NullableClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NullableClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="NullableClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(NullableClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -244,8 +276,10 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]

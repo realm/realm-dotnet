@@ -24,7 +24,7 @@ namespace AssemblyToProcess
     // See #588
     public class Dog : RealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public static Dog MyOnlyDog { get; } = new Dog();
     }

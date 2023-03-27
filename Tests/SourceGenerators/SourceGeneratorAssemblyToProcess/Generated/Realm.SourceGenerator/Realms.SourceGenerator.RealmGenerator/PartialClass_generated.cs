@@ -20,10 +20,13 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(PartialClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class PartialClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="PartialClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PartialClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Name"),
         }.Build();
 
         #region IRealmObject implementation
@@ -34,24 +37,31 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal IPartialClassAccessor Accessor => _accessor ??= new PartialClassUnmanagedAccessor(typeof(PartialClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -67,10 +77,7 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if (!skipDefaults || oldAccessor.Name != default(string))
-                {
-                    newAccessor.Name = oldAccessor.Name;
-                }
+                newAccessor.Name = oldAccessor.Name;
             }
 
             if (_propertyChanged != null)
@@ -95,6 +102,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -163,13 +171,25 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="PartialClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="PartialClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
         public static explicit operator PartialClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PartialClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="PartialClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(PartialClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -195,8 +215,10 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -223,7 +245,7 @@ namespace SourceGeneratorAssemblyToProcess
         {
             int Id { get; set; }
 
-            string? Name { get; set; }
+            string Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -235,9 +257,9 @@ namespace SourceGeneratorAssemblyToProcess
                 set => SetValue("Id", value);
             }
 
-            public string? Name
+            public string Name
             {
-                get => (string?)GetValue("Name");
+                get => (string)GetValue("Name")!;
                 set => SetValue("Name", value);
             }
         }
@@ -258,8 +280,8 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string? _name;
-            public string? Name
+            private string _name = null!;
+            public string Name
             {
                 get => _name;
                 set
@@ -291,7 +313,7 @@ namespace SourceGeneratorAssemblyToProcess
                         Id = (int)val;
                         return;
                     case "Name":
-                        Name = (string?)val;
+                        Name = (string)val!;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

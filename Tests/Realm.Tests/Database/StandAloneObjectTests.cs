@@ -20,12 +20,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -34,7 +30,7 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class StandAloneObjectTests : RealmTest
     {
-        private Person _person;
+        private Person _person = null!;
 
         protected override void CustomSetUp()
         {
@@ -45,7 +41,7 @@ namespace Realms.Tests.Database
         [Test]
         public void PropertyGet()
         {
-            string firstName = null;
+            string? firstName = null;
             Assert.DoesNotThrow(() => firstName = _person.FirstName);
             Assert.That(string.IsNullOrEmpty(firstName));
         }
@@ -131,47 +127,47 @@ namespace Realms.Tests.Database
 
     public partial class NoListProperties : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public int Age { get; set; }
     }
 
     public partial class OnlyListProperties : TestRealmObject
     {
-        public IList<Person> Friends { get; }
+        public IList<Person> Friends { get; } = null!;
 
-        public IList<Person> Enemies { get; }
+        public IList<Person> Enemies { get; } = null!;
     }
 
     public partial class MixedProperties1 : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public IList<Person> Friends { get; }
+        public IList<Person> Friends { get; } = null!;
 
         public int Age { get; set; }
 
-        public IList<Person> Enemies { get; }
+        public IList<Person> Enemies { get; } = null!;
     }
 
     public partial class MixedProperties2 : TestRealmObject
     {
-        public IList<Person> Friends { get; }
+        public IList<Person> Friends { get; } = null!;
 
         public int Age { get; set; }
 
-        public IList<Person> Enemies { get; }
+        public IList<Person> Enemies { get; } = null!;
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     public partial class OneNonListProperty : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     public partial class OneListProperty : TestRealmObject
     {
-        public IList<Person> People { get; }
+        public IList<Person> People { get; } = null!;
     }
 }

@@ -24,12 +24,12 @@ namespace Realms
     {
         public T Add<T>(T obj, bool update) where T : RealmObject
         {
-            return default(T);
+            return default!;
         }
 
         public RealmObject Add(RealmObject obj, bool update)
         {
-            return null;
+            return null!;
         }
 
         public void Add<T>(IEnumerable<T> objs, bool update = false)

@@ -26,8 +26,6 @@ using Realms.Tests.Sync;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-using Environment = Android.OS.Environment;
-
 namespace Realms.Tests.Android
 {
     [Activity(Label = "Realm Tests", MainLauncher = true)]
@@ -50,7 +48,7 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent.GetStringArrayExtra("args") ?? Array.Empty<string>());
+            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent?.GetStringArrayExtra("args") ?? Array.Empty<string>());
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {

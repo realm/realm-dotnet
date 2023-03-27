@@ -92,7 +92,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void Test_SyncConfigRelease()
         {
-            WeakReference weakConfigRef = null;
+            WeakReference weakConfigRef = null!;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var config = await GetIntegrationConfigAsync();

@@ -34,7 +34,7 @@ namespace SourceGeneratorPlayground
         public double DoubleProp { get; set; }
 
         [Indexed]
-        public RealmObj ObjectProp { get; set; }
+        public RealmObj? ObjectProp { get; set; }
 
         [Indexed]
         public RealmValue RealmvalueProp { get; set; }

@@ -28,7 +28,7 @@ namespace Realms.Tests.UWP
 {
     public sealed partial class MainPage
     {
-        private NUnit.Runner.App _nunit;
+        private NUnit.Runner.App? _nunit;
 
         public MainPage()
         {

@@ -27,10 +27,10 @@ using Realms.Schema;
 
 namespace PerformanceTests
 {
-    public class SchemaTests : BenchmarkBase
+    public partial class SchemaTests : BenchmarkBase
     {
-        private Type[] _schemaClasses;
-        private string _basePath;
+        private Type[] _schemaClasses = null!;
+        private string _basePath = null!;
 
         protected override void SeedData()
         {
@@ -63,16 +63,16 @@ namespace PerformanceTests
         }
 
         [Explicit]
-        public class Embedded : EmbeddedObject
+        public partial class Embedded : IEmbeddedObject
         {
-            public string SomeProperty { get; set; }
+            public string? SomeProperty { get; set; }
 
             [Backlink(nameof(LinkTypesObject.EmbeddedLink))]
-            public IQueryable<LinkTypesObject> BacklinksLink { get; }
+            public IQueryable<LinkTypesObject> BacklinksLink { get; } = null!;
         }
 
         [Explicit]
-        public class CounterTypesObject : RealmObject
+        public partial class CounterTypesObject : IRealmObject
         {
             public RealmInteger<byte> ByteCounter { get; set; }
 
@@ -92,36 +92,36 @@ namespace PerformanceTests
         }
 
         [Explicit]
-        public class LinkTypesObject : RealmObject
+        public partial class LinkTypesObject : IRealmObject
         {
-            public LinkTypesObject SingleLink { get; set; }
+            public LinkTypesObject? SingleLink { get; set; }
 
-            public IList<RequiredTypesObject> ListLink { get; }
+            public IList<RequiredTypesObject> ListLink { get; } = null!;
 
-            public ISet<RequiredTypesObject> SetLink { get; }
+            public ISet<RequiredTypesObject> SetLink { get; } = null!;
 
-            public IDictionary<string, RequiredTypesObject> DictionaryLink { get; }
+            public IDictionary<string, RequiredTypesObject?> DictionaryLink { get; } = null!;
 
             [Backlink(nameof(SingleLink))]
-            public IQueryable<LinkTypesObject> BacklinksLink { get; }
+            public IQueryable<LinkTypesObject> BacklinksLink { get; } = null!;
 
-            public Embedded EmbeddedLink { get; set; }
+            public Embedded? EmbeddedLink { get; set; }
 
-            public IList<Embedded> EmbeddedList { get; }
+            public IList<Embedded> EmbeddedList { get; } = null!;
 
-            public IDictionary<string, Embedded> EmbeddedDict { get; }
+            public IDictionary<string, Embedded?> EmbeddedDict { get; } = null!;
 
             public RealmValue RealmValueProp { get; set; }
 
-            public IList<RealmValue> RealmValueList { get; }
+            public IList<RealmValue> RealmValueList { get; } = null!;
 
-            public ISet<RealmValue> RealmValueSet { get; }
+            public ISet<RealmValue> RealmValueSet { get; } = null!;
 
-            public IDictionary<string, RealmValue> RealmValueDict { get; }
+            public IDictionary<string, RealmValue> RealmValueDict { get; } = null!;
         }
 
         [Explicit]
-        public class RequiredTypesObject : RealmObject
+        public partial class RequiredTypesObject : IRealmObject
         {
             public char CharProperty { get; set; }
 
@@ -149,123 +149,115 @@ namespace PerformanceTests
 
             public Guid GuidProperty { get; set; }
 
-            [Required]
-            public string StringProperty { get; set; }
+            public string StringProperty { get; set; } = null!;
 
-            [Required]
-            public byte[] ByteArrayProperty { get; set; }
+            public byte[] ByteArrayProperty { get; set; } = null!;
         }
 
         [Explicit]
         public class RequiredListTypesObject : RealmObject
         {
-            public IList<char> CharProperty { get; }
+            public IList<char> CharProperty { get; } = null!;
 
-            public IList<byte> ByteProperty { get; }
+            public IList<byte> ByteProperty { get; } = null!;
 
-            public IList<short> Int16Property { get; }
+            public IList<short> Int16Property { get; } = null!;
 
-            public IList<int> Int32Property { get; }
+            public IList<int> Int32Property { get; } = null!;
 
-            public IList<long> Int64Property { get; }
+            public IList<long> Int64Property { get; } = null!;
 
-            public IList<float> SingleProperty { get; }
+            public IList<float> SingleProperty { get; } = null!;
 
-            public IList<double> DoubleProperty { get; }
+            public IList<double> DoubleProperty { get; } = null!;
 
-            public IList<bool> BooleanProperty { get; }
+            public IList<bool> BooleanProperty { get; } = null!;
 
-            public IList<DateTimeOffset> DateTimeOffsetProperty { get; }
+            public IList<DateTimeOffset> DateTimeOffsetProperty { get; } = null!;
 
-            public IList<decimal> DecimalProperty { get; }
+            public IList<decimal> DecimalProperty { get; } = null!;
 
-            public IList<Decimal128> Decimal128Property { get; }
+            public IList<Decimal128> Decimal128Property { get; } = null!;
 
-            public IList<ObjectId> ObjectIdProperty { get; }
+            public IList<ObjectId> ObjectIdProperty { get; } = null!;
 
-            public IList<Guid> GuidProperty { get; }
+            public IList<Guid> GuidProperty { get; } = null!;
 
-            [Required]
-            public IList<string> StringProperty { get; }
+            public IList<string> StringProperty { get; } = null!;
 
-            [Required]
-            public IList<byte[]> ByteArrayProperty { get; }
+            public IList<byte[]> ByteArrayProperty { get; } = null!;
         }
 
         [Explicit]
-        public class RequiredSetTypesObject : RealmObject
+        public partial class RequiredSetTypesObject : IRealmObject
         {
-            public ISet<char> CharProperty { get; }
+            public ISet<char> CharProperty { get; } = null!;
 
-            public ISet<byte> ByteProperty { get; }
+            public ISet<byte> ByteProperty { get; } = null!;
 
-            public ISet<short> Int16Property { get; }
+            public ISet<short> Int16Property { get; } = null!;
 
-            public ISet<int> Int32Property { get; }
+            public ISet<int> Int32Property { get; } = null!;
 
-            public ISet<long> Int64Property { get; }
+            public ISet<long> Int64Property { get; } = null!;
 
-            public ISet<float> SingleProperty { get; }
+            public ISet<float> SingleProperty { get; } = null!;
 
-            public ISet<double> DoubleProperty { get; }
+            public ISet<double> DoubleProperty { get; } = null!;
 
-            public ISet<bool> BooleanProperty { get; }
+            public ISet<bool> BooleanProperty { get; } = null!;
 
-            public ISet<DateTimeOffset> DateTimeOffsetProperty { get; }
+            public ISet<DateTimeOffset> DateTimeOffsetProperty { get; } = null!;
 
-            public ISet<decimal> DecimalProperty { get; }
+            public ISet<decimal> DecimalProperty { get; } = null!;
 
-            public ISet<Decimal128> Decimal128Property { get; }
+            public ISet<Decimal128> Decimal128Property { get; } = null!;
 
-            public ISet<ObjectId> ObjectIdProperty { get; }
+            public ISet<ObjectId> ObjectIdProperty { get; } = null!;
 
-            public ISet<Guid> GuidProperty { get; }
+            public ISet<Guid> GuidProperty { get; } = null!;
 
-            [Required]
-            public ISet<string> StringProperty { get; }
+            public ISet<string> StringProperty { get; } = null!;
 
-            [Required]
-            public ISet<byte[]> ByteArrayProperty { get; }
+            public ISet<byte[]> ByteArrayProperty { get; } = null!;
         }
 
         [Explicit]
-        public class RequiredDictionaryTypesObject : RealmObject
+        public partial class RequiredDictionaryTypesObject : IRealmObject
         {
-            public IDictionary<string, char> CharProperty { get; }
+            public IDictionary<string, char> CharProperty { get; } = null!;
 
-            public IDictionary<string, byte> ByteProperty { get; }
+            public IDictionary<string, byte> ByteProperty { get; } = null!;
 
-            public IDictionary<string, short> Int16Property { get; }
+            public IDictionary<string, short> Int16Property { get; } = null!;
 
-            public IDictionary<string, int> Int32Property { get; }
+            public IDictionary<string, int> Int32Property { get; } = null!;
 
-            public IDictionary<string, long> Int64Property { get; }
+            public IDictionary<string, long> Int64Property { get; } = null!;
 
-            public IDictionary<string, float> SingleProperty { get; }
+            public IDictionary<string, float> SingleProperty { get; } = null!;
 
-            public IDictionary<string, double> DoubleProperty { get; }
+            public IDictionary<string, double> DoubleProperty { get; } = null!;
 
-            public IDictionary<string, bool> BooleanProperty { get; }
+            public IDictionary<string, bool> BooleanProperty { get; } = null!;
 
-            public IDictionary<string, DateTimeOffset> DateTimeOffsetProperty { get; }
+            public IDictionary<string, DateTimeOffset> DateTimeOffsetProperty { get; } = null!;
 
-            public IDictionary<string, decimal> DecimalProperty { get; }
+            public IDictionary<string, decimal> DecimalProperty { get; } = null!;
 
-            public IDictionary<string, Decimal128> Decimal128Property { get; }
+            public IDictionary<string, Decimal128> Decimal128Property { get; } = null!;
 
-            public IDictionary<string, ObjectId> ObjectIdProperty { get; }
+            public IDictionary<string, ObjectId> ObjectIdProperty { get; } = null!;
 
-            public IDictionary<string, Guid> GuidProperty { get; }
+            public IDictionary<string, Guid> GuidProperty { get; } = null!;
 
-            [Required]
-            public IDictionary<string, string> StringProperty { get; }
+            public IDictionary<string, string> StringProperty { get; } = null!;
 
-            [Required]
-            public IDictionary<string, byte[]> ByteArrayProperty { get; }
+            public IDictionary<string, byte[]> ByteArrayProperty { get; } = null!;
         }
 
         [Explicit]
-        public class OptionalTypesObject : RealmObject
+        public partial class OptionalTypesObject : IRealmObject
         {
             public char? CharProperty { get; set; }
 
@@ -293,111 +285,111 @@ namespace PerformanceTests
 
             public Guid? GuidProperty { get; set; }
 
-            public string StringProperty { get; set; }
+            public string? StringProperty { get; set; }
 
-            public byte[] ByteArrayProperty { get; set; }
+            public byte[]? ByteArrayProperty { get; set; }
         }
 
         [Explicit]
-        public class OptionalListTypesObject : RealmObject
+        public partial class OptionalListTypesObject : IRealmObject
         {
-            public IList<char?> CharProperty { get; }
+            public IList<char?> CharProperty { get; } = null!;
 
-            public IList<byte?> ByteProperty { get; }
+            public IList<byte?> ByteProperty { get; } = null!;
 
-            public IList<short?> Int16Property { get; }
+            public IList<short?> Int16Property { get; } = null!;
 
-            public IList<int?> Int32Property { get; }
+            public IList<int?> Int32Property { get; } = null!;
 
-            public IList<long?> Int64Property { get; }
+            public IList<long?> Int64Property { get; } = null!;
 
-            public IList<float?> SingleProperty { get; }
+            public IList<float?> SingleProperty { get; } = null!;
 
-            public IList<double?> DoubleProperty { get; }
+            public IList<double?> DoubleProperty { get; } = null!;
 
-            public IList<bool?> BooleanProperty { get; }
+            public IList<bool?> BooleanProperty { get; } = null!;
 
-            public IList<DateTimeOffset?> DateTimeOffsetProperty { get; }
+            public IList<DateTimeOffset?> DateTimeOffsetProperty { get; } = null!;
 
-            public IList<decimal?> DecimalProperty { get; }
+            public IList<decimal?> DecimalProperty { get; } = null!;
 
-            public IList<Decimal128?> Decimal128Property { get; }
+            public IList<Decimal128?> Decimal128Property { get; } = null!;
 
-            public IList<ObjectId?> ObjectIdProperty { get; }
+            public IList<ObjectId?> ObjectIdProperty { get; } = null!;
 
-            public IList<Guid?> GuidProperty { get; }
+            public IList<Guid?> GuidProperty { get; } = null!;
 
-            public IList<string> StringProperty { get; }
+            public IList<string?> StringProperty { get; } = null!;
 
-            public IList<byte[]> ByteArrayProperty { get; }
+            public IList<byte[]?> ByteArrayProperty { get; } = null!;
         }
 
         [Explicit]
-        public class OptionalSetTypesObject : RealmObject
+        public partial class OptionalSetTypesObject : IRealmObject
         {
-            public ISet<char?> CharProperty { get; }
+            public ISet<char?> CharProperty { get; } = null!;
 
-            public ISet<byte?> ByteProperty { get; }
+            public ISet<byte?> ByteProperty { get; } = null!;
 
-            public ISet<short?> Int16Property { get; }
+            public ISet<short?> Int16Property { get; } = null!;
 
-            public ISet<int?> Int32Property { get; }
+            public ISet<int?> Int32Property { get; } = null!;
 
-            public ISet<long?> Int64Property { get; }
+            public ISet<long?> Int64Property { get; } = null!;
 
-            public ISet<float?> SingleProperty { get; }
+            public ISet<float?> SingleProperty { get; } = null!;
 
-            public ISet<double?> DoubleProperty { get; }
+            public ISet<double?> DoubleProperty { get; } = null!;
 
-            public ISet<bool?> BooleanProperty { get; }
+            public ISet<bool?> BooleanProperty { get; } = null!;
 
-            public ISet<DateTimeOffset?> DateTimeOffsetProperty { get; }
+            public ISet<DateTimeOffset?> DateTimeOffsetProperty { get; } = null!;
 
-            public ISet<decimal?> DecimalProperty { get; }
+            public ISet<decimal?> DecimalProperty { get; } = null!;
 
-            public ISet<Decimal128?> Decimal128Property { get; }
+            public ISet<Decimal128?> Decimal128Property { get; } = null!;
 
-            public ISet<ObjectId?> ObjectIdProperty { get; }
+            public ISet<ObjectId?> ObjectIdProperty { get; } = null!;
 
-            public ISet<Guid?> GuidProperty { get; }
+            public ISet<Guid?> GuidProperty { get; } = null!;
 
-            public ISet<string> StringProperty { get; }
+            public ISet<string?> StringProperty { get; } = null!;
 
-            public ISet<byte[]> ByteArrayProperty { get; }
+            public ISet<byte[]?> ByteArrayProperty { get; } = null!;
         }
 
         [Explicit]
-        public class OptionalDictionaryTypesObject : RealmObject
+        public partial class OptionalDictionaryTypesObject : IRealmObject
         {
-            public IDictionary<string, char?> CharProperty { get; }
+            public IDictionary<string, char?> CharProperty { get; } = null!;
 
-            public IDictionary<string, byte?> ByteProperty { get; }
+            public IDictionary<string, byte?> ByteProperty { get; } = null!;
 
-            public IDictionary<string, short?> Int16Property { get; }
+            public IDictionary<string, short?> Int16Property { get; } = null!;
 
-            public IDictionary<string, int?> Int32Property { get; }
+            public IDictionary<string, int?> Int32Property { get; } = null!;
 
-            public IDictionary<string, long?> Int64Property { get; }
+            public IDictionary<string, long?> Int64Property { get; } = null!;
 
-            public IDictionary<string, float?> SingleProperty { get; }
+            public IDictionary<string, float?> SingleProperty { get; } = null!;
 
-            public IDictionary<string, double?> DoubleProperty { get; }
+            public IDictionary<string, double?> DoubleProperty { get; } = null!;
 
-            public IDictionary<string, bool?> BooleanProperty { get; }
+            public IDictionary<string, bool?> BooleanProperty { get; } = null!;
 
-            public IDictionary<string, DateTimeOffset?> DateTimeOffsetProperty { get; }
+            public IDictionary<string, DateTimeOffset?> DateTimeOffsetProperty { get; } = null!;
 
-            public IDictionary<string, decimal?> DecimalProperty { get; }
+            public IDictionary<string, decimal?> DecimalProperty { get; } = null!;
 
-            public IDictionary<string, Decimal128?> Decimal128Property { get; }
+            public IDictionary<string, Decimal128?> Decimal128Property { get; } = null!;
 
-            public IDictionary<string, ObjectId?> ObjectIdProperty { get; }
+            public IDictionary<string, ObjectId?> ObjectIdProperty { get; } = null!;
 
-            public IDictionary<string, Guid?> GuidProperty { get; }
+            public IDictionary<string, Guid?> GuidProperty { get; } = null!;
 
-            public IDictionary<string, string> StringProperty { get; }
+            public IDictionary<string, string?> StringProperty { get; } = null!;
 
-            public IDictionary<string, byte[]> ByteArrayProperty { get; }
+            public IDictionary<string, byte[]?> ByteArrayProperty { get; } = null!;
         }
     }
 }
