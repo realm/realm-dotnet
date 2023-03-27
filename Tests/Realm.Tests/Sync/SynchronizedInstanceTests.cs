@@ -115,7 +115,7 @@ namespace Realms.Tests.Sync
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     callbacksInvoked++;
@@ -145,7 +145,7 @@ namespace Realms.Tests.Sync
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     callbacksInvoked++;
@@ -179,7 +179,7 @@ namespace Realms.Tests.Sync
                 var logger = new Logger.InMemoryLogger();
                 Logger.Default = logger;
 
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     throw new Exception("Exception in OnProgress");
@@ -206,7 +206,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 await PopulateData(config);
 
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
 
                 using var cts = new CancellationTokenSource(10);
 
@@ -247,7 +247,7 @@ namespace Realms.Tests.Sync
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(IntPrimaryKeyWithValueObject), out var objectSchema), Is.True);
             Assert.That(objectSchema, Is.Not.Null);
 
-            Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
+            Assert.That(objectSchema!.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
             var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
@@ -258,7 +258,7 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
             var config = GetFakeConfig();
-            config.Schema = null;
+            config.Schema = null!;
             config.IsDynamic = true;
 
             using var realm = GetRealm(config);
@@ -374,7 +374,7 @@ namespace Realms.Tests.Sync
 
                 var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
                 Assert.That(itemInOriginal, Is.Not.Null);
-                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
+                Assert.That(itemInOriginal!.StringValue, Is.EqualTo(fromCopy.StringValue));
 
                 var fromOriginal = originalRealm.Write(() =>
                 {
@@ -389,7 +389,7 @@ namespace Realms.Tests.Sync
 
                 var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
                 Assert.That(itemInCopy, Is.Not.Null);
-                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
+                Assert.That(itemInCopy!.StringValue, Is.EqualTo(fromOriginal.StringValue));
             });
         }
 
@@ -456,7 +456,7 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(anotherUserRealm);
                 await WaitForDownloadAsync(copiedRealm);
 
-                var syncedObject = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(addedObject.Id);
+                var syncedObject = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(addedObject.Id)!;
 
                 Assert.That(syncedObject.StringValue, Is.EqualTo("abc"));
             });
@@ -601,7 +601,7 @@ namespace Realms.Tests.Sync
                 var partition = Guid.NewGuid().ToString();
                 var originalConfig = await GetIntegrationConfigAsync(partition);
                 using var originalRealm = GetRealm(originalConfig);
-                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
+                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null!));
             });
         }
 
@@ -733,7 +733,7 @@ namespace Realms.Tests.Sync
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
-            Transaction currentTransaction = null;
+            Transaction? currentTransaction = null;
 
             if (singleTransaction)
             {
@@ -758,7 +758,7 @@ namespace Realms.Tests.Sync
 
             if (singleTransaction)
             {
-                currentTransaction.Commit();
+                currentTransaction!.Commit();
                 currentTransaction = realm.BeginWrite();
             }
 
@@ -774,7 +774,7 @@ namespace Realms.Tests.Sync
 
             if (singleTransaction)
             {
-                currentTransaction.Commit();
+                currentTransaction!.Commit();
             }
         }
 

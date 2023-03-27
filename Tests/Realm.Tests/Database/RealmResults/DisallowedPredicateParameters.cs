@@ -19,7 +19,6 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -45,7 +44,7 @@ namespace Realms.Tests.Database
             var accessPropertyWithOnlyGet = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PropertyWithOnlyGet == null);
             Assert.That(() => accessPropertyWithOnlyGet.ToList(), Throws.TypeOf<NotSupportedException>());
 
-            var indirectAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty.FirstName == null);
+            var indirectAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty!.FirstName == null);
             Assert.That(() => indirectAccess.ToList(), Throws.TypeOf<NotSupportedException>());
 
             var listAccess = realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmListProperty != null);

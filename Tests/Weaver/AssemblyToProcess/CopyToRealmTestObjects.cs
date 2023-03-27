@@ -17,16 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using MongoDB.Bson;
 using Realms;
 
 namespace AssemblyToProcess
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NonNullableProperties : RealmObject
     {
-        public string String { get; set; }
+        public string? String { get; set; }
 
         public char Char { get; set; }
 
@@ -44,40 +42,34 @@ namespace AssemblyToProcess
 
         public bool Boolean { get; set; }
 
-        public byte[] ByteArray { get; set; }
+        public byte[]? ByteArray { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DateTimeOffsetProperty : RealmObject
     {
         public DateTimeOffset DateTimeOffset { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DecimalProperty : RealmObject
     {
         public decimal Decimal { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Decimal128Property : RealmObject
     {
         public Decimal128 Decimal128 { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ObjectIdProperty : RealmObject
     {
         public ObjectId ObjectId { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class GuidProperty : RealmObject
     {
         public Guid Guid { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NullableProperties : RealmObject
     {
         public char? Char { get; set; }
@@ -108,7 +100,6 @@ namespace AssemblyToProcess
 
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PKObjectOne : RealmObject
     {
         public string Foo { get; set; } = Guid.NewGuid().ToString();
@@ -117,7 +108,6 @@ namespace AssemblyToProcess
         public int Id { get; set; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PKObjectTwo : RealmObject
     {
         [PrimaryKey]
@@ -126,7 +116,6 @@ namespace AssemblyToProcess
         public string Foo { get; set; } = Guid.NewGuid().ToString();
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PKObjectThree : RealmObject
     {
         public string Foo { get; set; } = Guid.NewGuid().ToString();
@@ -140,11 +129,11 @@ namespace AssemblyToProcess
     public class RequiredObject : RealmObject
     {
         [Required]
-        public string String { get; set; }
+        public string String { get; set; } = null!;
     }
 
     public class NonRequiredObject : RealmObject
     {
-        public string String { get; set; }
+        public string? String { get; set; }
     }
 }

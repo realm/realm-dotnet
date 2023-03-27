@@ -28,6 +28,8 @@
     <PackageCertificateKeyFile>
     </PackageCertificateKeyFile>
     <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">DC86DF96F20D7AD28FF9647D95E895E969F7FDD1</PackageCertificateThumbprint>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != '' And '$(RestoreConfigFile)' == '' ">
     <RestoreConfigFile>$(MSBuildProjectDirectory)\..\Test.NuGet.Config</RestoreConfigFile>

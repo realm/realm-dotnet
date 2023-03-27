@@ -69,7 +69,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
-            var obj = (IRealmObject)Activator.CreateInstance(objectType);
+            var obj = (IRealmObject)Activator.CreateInstance(objectType)!;
             var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
@@ -92,7 +92,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassNotManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
-            var obj = (IRealmObject)Activator.CreateInstance(objectType);
+            var obj = (IRealmObject)Activator.CreateInstance(objectType)!;
             var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
@@ -104,7 +104,7 @@ namespace Realms.Tests.Database
 
         private static IRealmObjectHelper GetHelper(IRealmObjectBase obj)
         {
-            return obj.GetObjectMetadata().Helper;
+            return obj.GetObjectMetadata()!.Helper;
         }
 
         private IRealmObjectHelper GetHelper(Type type)

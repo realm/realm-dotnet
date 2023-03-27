@@ -130,7 +130,7 @@ namespace Realms.Tests.Database
         public void DeleteRealmWorksIfFolderDoesntExist()
         {
             var config = RealmConfiguration.DefaultConfiguration;
-            var dbFolder = Path.GetDirectoryName(config.DatabasePath);
+            var dbFolder = Path.GetDirectoryName(config.DatabasePath)!;
             var nonExistingRealm = Path.Combine(dbFolder, "idontexist", "my.realm");
             var newConfig = new RealmConfiguration(nonExistingRealm);
 
@@ -142,8 +142,8 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                Realm realm1 = null;
-                Realm realm2 = null;
+                Realm realm1 = null!;
+                Realm realm2 = null!;
                 try
                 {
                     // Arrange
@@ -289,7 +289,7 @@ namespace Realms.Tests.Database
             var ex = Assert.Throws<ArgumentException>(() => _ = new RealmConfiguration
             {
                 Schema = new[] { typeof(LoneClass), typeof(object) }
-            });
+            })!;
 
             Assert.That(ex.Message, Does.Contain("System.Object"));
             Assert.That(ex.Message, Does.Contain("must descend directly from either RealmObject, EmbeddedObject, or AsymmetricObject"));
@@ -657,8 +657,7 @@ namespace Realms.Tests.Database
 
                 using (var copy = GetRealm(copyConfig))
                 {
-                    var copiedPerson = copy.All<Person>().SingleOrDefault();
-                    Assert.That(copiedPerson, Is.Not.Null);
+                    var copiedPerson = copy.All<Person>().Single();
                     Assert.That(copiedPerson.FirstName, Is.EqualTo("John"));
                     Assert.That(copiedPerson.LastName, Is.EqualTo("Doe"));
                 }
@@ -685,7 +684,7 @@ namespace Realms.Tests.Database
 
             config.EnableCache = enableCache;
 
-            var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+            var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic)!;
             using var first = GetRealm(config);
             using var second = GetRealm(config);
             Assert.That(enableCache == ReferenceEquals(stateAccessor.GetValue(first), stateAccessor.GetValue(second)));
@@ -725,7 +724,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(AllTypesObject), out var allTypesSchema), Is.True);
             Assert.That(allTypesSchema, Is.Not.Null);
-            Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(allTypesSchema!.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
             Assert.That(allTypesSchema.BaseType, Is.Not.EqualTo(ObjectSchema.ObjectType.AsymmetricObject));
 
             var hasExpectedProp = allTypesSchema.TryFindProperty(nameof(AllTypesObject.RequiredStringProperty), out var requiredStringProp);
@@ -742,7 +741,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(EmbeddedAllTypesObject), out var embeddedAllTypesSchema), Is.True);
             Assert.That(embeddedAllTypesSchema, Is.Not.Null);
-            Assert.That(embeddedAllTypesSchema.BaseType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
+            Assert.That(embeddedAllTypesSchema!.BaseType, Is.EqualTo(ObjectSchema.ObjectType.EmbeddedObject));
 
             Assert.That(embeddedAllTypesSchema.TryFindProperty(nameof(EmbeddedAllTypesObject.StringProperty), out var stringProp), Is.True);
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
@@ -831,7 +830,7 @@ namespace Realms.Tests.Database
 
             var owner = query.Single();
             Assert.That(owner.IsFrozen);
-            Assert.That(owner.TopDog.IsFrozen);
+            Assert.That(owner.TopDog!.IsFrozen);
             Assert.That(owner.ListOfDogs.AsRealmCollection().IsFrozen);
             Assert.That(owner.ListOfDogs[0].IsFrozen);
         }
@@ -840,15 +839,14 @@ namespace Realms.Tests.Database
         public void FrozenRealm_DoesntUpdate()
         {
             using var realm = GetRealm();
-            Owner george = null;
-            realm.Write(() =>
+            var george = realm.Write(() =>
             {
                 var dog = realm.Add(new Dog
                 {
                     Name = "Charlie"
                 });
 
-                george = realm.Add(new Owner
+                return realm.Add(new Owner
                 {
                     Name = "George",
                     TopDog = dog,
@@ -987,7 +985,7 @@ namespace Realms.Tests.Database
             config.IsReadOnly = true;
 
             realm = GetRealm(config);
-            Realm frozenRealm = null;
+            Realm frozenRealm = null!;
             Assert.DoesNotThrow(() => frozenRealm = realm.Freeze());
             frozenRealm.Dispose();
         }
@@ -1017,10 +1015,10 @@ namespace Realms.Tests.Database
             {
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
-                    var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic);
+                    var stateAccessor = typeof(Realm).GetField("_state", BindingFlags.Instance | BindingFlags.NonPublic)!;
 
                     using var realm = Realm.GetInstance();
-                    var state = stateAccessor.GetValue(realm);
+                    var state = stateAccessor.GetValue(realm)!;
 
                     return new object[] { state };
                 });
@@ -1118,7 +1116,7 @@ namespace Realms.Tests.Database
             Assert.That(myTypes.Count(), Is.EqualTo(2));
             Assert.That(otherObjects.Count(), Is.EqualTo(1));
 
-            var foundById = realm.DynamicApi.Find("OtherObject", "abc");
+            var foundById = realm.DynamicApi.Find("OtherObject", "abc")!;
             Assert.Throws<MissingMemberException>(() => foundById.DynamicApi.Get<int>("hoho"));
             var backlinks = foundById.DynamicApi.GetBacklinks("MyTypes");
 
@@ -1214,13 +1212,13 @@ namespace Realms.Tests.Database
                 });
             });
 
-            var exGet = Assert.Throws<MissingMemberException>(() => _ = person.FirstName);
+            var exGet = Assert.Throws<MissingMemberException>(() => _ = person.FirstName)!;
             Assert.That(exGet.Message, Does.Contain(nameof(Person)));
             Assert.That(exGet.Message, Does.Contain(nameof(Person.FirstName)));
 
             realm.Write(() =>
             {
-                var exSet = Assert.Throws<MissingMemberException>(() => person.FirstName = "John");
+                var exSet = Assert.Throws<MissingMemberException>(() => person.FirstName = "John")!;
                 Assert.That(exSet.Message, Does.Contain(nameof(Person)));
                 Assert.That(exSet.Message, Does.Contain(nameof(Person.FirstName)));
             });
@@ -1239,7 +1237,7 @@ namespace Realms.Tests.Database
                 }).Freeze();
             });
 
-            frozenObj.Realm.Dispose();
+            frozenObj.Realm!.Dispose();
             realm.Dispose();
 
             Assert.That(frozenObj.Realm.IsClosed, Is.True);
@@ -1289,7 +1287,7 @@ namespace Realms.Tests.Database
             {
                 realm.Write(() =>
                 {
-                    var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i);
+                    var item = realm.Find<IntPrimaryKeyWithValueObject>(2 * i)!;
                     realm.Remove(item);
                 });
             }
@@ -1298,6 +1296,6 @@ namespace Realms.Tests.Database
 
     public partial class LoneClass : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

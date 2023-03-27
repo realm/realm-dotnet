@@ -23,13 +23,13 @@ namespace Realms.Tests
 {
     public class EventHelper<TSender, TArgs>
     {
-        private readonly ConcurrentQueue<TaskCompletionSource<(TSender, TArgs)>> _consumers = new ConcurrentQueue<TaskCompletionSource<(TSender, TArgs)>>();
+        private readonly ConcurrentQueue<TaskCompletionSource<(TSender, TArgs)>> _consumers = new();
 
-        public void OnEvent(object sender, TArgs args)
+        public void OnEvent(object? sender, TArgs args)
         {
             if (_consumers.TryDequeue(out var tcs))
             {
-                tcs.TrySetResult(((TSender)sender, args));
+                tcs.TrySetResult(((TSender)sender!, args));
             }
         }
 

@@ -28,7 +28,7 @@ namespace PerformanceTests
     /// over a large results set. It's intended to diagnose regressions in
     /// case we want to restructure ownership semantics of SharedRealmHandle.
     /// </summary>
-    public class IterationTests : BenchmarkBase
+    public partial class IterationTests : BenchmarkBase
     {
         [Params(1000, 10_000)]
         public int ObjectCount { get; set; }
@@ -82,11 +82,11 @@ namespace PerformanceTests
             _realm = Realm.GetInstance(_realm.Config.DatabasePath);
         }
 
-        private class ObjectWithList : RealmObject
+        private partial class ObjectWithList : IRealmObject
         {
             public int Value { get; set; }
 
-            public IList<string> Strings { get; }
+            public IList<string> Strings { get; } = null!;
         }
     }
 }

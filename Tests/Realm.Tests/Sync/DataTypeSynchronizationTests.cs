@@ -236,7 +236,7 @@ namespace Realms.Tests.Sync
         public void Dict_Binary() => TestDictionaryCore(o => o.ByteArrayDict, TestHelpers.GetBytes(10), TestHelpers.GetBytes(15), (a, b) => a.SequenceEqual(b));
 
         [Test]
-        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a.SequenceEqual(b));
+        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a!.SequenceEqual(b!));
 
         #endregion
 
@@ -249,7 +249,7 @@ namespace Realms.Tests.Sync
         public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         [Test]
-        public void Dict_Object() => TestDictionaryCore(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+        public void Dict_Object() => TestDictionaryCore(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a?.Int == b?.Int);
 
         #endregion
 
@@ -259,7 +259,7 @@ namespace Realms.Tests.Sync
         public void List_EmbeddedObject() => TestListCore(o => o.EmbeddedObjectList, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         [Test]
-        public void Dict_EmbeddedObject() => TestDictionaryCore(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+        public void Dict_EmbeddedObject() => TestDictionaryCore(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a?.Int == b?.Int);
 
         #endregion
 
@@ -289,9 +289,9 @@ namespace Realms.Tests.Sync
 
         #endregion
 
-        private void TestListCore<T>(Func<SyncCollectionsObject, IList<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestListCore<T>(Func<SyncCollectionsObject, IList<T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            equalsOverride ??= (a, b) => a.Equals(b);
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -345,9 +345,9 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            equalsOverride ??= (a, b) => a.Equals(b);
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -401,11 +401,11 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
             var comparer = new Func<KeyValuePair<string, T>, KeyValuePair<string, T>, bool>((a, b) =>
             {
-                return a.Key == b.Key && (equalsOverride?.Invoke(a.Value, b.Value) ?? a.Value.Equals(b.Value));
+                return a.Key == b.Key && (equalsOverride?.Invoke(a.Value, b.Value) ?? a.Value?.Equals(b.Value) == true);
             });
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -474,9 +474,9 @@ namespace Realms.Tests.Sync
             }, timeout: 60_000);
         }
 
-        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            equalsOverride ??= (a, b) => a.Equals(b);
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -527,7 +527,7 @@ namespace Realms.Tests.Sync
             }
 
             var robj = original.AsIRealmObject();
-            var clone = (IRealmObjectBase)Activator.CreateInstance(robj.GetType());
+            var clone = (IRealmObjectBase)Activator.CreateInstance(robj.GetType())!;
             var properties = robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite && p.CanRead && !p.HasCustomAttribute<PrimaryKeyAttribute>());
 
@@ -551,8 +551,8 @@ namespace Realms.Tests.Sync
             if (value is IRealmObject robj)
             {
                 // item2 belongs to realm2 - we want to look up the equivalent in realm1 to add it to dict1
-                Assert.That(robj.GetObjectMetadata().Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
-                var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema.Name, Operator.Convert<RealmValue>(pk));
+                Assert.That(robj.GetObjectMetadata()!.Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
+                var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema!.Name, Operator.Convert<RealmValue>(pk))!;
                 return Operator.Convert<IRealmObject, T>(item2InRealm1);
             }
 
@@ -601,9 +601,9 @@ namespace Realms.Tests.Sync
         private static async Task WaitForPropertyChangedAsync(IRealmObject realmObject, int timeout = 10 * 1000)
         {
             var tcs = new TaskCompletionSource();
-            (realmObject as INotifyPropertyChanged).PropertyChanged += RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged)!.PropertyChanged += RealmObject_PropertyChanged;
 
-            void RealmObject_PropertyChanged(object sender, PropertyChangedEventArgs e)
+            void RealmObject_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
             {
                 if (e != null)
                 {
@@ -612,7 +612,7 @@ namespace Realms.Tests.Sync
             }
 
             await tcs.Task.Timeout(timeout);
-            (realmObject as INotifyPropertyChanged).PropertyChanged -= RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged)!.PropertyChanged -= RealmObject_PropertyChanged;
         }
 
         private static async Task WaitForCollectionAsync<T>(IEnumerable<T> first, IEnumerable<T> second, Func<T, T, bool> comparer, string message)

@@ -34,7 +34,7 @@ namespace Realms.Tests
                 var doc = new XmlDocument();
                 doc.Load("App.Local.config");
 
-                foreach (var child in doc["appSettings"].ChildNodes.OfType<XmlElement>())
+                foreach (var child in doc["appSettings"]?.ChildNodes?.OfType<XmlElement>() ?? Enumerable.Empty<XmlElement>())
                 {
                     if (child.Name == "add")
                     {
@@ -44,7 +44,7 @@ namespace Realms.Tests
             }
         }
 
-        public static string GetSetting(string key)
+        public static string? GetSetting(string key)
         {
             if (_settings.TryGetValue(key, out var value))
             {

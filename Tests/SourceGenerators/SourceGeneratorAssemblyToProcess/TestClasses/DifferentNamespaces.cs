@@ -25,7 +25,7 @@ namespace SourceGeneratorAssemblyToProcess
     {
         public int Id { get; set; }
 
-        public OtherNamespaceObj OtherNamespaceObj { get; set; }
+        public OtherNamespaceObj? OtherNamespaceObj { get; set; }
     }
 }
 

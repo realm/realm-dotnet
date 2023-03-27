@@ -26,7 +26,7 @@ namespace SourceGeneratorPlayground
         {
             public int Id { get; set; }
 
-            public NestedClassWithoutPartialParent Link { get; set; }
+            public NestedClassWithoutPartialParent? Link { get; set; }
         }
     }
 }

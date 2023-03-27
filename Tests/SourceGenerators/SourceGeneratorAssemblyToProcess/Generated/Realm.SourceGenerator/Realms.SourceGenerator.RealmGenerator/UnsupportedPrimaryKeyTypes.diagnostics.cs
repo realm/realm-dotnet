@@ -80,7 +80,7 @@
       "StartLine": 43,
       "StartColumn": 9,
       "EndLine": 44,
-      "EndColumn": 49
+      "EndColumn": 50
     }
   },
   {

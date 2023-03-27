@@ -21,12 +21,8 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -34,7 +30,7 @@ namespace Realms.Tests.Database
 {
     internal partial class Cities : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     [TestFixture, Preserve(AllMembers = true)]
@@ -231,19 +227,19 @@ namespace Realms.Tests.Database
             Assert.That(level1.Select(l => l.StringValue), Is.EqualTo(new[] { "A", "B", "C" }));
 
             var level2 = _realm.All<Level1>()
-                               .OrderBy(l => l.Level2.IntValue)
+                               .OrderBy(l => l.Level2!.IntValue)
                                .ToArray();
 
             Assert.That(level2.Select(l => l.StringValue), Is.EqualTo(new[] { "A", "C", "B" }));
-            Assert.That(level2.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 1, 2, 3 }));
+            Assert.That(level2.Select(l => l.Level2!.IntValue), Is.EqualTo(new[] { 1, 2, 3 }));
 
             var level3 = _realm.All<Level1>()
-                               .OrderBy(l => l.Level2.Level3.DateValue)
+                               .OrderBy(l => l.Level2!.Level3!.DateValue)
                                .ToArray();
 
             Assert.That(level3.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "A", "B" }));
-            Assert.That(level3.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 2, 1, 3 }));
-            Assert.That(level3.Select(l => l.Level2.Level3.DateValue), Is.EqualTo(new[] { Date(1000), Date(5000), Date(10000) }));
+            Assert.That(level3.Select(l => l.Level2!.IntValue), Is.EqualTo(new[] { 2, 1, 3 }));
+            Assert.That(level3.Select(l => l.Level2!.Level3!.DateValue), Is.EqualTo(new[] { Date(1000), Date(5000), Date(10000) }));
         }
 
         [Test]
@@ -258,19 +254,19 @@ namespace Realms.Tests.Database
             Assert.That(level1.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "B", "A" }));
 
             var level2 = _realm.All<Level1>()
-                               .OrderByDescending(l => l.Level2.IntValue)
+                               .OrderByDescending(l => l.Level2!.IntValue)
                                .ToArray();
 
             Assert.That(level2.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "C", "A" }));
-            Assert.That(level2.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 3, 2, 1 }));
+            Assert.That(level2.Select(l => l.Level2!.IntValue), Is.EqualTo(new[] { 3, 2, 1 }));
 
             var level3 = _realm.All<Level1>()
-                               .OrderByDescending(l => l.Level2.Level3.DateValue)
+                               .OrderByDescending(l => l.Level2!.Level3!.DateValue)
                                .ToArray();
 
             Assert.That(level3.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "A", "C" }));
-            Assert.That(level3.Select(l => l.Level2.IntValue), Is.EqualTo(new[] { 3, 1, 2 }));
-            Assert.That(level3.Select(l => l.Level2.Level3.DateValue), Is.EqualTo(new[] { Date(10000), Date(5000), Date(1000) }));
+            Assert.That(level3.Select(l => l.Level2!.IntValue), Is.EqualTo(new[] { 3, 1, 2 }));
+            Assert.That(level3.Select(l => l.Level2!.Level3!.DateValue), Is.EqualTo(new[] { Date(10000), Date(5000), Date(1000) }));
         }
 
         [Test]
@@ -279,8 +275,8 @@ namespace Realms.Tests.Database
             MakeThreeLinkingObjects("A", 2, 10000, "B", 2, 5000, "C", 1, 10000);
 
             var items = _realm.All<Level1>()
-                              .OrderBy(o => o.Level2.IntValue)
-                              .ThenByDescending(o => o.Level2.Level3.DateValue)
+                              .OrderBy(o => o.Level2!.IntValue)
+                              .ThenByDescending(o => o.Level2!.Level3!.DateValue)
                               .ToArray();
 
             Assert.That(items.Select(l => l.StringValue), Is.EqualTo(new[] { "C", "A", "B" }));
@@ -292,8 +288,8 @@ namespace Realms.Tests.Database
             MakeThreeLinkingObjects("A", 2, 10000, "B", 2, 5000, "C", 1, 10000);
 
             var items = _realm.All<Level1>()
-                              .OrderByDescending(o => o.Level2.IntValue)
-                              .ThenBy(o => o.Level2.Level3.DateValue)
+                              .OrderByDescending(o => o.Level2!.IntValue)
+                              .ThenBy(o => o.Level2!.Level3!.DateValue)
                               .ToArray();
 
             Assert.That(items.Select(l => l.StringValue), Is.EqualTo(new[] { "B", "A", "C" }));
@@ -514,16 +510,16 @@ namespace Realms.Tests.Database
 
     public partial class Level1 : TestRealmObject
     {
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
 
-        public Level2 Level2 { get; set; }
+        public Level2? Level2 { get; set; }
     }
 
     public partial class Level2 : TestRealmObject
     {
         public int IntValue { get; set; }
 
-        public Level3 Level3 { get; set; }
+        public Level3? Level3 { get; set; }
     }
 
     public partial class Level3 : TestRealmObject

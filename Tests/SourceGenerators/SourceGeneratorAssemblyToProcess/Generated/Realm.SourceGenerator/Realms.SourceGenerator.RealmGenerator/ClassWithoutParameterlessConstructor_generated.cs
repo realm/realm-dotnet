@@ -20,12 +20,17 @@ namespace SourceGeneratorAssemblyToProcess
     [Woven(typeof(ClassWithoutParameterlessConstructorObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ClassWithoutParameterlessConstructor : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="ClassWithoutParameterlessConstructor"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ClassWithoutParameterlessConstructor", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Name"),
         }.Build();
 
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private ClassWithoutParameterlessConstructor() {}
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         #region IRealmObject implementation
 
@@ -35,24 +40,31 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal IClassWithoutParameterlessConstructorAccessor Accessor => _accessor ??= new ClassWithoutParameterlessConstructorUnmanagedAccessor(typeof(ClassWithoutParameterlessConstructor));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -64,10 +76,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Name != default(string))
-                {
-                    newAccessor.Name = oldAccessor.Name;
-                }
+                newAccessor.Name = oldAccessor.Name;
             }
 
             if (_propertyChanged != null)
@@ -92,6 +101,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -160,13 +170,25 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="ClassWithoutParameterlessConstructor"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="ClassWithoutParameterlessConstructor"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
         public static explicit operator ClassWithoutParameterlessConstructor?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ClassWithoutParameterlessConstructor>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="ClassWithoutParameterlessConstructor"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(ClassWithoutParameterlessConstructor? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -192,8 +214,10 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -218,15 +242,15 @@ namespace SourceGeneratorAssemblyToProcess
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IClassWithoutParameterlessConstructorAccessor : Realms.IRealmAccessor
         {
-            string? Name { get; set; }
+            string Name { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ClassWithoutParameterlessConstructorManagedAccessor : Realms.ManagedAccessor, IClassWithoutParameterlessConstructorAccessor
         {
-            public string? Name
+            public string Name
             {
-                get => (string?)GetValue("Name");
+                get => (string)GetValue("Name")!;
                 set => SetValue("Name", value);
             }
         }
@@ -236,8 +260,8 @@ namespace SourceGeneratorAssemblyToProcess
         {
             public override ObjectSchema ObjectSchema => ClassWithoutParameterlessConstructor.RealmSchema;
 
-            private string? _name;
-            public string? Name
+            private string _name = null!;
+            public string Name
             {
                 get => _name;
                 set
@@ -265,7 +289,7 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (propertyName)
                 {
                     case "Name":
-                        Name = (string?)val;
+                        Name = (string)val!;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");

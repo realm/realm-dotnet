@@ -28,7 +28,6 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using Nito.AsyncEx;
 using NUnit.Framework;
-using Realms.Helpers;
 
 namespace Realms.Tests
 {
@@ -67,22 +66,17 @@ namespace Realms.Tests
             return result;
         }
 
-        public static object GetPropertyValue(object o, string propName)
+        public static object? GetPropertyValue(object o, string propName)
         {
-            return o.GetType().GetProperty(propName).GetValue(o, null);
+            return o.GetType().GetProperty(propName)!.GetValue(o, null);
         }
 
-        public static void SetPropertyValue(object o, string propName, object propertyValue)
+        public static void SetPropertyValue(object o, string propName, object? propertyValue)
         {
-            o.GetType().GetProperty(propName).SetValue(o, propertyValue);
+            o.GetType().GetProperty(propName)!.SetValue(o, propertyValue);
         }
 
-        public static T GetPropertyValue<T>(this object obj, string propertyName)
-        {
-            return (T)GetPropertyValue(obj, propertyName);
-        }
-
-        public static string CopyBundledFileToDocuments(string realmName, string destPath = null)
+        public static string CopyBundledFileToDocuments(string realmName, string? destPath = null)
         {
             destPath = RealmConfigurationBase.GetPathToRealm(destPath);  // any relative subdir or filename works
             TransformHelpers.ExtractBundledFile(realmName, destPath);
@@ -135,10 +129,12 @@ namespace Realms.Tests
             }
         }
 
-        public static async Task EnsurePreserverKeepsObjectAlive<T>(Func<(T Preserver, WeakReference Reference)> func, Action<(T Preserver, WeakReference Reference)> assertReferenceIsAlive = null)
+        public static async Task EnsurePreserverKeepsObjectAlive<T>(
+            Func<(T Preserver, WeakReference Reference)> func,
+            Action<(T Preserver, WeakReference Reference)>? assertReferenceIsAlive = null)
         {
-            WeakReference reference = null;
-            WeakReference preserverReference = null;
+            WeakReference reference = null!;
+            WeakReference preserverReference = null!;
             await new Func<Task>(async () =>
             {
                 T preserver;
@@ -155,7 +151,7 @@ namespace Realms.Tests
                 }
 
                 preserverReference = new WeakReference(preserver);
-                preserver = default;
+                preserver = default!;
             })();
 
             await WaitUntilReferencesAreCollected(10000, reference, preserverReference);
@@ -220,54 +216,24 @@ namespace Realms.Tests
 
         public static ObjectId GenerateRepetitiveObjectId(byte value) => new(Enumerable.Range(0, 12).Select(_ => value).ToArray());
 
-        public static RealmInteger<T>[] ToInteger<T>(this T[] values)
-            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
-        {
-            return values?.Select(v => new RealmInteger<T>(v)).ToArray();
-        }
-
-        public static RealmInteger<T>?[] ToInteger<T>(this T?[] values)
-            where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
-        {
-            return values?.Select(v => v == null ? (RealmInteger<T>?)null : new RealmInteger<T>(v.Value)).ToArray();
-        }
-
         public static (TKey, RealmInteger<TValue>)[] ToIntegerTuple<TKey, TValue>(this (TKey, TValue)[] values)
             where TValue : struct, IComparable<TValue>, IFormattable, IConvertible, IEquatable<TValue>
         {
-            return values?.Select(kvp => (kvp.Item1, new RealmInteger<TValue>(kvp.Item2))).ToArray();
+            return values.Select(kvp => (kvp.Item1, new RealmInteger<TValue>(kvp.Item2))).ToArray();
         }
 
         public static (TKey, RealmInteger<TValue>?)[] ToIntegerTuple<TKey, TValue>(this (TKey, TValue?)[] values)
             where TValue : struct, IComparable<TValue>, IFormattable, IConvertible, IEquatable<TValue>
         {
-            return values?.Select(kvp => (kvp.Item1, kvp.Item2 == null ? (RealmInteger<TValue>?)null : new RealmInteger<TValue>(kvp.Item2.Value))).ToArray();
+            return values.Select(kvp => (kvp.Item1, kvp.Item2 == null ? (RealmInteger<TValue>?)null : new RealmInteger<TValue>(kvp.Item2.Value))).ToArray();
         }
 
-        public static Task<TEventArgs> EventToTask<TEventArgs>(Action<EventHandler<TEventArgs>> subscribe, Action<EventHandler<TEventArgs>> unsubscribe)
-        {
-            Argument.NotNull(subscribe, nameof(subscribe));
-            Argument.NotNull(unsubscribe, nameof(unsubscribe));
-
-            var tcs = new TaskCompletionSource<TEventArgs>();
-
-            subscribe(handler);
-
-            return tcs.Task;
-
-            void handler(object sender, TEventArgs args)
-            {
-                unsubscribe(handler);
-                tcs.TrySetResult(args);
-            }
-        }
-
-        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100, string errorMessage = null)
+        public static Task WaitForConditionAsync(Func<bool> testFunc, int retryDelay = 100, int attempts = 100, string? errorMessage = null)
         {
             return WaitForConditionAsync(testFunc, b => b, retryDelay, attempts, errorMessage);
         }
 
-        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string errorMessage = null)
+        public static async Task<T> WaitForConditionAsync<T>(Func<T> producer, Func<T, bool> tester, int retryDelay = 100, int attempts = 100, string? errorMessage = null)
         {
             var value = producer();
             var success = tester(value);
@@ -289,7 +255,7 @@ namespace Realms.Tests
             return value;
         }
 
-        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task errorTask = null)
+        public static void RunAsyncTest(Func<Task> testFunc, int timeout = 30000, Task? errorTask = null)
         {
             AsyncContext.Run(async () =>
             {
@@ -314,7 +280,7 @@ namespace Realms.Tests
             }
 
             Assert.Fail($"Exception of type {typeof(T)} expected but method didn't throw.");
-            return null;
+            return null!;
         }
 
         public static void TransformTestResults(string resultPath)
@@ -325,7 +291,7 @@ namespace Realms.Tests
 
         public static string ByteArrayToTestDescription<T>(T arr)
         {
-            var byteArr = (byte[])(object)arr;
+            var byteArr = (byte[]?)(object?)arr;
 
             if (byteArr == null)
             {
@@ -344,7 +310,7 @@ namespace Realms.Tests
         {
             while (queue.TryDequeue(out var result))
             {
-                action(result.Value);
+                action(result.Value!);
                 result.Value = default;
             }
         }
@@ -357,7 +323,7 @@ namespace Realms.Tests
                 {
                     while (queue.TryDequeue(out var result))
                     {
-                        await action(result.Value);
+                        await action(result.Value!);
                         result.Value = default;
                     }
                 }).Timeout(20_000, detail: $"Failed to drain queue: {queue.GetType().Name}");
@@ -432,7 +398,7 @@ namespace Realms.Tests
 
         public class StrongBox<T>
         {
-            public T Value { get; set; }
+            public T? Value { get; set; }
 
             public static implicit operator StrongBox<T>(T value) => new() { Value = value };
         }

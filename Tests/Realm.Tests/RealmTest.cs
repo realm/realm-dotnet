@@ -33,7 +33,7 @@ namespace Realms.Tests
     public abstract class RealmTest
     {
         private readonly ConcurrentQueue<StrongBox<Realm>> _realms = new();
-        private Logger _originalLogger;
+        private Logger _originalLogger = null!;
         private LogLevel _originalLogLevel;
 
         private bool _isSetup;
@@ -109,7 +109,7 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
-                realm.Value.Dispose();
+                realm.Value!.Dispose();
             }
 
             _realms.DrainQueue(realm =>
@@ -138,7 +138,7 @@ namespace Realms.Tests
             return false;
         }
 
-        protected Realm GetRealm(RealmConfigurationBase config = null)
+        protected Realm GetRealm(RealmConfigurationBase? config = null)
         {
             var result = Realm.GetInstance(config);
             CleanupOnTearDown(result);
@@ -158,7 +158,7 @@ namespace Realms.Tests
             using var cts = cancellationToken != null ? null : new CancellationTokenSource(timeout);
             try
             {
-                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts.Token);
+                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts!.Token);
                 CleanupOnTearDown(result);
                 return result;
             }

@@ -14,8 +14,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
@@ -24,12 +22,15 @@ namespace Realms.Tests.Database
     [Woven(typeof(DynamicOwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="DynamicOwner"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicOwner", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
             Realms.Schema.Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
-            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: true, managedName: "Tags"),
+            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Tags"),
             Realms.Schema.Property.ObjectDictionary("DogsDictionary", "DynamicDog", managedName: "DogsDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("TagsDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "TagsDictionary"),
             Realms.Schema.Property.ObjectSet("DogsSet", "DynamicDog", managedName: "DogsSet"),
@@ -44,24 +45,31 @@ namespace Realms.Tests.Database
 
         internal IDynamicOwnerAccessor Accessor => _accessor ??= new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -83,7 +91,7 @@ namespace Realms.Tests.Database
                     newAccessor.TagsSet.Clear();
                 }
 
-                if (!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string?))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
@@ -122,6 +130,7 @@ namespace Realms.Tests.Database
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -190,13 +199,25 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="DynamicOwner"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="DynamicOwner"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
         public static explicit operator DynamicOwner?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DynamicOwner>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="DynamicOwner"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(DynamicOwner? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -222,8 +243,10 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
@@ -254,7 +277,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; }
 
-            System.Collections.Generic.IList<string?> Tags { get; }
+            System.Collections.Generic.IList<string> Tags { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; }
 
@@ -294,14 +317,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IList<string?> _tags = null!;
-            public System.Collections.Generic.IList<string?> Tags
+            private System.Collections.Generic.IList<string> _tags = null!;
+            public System.Collections.Generic.IList<string> Tags
             {
                 get
                 {
                     if (_tags == null)
                     {
-                        _tags = GetListValue<string?>("Tags");
+                        _tags = GetListValue<string>("Tags");
                     }
 
                     return _tags;
@@ -394,7 +417,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; } = new List<Realms.Tests.Database.DynamicDog>();
 
-            public System.Collections.Generic.IList<string?> Tags { get; } = new List<string?>();
+            public System.Collections.Generic.IList<string> Tags { get; } = new List<string>();
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicDog?>();
 

@@ -119,7 +119,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppSwitchUser_WhenUserIsNull_Throws()
         {
-            Assert.That(() => DefaultApp.SwitchUser(null), Throws.InstanceOf<ArgumentNullException>());
+            Assert.That(() => DefaultApp.SwitchUser(null!), Throws.InstanceOf<ArgumentNullException>());
         }
 
         [Test]
@@ -161,17 +161,7 @@ namespace Realms.Tests.Sync
                 await DefaultApp.DeleteUserFromServerAsync(user);
                 Assert.That(DefaultApp.CurrentUser, Is.Null);
 
-                Exception ex = null;
-                try
-                {
-                    await DefaultApp.LogInAsync(Credentials.EmailPassword(username, password));
-                }
-                catch (Exception e)
-                {
-                    ex = e;
-                }
-
-                Assert.That(ex, Is.TypeOf<AppException>());
+                var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(Credentials.EmailPassword(username, password)));
                 Assert.That(ex.Message, Is.EqualTo("InvalidPassword: invalid username/password"));
             });
         }
@@ -202,7 +192,7 @@ namespace Realms.Tests.Sync
             const string tokenWithCustomData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjIsInVzZXJfZGF0YSI6eyJuYW1lIjoiVGltb3RoeSIsImVtYWlsIjoiYmlnX3RpbUBnbWFpbC5jb20iLCJhZGRyZXNzZXMiOlt7ImNpdHkiOiJOWSIsInN0cmVldCI6IjQybmQifSx7ImNpdHkiOiJTRiIsInN0cmVldCI6Ik1haW4gU3QuIn1dLCJmYXZvcml0ZUlkcyI6WzEsMiwzXX19.wYYtavafunx-iEKFNwXC6DR0C3vBDunwhvIox6XgqDE";
             var user = GetFakeUser(accessToken: tokenWithCustomData);
 
-            var customData = user.GetCustomData();
+            var customData = user.GetCustomData()!;
             Assert.That(customData, Is.Not.Null);
             Assert.That(customData["name"].AsString, Is.EqualTo("Timothy"));
             Assert.That(customData["email"].AsString, Is.EqualTo("big_tim@gmail.com"));
@@ -219,30 +209,30 @@ namespace Realms.Tests.Sync
         {
             [BsonElement("name")]
             [Preserve]
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
 
             [BsonElement("email")]
             [Preserve]
-            public string Email { get; set; }
+            public string Email { get; set; } = string.Empty;
 
             [BsonElement("addresses")]
             [Preserve]
-            public Address[] Addresses { get; set; }
+            public Address[] Addresses { get; set; } = Array.Empty<Address>();
 
             [BsonElement("favoriteIds")]
             [Preserve]
-            public long[] FavoriteIds { get; set; }
+            public long[] FavoriteIds { get; set; } = Array.Empty<long>();
 
             [Preserve(AllMembers = true)]
             public class Address
             {
                 [BsonElement("city")]
                 [Preserve]
-                public string City { get; set; }
+                public string City { get; set; } = string.Empty;
 
                 [BsonElement("street")]
                 [Preserve]
-                public string Street { get; set; }
+                public string Street { get; set; } = string.Empty;
             }
         }
 
@@ -252,7 +242,7 @@ namespace Realms.Tests.Sync
             const string tokenWithCustomData = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWNjZXNzIHRva2VuIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjI1MzYyMzkwMjIsInVzZXJfZGF0YSI6eyJuYW1lIjoiVGltb3RoeSIsImVtYWlsIjoiYmlnX3RpbUBnbWFpbC5jb20iLCJhZGRyZXNzZXMiOlt7ImNpdHkiOiJOWSIsInN0cmVldCI6IjQybmQifSx7ImNpdHkiOiJTRiIsInN0cmVldCI6Ik1haW4gU3QuIn1dLCJmYXZvcml0ZUlkcyI6WzEsMiwzXX19.wYYtavafunx-iEKFNwXC6DR0C3vBDunwhvIox6XgqDE";
             var user = GetFakeUser(accessToken: tokenWithCustomData);
 
-            var customData = user.GetCustomData<AccessTokenCustomData>();
+            var customData = user.GetCustomData<AccessTokenCustomData>()!;
             Assert.That(customData, Is.Not.Null);
             Assert.That(customData.Name, Is.EqualTo("Timothy"));
             Assert.That(customData.Email, Is.EqualTo("big_tim@gmail.com"));
@@ -426,7 +416,7 @@ namespace Realms.Tests.Sync
                 Assert.That(user.Profile.Gender, Is.EqualTo("other"));
                 Assert.That(user.Profile.MinAge, Is.EqualTo("80"));
                 Assert.That(user.Profile.MaxAge, Is.EqualTo("90"));
-                Assert.That(user.Profile.PictureUrl.AbsoluteUri, Is.EqualTo("https://doe.com/mypicture"));
+                Assert.That(user.Profile.PictureUrl!.AbsoluteUri, Is.EqualTo("https://doe.com/mypicture"));
 
                 // TODO: add other checks once https://github.com/realm/realm-core/issues/4131 is implemented.
             });
@@ -520,7 +510,6 @@ namespace Realms.Tests.Sync
 
                 var fetched = await user.ApiKeys.FetchAsync(key.Id);
 
-                Assert.That(fetched, Is.Not.Null);
                 AssertKeysAreSame(key, fetched);
             });
         }
@@ -668,7 +657,7 @@ namespace Realms.Tests.Sync
                 await user.ApiKeys.EnableAsync(key.Id);
 
                 var fetched = await user.ApiKeys.FetchAsync(key.Id);
-                Assert.That(fetched.IsEnabled);
+                Assert.That(fetched!.IsEnabled);
             });
         }
 
@@ -685,12 +674,12 @@ namespace Realms.Tests.Sync
                 await user.ApiKeys.DisableAsync(key.Id);
 
                 var fetched = await user.ApiKeys.FetchAsync(key.Id);
-                Assert.IsFalse(fetched.IsEnabled);
+                Assert.IsFalse(fetched!.IsEnabled);
 
                 await user.ApiKeys.DisableAsync(key.Id);
 
                 var refetched = await user.ApiKeys.FetchAsync(key.Id);
-                Assert.IsFalse(refetched.IsEnabled);
+                Assert.IsFalse(refetched!.IsEnabled);
             });
         }
 
@@ -762,7 +751,7 @@ namespace Realms.Tests.Sync
                 var user = await GetUserAsync();
                 var apiKey = await user.ApiKeys.CreateAsync("my-api-key");
 
-                var credentials = Credentials.ApiKey(apiKey.Value);
+                var credentials = Credentials.ApiKey(apiKey.Value!);
                 var apiKeyUser = await DefaultApp.LogInAsync(credentials);
 
                 Assert.That(apiKeyUser.Id, Is.EqualTo(user.Id));
@@ -782,7 +771,7 @@ namespace Realms.Tests.Sync
 
                 await user.ApiKeys.DisableAsync(apiKey.Id);
 
-                var credentials = Credentials.ApiKey(apiKey.Value);
+                var credentials = Credentials.ApiKey(apiKey.Value!);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
                 Assert.That(ex.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
@@ -810,7 +799,7 @@ namespace Realms.Tests.Sync
 
                 await user.ApiKeys.DisableAsync(apiKey.Id);
 
-                var credentials = Credentials.ApiKey(apiKey.Value);
+                var credentials = Credentials.ApiKey(apiKey.Value!);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
@@ -830,7 +819,7 @@ namespace Realms.Tests.Sync
 
                 await user.ApiKeys.DeleteAsync(apiKey.Id);
 
-                var credentials = Credentials.ApiKey(apiKey.Value);
+                var credentials = Credentials.ApiKey(apiKey.Value!);
 
                 var ex = await TestHelpers.AssertThrows<AppException>(() => DefaultApp.LogInAsync(credentials));
 
@@ -840,9 +829,10 @@ namespace Realms.Tests.Sync
             });
         }
 
-        private static void AssertKeysAreSame(ApiKey original, ApiKey fetched)
+        private static void AssertKeysAreSame(ApiKey original, ApiKey? fetched)
         {
-            Assert.That(fetched.Id, Is.EqualTo(original.Id));
+            Assert.That(fetched, Is.Not.Null);
+            Assert.That(fetched!.Id, Is.EqualTo(original.Id));
             Assert.That(fetched.IsEnabled, Is.EqualTo(original.IsEnabled));
             Assert.That(fetched.Name, Is.EqualTo(original.Name));
             Assert.That(fetched.Value, Is.Null);
@@ -875,11 +865,11 @@ namespace Realms.Tests.Sync
                 updatedData = await user.RefreshCustomDataAsync();
 
                 Assert.That(updatedData, Is.Not.Null);
-                Assert.That(updatedData["age"].AsInt32, Is.EqualTo(153));
+                Assert.That(updatedData!["age"].AsInt32, Is.EqualTo(153));
                 Assert.That(updatedData["interests"].AsBsonArray.Select(i => i.AsString), Is.EquivalentTo(new[] { "painting", "sci-fi" }));
 
                 Assert.That(user.GetCustomData(), Is.Not.Null);
-                Assert.That(user.GetCustomData()["age"].AsInt32, Is.EqualTo(153));
+                Assert.That(user.GetCustomData()!["age"].AsInt32, Is.EqualTo(153));
             });
         }
 
@@ -908,13 +898,13 @@ namespace Realms.Tests.Sync
                 updatedData = await user.RefreshCustomDataAsync<CustomDataDocument>();
 
                 Assert.That(updatedData, Is.Not.Null);
-                Assert.That(updatedData.Age, Is.EqualTo(45));
+                Assert.That(updatedData!.Age, Is.EqualTo(45));
                 Assert.That(updatedData.Interests, Is.EquivalentTo(new[] { "swimming", "biking" }));
 
                 var customData = user.GetCustomData<CustomDataDocument>();
 
                 Assert.That(customData, Is.Not.Null);
-                Assert.That(customData.Age, Is.EqualTo(45));
+                Assert.That(customData!.Age, Is.EqualTo(45));
                 Assert.That(customData.Interests, Is.EquivalentTo(new[] { "swimming", "biking" }));
             });
         }
@@ -972,7 +962,7 @@ namespace Realms.Tests.Sync
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous(reuseExisting: false));
-                var currentUser = DefaultApp.CurrentUser;
+                var currentUser = DefaultApp.CurrentUser!;
 
                 Assert.That(user.Id, Is.EqualTo(currentUser.Id));
                 Assert.That(user.Equals(currentUser));
@@ -1001,7 +991,7 @@ namespace Realms.Tests.Sync
 
             [Preserve]
             [BsonElement("user_id")]
-            public string UserId { get; set; }
+            public string UserId { get; set; } = string.Empty;
 
             [Preserve]
             [BsonElement("age")]
@@ -1009,7 +999,7 @@ namespace Realms.Tests.Sync
 
             [Preserve]
             [BsonElement("interests")]
-            public string[] Interests { get; set; }
+            public string[] Interests { get; set; } = Array.Empty<string>();
         }
     }
 }

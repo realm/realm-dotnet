@@ -25,7 +25,7 @@ namespace AssemblyToProcess
 {
     public class LambdaPropertyObject : RealmObject
     {
-        public IList<Person> ListProperty { get; }
+        public IList<Person> ListProperty { get; } = null!;
 
         public Person FirstPropertyObject => ListProperty.First();
 
@@ -36,38 +36,38 @@ namespace AssemblyToProcess
     {
         public int Id { get; set; }
 
-        public IList<RealmInteger<int>> CounterList { get; set; }
+        public IList<RealmInteger<int>> CounterList { get; set; } = null!;
 
-        public ISet<RealmInteger<int>> CounterSet { get; set; }
+        public ISet<RealmInteger<int>> CounterSet { get; set; } = null!;
 
-        public IDictionary<string, RealmInteger<int>> CounterDict { get; set; }
+        public IDictionary<string, RealmInteger<int>> CounterDict { get; set; } = null!;
 
     }
 
     public class RealmListWithSetter : RealmObject
     {
-        public IList<Person> People { get; set; }
+        public IList<Person> People { get; set; } = null!;
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
     public class RealmSetWithSetter : RealmObject
     {
-        public ISet<Person> People { get; set; }
+        public ISet<Person> People { get; set; } = null!;
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
     public class RealmDictionaryWithSetter : RealmObject
     {
-        public IDictionary<string, Person> People { get; set; }
+        public IDictionary<string, Person> People { get; set; } = null!;
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
     public class RealmDictionaryWithNonStringKey : RealmObject
     {
-        public IDictionary<int, Person> People { get; }
+        public IDictionary<int, Person> People { get; } = null!;
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
@@ -86,7 +86,7 @@ namespace AssemblyToProcess
         public int IntProperty { get; set; }
 
         [Indexed]
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
         [Indexed]
         public bool BooleanProperty { get; set; }
@@ -108,10 +108,10 @@ namespace AssemblyToProcess
         // These should be allowed:
 
         [Required]
-        public string StringProperty { get; set; }
+        public string StringProperty { get; set; } = null!;
 
         [Required]
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[] ByteArrayProperty { get; set; } = null!;
 
         [Required]
         public char? NullableCharProperty { get; set; }
@@ -170,10 +170,10 @@ namespace AssemblyToProcess
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
         [Required]
-        public Person ObjectProperty { get; set; }
+        public Person ObjectProperty { get; set; } = null!;
 
         [Required]
-        public IList<Person> ListProperty { get; }
+        public IList<Person> ListProperty { get; } = null!;
     }
 
     public class PrimaryKeyProperties : RealmObject
@@ -184,7 +184,7 @@ namespace AssemblyToProcess
         public int IntProperty { get; set; }
 
         [PrimaryKey]
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
         // These should cause errors:
 
@@ -227,13 +227,13 @@ namespace AssemblyToProcess
         public DateTimeOffset AutomaticDate { get; }
 
         [MapTo("Email")]
-        public string Email_ { get; }
+        public string? Email_ { get; }
 
         [Indexed]
         [MapTo("Date")]
         public DateTimeOffset Date_ { get; }
 
-        public string PersistedProperty { get; set; }
+        public string? PersistedProperty { get; set; }
     }
 
     public class NotSupportedProperties : RealmObject
@@ -244,9 +244,9 @@ namespace AssemblyToProcess
 
         public MyEnum EnumProperty { get; set; }
 
-        public List<Person> People { get; }
+        public List<Person> People { get; } = null!;
 
-        public string PersistedProperty { get; set; }
+        public string? PersistedProperty { get; set; }
 
         public enum MyEnum
         {
@@ -260,18 +260,18 @@ namespace AssemblyToProcess
         public int Id { get; set; }
 
         [Backlink(nameof(ChildRelationShips))]
-        public InvalidBacklinkRelationships ParentRelationship { get; set; }
+        public InvalidBacklinkRelationships ParentRelationship { get; set; } = null!;
 
         [Backlink(nameof(ParentRelationship))]
-        public IList<InvalidBacklinkRelationships> ChildRelationShips { get; }
+        public IList<InvalidBacklinkRelationships> ChildRelationShips { get; } = null!;
 
         [Backlink(nameof(ParentRelationship))]
-        public IQueryable<InvalidBacklinkRelationships> WritableBacklinksProperty { get; set; }
+        public IQueryable<InvalidBacklinkRelationships> WritableBacklinksProperty { get; set; } = null!;
 
         [Backlink(nameof(Person.PhoneNumbers))]
-        public IQueryable<Person> NoSuchRelationshipProperty { get; }
+        public IQueryable<Person> NoSuchRelationshipProperty { get; } = null!;
 
-        public IQueryable<Person> BacklinkNotAppliedProperty { get; set; }
+        public IQueryable<Person> BacklinkNotAppliedProperty { get; set; } = null!;
     }
 
     public class AccessorTestObject : RealmObject
@@ -281,11 +281,11 @@ namespace AssemblyToProcess
 
         public AccessorTestObject GetterLessObject { set { } }
 
-        public AccessorTestObject SetterLessObject { get; }
+        public AccessorTestObject SetterLessObject { get; } = null!;
 
         public string GetterLessString { set { } }
 
-        public string SetterLessString { get; }
+        public string SetterLessString { get; } = null!;
     }
 
     public class Sensor : AsymmetricObject
@@ -294,7 +294,7 @@ namespace AssemblyToProcess
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Backlink(nameof(Measurement.Sensor))]
-        public IQueryable<Measurement> Measurements { get; }
+        public IQueryable<Measurement> Measurements { get; } = null!;
 
         public Measurement FirstMeasurement => Measurements.First();
     }
@@ -305,15 +305,15 @@ namespace AssemblyToProcess
 
         public double Y { get; set; }
 
-        public Sensor Sensor { get; set; }
+        public Sensor? Sensor { get; set; }
     }
 
     public class Department : EmbeddedObject
     {
-        public IList<Sensor> SensorsList { get; }
+        public IList<Sensor> SensorsList { get; } = null!;
 
-        public ISet<Sensor> SensorsSet { get; }
+        public ISet<Sensor> SensorsSet { get; } = null!;
 
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

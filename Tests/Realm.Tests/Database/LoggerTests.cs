@@ -27,7 +27,7 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class LoggerTests
     {
-        private Logger _originalLogger;
+        private Logger _originalLogger = null!;
         private LogLevel _originalLogLevel;
 
         [SetUp]

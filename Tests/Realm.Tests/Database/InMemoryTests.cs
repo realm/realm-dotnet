@@ -21,14 +21,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class InMemoryTests : RealmTest
     {
-        private InMemoryConfiguration _config;
+        private InMemoryConfiguration _config = null!;
 
         protected override void CustomSetUp()
         {
@@ -160,7 +159,7 @@ namespace Realms.Tests.Database
                 }).Freeze();
             });
 
-            frozenObj.Realm.Dispose();
+            frozenObj.Realm!.Dispose();
             realm.Dispose();
 
             Assert.That(frozenObj.Realm.IsClosed, Is.True);

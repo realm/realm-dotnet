@@ -114,13 +114,14 @@ namespace Realms.Tests.Database
         public void SetRemappedPropertyTest()
         {
             // Arrange
-            Person p = null;
-            _realm.Write(() =>
+            var p = _realm.Write(() =>
             {
-                p = _realm.Add(new Person());
+                var result = _realm.Add(new Person());
 
                 // Act
-                p.Email = "John@a.com";
+                result.Email = "John@a.com";
+
+                return result;
             });
 
             var receivedEmail = p.Email;
@@ -146,14 +147,13 @@ namespace Realms.Tests.Database
         [Test]
         public void AddNullObjectShouldFail()
         {
-            Assert.That(() => _realm.Add(null as Person), Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => _realm.Add((null as Person)!), Throws.TypeOf<ArgumentNullException>());
         }
 
         [Test]
         public void AddAnObjectFromAnotherRealmShouldFail()
         {
-            Person p = null;
-            _realm.Write(() => p = _realm.Add(new Person()));
+            var p = _realm.Write(() => _realm.Add(new Person()));
 
             var secondaryConfig = new RealmConfiguration(Guid.NewGuid().ToString());
             using var otherRealm = GetRealm(secondaryConfig);
@@ -168,7 +168,7 @@ namespace Realms.Tests.Database
 
             using var realm2 = GetRealm(_realm.Config);
             Assert.That(firstObject.IsManaged);
-            Assert.That(realm2.IsSameInstance(firstObject.Realm));
+            Assert.That(realm2.IsSameInstance(firstObject.Realm!));
             realm2.Write(() => realm2.Add(firstObject));
         }
 
@@ -176,8 +176,7 @@ namespace Realms.Tests.Database
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
-            Person p = null;
-            _realm.Write(() => p = _realm.Add(new Person()));
+            var p = _realm.Write(() => _realm.Add(new Person()));
 
             // Act and assert
             Assert.That(() => p.FirstName = "John", Throws.TypeOf<RealmInvalidTransactionException>());
@@ -186,7 +185,7 @@ namespace Realms.Tests.Database
         [Test]
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
-            Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
+            Assert.That(typeof(Person).GetProperty("Nickname")!.GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
 
         [Test]

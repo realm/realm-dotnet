@@ -23,12 +23,8 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -369,9 +365,11 @@ namespace Realms.Tests.Database
             Assert.That(rv == value);
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.String));
 
-            Assert.That((string)rv == value);
+            Assert.That((string)rv! == value);
+            Assert.That((string?)rv == value);
             Assert.That(rv.As<string>() == value);
             Assert.That(rv.AsString() == value);
+            Assert.That(rv.AsNullableString() == value);
             Assert.That(rv != RealmValue.Null);
         }
 
@@ -390,9 +388,11 @@ namespace Realms.Tests.Database
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Data));
 
-            Assert.That((byte[])rv, Is.EqualTo(value));
+            Assert.That((byte[])rv!, Is.EqualTo(value));
+            Assert.That((byte[]?)rv, Is.EqualTo(value));
             Assert.That(rv.As<byte[]>(), Is.EqualTo(value));
             Assert.That(rv.AsData(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableData(), Is.EqualTo(value));
             Assert.That(rv != RealmValue.Null);
         }
 
@@ -401,7 +401,7 @@ namespace Realms.Tests.Database
             [ValueSource(nameof(ObjectValues))] IRealmObjectBase value,
             [Values(true, false)] bool isManaged)
         {
-            RealmValue rv = RealmValue.Object(value);
+            var rv = RealmValue.Object(value);
 
             if (isManaged)
             {
@@ -527,7 +527,7 @@ namespace Realms.Tests.Database
         [Test]
         public void NullTests([Values(true, false)] bool isManaged)
         {
-            RealmValue rv = RealmValue.Null;
+            var rv = RealmValue.Null;
 
             if (isManaged)
             {
@@ -555,6 +555,10 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsNullableInt32RealmInteger() == null);
             Assert.That(rv.AsNullableInt64() == null);
             Assert.That(rv.AsNullableInt64RealmInteger() == null);
+            Assert.That(rv.AsNullableString() == null);
+            Assert.That(rv.AsNullableData() == null);
+            Assert.That(rv.AsNullableRealmObject() == null);
+            Assert.That(rv.AsNullableIRealmObject() == null);
 
             Assert.That((bool?)rv == null);
             Assert.That((DateTimeOffset?)rv == null);
@@ -572,6 +576,9 @@ namespace Realms.Tests.Database
             Assert.That((RealmInteger<int>?)rv == null);
             Assert.That((long?)rv == null);
             Assert.That((RealmInteger<long>?)rv == null);
+            Assert.That((string?)rv == null);
+            Assert.That((byte[]?)rv == null);
+            Assert.That((RealmObject?)rv == null);
         }
 
         [Test]
@@ -708,7 +715,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WhenManaged_NotificationTests()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
             {
@@ -750,7 +757,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WhenManaged_BoolNotificationTests([Values(0, 1)] int intValue, [Values(true, false)] bool boolValue)
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
             {
@@ -1003,7 +1010,7 @@ namespace Realms.Tests.Database
                 Assert.That(f, Is.EquivalentTo(referenceResult));
             }
 
-            foreach (RealmValueType type in Enum.GetValues(typeof(RealmValueType)))
+            foreach (var type in (RealmValueType[])Enum.GetValues(typeof(RealmValueType)))
             {
                 // Equality on RealmValueType
                 var referenceResult = rvObjects.Where(r => r.RealmValueProperty.Type == type).OrderBy(r => r.Id).ToList();
@@ -1165,14 +1172,14 @@ namespace Realms.Tests.Database
     {
         public int IntProperty { get; set; }
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public override bool Equals(object obj) => Equals(obj as InternalObject);
+        public override bool Equals(object? obj) => Equals(obj as InternalObject);
 
-        public bool Equals(InternalObject other) => other != null &&
+        public bool Equals(InternalObject? other) => other != null &&
                    IntProperty == other.IntProperty &&
                    StringProperty == other.StringProperty;
 
-        public override string ToString() => $"{IntProperty} - {StringProperty}";
+        public override string? ToString() => $"{IntProperty} - {StringProperty}";
     }
 }

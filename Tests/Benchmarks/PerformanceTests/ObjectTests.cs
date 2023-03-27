@@ -23,14 +23,14 @@ using Realms;
 
 namespace PerformanceTests
 {
-    public class ObjectTests : BenchmarkBase
+    public partial class ObjectTests : BenchmarkBase
     {
         private const int ObjectCount = 100;
 
-        private ObjectClass _robject;
-        private DummyClass[] _newPropertyValues;
-        private Transaction _transaction;
-        private DummyClass _temp;
+        private ObjectClass _robject = null!;
+        private DummyClass[] _newPropertyValues = null!;
+        private Transaction _transaction = null!;
+        private DummyClass? _temp;
 
         protected override void SeedData()
         {
@@ -83,8 +83,8 @@ namespace PerformanceTests
             _newPropertyValues = new DummyClass[32];
             for (var i = 0; i < _newPropertyValues.Length; i++)
             {
-                var prop = typeof(ObjectClass).GetProperty($"Value{i}", BindingFlags.Public | BindingFlags.Instance);
-                _newPropertyValues[i] = (DummyClass)prop.GetValue(_robject);
+                var prop = typeof(ObjectClass).GetProperty($"Value{i}", BindingFlags.Public | BindingFlags.Instance)!;
+                _newPropertyValues[i] = (DummyClass)prop.GetValue(_robject)!;
             }
 
             _transaction = _realm.BeginWrite();
@@ -96,7 +96,7 @@ namespace PerformanceTests
         }
 
         [Benchmark(OperationsPerInvoke = 32, Description = "Time to get a property of type RealmObject")]
-        public object GetPropertyValue()
+        public object? GetPropertyValue()
         {
             _temp = _robject.Value0;
             _temp = _robject.Value1;
@@ -170,74 +170,74 @@ namespace PerformanceTests
             _robject.Value31 = _newPropertyValues[31];
         }
 
-        private class ObjectClass : RealmObject
+        private partial class ObjectClass : IRealmObject
         {
-            public DummyClass Value0 { get; set; }
+            public DummyClass? Value0 { get; set; }
 
-            public DummyClass Value1 { get; set; }
+            public DummyClass? Value1 { get; set; }
 
-            public DummyClass Value2 { get; set; }
+            public DummyClass? Value2 { get; set; }
 
-            public DummyClass Value3 { get; set; }
+            public DummyClass? Value3 { get; set; }
 
-            public DummyClass Value4 { get; set; }
+            public DummyClass? Value4 { get; set; }
 
-            public DummyClass Value5 { get; set; }
+            public DummyClass? Value5 { get; set; }
 
-            public DummyClass Value6 { get; set; }
+            public DummyClass? Value6 { get; set; }
 
-            public DummyClass Value7 { get; set; }
+            public DummyClass? Value7 { get; set; }
 
-            public DummyClass Value8 { get; set; }
+            public DummyClass? Value8 { get; set; }
 
-            public DummyClass Value9 { get; set; }
+            public DummyClass? Value9 { get; set; }
 
-            public DummyClass Value10 { get; set; }
+            public DummyClass? Value10 { get; set; }
 
-            public DummyClass Value11 { get; set; }
+            public DummyClass? Value11 { get; set; }
 
-            public DummyClass Value12 { get; set; }
+            public DummyClass? Value12 { get; set; }
 
-            public DummyClass Value13 { get; set; }
+            public DummyClass? Value13 { get; set; }
 
-            public DummyClass Value14 { get; set; }
+            public DummyClass? Value14 { get; set; }
 
-            public DummyClass Value15 { get; set; }
+            public DummyClass? Value15 { get; set; }
 
-            public DummyClass Value16 { get; set; }
+            public DummyClass? Value16 { get; set; }
 
-            public DummyClass Value17 { get; set; }
+            public DummyClass? Value17 { get; set; }
 
-            public DummyClass Value18 { get; set; }
+            public DummyClass? Value18 { get; set; }
 
-            public DummyClass Value19 { get; set; }
+            public DummyClass? Value19 { get; set; }
 
-            public DummyClass Value20 { get; set; }
+            public DummyClass? Value20 { get; set; }
 
-            public DummyClass Value21 { get; set; }
+            public DummyClass? Value21 { get; set; }
 
-            public DummyClass Value22 { get; set; }
+            public DummyClass? Value22 { get; set; }
 
-            public DummyClass Value23 { get; set; }
+            public DummyClass? Value23 { get; set; }
 
-            public DummyClass Value24 { get; set; }
+            public DummyClass? Value24 { get; set; }
 
-            public DummyClass Value25 { get; set; }
+            public DummyClass? Value25 { get; set; }
 
-            public DummyClass Value26 { get; set; }
+            public DummyClass? Value26 { get; set; }
 
-            public DummyClass Value27 { get; set; }
+            public DummyClass? Value27 { get; set; }
 
-            public DummyClass Value28 { get; set; }
+            public DummyClass? Value28 { get; set; }
 
-            public DummyClass Value29 { get; set; }
+            public DummyClass? Value29 { get; set; }
 
-            public DummyClass Value30 { get; set; }
+            public DummyClass? Value30 { get; set; }
 
-            public DummyClass Value31 { get; set; }
+            public DummyClass? Value31 { get; set; }
         }
 
-        private class DummyClass : RealmObject
+        private partial class DummyClass : IRealmObject
         {
             public int Int { get; set; }
         }
