@@ -36,7 +36,7 @@ namespace Realms.Logging
         private readonly Lazy<GCHandle> _gcHandle;
 
         private static Logger? _defaultLogger;
-        private static LogLevel logLevel = LogLevel.Info;
+        private static LogLevel _logLevel = LogLevel.Info;
 
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
@@ -89,10 +89,10 @@ namespace Realms.Logging
         /// <value>The log level for Realm-originating messages.</value>
         public static LogLevel LogLevel
         {
-            get => logLevel;
+            get => _logLevel;
             set
             {
-                logLevel = value;
+                _logLevel = value;
                 SharedRealmHandle.SetLogLevel(value);
             }
         }
@@ -206,10 +206,10 @@ namespace Realms.Logging
             protected override void LogImpl(LogLevel level, string message)
             {
                 lock (_builder)
-                    {
-                        _builder.AppendLine(FormatLog(level, message));
-                    }
+                {
+                    _builder.AppendLine(FormatLog(level, message));
                 }
+            }
 
             public string GetLog()
             {

@@ -1281,25 +1281,20 @@ namespace Realms.Tests.Database
             TestHelpers.AssertRegex(logger.GetLog(), expectedLog);
             Assert.That(logger.GetLog(), Does.Not.Contain("Debug"));
 
-            WriteObject();
-
             // We're at info level, so we don't expect any statements.
-            Assert.That(logger.GetLog(), Is.Empty);
+            WriteAndVerifyLogs();
 
             Logger.LogLevel = LogLevel.Debug;
-            WriteObject();
 
             // We're at Debug level now, so we should see the write message.
             var expectedWriteLog = new Regex("Debug: DB: .* Commit of size [^ ]* done in [^ ]* us");
-            TestHelpers.AssertRegex(logger.GetLog(), expectedWriteLog);
+            WriteAndVerifyLogs(expectedWriteLog);
 
             // Revert back to Info level and make sure we don't log anything
             Logger.LogLevel = LogLevel.Info;
-            WriteObject();
+            WriteAndVerifyLogs();
 
-            Assert.That(logger.GetLog(), Is.Empty);
-
-            void WriteObject()
+            void WriteAndVerifyLogs(Regex? expectedRegex = null)
             {
                 logger.Clear();
 
@@ -1307,6 +1302,15 @@ namespace Realms.Tests.Database
                 {
                     realm.Add(new IntPropertyObject());
                 });
+
+                if (expectedRegex == null)
+                {
+                    Assert.That(logger.GetLog(), Is.Empty);
+                }
+                else
+                {
+                    TestHelpers.AssertRegex(logger.GetLog(), expectedRegex);
+                }
             }
         }
 
