@@ -23,9 +23,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Schema;
 #if TEST_WEAVER
 using TestRealmObject = Realms.RealmObject;
@@ -1265,6 +1267,51 @@ namespace Realms.Tests.Database
             realm.Dispose();
 
             Assert.That(ts.State, Is.EqualTo(TransactionState.RolledBack));
+        }
+
+        [Test]
+        public void Logger_ChangeLevel_ReflectedImmediately()
+        {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+
+            using var realm = GetRealm(Guid.NewGuid().ToString());
+
+            var expectedLog = new Regex("Info: DB: [^ ]* Thread [^ ]*: Open file");
+            TestHelpers.AssertRegex(logger.GetLog(), expectedLog);
+            Assert.That(logger.GetLog(), Does.Not.Contain("Debug"));
+
+            // We're at info level, so we don't expect any statements.
+            WriteAndVerifyLogs();
+
+            Logger.LogLevel = LogLevel.Debug;
+
+            // We're at Debug level now, so we should see the write message.
+            var expectedWriteLog = new Regex("Debug: DB: .* Commit of size [^ ]* done in [^ ]* us");
+            WriteAndVerifyLogs(expectedWriteLog);
+
+            // Revert back to Info level and make sure we don't log anything
+            Logger.LogLevel = LogLevel.Info;
+            WriteAndVerifyLogs();
+
+            void WriteAndVerifyLogs(Regex? expectedRegex = null)
+            {
+                logger.Clear();
+
+                realm.Write(() =>
+                {
+                    realm.Add(new IntPropertyObject());
+                });
+
+                if (expectedRegex == null)
+                {
+                    Assert.That(logger.GetLog(), Is.Empty);
+                }
+                else
+                {
+                    TestHelpers.AssertRegex(logger.GetLog(), expectedRegex);
+                }
+            }
         }
 
         private const int DummyDataSize = 200;

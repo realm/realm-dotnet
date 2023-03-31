@@ -50,28 +50,16 @@
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
 * Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
+* It is now possible to change the log level at any point of the application's lifetime. (PR [#3277](https://github.com/realm/realm-dotnet/pull/3277))
+* Some log messages have been added to the Core database. Events, such as opening a Realm or committing a transaction will now be logged. (Issue [#2910](https://github.com/realm/realm-dotnet/issues/2910))
 
 ### Fixed
-
-### Compatibility
-* Realm Studio: 12.0.0 or later.
-
-### Internal
-* Using Core x.y.z.
-
-## vNext (TBD)
-
-### Enhancements
-* None
-
-### Fixed
-* None
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.8.0.
 
 ## 10.21.0 (2023-03-24)
 

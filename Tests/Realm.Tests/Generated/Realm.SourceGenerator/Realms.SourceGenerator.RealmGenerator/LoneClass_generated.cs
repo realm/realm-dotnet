@@ -4,6 +4,7 @@
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using Realms.Logging;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;
@@ -17,6 +18,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using TestRealmObject = Realms.IRealmObject;

@@ -22,7 +22,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Realms.Logging;
 using Realms.Native;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
@@ -35,9 +34,6 @@ namespace Realms.Sync
 
         private static class NativeMethods
         {
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void LogMessageCallback(IntPtr managed_handler, PrimitiveValue messageValue, LogLevel logLevel);
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void UserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error);
 
@@ -59,7 +55,7 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string cpu_arch, IntPtr cpu_arch_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_name, IntPtr device_name_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_version, IntPtr device_version_len,
-                UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, LogMessageCallback log_message_callback, ApiKeysCallback api_keys_callback);
+                UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[]? encryptionKey, out NativeException ex);
@@ -152,13 +148,11 @@ namespace Realms.Sync
 
         public static void Initialize()
         {
-            NativeMethods.LogMessageCallback logMessage = HandleLogMessage;
             NativeMethods.UserCallback userLogin = HandleUserCallback;
             NativeMethods.VoidTaskCallback taskCallback = HandleTaskCompletion;
             NativeMethods.StringCallback stringCallback = HandleStringCallback;
             NativeMethods.ApiKeysCallback apiKeysCallback = HandleApiKeysCallback;
 
-            GCHandle.Alloc(logMessage);
             GCHandle.Alloc(userLogin);
             GCHandle.Alloc(taskCallback);
             GCHandle.Alloc(stringCallback);
@@ -191,7 +185,7 @@ namespace Realms.Sync
                 cpuArch, cpuArch.IntPtrLength(),
                 deviceName, deviceName.IntPtrLength(),
                 deviceVersion, deviceVersion.IntPtrLength(),
-                userLogin, taskCallback, stringCallback, logMessage, apiKeysCallback);
+                userLogin, taskCallback, stringCallback, apiKeysCallback);
         }
 
         internal AppHandle(IntPtr handle) : base(handle)
@@ -341,24 +335,7 @@ namespace Realms.Sync
 
         protected override void Unbind() => NativeMethods.destroy(handle);
 
-        [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static void HandleLogMessage(IntPtr managedHandler, PrimitiveValue messageValue, LogLevel level)
-        {
-            try
-            {
-                var message = messageValue.AsString();
-                var logger = (Logger)GCHandle.FromIntPtr(managedHandler).Target!;
-                logger.Log(level, message);
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = $"An error occurred while trying to log a message: {ex}";
-                Logger.LogDefault(LogLevel.Error, errorMessage);
-            }
-        }
-
         [MonoPInvokeCallback(typeof(NativeMethods.UserCallback))]
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The user will own its handle.")]
         private static void HandleUserCallback(IntPtr tcs_ptr, IntPtr user_ptr, AppError error)
         {
             var tcsHandle = GCHandle.FromIntPtr(tcs_ptr);

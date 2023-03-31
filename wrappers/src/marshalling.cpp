@@ -18,6 +18,7 @@
  
 #include <iostream>
 #include <realm.hpp>
+#include <realm/util/logger.hpp>
 
 #include "marshalling.hpp"
 #include "error_handling.hpp"
@@ -33,6 +34,7 @@ namespace binding {
 }
 
 using namespace realm;
+using namespace realm::util;
 
 //stringdata is utf8
 //cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
@@ -68,7 +70,7 @@ size_t realm::binding::stringdata_to_csharpstringbuffer(StringData str, uint16_t
     size_t size = Xcode::find_utf16_buf_size(in_begin, in_end);//Figure how much space is actually needed
 
     if (in_begin != in_end) {
-        realm::binding::log_message(util::format("BAD UTF8 DATA IN stringdata_tocsharpbuffer: %1", str.data()));
+        Logger::get_default_logger()->log(Logger::Level::warn, "BAD UTF8 DATA IN stringdata_tocsharpbuffer: %1", str.data());
         return -1;//bad uft8 data    
     }
     if (size > bufsize)

@@ -200,10 +200,10 @@ REALM_EXPORT void realm_syncsession_report_error_for_testing(const SharedSyncSes
         return;
     }
 
-    SyncError error{ error_code, std::move(message), is_fatal };
+    sync::SessionErrorInfo error{ error_code, std::move(message), is_fatal };
     error.server_requests_action = static_cast<realm::sync::ProtocolErrorInfo::Action>(server_requests_action);
 
-    SyncSession::OnlyForTesting::handle_error(*session, error);
+    SyncSession::OnlyForTesting::handle_error(*session, std::move(error));
 }
 
 REALM_EXPORT void realm_syncsession_stop(const SharedSyncSession& session, NativeException::Marshallable& ex)

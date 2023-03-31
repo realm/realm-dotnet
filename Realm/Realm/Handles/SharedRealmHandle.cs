@@ -65,7 +65,7 @@ namespace Realms
             public delegate void DisposeGCHandleCallback(IntPtr handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
+            public delegate void LogMessageCallback(StringValue message, LogLevel level);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, [MarshalAs(UnmanagedType.U1)] bool invoke_async, NativeException ex);
@@ -234,6 +234,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool set_log_level(LogLevel level);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -271,6 +274,8 @@ namespace Realms
 
             NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
+
+        public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);
 
         [Preserve]
         public SharedRealmHandle(IntPtr handle) : base(handle)
@@ -765,7 +770,6 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Realm will be owned by the creator of the tcs")]
         private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
             var handleTcs = GCHandle.FromIntPtr(taskCompletionSource);
@@ -793,9 +797,9 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static void LogMessage(PrimitiveValue message, LogLevel level)
+        private static void LogMessage(StringValue message, LogLevel level)
         {
-            Logger.LogDefault(level, message.AsString());
+            Logger.LogDefault(level, message!);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
