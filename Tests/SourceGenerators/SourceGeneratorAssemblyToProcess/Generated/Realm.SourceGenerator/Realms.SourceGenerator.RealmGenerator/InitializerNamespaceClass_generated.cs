@@ -26,7 +26,7 @@ namespace SourceGeneratorAssemblyToProcess
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("InitializerNamespaceClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
         }.Build();
 
         #region IRealmObject implementation

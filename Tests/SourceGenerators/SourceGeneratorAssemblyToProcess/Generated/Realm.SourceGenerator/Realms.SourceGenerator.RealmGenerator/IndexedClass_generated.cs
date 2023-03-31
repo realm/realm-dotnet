@@ -17,25 +17,29 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(PartialClassObjectHelper)), Realms.Preserve(AllMembers = true)]
-    public partial class PartialClass : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(IndexedClassObjectHelper)), Realms.Preserve(AllMembers = true)]
+    internal partial class IndexedClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
         /// <summary>
-        /// Defines the schema for the <see cref="PartialClass"/> class.
+        /// Defines the schema for the <see cref="IndexedClass"/> class.
         /// </summary>
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PartialClass", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexedClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("FullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: false, managedName: "FullTextProp"),
+            Realms.Schema.Property.Primitive("NullableFullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: true, managedName: "NullableFullTextProp"),
+            Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "IntProp"),
+            Realms.Schema.Property.Primitive("GuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "GuidProp"),
+            Realms.Schema.Property.Primitive("GeneralGuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "GeneralGuidProp"),
         }.Build();
 
         #region IRealmObject implementation
 
-        private IPartialClassAccessor? _accessor;
+        private IIndexedClassAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IPartialClassAccessor Accessor => _accessor ??= new PartialClassUnmanagedAccessor(typeof(PartialClass));
+        internal IIndexedClassAccessor Accessor => _accessor ??= new IndexedClassUnmanagedAccessor(typeof(IndexedClass));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
@@ -67,7 +71,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
-            var newAccessor = (IPartialClassAccessor)managedAccessor;
+            var newAccessor = (IIndexedClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
@@ -77,7 +81,23 @@ namespace SourceGeneratorAssemblyToProcess
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                newAccessor.Name = oldAccessor.Name;
+                newAccessor.FullTextProp = oldAccessor.FullTextProp;
+                if (!skipDefaults || oldAccessor.NullableFullTextProp != default(string?))
+                {
+                    newAccessor.NullableFullTextProp = oldAccessor.NullableFullTextProp;
+                }
+                if (!skipDefaults || oldAccessor.IntProp != default(int))
+                {
+                    newAccessor.IntProp = oldAccessor.IntProp;
+                }
+                if (!skipDefaults || oldAccessor.GuidProp != default(System.Guid))
+                {
+                    newAccessor.GuidProp = oldAccessor.GuidProp;
+                }
+                if (!skipDefaults || oldAccessor.GeneralGuidProp != default(System.Guid))
+                {
+                    newAccessor.GeneralGuidProp = oldAccessor.GeneralGuidProp;
+                }
             }
 
             if (_propertyChanged != null)
@@ -172,18 +192,18 @@ namespace SourceGeneratorAssemblyToProcess
         }
 
         /// <summary>
-        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="PartialClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="IndexedClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
         /// </summary>
         /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-        /// <returns>The <see cref="PartialClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-        public static explicit operator PartialClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<PartialClass>();
+        /// <returns>The <see cref="IndexedClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator IndexedClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<IndexedClass>();
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="PartialClass"/>.
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="IndexedClass"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.RealmValue(PartialClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(IndexedClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -222,52 +242,84 @@ namespace SourceGeneratorAssemblyToProcess
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class PartialClassObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class IndexedClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new PartialClassManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new IndexedClassManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new PartialClass();
+            public Realms.IRealmObjectBase CreateInstance() => new IndexedClass();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = RealmValue.Null;
-                return false;
+                value = ((IIndexedClassAccessor)instance.Accessor).Id;
+                return true;
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal interface IPartialClassAccessor : Realms.IRealmAccessor
+        internal interface IIndexedClassAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
 
-            string Name { get; set; }
+            string FullTextProp { get; set; }
+
+            string? NullableFullTextProp { get; set; }
+
+            int IntProp { get; set; }
+
+            System.Guid GuidProp { get; set; }
+
+            System.Guid GeneralGuidProp { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PartialClassManagedAccessor : Realms.ManagedAccessor, IPartialClassAccessor
+        internal class IndexedClassManagedAccessor : Realms.ManagedAccessor, IIndexedClassAccessor
         {
             public int Id
             {
                 get => (int)GetValue("Id");
-                set => SetValue("Id", value);
+                set => SetValueUnique("Id", value);
             }
 
-            public string Name
+            public string FullTextProp
             {
-                get => (string)GetValue("Name")!;
-                set => SetValue("Name", value);
+                get => (string)GetValue("FullTextProp")!;
+                set => SetValue("FullTextProp", value);
+            }
+
+            public string? NullableFullTextProp
+            {
+                get => (string?)GetValue("NullableFullTextProp");
+                set => SetValue("NullableFullTextProp", value);
+            }
+
+            public int IntProp
+            {
+                get => (int)GetValue("IntProp");
+                set => SetValue("IntProp", value);
+            }
+
+            public System.Guid GuidProp
+            {
+                get => (System.Guid)GetValue("GuidProp");
+                set => SetValue("GuidProp", value);
+            }
+
+            public System.Guid GeneralGuidProp
+            {
+                get => (System.Guid)GetValue("GeneralGuidProp");
+                set => SetValue("GeneralGuidProp", value);
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class PartialClassUnmanagedAccessor : Realms.UnmanagedAccessor, IPartialClassAccessor
+        internal class IndexedClassUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedClassAccessor
         {
-            public override ObjectSchema ObjectSchema => PartialClass.RealmSchema;
+            public override ObjectSchema ObjectSchema => IndexedClass.RealmSchema;
 
             private int _id;
             public int Id
@@ -280,18 +332,62 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string _name = null!;
-            public string Name
+            private string _fullTextProp = "";
+            public string FullTextProp
             {
-                get => _name;
+                get => _fullTextProp;
                 set
                 {
-                    _name = value;
-                    RaisePropertyChanged("Name");
+                    _fullTextProp = value;
+                    RaisePropertyChanged("FullTextProp");
                 }
             }
 
-            public PartialClassUnmanagedAccessor(Type objectType) : base(objectType)
+            private string? _nullableFullTextProp;
+            public string? NullableFullTextProp
+            {
+                get => _nullableFullTextProp;
+                set
+                {
+                    _nullableFullTextProp = value;
+                    RaisePropertyChanged("NullableFullTextProp");
+                }
+            }
+
+            private int _intProp;
+            public int IntProp
+            {
+                get => _intProp;
+                set
+                {
+                    _intProp = value;
+                    RaisePropertyChanged("IntProp");
+                }
+            }
+
+            private System.Guid _guidProp;
+            public System.Guid GuidProp
+            {
+                get => _guidProp;
+                set
+                {
+                    _guidProp = value;
+                    RaisePropertyChanged("GuidProp");
+                }
+            }
+
+            private System.Guid _generalGuidProp;
+            public System.Guid GeneralGuidProp
+            {
+                get => _generalGuidProp;
+                set
+                {
+                    _generalGuidProp = value;
+                    RaisePropertyChanged("GeneralGuidProp");
+                }
+            }
+
+            public IndexedClassUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 
@@ -300,7 +396,11 @@ namespace SourceGeneratorAssemblyToProcess
                 return propertyName switch
                 {
                     "Id" => _id,
-                    "Name" => _name,
+                    "FullTextProp" => _fullTextProp,
+                    "NullableFullTextProp" => _nullableFullTextProp,
+                    "IntProp" => _intProp,
+                    "GuidProp" => _guidProp,
+                    "GeneralGuidProp" => _generalGuidProp,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
             }
@@ -310,10 +410,21 @@ namespace SourceGeneratorAssemblyToProcess
                 switch (propertyName)
                 {
                     case "Id":
-                        Id = (int)val;
+                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
+                    case "FullTextProp":
+                        FullTextProp = (string)val!;
                         return;
-                    case "Name":
-                        Name = (string)val!;
+                    case "NullableFullTextProp":
+                        NullableFullTextProp = (string?)val;
+                        return;
+                    case "IntProp":
+                        IntProp = (int)val;
+                        return;
+                    case "GuidProp":
+                        GuidProp = (System.Guid)val;
+                        return;
+                    case "GeneralGuidProp":
+                        GeneralGuidProp = (System.Guid)val;
                         return;
                     default:
                         throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -322,7 +433,12 @@ namespace SourceGeneratorAssemblyToProcess
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
+                if (propertyName != "Id")
+                {
+                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
+                }
+
+                Id = (int)val;
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

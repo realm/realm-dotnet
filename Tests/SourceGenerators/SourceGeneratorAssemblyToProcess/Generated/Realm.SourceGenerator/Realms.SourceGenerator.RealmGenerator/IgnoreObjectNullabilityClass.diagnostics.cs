@@ -4,7 +4,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.NonNullableObject has type IgnoreObjectNullabilityClass, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 30,
       "StartColumn": 9,
       "EndLine": 30,
@@ -16,7 +15,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.ListNullableObject has type IList<IgnoreObjectNullabilityClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 34,
       "StartColumn": 9,
       "EndLine": 34,
@@ -28,7 +26,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.SetNullableObject has type ISet<IgnoreObjectNullabilityClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 38,
       "StartColumn": 9,
       "EndLine": 38,
@@ -40,7 +37,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.DictionaryNonNullableObject has type IDictionary<string, IgnoreObjectNullabilityClass>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 40,
       "StartColumn": 9,
       "EndLine": 40,
@@ -52,7 +48,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.DictionaryNullableObject has type IDictionary<string, IgnoreObjectNullabilityClass>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 42,
       "StartColumn": 9,
       "EndLine": 42,
@@ -64,7 +59,6 @@
     "Severity": 3,
     "Message": "IgnoreObjectNullabilityClass.BacklinkNullableObject has type IQueryable<IgnoreObjectNullabilityClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 44,
       "StartColumn": 9,
       "EndLine": 45,

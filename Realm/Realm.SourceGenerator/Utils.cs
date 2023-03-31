@@ -50,10 +50,31 @@ namespace Realms.SourceGenerator
             return symbol.GetAttributes().Any(a => a.AttributeClass?.Name == attributeName);
         }
 
-        public static object? GetAttributeArgument(this ISymbol symbol, string attributeName)
+        public static object? GetAttributeArgument(this ISymbol symbol, string attributeName, int index = 0)
         {
-            var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == attributeName);
-            return attribute?.ConstructorArguments[0].Value;
+            var arguments = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == attributeName)?.ConstructorArguments;
+            if (arguments != null && arguments.Value.Length > index)
+            {
+                return arguments.Value[index].Value;
+            }
+
+            return null;
+        }
+
+        public static IndexMode GetIndexMode(this ISymbol symbol)
+        {
+            var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "IndexedAttribute");
+            if (attribute == null)
+            {
+                return IndexMode.None;
+            }
+
+            if (attribute.ConstructorArguments.Length == 0)
+            {
+                return IndexMode.General;
+            }
+
+            return (IndexMode)(int)attribute.ConstructorArguments[0].Value!;
         }
 
         public static bool IsValidIntegerType(this ITypeSymbol symbol)
@@ -226,6 +247,11 @@ namespace Realms.SourceGenerator
         public static string ToCodeString(this bool boolean)
         {
             return boolean.ToString().ToLower();
+        }
+
+        public static string ToCodeString(this IndexMode index)
+        {
+            return $"IndexMode.{index}";
         }
 
         #region Formatting

@@ -50,7 +50,8 @@ namespace Realms.SourceGenerator
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
             NotPersistedPropertyWithRealmAttributes = 26,
-            ParentOfNestedClassIsNotPartial = 27
+            ParentOfNestedClassIsNotPartial = 27,
+            IndexedPrimaryKey = 28,
         }
 
         #region Errors
@@ -116,6 +117,33 @@ namespace Realms.SourceGenerator
                 Id.IndexedWrongType,
                 "[Indexed] is only allowed on specific types",
                 $"{className}.{propertyName} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {propertyType}.",
+                location);
+        }
+
+        public static Diagnostic FullTextIndexedWrongType(string className, string propertyName, string propertyType, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedWrongType,
+                "[Indexed(IndexMode.FullText)] is only allowed on string properties",
+                $"{className}.{propertyName} is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on {propertyType}.",
+                location);
+        }
+
+        public static Diagnostic IndexedModeNone(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedWrongType,
+                "[Indexed(IndexMode.None)] is not allowed",
+                $"{className}.{propertyName} is annotated as [Indexed(IndexMode.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
+                location);
+        }
+
+        public static Diagnostic IndexPrimaryKey(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedPrimaryKey,
+                "[Indexed] is not allowed in combination with [PrimaryKey]",
+                $"{className}.{propertyName} is marked has both [Indexed] and [PrimaryKey] attributes which is not allowed. PrimaryKey properties are indexed by default so the [Indexed] attribute is redundant.",
                 location);
         }
 

@@ -43,6 +43,31 @@ namespace SourceGeneratorPlayground
         public decimal DecimalProp { get; set; }
 
         [Indexed]
-        public int[] UnsupportedProp { get; set; }
+        public int[] UnsupportedProp { get; set; } = null!;
+
+        [Indexed(IndexMode.FullText)]
+        public int FtsIntProp { get; set; }
+
+        [Indexed(IndexMode.FullText)]
+        public bool FtsBoolProp { get; set; }
+
+        [Indexed(IndexMode.FullText)]
+        public RealmValue FtsRealmValueProp { get; set; }
+
+        [Indexed(IndexMode.FullText)]
+        public RealmObj? FtsObjectProp { get; set; }
+
+        [Indexed(IndexMode.FullText)]
+        public double FtsDoubleProp { get; set; }
+
+        [Indexed(IndexMode.None)]
+        public int NoneIndexedInt { get; set; }
+
+        [Indexed(IndexMode.General)]
+        public RealmValue GeneralRealmValueProp { get; set; }
+
+        [PrimaryKey]
+        [Indexed]
+        public int IndexedPrimaryKeyProp { get; set; }
     }
 }

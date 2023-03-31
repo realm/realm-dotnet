@@ -85,7 +85,7 @@ namespace Realms.SourceGenerator
 
     internal record PropertyInfo(string Name)
     {
-        public bool IsIndexed { get; set; }
+        public IndexMode Index { get; set; }
 
         public bool IsRequired { get; set; }
 
@@ -234,6 +234,11 @@ namespace Realms.SourceGenerator
             }
 
             return _indexableTypes.Contains(ScalarType);
+        }
+
+        public bool IsSupportedFullTextType()
+        {
+            return CollectionType == CollectionType.None && ScalarType == ScalarType.String;
         }
 
         public bool IsSupportedPrimaryKeyType()
@@ -415,5 +420,13 @@ namespace Realms.SourceGenerator
         ObjectId,
         Decimal,
         Guid,
+    }
+
+    internal enum IndexMode
+    {
+        ForceNone,
+        General,
+        FullText,
+        None,
     }
 }
