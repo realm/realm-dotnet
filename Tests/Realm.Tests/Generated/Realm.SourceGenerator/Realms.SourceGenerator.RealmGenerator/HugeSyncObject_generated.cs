@@ -30,8 +30,8 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("HugeSyncObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Data", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Data"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Data", Realms.RealmValueType.Data, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Data"),
         }.Build();
 
         #region IRealmObject implementation

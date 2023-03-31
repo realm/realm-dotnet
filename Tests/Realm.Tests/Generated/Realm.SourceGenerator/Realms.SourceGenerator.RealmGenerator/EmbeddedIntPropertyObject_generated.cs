@@ -30,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedIntPropertyObject", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Realms.Schema.Property.Primitive("Int", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int"),
+            Realms.Schema.Property.Primitive("Int", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Int"),
         }.Build();
 
         #region IEmbeddedObject implementation

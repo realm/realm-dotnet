@@ -31,8 +31,8 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SerializedObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "IntValue"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.PrimitiveDictionary("Dict", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Dict"),
             Realms.Schema.Property.PrimitiveList("List", Realms.RealmValueType.String, areElementsNullable: false, managedName: "List"),
             Realms.Schema.Property.PrimitiveSet("Set", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Set"),

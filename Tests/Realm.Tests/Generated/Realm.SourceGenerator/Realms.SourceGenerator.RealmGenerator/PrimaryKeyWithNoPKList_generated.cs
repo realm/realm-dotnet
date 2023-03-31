@@ -30,8 +30,8 @@ namespace Realms.Tests.Database
             /// </summary>
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("PrimaryKeyWithNoPKList", ObjectSchema.ObjectType.RealmObject)
             {
-                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-                Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+                Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "StringValue"),
                 Realms.Schema.Property.ObjectList("ListValue", "NonPrimaryKeyObject", managedName: "ListValue"),
             }.Build();
 

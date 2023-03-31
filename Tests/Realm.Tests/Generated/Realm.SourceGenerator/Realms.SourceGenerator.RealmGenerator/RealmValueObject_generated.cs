@@ -30,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RealmValueObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
             Realms.Schema.Property.RealmValueList("RealmValueList", managedName: "RealmValueList"),
             Realms.Schema.Property.RealmValueSet("RealmValueSet", managedName: "RealmValueSet"),

@@ -30,8 +30,8 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPrimaryKeyStringObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Value"),
         }.Build();
 
         #region IRealmObject implementation

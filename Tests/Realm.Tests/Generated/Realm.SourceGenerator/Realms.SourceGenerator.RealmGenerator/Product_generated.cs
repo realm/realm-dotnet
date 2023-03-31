@@ -27,9 +27,9 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Product", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Primitive("Date", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Date"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Date", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Date"),
             Realms.Schema.Property.ObjectList("Reports", "Report", managedName: "Reports"),
         }.Build();
 
