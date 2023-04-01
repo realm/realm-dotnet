@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Realms;
 
 namespace RealmWeaver
 {
