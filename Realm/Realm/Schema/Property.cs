@@ -143,6 +143,11 @@ namespace Realms.Schema
                 throw new ArgumentException($"Property of type {type} cannot be indexed. The only valid indexable types are {string.Join(", ", IndexableTypes)}.");
             }
 
+            if (indexMode == IndexMode.FullText && nonNullableType != PropertyType.String)
+            {
+                throw new ArgumentException($"Property of type {type} cannot have a FullText index added to it. Only string properties support Full-Text indexing.");
+            }
+
             if (type.HasFlag(PropertyType.Object))
             {
                 var shouldBeNullable = !type.HasFlag(PropertyType.Array) && !type.HasFlag(PropertyType.Set);
