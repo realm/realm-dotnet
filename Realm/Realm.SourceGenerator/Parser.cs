@@ -240,7 +240,7 @@ namespace Realms.SourceGenerator
                         classInfo.Diagnostics.Add(Diagnostics.PrimaryKeyWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
 
-                    if (info.Index != IndexMode.None)
+                    if (info.Index != null)
                     {
                         classInfo.Diagnostics.Add(Diagnostics.IndexPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
                     }
@@ -253,7 +253,7 @@ namespace Realms.SourceGenerator
                 {
                     classInfo.Diagnostics.Add(Diagnostics.FullTextIndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                 }
-                else if (info.Index == IndexMode.ForceNone)
+                else if (info.Index == IndexMode.None)
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IndexedModeNone(classInfo.Name, info.Name, propSyntax.GetLocation()));
                 }

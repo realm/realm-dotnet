@@ -61,12 +61,12 @@ namespace Realms.SourceGenerator
             return null;
         }
 
-        public static IndexMode GetIndexMode(this ISymbol symbol)
+        public static IndexMode? GetIndexMode(this ISymbol symbol)
         {
             var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "IndexedAttribute");
             if (attribute == null)
             {
-                return IndexMode.None;
+                return null;
             }
 
             if (attribute.ConstructorArguments.Length == 0)
@@ -249,9 +249,9 @@ namespace Realms.SourceGenerator
             return boolean.ToString().ToLower();
         }
 
-        public static string ToCodeString(this IndexMode index)
+        public static string ToCodeString(this IndexMode? index)
         {
-            return $"IndexMode.{index}";
+            return $"IndexMode.{index ?? IndexMode.None}";
         }
 
         #region Formatting

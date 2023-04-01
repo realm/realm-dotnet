@@ -576,6 +576,25 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ObjectSchemaBuilder_FromType_Indexes()
+        {
+            var builder = new ObjectSchema.Builder(typeof(IndexesClass));
+            Assert.That(builder.Name, Is.EqualTo(nameof(IndexesClass)));
+            Assert.That(builder.Count, Is.EqualTo(8));
+
+            Assert.That(builder[nameof(IndexesClass.Id)].IndexMode, Is.EqualTo(IndexMode.General));
+            Assert.That(builder[nameof(IndexesClass.Id)].IsPrimaryKey, Is.True);
+
+            Assert.That(builder[nameof(IndexesClass.StringFts)].IndexMode, Is.EqualTo(IndexMode.FullText));
+            Assert.That(builder[nameof(IndexesClass.StringGeneral)].IndexMode, Is.EqualTo(IndexMode.General));
+            Assert.That(builder[nameof(IndexesClass.StringDefault)].IndexMode, Is.EqualTo(IndexMode.General));
+            Assert.That(builder[nameof(IndexesClass.StringNone)].IndexMode, Is.EqualTo(IndexMode.None));
+            Assert.That(builder[nameof(IndexesClass.IntGeneral)].IndexMode, Is.EqualTo(IndexMode.General));
+            Assert.That(builder[nameof(IndexesClass.IntDefault)].IndexMode, Is.EqualTo(IndexMode.General));
+            Assert.That(builder[nameof(IndexesClass.IntNone)].IndexMode, Is.EqualTo(IndexMode.None));
+        }
+
+        [Test]
         public void ObjectSchemaBuilder_CanBuildEmptySchema()
         {
             var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.EmbeddedObject);
@@ -1609,5 +1628,30 @@ namespace Realms.Tests.Database
     public partial class ExplicitClass : TestRealmObject
     {
         public int Foo { get; set; }
+    }
+
+    public partial class IndexesClass : TestRealmObject
+    {
+        [PrimaryKey]
+        public ObjectId Id { get; set;  }
+
+        [Indexed(IndexMode.FullText)]
+        public string? StringFts { get; set; }
+
+        [Indexed(IndexMode.General)]
+        public string? StringGeneral { get; set; }
+
+        [Indexed]
+        public string? StringDefault { get; set; }
+
+        public string? StringNone { get; set; }
+
+        [Indexed(IndexMode.General)]
+        public int IntGeneral { get; set; }
+
+        [Indexed]
+        public int IntDefault { get; set; }
+
+        public int IntNone { get; set; }
     }
 }
