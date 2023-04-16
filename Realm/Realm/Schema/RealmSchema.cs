@@ -85,7 +85,14 @@ namespace Realms.Schema
                 if (_defaultTypes.Add(type) &&
                     _default.IsValueCreated)
                 {
-                    throw new NotSupportedException("AddDefaultTypes should be called before creating a Realm instance with the default schema. If you see this error, please report it to help@realm.io.");
+                    const string errorMessage = "AddDefaultTypes should be called before creating a Realm instance with the default schema. " +
+                        "If you see this error, this likely means that an assembly containing Realm models was loaded after a Realm has been " +
+                        "opened. To resolve it, try force loading the assembly containing the models prior to opening the Realm.";
+
+                    throw new NotSupportedException(errorMessage)
+                    {
+                        HelpLink = "https://www.mongodb.com/docs/realm/sdk/dotnet/troubleshooting/#resolving-a--adddefaulttypes-should-be-called-before-creating-a-realm-instance--exception"
+                    };
                 }
             }
         }
