@@ -1831,10 +1831,12 @@ namespace Realms.Tests.Database
             new object[] { new FtsTestData("lord of the", LordOfTheFlies, LordOfTheRings, WheelOfTime, Silmarillion) },
             new object[] { new FtsTestData("fantasy novel", LordOfTheRings, WheelOfTime) },
             new object[] { new FtsTestData("popular english", LordOfTheFlies, Silmarillion) },
+            new object[] { new FtsTestData("amazing awesome stuff") },
+            new object[] { new FtsTestData("fantasy -novel", Silmarillion) },
         };
 
         [TestCaseSource(nameof(FtsTestCases))]
-        public void Fts_FindSimpleTerm(FtsTestData testData)
+        public void Fts_Filter_SimpleTerm(FtsTestData testData)
         {
             PopulateFtsData();
 
@@ -1843,6 +1845,25 @@ namespace Realms.Tests.Database
 
             var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.NullableSummary)} TEXT $0", testData.Query).ToArray().Select(o => o.Title);
             Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+        }
+
+        [TestCaseSource(nameof(FtsTestCases))]
+        public void Fts_Linq_SimpleTerm(FtsTestData testData)
+        {
+            PopulateFtsData();
+
+            var summaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => o.Summary.FullTextSearch(testData.Query)).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+
+            var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => o.NullableSummary.FullTextSearch(testData.Query)).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+        }
+
+        [Test]
+        public void Fts_Linq_WhenTermsIsNull_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => o.Summary.FullTextSearch(null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => o.NullableSummary.FullTextSearch(null!)).ToArray());
         }
 
         private void PopulateAObjects(params int[] values)

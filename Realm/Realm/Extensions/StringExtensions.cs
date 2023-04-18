@@ -80,6 +80,25 @@ namespace Realms
             return Regex.Match(str, $"^{pattern}$", options).Success;
         }
 
+        /// <summary>
+        /// Performs a 'simple term' Full-Text search on a string property. Can only be used in queries.
+        /// </summary>
+        /// <param name="str">The string to compare against the terms.</param>
+        /// <param name="terms">The terms to look for in <paramref name="str"/>.</param>
+        /// <returns><c>true</c> if the string matches the terms; <c>false</c> otherwise.</returns>
+        /// <example>
+        /// <code>
+        /// var matches = realm.All&lt;Book&gt;().Where(b => b.Summary.FullTextSearch("fantasy novel"));
+        /// </code>
+        /// </example>
+        /// <remarks>
+        /// When this method is used outside of a Realm query, a <see cref="NotSupportedException"/> will be thrown.
+        /// </remarks>
+        public static bool FullTextSearch(this string? str, string terms)
+        {
+            throw new NotSupportedException("This method can only be used in queries and cannot be invoked directly on strings.");
+        }
+
         internal static IntPtr IntPtrLength(this string? str) => (IntPtr)(str?.Length ?? 0);
     }
 }

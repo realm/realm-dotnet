@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -62,6 +63,8 @@ namespace Realms
                 internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
 
                 internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+
+                internal static readonly LazyMethod FullTextSearch = Capture<string>(s => s.FullTextSearch(string.Empty));
 
                 [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
@@ -377,6 +380,21 @@ namespace Realms
                     }
 
                     queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.FullTextSearch.Value))
+                {
+                    member = node.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+
+                    queryMethod = (q, r, p, v) =>
+                    {
+                        if (v == null)
+                        {
+                            throw new ArgumentNullException("terms", "Cannot perform a Full-Text search against null string");
+                        }
+
+                        q.StringFTS(r, p, v);
+                    };
                 }
 
                 if (queryMethod != null)

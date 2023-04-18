@@ -1138,7 +1138,7 @@ namespace Realms.Tests
         public string Summary { get; set; } = string.Empty;
 
         [Indexed(IndexMode.FullText)]
-        public string? NullableSummary{ get; set; }
+        public string? NullableSummary { get; set; }
 
         public ObjectWithFtsIndex(string title, string summary)
         {
