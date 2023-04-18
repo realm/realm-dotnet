@@ -24,7 +24,7 @@
 #@ actionDockerLayerCaching = "jpribyl/action-docker-layer-caching@c632825d12ec837065f49726ea27ddd40bcc7894" #! 0.1.1
 #@ actionDockerBuild = "docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7" #! 2.7.0
 #@ actionDockerRun = "addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609" #! v3
-#@ actionCoveralls = "coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057" #! v1.1.3
+#@ actionCoveralls = "coverallsapp/github-action@66741573064b23a82206aebd518f4bb11802fa5a" #! v2.1.1
 #@ actionDeleteArtifact = "geekyeggo/delete-artifact@dc8092f14c4245ef6a3501b1669b171c12899167" #! v1
 #@ actionGithubRelease = "ncipollo/release-action@3ac4132803a6419fa2a7f4e9dbd1d93fceb690b9" #! v1.8.8
 #@ actionDownloadAllArtifacts = "dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c" #! v2.14.1

@@ -157,10 +157,10 @@ jobs:
       run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
       id: publish-coveralls
-      uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
+      uses: coverallsapp/github-action@66741573064b23a82206aebd518f4bb11802fa5a
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./report.lcov
+        file: ./report.lcov
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}

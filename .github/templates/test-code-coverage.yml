@@ -26,7 +26,7 @@ jobs:
         uses: #@ actionCoveralls
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ./report.lcov
+          file: ./report.lcov
           git-commit: ${{ github.event.pull_request.head.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
