@@ -1146,6 +1146,12 @@ namespace Realms.Tests
             Summary = summary;
             NullableSummary = summary;
         }
+
+#if TEST_WEAVER
+        private ObjectWithFtsIndex()
+        {
+        }
+#endif
     }
 
     [Explicit]
