@@ -2,7 +2,7 @@ name: main
 "on":
   push:
     branches:
-    - main
+    - main-v10
   workflow_dispatch:
     inputs:
       publish-prerelease:

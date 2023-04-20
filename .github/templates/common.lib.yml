@@ -32,7 +32,7 @@
 #@ actionFindPR = "juliangruber/find-pull-request-action@afdd62ccd2d4c55f5bdb154b489b85fc4cbcb9c1" #! 1.5.0
 #@ actionMergePR = "juliangruber/merge-pull-request-action@333730196b34b74936aad75a4e31c23a57582d14" #! 1.0.6
 
-#@ mainBranch = "main"
+#@ mainBranch = "main-v10"
 ---
 
 #@ def setupNugetCache(projectPaths = []):

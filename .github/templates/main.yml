@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact", "mainBranch")
 #@ load("test.lib.yml", "dotnetBuildTests")
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "ignoreSkippedJobsCondition", "buildUnity")
 
@@ -17,7 +17,7 @@ name: main
 "on":
   push:
     branches:
-      - main
+      - #@ mainBranch
   workflow_dispatch:
     inputs:
       publish-prerelease:
