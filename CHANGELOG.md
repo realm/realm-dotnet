@@ -4,13 +4,13 @@
 * None
 
 ### Fixed
-* None
+* Fixed a crash that occurs when the server sends a PermissionDenied error. (Issue [#3292](https://github.com/realm/realm-dotnet/issues/3292))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.6.0.
 
 ## 10.21.0 (2023-03-24)
 
