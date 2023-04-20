@@ -1500,6 +1500,40 @@ namespace Realms.Tests.Sync
             Assert.That(session.Equals(new object()), Is.False);
         }
 
+        [Test]
+        public void Session_PermissionDenied_DoesntCrash()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                var config = await GetIntegrationConfigAsync("read-only");
+
+                config.OnSessionError = (session, error) =>
+                {
+#pragma warning disable CS0618 // Type or member is obsolete
+                    Assert.That(error, Is.TypeOf<PermissionDeniedException>());
+#pragma warning restore CS0618 // Type or member is obsolete
+                    Assert.That(error.ErrorCode == ErrorCode.PermissionDenied);
+                    Assert.That(error.InnerException == null);
+
+                    tcs.TrySetResult(true);
+                };
+
+                using var realm = GetRealm(config);
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyStringObject
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = "abc"
+                    });
+                });
+
+                await tcs.Task;
+            }, timeout: 1000000);
+        }
+
         protected override void CustomTearDown()
         {
             base.CustomTearDown();
