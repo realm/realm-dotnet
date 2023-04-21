@@ -305,7 +305,7 @@ namespace Realms.Sync
                 SessionException exception;
                 if (error.error_code == ErrorCode.PermissionDenied)
                 {
-                    var userInfo = error.user_info_pairs.AsEnumerable().ToDictionary(p => p.Key, p => p.Value);
+                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
 #pragma warning disable CS0618 // Type or member is obsolete
                     exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
 #pragma warning restore CS0618 // Type or member is obsolete
