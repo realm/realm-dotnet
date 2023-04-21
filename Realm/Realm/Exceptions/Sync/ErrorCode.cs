@@ -40,6 +40,11 @@ namespace Realms.Sync.Exceptions
         IllegalRealmPath = 204,
 
         /// <summary>
+        /// Permission to Realm has been denied.
+        /// </summary>
+        PermissionDenied = 206,
+
+        /// <summary>
         /// The client file identifier is invalid.
         /// </summary>
         BadClientFileIdentifier = 208,

@@ -1191,6 +1191,37 @@ namespace Realms.Tests.Sync
             Assert.That(session.Equals(new object()), Is.False);
         }
 
+        [Test]
+        public void Session_PermissionDenied_DoesntCrash()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var tcs = new TaskCompletionSource<object>();
+                var config = await GetIntegrationConfigAsync("read-only");
+
+                config.OnSessionError = (session, error) =>
+                {
+                    Assert.That(error.ErrorCode == ErrorCode.PermissionDenied);
+                    Assert.That(error.InnerException == null);
+
+                    tcs.TrySetResult(true);
+                };
+
+                using var realm = GetRealm(config);
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyStringObject
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Value = "abc"
+                    });
+                });
+
+                await tcs.Task;
+            }, timeout: 1000000);
+        }
+
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
             BeforeResetCallback? beforeCb = null,
