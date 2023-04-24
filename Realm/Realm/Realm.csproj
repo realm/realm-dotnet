@@ -47,6 +47,15 @@
     <None Include="wrappers-props\Realm.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />
     <None Include="..\Realm.Fody\Realm.Fody.xcf" PackagePath="weaver\Realm.Fody.xcf" Pack="true" Visible="false" />
     <None Include="..\Realm.Fody\bin\$(Configuration)\netstandard2.0\Realm.Fody.dll" PackagePath="weaver\Realm.Fody.dll" Pack="true" Visible="false" />
+    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+    <None Update="DatabaseTypes\QueryArgument.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryArgument.cs</LastGenOutput>
+    </None>
+    <None Update="Helpers\Operator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Operator.cs</LastGenOutput>
+    </None>
     <!-- iOS -->
     <Content Include="wrappers-props\xamarinios\Realm.dll.config">
       <Pack>true</Pack>
@@ -167,6 +176,11 @@
       <PackagePath>runtimes\win10-arm64\nativeassets\uap10.0</PackagePath>
       <Link>wrappers\WindowsStore\ARM64\realm-wrappers.dll</Link>
     </None>
+    <None Include="DatabaseTypes\QueryArgument.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QueryArgument.tt</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
@@ -174,6 +188,11 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Operator.cs</LastGenOutput>
     </None>
+    <Compile Update="DatabaseTypes\QueryArgument.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QueryArgument.tt</DependentUpon>
+    </Compile>
     <Compile Update="Helpers\Operator.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>

@@ -1266,7 +1266,7 @@ namespace Realms.Tests.Database
             var matches = _realm.All<AllTypesObject>().Filter("NullableInt32Property = $0", (int?)null);
             Assert.AreEqual(matches.Single(), nullableObjMatch);
 
-            RealmValue[] argumentsArray = null!;
+            QueryArgument[] argumentsArray = null!;
             Assert.Throws<ArgumentNullException>(() => _realm.All<Dog>().Filter("Name = $0", argumentsArray));
         }
 

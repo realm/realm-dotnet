@@ -274,7 +274,7 @@ REALM_EXPORT Results* list_to_results(const List& list, NativeException::Marshal
     });
 }
 
-REALM_EXPORT Results* list_get_filtered_results(const List& list, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+REALM_EXPORT Results* list_get_filtered_results(const List& list, uint16_t* query_buf, size_t query_len, query_argument_t* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(list.get_realm(), list.get_table(), list.get_query(), query_buf, query_len, arguments, args_count, DescriptorOrdering());

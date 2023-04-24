@@ -45,6 +45,13 @@ enum class realm_value_type : unsigned char {
     RLM_TYPE_UUID,
 };
 
+enum class query_argument_type : unsigned char {
+    PRIMITIVE,
+    BOX,
+    POLYGON,
+    SPHERE,
+};
+
 typedef struct realm_string {
     const char* data;
     size_t size;
@@ -104,6 +111,37 @@ typedef struct realm_value {
         return integer == 1;
     }
 } realm_value_t;
+
+typedef struct geo_point {
+    double latitude;
+    double longitude;
+} geo_point_t;
+
+typedef struct geo_box {
+    geo_point_t bottom_left;
+    geo_point_t top_right;
+} geo_box_t;
+
+typedef struct geo_sphere {
+    geo_point_t center;
+    double radius_radians;
+} geo_sphere_t;
+
+typedef struct geo_polygon {
+    geo_point_t* points;
+    size_t points_len;
+} geo_polygon_t;
+
+typedef struct query_argument {
+    union {
+        realm_value_t primitive;
+        geo_box_t box;
+        geo_sphere_t sphere;
+        geo_polygon_t polygon;
+    };
+
+    query_argument_type type;
+} query_argument_t;
 
 typedef struct realm_sync_error_compensating_write_info {
     realm_string_t reason;
@@ -208,6 +246,33 @@ static inline realm_decimal128_t to_capi(const Decimal128& dec)
 static inline Decimal128 from_capi(realm_decimal128_t dec)
 {
     return Decimal128{ Decimal128::Bid128{{dec.w[0], dec.w[1]}} };
+}
+
+static inline GeoPoint from_capi(geo_point_t point)
+{
+    return GeoPoint(point.longitude, point.latitude);
+}
+
+static inline GeoBox from_capi(geo_box_t box)
+{
+    return GeoBox{ from_capi(box.bottom_left), from_capi(box.top_right) };
+}
+
+static inline GeoCenterSphere from_capi(geo_sphere_t sphere)
+{
+    return GeoCenterSphere{ sphere.radius_radians, from_capi(sphere.center) };
+}
+
+static inline GeoPolygon from_capi(geo_polygon_t polygon)
+{
+    std::vector<GeoPoint> points;
+    points.reserve(polygon.points_len);
+
+    for (int i = 0; i < polygon.points_len; i++) {
+        points.push_back(from_capi(polygon.points[i]));
+    }
+
+    return GeoPolygon(points);
 }
 
 static inline realm_object_id_t to_capi(ObjectId oid)
