@@ -342,7 +342,15 @@ namespace Baas
                         permissions = new
                         {
                             read = true,
-                            write = true,
+                            write = new BsonDocument
+                            {
+                                {
+                                    "%%partition", new BsonDocument
+                                    {
+                                        { "$ne", "read-only" }
+                                    }
+                                }
+                            },
                         }
                     }
                 }
