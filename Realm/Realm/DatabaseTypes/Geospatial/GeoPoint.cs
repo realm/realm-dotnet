@@ -49,5 +49,9 @@ namespace Realms
         }
 
         internal NativeGeoPoint ToNative() => new(Latitude, Longitude);
+
+
+        /// <inheritdoc/>
+        public override string ToString() => $"[{Latitude}, {Longitude}]";
     }
 }

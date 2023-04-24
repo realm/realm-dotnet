@@ -26,5 +26,7 @@ namespace Realms.Native
     {
         public NativeGeoPoint* Points;
         public IntPtr PointsLength;
+
+        public override string ToString() => $"Polygon {{size: {PointsLength}}}";
     }
 }

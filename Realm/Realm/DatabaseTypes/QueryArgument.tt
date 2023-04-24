@@ -41,9 +41,9 @@ namespace Realms
     public readonly struct QueryArgument
     {
         internal readonly RealmValue? RealmValue;
-        internal readonly GeoBase? GeoValue;
+        internal readonly GeoShapeBase? GeoValue;
 
-        private QueryArgument(RealmValue? realmValue = null, GeoBase? geoValue = null)
+        private QueryArgument(RealmValue? realmValue = null, GeoShapeBase? geoValue = null)
         {
             RealmValue = realmValue;
             GeoValue = geoValue;
@@ -73,11 +73,11 @@ namespace Realms
         public static implicit operator QueryArgument(RealmValue value) => new(value);
 
         /// <summary>
-        /// Implicitly constructs a <see cref="QueryArgument"/> from <see cref="GeoBase" />.
+        /// Implicitly constructs a <see cref="QueryArgument"/> from <see cref="GeoShapeBase" />.
         /// </summary>
         /// <param name="value">The value to store in the <see cref="QueryArgument"/>.</param>
         /// <returns>A <see cref="QueryArgument"/> containing the supplied <paramref name="value"/>.</returns>
-        public static implicit operator QueryArgument(GeoBase? value) => new(geoValue: value);
+        public static implicit operator QueryArgument(GeoShapeBase? value) => new(geoValue: value);
 
         internal (NativeQueryArgument Value, RealmValue.HandlesToCleanup? Handles) ToNative()
         {
@@ -99,9 +99,12 @@ namespace Realms
                 GeoBox box => (NativeQueryArgument.GeoBox(box.ToNative()), null),
                 GeoSphere sphere => (NativeQueryArgument.GeoSphere(sphere.ToNative()), null),
                 GeoPolygon polygon => polygon.ToNativeQueryArgument(),
-                _ => throw new NotSupportedException($"Unsupported GeoBase type: {GeoValue?.GetType().FullName}")
+                _ => throw new NotSupportedException($"Unsupported GeoShapeBase type: {GeoValue?.GetType().FullName}")
             };
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString();
     }
 }
 <#+

@@ -51,7 +51,16 @@ namespace Realms.Tests.Database
 
             var sphere = new GeoSphere(new(40.7128, 74.0060), 0.01);
             var matches = _realm.All<Company>().Filter("Location geoWithin $0", sphere);
-            var test = ((RealmResults<Company>)matches).ResultsHandle.Description;
+            Assert.That(matches.Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Geospatial_SupportsLINQ()
+        {
+            PopulateCompanies();
+
+            var sphere = new GeoSphere(new(40.7128, 74.0060), 0.01);
+            var matches = _realm.All<Company>().Where(c => c.Location.GeoWithin(sphere));
             Assert.That(matches.Count(), Is.EqualTo(1));
         }
 

@@ -516,4 +516,31 @@ REALM_EXPORT void query_realm_value_type_not_equal(Query& query, SharedRealm& re
         query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() != TypeOfValue(attribute_from(realm_value_type)));  //Need to check if correct
     });
 }
+
+REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t property_index, query_argument_t geo_value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+        
+        Geospatial geo_store;
+        switch (geo_value.type) {
+        case query_argument_type::PRIMITIVE: 
+            REALM_UNREACHABLE();
+        case query_argument_type::BOX:
+            geo_store = from_capi(geo_value.box);
+            break;
+        case query_argument_type::SPHERE:
+            geo_store = from_capi(geo_value.sphere);
+            break;
+        case query_argument_type::POLYGON:
+            geo_store = from_capi(geo_value.polygon);
+            break;
+        }
+
+        // TODO: geo_within doesn't exist?
+        // query.geo_within(get_key_for_prop(query, realm, property_index), geo_store);
+    });
+}
 }   // extern "C"

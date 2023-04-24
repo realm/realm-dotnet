@@ -23,7 +23,7 @@ namespace Realms
     /// <summary>
     /// Represents a rectangle for a geospatial geoWithin query.
     /// </summary>
-    public class GeoBox : GeoBase
+    public class GeoBox : GeoShapeBase
     {
         /// <summary>
         /// Gets the bottom left corner of the rectangle.

@@ -23,7 +23,7 @@ namespace Realms
     /// <summary>
     /// Represents a spherical geometry.
     /// </summary>
-    public class GeoSphere : GeoBase
+    public class GeoSphere : GeoShapeBase
     {
         /// <summary>
         /// Gets the center of the sphere.
@@ -60,5 +60,8 @@ namespace Realms
         }
 
         internal NativeGeoSphere ToNative() => new(Center.ToNative(), Radius);
+
+        /// <inheritdoc/>
+        public override string ToString() => $"Sphere: {{ center: {Center}, radius: {Radius} }}";
     }
 }

@@ -2,7 +2,7 @@
 //
 // Copyright 2023 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License")
+// Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,14 +16,20 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.ComponentModel;
+
 namespace Realms
 {
     /// <summary>
-    /// A base class for the geometry types supported by Realm. It should not be used directly -
-    /// instead you should use one of its inheritors, such as <see cref="GeoBox"/>, <see cref="GeoSphere"/>, or
-    /// <see cref="GeoPolygon"/>.
+    /// A set of extensions methods usable in LINQ queries.
     /// </summary>
-    public abstract class GeoBase
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static class QueryExtensions
     {
+        public static bool GeoWithin(this IEmbeddedObject? embeddedObject, GeoShapeBase geoShape)
+        {
+            throw new NotSupportedException("This method can only be used in queries and should not be used directly.");
+        }
     }
 }

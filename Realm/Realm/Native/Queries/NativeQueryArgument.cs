@@ -65,6 +65,18 @@ namespace Realms.Native
             _sphere = sphere,
             _type = QueryArgumentType.Sphere
         };
+
+        public override string ToString()
+        {
+            return $"[QueryArgument] " + _type switch
+            {
+                QueryArgumentType.Primitive => _primitive.ToString(),
+                QueryArgumentType.Box => _box.ToString(),
+                QueryArgumentType.Polygon => _polygon.ToString(),
+                QueryArgumentType.Sphere => _sphere.ToString(),
+                _ => "Unknown",
+            };
+        }
     }
 
     internal enum QueryArgumentType : byte

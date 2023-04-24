@@ -31,5 +31,7 @@ namespace Realms.Native
             _latitude = latitude;
             _longitude = longitude;
         }
+
+        public override string ToString() => $"[{_latitude}, {_longitude}]";
     }
 }

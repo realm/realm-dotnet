@@ -23,7 +23,7 @@ using Realms.Native;
 
 namespace Realms
 {
-    public class GeoPolygon : GeoBase
+    public class GeoPolygon : GeoShapeBase
     {
         public GeoPoint[] Points { get; }
 
@@ -44,5 +44,8 @@ namespace Realms
             var (polygon, handles) = ToNative();
             return (NativeQueryArgument.GeoPolygon(polygon), handles);
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => $"Polygon: {{ {string.Join(",", Points)} }}";
     }
 }

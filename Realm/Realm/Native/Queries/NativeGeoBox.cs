@@ -31,5 +31,7 @@ namespace Realms.Native
             _bottom_left_corner = bottom_left;
             _top_right_corner = top_right;
         }
+
+        public override string ToString() => $"Box {{bl: {_bottom_left_corner}, tr: {_top_right_corner}}}";
     }
 }
