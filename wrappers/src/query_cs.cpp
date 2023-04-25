@@ -539,8 +539,7 @@ REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t prope
             break;
         }
 
-        // TODO: geo_within doesn't exist?
-        // query.geo_within(get_key_for_prop(query, realm, property_index), geo_store);
+        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(geo_store));
     });
 }
 }   // extern "C"
