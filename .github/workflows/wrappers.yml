@@ -18,9 +18,9 @@ jobs:
     outputs:
       wrappers-macos: ${{ steps.check-cache-macos.outputs.cache-hit }}
       wrappers-catalyst: ${{ steps.check-cache-catalyst.outputs.cache-hit }}
-      wrappers-linux-x64: ${{ steps.check-cache-linux-x64.outputs.cache-hit }}
-      wrappers-linux-arm: ${{ steps.check-cache-linux-arm.outputs.cache-hit }}
-      wrappers-linux-arm64: ${{ steps.check-cache-linux-arm64.outputs.cache-hit }}
+      wrappers-linux-x86_64: ${{ steps.check-cache-linux-x86_64.outputs.cache-hit }}
+      wrappers-linux-armhf: ${{ steps.check-cache-linux-armhf.outputs.cache-hit }}
+      wrappers-linux-aarch64: ${{ steps.check-cache-linux-aarch64.outputs.cache-hit }}
       wrappers-iOS-Device: ${{ steps.check-cache-iOS-Device.outputs.cache-hit }}
       wrappers-iOS-Simulator: ${{ steps.check-cache-iOS-Simulator.outputs.cache-hit }}
       wrappers-tvOS-Device: ${{ steps.check-cache-tvOS-Device.outputs.cache-hit }}
@@ -76,55 +76,55 @@ jobs:
       if: matrix.os == 'ubuntu' && steps.check-cache-catalyst.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for linux-x64
-      id: check-cache-linux-x64
+    - name: Check cache for linux-x86_64
+      id: check-cache-linux-x86_64
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-x64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-x86_64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-linux-x64
+    - name: Store artifacts for wrappers-linux-x86_64
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-linux-x64
+        name: wrappers-linux-x86_64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-linux-x64.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-linux-x86_64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for linux-arm
-      id: check-cache-linux-arm
+    - name: Check cache for linux-armhf
+      id: check-cache-linux-armhf
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-arm-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-armhf-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-linux-arm
+    - name: Store artifacts for wrappers-linux-armhf
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-linux-arm
+        name: wrappers-linux-armhf
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-linux-arm.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-linux-armhf.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
-    - name: Check cache for linux-arm64
-      id: check-cache-linux-arm64
+    - name: Check cache for linux-aarch64
+      id: check-cache-linux-aarch64
       uses: nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8
       with:
         path: ./wrappers/build/**
-        key: wrappers-linux-arm64-Release-${{hashFiles('./wrappers/**')}}
+        key: wrappers-linux-aarch64-Release-${{hashFiles('./wrappers/**')}}
       if: matrix.os == 'ubuntu'
-    - name: Store artifacts for wrappers-linux-arm64
+    - name: Store artifacts for wrappers-linux-aarch64
       uses: actions/upload-artifact@v3
       with:
-        name: wrappers-linux-arm64
+        name: wrappers-linux-aarch64
         path: ${{ github.workspace }}/wrappers/build/**
         retention-days: 1
         if-no-files-found: error
-      if: matrix.os == 'ubuntu' && steps.check-cache-linux-arm64.outputs.cache-hit == 'true'
+      if: matrix.os == 'ubuntu' && steps.check-cache-linux-aarch64.outputs.cache-hit == 'true'
     - run: git clean -fdx
       if: matrix.os == 'ubuntu'
     - name: Check cache for iOS-Device
@@ -487,13 +487,13 @@ jobs:
     strategy:
       matrix:
         arch:
-        - x64
-        - arm
-        - arm64
+        - x86_64
+        - armhf
+        - aarch64
     timeout-minutes: 90
     needs:
     - check-cache
-    if: needs.check-cache.outputs.wrappers-linux-x64 != 'true' || needs.check-cache.outputs.wrappers-linux-arm != 'true' || needs.check-cache.outputs.wrappers-linux-arm64 != 'true'
+    if: needs.check-cache.outputs.wrappers-linux-x86_64 != 'true' || needs.check-cache.outputs.wrappers-linux-armhf != 'true' || needs.check-cache.outputs.wrappers-linux-aarch64 != 'true'
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -510,20 +510,11 @@ jobs:
       with:
         path: ./wrappers/build/**
         key: wrappers-linux-${{ matrix.arch }}-Release-${{hashFiles('./wrappers/**')}}
-    - name: Build Docker image
-      uses: docker/build-push-action@6e95f19fb8c9e00a1a391941edbc0ae30c1799f7
-      with:
-        tags: wrappers-linux-${{ matrix.arch }}:latest
-        file: ./wrappers/${{ matrix.arch == 'x64' && 'centos' || 'debian-multiarch-arm' }}.Dockerfile
-        push: false
+    - name: Install Ninja
+      run: sudo apt install ninja-build
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      uses: addnab/docker-run-action@3e77f186b7a929ef010f183a9e24c0f9955ea609
-      with:
-        image: wrappers-linux-${{ matrix.arch }}:latest
-        shell: bash
-        options: -v ${{ github.workspace }}:/work
-        run: /work/wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
+      run: ./wrappers/build-linux.sh -a=${{ matrix.arch }} --configuration=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION='ON'
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-linux-${{ matrix.arch }}
       uses: actions/upload-artifact@v3

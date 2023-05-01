@@ -19,13 +19,13 @@
 #pragma once
 
 #include <realm.hpp>
-#include <realm/util/utf8.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/binding_context.hpp>
 
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
 #include "shared_realm_cs.hpp"
+#include "utf8.hpp"
 
 namespace realm {
 namespace binding {

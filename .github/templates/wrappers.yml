@@ -113,20 +113,11 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode("recursive"))
       - #@ checkCache("wrappers-linux-${{ matrix.arch }}")
-      - name: Build Docker image
-        uses: #@ actionDockerBuild
-        with:
-          tags: wrappers-linux-${{ matrix.arch }}:latest
-          file: ./wrappers/${{ matrix.arch == 'x64' && 'centos' || 'debian-multiarch-arm' }}.Dockerfile
-          push: false
+      - name: Install Ninja
+        run: sudo apt install ninja-build
         if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: #@ actionDockerRun
-        with:
-          image: wrappers-linux-${{ matrix.arch }}:latest
-          shell: bash
-          options: -v ${{ github.workspace }}:/work
-          run: #@ getWrapperBuildCommand("/work/wrappers/build-linux.sh -a=${{ matrix.arch }}")
+        run: #@ getWrapperBuildCommand("./wrappers/build-linux.sh -a=${{ matrix.arch }}")
         if: #@ wrappersCacheCondition
       - #@ uploadArtifacts("wrappers-linux-${{ matrix.arch }}", "wrappers/build/**", 1)
   android:
