@@ -1314,6 +1314,25 @@ namespace Realms.Tests.Database
             }
         }
 
+        [Test]
+        public void ParallelOpen_DoesNotThrow()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var path = Guid.NewGuid().ToString();
+
+                var tasks = Enumerable.Range(0, 10).Select(_ =>
+                {
+                    return Task.Run(() =>
+                    {
+                        using var realm = GetRealm(path);
+                    });
+                });
+
+                await Task.WhenAll(tasks);
+            });
+        }
+
         private const int DummyDataSize = 200;
 
         private static void AddDummyData(Realm realm)
