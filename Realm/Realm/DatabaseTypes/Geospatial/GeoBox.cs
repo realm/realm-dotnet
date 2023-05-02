@@ -49,5 +49,8 @@ namespace Realms
         }
 
         internal NativeGeoBox ToNative() => new(BottomLeftCorner.ToNative(), TopRightCorner.ToNative());
+
+        /// <inheritdoc />
+        public override string ToString() => $"Box: {{ {BottomLeftCorner}, {TopRightCorner} }}";
     }
 }
