@@ -22,11 +22,11 @@ jobs:
           runtime: osx-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net6.0
+        - framework: net7.0
           os:
             runner: macos-arm
             runtime: osx-arm64
-        - framework: netcoreapp3.1
+        - framework: net7.0
           os:
             runner: win81
             runtime: win-x64
