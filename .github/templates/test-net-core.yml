@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - #@ template.replace(prepareTest(cleanupWorkspace = True))
-      - #@ setupDotnet(ifCondition = "matrix.framework == 'net7.0' && matrix.os.runner != 'macos-arm' && matrix.os.runner != 'win81'")
+      - #@ setupDotnet("7.0.x", ifCondition = "matrix.framework == 'net7.0' && matrix.os.runner != 'macos-arm' && matrix.os.runner != 'win81'")
       - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")

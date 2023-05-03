@@ -11,14 +11,14 @@ jobs:
     name: Code Coverage
     timeout-minutes: 90
     steps:
-      - #@ setupDotnet()
+      - #@ setupDotnet("7.0.x")
       - #@ template.replace(prepareTest(fetchWrappers=True))
       - name: Setup Coverlet & Report Generator
         run: |
           dotnet tool install coverlet.console --tool-path tools
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
-      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net6.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
+      - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net7.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
       - name: Run the tests
         run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs("code-coverage") + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
       - name: Publish Coverage
