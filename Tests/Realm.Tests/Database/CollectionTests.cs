@@ -1866,6 +1866,16 @@ namespace Realms.Tests.Database
             Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, null!)).ToArray());
         }
 
+        [Test]
+        public void Fts_OnNonIndexedProperty_Throws()
+        {
+            var ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Title, "value")).ToArray());
+            Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
+
+            ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.Title)} TEXT $0", "value").ToArray());
+            Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
+        }
+
         private void PopulateAObjects(params int[] values)
         {
             if (values.Length == 0)
