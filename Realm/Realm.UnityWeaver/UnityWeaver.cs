@@ -400,14 +400,14 @@ namespace RealmWeaver
             {
                 if (_UnityMajorVersion < 2022)
                 {
-                    return report.files;
+                    var getFilesPI = typeof(BuildReport).GetProperty("files", BindingFlags.Public | BindingFlags.Instance);
+                    return (BuildFile[])getFilesPI.GetValue(report);
                 }
 
                 // Starting with 2022, .files is replaced with .GetFiles. This is a bit hacky, but allows
                 // us to target both versions with the same assembly.
                 var getFilesMI = typeof(BuildReport).GetMethod("GetFiles", BindingFlags.Public | BindingFlags.Instance);
-                var files = getFilesMI.Invoke(report, null);
-                return (BuildFile[])files;
+                return (BuildFile[])getFilesMI.Invoke(report, null);
             }
             catch (Exception e)
             {
