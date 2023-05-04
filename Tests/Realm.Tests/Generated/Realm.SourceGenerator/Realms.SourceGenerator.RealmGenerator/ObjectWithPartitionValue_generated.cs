@@ -38,10 +38,10 @@ namespace Realms.Tests.Sync
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: true, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Value"),
-            Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Partition"),
-            Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Guid"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Value"),
+            Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Partition"),
+            Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Guid"),
         }.Build();
 
         #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

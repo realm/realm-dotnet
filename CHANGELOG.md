@@ -46,7 +46,7 @@
 * Removed `PermissionDeniedException` as it was no longer possible to get it. (Issue [#3272](https://github.com/realm/realm-dotnet/issues/3272))
 * Removed some obsolete error codes from the `ErrorCode` enum. All codes removed were obsolete and no longer emitted by the server. (PR [3273](https://github.com/realm/realm-dotnet/issues/3273))
 * Removed `IncompatibleSyncedFileException` as it was no longer possible to get it. (Issue [#3167](https://github.com/realm/realm-dotnet/issues/3167))
-* The `Realms.Schema.Property` API now use `IndexMode` rather than a boolean indicating whether a property is indexed. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+* The `Realms.Schema.Property` API now use `IndexType` rather than a boolean indicating whether a property is indexed. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))

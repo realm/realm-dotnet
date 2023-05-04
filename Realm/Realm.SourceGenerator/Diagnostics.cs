@@ -124,8 +124,8 @@ namespace Realms.SourceGenerator
         {
             return CreateDiagnosticError(
                 Id.IndexedWrongType,
-                "[Indexed(IndexMode.FullText)] is only allowed on string properties",
-                $"{className}.{propertyName} is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on {propertyType}.",
+                "[Indexed(IndexType.FullText)] is only allowed on string properties",
+                $"{className}.{propertyName} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {propertyType}.",
                 location);
         }
 
@@ -133,8 +133,8 @@ namespace Realms.SourceGenerator
         {
             return CreateDiagnosticError(
                 Id.IndexedWrongType,
-                "[Indexed(IndexMode.None)] is not allowed",
-                $"{className}.{propertyName} is annotated as [Indexed(IndexMode.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
+                "[Indexed(IndexType.None)] is not allowed",
+                $"{className}.{propertyName} is annotated as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
                 location);
         }
 

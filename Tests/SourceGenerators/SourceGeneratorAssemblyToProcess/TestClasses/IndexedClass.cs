@@ -26,19 +26,19 @@ namespace SourceGeneratorAssemblyToProcess
         [PrimaryKey]
         public int Id { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public string FullTextProp { get; set; } = "";
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public string? NullableFullTextProp { get; set; }
 
-        [Indexed(IndexMode.General)]
+        [Indexed(IndexType.General)]
         public int IntProp { get; set; }
 
         [Indexed]
         public Guid GuidProp { get; set; }
 
-        [Indexed(IndexMode.General)]
+        [Indexed(IndexType.General)]
         public Guid GeneralGuidProp { get; set; }
     }
 }

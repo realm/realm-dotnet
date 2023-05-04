@@ -1134,10 +1134,10 @@ namespace Realms.Tests
 #if TEST_WEAVER
         [Required]
 #endif
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public string Summary { get; set; } = string.Empty;
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public string? NullableSummary { get; set; }
 
         public ObjectWithFtsIndex(string title, string summary)

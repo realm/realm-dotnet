@@ -45,25 +45,25 @@ namespace SourceGeneratorPlayground
         [Indexed]
         public int[] UnsupportedProp { get; set; } = null!;
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public int FtsIntProp { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public bool FtsBoolProp { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public RealmValue FtsRealmValueProp { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public RealmObj? FtsObjectProp { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public double FtsDoubleProp { get; set; }
 
-        [Indexed(IndexMode.None)]
+        [Indexed(IndexType.None)]
         public int NoneIndexedInt { get; set; }
 
-        [Indexed(IndexMode.General)]
+        [Indexed(IndexType.General)]
         public RealmValue GeneralRealmValueProp { get; set; }
 
         [PrimaryKey]

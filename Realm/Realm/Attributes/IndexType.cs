@@ -18,13 +18,14 @@
 
 namespace Realms
 {
-#if PRIVATE_INDEXMODE
-    internal enum IndexMode
+#if PRIVATE_INDEXTYPE
+    internal enum IndexType : int
+
 #else
     /// <summary>
     /// Describes the indexing mode for properties annotated with the <see cref="IndexedAttribute"/>.
     /// </summary>
-    public enum IndexMode
+    public enum IndexType : int
 #endif
     {
         /// <summary>

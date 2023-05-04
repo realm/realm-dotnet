@@ -61,7 +61,7 @@ namespace Realms.SourceGenerator
             return null;
         }
 
-        public static IndexMode? GetIndexMode(this ISymbol symbol)
+        public static IndexType? GetIndexType(this ISymbol symbol)
         {
             var attribute = symbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "IndexedAttribute");
             if (attribute == null)
@@ -71,10 +71,10 @@ namespace Realms.SourceGenerator
 
             if (attribute.ConstructorArguments.Length == 0)
             {
-                return IndexMode.General;
+                return IndexType.General;
             }
 
-            return (IndexMode)(int)attribute.ConstructorArguments[0].Value!;
+            return (IndexType)(int)attribute.ConstructorArguments[0].Value!;
         }
 
         public static bool IsValidIntegerType(this ITypeSymbol symbol)
@@ -249,9 +249,9 @@ namespace Realms.SourceGenerator
             return boolean.ToString().ToLower();
         }
 
-        public static string ToCodeString(this IndexMode? index)
+        public static string ToCodeString(this IndexType? index)
         {
-            return $"IndexMode.{index ?? IndexMode.None}";
+            return $"IndexType.{index ?? IndexType.None}";
         }
 
         #region Formatting

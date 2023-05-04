@@ -23,13 +23,13 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Property)]
     public class IndexedAttribute : Attribute
     {
-        public IndexMode Mode { get; }
+        public IndexType Mode { get; }
 
         public IndexedAttribute()
         {
         }
 
-        public IndexedAttribute(IndexMode mode)
+        public IndexedAttribute(IndexType mode)
         {
         }
     }

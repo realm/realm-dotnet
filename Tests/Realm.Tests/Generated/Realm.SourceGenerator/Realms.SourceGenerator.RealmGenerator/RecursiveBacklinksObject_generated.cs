@@ -30,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RecursiveBacklinksObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Object("Parent", "RecursiveBacklinksObject", managedName: "Parent"),
             Realms.Schema.Property.Backlinks("Children", "RecursiveBacklinksObject", "Parent", managedName: "Children"),
         }.Build();

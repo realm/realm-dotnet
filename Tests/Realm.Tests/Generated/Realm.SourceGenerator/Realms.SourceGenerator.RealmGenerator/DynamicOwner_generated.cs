@@ -27,7 +27,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicOwner", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
             Realms.Schema.Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
             Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Tags"),

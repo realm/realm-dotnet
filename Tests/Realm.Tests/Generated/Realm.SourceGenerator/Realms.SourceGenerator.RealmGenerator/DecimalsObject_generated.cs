@@ -30,8 +30,8 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("DecimalValue", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "DecimalValue"),
-            Realms.Schema.Property.Primitive("Decimal128Value", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Decimal128Value"),
+            Realms.Schema.Property.Primitive("DecimalValue", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DecimalValue"),
+            Realms.Schema.Property.Primitive("Decimal128Value", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
 
         #region IRealmObject implementation

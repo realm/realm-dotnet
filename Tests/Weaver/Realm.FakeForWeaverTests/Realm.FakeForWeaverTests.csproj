@@ -15,7 +15,7 @@
     <Compile Include="..\..\..\Realm\Realm\Attributes\PrimaryKeyAttribute.cs" Link="Attributes\PrimaryKeyAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\RequiredAttribute.cs" Link="Attributes\RequiredAttribute.cs" />
     <Compile Include="..\..\..\Realm\Realm\Attributes\GeneratedAttribute.cs" Link="Attributes\GeneratedAttribute.cs" />
-    <Compile Include="..\..\..\Realm\Realm\Attributes\IndexMode.cs" Link="Attributes\IndexMode.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\IndexType.cs" Link="Attributes\IndexType.cs" />
     <Compile Include="..\..\..\Realm\Realm\DatabaseTypes\RealmValueType.cs" Link="RealmValueType.cs" />
     <Compile Include="..\..\..\Realm\Realm\Schema\PropertyType.cs" Link="PropertyType.cs" />
     <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />

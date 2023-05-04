@@ -28,14 +28,14 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexesClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("StringFts", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: true, managedName: "StringFts"),
-            Realms.Schema.Property.Primitive("StringGeneral", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: true, managedName: "StringGeneral"),
-            Realms.Schema.Property.Primitive("StringDefault", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: true, managedName: "StringDefault"),
-            Realms.Schema.Property.Primitive("StringNone", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "StringNone"),
-            Realms.Schema.Property.Primitive("IntGeneral", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "IntGeneral"),
-            Realms.Schema.Property.Primitive("IntDefault", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "IntDefault"),
-            Realms.Schema.Property.Primitive("IntNone", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "IntNone"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("StringFts", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.FullText, isNullable: true, managedName: "StringFts"),
+            Realms.Schema.Property.Primitive("StringGeneral", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.General, isNullable: true, managedName: "StringGeneral"),
+            Realms.Schema.Property.Primitive("StringDefault", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.General, isNullable: true, managedName: "StringDefault"),
+            Realms.Schema.Property.Primitive("StringNone", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringNone"),
+            Realms.Schema.Property.Primitive("IntGeneral", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "IntGeneral"),
+            Realms.Schema.Property.Primitive("IntDefault", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "IntDefault"),
+            Realms.Schema.Property.Primitive("IntNone", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntNone"),
         }.Build();
 
         #region IRealmObject implementation

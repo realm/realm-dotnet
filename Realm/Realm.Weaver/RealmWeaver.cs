@@ -542,15 +542,15 @@ Analytics payload
 
                 if (indexedAttribute.ConstructorArguments.Count > 0)
                 {
-                    var mode = (IndexMode)(int)indexedAttribute.ConstructorArguments[0].Value;
-                    if (mode == IndexMode.None)
+                    var mode = (IndexType)(int)indexedAttribute.ConstructorArguments[0].Value;
+                    if (mode == IndexType.None)
                     {
-                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexMode.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
                     }
 
-                    if (mode == IndexMode.FullText && prop.PropertyType.FullName != StringTypeName)
+                    if (mode == IndexType.FullText && prop.PropertyType.FullName != StringTypeName)
                     {
-                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
                     }
                 }
             }

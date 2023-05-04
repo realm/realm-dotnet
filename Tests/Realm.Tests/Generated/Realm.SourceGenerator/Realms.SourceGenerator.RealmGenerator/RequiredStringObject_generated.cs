@@ -30,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredStringObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("String", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "String"),
+            Realms.Schema.Property.Primitive("String", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "String"),
         }.Build();
 
         #region IRealmObject implementation

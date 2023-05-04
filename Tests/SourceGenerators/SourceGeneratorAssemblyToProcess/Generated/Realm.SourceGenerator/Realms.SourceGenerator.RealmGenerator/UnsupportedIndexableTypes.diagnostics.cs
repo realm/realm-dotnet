@@ -90,7 +90,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.FtsIntProp is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on int.",
+    "Message": "UnsupportedIndexableTypes.FtsIntProp is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on int.",
     "Location": {
       "StartLine": 48,
       "StartColumn": 9,
@@ -101,7 +101,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.FtsBoolProp is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on bool.",
+    "Message": "UnsupportedIndexableTypes.FtsBoolProp is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on bool.",
     "Location": {
       "StartLine": 51,
       "StartColumn": 9,
@@ -112,7 +112,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.FtsRealmValueProp is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on RealmValue.",
+    "Message": "UnsupportedIndexableTypes.FtsRealmValueProp is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on RealmValue.",
     "Location": {
       "StartLine": 54,
       "StartColumn": 9,
@@ -123,7 +123,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.FtsObjectProp is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on RealmObj.",
+    "Message": "UnsupportedIndexableTypes.FtsObjectProp is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on RealmObj.",
     "Location": {
       "StartLine": 57,
       "StartColumn": 9,
@@ -134,7 +134,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.FtsDoubleProp is marked as [Indexed(IndexMode.FullText)] which is only allowed on string properties, not on double.",
+    "Message": "UnsupportedIndexableTypes.FtsDoubleProp is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on double.",
     "Location": {
       "StartLine": 60,
       "StartColumn": 9,
@@ -145,7 +145,7 @@
   {
     "Id": "RLM007",
     "Severity": 3,
-    "Message": "UnsupportedIndexableTypes.NoneIndexedInt is annotated as [Indexed(IndexMode.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
+    "Message": "UnsupportedIndexableTypes.NoneIndexedInt is annotated as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
     "Location": {
       "StartLine": 63,
       "StartColumn": 9,

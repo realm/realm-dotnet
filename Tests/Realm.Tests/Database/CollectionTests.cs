@@ -1852,18 +1852,18 @@ namespace Realms.Tests.Database
         {
             PopulateFtsData();
 
-            var summaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => o.Summary.FullTextSearch(testData.Query)).ToArray().Select(o => o.Title);
+            var summaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, testData.Query)).ToArray().Select(o => o.Title);
             Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
 
-            var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => o.NullableSummary.FullTextSearch(testData.Query)).ToArray().Select(o => o.Title);
+            var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, testData.Query)).ToArray().Select(o => o.Title);
             Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
         }
 
         [Test]
         public void Fts_Linq_WhenTermsIsNull_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => o.Summary.FullTextSearch(null!)).ToArray());
-            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => o.NullableSummary.FullTextSearch(null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, null!)).ToArray());
         }
 
         private void PopulateAObjects(params int[] values)

@@ -33,7 +33,7 @@ namespace Realms.Tests.Sync
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedListObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.ObjectList("EmbeddedListObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedListObject"),
         }.Build();
 

@@ -41,6 +41,6 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         internal bool is_primary;
 
-        internal IndexMode index;
+        internal IndexType index;
     }
 }

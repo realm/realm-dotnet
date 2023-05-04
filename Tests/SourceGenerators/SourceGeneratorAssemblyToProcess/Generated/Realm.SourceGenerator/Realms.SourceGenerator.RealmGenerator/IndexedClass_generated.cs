@@ -25,12 +25,12 @@ namespace SourceGeneratorAssemblyToProcess
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexedClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("FullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: false, managedName: "FullTextProp"),
-            Realms.Schema.Property.Primitive("NullableFullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: true, managedName: "NullableFullTextProp"),
-            Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "IntProp"),
-            Realms.Schema.Property.Primitive("GuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "GuidProp"),
-            Realms.Schema.Property.Primitive("GeneralGuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "GeneralGuidProp"),
+            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("FullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.FullText, isNullable: false, managedName: "FullTextProp"),
+            Realms.Schema.Property.Primitive("NullableFullTextProp", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.FullText, isNullable: true, managedName: "NullableFullTextProp"),
+            Realms.Schema.Property.Primitive("IntProp", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "IntProp"),
+            Realms.Schema.Property.Primitive("GuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "GuidProp"),
+            Realms.Schema.Property.Primitive("GeneralGuidProp", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "GeneralGuidProp"),
         }.Build();
 
         #region IRealmObject implementation

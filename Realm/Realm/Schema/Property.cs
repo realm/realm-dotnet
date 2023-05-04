@@ -98,7 +98,7 @@ namespace Realms.Schema
         /// <summary>
         /// Gets a value indicating the index mode for this <see cref="Property"/>.
         /// </summary>
-        public IndexMode IndexMode { get; }
+        public IndexType IndexType { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Property"/> struct.
@@ -108,9 +108,9 @@ namespace Realms.Schema
         /// <param name="objectType">The object type of the property. Sets <see cref="ObjectType"/>.</param>
         /// <param name="linkOriginPropertyName">The name of the property that links to the model. Sets <see cref="LinkOriginPropertyName"/>.</param>
         /// <param name="isPrimaryKey">A flag indicating whether this property is a primary key. Sets <see cref="IsPrimaryKey"/>.</param>
-        /// <param name="indexMode">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexMode"/>.</param>
+        /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="managedName">The managed name of the property. Sets <see cref="ManagedName"/>.</param>
-        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexMode indexMode = IndexMode.None, string? managedName = null)
+        public Property(string name, PropertyType type, string? objectType = null, string? linkOriginPropertyName = null, bool isPrimaryKey = false, IndexType indexType = IndexType.None, string? managedName = null)
         {
             Argument.NotNullOrEmpty(name, nameof(name));
 
@@ -128,22 +128,22 @@ namespace Realms.Schema
                     throw new ArgumentException($"Property of type {type} cannot be primary key. The only valid primary key types are {string.Join(", ", PrimaryKeyTypes)}.");
                 }
 
-                if (indexMode == IndexMode.FullText)
+                if (indexType == IndexType.FullText)
                 {
                     throw new ArgumentException("PrimaryKey properties cannot have a FullText index added to them.");
                 }
 
-                indexMode = IndexMode.General;
+                indexType = IndexType.General;
             }
 
             IsPrimaryKey = isPrimaryKey;
 
-            if (indexMode == IndexMode.General && !IndexableTypes.Contains(nonNullableType))
+            if (indexType == IndexType.General && !IndexableTypes.Contains(nonNullableType))
             {
                 throw new ArgumentException($"Property of type {type} cannot be indexed. The only valid indexable types are {string.Join(", ", IndexableTypes)}.");
             }
 
-            if (indexMode == IndexMode.FullText && nonNullableType != PropertyType.String)
+            if (indexType == IndexType.FullText && nonNullableType != PropertyType.String)
             {
                 throw new ArgumentException($"Property of type {type} cannot have a FullText index added to it. Only string properties support Full-Text indexing.");
             }
@@ -163,7 +163,7 @@ namespace Realms.Schema
                 }
             }
 
-            IndexMode = indexMode;
+            IndexType = indexType;
         }
 
         internal Property(SchemaProperty nativeProperty)
@@ -174,7 +174,7 @@ namespace Realms.Schema
             ObjectType = nativeProperty.object_type;
             LinkOriginPropertyName = nativeProperty.link_origin_property_name;
             IsPrimaryKey = nativeProperty.is_primary;
-            IndexMode = nativeProperty.index;
+            IndexType = nativeProperty.index;
         }
 
         /// <summary>
@@ -186,14 +186,14 @@ namespace Realms.Schema
         /// will be inferred for value types, but must be specified via <paramref name="isNullable"/> for reference types.
         /// </param>
         /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
-        /// <param name="indexMode">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexMode"/>.</param>
+        /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="isNullable">
         /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <paramref name="type"/> argument.
         /// Pass a non-null value to override it.
         /// </param>
         /// <param name="managedName">The managed name of the property.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
-        public static Property FromType(string name, Type type, bool isPrimaryKey = false, IndexMode indexMode = IndexMode.None, bool? isNullable = null, string? managedName = null)
+        public static Property FromType(string name, Type type, bool isPrimaryKey = false, IndexType indexType = IndexType.None, bool? isNullable = null, string? managedName = null)
         {
             Argument.NotNull(type, nameof(type));
             var propertyType = type.ToPropertyType(out var objectType);
@@ -209,7 +209,7 @@ namespace Realms.Schema
                     break;
             }
 
-            return new Property(name, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexMode: indexMode, managedName: managedName);
+            return new Property(name, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName);
         }
 
         /// <summary>
@@ -221,15 +221,15 @@ namespace Realms.Schema
         /// </typeparam>
         /// <param name="name">The name of the property.</param>
         /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
-        /// <param name="indexMode">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexMode"/>.</param>
+        /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="isNullable">
         /// A flag indicating whether the property is nullable. Pass <c>null</c> to infer nullability from the <typeparamref name="T"/> argument.
         /// Pass a non-null value to override it.
         /// </param>
         /// <param name="managedName">The managed name of the property.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
-        public static Property FromType<T>(string name, bool isPrimaryKey = false, IndexMode indexMode = IndexMode.None, bool? isNullable = null, string? managedName = null)
-            => FromType(name, typeof(T), isPrimaryKey, indexMode, isNullable, managedName: managedName);
+        public static Property FromType<T>(string name, bool isPrimaryKey = false, IndexType indexType = IndexType.None, bool? isNullable = null, string? managedName = null)
+            => FromType(name, typeof(T), isPrimaryKey, indexType, isNullable, managedName: managedName);
 
         /// <summary>
         /// Initializes a new property of a primitive (string, int, date, etc.) type.
@@ -240,12 +240,12 @@ namespace Realms.Schema
         /// in an exception being thrown. If you want to create an object property, use <see cref="Object(string, string, string)"/>.
         /// </param>
         /// <param name="isPrimaryKey">A flag indicating whether the property is primary key.</param>
-        /// <param name="indexMode">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexMode"/>.</param>
+        /// <param name="indexType">An enum indicating whether this property is indexed and the type of the index used. Sets <see cref="IndexType"/>.</param>
         /// <param name="isNullable">A flag indicating whether the property is nullable.</param>
         /// <param name="managedName">The managed name of the property.</param>
         /// <returns>A <see cref="Property"/> instance that can be used to construct an <see cref="ObjectSchema"/>.</returns>
-        public static Property Primitive(string name, RealmValueType type, bool isPrimaryKey = false, IndexMode indexMode = IndexMode.None, bool isNullable = false, string? managedName = null)
-            => PrimitiveCore(name, type, isPrimaryKey: isPrimaryKey, indexMode: indexMode, isNullable: isNullable, managedName: managedName);
+        public static Property Primitive(string name, RealmValueType type, bool isPrimaryKey = false, IndexType indexType = IndexType.None, bool isNullable = false, string? managedName = null)
+            => PrimitiveCore(name, type, isPrimaryKey: isPrimaryKey, indexType: indexType, isNullable: isNullable, managedName: managedName);
 
         /// <summary>
         /// Initializes a new property describing a list of primitive values.
@@ -421,20 +421,20 @@ namespace Realms.Schema
 
                 var objectTypeName = objectType?.GetMappedOrOriginalName();
                 var isPrimaryKey = prop.HasCustomAttribute<PrimaryKeyAttribute>();
-                var indexMode = prop.GetCustomAttribute<IndexedAttribute>()?.Mode ?? IndexMode.None;
-                result = new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexMode: indexMode, managedName: prop.Name);
+                var indexType = prop.GetCustomAttribute<IndexedAttribute>()?.Type ?? IndexType.None;
+                result = new Property(propertyName, propertyType, objectTypeName, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: prop.Name);
             }
 
             return result;
         }
 
-        private static Property PrimitiveCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isPrimaryKey = false, IndexMode indexMode = IndexMode.None,
+        private static Property PrimitiveCore(string name, RealmValueType type, PropertyType collectionModifier = default, bool isPrimaryKey = false, IndexType indexType = IndexType.None,
             bool isNullable = false, string? managedName = null)
         {
             Argument.Ensure(type != RealmValueType.Null, $"{nameof(type)} can't be {RealmValueType.Null}", nameof(type));
             Argument.Ensure(type != RealmValueType.Object, $"{nameof(type)} can't be {RealmValueType.Object}. Use Property.Object instead.", nameof(type));
 
-            return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, indexMode: indexMode, managedName: managedName);
+            return new Property(name, type.ToPropertyType(isNullable) | collectionModifier, isPrimaryKey: isPrimaryKey, indexType: indexType, managedName: managedName);
         }
 
         private static Property ObjectCore(string name, string objectType, PropertyType typeModifier = default, string? managedName = null)

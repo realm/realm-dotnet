@@ -38,7 +38,7 @@ namespace Realms.Tests.Sync
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncObjectWithRequiredStringList", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: true, managedName: "Id"),
             Realms.Schema.Property.PrimitiveList("Strings", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Strings"),
         }.Build();
 

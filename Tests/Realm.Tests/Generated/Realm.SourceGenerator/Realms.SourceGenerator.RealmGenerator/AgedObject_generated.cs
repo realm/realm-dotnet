@@ -28,7 +28,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AgedObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "Birthday"),
+            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Birthday"),
         }.Build();
 
         #region IRealmObject implementation

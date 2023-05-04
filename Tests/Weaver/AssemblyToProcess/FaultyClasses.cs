@@ -98,10 +98,10 @@ namespace AssemblyToProcess
         [Indexed]
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
-        [Indexed(IndexMode.General)]
+        [Indexed(IndexType.General)]
         public ObjectId ObjectIdProperty { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public string? FullTextStringProperty { get; set; }
 
         // This should cause an error:
@@ -109,10 +109,10 @@ namespace AssemblyToProcess
         [Indexed]
         public float SingleProperty { get; set; }
 
-        [Indexed(IndexMode.None)]
+        [Indexed(IndexType.None)]
         public int NoneIntProperty { get; set; }
 
-        [Indexed(IndexMode.FullText)]
+        [Indexed(IndexType.FullText)]
         public int FullTextIntProperty { get; set; }
     }
 

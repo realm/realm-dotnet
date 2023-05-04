@@ -30,9 +30,9 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithFtsIndex", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Title", Realms.RealmValueType.String, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "Title"),
-            Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: false, managedName: "Summary"),
-            Realms.Schema.Property.Primitive("NullableSummary", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.FullText, isNullable: true, managedName: "NullableSummary"),
+            Realms.Schema.Property.Primitive("Title", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Title"),
+            Realms.Schema.Property.Primitive("Summary", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.FullText, isNullable: false, managedName: "Summary"),
+            Realms.Schema.Property.Primitive("NullableSummary", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.FullText, isNullable: true, managedName: "NullableSummary"),
         }.Build();
 
         #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

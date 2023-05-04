@@ -29,7 +29,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexedDateTimeOffsetObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("DateTimeOffset", Realms.RealmValueType.Date, isPrimaryKey: false, indexMode: IndexMode.General, isNullable: false, managedName: "DateTimeOffset"),
+            Realms.Schema.Property.Primitive("DateTimeOffset", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "DateTimeOffset"),
         }.Build();
 
         #region IRealmObject implementation

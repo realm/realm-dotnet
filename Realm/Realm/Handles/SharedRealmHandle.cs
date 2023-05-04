@@ -968,7 +968,7 @@ namespace Realms
                     object_type = property.ObjectType,
                     link_origin_property_name = property.LinkOriginPropertyName,
                     is_primary = property.IsPrimaryKey,
-                    index = property.IndexMode,
+                    index = property.IndexType,
                 };
             }
         }

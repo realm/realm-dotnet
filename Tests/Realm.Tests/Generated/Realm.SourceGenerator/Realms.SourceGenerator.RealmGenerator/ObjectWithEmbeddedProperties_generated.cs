@@ -30,7 +30,7 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithEmbeddedProperties", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, indexMode: IndexMode.None, isNullable: false, managedName: "PrimaryKey"),
+            Realms.Schema.Property.Primitive("PrimaryKey", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "PrimaryKey"),
             Realms.Schema.Property.Object("AllTypesObject", "EmbeddedAllTypesObject", managedName: "AllTypesObject"),
             Realms.Schema.Property.ObjectList("ListOfAllTypesObjects", "EmbeddedAllTypesObject", managedName: "ListOfAllTypesObjects"),
             Realms.Schema.Property.Object("RecursiveObject", "EmbeddedLevel1", managedName: "RecursiveObject"),

@@ -28,7 +28,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RequiredPropertyClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("FooRequired", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: false, managedName: "FooRequired"),
+            Realms.Schema.Property.Primitive("FooRequired", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "FooRequired"),
         }.Build();
 
         #region IRealmObject implementation

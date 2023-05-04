@@ -30,10 +30,10 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ClassWithUnqueryableMembers", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("RealPropertyToSatisfyWeaver", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),
+            Realms.Schema.Property.Primitive("RealPropertyToSatisfyWeaver", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "RealPropertyToSatisfyWeaver"),
             Realms.Schema.Property.Object("RealmObjectProperty", "Person", managedName: "RealmObjectProperty"),
             Realms.Schema.Property.ObjectList("RealmListProperty", "Person", managedName: "RealmListProperty"),
-            Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "FirstName"),
+            Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "FirstName"),
             Realms.Schema.Property.Backlinks("BacklinkProperty", "UnqueryableBacklinks", "Parent", managedName: "BacklinkProperty"),
         }.Build();
 

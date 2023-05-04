@@ -30,7 +30,7 @@ namespace Realms.Tests.Database
             /// </summary>
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NonPrimaryKeyWithPKRelation", ObjectSchema.ObjectType.RealmObject)
             {
-                Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, indexMode: IndexMode.None, isNullable: true, managedName: "StringValue"),
+                Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringValue"),
                 Realms.Schema.Property.Object("OtherObject", "PrimaryKeyObject", managedName: "OtherObject"),
             }.Build();
 
