@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageId>Realm.UnityWeaver</PackageId>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' == 'true'">netstandard2.1</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' != 'true'">netstandard2.0</TargetFramework>
     <Title>Realm.UnityWeaver</Title>
     <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
@@ -17,8 +18,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' == 'true'">
+    <PackageReference Include="Unity3D" Version="2.1.2"  />
+    <Reference Include="$(UnityEditorPath)" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' != 'true'">
     <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
   </ItemGroup>
+
   <Import Project="..\Realm.Weaver\Realm.Weaver.projitems" Label="Shared" />
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
