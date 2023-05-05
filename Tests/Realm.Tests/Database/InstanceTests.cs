@@ -1277,9 +1277,7 @@ namespace Realms.Tests.Database
 
             using var realm = GetRealm(Guid.NewGuid().ToString());
 
-            var expectedLog = new Regex("Info: DB: [^ ]* Thread [^ ]*: Open file");
-            TestHelpers.AssertRegex(logger.GetLog(), expectedLog);
-            Assert.That(logger.GetLog(), Does.Not.Contain("Debug"));
+            Assert.That(logger.GetLog(), Is.Empty);
 
             // We're at info level, so we don't expect any statements.
             WriteAndVerifyLogs();

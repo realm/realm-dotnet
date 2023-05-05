@@ -30,7 +30,7 @@ namespace Bar
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DuplicateClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringValue"),
+            Realms.Schema.Property.Primitive("StringValue", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringValue"),
         }.Build();
 
         #region IRealmObject implementation

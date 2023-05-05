@@ -40,8 +40,9 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
             p.type = property.type;
             p.object_type = property.object_type ? property.object_type : "";
             p.link_origin_property_name = property.link_origin_property_name ? property.link_origin_property_name : "";
-            p.is_indexed = property.is_indexed;
-            
+            p.is_indexed = property.index == IndexType::General;
+            p.is_fulltext_indexed = property.index == IndexType::Fulltext;
+
             if ((p.is_primary = property.is_primary)) {
                 o.primary_key = p.name;
             }

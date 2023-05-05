@@ -27,7 +27,7 @@ namespace SourceGeneratorPlayground
             /// </summary>
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NestedClass", ObjectSchema.ObjectType.RealmObject)
             {
-                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Id"),
+                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Id"),
                 Realms.Schema.Property.Object("Link", "NestedClass", managedName: "Link"),
             }.Build();
 

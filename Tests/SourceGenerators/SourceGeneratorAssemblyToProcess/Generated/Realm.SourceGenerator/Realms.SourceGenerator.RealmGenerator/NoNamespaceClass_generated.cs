@@ -22,7 +22,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     /// </summary>
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoNamespaceClass", ObjectSchema.ObjectType.RealmObject)
     {
-        Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Name"),
+        Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Name"),
     }.Build();
 
     #region IRealmObject implementation

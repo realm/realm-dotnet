@@ -1126,6 +1126,34 @@ namespace Realms.Tests
         public IDictionary<string, int> TestDict { get; } = null!;
     }
 
+    public partial class ObjectWithFtsIndex : TestRealmObject
+    {
+        [PrimaryKey]
+        public string Title { get; set; }
+
+#if TEST_WEAVER
+        [Required]
+#endif
+        [Indexed(IndexType.FullText)]
+        public string Summary { get; set; } = string.Empty;
+
+        [Indexed(IndexType.FullText)]
+        public string? NullableSummary { get; set; }
+
+        public ObjectWithFtsIndex(string title, string summary)
+        {
+            Title = title;
+            Summary = summary;
+            NullableSummary = summary;
+        }
+
+#if TEST_WEAVER
+        private ObjectWithFtsIndex()
+        {
+        }
+#endif
+    }
+
     [Explicit]
     public partial class PrivatePrimaryKeyObject : TestRealmObject
     {

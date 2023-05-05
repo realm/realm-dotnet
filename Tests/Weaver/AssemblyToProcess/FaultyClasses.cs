@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MongoDB.Bson;
 using Realms;
 
 namespace AssemblyToProcess
@@ -97,10 +98,22 @@ namespace AssemblyToProcess
         [Indexed]
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        [Indexed(IndexType.General)]
+        public ObjectId ObjectIdProperty { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public string? FullTextStringProperty { get; set; }
+
         // This should cause an error:
 
         [Indexed]
         public float SingleProperty { get; set; }
+
+        [Indexed(IndexType.None)]
+        public int NoneIntProperty { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public int FullTextIntProperty { get; set; }
     }
 
     public class RequiredProperties : RealmObject

@@ -26,7 +26,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TestNotificationObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
+            Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringProperty"),
             Realms.Schema.Property.ObjectList("ListSameType", "TestNotificationObject", managedName: "ListSameType"),
             Realms.Schema.Property.ObjectSet("SetSameType", "TestNotificationObject", managedName: "SetSameType"),
             Realms.Schema.Property.ObjectDictionary("DictionarySameType", "TestNotificationObject", managedName: "DictionarySameType"),

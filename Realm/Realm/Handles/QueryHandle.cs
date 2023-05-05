@@ -61,6 +61,10 @@ namespace Realms
             public static extern void string_like(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
                         PrimitiveValue primitive, [MarshalAs(UnmanagedType.U1)] bool caseSensitive, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_fts", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void string_fts(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx,
+                PrimitiveValue primitive, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_primitive_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void primitive_equal(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, PrimitiveValue primitive, out NativeException ex);
 
@@ -203,6 +207,17 @@ namespace Realms
             }
 
             nativeException.ThrowIfNecessary();
+        }
+
+        public void StringFTS(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)
+        {
+            EnsureIsOpen();
+
+            var (primitive, handles) = value.ToNative();
+            NativeMethods.string_fts(this, realm, propertyIndex, primitive, out var ex);
+            handles?.Dispose();
+
+            ex.ThrowIfNecessary();
         }
 
         public void ValueEqual(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value)

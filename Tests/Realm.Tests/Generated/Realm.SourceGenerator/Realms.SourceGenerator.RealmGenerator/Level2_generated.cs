@@ -28,7 +28,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Level2", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IntValue"),
+            Realms.Schema.Property.Primitive("IntValue", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IntValue"),
             Realms.Schema.Property.Object("Level3", "Level3", managedName: "Level3"),
         }.Build();
 

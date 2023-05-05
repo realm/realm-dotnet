@@ -196,6 +196,18 @@ REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t pro
     });
 }
 
+REALM_EXPORT void query_string_fts(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
+        REALM_ASSERT(primitive.type == realm_value_type::RLM_TYPE_STRING);
+        query.fulltext(get_key_for_prop(query, realm, property_index), from_capi(primitive.string));
+    });
+}
+
 REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

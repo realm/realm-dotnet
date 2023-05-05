@@ -28,8 +28,8 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CompletionReport", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Realms.Schema.Property.Primitive("CompletionDate", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CompletionDate"),
-            Realms.Schema.Property.Primitive("Remarks", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Remarks"),
+            Realms.Schema.Property.Primitive("CompletionDate", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "CompletionDate"),
+            Realms.Schema.Property.Primitive("Remarks", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Remarks"),
         }.Build();
 
         #region IEmbeddedObject implementation

@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Serializers;
 using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -59,9 +60,19 @@ namespace Realms
             {
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
-                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+#pragma warning disable CS0618 // Type or member is obsolete
+                internal static readonly LazyMethod InstanceContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+#pragma warning restore CS0618 // Type or member is obsolete
 
-                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => QueryMethods.Contains(s, string.Empty, StringComparison.Ordinal));
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                internal static readonly LazyMethod LegacyLike = Capture<string>(s => s.Like(string.Empty, true));
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                internal static readonly LazyMethod Like = Capture<string>(s => QueryMethods.Like(s, string.Empty, true));
+
+                internal static readonly LazyMethod FullTextSearch = Capture<string>(s => QueryMethods.FullTextSearch(s, string.Empty));
 
                 [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
@@ -300,7 +311,8 @@ namespace Realms
             }
 
             if (node.Method.DeclaringType == typeof(string) ||
-                node.Method.DeclaringType == typeof(StringExtensions))
+                node.Method.DeclaringType == typeof(StringExtensions) ||
+                node.Method.DeclaringType == typeof(QueryMethods))
             {
                 QueryHandle.Operation<string?>? queryMethod = null;
 
@@ -367,7 +379,7 @@ namespace Realms
                 {
                     queryMethod = (q, r, p, v) => q.StringEqual(r, p, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.Like.Value) || AreMethodsSame(node.Method, Methods.String.LegacyLike.Value))
                 {
                     member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
@@ -377,6 +389,21 @@ namespace Realms
                     }
 
                     queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.FullTextSearch.Value))
+                {
+                    member = node.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+
+                    queryMethod = (q, r, p, v) =>
+                    {
+                        if (v == null)
+                        {
+                            throw new ArgumentNullException("terms", "Cannot perform a Full-Text search against null string");
+                        }
+
+                        q.StringFTS(r, p, v);
+                    };
                 }
 
                 if (queryMethod != null)
@@ -441,13 +468,19 @@ namespace Realms
         private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
         {
 #if !NETCOREAPP2_1_OR_GREATER
-            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            if (AreMethodsSame(method, Methods.String.InstanceContainsStringComparison.Value))
             {
                 // This is an extension method, so the string to compare against is at position 1.
                 stringArgumentIndex = 1;
                 return true;
             }
 #endif
+
+            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            {
+                stringArgumentIndex = 1;
+                return true;
+            }
 
             // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
             // string.Contains overload that accepts comparison.

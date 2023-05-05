@@ -30,8 +30,8 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("SyncCollectionsObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "GuidProperty"),
             Realms.Schema.Property.PrimitiveList("CharList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharList"),
             Realms.Schema.Property.PrimitiveList("ByteList", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "ByteList"),
             Realms.Schema.Property.PrimitiveList("Int16List", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "Int16List"),

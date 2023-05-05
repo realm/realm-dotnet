@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -28,10 +29,29 @@ namespace Realms
     public class IndexedAttribute : Attribute
     {
         /// <summary>
+        /// Gets a value indicating the type of indexing that the database will perform. Default is <see cref="IndexType.General"/>.
+        /// </summary>
+        /// <value>The index mode for the property.</value>
+        public IndexType Type { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="IndexedAttribute"/> class.
         /// </summary>
-        public IndexedAttribute()
+        public IndexedAttribute() : this(IndexType.General)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexedAttribute"/> class.
+        /// </summary>
+        /// <param name="mode">The type of index that will be created.</param>
+        public IndexedAttribute(IndexType mode)
+        {
+            Argument.Ensure(
+                mode != IndexType.None,
+                $"IndexType.None is not valid when constructing an {nameof(IndexedAttribute)}. If you don't wish to index the property, remove the attribute altogether.",
+                nameof(mode));
+            Type = mode;
         }
     }
 }
