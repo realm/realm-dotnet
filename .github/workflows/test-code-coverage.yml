@@ -30,10 +30,6 @@ jobs:
     name: Code Coverage
     timeout-minutes: 90
     steps:
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      with:
-        dotnet-version: 6.0.x
     - name: Checkout code
       uses: actions/checkout@v3
       with:
@@ -148,10 +144,10 @@ jobs:
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net6.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f net7.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net6.0/linux-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net7.0/linux-x64' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run the tests
       run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
