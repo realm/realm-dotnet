@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -1534,11 +1535,33 @@ namespace Realms.Tests.Database
 
                 target.AsRealmCollection().CollectionChanged -= HandleCollectionChanged;
 
+                var propertyChangedCallbacks = new List<string>();
+                target.AsRealmCollection().PropertyChanged += HandlePropertyChanged;
+
+                WriteIfNecessary(target, () => target.Add(newValue));
+
+                await TestHelpers.WaitForConditionAsync(() => propertyChangedCallbacks.Count == 2);
+                Assert.That(propertyChangedCallbacks, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+                WriteIfNecessary(target, () => target.Remove(newValue));
+
+                await TestHelpers.WaitForConditionAsync(() => propertyChangedCallbacks.Count == 4);
+                Assert.That(propertyChangedCallbacks, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
+
+                target.AsRealmCollection().PropertyChanged -= HandlePropertyChanged;
+
                 void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs? e)
                 {
                     Assert.That(sender, Is.EqualTo(target));
 
                     callbacks.Add(e!);
+                }
+
+                void HandlePropertyChanged(object? sender, PropertyChangedEventArgs? e)
+                {
+                    Assert.That(sender, Is.EqualTo(target));
+
+                    propertyChangedCallbacks.Add(e!.PropertyName);
                 }
             }
 
