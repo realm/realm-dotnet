@@ -88,10 +88,20 @@
       <Link>wrappers\Darwin\librealm-wrappers.dylib</Link>
     </None>
     <!-- Linux -->
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x86_64\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
-      <Link>wrappers\Linux\librealm-wrappers.so</Link>
+      <Link>wrappers\Linux-x86_64\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-armv7l\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm\native</PackagePath>
+      <Link>wrappers\Linux-armhf\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-aarch64\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm64\native</PackagePath>
+      <Link>wrappers\Linux-aarch64\librealm-wrappers.so</Link>
     </None>
     <!-- Android -->
     <Content Include="wrappers-props\monoandroid\wrappers.props" Pack="true" PackagePath="build\monoandroid\Realm.props" />

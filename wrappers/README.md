@@ -54,15 +54,24 @@ Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can s
 
 You can find the CMake-generated Visual Studio project files in `cmake\$Target\$Configuration-$Platform` and use them for debugging.
 
-Building .NET Core wrappers for macOS and Linux
+Building macOS wrappers
 -------------
 
-`build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
+You need Xcode 13 (or later) installed.
 
-For Linux builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
+* To build a universal (x64 and Arm64) binary, run `./build-macos.sh -c=Debug/Release`.
 
-1. `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
-1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
+Building Linux wrappers
+-------------
+
+`build-linux.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
+
+  1. For Linux x64 builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
+     * `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
+     * `docker run --rm -v $(pwd):/source realm-dotnet/wrappers`
+  1. For Linux Arm/Arm64 builds you can build and run `debian-multiarch-arm.Dockerfile`:
+     * `docker build . -f debian-multiarch-arm.Dockerfile -t realm-dotnet/wrappers-arm`
+     * `docker run --rm -v $(pwd):/source realm-dotnet/wrappers-arm -a=arm64/arm`
 
 General Notes
 -------------

@@ -18,6 +18,7 @@
 
 #@ androidABIs = [ 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64' ]
 #@ windowsArchs = [ 'Win32', 'x64', 'ARM64' ]
+#@ linuxArchs = [ 'x86_64', 'armhf', 'aarch64' ]
 #@ windowsUWPArchs = [ 'Win32', 'x64', 'ARM', 'ARM64' ]
 #@ applePlatforms = [ 'iOS', 'tvOS'  ]
 
@@ -145,7 +146,10 @@ with:
 #@ end
 
 #@ def getWrapperBinaryNames():
-#@ wrapperPlatforms = [ 'macos', 'catalyst', 'linux' ]
+#@ wrapperPlatforms = [ 'macos', 'catalyst' ]
+#@ for linuxArch in linuxArchs:
+#@   wrapperPlatforms.append("linux-" + linuxArch)
+#@ end
 #@ for platform in applePlatforms:
 #@   wrapperPlatforms.append(platform + "-Device")
 #@   wrapperPlatforms.append(platform + "-Simulator")

@@ -20,11 +20,12 @@ if(ANDROID)
 endif()
 
 option(REALM_DOTNET_BUILD_CORE_FROM_SOURCE "Build Realm Core from source, as opposed to downloading prebuilt binaries" ON)
-if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
-    set(REALM_BUILD_LIB_ONLY ON)
-    set(REALM_ENABLE_SYNC ON)
 
-    add_subdirectory(realm-core EXCLUDE_FROM_ALL)
+if(REALM_DOTNET_BUILD_CORE_FROM_SOURCE)
+  set(REALM_BUILD_LIB_ONLY ON)
+  set(REALM_ENABLE_SYNC ON)
+
+  add_subdirectory(realm-core EXCLUDE_FROM_ALL)
 endif()
 
 # Build as a .framework instead of .dylib
@@ -32,13 +33,14 @@ set(BUILD_APPLE_FRAMEWORK OFF)
 
 if(APPLE)
   set(CMAKE_VISIBILITY_INLINES_HIDDEN TRUE)
-  if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(BUILD_APPLE_FRAMEWORK TRUE)
   endif()
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(/DWIN32_LEAN_AND_MEAN)
   add_compile_options(
-      /MP # Enable multi-processor compilation
+    /MP # Enable multi-processor compilation
   )
 
   # always produce a PDB
