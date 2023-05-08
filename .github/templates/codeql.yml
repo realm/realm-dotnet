@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild", "setupDotnet")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL
@@ -22,7 +22,6 @@
 #@ def buildPackages():
   - name: Add msbuild to PATH
     uses: #@ actionSetupMSBuild
-  - #@ setupDotnet("6.0.202")
 #@ for pkgName in nugetPackages:
   - name: #@ "Build " + pkgName
     run: #@ "msbuild Realm/" + pkgName + " -p:UseSharedCompilation=false -restore -p:Configuration=" + configuration

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "setupDotnet")
+#@ load("common.lib.yml", "checkoutCode")
 #@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "wovenClassesBuildTests")
 
 ---
@@ -12,7 +12,6 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ setupDotnet("7.0.x")
       - #@ template.replace(fetchPackageArtifacts())
       - #@ template.replace(wovenClassesBuildTests("Tests/Realm.Tests", "net7.0", "win-x64"))
       - name: Run the tests

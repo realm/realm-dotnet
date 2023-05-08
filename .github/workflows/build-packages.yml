@@ -210,11 +210,6 @@ jobs:
         Invoke-WebRequest -Uri https://github.com/dotnet/docfx/releases/download/v2.62.1/docfx-win-x64-v2.62.1.zip -OutFile C:\docfx.zip
         Expand-Archive -Path C:\docfx.zip -DestinationPath C:\docfx
       shell: powershell
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      if: inputs.build-docs
-      with:
-        dotnet-version: 6.0.x
     - name: Build docs
       if: inputs.build-docs
       run: |

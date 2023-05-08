@@ -7,7 +7,6 @@
     first in the list.
     -->
     <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0;net7.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
