@@ -1129,7 +1129,12 @@ namespace Realms.Tests
     public partial class ObjectWithFtsIndex : TestRealmObject
     {
         [PrimaryKey]
+#if TEST_WEAVER
+        [Required]
+        public string Title { get; set; } = null!;
+#else
         public string Title { get; set; }
+#endif
 
 #if TEST_WEAVER
         [Required]
