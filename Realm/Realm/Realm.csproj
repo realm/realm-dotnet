@@ -93,7 +93,7 @@
       <PackagePath>runtimes\linux-x64\native</PackagePath>
       <Link>wrappers\Linux-x86_64\librealm-wrappers.so</Link>
     </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)-armhf\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-armv7l\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-arm\native</PackagePath>
       <Link>wrappers\Linux-armhf\librealm-wrappers.so</Link>
