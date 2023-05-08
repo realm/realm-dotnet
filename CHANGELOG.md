@@ -1,4 +1,4 @@
-## 11.0.0 (TBD)
+## 10.22.0 (2023-05-08)
 
 ### Breaking changes
 * The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` used in `*collection*.SubscribeForNotifications` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
