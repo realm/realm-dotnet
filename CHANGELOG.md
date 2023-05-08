@@ -54,15 +54,46 @@
 * It is now possible to change the log level at any point of the application's lifetime. (PR [#3277](https://github.com/realm/realm-dotnet/pull/3277))
 * Some log messages have been added to the Core database. Events, such as opening a Realm or committing a transaction will now be logged. (Issue [#2910](https://github.com/realm/realm-dotnet/issues/2910))
 * Added support for Full-Text search (simple term) queries. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+* Performance improvement for the following queries (Core 13.8.0):
+  * Significant (~75%) improvement when counting (`IQueryable.Count()`) the number of exact matches (with no other query conditions) on a string/int/UUID/ObjectID property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
+  * Significant (~99%) improvement when querying for an exact match on a `DateTimeOffset` property that has an index.
+  * Significant (~99%) improvement when querying for a case insensitive match on a `RealmValue` property that has an index.
+  * Moderate (~25%) improvement when querying for an exact match on a Boolean property that has an index.
+  * Small (~5%) improvement when querying for a case insensitive match on a `RealmValue` property that does not have an index.
+  * Moderate (~30%) improvement of equality queries on a non-indexed `RealmValue`.
+* Enable multiple processes to operate on an encrypted Realm simultaneously. (Core 13.9.0)
+* Improve performance of rolling back write transactions after making changes. If no notifications events are subscribed to, this is now constant time rather than taking time proportional to the number of changes to be rolled back. Rollbacks with notifications are 10-20% faster. (Core 13.9.4)
+* PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. (Core 13.10.0)
 
 ### Fixed
 * Fixed an issue that could cause a `The specified table name is already in use` exception when creating a new Realm file on multiple threads. (Issue [#3302](https://github.com/realm/realm-dotnet/issues/3302))
+* Fixed a bug that may have resulted in arrays being in different orders on different devices. Some cases of “Invalid prior_size” may be fixed too. (Core 13.7.1)
+* Fixed a crash when querying a `RealmValue` property with a string operator (contains/like/beginswith/endswith) or with case insensitivity. (Core 13.8.0)
+* Querying for equality of a string on an indexed `RealmValue` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of "foo" or "FOO" etc. (Core 13.8.0)
+* Adding an index to a `RealmValue` property on a non-empty table would crash with an assertion. (Core 13.8.0)
+* `SyncSession.Stop()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the realm. (Core 13.8.0)
+* Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. (Core 13.9.0)
+* `ClientResetException.InitiateClientReset()` no longer ignores the result of trying to remove a realm. This could have resulted in a client reset action being reported as successful when it actually failed on windows if the `Realm` was still open. (Core 13.9.0)
+* Fix a data race where if one thread committed a write transaction which increased the number of live versions above the previous highest seen during the current session at the same time as another thread began a read, the reading thread could read from a no-longer-valid memory mapping (Core 13.9.0).
+* Performing a query like `{1, 2, 3, ...} IN list` where the array is longer than 8 and all elements are smaller than some values in list, the program would crash (Core 13.9.4)
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache (Core 13.9.4)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.8.0.
+* Using Core 13.10.0.
+
+## 10.21.1 (2023-04-21)
+
+### Fixed
+* Fixed a crash that occurs when the server sends a PermissionDenied error. (Issue [#3292](https://github.com/realm/realm-dotnet/issues/3292))
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.6.0.
 
 ## 10.21.0 (2023-03-24)
 
