@@ -54,7 +54,7 @@ jobs:
       with:
         name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -69,7 +69,7 @@ jobs:
     - name: Build Tests/Tests.iOS
       run: msbuild Tests/Tests.iOS -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:Platform=iPhoneSimulator
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30
+      uses: realm/ci-actions/run-ios-simulator@729a80d203351eab7df4eca564daa275e76ec52f
       with:
         appPath: Tests/Tests.iOS/bin/iPhoneSimulator/Release/Tests.iOS.app
         bundleId: io.realm.dotnettests
@@ -126,7 +126,7 @@ jobs:
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
-      uses: realm/ci-actions/run-ios-simulator@187889c026eb16673dba3152906a46ed87406e30
+      uses: realm/ci-actions/run-ios-simulator@729a80d203351eab7df4eca564daa275e76ec52f
       with:
         appPath: Tests/Tests.Maui/bin/Release/net6.0-ios/iossimulator-x64/Tests.Maui.app
         bundleId: io.realm.mauitests
