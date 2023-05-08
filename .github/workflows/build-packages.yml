@@ -224,10 +224,12 @@ jobs:
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       if: inputs.build-docs
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 6.0.402
     - name: Build docs
       if: inputs.build-docs
       run: |
+        New-Item global.json
+        Set-Content global.json '{ "sdk": { "version": "6.0.402" } }'
         C:\docfx\docfx Docs/docfx.json
         Compress-Archive -Path Docs/_site -DestinationPath "Realm/packages/Docs.zip"
     - name: Store artifacts for Docs.zip
