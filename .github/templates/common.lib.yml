@@ -199,3 +199,16 @@ with:
   with:
     xcode-version: #@ version
 #@ end
+---
+#@ def uploadToNpm(tag = "latest", versionExpression = "steps.get-version.outputs.version", expectShortPath = False):
+#@ package = "io.realm.unity-${{" + versionExpression + "}}.tgz"
+#@ pkgPath = "" if expectShortPath else package + "/"
+  - uses: #@ actionSetupNode
+    with:
+      node-version: '16.x'
+      registry-url: 'https://registry.npmjs.org'
+  - name: #@ "Npm Publish " + package
+    run: #@ "npm publish ${{ github.workspace }}/Realm/packages/" + pkgPath + package + " --tag " + tag
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+#@ end

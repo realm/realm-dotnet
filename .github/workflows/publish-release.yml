@@ -46,10 +46,10 @@ jobs:
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
       with:
-        node-version: 12.x
+        node-version: 16.x
         registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag latest
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
