@@ -1,4 +1,4 @@
-## 11.0.0 (TBD)
+## 11.0.0 (2023-05-08)
 
 ### Breaking changes
 * The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` used in `*collection*.SubscribeForNotifications` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
@@ -47,13 +47,17 @@
 * Removed some obsolete error codes from the `ErrorCode` enum. All codes removed were obsolete and no longer emitted by the server. (PR [3273](https://github.com/realm/realm-dotnet/issues/3273))
 * Removed `IncompatibleSyncedFileException` as it was no longer possible to get it. (Issue [#3167](https://github.com/realm/realm-dotnet/issues/3167))
 * The `Realms.Schema.Property` API now use `IndexType` rather than a boolean indicating whether a property is indexed. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+* The extension methods in `StringExtensions` (`Like`, `Contains`) are now deprecated. Use the identical ones in `QueryMethods` instead - e.g. `realm.All<Foo>().Where(f => f.Name.Like("Mic*l"))` would need to be rewritten like `realm.All<Foo>().Where(f => QueryMethods.Like(f.Name, "Mic*l"))`.
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
-* Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
+* Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly raise `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
 * It is now possible to change the log level at any point of the application's lifetime. (PR [#3277](https://github.com/realm/realm-dotnet/pull/3277))
 * Some log messages have been added to the Core database. Events, such as opening a Realm or committing a transaction will now be logged. (Issue [#2910](https://github.com/realm/realm-dotnet/issues/2910))
 * Added support for Full-Text search (simple term) queries. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+  * To enable FTS queries on string properties, add the `[Indexed(IndexType.FullText)]` attribute.
+  * To run LINQ queries, use `QueryMethods.FullTextSearch`: `realm.All<Book>().Where(b => QueryMethods.FullTextSearch(b.Description, "fantasy novel"))`.
+  * To run `Filter` queries, use the `TEXT` operator: `realm.All<Book>().Filter("Description TEXT $0", "fantasy novel")`.
 * Performance improvement for the following queries (Core 13.8.0):
   * Significant (~75%) improvement when counting (`IQueryable.Count()`) the number of exact matches (with no other query conditions) on a string/int/UUID/ObjectID property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
   * Significant (~99%) improvement when querying for an exact match on a `DateTimeOffset` property that has an index.
@@ -62,14 +66,14 @@
   * Small (~5%) improvement when querying for a case insensitive match on a `RealmValue` property that does not have an index.
   * Moderate (~30%) improvement of equality queries on a non-indexed `RealmValue`.
 * Enable multiple processes to operate on an encrypted Realm simultaneously. (Core 13.9.0)
-* Improve performance of rolling back write transactions after making changes. If no notifications events are subscribed to, this is now constant time rather than taking time proportional to the number of changes to be rolled back. Rollbacks with notifications are 10-20% faster. (Core 13.9.4)
+* Improve performance of rolling back write transactions after making changes. If no notifications events are subscribed to, this is now constant time rather than taking time proportional to the number of changes to be rolled back. Rollbacks when there are notifications subscriptions are 10-20% faster. (Core 13.9.4)
 * PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. (Core 13.10.0)
 
 ### Fixed
 * Fixed an issue that could cause a `The specified table name is already in use` exception when creating a new Realm file on multiple threads. (Issue [#3302](https://github.com/realm/realm-dotnet/issues/3302))
 * Fixed a bug that may have resulted in arrays being in different orders on different devices. Some cases of “Invalid prior_size” may be fixed too. (Core 13.7.1)
 * Fixed a crash when querying a `RealmValue` property with a string operator (contains/like/beginswith/endswith) or with case insensitivity. (Core 13.8.0)
-* Querying for equality of a string on an indexed `RealmValue` property was returning case insensitive matches. For example querying for `myIndexedMixed == "Foo"` would incorrectly match on values of "foo" or "FOO" etc. (Core 13.8.0)
+* Querying for equality of a string on an indexed `RealmValue` property was returning case insensitive matches. For example querying for `myIndexedValue == "Foo"` would incorrectly match on values of "foo" or "FOO" etc. (Core 13.8.0)
 * Adding an index to a `RealmValue` property on a non-empty table would crash with an assertion. (Core 13.8.0)
 * `SyncSession.Stop()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the realm. (Core 13.8.0)
 * Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. (Core 13.9.0)
