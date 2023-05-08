@@ -6,17 +6,17 @@
     uses: #@ actionCodeQLInit
     with:
       languages: #@ language
-      queries: security-and-quality
+      config: |
+        queries:
+          - uses: security-and-quality
+        query-filters:
+          - exclude: cs/call-to-unmanaged-code
+          - exclude: cs/unmanaged-code
   #@ for step in buildSteps:
   - #@ template.replace(step)
   #@ end
   - name: Perform CodeQL Analysis
     uses: #@ actionCodeQLAnalyze
-#@ end
-
-#@ def buildWrappers():
-  - name: Build wrappers
-    run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
 #@ end
 
 #@ def buildPackages():
@@ -43,6 +43,7 @@ name: "CodeQL"
       - '**.cpp'
       - '**.hpp'
       - '**.csproj'
+      - '.github/workflows/codeql.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:
