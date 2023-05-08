@@ -72,6 +72,7 @@
   * To enable FTS queries on string properties, add the `[Indexed(IndexType.FullText)]` attribute.
   * To run LINQ queries, use `QueryMethods.FullTextSearch`: `realm.All<Book>().Where(b => QueryMethods.FullTextSearch(b.Description, "fantasy novel"))`.
   * To run `Filter` queries, use the `TEXT` operator: `realm.All<Book>().Filter("Description TEXT $0", "fantasy novel")`.
+* Added support for Windows Arm64 for Unity. (Issue [#3312](https://github.com/realm/realm-dotnet/issues/3312))
 * Performance improvement for the following queries (Core 13.8.0):
   * Significant (~75%) improvement when counting (`IQueryable.Count()`) the number of exact matches (with no other query conditions) on a string/int/UUID/ObjectID property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
   * Significant (~99%) improvement when querying for an exact match on a `DateTimeOffset` property that has an index.
