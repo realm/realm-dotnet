@@ -35,9 +35,6 @@ namespace Realms.Native
         [FieldOffset(0)]
         private NativeGeoSphere _sphere;
 
-        [FieldOffset(0)]
-        private NativeGeoPoint _point;
-
         [FieldOffset(32)]
         [MarshalAs(UnmanagedType.U1)]
         public QueryArgumentType _type;
@@ -70,7 +67,7 @@ namespace Realms.Native
         {
             return $"[QueryArgument] " + _type switch
             {
-                QueryArgumentType.Primitive => _primitive.ToString(),
+                QueryArgumentType.Primitive => $"primitive {_primitive.Type}",
                 QueryArgumentType.Box => _box.ToString(),
                 QueryArgumentType.Polygon => _polygon.ToString(),
                 QueryArgumentType.Sphere => _sphere.ToString(),

@@ -264,7 +264,7 @@ REALM_EXPORT Results* set_to_results(const object_store::Set& set, NativeExcepti
     });
 }
 
-REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uint16_t* query_buf, size_t query_len, query_argument_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(set.get_realm(), set.get_table(), set.get_query(), query_buf, query_len, arguments, args_count, DescriptorOrdering());

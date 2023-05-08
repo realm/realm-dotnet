@@ -30,7 +30,7 @@
 namespace realm {
 namespace binding {
 
-enum class realm_value_type : unsigned char {
+enum class realm_value_type : uint8_t {
     RLM_TYPE_NULL,
     RLM_TYPE_INT,
     RLM_TYPE_BOOL,
@@ -45,7 +45,7 @@ enum class realm_value_type : unsigned char {
     RLM_TYPE_UUID,
 };
 
-enum class query_argument_type : unsigned char {
+enum class query_argument_type : uint8_t {
     PRIMITIVE,
     BOX,
     POLYGON,
@@ -112,36 +112,36 @@ typedef struct realm_value {
     }
 } realm_value_t;
 
-typedef struct geo_point {
+struct geo_point {
     double latitude;
     double longitude;
-} geo_point_t;
+};
 
-typedef struct geo_box {
-    geo_point_t bottom_left;
-    geo_point_t top_right;
-} geo_box_t;
+struct geo_box {
+    geo_point bottom_left;
+    geo_point top_right;
+};
 
-typedef struct geo_sphere {
-    geo_point_t center;
+struct geo_sphere {
+    geo_point center;
     double radius_radians;
-} geo_sphere_t;
+};
 
-typedef struct geo_polygon {
-    geo_point_t* points;
+struct geo_polygon {
+    geo_point* points;
     size_t points_len;
-} geo_polygon_t;
+};
 
-typedef struct query_argument {
+struct query_argument {
     union {
         realm_value_t primitive;
-        geo_box_t box;
-        geo_sphere_t sphere;
-        geo_polygon_t polygon;
+        geo_box box;
+        geo_sphere sphere;
+        geo_polygon polygon;
     };
 
     query_argument_type type;
-} query_argument_t;
+};
 
 typedef struct realm_sync_error_compensating_write_info {
     realm_string_t reason;
@@ -248,22 +248,22 @@ static inline Decimal128 from_capi(realm_decimal128_t dec)
     return Decimal128{ Decimal128::Bid128{{dec.w[0], dec.w[1]}} };
 }
 
-static inline GeoPoint from_capi(geo_point_t point)
+static inline GeoPoint from_capi(geo_point point)
 {
     return GeoPoint(point.longitude, point.latitude);
 }
 
-static inline GeoBox from_capi(geo_box_t box)
+static inline GeoBox from_capi(geo_box box)
 {
     return GeoBox{ from_capi(box.bottom_left), from_capi(box.top_right) };
 }
 
-static inline GeoCenterSphere from_capi(geo_sphere_t sphere)
+static inline GeoCenterSphere from_capi(geo_sphere sphere)
 {
     return GeoCenterSphere{ sphere.radius_radians, from_capi(sphere.center) };
 }
 
-static inline GeoPolygon from_capi(geo_polygon_t polygon)
+static inline GeoPolygon from_capi(geo_polygon polygon)
 {
     std::vector<GeoPoint> points;
     points.reserve(polygon.points_len);

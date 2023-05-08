@@ -33,7 +33,7 @@ inline Results* get_empty_results()
 
 inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableRef table, 
                                         Query query, uint16_t* query_buf, size_t query_len,
-                                        query_argument_t* arguments, size_t args_count, DescriptorOrdering new_order)
+                                        query_argument* arguments, size_t args_count, DescriptorOrdering new_order)
 {
     if (!table) {
         return get_empty_results();
@@ -46,21 +46,9 @@ inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableR
 
     std::vector<Mixed> mixed_args;
     mixed_args.reserve(args_count);
-
+    
     std::vector<Geospatial> geo_store;
-
-    int geo_store_size = 0;
-    for (size_t i = 0; i < args_count; ++i) {
-        switch (arguments[i].type) {
-        case query_argument_type::BOX:
-        case query_argument_type::POLYGON:
-        case query_argument_type::SPHERE:
-            ++geo_store_size;
-            break;
-        }
-    }
-
-    geo_store.reserve(geo_store_size);
+    geo_store.reserve(args_count);
 
     for (size_t i = 0; i < args_count; ++i) {
         switch (arguments[i].type) {

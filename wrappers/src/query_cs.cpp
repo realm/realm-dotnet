@@ -517,7 +517,7 @@ REALM_EXPORT void query_realm_value_type_not_equal(Query& query, SharedRealm& re
     });
 }
 
-REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t property_index, query_argument_t geo_value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t property_index, query_argument geo_value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         if (!query.get_table()) {
