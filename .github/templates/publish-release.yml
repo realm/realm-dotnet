@@ -1,20 +1,9 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupNode", "actionGithubRelease", "actionReleaseToSlack", "actionFindPR", "actionMergePR", "actionCreatePR", "mainBranch", "downloadAllArtifacts", "readVersionFromPackage", "configureAWSCredentials")
+#@ load("common.lib.yml", "checkoutCode", "actionSetupNode", "actionGithubRelease", "actionReleaseToSlack", "actionFindPR", "actionMergePR", "actionCreatePR", "mainBranch", "downloadAllArtifacts", "readVersionFromPackage", "configureAWSCredentials", "uploadToNpm")
 
 #@ def uploadToNuget(packageName):
   - name: #@ "NuGet Publish " + packageName + ".${{ steps.get-version.outputs.version }}"
     run: #@ "dotnet nuget push ${{ github.workspace }}/Realm/packages/" + packageName + ".${{ steps.get-version.outputs.version }}/" + packageName + ".${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json"
-#@ end
-
-#@ def uploadToNpm(packageName):
-  - uses: #@ actionSetupNode
-    with:
-      node-version: '12.x'
-      registry-url: 'https://registry.npmjs.org'
-  - name: #@ "Npm Publish " + packageName + "-${{ steps.get-version.outputs.version }}"
-    run: #@ "npm publish ${{ github.workspace }}/Realm/packages/" + packageName + "-${{ steps.get-version.outputs.version }}.tgz/" + packageName + "-${{ steps.get-version.outputs.version }}.tgz"
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 #@ end
 
 #@ def publishGithubRelease():
@@ -108,7 +97,7 @@ jobs:
     - #@ template.replace(uploadToNuget("Realm.SourceGenerator"))
     - #@ template.replace(uploadToNuget("Realm.Fody"))
     - #@ template.replace(uploadToNuget("Realm"))
-    - #@ template.replace(uploadToNpm("io.realm.unity"))
+    - #@ template.replace(uploadToNpm())
     - #@ template.replace(mergeReleasePR())
     - #@ template.replace(publishGithubRelease())
     - #@ template.replace(updateChangelogForvNext())

@@ -1,12 +1,17 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild", "setupDotnet")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL
     uses: #@ actionCodeQLInit
     with:
       languages: #@ language
-      queries: security-and-quality
+      config: |
+        queries:
+          - uses: security-and-quality
+        query-filters:
+          - exclude: cs/call-to-unmanaged-code
+          - exclude: cs/unmanaged-code
   #@ for step in buildSteps:
   - #@ template.replace(step)
   #@ end
@@ -14,15 +19,9 @@
     uses: #@ actionCodeQLAnalyze
 #@ end
 
-#@ def buildWrappers():
-  - name: Build wrappers
-    run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
-#@ end
-
 #@ def buildPackages():
   - name: Add msbuild to PATH
     uses: #@ actionSetupMSBuild
-  - #@ setupDotnet("6.0.202")
 #@ for pkgName in nugetPackages:
   - name: #@ "Build " + pkgName
     run: #@ "msbuild Realm/" + pkgName + " -p:UseSharedCompilation=false -restore -p:Configuration=" + configuration
@@ -43,6 +42,7 @@ name: "CodeQL"
       - '**.cpp'
       - '**.hpp'
       - '**.csproj'
+      - '.github/workflows/codeql.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
 jobs:

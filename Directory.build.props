@@ -1,6 +1,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<ItemGroup>
-  <None Remove="StyleCop.Cache" />
-  <None Remove="FodyWeavers.xsd" />
+  <PropertyGroup>
+    <!-- 
+      These control where the Unity reference assemblies get pulled from. If LocalUnityReference is
+      set to true, the assemblies will be looked up from the local installation of Unity matching
+      the version specified by UnityVersion. This should only be used for local development/verify
+      that we're still compatible with new versions of Unity. Projects affected by these changes are
+      Realm.UnityUtils and Realm.UnityWeaver.
+      -->
+    <LocalUnityReference>false</LocalUnityReference>
+    <UnityVersion>2022.2.17f1</UnityVersion>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Remove="StyleCop.Cache" />
+    <None Remove="FodyWeavers.xsd" />
   </ItemGroup>
 </Project>

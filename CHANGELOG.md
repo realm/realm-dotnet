@@ -46,14 +46,17 @@
 * Removed `PermissionDeniedException` as it was no longer possible to get it. (Issue [#3272](https://github.com/realm/realm-dotnet/issues/3272))
 * Removed some obsolete error codes from the `ErrorCode` enum. All codes removed were obsolete and no longer emitted by the server. (PR [3273](https://github.com/realm/realm-dotnet/issues/3273))
 * Removed `IncompatibleSyncedFileException` as it was no longer possible to get it. (Issue [#3167](https://github.com/realm/realm-dotnet/issues/3167))
+* The `Realms.Schema.Property` API now use `IndexType` rather than a boolean indicating whether a property is indexed. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
 * Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
 * It is now possible to change the log level at any point of the application's lifetime. (PR [#3277](https://github.com/realm/realm-dotnet/pull/3277))
 * Some log messages have been added to the Core database. Events, such as opening a Realm or committing a transaction will now be logged. (Issue [#2910](https://github.com/realm/realm-dotnet/issues/2910))
+* Added support for Full-Text search (simple term) queries. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
 
 ### Fixed
+* Fixed an issue that could cause a `The specified table name is already in use` exception when creating a new Realm file on multiple threads. (Issue [#3302](https://github.com/realm/realm-dotnet/issues/3302))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
@@ -73,6 +76,7 @@
 ### Fixed
 * Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
 * Creating subscriptions with queries having unicode parameters causes a server error. (Core 13.6.0)
+* Fixed an issue with Unity 2022 and later that would result in builds failing with `Specified method is not supported` error. (Issue [#3306](https://github.com/realm/realm-dotnet/issues/3306))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

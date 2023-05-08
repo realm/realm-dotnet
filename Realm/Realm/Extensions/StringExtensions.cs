@@ -39,6 +39,7 @@ namespace Realms
         /// <returns><c>true</c> if the value parameter occurs within this string, or if value is the empty string (""); otherwise, <c>false</c>.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <c>str</c> or <c>value</c> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when <c>comparisonType</c> is not a valid <see cref="StringComparison"/> value.</exception>
+        [Obsolete("Use QueryMethods.Contains instead")]
         public static bool Contains(this string str, string value, StringComparison comparisonType)
         {
             if (str == null)
@@ -65,6 +66,7 @@ namespace Realms
         /// <param name="pattern">The pattern to compare against.</param>
         /// <param name="caseSensitive">If set to <c>true</c> performs a case sensitive comparison.</param>
         /// <returns><c>true</c>  if the string matches the pattern, <c>false</c> otherwise.</returns>
+        [Obsolete("Use QueryMethods.Like instead")]
         public static bool Like(this string str, string pattern, bool caseSensitive = true)
         {
             if (str == null)

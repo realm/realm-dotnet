@@ -19,6 +19,7 @@
     <IncludeSymbols>false</IncludeSymbols>
     <Nullable>enable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1">
@@ -60,6 +61,7 @@
 
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+    <Compile Include="..\Realm\Attributes\IndexType.cs" Link="IndexType.cs" />
   </ItemGroup>
 
   <ItemGroup>

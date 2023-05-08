@@ -29,7 +29,7 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("A", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Value"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Value"),
             Realms.Schema.Property.Object("B", "B", managedName: "B"),
         }.Build();
 

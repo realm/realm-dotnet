@@ -26,18 +26,18 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Person", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "FirstName"),
-            Realms.Schema.Property.Primitive("LastName", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "LastName"),
-            Realms.Schema.Property.Primitive("Score", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Score"),
-            Realms.Schema.Property.Primitive("Latitude", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Latitude"),
-            Realms.Schema.Property.Primitive("Longitude", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Longitude"),
-            Realms.Schema.Property.Primitive("Salary", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Salary"),
-            Realms.Schema.Property.Primitive("IsAmbivalent", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "IsAmbivalent"),
-            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Birthday"),
-            Realms.Schema.Property.Primitive("PublicCertificateBytes", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "PublicCertificateBytes"),
-            Realms.Schema.Property.Primitive("OptionalAddress", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalAddress"),
-            Realms.Schema.Property.Primitive("Email", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Email_"),
-            Realms.Schema.Property.Primitive("IsInteresting", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "IsInteresting"),
+            Realms.Schema.Property.Primitive("FirstName", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "FirstName"),
+            Realms.Schema.Property.Primitive("LastName", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "LastName"),
+            Realms.Schema.Property.Primitive("Score", Realms.RealmValueType.Float, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Score"),
+            Realms.Schema.Property.Primitive("Latitude", Realms.RealmValueType.Double, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Latitude"),
+            Realms.Schema.Property.Primitive("Longitude", Realms.RealmValueType.Double, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Longitude"),
+            Realms.Schema.Property.Primitive("Salary", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Salary"),
+            Realms.Schema.Property.Primitive("IsAmbivalent", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "IsAmbivalent"),
+            Realms.Schema.Property.Primitive("Birthday", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Birthday"),
+            Realms.Schema.Property.Primitive("PublicCertificateBytes", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "PublicCertificateBytes"),
+            Realms.Schema.Property.Primitive("OptionalAddress", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "OptionalAddress"),
+            Realms.Schema.Property.Primitive("Email", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Email_"),
+            Realms.Schema.Property.Primitive("IsInteresting", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "IsInteresting"),
             Realms.Schema.Property.ObjectList("Friends", "Person", managedName: "Friends"),
         }.Build();
 

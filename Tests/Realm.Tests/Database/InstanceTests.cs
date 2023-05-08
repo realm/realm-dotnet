@@ -1277,9 +1277,7 @@ namespace Realms.Tests.Database
 
             using var realm = GetRealm(Guid.NewGuid().ToString());
 
-            var expectedLog = new Regex("Info: DB: [^ ]* Thread [^ ]*: Open file");
-            TestHelpers.AssertRegex(logger.GetLog(), expectedLog);
-            Assert.That(logger.GetLog(), Does.Not.Contain("Debug"));
+            Assert.That(logger.GetLog(), Is.Empty);
 
             // We're at info level, so we don't expect any statements.
             WriteAndVerifyLogs();
@@ -1312,6 +1310,25 @@ namespace Realms.Tests.Database
                     TestHelpers.AssertRegex(logger.GetLog(), expectedRegex);
                 }
             }
+        }
+
+        [Test]
+        public void ParallelOpen_DoesNotThrow()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var path = Guid.NewGuid().ToString();
+
+                var tasks = Enumerable.Range(0, 10).Select(_ =>
+                {
+                    return Task.Run(() =>
+                    {
+                        using var realm = GetRealm(path);
+                    });
+                });
+
+                await Task.WhenAll(tasks);
+            });
         }
 
         private const int DummyDataSize = 200;

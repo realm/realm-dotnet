@@ -196,9 +196,9 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                 {
                     var realmValueType = GetRealmValueType(property.TypeInfo);
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
-                    var isIndexed = property.IsIndexed.ToCodeString();
+                    var indexType = property.Index.ToCodeString();
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, indexType: {indexType}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
                     // The rules for determining whether to always set the property value are:
                     // 1. If the property has [Required], always set it - this is only the case for string and byte[] properties.
