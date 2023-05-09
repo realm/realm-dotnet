@@ -79,5 +79,10 @@ namespace Realms
         {
             throw new NotSupportedException("This method can only be used in queries and cannot be invoked directly on strings.");
         }
+
+        public static bool GeoWithin(IEmbeddedObject? embeddedObject, GeoShapeBase geoShape)
+        {
+            throw new NotSupportedException("This method can only be used in queries and should not be used directly.");
+        }
     }
 }

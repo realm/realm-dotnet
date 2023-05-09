@@ -94,7 +94,7 @@ namespace Realms
 
             internal static class EmbeddedObject
             {
-                internal static readonly LazyMethod GeoWithin = Capture<IEmbeddedObject>(o => o.GeoWithin(null!));
+                internal static readonly LazyMethod GeoWithin = Capture<IEmbeddedObject>(o => QueryMethods.GeoWithin(o, null!));
             }
         }
 
@@ -316,7 +316,7 @@ namespace Realms
                 }
             }
 
-            if (node.Method.DeclaringType == typeof(QueryExtensions))
+            if (node.Method.DeclaringType == typeof(QueryMethods))
             {
                 if (AreMethodsSame(node.Method, Methods.EmbeddedObject.GeoWithin.Value))
                 {
@@ -326,7 +326,7 @@ namespace Realms
                     if (!TryExtractConstantValue(node.Arguments[1], out var argument) ||
                         argument is not GeoShapeBase geoShape)
                     {
-                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single string constant argument or closure variable");
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single GeoShapeBase argument or closure variable");
                     }
 
                     _coreQueryHandle.GeoWithin(_realm.SharedRealmHandle, propertyIndex, geoShape);

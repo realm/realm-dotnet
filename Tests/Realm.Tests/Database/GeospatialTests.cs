@@ -60,7 +60,7 @@ namespace Realms.Tests.Database
         {
             PopulateCompanies();
 
-            var matches = _realm.All<Company>().Where(c => c.Location.GeoWithin(shape));
+            var matches = _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, shape));
             Assert.That(matches.ToArray().Select(m => m.Name), Is.EquivalentTo(expectedMatches));
         }
 
