@@ -1561,7 +1561,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(sender, Is.EqualTo(target));
 
-                    propertyChangedCallbacks.Add(e!.PropertyName);
+                    propertyChangedCallbacks.Add(e!.PropertyName!);
                 }
             }
 

@@ -59,7 +59,6 @@ namespace Realms
         public static bool Like(string? str, string pattern, bool caseSensitive = true)
         {
             throw new NotSupportedException("This method can only be used in queries and cannot be invoked directly on strings.");
-
         }
 
         /// <summary>

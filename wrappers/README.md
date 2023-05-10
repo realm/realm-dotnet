@@ -78,4 +78,3 @@ General Notes
 All builds steps download the required realm components (core and sync) automatically.
 
 **Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `src/CMakeLists.txt` for builds to work.
-

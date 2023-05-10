@@ -106,7 +106,7 @@ jobs:
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@187889c026eb16673dba3152906a46ed87406e30
+      uses: realm/ci-actions/release-to-slack@729a80d203351eab7df4eca564daa275e76ec52f
       with:
         changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET
