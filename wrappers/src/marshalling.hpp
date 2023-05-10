@@ -129,7 +129,8 @@ struct geo_sphere {
 
 struct geo_polygon {
     geo_point* points;
-    size_t points_len;
+    size_t* rings_lengths;
+    size_t num_rings;
 };
 
 struct query_argument {
@@ -265,14 +266,23 @@ static inline GeoCenterSphere from_capi(geo_sphere sphere)
 
 static inline GeoPolygon from_capi(geo_polygon polygon)
 {
-    std::vector<GeoPoint> points;
-    points.reserve(polygon.points_len);
+    std::vector<std::vector<GeoPoint>> rings;
+    rings.reserve(polygon.num_rings);
 
-    for (int i = 0; i < polygon.points_len; i++) {
-        points.push_back(from_capi(polygon.points[i]));
+    int points_index = 0;
+    for (int i = 0; i < polygon.num_rings; i++) {
+        std::vector<GeoPoint> points;
+        int points_len = polygon.rings_lengths[i];
+        points.reserve(points_len);
+
+        for (int j = 0; j < points_len; j++) {
+            points.push_back(from_capi(polygon.points[points_index++]));
+        }
+
+        rings.push_back(points);
     }
 
-    return GeoPolygon(points);
+    return GeoPolygon(rings);
 }
 
 static inline realm_object_id_t to_capi(ObjectId oid)

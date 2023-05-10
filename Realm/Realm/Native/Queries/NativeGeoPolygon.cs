@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
@@ -25,8 +26,16 @@ namespace Realms.Native
     internal unsafe struct NativeGeoPolygon
     {
         public NativeGeoPoint* Points;
-        public IntPtr PointsLength;
+        public nint* PointsLengths;
+        public nint PointsLengthsLength;
 
-        public override string ToString() => $"Polygon {{size: {PointsLength}}}";
+        public override string ToString()
+        {
+            var pointsLengthsArray = PointsLengths;
+            var sizes = Enumerable.Range(0, (int)PointsLengthsLength)
+                .Select(p => $"{{ size: {(int)(pointsLengthsArray + p)}}}")
+                .ToArray();
+            return $"Polygon {{ {string.Join(", ", sizes)} }}";
+        }
     }
 }

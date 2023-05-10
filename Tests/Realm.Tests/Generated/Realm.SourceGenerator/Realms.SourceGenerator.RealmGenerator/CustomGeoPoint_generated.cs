@@ -32,7 +32,7 @@ namespace Realms.Tests.Database
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CustomGeoPoint", ObjectSchema.ObjectType.EmbeddedObject)
             {
                 Realms.Schema.Property.PrimitiveList("coordinates", Realms.RealmValueType.Double, areElementsNullable: false, managedName: "Coordinates"),
-                Realms.Schema.Property.Primitive("type", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Type"),
+                Realms.Schema.Property.Primitive("type", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Type"),
             }.Build();
 
             #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.

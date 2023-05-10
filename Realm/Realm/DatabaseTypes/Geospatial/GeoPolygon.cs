@@ -17,26 +17,72 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Realms.Helpers;
 using Realms.Native;
 
 namespace Realms
 {
     public class GeoPolygon : GeoShapeBase
     {
-        public GeoPoint[] Points { get; }
+        private readonly IReadOnlyList<GeoPoint>[] _linearRings;
 
-        public GeoPolygon()
+        public IReadOnlyList<GeoPoint> OuterRing { get; }
+
+        public IReadOnlyList<IReadOnlyList<GeoPoint>> Holes { get; }
+
+        public GeoPolygon(params GeoPoint[] outerRing)
+            : this(new[] { outerRing })
         {
-            throw new NotImplementedException("this can't be implemented until https://github.com/realm/realm-core/pull/6529 is merged");
+        }
+
+        public GeoPolygon(IEnumerable<GeoPoint> outerRing, params IEnumerable<GeoPoint>[] holes)
+            : this(new[] { outerRing.ToList().AsReadOnly() }.Concat(holes.Select(h => h.ToList().AsReadOnly())).ToArray())
+        {
+        }
+
+        private GeoPolygon(IReadOnlyList<GeoPoint>[] linearRings)
+        {
+            foreach (var polygon in linearRings)
+            {
+                Argument.Ensure(polygon.Count > 3, $"Each linear ring (both the outer one and any holes) must have at least 4 points, but {LinearRingToString(polygon)} only had {polygon.Count}.", nameof(linearRings));
+                Argument.Ensure(polygon[0] == polygon[polygon.Count - 1], $"The first and the last points of the polygon {LinearRingToString(polygon)} must be the same.", nameof(linearRings));
+            }
+
+            _linearRings = linearRings;
+
+            OuterRing = _linearRings[0];
+            Holes = new ArraySegment<IReadOnlyList<GeoPoint>>(_linearRings, 1, _linearRings.Length - 1);
         }
 
         internal unsafe (NativeGeoPolygon NativePolygon, RealmValue.HandlesToCleanup? Handles) ToNative()
         {
-            var handle = GCHandle.Alloc(Points.Select(p => p.ToNative()).ToArray(), GCHandleType.Pinned);
+            var points = new NativeGeoPoint[_linearRings.Sum(p => p.Count)];
+            var pointsLengths = new nint[_linearRings.Length];
 
-            return (new() { Points = (NativeGeoPoint*)handle.AddrOfPinnedObject(), PointsLength = (IntPtr)Points.Length }, new(handle));
+            var pointIndex = 0;
+            var polygonIndex = 0;
+            foreach (var polygon in _linearRings)
+            {
+                foreach (var point in polygon)
+                {
+                    points[pointIndex++] = point.ToNative();
+                }
+
+                pointsLengths[polygonIndex++] = polygon.Count;
+            }
+
+            var pointsHandle = GCHandle.Alloc(points, GCHandleType.Pinned);
+            var pointsLengthsHandle = GCHandle.Alloc(pointsLengths, GCHandleType.Pinned);
+
+            return (new()
+            {
+                Points = (NativeGeoPoint*)pointsHandle.AddrOfPinnedObject(),
+                PointsLengths = (nint*)pointsLengthsHandle.AddrOfPinnedObject(),
+                PointsLengthsLength = pointsLengths.Length,
+            }, new(pointsHandle, handle2: pointsLengthsHandle));
         }
 
         internal (NativeQueryArgument QueryArgument, RealmValue.HandlesToCleanup? Handles) ToNativeQueryArgument()
@@ -46,6 +92,9 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override string ToString() => $"Polygon: {{ {string.Join(",", Points)} }}";
+        public override string ToString() => $"Polygon: {LinearRingToString(OuterRing)}"
+            + (Holes.Count == 0 ? string.Empty : $", Holes: [ {string.Join(", ", Holes.Select(LinearRingToString))} ]");
+
+        private static string LinearRingToString(IEnumerable<GeoPoint> points) => $"{{ {string.Join(",", points)} }}";
     }
 }

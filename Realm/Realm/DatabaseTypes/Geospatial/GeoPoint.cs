@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Native;
 
 namespace Realms
@@ -23,7 +25,7 @@ namespace Realms
     /// <summary>
     /// Represents a point geometry.
     /// </summary>
-    public readonly struct GeoPoint
+    public readonly struct GeoPoint : IEquatable<GeoPoint>
     {
         /// <summary>
         /// Gets the latitude of the point.
@@ -50,8 +52,28 @@ namespace Realms
 
         internal NativeGeoPoint ToNative() => new(Latitude, Longitude);
 
-
         /// <inheritdoc/>
         public override string ToString() => $"[{Latitude}, {Longitude}]";
+
+        /// <inheritdoc/>
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            if (obj is GeoPoint geoPoint)
+            {
+                return Equals(geoPoint);
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public bool Equals(GeoPoint other)
+        {
+            return Latitude == other.Latitude && Longitude == other.Longitude;
+        }
+
+        public static bool operator ==(GeoPoint left, GeoPoint right) => left.Equals(right);
+
+        public static bool operator !=(GeoPoint left, GeoPoint right) => !(left == right);
     }
 }

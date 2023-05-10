@@ -44,6 +44,9 @@ namespace Realms.Tests.Database
             new object[] { new GeoBox(new(55.6281, 12.0826), new(55.6761, 12.5683)), new[] { "Realm" } },
             new object[] { new GeoBox(new(55.6280, 12.0826), new(55.6761, 12.5683)), new[] { "Realm", "Ragnarock" } },
             new object[] { new GeoBox(new(0, -75), new(60, 15)), new[] { "Realm", "Ragnarock", "MongoDB" } },
+            new object[] { new GeoPolygon(new GeoPoint(55.6281, 12.0826), new(55.6761, 12.0826), new(55.6761, 12.5683), new(55.6281, 12.5683), new(55.6281, 12.0826)), new[] { "Realm" } },
+            new object[] { new GeoPolygon(new GeoPoint(55, 12), new(55.67, 12.5), new(55.67, 11.5), new(55, 12)), new[] { "Ragnarock" } },
+            new object[] { new GeoPolygon(new GeoPoint(40.7128, -74.0060), new(55.6761, 12.5683), new(55.6280, 12.0826), new(40.7128, -74.0060)), new[] { "MongoDB", "Realm", "Ragnarock" } },
         };
 
         [TestCaseSource(nameof(GeospatialTestCases))]
@@ -61,6 +64,7 @@ namespace Realms.Tests.Database
             PopulateCompanies();
 
             var matches = _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, shape));
+            var test = ((RealmResults<Company>)matches).ResultsHandle.Description;
             Assert.That(matches.ToArray().Select(m => m.Name), Is.EquivalentTo(expectedMatches));
         }
 
