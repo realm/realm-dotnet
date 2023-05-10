@@ -48,11 +48,6 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.Fody.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
       if: ${{ inputs.realmUrl }}
       with:

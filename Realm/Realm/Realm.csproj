@@ -33,7 +33,9 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
-    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
@@ -41,6 +43,9 @@
   <ItemGroup Label="Package">
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
+    <None Include="..\Realm.Fody\Weaver.props" PackagePath="build\Realm.Fody.props" Pack="true" Visible="false" />
+    <None Include="..\Realm.Fody\Realm.Fody.xcf" PackagePath="weaver\Realm.Fody.xcf" Pack="true" Visible="false" />
+    <None Include="..\Realm.Fody\bin\$(Configuration)\netstandard2.0\Realm.Fody.dll" PackagePath="weaver\Realm.Fody.dll" Pack="true" Visible="false" />
     <!-- iOS -->
     <Content Include="wrappers-props\xamarinios\Realm.dll.config">
       <Pack>true</Pack>
