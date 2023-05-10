@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Deprecate the `Realm.SourceGenerator` package. The source generation assemblies are now contained in the main `Realm` package. This should be a transparent change for users who only referenced the `Realm` package, but if you explicitly added a package reference to `Realm.SourceGenerator`, you should remove it. (PR [#3319](https://github.com/realm/realm-dotnet/pull/3319))
 
 ### Fixed
 * None
@@ -10,7 +10,7 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.10.0.
 
 ## 11.0.0 (2023-05-08)
 
