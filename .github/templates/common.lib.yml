@@ -1,7 +1,7 @@
 #@ load("@ytt:template", "template")
 
 #@ configuration = "Release"
-#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver', 'Realm.SourceGenerator' ]
+#@ nugetPackages = [ 'Realm.Fody', 'Realm', 'Realm.UnityUtils', 'Realm.UnityWeaver' ]
 #@ actionCheckout = "actions/checkout@v3"
 #@ actionCache = "nirinchev/cache@29e8e4dd9148ea81f9e188480132072cb6cc92d8"
 #@ actionUploadArtifact = "actions/upload-artifact@v3"
@@ -132,7 +132,7 @@ with:
   - name: Install sleet
     run: dotnet tool install -g sleet
   - #@ template.replace(configureAWSCredentials("NUGET_S3_ACCESS_KEY", "NUGET_S3_SECRET_KEY"))
-#@ for pkg in [ "Realm.Fody", "Realm", "Realm.SourceGenerator" ]:
+#@ for pkg in [ "Realm.Fody", "Realm" ]:
 #@ pkg = pkg + ".${{ " + versionExpression + " }}"
 #@ pkgPath = "" if expectShortPath else pkg + "/"
   - name: #@ "NuGet Publish " + pkg

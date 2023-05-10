@@ -57,11 +57,6 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Configure .NET
       uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
@@ -78,8 +73,6 @@ jobs:
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ needs.build-packages.outputs.package_version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
-    - name: NuGet Publish Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
-      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
   build-unity:
     uses: ./.github/workflows/build-unity.yml
     name: Package
@@ -219,11 +212,6 @@ jobs:
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Tests.XUnit
       run: dotnet publish Tests/Tests.XUnit -c Release -f net6.0 -r win-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} --no-self-contained
     - name: Output executable path
@@ -278,11 +266,6 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: Realm.Fody.${{ needs.build-packages.outputs.package_version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Publish Tests/Benchmarks/PerformanceTests
       run: dotnet publish Tests/Benchmarks/PerformanceTests -c Release -f net6.0 -r linux-x64 -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ needs.build-packages.outputs.package_version }} -p:RealmTestsStandaloneExe=true --no-self-contained

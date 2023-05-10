@@ -4,7 +4,7 @@
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "ignoreSkippedJobsCondition", "buildUnity")
 
 #@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]:
+#@ for pkg in [ "Realm", "Realm.Fody" ]:
   - name: #@ "Fetch " + pkg
     uses: #@ actionDownloadArtifact
     with:

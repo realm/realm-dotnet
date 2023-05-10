@@ -6,7 +6,7 @@
     <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Title>Realm</Title>
     <PackageReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</PackageReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
@@ -34,15 +34,13 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.3" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
-    <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile" />
+    <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="Package">
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
-    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
-    <None Update="Helpers\Operator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Operator.cs</LastGenOutput>
-    </None>
+    <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
     <!-- iOS -->
     <Content Include="wrappers-props\xamarinios\Realm.dll.config">
       <Pack>true</Pack>
@@ -165,6 +163,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+    <None Update="Helpers\Operator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Operator.cs</LastGenOutput>
+    </None>
     <Compile Update="Helpers\Operator.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
