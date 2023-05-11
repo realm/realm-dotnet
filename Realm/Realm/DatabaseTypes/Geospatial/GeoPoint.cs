@@ -72,6 +72,15 @@ namespace Realms
             return Latitude == other.Latitude && Longitude == other.Longitude;
         }
 
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            var hashCode = -1416534245;
+            hashCode = (hashCode * -1521134295) + Latitude.GetHashCode();
+            hashCode = (hashCode * -1521134295) + Longitude.GetHashCode();
+            return hashCode;
+        }
+
         public static bool operator ==(GeoPoint left, GeoPoint right) => left.Equals(right);
 
         public static bool operator !=(GeoPoint left, GeoPoint right) => !(left == right);

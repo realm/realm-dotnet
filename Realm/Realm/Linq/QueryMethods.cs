@@ -25,6 +25,10 @@ namespace Realms
     /// <summary>
     /// Provides methods that get translated into native Realm queries when using LINQ.
     /// </summary>
+    /// <remarks>
+    /// These methods don't have implementation and are only usable in a LINQ query
+    /// performed on a Realm query result - e.g. the IQueryable returned by <see cref="Realm.All{T}"/>.
+    /// </remarks>
     public static class QueryMethods
     {
         /// <summary>
@@ -62,7 +66,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Performs a 'simple term' Full-Text search on a string property. Can only be used in queries.
+        /// Performs a 'simple term' Full-Text search on a string property.
         /// </summary>
         /// <param name="str">The string to compare against the terms.</param>
         /// <param name="terms">The terms to look for in <paramref name="str"/>.</param>
@@ -80,7 +84,45 @@ namespace Realms
             throw new NotSupportedException("This method can only be used in queries and cannot be invoked directly on strings.");
         }
 
-        public static bool GeoWithin(IEmbeddedObject? embeddedObject, GeoShapeBase geoShape)
+        /// <summary>
+        /// Checks whether <paramref name="geoShape"/> contains the point represented by an embedded object.
+        /// </summary>
+        /// <param name="point">
+        /// An embedded object that has the shape of a GeoJson point. It must have at least two fields - <c>IList&lt;double&gt; coordinates</c>
+        /// and <c>string type</c>. The shape of the object will be verified at runtime.
+        /// </param>
+        /// <param name="geoShape">
+        /// One of <see cref="GeoBox"/>, <see cref="GeoSphere"/>, or <see cref="GeoPolygon"/> representing the shape that <paramref name="point"/>
+        /// will be checked against.
+        /// </param>
+        /// <returns><c>true</c> if <paramref name="point"/> is contained in <paramref name="geoShape"/>; <c>false</c> otherwise.</returns>
+        /// <example>
+        /// An example embedded object that can be used in geospatial queries is:
+        /// <code>
+        /// public partial class MyGeoPoint : IEmbeddedObject
+        /// {
+        ///     [MapTo("coordinates")]
+        ///     private IList&lt;double&gt; Coordinates { get; } = null!;
+        ///
+        ///     [MapTo("type")]
+        ///     private string Type { get; set; } = "Point";
+        ///
+        ///     public double Latitude => Coordinates.Count > 1 ? Coordinates[1] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+        ///
+        ///     public double Longitude => Coordinates.Count > 1 ? Coordinates[0] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+        ///
+        ///     public MyGeoPoint(double latitude, double longitude)
+        ///     {
+        ///         Coordinates.Add(longitude);
+        ///         Coordinates.Add(latitude);
+        ///     }
+        /// }
+        /// </code>
+        ///
+        /// Note that if you're using Sync, the name of the embedded object type must match exactly the <c>title</c> of
+        /// the embedded object defined in the GeoJson Schema on the server.
+        /// </example>
+        public static bool GeoWithin(IEmbeddedObject? point, GeoShapeBase geoShape)
         {
             throw new NotSupportedException("This method can only be used in queries and should not be used directly.");
         }

@@ -25,19 +25,78 @@ using Realms.Native;
 
 namespace Realms
 {
+    /// <summary>
+    /// A polygon describes a shape comprised of 3 or more line segments.
+    /// </summary>
+    /// <remarks>
+    /// A polygon comprises of one outer ring and 0 or more rings representing holes with the following restrictions:
+    /// <list type="bullet">
+    /// <item>
+    /// Each ring must consist of at least 3 distinct points (vertices). The first and the last point may be the same to indicate a closed ring. If they
+    /// are different, then Realm will consider them implicitly connected via an edge.
+    /// </item>
+    /// <item>Rings may not cross, i.e. the boundary of a ring may not intersect both the interior and exterior of any other ring.</item>
+    /// <item>Rings may not share edges, i.e. if a ring contains an edge AB, then no other ring may contain AB or BA.</item>
+    /// <item>Rings may share vertices, however no vertex may appear twice in a single ring.</item>
+    /// <item>No ring may be empty.</item>
+    /// </list>
+    /// <br/>
+    /// Holes may be nested inside each other, in which case a location will be considered "inside" the polygon if it is included in an odd number of rings.
+    /// For example, a polygon representing a square with side 10 centered at (0,0) with holes representing squares with sides 5 and 2, centered at (0,0) will
+    /// include the location (1, 1) because it is contained in 3 rings, but not (3, 3), because it is contained in 2.
+    /// </remarks>
     public class GeoPolygon : GeoShapeBase
     {
         private readonly IReadOnlyList<GeoPoint>[] _linearRings;
 
+        /// <summary>
+        /// Gets the outer ring of the polygon.
+        /// </summary>
+        /// <value>The polygon's outer ring.</value>
         public IReadOnlyList<GeoPoint> OuterRing { get; }
 
+        /// <summary>
+        /// Gets the holes in the polygon.
+        /// </summary>
+        /// <value>The holes (if any) in the polygon.</value>
         public IReadOnlyList<IReadOnlyList<GeoPoint>> Holes { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeoPolygon"/> class from a collection of <see cref="GeoPoint">GeoPoints</see>
+        /// with no holes.
+        /// </summary>
+        /// <param name="outerRing">The points representing the outer ring of the polygon.</param>
+        /// <remarks>
+        /// <paramref name="outerRing"/> must contain at least 3 unique points. The first and the last point may be identical, but
+        /// no other duplicates are allowed. Each subsequent pair of points represents an edge in the polygon with the first and the
+        /// last points being implicitly connected.
+        /// </remarks>
         public GeoPolygon(params GeoPoint[] outerRing)
             : this(new[] { outerRing })
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeoPolygon"/> class with an outer ring and a collection of holes.
+        /// </summary>
+        /// <param name="outerRing">
+        /// A collection of <see cref="GeoPoint">GeoPoints</see> representing the outer ring of the polygon.
+        /// </param>
+        /// <param name="holes">
+        /// A collection of collections of <see cref="GeoPoint">GeoPoints</see> representing the inner rings of the polygon.
+        /// </param>
+        /// <remarks>
+        /// <paramref name="outerRing"/> must contain at least 3 unique points. The first and the last point may be identical, but
+        /// no other duplicates are allowed. Each subsequent pair of points represents an edge in the polygon with the first and the
+        /// last points being implicitly connected.
+        /// <br/>
+        /// Each collection in <paramref name="holes"/> must contain at least 3 unique points with the same rules as for <paramref name="outerRing"/>.
+        /// <br/>
+        /// No two rings may intersect or share an edge, though they may share vertices.
+        /// <br/>
+        /// A point is considered "inside" the polygon if it is contained by an odd number of rings and "outside" if it's contained
+        /// by an even number of rings.
+        /// </remarks>
         public GeoPolygon(IEnumerable<GeoPoint> outerRing, params IEnumerable<GeoPoint>[] holes)
             : this(new[] { outerRing.ToList().AsReadOnly() }.Concat(holes.Select(h => h.ToList().AsReadOnly())).ToArray())
         {

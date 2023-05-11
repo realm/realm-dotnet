@@ -23,6 +23,7 @@ namespace Realms
     /// instead you should use one of its inheritors, such as <see cref="GeoBox"/>, <see cref="GeoSphere"/>, or
     /// <see cref="GeoPolygon"/>.
     /// </summary>
+    /// <seealso cref="QueryMethods.GeoWithin"/>
     public abstract class GeoShapeBase
     {
     }
