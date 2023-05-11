@@ -27,12 +27,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Weaver.props" Pack="true" PackagePath="build\Realm.Fody.props" />
-    <TfmSpecificPackageFile Include="Realm.Fody.xcf" Pack="true" PackagePath="$(BuildOutputTargetFolder)\$(TargetFramework)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </TfmSpecificPackageFile>
-  </ItemGroup>
-  <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
   </ItemGroup>
   <Import Project="..\Realm.Weaver\Realm.Weaver.projitems" Label="Shared" />
