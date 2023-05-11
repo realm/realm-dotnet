@@ -23,7 +23,7 @@ jobs:
       - #@ publishTestsResults("TestResults.iOS.xml", "Xamarin.iOS")
 
   test-maui:
-    runs-on: macos-12
+    runs-on: macos-latest
     name: Maui.iOS
     timeout-minutes: 45
     steps:
