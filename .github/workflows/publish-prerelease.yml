@@ -21,7 +21,7 @@ jobs:
       id: get-version
       run: |
         cd Realm/packages
-        pkgVersion=$(find . -type f -regex "Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure .NET
