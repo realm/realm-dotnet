@@ -77,7 +77,7 @@ jobs:
         path-replace-backslashes: true
         fail-on-error: false
   test-maui:
-    runs-on: macos-latest
+    runs-on: macos-13
     name: Maui.iOS
     timeout-minutes: 45
     steps:

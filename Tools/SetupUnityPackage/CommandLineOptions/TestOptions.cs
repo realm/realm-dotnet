@@ -32,6 +32,7 @@ namespace SetupUnityPackage
 
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
+            "Realm.Fody",
             "Fody",
             "Realm",
             "Microsoft.CSharp",

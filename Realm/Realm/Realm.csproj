@@ -44,7 +44,7 @@
   <ItemGroup Label="Package">
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
-    <None Include="..\Realm.Fody\Weaver.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />
+    <None Include="..\wrappers-props\Realm.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />
     <None Include="..\Realm.Fody\Realm.Fody.xcf" PackagePath="weaver\Realm.Fody.xcf" Pack="true" Visible="false" />
     <None Include="..\Realm.Fody\bin\$(Configuration)\netstandard2.0\Realm.Fody.dll" PackagePath="weaver\Realm.Fody.dll" Pack="true" Visible="false" />
     <!-- iOS -->
