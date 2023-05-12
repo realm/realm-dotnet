@@ -3,6 +3,7 @@
     <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
   </PropertyGroup>
   <ItemGroup>
+    <WeaverFiles Include="$(MsBuildThisFileDirectory)..\..\weaver\Realm.Fody.dll" />
     <Content Include="$(_RealmNugetRuntimesPath)win-x86\native\realm-wrappers.dll">
       <Link>lib\win32\x86\realm-wrappers.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

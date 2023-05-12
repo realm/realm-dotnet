@@ -148,30 +148,19 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
       if: ${{ runner.os == 'Windows' }}
-    - name: Build Realm/Realm.Fody
-      run: msbuild Realm/Realm.Fody -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm
       run: msbuild Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
-    - name: Build Realm/Realm.SourceGenerator
-      run: msbuild Realm/Realm.SourceGenerator -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Read version
       id: get-version
       run: |
         cd Realm/packages
-        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
-    - name: Store artifacts for Realm.Fody.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: Realm.Fody.${{ steps.get-version.outputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}.*nupkg
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
     - name: Store artifacts for Realm.${{ steps.get-version.outputs.version }}
       uses: actions/upload-artifact@v3
       with:
@@ -191,13 +180,6 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.UnityWeaver.${{ steps.get-version.outputs.version }}.*nupkg
-        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
-        if-no-files-found: error
-    - name: Store artifacts for Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for ExtractedChangelog

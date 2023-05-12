@@ -1,7 +1,7 @@
 #@ load("@ytt:template", "template")
 #@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode")
 
-#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]):
+#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm" ]):
 #@ for pkg in packages:
   - name: #@ "Fetch " + pkg
     uses: #@ actionDownloadArtifact
