@@ -22,25 +22,24 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(ObjectV1ObjectHelper)), Realms.Preserve(AllMembers = true)]
-    public partial class ObjectV1 : IRealmObject, INotifyPropertyChanged, IReflectableType
+    [Woven(typeof(ObjectEmbeddedObjectHelper)), Realms.Preserve(AllMembers = true)]
+    public partial class ObjectEmbedded : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
     {
         /// <summary>
-        /// Defines the schema for the <see cref="ObjectV1"/> class.
+        /// Defines the schema for the <see cref="ObjectEmbedded"/> class.
         /// </summary>
-        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Object", ObjectSchema.ObjectType.RealmObject)
+        public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Object", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Value"),
         }.Build();
 
-        #region IRealmObject implementation
+        #region IEmbeddedObject implementation
 
-        private IObjectV1Accessor? _accessor;
+        private IObjectEmbeddedAccessor? _accessor;
 
         Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-        internal IObjectV1Accessor Accessor => _accessor ??= new ObjectV1UnmanagedAccessor(typeof(ObjectV1));
+        internal IObjectEmbeddedAccessor Accessor => _accessor ??= new ObjectEmbeddedUnmanagedAccessor(typeof(ObjectEmbedded));
 
         /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
@@ -70,18 +69,18 @@ namespace Realms.Tests.Database
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
+        /// <inheritdoc />
+        [IgnoreDataMember, XmlIgnore]
+        public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
+
         void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
-            var newAccessor = (IObjectV1Accessor)managedAccessor;
+            var newAccessor = (IObjectEmbeddedAccessor)managedAccessor;
             var oldAccessor = _accessor;
             _accessor = newAccessor;
 
             if (helper != null && oldAccessor != null)
             {
-                if (!skipDefaults || oldAccessor.Id != default(int))
-                {
-                    newAccessor.Id = oldAccessor.Id;
-                }
                 if (!skipDefaults || oldAccessor.Value != default(string?))
                 {
                     newAccessor.Value = oldAccessor.Value;
@@ -180,18 +179,18 @@ namespace Realms.Tests.Database
         }
 
         /// <summary>
-        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="ObjectV1"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="ObjectEmbedded"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
         /// </summary>
         /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-        /// <returns>The <see cref="ObjectV1"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-        public static explicit operator ObjectV1?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectV1>();
+        /// <returns>The <see cref="ObjectEmbedded"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator ObjectEmbedded?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectEmbedded>();
 
         /// <summary>
-        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="ObjectV1"/>.
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="ObjectEmbedded"/>.
         /// </summary>
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-        public static implicit operator Realms.RealmValue(ObjectV1? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+        public static implicit operator Realms.RealmValue(ObjectEmbedded? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -230,41 +229,33 @@ namespace Realms.Tests.Database
         public override string? ToString() => Accessor.ToString();
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        private class ObjectV1ObjectHelper : Realms.Weaving.IRealmObjectHelper
+        private class ObjectEmbeddedObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
             {
                 throw new InvalidOperationException("This method should not be called for source generated classes.");
             }
 
-            public Realms.ManagedAccessor CreateAccessor() => new ObjectV1ManagedAccessor();
+            public Realms.ManagedAccessor CreateAccessor() => new ObjectEmbeddedManagedAccessor();
 
-            public Realms.IRealmObjectBase CreateInstance() => new ObjectV1();
+            public Realms.IRealmObjectBase CreateInstance() => new ObjectEmbedded();
 
             public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = ((IObjectV1Accessor)instance.Accessor).Id;
-                return true;
+                value = RealmValue.Null;
+                return false;
             }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal interface IObjectV1Accessor : Realms.IRealmAccessor
+        internal interface IObjectEmbeddedAccessor : Realms.IRealmAccessor
         {
-            int Id { get; set; }
-
             string? Value { get; set; }
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectV1ManagedAccessor : Realms.ManagedAccessor, IObjectV1Accessor
+        internal class ObjectEmbeddedManagedAccessor : Realms.ManagedAccessor, IObjectEmbeddedAccessor
         {
-            public int Id
-            {
-                get => (int)GetValue("Id");
-                set => SetValueUnique("Id", value);
-            }
-
             public string? Value
             {
                 get => (string?)GetValue("Value");
@@ -273,20 +264,9 @@ namespace Realms.Tests.Database
         }
 
         [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-        internal class ObjectV1UnmanagedAccessor : Realms.UnmanagedAccessor, IObjectV1Accessor
+        internal class ObjectEmbeddedUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectEmbeddedAccessor
         {
-            public override ObjectSchema ObjectSchema => ObjectV1.RealmSchema;
-
-            private int _id;
-            public int Id
-            {
-                get => _id;
-                set
-                {
-                    _id = value;
-                    RaisePropertyChanged("Id");
-                }
-            }
+            public override ObjectSchema ObjectSchema => ObjectEmbedded.RealmSchema;
 
             private string? _value;
             public string? Value
@@ -299,7 +279,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public ObjectV1UnmanagedAccessor(Type objectType) : base(objectType)
+            public ObjectEmbeddedUnmanagedAccessor(Type objectType) : base(objectType)
             {
             }
 
@@ -307,7 +287,6 @@ namespace Realms.Tests.Database
             {
                 return propertyName switch
                 {
-                    "Id" => _id,
                     "Value" => _value,
                     _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                 };
@@ -317,8 +296,6 @@ namespace Realms.Tests.Database
             {
                 switch (propertyName)
                 {
-                    case "Id":
-                        throw new InvalidOperationException("Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique");
                     case "Value":
                         Value = (string?)val;
                         return;
@@ -329,12 +306,7 @@ namespace Realms.Tests.Database
 
             public override void SetValueUnique(string propertyName, Realms.RealmValue val)
             {
-                if (propertyName != "Id")
-                {
-                    throw new InvalidOperationException($"Cannot set the value of non primary key property ({propertyName}) with SetValueUnique");
-                }
-
-                Id = (int)val;
+                throw new InvalidOperationException("Cannot set the value of an non primary key property with SetValueUnique");
             }
 
             public override IList<T> GetListValue<T>(string propertyName)

@@ -1,7 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Automatically handle `RealmObject`->`EmbeddedObject` migrations by duplicating objects referenced by multiple parents as well as removing "orphaned" objects. (Issue [#2408](https://github.com/realm/realm-dotnet/issues/2408))
 
 ### Fixed
 * None
@@ -10,7 +10,7 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.10.0.
 
 ## 11.0.0 (2023-05-08)
 
