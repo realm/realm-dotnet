@@ -21,7 +21,7 @@ namespace Realms
     /// <summary>
     /// Represents equatorial distance.
     /// </summary>
-    public struct Distance
+    public readonly struct Distance
     {
         private const double EarthRadiusMeters = 6378100.0;
         private const double MetersPerMile = 1609.344;
