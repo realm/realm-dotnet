@@ -37,7 +37,6 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
     <PackageReference Include="Realm" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
-    <PackageReference Include="Realm.SourceGenerator" Version="$(UseRealmNupkgsWithVersion)" PrivateAssets="None" />
   </ItemGroup>
   <Import Project="..\..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup>

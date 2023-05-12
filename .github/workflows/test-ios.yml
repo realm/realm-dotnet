@@ -44,16 +44,6 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.Fody.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
       if: ${{ inputs.realmUrl }}
       with:
@@ -87,7 +77,7 @@ jobs:
         path-replace-backslashes: true
         fail-on-error: false
   test-maui:
-    runs-on: macos-12
+    runs-on: macos-13
     name: Maui.iOS
     timeout-minutes: 45
     steps:
@@ -105,21 +95,11 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.Fody.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
     - name: Set XCode Version
       shell: bash
       run: |
-        sudo xcode-select -s "/Applications/Xcode_14.2.app"
-        echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.2.app" >> $GITHUB_ENV
+        sudo xcode-select -s "/Applications/Xcode_14.3.app"
+        echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
     - name: Setup workloads
       run: |
         dotnet workload install maui

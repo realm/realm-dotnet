@@ -1,6 +1,7 @@
 ## vNext (TBD)
 
 ### Enhancements
+* Deprecate the `Realm.SourceGenerator` and `Realm.Fody` packages. The source generation and weaver assemblies are now contained in the main `Realm` package. This should be a transparent change for users who only referenced the `Realm` package, but if you explicitly added a package reference to `Realm.SourceGenerator` or `Realm.Fody`, you should remove it. (PR [#3319](https://github.com/realm/realm-dotnet/pull/3319))
 * Automatically handle `RealmObject`->`EmbeddedObject` migrations by duplicating objects referenced by multiple parents as well as removing "orphaned" objects. (Issue [#2408](https://github.com/realm/realm-dotnet/issues/2408))
 
 ### Fixed
