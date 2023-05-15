@@ -92,7 +92,7 @@ namespace Realms
         /// and <c>string type</c>. The shape of the object will be verified at runtime.
         /// </param>
         /// <param name="geoShape">
-        /// One of <see cref="GeoBox"/>, <see cref="GeoSphere"/>, or <see cref="GeoPolygon"/> representing the shape that <paramref name="point"/>
+        /// One of <see cref="GeoBox"/>, <see cref="GeoCircle"/>, or <see cref="GeoPolygon"/> representing the shape that <paramref name="point"/>
         /// will be checked against.
         /// </param>
         /// <returns><c>true</c> if <paramref name="point"/> is contained in <paramref name="geoShape"/>; <c>false</c> otherwise.</returns>

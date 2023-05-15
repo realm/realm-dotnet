@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Realms.Helpers;
 using Realms.Native;
 
 namespace Realms
@@ -46,6 +47,9 @@ namespace Realms
         /// <param name="longitude">The longitude of the point.</param>
         public GeoPoint(double latitude, double longitude)
         {
+            Argument.EnsureRange(latitude, -90, 90, nameof(latitude));
+            Argument.EnsureRange(longitude, -180, 180, nameof(longitude));
+
             Latitude = latitude;
             Longitude = longitude;
         }
@@ -84,5 +88,7 @@ namespace Realms
         public static bool operator ==(GeoPoint left, GeoPoint right) => left.Equals(right);
 
         public static bool operator !=(GeoPoint left, GeoPoint right) => !(left == right);
+
+        public static implicit operator GeoPoint((double Latitude, double Longitude) tuple) => new(tuple.Latitude, tuple.Longitude);
     }
 }

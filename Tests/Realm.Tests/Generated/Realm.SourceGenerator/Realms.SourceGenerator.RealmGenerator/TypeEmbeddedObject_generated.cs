@@ -24,27 +24,24 @@ namespace Realms.Tests.Database
     public partial class GeospatialTests
     {
         [Generated]
-        [Woven(typeof(CompanyObjectHelper)), Realms.Preserve(AllMembers = true)]
-        public partial class Company : IRealmObject, INotifyPropertyChanged, IReflectableType
+        [Woven(typeof(TypeEmbeddedObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
+        public partial class TypeEmbeddedObject : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
         {
             /// <summary>
-            /// Defines the schema for the <see cref="Company"/> class.
+            /// Defines the schema for the <see cref="TypeEmbeddedObject"/> class.
             /// </summary>
-            public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Company", ObjectSchema.ObjectType.RealmObject)
+            public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("TypeEmbeddedObject", ObjectSchema.ObjectType.EmbeddedObject)
             {
-                Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Id"),
-                Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Name"),
-                Realms.Schema.Property.Object("Location", "CustomGeoPoint", managedName: "Location"),
-                Realms.Schema.Property.ObjectList("Offices", "CustomGeoPoint", managedName: "Offices"),
+                Realms.Schema.Property.Primitive("type", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Type"),
             }.Build();
 
-            #region IRealmObject implementation
+            #region IEmbeddedObject implementation
 
-            private ICompanyAccessor? _accessor;
+            private ITypeEmbeddedObjectAccessor? _accessor;
 
             Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
-            internal ICompanyAccessor Accessor => _accessor ??= new CompanyUnmanagedAccessor(typeof(Company));
+            internal ITypeEmbeddedObjectAccessor Accessor => _accessor ??= new TypeEmbeddedObjectUnmanagedAccessor(typeof(TypeEmbeddedObject));
 
             /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
@@ -74,26 +71,19 @@ namespace Realms.Tests.Database
             [IgnoreDataMember, XmlIgnore]
             public int BacklinksCount => Accessor.BacklinksCount;
 
+            /// <inheritdoc />
+            [IgnoreDataMember, XmlIgnore]
+            public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
+
             void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
             {
-                var newAccessor = (ICompanyAccessor)managedAccessor;
+                var newAccessor = (ITypeEmbeddedObjectAccessor)managedAccessor;
                 var oldAccessor = _accessor;
                 _accessor = newAccessor;
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if (!skipDefaults)
-                    {
-                        newAccessor.Offices.Clear();
-                    }
-
-                    if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
-                    {
-                        newAccessor.Id = oldAccessor.Id;
-                    }
-                    newAccessor.Name = oldAccessor.Name;
-                    newAccessor.Location = oldAccessor.Location;
-                    Realms.CollectionExtensions.PopulateCollection(oldAccessor.Offices, newAccessor.Offices, update, skipDefaults);
+                    newAccessor.Type = oldAccessor.Type;
                 }
 
                 if (_propertyChanged != null)
@@ -188,25 +178,25 @@ namespace Realms.Tests.Database
             }
 
             /// <summary>
-            /// Converts a <see cref="Realms.RealmValue"/> to <see cref="Company"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+            /// Converts a <see cref="Realms.RealmValue"/> to <see cref="TypeEmbeddedObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
             /// </summary>
             /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
-            /// <returns>The <see cref="Company"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
-            public static explicit operator Company?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Company>();
+            /// <returns>The <see cref="TypeEmbeddedObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+            public static explicit operator TypeEmbeddedObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<TypeEmbeddedObject>();
 
             /// <summary>
-            /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="Company"/>.
+            /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="TypeEmbeddedObject"/>.
             /// </summary>
             /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
             /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
-            public static implicit operator Realms.RealmValue(Company? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+            public static implicit operator Realms.RealmValue(TypeEmbeddedObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
             /// <summary>
-            /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="Company"/>.
+            /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="TypeEmbeddedObject"/>.
             /// </summary>
             /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
             /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
-            public static implicit operator Realms.QueryArgument(Company? val) => (Realms.RealmValue)val;
+            public static implicit operator Realms.QueryArgument(TypeEmbeddedObject? val) => (Realms.RealmValue)val;
 
             /// <inheritdoc />
             [EditorBrowsable(EditorBrowsableState.Never)]
@@ -245,16 +235,16 @@ namespace Realms.Tests.Database
             public override string? ToString() => Accessor.ToString();
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            private class CompanyObjectHelper : Realms.Weaving.IRealmObjectHelper
+            private class TypeEmbeddedObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
                 {
                     throw new InvalidOperationException("This method should not be called for source generated classes.");
                 }
 
-                public Realms.ManagedAccessor CreateAccessor() => new CompanyManagedAccessor();
+                public Realms.ManagedAccessor CreateAccessor() => new TypeEmbeddedObjectManagedAccessor();
 
-                public Realms.IRealmObjectBase CreateInstance() => new Company();
+                public Realms.IRealmObjectBase CreateInstance() => new TypeEmbeddedObject();
 
                 public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
                 {
@@ -264,94 +254,38 @@ namespace Realms.Tests.Database
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal interface ICompanyAccessor : Realms.IRealmAccessor
+            internal interface ITypeEmbeddedObjectAccessor : Realms.IRealmAccessor
             {
-                MongoDB.Bson.ObjectId Id { get; set; }
-
-                string Name { get; set; }
-
-                Realms.Tests.Database.GeospatialTests.CustomGeoPoint? Location { get; set; }
-
-                System.Collections.Generic.IList<Realms.Tests.Database.GeospatialTests.CustomGeoPoint> Offices { get; }
+                string Type { get; set; }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CompanyManagedAccessor : Realms.ManagedAccessor, ICompanyAccessor
+            internal class TypeEmbeddedObjectManagedAccessor : Realms.ManagedAccessor, ITypeEmbeddedObjectAccessor
             {
-                public MongoDB.Bson.ObjectId Id
+                public string Type
                 {
-                    get => (MongoDB.Bson.ObjectId)GetValue("_id");
-                    set => SetValue("_id", value);
-                }
-
-                public string Name
-                {
-                    get => (string)GetValue("Name")!;
-                    set => SetValue("Name", value);
-                }
-
-                public Realms.Tests.Database.GeospatialTests.CustomGeoPoint? Location
-                {
-                    get => (Realms.Tests.Database.GeospatialTests.CustomGeoPoint?)GetValue("Location");
-                    set => SetValue("Location", value);
-                }
-
-                private System.Collections.Generic.IList<Realms.Tests.Database.GeospatialTests.CustomGeoPoint> _offices = null!;
-                public System.Collections.Generic.IList<Realms.Tests.Database.GeospatialTests.CustomGeoPoint> Offices
-                {
-                    get
-                    {
-                        if (_offices == null)
-                        {
-                            _offices = GetListValue<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>("Offices");
-                        }
-
-                        return _offices;
-                    }
+                    get => (string)GetValue("type")!;
+                    set => SetValue("type", value);
                 }
             }
 
             [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
-            internal class CompanyUnmanagedAccessor : Realms.UnmanagedAccessor, ICompanyAccessor
+            internal class TypeEmbeddedObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ITypeEmbeddedObjectAccessor
             {
-                public override ObjectSchema ObjectSchema => Company.RealmSchema;
+                public override ObjectSchema ObjectSchema => TypeEmbeddedObject.RealmSchema;
 
-                private MongoDB.Bson.ObjectId _id = ObjectId.GenerateNewId();
-                public MongoDB.Bson.ObjectId Id
+                private string _type = "Point";
+                public string Type
                 {
-                    get => _id;
+                    get => _type;
                     set
                     {
-                        _id = value;
-                        RaisePropertyChanged("Id");
+                        _type = value;
+                        RaisePropertyChanged("Type");
                     }
                 }
 
-                private string _name = null!;
-                public string Name
-                {
-                    get => _name;
-                    set
-                    {
-                        _name = value;
-                        RaisePropertyChanged("Name");
-                    }
-                }
-
-                private Realms.Tests.Database.GeospatialTests.CustomGeoPoint? _location;
-                public Realms.Tests.Database.GeospatialTests.CustomGeoPoint? Location
-                {
-                    get => _location;
-                    set
-                    {
-                        _location = value;
-                        RaisePropertyChanged("Location");
-                    }
-                }
-
-                public System.Collections.Generic.IList<Realms.Tests.Database.GeospatialTests.CustomGeoPoint> Offices { get; } = new List<Realms.Tests.Database.GeospatialTests.CustomGeoPoint>();
-
-                public CompanyUnmanagedAccessor(Type objectType) : base(objectType)
+                public TypeEmbeddedObjectUnmanagedAccessor(Type objectType) : base(objectType)
                 {
                 }
 
@@ -359,9 +293,7 @@ namespace Realms.Tests.Database
                 {
                     return propertyName switch
                     {
-                        "_id" => _id,
-                        "Name" => _name,
-                        "Location" => _location,
+                        "type" => _type,
                         _ => throw new MissingMemberException($"The object does not have a gettable Realm property with name {propertyName}"),
                     };
                 }
@@ -370,14 +302,8 @@ namespace Realms.Tests.Database
                 {
                     switch (propertyName)
                     {
-                        case "_id":
-                            Id = (MongoDB.Bson.ObjectId)val;
-                            return;
-                        case "Name":
-                            Name = (string)val!;
-                            return;
-                        case "Location":
-                            Location = (Realms.Tests.Database.GeospatialTests.CustomGeoPoint?)val;
+                        case "type":
+                            Type = (string)val!;
                             return;
                         default:
                             throw new MissingMemberException($"The object does not have a settable Realm property with name {propertyName}");
@@ -391,11 +317,7 @@ namespace Realms.Tests.Database
 
                 public override IList<T> GetListValue<T>(string propertyName)
                 {
-                    return propertyName switch
-                    {
-                        "Offices" => (IList<T>)Offices,
-                        _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                    };
+                    throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}");
                 }
 
                 public override ISet<T> GetSetValue<T>(string propertyName)

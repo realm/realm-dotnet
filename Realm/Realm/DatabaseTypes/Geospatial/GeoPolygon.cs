@@ -154,6 +154,6 @@ namespace Realms
         public override string ToString() => $"Polygon: {LinearRingToString(OuterRing)}"
             + (Holes.Count == 0 ? string.Empty : $", Holes: [ {string.Join(", ", Holes.Select(LinearRingToString))} ]");
 
-        private static string LinearRingToString(IEnumerable<GeoPoint> points) => $"{{ {string.Join(",", points)} }}";
+        internal static string LinearRingToString(IEnumerable<GeoPoint> points) => $"{{ {string.Join(",", points)} }}";
     }
 }

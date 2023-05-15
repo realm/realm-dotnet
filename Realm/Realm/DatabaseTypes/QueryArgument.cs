@@ -331,13 +331,13 @@ namespace Realms
             return GeoValue switch
             {
                 GeoBox box => (NativeQueryArgument.GeoBox(box.ToNative()), null),
-                GeoSphere sphere => (NativeQueryArgument.GeoSphere(sphere.ToNative()), null),
+                GeoCircle sphere => (NativeQueryArgument.GeoSphere(sphere.ToNative()), null),
                 GeoPolygon polygon => polygon.ToNativeQueryArgument(),
                 _ => throw new NotSupportedException($"Unsupported GeoShapeBase type: {GeoValue?.GetType().FullName}")
             };
         }
 
         /// <inheritdoc/>
-        public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString() ?? $"Invalid {nameof(QueryArgument)}";
+        public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString();
     }
 }

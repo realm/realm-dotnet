@@ -21,9 +21,9 @@ using Realms.Native;
 namespace Realms
 {
     /// <summary>
-    /// Represents a spherical geometry.
+    /// Represents a circle on the surface of a sphere.
     /// </summary>
-    public class GeoSphere : GeoShapeBase
+    public class GeoCircle : GeoShapeBase
     {
         /// <summary>
         /// Gets the center of the sphere.
@@ -38,22 +38,22 @@ namespace Realms
         public double Radius { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GeoSphere"/> class.
+        /// Initializes a new instance of the <see cref="GeoCircle"/> class.
         /// </summary>
         /// <param name="center">The center of the sphere.</param>
         /// <param name="radiusInRadians">The radius of the sphere in radians.</param>
-        public GeoSphere(GeoPoint center, double radiusInRadians)
+        public GeoCircle(GeoPoint center, double radiusInRadians)
         {
             Center = center;
             Radius = radiusInRadians;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GeoSphere"/> class.
+        /// Initializes a new instance of the <see cref="GeoCircle"/> class.
         /// </summary>
         /// <param name="center">The center of the sphere.</param>
         /// <param name="radius">The radius of the sphere.</param>
-        public GeoSphere(GeoPoint center, Distance radius)
+        public GeoCircle(GeoPoint center, Distance radius)
         {
             Center = center;
             Radius = radius.Radians;

@@ -20,7 +20,7 @@ namespace Realms
 {
     /// <summary>
     /// A base class for the geometry types supported by Realm. It should not be used directly -
-    /// instead you should use one of its inheritors, such as <see cref="GeoBox"/>, <see cref="GeoSphere"/>, or
+    /// instead you should use one of its inheritors, such as <see cref="GeoBox"/>, <see cref="GeoCircle"/>, or
     /// <see cref="GeoPolygon"/>.
     /// </summary>
     /// <seealso cref="QueryMethods.GeoWithin"/>

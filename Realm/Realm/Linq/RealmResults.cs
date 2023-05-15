@@ -92,6 +92,9 @@ namespace Realms
             return ResultsHandle.Find(realmValue);
         }
 
+        /// <inheritdoc/>
+        public override string ToString() => $"RealmResults: {ResultsHandle.Description}";
+
         void ICollection<T>.Add(T item) => throw new NotSupportedException("Adding elements to the Results collection is not supported.");
 
         bool ICollection<T>.Remove(T item) => throw new NotSupportedException("Removing elements from the Results collection is not supported.");

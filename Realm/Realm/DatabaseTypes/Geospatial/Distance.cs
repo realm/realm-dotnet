@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+
 namespace Realms
 {
     /// <summary>
@@ -25,6 +27,7 @@ namespace Realms
     {
         private const double EarthRadiusMeters = 6378100.0;
         private const double MetersPerMile = 1609.344;
+        private const double RadiansPerDegree = Math.PI / 180;
 
         /// <summary>
         /// Gets the distance in radians.
@@ -57,5 +60,12 @@ namespace Realms
         /// <param name="radians">The distance in radians.</param>
         /// <returns>A <see cref="Distance"/> value that represents the provided distance in radians.</returns>
         public static Distance FromRadians(double radians) => new(radians);
+
+        /// <summary>
+        /// Constructs a <see cref="Distance"/> from a degrees value.
+        /// </summary>
+        /// <param name="degrees">The distance in degrees.</param>
+        /// <returns>A <see cref="Distance"/> value that represents the provided distance in radians.</returns>
+        public static Distance FromDegrees(double degrees) => new(degrees * RadiansPerDegree);
     }
 }

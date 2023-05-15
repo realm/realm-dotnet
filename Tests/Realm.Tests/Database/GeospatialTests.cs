@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+using Realms.Exceptions;
 
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
@@ -37,10 +38,10 @@ namespace Realms.Tests.Database
     {
         public static object[] GeospatialTestCases =
         {
-            new object[] { new GeoSphere(new(55.67, 12.56), 0.001), new[] { "Realm" } },
-            new object[] { new GeoSphere(new(55.67, 12.56), Distance.FromKilometers(10)), new[] { "Realm" } },
-            new object[] { new GeoSphere(new(55.67, 12.56), Distance.FromKilometers(100)), new[] { "Realm", "Ragnarock" } },
-            new object[] { new GeoSphere(new(45, -20), Distance.FromKilometers(5000)), new[] { "Realm", "Ragnarock", "MongoDB" } },
+            new object[] { new GeoCircle(new(55.67, 12.56), 0.001), new[] { "Realm" } },
+            new object[] { new GeoCircle(new(55.67, 12.56), Distance.FromKilometers(10)), new[] { "Realm" } },
+            new object[] { new GeoCircle(new(55.67, 12.56), Distance.FromKilometers(100)), new[] { "Realm", "Ragnarock" } },
+            new object[] { new GeoCircle(new(45, -20), Distance.FromKilometers(5000)), new[] { "Realm", "Ragnarock", "MongoDB" } },
             new object[] { new GeoBox(new(55.6281, 12.0826), new(55.6761, 12.5683)), new[] { "Realm" } },
             new object[] { new GeoBox(new(55.6280, 12.0826), new(55.6761, 12.5683)), new[] { "Realm", "Ragnarock" } },
             new object[] { new GeoBox(new(0, -75), new(60, 15)), new[] { "Realm", "Ragnarock", "MongoDB" } },
@@ -64,8 +65,160 @@ namespace Realms.Tests.Database
             PopulateCompanies();
 
             var matches = _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, shape));
-            var test = ((RealmResults<Company>)matches).ResultsHandle.Description;
             Assert.That(matches.ToArray().Select(m => m.Name), Is.EquivalentTo(expectedMatches));
+        }
+
+        [Test]
+        public void Filter_InvalidPropertyType_Throws()
+        {
+            PopulateCompanies();
+            _realm.Write(() =>
+            {
+                var company = _realm.All<Company>().First();
+
+                // We're making the point into a polygon, which is not supported
+                company.Location!.DynamicApi.Set("type", "Polygon");
+
+                _realm.Add(new ObjectWithInvalidGeoPoints
+                {
+                    CoordinatesEmbedded = new()
+                    {
+                        Coordinates = { 1, 2 }
+                    },
+                    TypeEmbedded = new(),
+                    TopLevelGeoPoint = new()
+                    {
+                        Coordinates = { 1, 2 },
+                    }
+                });
+            });
+
+            AssertInvalidGeoData<Company>(nameof(Company.Location), expectedError: "The only Geospatial type currently supported is 'point'");
+
+            // TODO: this is currently supported, but maybe it shouldn't?
+            // AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TopLevelGeoPoint));
+            AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TypeEmbedded));
+            AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.CoordinatesEmbedded));
+
+            void AssertInvalidGeoData<T>(string property, string expectedError = "wrong format")
+                where T : IRealmObject
+            {
+                var shape = new GeoCircle(new(0, 0), 10);
+
+                var ex = Assert.Throws<RealmException>(() => _realm.All<T>().Filter($"{property} geowithin $0", shape).ToArray(), $"Expected an error when querying {typeof(T).Name}.{property}")!;
+                Assert.That(ex.Message, Does.Contain(expectedError));
+            }
+        }
+
+        public static object[] GeoPointTests =
+        {
+            new object?[] { 0, 0, null },
+            new object?[] { 90.000000001, 0, nameof(GeoPoint.Latitude) },
+            new object?[] { -90.000000001, 0, nameof(GeoPoint.Latitude) },
+            new object?[] { 9999999, 0, nameof(GeoPoint.Latitude) },
+            new object?[] { -9999999, 0, nameof(GeoPoint.Latitude) },
+            new object?[] { 90, 0, null },
+            new object?[] { -90, 0, null },
+            new object?[] { 12.3456789, 0, null },
+            new object?[] { 0, 180.000000001, nameof(GeoPoint.Longitude) },
+            new object?[] { 0, -180.000000001, nameof(GeoPoint.Longitude) },
+            new object?[] { 0, 9999999, nameof(GeoPoint.Longitude) },
+            new object?[] { 0, -9999999, nameof(GeoPoint.Longitude) },
+            new object?[] { 0, 180, null },
+            new object?[] { 0, -180, null },
+            new object?[] { 0, 12.3456789, null },
+        };
+
+        [TestCaseSource(nameof(GeoPointTests))]
+        public void GeoPoint_ArgumentValidation(double latitude, double longitude, string? expectedParamError)
+        {
+            if (expectedParamError != null)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => new GeoPoint(latitude, longitude))!;
+                Assert.That(ex.ParamName, Is.EqualTo(expectedParamError.ToLower()));
+            }
+            else
+            {
+                Assert.DoesNotThrow(() => new GeoPoint(latitude, longitude));
+            }
+        }
+
+        public static object[] GeoPolygonTests =
+        {
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0) }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (0, 0) }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2) }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0) } }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (0, 0) } }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2) } }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) } }) },
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) }, new GeoPoint[] { (0, 0) } }) },
+        };
+
+        [TestCaseSource(nameof(GeoPolygonTests))]
+        public void GeoPolygon_ArgumentValidation(GeoPolygonValidationData testData)
+        {
+            Assert.Throws<ArgumentException>(() => testData.CreatePolygon());
+        }
+
+        public static object[] GeoPolygonQueryTests =
+        {
+            // Square (0, 0), (1, 1) and a square (2, 2), (3, 3) - outer ring doesn't contain hole
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (2, 2), (2, 3), (3, 3), (3, 2), (2, 2) } }) },
+
+            // Square (0, 0), (1, 1) and a square (0, 0.1), (0.5, 0.5) - they share an edge (0, 0.1 - 0, 0.5)
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (0, 0.1), (0.5, 0.1), (0.5, 0.5), (0, 0.5), (0, 0.1) } }) },
+
+            // Square (0, 0), (1, 1) and a square (0.25, 0.5), (0.75, 1.5) - they intersect
+            new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (0.25, 0.5), (0.75, 0.5), (0.75, 1.5), (0.25, 1.5), (0.25, 0.5) } }) },
+        };
+
+        [TestCaseSource(nameof(GeoPolygonQueryTests))]
+        public void GeoPolygon_QueryArgumentValidation(GeoPolygonValidationData testData)
+        {
+            // These polygons are invalid, but not validated by the SDK. They'll only show
+            // up as errors when we use them in a query
+            var polygon = testData.CreatePolygon();
+            Assert.Throws<ArgumentException>(() => _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, polygon)).ToArray());
+        }
+
+        public static object[] GeospatialCollectionTestCases =
+        {
+            new object[] { new GeoPoint(1, 1), new[] { "1,2" } },
+            new object[] { new GeoPoint(2, 2), new[] { "1,2", "2,3" } },
+            new object[] { new GeoPoint(3, 3), new[] { "2,3" } },
+        };
+
+        [TestCaseSource(nameof(GeospatialCollectionTestCases))]
+        public void Filter_ListOfPoints(GeoPoint point, string[] expectedMatches)
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new Company
+                {
+                    Name = "1,2",
+                    Offices =
+                    {
+                        new(1, 1),
+                        new(2, 2),
+                    }
+                });
+
+                _realm.Add(new Company
+                {
+                    Name = "2,3",
+                    Offices =
+                    {
+                        new(2, 2),
+                        new(3, 3)
+                    }
+                });
+            });
+
+            var circle = new GeoCircle(point, Distance.FromDegrees(0.5));
+            var query = _realm.All<Company>().Filter("ANY Offices GEOWITHIN $0", circle);
+            Assert.That(query.ToArray().Select(c => c.Name), Is.EquivalentTo(expectedMatches));
         }
 
         private void PopulateCompanies()
@@ -89,6 +242,12 @@ namespace Realms.Tests.Database
                     Name = "Ragnarock",
                     Location = new(55.6280, 12.0826)
                 });
+
+                _realm.Add(new Company
+                {
+                    Name = "Internet company",
+                    Location = null
+                });
             });
         }
 
@@ -100,6 +259,8 @@ namespace Realms.Tests.Database
             public string Name { get; set; } = null!;
 
             public CustomGeoPoint? Location { get; set; }
+
+            public IList<CustomGeoPoint> Offices { get; } = null!;
         }
 
         public partial class CustomGeoPoint : TestEmbeddedObject
@@ -108,16 +269,23 @@ namespace Realms.Tests.Database
             private IList<double> Coordinates { get; } = null!;
 
             [MapTo("type")]
-            private string Type { get; set; } = "Point";
+            public string Type { get; set; } = "Point";
 
             public double Latitude => Coordinates.Count > 1 ? Coordinates[1] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
 
             public double Longitude => Coordinates.Count > 1 ? Coordinates[0] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
 
-            public CustomGeoPoint(double latitude, double longitude)
+            public double? Altitude => Coordinates.Count > 2 ? Coordinates[2] : null;
+
+            public CustomGeoPoint(double latitude, double longitude, double? altitude = null)
             {
                 Coordinates.Add(longitude);
                 Coordinates.Add(latitude);
+
+                if (altitude != null)
+                {
+                    Coordinates.Add(altitude.Value);
+                }
             }
 
 #if TEST_WEAVER
@@ -125,6 +293,59 @@ namespace Realms.Tests.Database
             {
             }
 #endif
+        }
+
+        public partial class ObjectWithInvalidGeoPoints : TestRealmObject
+        {
+            public CoordinatesEmbeddedObject? CoordinatesEmbedded { get; set; }
+
+            public TypeEmbeddedObject? TypeEmbedded { get; set; }
+
+            public TopLevelGeoPoint? TopLevelGeoPoint { get; set; }
+        }
+
+        public partial class CoordinatesEmbeddedObject : TestEmbeddedObject
+        {
+            [MapTo("coordinate")]
+            public IList<double> Coordinates { get; } = null!;
+        }
+
+        public partial class TypeEmbeddedObject : TestEmbeddedObject
+        {
+            [MapTo("type")]
+            public string Type { get; set; } = "Point";
+        }
+
+        public partial class TopLevelGeoPoint : TestRealmObject
+        {
+            [MapTo("coordinates")]
+            public IList<double> Coordinates { get; } = null!;
+
+            [MapTo("type")]
+            public string Type { get; set; } = "Point";
+        }
+
+        // This class is only needed in order to override .ToString, otherwise NUnit can't differentiate between tests
+        // that have the same number of elements in the holes array.
+        public class GeoPolygonValidationData
+        {
+            public GeoPoint[] OuterRing { get; }
+
+            public GeoPoint[][] Holes { get; }
+
+            public GeoPolygonValidationData(GeoPoint[] outerRing, GeoPoint[][]? holes = null)
+            {
+                OuterRing = outerRing;
+                Holes = holes ?? Array.Empty<GeoPoint[]>();
+            }
+
+            public GeoPolygon CreatePolygon() => new GeoPolygon(OuterRing, Holes);
+
+            public override string ToString()
+            {
+                return $"{GeoPolygon.LinearRingToString(OuterRing)}"
+                    + (Holes.Length == 0 ? string.Empty : $", [ {string.Join(", ", Holes.Select(GeoPolygon.LinearRingToString))} ]");
+            }
         }
     }
 }
