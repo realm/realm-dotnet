@@ -36,8 +36,14 @@ namespace Realms.Tests.Sync
         [Test]
         public void DeviceInfo_OutputsMeaningfulInfo()
         {
-            var os = SharedRealmHandle.GetNativeLibraryOS();
+            if (TestHelpers.IsUnity)
+            {
+                Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
+                Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                return;
+            }
 
+            var os = SharedRealmHandle.GetNativeLibraryOS();
             switch (os)
             {
                 case "Windows":
