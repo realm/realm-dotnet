@@ -16,12 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Android.OS;
+
+using static Realms.PlatformHelpers.Platform;
+
 namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => Build.Model;
+        public string DeviceName => Build.Manufacturer ?? Unknown;
 
-        public string DeviceVersion => throw new System.NotImplementedException();
+        public string DeviceVersion => Build.Model ?? Unknown;
     }
 }

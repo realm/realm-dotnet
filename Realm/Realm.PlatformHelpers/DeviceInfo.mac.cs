@@ -17,29 +17,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.InteropServices;
+using ObjCRuntime;
+using static Realms.PlatformHelpers.Platform;
 
 namespace Realms.PlatformHelpers
 {
-    internal static class Platform
+    internal class DeviceInfo : IDeviceInfo
     {
-        public const string Unknown = "unknown";
+        public string DeviceName => Unknown;
 
-        private static IDeviceInfo? _deviceInfo;
-
-        private static Lazy<IDeviceInfo> _deviceInfoLazy = new(() => _deviceInfo ?? new DeviceInfo());
-
-        public static IDeviceInfo DeviceInfo
-        {
-            get => _deviceInfoLazy.Value;
-            set
-            {
-                if (_deviceInfoLazy.IsValueCreated)
-                {
-                    throw new Exception("DeviceInfo should only be configured once");
-                }
-
-                _deviceInfo = value;
-            }
-        }
+        public string DeviceVersion => Unknown;
     }
 }

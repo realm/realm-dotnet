@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalUnityReference)' == 'true'">
-    <PackageReference Include="Unity3D" Version="2.1.2"  />
+    <PackageReference Include="Unity3D" Version="2.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalUnityReference)' != 'true'">

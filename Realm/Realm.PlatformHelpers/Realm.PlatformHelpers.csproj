@@ -1,9 +1,11 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.22">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-ios;netstandard2.0;net6.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFramework)' == ''">netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0-ios;net6.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &lt; '17.0'">$(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
   </PropertyGroup>
 
@@ -32,26 +34,14 @@
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) OR $(TargetFramework.StartsWith('net6.0-android'))">
     <Compile Include="**\*.android.cs" />
-    <PackageReference Include="Plugin.CurrentActivity" Version="2.1.0.4" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) OR $(TargetFramework.StartsWith('net6.0-ios'))">
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) OR $(TargetFramework.StartsWith('net6.0-ios')) OR $(TargetFramework.StartsWith('Xamarin.TVOS'))">
     <Compile Include="**\*.ios.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.TVOS'))">
-    <Compile Include="**\*.tvos.cs" />
-  </ItemGroup>
-
   <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac'))">
-    <Compile Include="**\*.apple.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework.StartsWith('Tizen'))">
-    <Compile Include="**\*.tizen.cs" />
-    <PackageReference Include="Tizen.NET" Version="4.0.0">
-      <ExcludeAssets>Runtime</ExcludeAssets>
-    </PackageReference>
+    <Compile Include="**\*.mac.cs" />
   </ItemGroup>
 
   <ItemGroup>

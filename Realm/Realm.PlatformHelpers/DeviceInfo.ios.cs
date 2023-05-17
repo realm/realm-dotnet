@@ -16,13 +16,59 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Runtime.InteropServices;
+using ObjCRuntime;
+using static Realms.PlatformHelpers.Platform;
+
 namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
+        [DllImport(Constants.SystemLibrary, EntryPoint = "sysctlbyname")]
+        internal static extern int SysctlByName([MarshalAs(UnmanagedType.LPStr)] string property, IntPtr output, IntPtr oldLen, IntPtr newp, uint newlen);
+
+        internal static string GetSystemLibraryProperty(string property)
+        {
+            var lengthPtr = Marshal.AllocHGlobal(sizeof(int));
+            SysctlByName(property, IntPtr.Zero, lengthPtr, IntPtr.Zero, 0);
+
+            var propertyLength = Marshal.ReadInt32(lengthPtr);
+
+            if (propertyLength == 0)
+            {
+                Marshal.FreeHGlobal(lengthPtr);
+                throw new InvalidOperationException("Unable to read length of property.");
+            }
+
+            var valuePtr = Marshal.AllocHGlobal(propertyLength);
+            SysctlByName(property, valuePtr, lengthPtr, IntPtr.Zero, 0);
+
+            var returnValue = Marshal.PtrToStringAnsi(valuePtr);
+
+            Marshal.FreeHGlobal(lengthPtr);
+            Marshal.FreeHGlobal(valuePtr);
+
+            return returnValue!;
+        }
+
+        private static readonly Lazy<string> _version = new(FindVersion);
+
+        private static string FindVersion()
+        {
+            try
+            {
+                return GetSystemLibraryProperty("hw.machine")!;
+            }
+            catch
+            {
+            }
+
+            return Unknown;
+        }
+
         public string DeviceName => UIKit.UIDevice.CurrentDevice.Model;
 
-        // TODO: what should these be?
-        public string DeviceVersion => UIKit.UIDevice.CurrentDevice.Model;
+        public string DeviceVersion => _version.Value;
     }
 }
