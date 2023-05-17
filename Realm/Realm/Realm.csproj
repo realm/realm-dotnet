@@ -37,6 +37,7 @@
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj" />
     <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

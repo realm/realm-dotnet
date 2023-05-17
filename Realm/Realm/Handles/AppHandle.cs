@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Native;
+using Realms.PlatformHelpers;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 
@@ -173,9 +174,8 @@ namespace Realms.Sync
 
             var cpuArch = RuntimeInformation.ProcessArchitecture.ToString();
 
-            // TODO: try and infer device information as part of RNET-849
-            var deviceName = "unknown";
-            var deviceVersion = "unknown";
+            var deviceName = Platform.DeviceInfo.DeviceName;
+            var deviceVersion = Platform.DeviceInfo.DeviceVersion;
 
             NativeMethods.initialize(
                 frameworkName, frameworkName.IntPtrLength(),
