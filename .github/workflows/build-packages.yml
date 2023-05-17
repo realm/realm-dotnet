@@ -150,6 +150,8 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
     - name: Build Realm/Realm
       run: msbuild Realm/Realm -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
+    - name: Build Realm/Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -t:Pack -p:Configuration=Release -restore -p:PackageOutputPath=${{ github.workspace }}/Realm/packages -p:VersionSuffix=${{ steps.set-version-suffix.outputs.build_suffix }}
     - name: Build Realm/Realm.UnityWeaver
@@ -166,6 +168,13 @@ jobs:
       with:
         name: Realm.${{ steps.get-version.outputs.version }}
         path: ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}.*nupkg
+        retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
+        if-no-files-found: error
+    - name: Store artifacts for Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.*nupkg
         retention-days: ${{ github.event_name != 'pull_request' && 30 || 1 }}
         if-no-files-found: error
     - name: Store artifacts for Realm.UnityUtils.${{ steps.get-version.outputs.version }}

@@ -42,6 +42,8 @@ jobs:
       uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
     - name: Build Realm
       run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
+    - name: Build Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityUtils
       run: msbuild Realm/Realm.UnityUtils -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityWeaver

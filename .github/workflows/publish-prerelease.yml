@@ -38,6 +38,8 @@ jobs:
         aws-region: us-east-1
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
       with:
         node-version: 16.x
