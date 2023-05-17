@@ -88,22 +88,22 @@
       <Name>Realm</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
-      <Project>{536c3309-f848-4485-abf3-56dcd9c9f9e8}</Project>
+      <Project>{4C9BE4FA-9CB2-4091-B86A-4EC557A78991}</Project>
       <Name>Realm.PlatformHelpers</Name>
     </ProjectReference>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
       <Link>lib\x86\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-x86_64\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86_64\librealm-wrappers.so">
       <Link>lib\x86_64\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-arm64-v8a\librealm-wrappers.so">
       <Link>lib\arm64-v8a\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="$(SolutionDir)\wrappers\build\android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
+    <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-armeabi-v7a\librealm-wrappers.so">
       <Link>lib\armeabi-v7a\librealm-wrappers.so</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </AndroidNativeLibrary>

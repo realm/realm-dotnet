@@ -16,17 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Runtime.InteropServices;
-using ObjCRuntime;
-using static Realms.PlatformHelpers.Platform;
+using Windows.Security.ExchangeActiveSyncProvisioning;
 
 namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => Unknown;
+        private static EasClientDeviceInformation deviceInfo = new();
 
-        public string DeviceVersion => Unknown;
+        public string DeviceName => deviceInfo.SystemManufacturer;
+
+        public string DeviceVersion => deviceInfo.SystemProductName;
     }
 }

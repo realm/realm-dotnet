@@ -190,8 +190,8 @@
   <UsingTask TaskName="ExtractChangelog" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
 
     <ParameterGroup>
-        <FilePath ParameterType="System.String" Required="true" />
-        <ExtractedText ParameterType="System.String" Output="true" />
+      <FilePath ParameterType="System.String" Required="true" />
+      <ExtractedText ParameterType="System.String" Output="true" />
     </ParameterGroup>
 
     <Task>
@@ -199,7 +199,7 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Text.RegularExpressions" />
       <Code Type="Fragment" Language="cs">
-<![CDATA[
+        <![CDATA[
 try
 {
     var textToParse = File.ReadAllText(FilePath);

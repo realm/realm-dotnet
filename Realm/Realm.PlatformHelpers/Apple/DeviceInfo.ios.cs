@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using static Realms.PlatformHelpers.Platform;
+
 namespace Realms.PlatformHelpers
 {
-    public class DeviceInfo : IDeviceInfo
+    internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => "Unknown";
+        public string DeviceName => UIKit.UIDevice.CurrentDevice.Model;
 
-        public string DeviceVersion => "Unknown";
+        public string DeviceVersion => NativeHelpers.GetSysctlProperty("hw.machine") ?? Unknown;
     }
 }

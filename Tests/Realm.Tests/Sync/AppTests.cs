@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+using Realms.PlatformHelpers;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -32,6 +33,42 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class AppTests : SyncTestBase
     {
+        [Test]
+        public void DeviceInfo_OutputsMeaningfulInfo()
+        {
+            var os = SharedRealmHandle.GetNativeLibraryOS();
+
+            switch (os)
+            {
+                case "Windows":
+                case "Linux":
+                case "macOS":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Is.EqualTo(Platform.Unknown));
+                    break;
+                case "iOS":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPhone"));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPhone"));
+                    break;
+                case "Android":
+                case "UWP":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.Not.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                    break;
+                case "tvOS":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple TV"));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("AppleTV"));
+                    break;
+                case "Mac Catalyst":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad"));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad"));
+                    break;
+                default:
+                    Assert.Fail($"Unknown OS: {os}");
+                    break;
+            }
+        }
+
         [Test]
         public void AppCreate_CreatesApp()
         {
