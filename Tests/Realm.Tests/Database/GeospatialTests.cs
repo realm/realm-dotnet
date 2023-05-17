@@ -38,16 +38,16 @@ namespace Realms.Tests.Database
     {
         public static object[] GeospatialTestCases =
         {
-            new object[] { new GeoCircle(new(55.67, 12.56), 0.001), new[] { "Realm" } },
-            new object[] { new GeoCircle(new(55.67, 12.56), Distance.FromKilometers(10)), new[] { "Realm" } },
-            new object[] { new GeoCircle(new(55.67, 12.56), Distance.FromKilometers(100)), new[] { "Realm", "Ragnarock" } },
-            new object[] { new GeoCircle(new(45, -20), Distance.FromKilometers(5000)), new[] { "Realm", "Ragnarock", "MongoDB" } },
-            new object[] { new GeoBox(new(55.6281, 12.0826), new(55.6761, 12.5683)), new[] { "Realm" } },
-            new object[] { new GeoBox(new(55.6280, 12.0826), new(55.6761, 12.5683)), new[] { "Realm", "Ragnarock" } },
-            new object[] { new GeoBox(new(0, -75), new(60, 15)), new[] { "Realm", "Ragnarock", "MongoDB" } },
-            new object[] { new GeoPolygon(new GeoPoint(55.6281, 12.0826), new(55.6761, 12.0826), new(55.6761, 12.5683), new(55.6281, 12.5683), new(55.6281, 12.0826)), new[] { "Realm" } },
-            new object[] { new GeoPolygon(new GeoPoint(55, 12), new(55.67, 12.5), new(55.67, 11.5), new(55, 12)), new[] { "Ragnarock" } },
-            new object[] { new GeoPolygon(new GeoPoint(40.7128, -74.0060), new(55.6761, 12.5683), new(55.6280, 12.0826), new(40.7128, -74.0060)), new[] { "MongoDB", "Realm", "Ragnarock" } },
+            new object[] { new GeoCircle((55.67, 12.56), 0.001), new[] { "Realm" } },
+            new object[] { new GeoCircle((55.67, 12.56), Distance.FromKilometers(10)), new[] { "Realm" } },
+            new object[] { new GeoCircle((55.67, 12.56), Distance.FromKilometers(100)), new[] { "Realm", "Ragnarock" } },
+            new object[] { new GeoCircle((45, -20), Distance.FromKilometers(5000)), new[] { "Realm", "Ragnarock", "MongoDB" } },
+            new object[] { new GeoBox((55.6281, 12.0826), (55.6761, 12.5683)), new[] { "Realm" } },
+            new object[] { new GeoBox((55.6280, 12.0826), (55.6761, 12.5683)), new[] { "Realm", "Ragnarock" } },
+            new object[] { new GeoBox((0, -75), (60, 15)), new[] { "Realm", "Ragnarock", "MongoDB" } },
+            new object[] { new GeoPolygon(new GeoPoint(55.6281, 12.0826), (55.6761, 12.0826), (55.6761, 12.5684), (55.6281, 12.5684), (55.6281, 12.0826)), new[] { "Realm" } },
+            new object[] { new GeoPolygon(new GeoPoint(55, 12), (55.67, 12.5), (55.67, 11.5), (55, 12)), new[] { "Ragnarock" } },
+            new object[] { new GeoPolygon(new GeoPoint(40.0096192, -75.5175781), (60, 20), (20, 20), (40.0096192, -75.5175781)), new[] { "MongoDB", "Realm", "Ragnarock" } },
         };
 
         [TestCaseSource(nameof(GeospatialTestCases))]
@@ -103,7 +103,7 @@ namespace Realms.Tests.Database
             void AssertInvalidGeoData<T>(string property, string expectedError = "wrong format")
                 where T : IRealmObject
             {
-                var shape = new GeoCircle(new(0, 0), 10);
+                var shape = new GeoCircle((0, 0), 10);
 
                 var ex = Assert.Throws<RealmException>(() => _realm.All<T>().Filter($"{property} geowithin $0", shape).ToArray(), $"Expected an error when querying {typeof(T).Name}.{property}")!;
                 Assert.That(ex.Message, Does.Contain(expectedError));
@@ -261,6 +261,16 @@ namespace Realms.Tests.Database
             public CustomGeoPoint? Location { get; set; }
 
             public IList<CustomGeoPoint> Offices { get; } = null!;
+
+            public BsonDocument ToBsonDocument()
+            {
+                return new BsonDocument
+                {
+                    ["Name"] = Name,
+                    ["Location"] = Location?.ToBsonDocument() ?? new BsonDocument(),
+                    ["Offices"] = new BsonArray(Offices.Select(o => o.ToBsonDocument()))
+                };
+            }
         }
 
         public partial class CustomGeoPoint : TestEmbeddedObject
@@ -293,6 +303,15 @@ namespace Realms.Tests.Database
             {
             }
 #endif
+
+            public BsonDocument ToBsonDocument()
+            {
+                return new BsonDocument
+                {
+                    ["type"] = Type,
+                    ["coordinates"] = new BsonArray(Coordinates)
+                };
+            }
         }
 
         public partial class ObjectWithInvalidGeoPoints : TestRealmObject
