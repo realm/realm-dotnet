@@ -53,7 +53,6 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string framework_version, IntPtr framework_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string sdk_version, IntPtr sdk_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string cpu_arch, IntPtr cpu_arch_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_name, IntPtr device_name_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_version, IntPtr device_version_len,
                 UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, ApiKeysCallback api_keys_callback);
@@ -172,8 +171,6 @@ namespace Realms.Sync
                 platformVersion += $" {Environment.OSVersion.ServicePack}";
             }
 
-            var cpuArch = RuntimeInformation.ProcessArchitecture.ToString();
-
             var deviceName = Platform.DeviceInfo.DeviceName;
             var deviceVersion = Platform.DeviceInfo.DeviceVersion;
 
@@ -182,7 +179,6 @@ namespace Realms.Sync
                 frameworkVersion, frameworkVersion.IntPtrLength(),
                 sdkVersion, sdkVersion.IntPtrLength(),
                 platformVersion, platformVersion.IntPtrLength(),
-                cpuArch, cpuArch.IntPtrLength(),
                 deviceName, deviceName.IntPtrLength(),
                 deviceVersion, deviceVersion.IntPtrLength(),
                 userLogin, taskCallback, stringCallback, apiKeysCallback);
