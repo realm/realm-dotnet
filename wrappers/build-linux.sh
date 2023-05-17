@@ -23,4 +23,17 @@ case $i in
 esac
 done
 
-REALM_CMAKE_SUBPLATFORM="Linux-$libc/$ARCH" bash "$SCRIPT_DIRECTORY"/build.sh -c=$REALM_CMAKE_CONFIGURATION -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/realm-core/tools/cmake/$ARCH.toolchain.cmake" -GNinja $EXTRA_CMAKE_ARGS
+TOOLCHAIN_FILE=""
+case $ARCH in
+  "x86_64")
+    TOOLCHAIN_FILE="x86_64-linux-gnu.toolchain.cmake"
+    ;;
+  "armhf")
+    TOOLCHAIN_FILE="armv7-linux-gnueabihf.toolchain.cmake"
+    ;;
+  "aarch64")
+    TOOLCHAIN_FILE="aarch64-linux-gnu.toolchain.cmake"
+    ;;
+esac
+
+REALM_CMAKE_SUBPLATFORM="Linux-$libc/$ARCH" bash "$SCRIPT_DIRECTORY"/build.sh -c=$REALM_CMAKE_CONFIGURATION -DCMAKE_TOOLCHAIN_FILE="$SCRIPT_DIRECTORY/realm-core/tools/cmake/$TOOLCHAIN_FILE" -GNinja $EXTRA_CMAKE_ARGS
