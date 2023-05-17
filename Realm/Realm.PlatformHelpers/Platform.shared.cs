@@ -22,7 +22,7 @@ namespace Realms.PlatformHelpers
 {
     internal static class Platform
     {
-        public const string Unknown = "unknown";
+        public const string Unknown = "";
 
         private static IDeviceInfo? _deviceInfo;
 

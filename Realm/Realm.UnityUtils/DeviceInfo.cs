@@ -23,6 +23,8 @@ namespace Realm.UnityUtils
 {
     internal class UnityDeviceInfo : IDeviceInfo
     {
-        public string DeviceName => SystemInfo.deviceName;
+        public string DeviceName => Platform.Unknown;
+
+        public string DeviceVersion => SystemInfo.deviceModel;
     }
 }
