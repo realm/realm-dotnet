@@ -1,9 +1,9 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.22">
 
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(TargetFramework)' == ''">netstandard2.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0-ios;net6.0-android</TargetFrameworks>
-    <TargetFrameworks Condition="'$(MSBuildVersion)' &lt; '17.0'">$(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0-ios;net6.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildVersion)' &lt; '17.0'">$(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
