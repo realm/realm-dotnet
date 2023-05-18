@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchPackageArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchPackageArtifacts", "setupWorkloads")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
@@ -23,9 +23,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - name: Setup workloads
-        run: |
-          dotnet workload install maui
+      - #@ setupWorkloads()
       - name: Build the tests
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests

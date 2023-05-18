@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "fetchPackageArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "fetchPackageArtifacts", "setupWorkloads")
 #@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
@@ -32,9 +32,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - name: Setup workloads
-        run: |
-          dotnet workload install maui
+      - #@ setupWorkloads()
       - name: Build the tests
         run: #@ "dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))

@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet", "actionSetupAndroid")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet", "actionSetupAndroid", "setupWorkloads")
 
 #@ def buildDocs():
   - name: Check Docfx cache
@@ -74,6 +74,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(setupAndroid())
+      - #@ setupWorkloads('tvos')
       - name: Set version suffix
         id: set-version-suffix
         #! Build suffix is pr-1234.5 for pr builds or alpha.123 for branch builds.

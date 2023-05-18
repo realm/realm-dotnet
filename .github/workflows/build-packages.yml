@@ -33,6 +33,8 @@ jobs:
       uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
     - name: Install SDK platform 21
       run: sdkmanager --install "platforms;android-21"
+    - name: Setup workloads
+      run: dotnet workload install tvos
     - name: Set version suffix
       id: set-version-suffix
       run: |

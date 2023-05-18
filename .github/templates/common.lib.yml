@@ -228,3 +228,8 @@ with:
       path: ${{ github.workspace }}/Realm/packages/
 #@ end
 #@ end
+---
+#@ def setupWorkloads(workloads = 'maui'):
+name: Setup workloads
+run: #@ "dotnet workload install " + workloads
+#@ end

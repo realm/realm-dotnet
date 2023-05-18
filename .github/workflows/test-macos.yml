@@ -101,8 +101,7 @@ jobs:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Setup workloads
-      run: |
-        dotnet workload install maui
+      run: dotnet workload install maui
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests
