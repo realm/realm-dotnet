@@ -71,7 +71,7 @@ namespace SetupUnityPackage
             }
 
             var extractedPackagePath = CreateTempDirectory("realm-package");
-            var realmDllPath = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime", "Realm.dll");
+            var realmDllsPath = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime");
             if (opts.RealmPackage == null)
             {
                 // If the user didn't provide a .tgz package, we should assume a local install
@@ -84,11 +84,11 @@ namespace SetupUnityPackage
                 using var gzipStream = new GZipInputStream(fileStream);
                 using var archive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8);
                 archive.ExtractContents(extractedPackagePath);
-                realmDllPath = Path.Combine(extractedPackagePath, "package", "Runtime", "Realm.dll");
+                realmDllsPath = Path.Combine(extractedPackagePath, "package", "Runtime");
             }
 
             var testsProjectFolder = Path.Combine(Helpers.SolutionFolder, "Tests", "Realm.Tests");
-            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllPath={realmDllPath} -c Release --include-symbols", Helpers.SolutionFolder);
+            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllsPath={realmDllsPath} -c Release --include-symbols", Helpers.SolutionFolder);
 
             var testsSearchDirectory = Path.Combine(testsProjectFolder, "bin", "Release", "netstandard2.0");
             await CopyPackages(Helpers.PackagesFolder, opts, testsSearchDirectory);
