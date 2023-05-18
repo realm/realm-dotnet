@@ -153,6 +153,9 @@ jobs:
         dotnet tool install coverlet.console --tool-path tools
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
+    - name: Setup workloads
+      run: |
+        dotnet workload install maui
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f net7.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
