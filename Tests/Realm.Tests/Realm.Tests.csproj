@@ -53,11 +53,11 @@
     the same dll here, otherwise when we try to ilrepack the test dependencies, we won't find MongoDB.Bson and friends.
     -->
     <Reference Include="Realm">
-      <HintPath>$(RealmDllsPath)Realm.dll</HintPath>
+      <HintPath>$(RealmDllsPath)\Realm.dll</HintPath>
     </Reference>
 
     <Reference Include="Realm.PlatformHelpers">
-      <HintPath>$(RealmDllsPath)Realm.PlatformHelpers.dll</HintPath>
+      <HintPath>$(RealmDllsPath)\Realm.PlatformHelpers.dll</HintPath>
     </Reference>
 
     <!--

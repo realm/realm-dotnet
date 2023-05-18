@@ -48,25 +48,29 @@ namespace Realms.Tests.Sync
             {
                 case "Windows":
                 case "Linux":
-                case "macOS":
                     Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Is.EqualTo(Platform.Unknown));
                     break;
+                case "macOS":
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple"));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                    break;
                 case "iOS":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPhone"));
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPhone").Or.EqualTo("x86_64"));
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPhone"));
                     break;
                 case "Android":
-                case "UWP":
                     Assert.That(Platform.DeviceInfo.DeviceName, Is.Not.EqualTo(Platform.Unknown));
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
                     break;
+                case "UWP":
+                    break;
                 case "tvOS":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple TV"));
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple TV").Or.EqualTo("x86_64"));
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("AppleTV"));
                     break;
                 case "Mac Catalyst":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad"));
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad").Or.EqualTo("x86_64)");
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad"));
                     break;
                 default:
