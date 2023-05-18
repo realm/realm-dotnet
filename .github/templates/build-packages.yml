@@ -42,6 +42,11 @@
 #@ return result
 #@ end
 
+#@ def setupAndroid():
+  - name: Install SDK platform 21
+    run: sdkmanager --install "platforms;android-21"
+#@ end
+
 ---
 name: build-packages
 "on":
