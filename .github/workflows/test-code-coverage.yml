@@ -155,7 +155,7 @@ jobs:
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Setup workloads
       run: |
-        dotnet workload install maui
+        dotnet workload restore
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f net7.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
