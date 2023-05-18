@@ -16,12 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using static Realms.PlatformHelpers.Platform;
+
 namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => "Unknown";
+        public string DeviceName => Unknown;
 
-        public string DeviceVersion => "Unknown";
+        public string DeviceVersion => Unknown;
     }
 }

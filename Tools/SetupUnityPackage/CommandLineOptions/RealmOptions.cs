@@ -86,6 +86,10 @@ namespace SetupUnityPackage
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86/realm-wrappers.dll" },
                 { "analyzers/dotnet/cs/Realm.SourceGenerator.dll", "Editor/Realm.SourceGenerator.dll" },
             }, _realmDependencies),
+            new PackageInfo("Realm.PlatformHelpers", new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/Realm.PlatformHelpers.dll", "Runtime/Realm.PlatformHelpers.dll" },
+            }),
             new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityUtils.dll", "Runtime/Realm.UnityUtils.dll" },
