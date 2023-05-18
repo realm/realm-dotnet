@@ -41,6 +41,7 @@ namespace SetupUnityPackage
             "Microsoft.CSharp",
             "Fody",
             "System.Dynamic.Runtime",
+            "Realm.PlatformHelpers"
         };
 
         private static readonly IEnumerable<DependencyInfo> _realmDependencies = new[]
