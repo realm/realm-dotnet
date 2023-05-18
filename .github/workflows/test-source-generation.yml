@@ -16,8 +16,9 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Setup workloads
-      run: dotnet workload install tvos
+    - name: Restore workloads
+      run: dotnet workload restore
+      working-directory: ${{ github.workspace }}/Realm/Realm.PlatformHelpers
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
     - name: Output executable path

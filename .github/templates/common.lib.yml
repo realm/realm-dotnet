@@ -233,3 +233,9 @@ with:
 name: Setup workloads
 run: #@ "dotnet workload install " + workloads
 #@ end
+---
+#@ def restoreWorkloads(workingDirectory = 'Realm/Realm.PlatformHelpers'):
+name: Restore workloads
+run: dotnet workload restore
+working-directory: #@ "${{ github.workspace }}/" + workingDirectory
+#@ end

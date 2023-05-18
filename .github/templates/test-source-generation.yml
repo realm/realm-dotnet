@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "setupWorkloads")
+#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "restoreWorkloads")
 #@ load("test.lib.yml", "publishTestsResults")
 
 ---
@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ setupWorkloads('tvos')
+      - #@ restoreWorkloads()
       - #@ template.replace(dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
