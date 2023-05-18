@@ -70,7 +70,7 @@ namespace Realms.Tests.Sync
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("AppleTV"));
                     break;
                 case "Mac Catalyst":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad").Or.EqualTo("x86_64)");
+                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad").Or.EqualTo("x86_64)"));
                     Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad"));
                     break;
                 default:
