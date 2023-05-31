@@ -55,14 +55,12 @@ namespace Realms
         /// and <c>QueryMethods.FullTextSearch(o.Bio, "café DANCING")</c> will return the same set of matches.
         /// </item>
         /// <item>
-        /// Ignoring results with certain tokens are done using `-`, e.g. <c>QueryMethods.FullTextSearch(o.Bio, "computer -dancing")</c>
-        /// will find all objects that contain <c>computer</c> but not <c>dancing</c> .
+        /// Ignoring results with certain tokens is done using <c>-</c>, e.g. <c>QueryMethods.FullTextSearch(o.Bio, "computer -dancing")</c>
+        /// will find all objects that contain <c>computer</c> but not <c>dancing</c>.
         /// </item>
         /// <item>
         /// Tokens only consist of alphanumerical characters from ASCII and the Latin-1 supplement. All other characters
-        /// are considered whitespace. In particular words using `-` like <c>full-text</c> are split into two tokens.
-        /// </item>
-        /// <item>
+        /// are considered whitespace. In particular words using <c>-</c> like <c>full-text</c> are split into two tokens.
         /// </item>
         /// </list>
         /// <br/>
