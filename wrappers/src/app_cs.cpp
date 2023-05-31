@@ -49,9 +49,7 @@ namespace realm {
         std::string s_framework;
         std::string s_framework_version;
         std::string s_sdk_version;
-        std::string s_platform;
         std::string s_platform_version;
-        std::string s_cpu_arch;
         std::string s_device_name;
         std::string s_device_version;
 
@@ -103,7 +101,6 @@ extern "C" {
         uint16_t* framework_version, size_t framework_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
         uint16_t* platform_version, size_t platform_version_len,
-        uint16_t* cpu_arch, size_t cpu_arch_len,
         uint16_t* device_name, size_t device_name_len,
         uint16_t* device_version, size_t device_version_len,
         UserCallbackT* user_callback,
@@ -115,23 +112,8 @@ extern "C" {
         s_framework_version = Utf16StringAccessor(framework_version, framework_version_len);
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
-        s_cpu_arch = Utf16StringAccessor(cpu_arch, cpu_arch_len);
         s_device_name = Utf16StringAccessor(device_name, device_name_len);
         s_device_version = Utf16StringAccessor(device_version, device_version_len);
-
-#if REALM_ANDROID
-        s_platform = "Android";
-#elif REALM_WINDOWS
-        s_platform = "Windows";
-#elif REALM_UWP
-        s_platform = "UWP";
-#elif REALM_IOS
-        s_platform = "iOS";
-#elif REALM_PLATFORM_APPLE
-        s_platform = "macOS";
-#else
-        s_platform = "Linux";
-#endif
 
         s_user_callback = wrap_managed_callback(user_callback);
         s_void_callback = wrap_managed_callback(void_callback);
@@ -151,9 +133,7 @@ extern "C" {
             config.device_info.framework_version = s_framework_version;
             config.device_info.sdk_version = s_sdk_version;
             config.device_info.sdk = "Dotnet";
-            config.device_info.platform = s_platform;
             config.device_info.platform_version = s_platform_version;
-            config.device_info.cpu_arch = s_cpu_arch;
             config.device_info.device_name = s_device_name;
             config.device_info.device_version = s_device_version;
 

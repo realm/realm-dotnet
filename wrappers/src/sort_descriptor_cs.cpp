@@ -38,7 +38,7 @@ REALM_EXPORT void sort_descriptor_destroy(DescriptorOrdering* descriptor)
 REALM_EXPORT void sort_descriptor_add_clause(DescriptorOrdering& descriptor, TableKey table_key, SharedRealm& realm, size_t* property_chain, size_t properties_count, bool ascending, bool replacing, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        std::vector<ColKey> column_keys;
+        std::vector<ExtendedColumnKey> column_keys;
         column_keys.reserve(properties_count);
 
         const std::vector<Property>* properties = &realm->schema().find(table_key)->persisted_properties;

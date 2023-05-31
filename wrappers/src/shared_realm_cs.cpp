@@ -525,9 +525,13 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
-    return realm->is_in_transaction() || realm->is_in_async_transaction();
+    return handle_errors(ex, [&]() {
+        realm->verify_thread();
+
+        return realm->is_in_transaction() || realm->is_in_async_transaction();
+    });
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)
