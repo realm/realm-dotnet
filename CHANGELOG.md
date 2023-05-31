@@ -2,9 +2,18 @@
 
 ### Enhancements
 * Deprecate the `Realm.SourceGenerator` and `Realm.Fody` packages. The source generation and weaver assemblies are now contained in the main `Realm` package. This should be a transparent change for users who only referenced the `Realm` package, but if you explicitly added a package reference to `Realm.SourceGenerator` or `Realm.Fody`, you should remove it. (PR [#3319](https://github.com/realm/realm-dotnet/pull/3319))
+* New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). (Core 13.10.1)
+* Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm (including the original support released in Core 11.0.0) will receive a "switch to flexible sync" error message when trying to sync with the app. (Core 13.11.0)
+* Support sort/distinct based on values from a dictionary e.g. `.Filter("TRUEPREDICATE SORT(meta['age'])")`. (Core 13.14.0)
 
 ### Fixed
-* None
+* Fixed a fatal error (reported to the sync error handler) during client reset (or automatic PBS to FLX migration) if the reset has been triggered during an async open and the schema being applied has added new classes. (Core 13.11.0)
+* Full text search would sometimes find words where the word only matches the beginning of the search token. (Core 13.11.0)
+* We could crash when removing backlinks in cases where forward links did not have a corresponding backlink due to corruption. We now silently ignore this inconsistency in release builds, allowing the app to continue. (Core 13.12.0)
+* `IDictionary<string, IRealmObject?>` would expose unresolved links rather than mapping them to null. In addition to allowing invalid objects to be read from Dictionaries, this resulted in queries on Dictionaries sometimes having incorrect results. (Core 13.12.0)
+* Access token refresh for websockets was not updating the location metadata. (Core 13.13.0)
+* Using both synchronous and asynchronous transactions on the same thread or scheduler could hit the assertion failure "!realm.is_in_transaction()" if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction. (Core 13.13.0)
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. (Core 13.14.0)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
