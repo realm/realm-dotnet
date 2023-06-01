@@ -62,6 +62,8 @@ struct Configuration
     bool invoke_initial_data_callback;
 
     bool invoke_migration_callback;
+
+    bool automatically_migrate_embedded;
 };
 
 struct SyncConfiguration

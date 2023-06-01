@@ -2,6 +2,7 @@
 
 ### Enhancements
 * Deprecate the `Realm.SourceGenerator` and `Realm.Fody` packages. The source generation and weaver assemblies are now contained in the main `Realm` package. This should be a transparent change for users who only referenced the `Realm` package, but if you explicitly added a package reference to `Realm.SourceGenerator` or `Realm.Fody`, you should remove it. (PR [#3319](https://github.com/realm/realm-dotnet/pull/3319))
+* Automatically handle `RealmObject`->`EmbeddedObject` migrations by duplicating objects referenced by multiple parents as well as removing "orphaned" objects. (Issue [#2408](https://github.com/realm/realm-dotnet/issues/2408))
 * New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). (Core 13.10.1)
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm (including the original support released in Core 11.0.0) will receive a "switch to flexible sync" error message when trying to sync with the app. (Core 13.11.0)
 * Support sort/distinct based on values from a dictionary e.g. `.Filter("TRUEPREDICATE SORT(meta['age'])")`. (Core 13.14.0)
