@@ -338,6 +338,6 @@ namespace Realms
         }
 
         /// <inheritdoc/>
-        public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString();
+        public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString() ?? "Invalid QueryArgument";
     }
 }

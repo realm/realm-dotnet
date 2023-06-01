@@ -24,10 +24,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Serializers;
 using Realms.Helpers;
 using Realms.Schema;
-using static MongoDB.Bson.Serialization.Serializers.SerializerHelper;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
@@ -75,12 +73,10 @@ namespace Realms
 
                 internal static readonly LazyMethod FullTextSearch = Capture<string>(s => QueryMethods.FullTextSearch(s, string.Empty));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
                 internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
