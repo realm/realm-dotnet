@@ -95,8 +95,7 @@ namespace Realms.Tests.Database
 
             AssertInvalidGeoData<Company>(nameof(Company.Location), expectedError: "The only Geospatial type currently supported is 'point'");
 
-            // TODO: this is currently supported, but maybe it shouldn't?
-            // AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TopLevelGeoPoint));
+            AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TopLevelGeoPoint), expectedError: "GEOWITHIN query can only operate on a link to an embedded class");
             AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.TypeEmbedded));
             AssertInvalidGeoData<ObjectWithInvalidGeoPoints>(nameof(ObjectWithInvalidGeoPoints.CoordinatesEmbedded));
 
