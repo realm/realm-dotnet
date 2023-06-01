@@ -118,6 +118,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+    config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
     if (sync_configuration.is_flexible_sync) {
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
@@ -271,6 +272,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+        config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
         if (configuration.fallback_path) {
             config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);

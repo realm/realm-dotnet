@@ -150,6 +150,7 @@ namespace Realms
             result.read_only = IsReadOnly;
             result.invoke_migration_callback = MigrationCallback != null;
             result.invoke_should_compact_callback = ShouldCompactOnLaunch != null;
+            result.automatically_migrate_embedded = true;
 
             return result;
         }
