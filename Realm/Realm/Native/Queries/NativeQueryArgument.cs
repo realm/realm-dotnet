@@ -33,7 +33,7 @@ namespace Realms.Native
         private NativeGeoPolygon _polygon;
 
         [FieldOffset(0)]
-        private NativeGeoSphere _sphere;
+        private NativeGeoCircle _circle;
 
         [FieldOffset(32)]
         [MarshalAs(UnmanagedType.U1)]
@@ -57,10 +57,10 @@ namespace Realms.Native
             _type = QueryArgumentType.Polygon
         };
 
-        public static NativeQueryArgument GeoSphere(NativeGeoSphere sphere) => new()
+        public static NativeQueryArgument GeoCircle(NativeGeoCircle circle) => new()
         {
-            _sphere = sphere,
-            _type = QueryArgumentType.Sphere
+            _circle = circle,
+            _type = QueryArgumentType.Circle
         };
 
         public override string ToString()
@@ -70,7 +70,7 @@ namespace Realms.Native
                 QueryArgumentType.Primitive => $"primitive {_primitive.Type}",
                 QueryArgumentType.Box => _box.ToString(),
                 QueryArgumentType.Polygon => _polygon.ToString(),
-                QueryArgumentType.Sphere => _sphere.ToString(),
+                QueryArgumentType.Circle => _circle.ToString(),
                 _ => "Unknown",
             };
         }
@@ -81,6 +81,6 @@ namespace Realms.Native
         Primitive,
         Box,
         Polygon,
-        Sphere,
+        Circle,
     }
 }

@@ -331,7 +331,7 @@ namespace Realms
             return GeoValue switch
             {
                 GeoBox box => (NativeQueryArgument.GeoBox(box.ToNative()), null),
-                GeoCircle sphere => (NativeQueryArgument.GeoSphere(sphere.ToNative()), null),
+                GeoCircle circle => (NativeQueryArgument.GeoCircle(circle.ToNative()), null),
                 GeoPolygon polygon => polygon.ToNativeQueryArgument(),
                 _ => throw new NotSupportedException($"Unsupported GeoShapeBase type: {GeoValue?.GetType().FullName}")
             };

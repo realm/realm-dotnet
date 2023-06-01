@@ -49,7 +49,7 @@ enum class query_argument_type : uint8_t {
     PRIMITIVE,
     BOX,
     POLYGON,
-    SPHERE,
+    CIRCLE,
 };
 
 typedef struct realm_string {
@@ -122,7 +122,7 @@ struct geo_box {
     geo_point top_right;
 };
 
-struct geo_sphere {
+struct geo_circle {
     geo_point center;
     double radius_radians;
 };
@@ -137,7 +137,7 @@ struct query_argument {
     union {
         realm_value_t primitive;
         geo_box box;
-        geo_sphere sphere;
+        geo_circle circle;
         geo_polygon polygon;
     };
 
@@ -259,9 +259,9 @@ static inline GeoBox from_capi(geo_box box)
     return GeoBox{ from_capi(box.bottom_left), from_capi(box.top_right) };
 }
 
-static inline GeoCenterSphere from_capi(geo_sphere sphere)
+static inline GeoCircle from_capi(geo_circle circle)
 {
-    return GeoCenterSphere{ sphere.radius_radians, from_capi(sphere.center) };
+    return GeoCircle{ circle.radius_radians, from_capi(circle.center) };
 }
 
 static inline GeoPolygon from_capi(geo_polygon polygon)

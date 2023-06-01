@@ -531,8 +531,8 @@ REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t prope
         case query_argument_type::BOX:
             geo_store = from_capi(geo_value.box);
             break;
-        case query_argument_type::SPHERE:
-            geo_store = from_capi(geo_value.sphere);
+        case query_argument_type::CIRCLE:
+            geo_store = from_capi(geo_value.circle);
             break;
         case query_argument_type::POLYGON:
             geo_store = from_capi(geo_value.polygon);

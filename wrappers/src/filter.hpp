@@ -65,8 +65,8 @@ inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableR
             geo_store.push_back(from_capi(arguments[i].box));
             mixed_args.push_back(Mixed(&geo_store.back()));
             break;
-        case query_argument_type::SPHERE:
-            geo_store.push_back(from_capi(arguments[i].sphere));
+        case query_argument_type::CIRCLE:
+            geo_store.push_back(from_capi(arguments[i].circle));
             mixed_args.push_back(Mixed(&geo_store.back()));
             break;
         case query_argument_type::POLYGON:

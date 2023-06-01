@@ -26,22 +26,22 @@ namespace Realms
     public class GeoCircle : GeoShapeBase
     {
         /// <summary>
-        /// Gets the center of the sphere.
+        /// Gets the center of the circle.
         /// </summary>
-        /// <value>The sphere's center.</value>
+        /// <value>The circle's center.</value>
         public GeoPoint Center { get; }
 
         /// <summary>
-        /// Gets the radius of the sphere in radians.
+        /// Gets the radius of the circle in radians.
         /// </summary>
-        /// <value>The sphere's radius.</value>
+        /// <value>The circle's radius.</value>
         public double Radius { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeoCircle"/> class.
         /// </summary>
-        /// <param name="center">The center of the sphere.</param>
-        /// <param name="radiusInRadians">The radius of the sphere in radians.</param>
+        /// <param name="center">The center of the circle.</param>
+        /// <param name="radiusInRadians">The radius of the circle in radians.</param>
         public GeoCircle(GeoPoint center, double radiusInRadians)
         {
             Center = center;
@@ -51,17 +51,17 @@ namespace Realms
         /// <summary>
         /// Initializes a new instance of the <see cref="GeoCircle"/> class.
         /// </summary>
-        /// <param name="center">The center of the sphere.</param>
-        /// <param name="radius">The radius of the sphere.</param>
+        /// <param name="center">The center of the circle.</param>
+        /// <param name="radius">The radius of the circle.</param>
         public GeoCircle(GeoPoint center, Distance radius)
         {
             Center = center;
             Radius = radius.Radians;
         }
 
-        internal NativeGeoSphere ToNative() => new(Center.ToNative(), Radius);
+        internal NativeGeoCircle ToNative() => new(Center.ToNative(), Radius);
 
         /// <inheritdoc/>
-        public override string ToString() => $"Sphere: {{ center: {Center}, radius: {Radius} }}";
+        public override string ToString() => $"Circle: {{ center: {Center}, radius: {Radius} }}";
     }
 }

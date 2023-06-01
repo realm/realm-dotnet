@@ -21,17 +21,17 @@ using System.Runtime.InteropServices;
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal readonly struct NativeGeoSphere
+    internal readonly struct NativeGeoCircle
     {
         private readonly NativeGeoPoint _center;
         private readonly double _radius_in_radians;
 
-        public NativeGeoSphere(NativeGeoPoint center, double radius_in_radians)
+        public NativeGeoCircle(NativeGeoPoint center, double radius_in_radians)
         {
             _center = center;
             _radius_in_radians = radius_in_radians;
         }
 
-        public override string ToString() => $"Sphere {{center: {_center}, radius: {_radius_in_radians}}}";
+        public override string ToString() => $"Circle {{center: {_center}, radius: {_radius_in_radians}}}";
     }
 }
