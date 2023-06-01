@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using Realms.Helpers;
 using Realms.Native;
 
 namespace Realms
@@ -44,6 +45,8 @@ namespace Realms
         /// <param name="radiusInRadians">The radius of the circle in radians.</param>
         public GeoCircle(GeoPoint center, double radiusInRadians)
         {
+            Argument.Ensure(radiusInRadians >= 0, $"Cannot construct a circle with a negative radius: {radiusInRadians}", nameof(radiusInRadians));
+
             Center = center;
             Radius = radiusInRadians;
         }

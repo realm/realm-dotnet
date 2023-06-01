@@ -33,7 +33,7 @@ namespace Realms.Native
         {
             var pointsLengthsArray = PointsLengths;
             var sizes = Enumerable.Range(0, (int)PointsLengthsLength)
-                .Select(p => $"{{ size: {(int)(pointsLengthsArray + p)}}}")
+                .Select(p => $"{{ size: {(int)*(pointsLengthsArray + p)} }}")
                 .ToArray();
             return $"Polygon {{ {string.Join(", ", sizes)} }}";
         }

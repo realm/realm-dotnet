@@ -1874,6 +1874,92 @@ namespace Realms.Tests.Database
             Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
         }
 
+        [Test]
+        public void QueryArgument_ToString()
+        {
+            QueryArgument charArg = 'A';
+            Assert.That(charArg.ToString(), Is.EqualTo(((int)'A').ToString()));
+
+            QueryArgument byteArg = (byte)5;
+            Assert.That(byteArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument shortArg = (short)10;
+            Assert.That(shortArg.ToString(), Is.EqualTo("10"));
+
+            QueryArgument intArg = -20;
+            Assert.That(intArg.ToString(), Is.EqualTo("-20"));
+
+            QueryArgument longArg = 9999999999999999;
+            Assert.That(longArg.ToString(), Is.EqualTo("9999999999999999"));
+
+            QueryArgument floatArg = 1.234f;
+            Assert.That(floatArg.ToString(), Is.EqualTo("1.234"));
+
+            QueryArgument doubleArg = 4.5;
+            Assert.That(doubleArg.ToString(), Is.EqualTo("4.5"));
+
+            var date = new DateTimeOffset(2023, 10, 5, 2, 3, 4, TimeSpan.Zero);
+            QueryArgument dateArg = date;
+            Assert.That(dateArg.ToString(), Is.EqualTo(date.ToString()));
+
+            QueryArgument decimalArg = 1.23456789123456789M;
+            Assert.That(decimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+
+            QueryArgument decimal128Arg = (Decimal128)10.20M;
+            Assert.That(decimal128Arg.ToString(), Is.EqualTo("10.20"));
+
+            QueryArgument objectIdArg = new ObjectId("507f1f77bcf86cd799439011");
+            Assert.That(objectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));
+
+            QueryArgument guidArg = new Guid("E30AB544-67B5-42E2-80F7-C2D2E8E01B22");
+            Assert.That(guidArg.ToString(), Is.EqualTo("e30ab544-67b5-42e2-80f7-c2d2e8e01b22"));
+
+            QueryArgument nullableCharArg = (char?)'A';
+            Assert.That(nullableCharArg.ToString(), Is.EqualTo(((int)'A').ToString()));
+
+            QueryArgument nullableByteArg = (byte?)5;
+            Assert.That(nullableByteArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableShortArg = (short?)10;
+            Assert.That(nullableShortArg.ToString(), Is.EqualTo("10"));
+
+            QueryArgument nullableIntArg = (int?)-20;
+            Assert.That(nullableIntArg.ToString(), Is.EqualTo("-20"));
+
+            QueryArgument nullableLongArg = (long?)9999999999999999;
+            Assert.That(nullableLongArg.ToString(), Is.EqualTo("9999999999999999"));
+
+            QueryArgument nullableFloatArg = (float?)1.234f;
+            Assert.That(nullableFloatArg.ToString(), Is.EqualTo("1.234"));
+
+            QueryArgument nullableDoubleArg = (double?)4.5;
+            Assert.That(nullableDoubleArg.ToString(), Is.EqualTo("4.5"));
+
+            QueryArgument nullableDateArg = (DateTimeOffset?)date;
+            Assert.That(nullableDateArg.ToString(), Is.EqualTo(date.ToString()));
+
+            QueryArgument nullableDecimalArg = (decimal?)1.23456789123456789M;
+            Assert.That(nullableDecimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+
+            QueryArgument nullableDecimal128Arg = (Decimal128?)10.20M;
+            Assert.That(nullableDecimal128Arg.ToString(), Is.EqualTo("10.20"));
+
+            QueryArgument nullableObjectIdArg = (ObjectId?)new ObjectId("507f1f77bcf86cd799439011");
+            Assert.That(nullableObjectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));
+
+            QueryArgument nullableGuidArg = (Guid?)new Guid("E30AB544-67B5-42E2-80F7-C2D2E8E01B22");
+            Assert.That(nullableGuidArg.ToString(), Is.EqualTo("e30ab544-67b5-42e2-80f7-c2d2e8e01b22"));
+
+            QueryArgument stringArg = "abc";
+            Assert.That(stringArg.ToString(), Is.EqualTo("abc"));
+
+            QueryArgument byteArrayArg = new byte[] { 1, 2, 3 };
+            Assert.That(byteArrayArg.ToString(), Is.EqualTo("System.Byte[]"));
+
+            QueryArgument objArg = (RealmObjectBase?)null;
+            Assert.That(objArg.ToString(), Is.EqualTo("<null>"));
+        }
+
         private void PopulateAObjects(params int[] values)
         {
             if (values.Length == 0)

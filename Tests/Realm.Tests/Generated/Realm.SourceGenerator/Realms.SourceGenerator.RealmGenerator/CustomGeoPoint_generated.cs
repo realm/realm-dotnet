@@ -5,6 +5,7 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms;
 using Realms.Exceptions;
+using Realms.Native;
 using Realms.Schema;
 using Realms.Tests.Database;
 using Realms.Weaving;

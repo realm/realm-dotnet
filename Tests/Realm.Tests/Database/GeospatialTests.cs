@@ -22,6 +22,7 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Native;
 
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
@@ -142,6 +143,13 @@ namespace Realms.Tests.Database
             }
         }
 
+        [Test]
+        public void GeoCircle_ArgumentValidation()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => new GeoCircle((10, 10), -1))!;
+            Assert.That(ex.ParamName, Is.EqualTo("radiusInRadians"));
+        }
+
         public static object[] GeoPolygonTests =
         {
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0) }) },
@@ -218,6 +226,138 @@ namespace Realms.Tests.Database
             var circle = new GeoCircle(point, Distance.FromDegrees(0.5));
             var query = _realm.All<Company>().Filter("ANY Offices GEOWITHIN $0", circle);
             Assert.That(query.ToArray().Select(c => c.Name), Is.EquivalentTo(expectedMatches));
+        }
+
+        [Test]
+        public void Distance_FromKilometers_Test()
+        {
+            const double EarthCircumferenceKM = 40075;
+            var distance = Distance.FromKilometers(EarthCircumferenceKM);
+
+            Assert.That(distance.Radians, Is.EqualTo(Math.PI * 2).Within(1).Percent);
+
+            var ex = Assert.Throws<ArgumentException>(() => Distance.FromKilometers(-1))!;
+            Assert.That(ex.ParamName, Is.EqualTo("kilometers"));
+
+            Assert.DoesNotThrow(() => Distance.FromKilometers(0));
+        }
+
+        [Test]
+        public void Distance_FromMiles_Test()
+        {
+            const double EarthCircumferenceMi = 24901;
+            var distance = Distance.FromMiles(EarthCircumferenceMi);
+
+            Assert.That(distance.Radians, Is.EqualTo(Math.PI * 2).Within(1).Percent);
+
+            var ex = Assert.Throws<ArgumentException>(() => Distance.FromMiles(-1))!;
+            Assert.That(ex.ParamName, Is.EqualTo("miles"));
+
+            Assert.DoesNotThrow(() => Distance.FromMiles(0));
+        }
+
+        [Test]
+        public void Distance_FromRadians_Test()
+        {
+            var distance = Distance.FromRadians(Math.PI);
+            Assert.That(distance.Radians, Is.EqualTo(Math.PI));
+
+            var ex = Assert.Throws<ArgumentException>(() => Distance.FromRadians(-1))!;
+            Assert.That(ex.ParamName, Is.EqualTo("radians"));
+
+            Assert.DoesNotThrow(() => Distance.FromRadians(0));
+        }
+
+        [Test]
+        public void GeoPoint_Equality()
+        {
+            var point1 = new GeoPoint(1.234, 5.678);
+            var point2 = new GeoPoint(1.234, 5.678);
+            GeoPoint point3 = (1.234, 5.678);
+            var unequalPoint = new GeoPoint(10, 10);
+
+            Assert.That(point1.Equals(point2));
+            Assert.That(point1.Equals(point3));
+            Assert.That(point1.Equals(unequalPoint), Is.False);
+
+            Assert.That(point1.Equals((object)point2));
+            Assert.That(point1.Equals((object)point3));
+            Assert.That(point1.Equals((object)unequalPoint), Is.False);
+
+            Assert.That(point1, Is.EqualTo(point2));
+            Assert.That(point1, Is.EqualTo(point3));
+            Assert.That(point1, Is.Not.EqualTo(unequalPoint));
+
+            Assert.That(point1 == point2);
+            Assert.That(point1 == point3);
+            Assert.That(point1 == unequalPoint, Is.False);
+
+            Assert.That(point1 != point2, Is.False);
+            Assert.That(point1 != point3, Is.False);
+            Assert.That(point1 != unequalPoint);
+
+            var regularObject = new object();
+            object tuple = (1.234, 5.678);
+
+            Assert.That(point1.Equals(regularObject), Is.False);
+            Assert.That(point1.Equals(tuple), Is.False);
+        }
+
+        [Test]
+        public void GeoPoint_HashCode()
+        {
+            var point1 = new GeoPoint(1.234, 5.678);
+            var point2 = new GeoPoint(1.234, 5.678);
+            GeoPoint point3 = (1.234, 5.678);
+            var unequalPoint = new GeoPoint(10, 10);
+
+            Assert.That(point1.GetHashCode(), Is.EqualTo(point2.GetHashCode()));
+            Assert.That(point1.GetHashCode(), Is.EqualTo(point3.GetHashCode()));
+            Assert.That(point1.GetHashCode(), Is.Not.EqualTo(unequalPoint.GetHashCode()));
+        }
+
+        [Test]
+        public void NativeGeoPoint_ToString()
+        {
+            var point = new GeoPoint(1, 2);
+            Assert.That(point.ToNative().ToString(), Is.EqualTo("[1, 2]"));
+        }
+
+        [Test]
+        public void NativeGeoBox_ToString()
+        {
+            var box = new GeoBox((1, 2), (3, 4));
+            Assert.That(box.ToNative().ToString(), Does.Contain("Box").And.Contains("[1, 2]").And.Contains("[3, 4]"));
+
+            QueryArgument arg = box;
+            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("[1, 2]").And.Contains("[3, 4]"));
+        }
+
+        [Test]
+        public void NativeGeoCircle_ToString()
+        {
+            var circle = new GeoCircle((1, 2), 5);
+            Assert.That(circle.ToNative().ToString(), Does.Contain("Circle").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+
+            QueryArgument arg = circle;
+            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+        }
+
+        [Test]
+        public void NativeGeoPolygon_ToString()
+        {
+            var outerRing = new GeoPoint[] { (0, 0), (10, 10), (0, 20), (0, 0) };
+            var hole1 = new GeoPoint[] { (1, 1), (2, 2), (1, 3), (1, 1) };
+            var hole2 = new GeoPoint[] { (3, 3), (3.5, 4), (4, 4), (5, 4), (3, 3) };
+            var polygon = new GeoPolygon(outerRing, hole1, hole2);
+            var (nativePolygon, handles) = polygon.ToNative();
+            Assert.That(nativePolygon.ToString(), Does.Contain("Polygon").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
+            handles!.Value.Dispose();
+
+            QueryArgument arg = polygon;
+            var (nativeArg, argHandles) = arg.ToNative();
+            Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
+            argHandles!.Value.Dispose();
         }
 
         private void PopulateCompanies()

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using Realms.Helpers;
 
 namespace Realms
 {
@@ -45,21 +46,36 @@ namespace Realms
         /// </summary>
         /// <param name="kilometers">The distance in kilometers.</param>
         /// <returns>A <see cref="Distance"/> value that represents the provided distance in radians.</returns>
-        public static Distance FromKilometers(double kilometers) => new(kilometers * 1000 / EarthRadiusMeters);
+        public static Distance FromKilometers(double kilometers)
+        {
+            Argument.Ensure(kilometers >= 0, $"Cannot construct a negative distance: {kilometers} < 0", nameof(kilometers));
+
+            return new(kilometers * 1000 / EarthRadiusMeters);
+        }
 
         /// <summary>
         /// Constructs a <see cref="Distance"/> from a miles value.
         /// </summary>
         /// <param name="miles">The distance in miles.</param>
         /// <returns>A <see cref="Distance"/> value that represents the provided distance in radians.</returns>
-        public static Distance FromMiles(double miles) => new(miles * MetersPerMile / EarthRadiusMeters);
+        public static Distance FromMiles(double miles)
+        {
+            Argument.Ensure(miles >= 0, $"Cannot construct a negative distance: {miles} < 0", nameof(miles));
+
+            return new(miles * MetersPerMile / EarthRadiusMeters);
+        }
 
         /// <summary>
         /// Constructs a <see cref="Distance"/> from a radians value.
         /// </summary>
         /// <param name="radians">The distance in radians.</param>
         /// <returns>A <see cref="Distance"/> value that represents the provided distance in radians.</returns>
-        public static Distance FromRadians(double radians) => new(radians);
+        public static Distance FromRadians(double radians)
+        {
+            Argument.Ensure(radians >= 0, $"Cannot construct a negative radians: {radians} < 0", nameof(radians));
+
+            return new(radians);
+        }
 
         /// <summary>
         /// Constructs a <see cref="Distance"/> from a degrees value.
