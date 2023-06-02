@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet", "actionSetupAndroid", "setupWorkloads")
+#@ load("common.lib.yml", "checkoutCode", "fetchWrapperBinaries", "msBuildMultiple", "readVersionFromPackage", "uploadArtifacts", "actionCache", "nugetPackages", "setupDotnet", "setupWorkloads", "setupAndroid")
 
 #@ def buildDocs():
   - name: Check Docfx cache
@@ -40,13 +40,6 @@
 #@   result.append("Realm/" + pkg)
 #@ end
 #@ return result
-#@ end
-
-#@ def setupAndroid():
-  - name: Setup Android
-    uses: #@ actionSetupAndroid
-  - name: Install SDK platform 21
-    run: sdkmanager --install "platforms;android-21"
 #@ end
 
 ---

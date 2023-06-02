@@ -239,3 +239,10 @@ name: Restore workloads
 run: dotnet workload restore
 working-directory: #@ "${{ github.workspace }}/" + workingDirectory
 #@ end
+---
+#@ def setupAndroid():
+  - name: Setup Android
+    uses: #@ actionSetupAndroid
+  - name: Install SDK platform 21
+    run: sdkmanager --install "platforms;android-21"
+#@ end
