@@ -32,8 +32,8 @@ namespace Realms
     /// A polygon comprises of one outer ring and 0 or more rings representing holes with the following restrictions:
     /// <list type="bullet">
     /// <item>
-    /// Each ring must consist of at least 3 distinct points (vertices). The first and the last point may be the same to indicate a closed ring. If they
-    /// are different, then Realm will consider them implicitly connected via an edge.
+    /// Each ring must consist of at least 3 distinct points (vertices). The first and the last point must be the same to indicate a closed ring
+    /// (meaning you need at least 4 points to define the polygon).
     /// </item>
     /// <item>Rings may not cross, i.e. the boundary of a ring may not intersect both the interior and exterior of any other ring.</item>
     /// <item>Rings may not share edges, i.e. if a ring contains an edge AB, then no other ring may contain AB or BA.</item>
