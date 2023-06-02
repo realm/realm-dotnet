@@ -9,7 +9,7 @@
 * Added initial support for geospatial queries on points. (Issue [#3299](https://github.com/realm/realm-dotnet/issues/3299))
   * In this version, only queries of the form "is this point contained in this shape" (equivalent to [$geoWithin](https://www.mongodb.com/docs/manual/reference/operator/query/geoWithin/) in MongoDB) are supported.
   * There is no index support right now.
-  * There is no dedicated type for persisted geospatial points. Instead, points should be stored as GeoJson-shaped embedded object and queries will use duck-typing to check if the shape contains the object. For convenience, here's an example embedded object that you can use in liew of a Realm-provided dedicated type:
+  * There is no dedicated type for persisted geospatial points. Instead, points should be stored as GeoJson-shaped embedded object and queries will use duck-typing to check if the shape contains the object. For convenience, here's an example embedded object that you can use in lieu of a Realm-provided dedicated type:
     ```csharp
     public partial class Location : IEmbeddedObject
     {
