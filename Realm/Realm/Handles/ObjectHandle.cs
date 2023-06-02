@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Native;
 using Realms.Schema;
 
@@ -188,6 +189,15 @@ namespace Realms
                     case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
+                            NativeMethods.get_value(this, propertyIndex, out var existingValue, out var ex);
+                            ex.ThrowIfNecessary();
+                            if (existingValue.TryGetObjectHandle(realm, out var existingObjectHandle) &&
+                                embeddedObj.GetObjectHandle()!.ObjEquals(existingObjectHandle))
+                            {
+                                // We're trying to set an object to the same value - treat it as a no-op.
+                                return;
+                            }
+
                             throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 

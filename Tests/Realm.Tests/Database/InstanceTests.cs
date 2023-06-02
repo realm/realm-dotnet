@@ -1331,6 +1331,19 @@ namespace Realms.Tests.Database
             });
         }
 
+        [Test]
+        public void IsInTransaction_WhenInvokedOnADifferentThread_Throws()
+        {
+            var config = new RealmConfiguration(Guid.NewGuid().ToString());
+            var realm = GetRealm(config);
+
+            Task.Run(() =>
+            {
+                var ex = Assert.Throws<RealmException>(() => _ = realm.IsInTransaction)!;
+                Assert.That(ex.Message, Does.Contain("incorrect thread"));
+            }).Wait();
+        }
+
         private const int DummyDataSize = 200;
 
         private static void AddDummyData(Realm realm)

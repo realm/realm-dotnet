@@ -119,6 +119,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+    config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
     if (sync_configuration.is_flexible_sync) {
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
@@ -272,6 +273,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+        config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
         if (configuration.fallback_path) {
             config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
@@ -524,9 +526,13 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
-    return realm->is_in_transaction() || realm->is_in_async_transaction();
+    return handle_errors(ex, [&]() {
+        realm->verify_thread();
+
+        return realm->is_in_transaction() || realm->is_in_async_transaction();
+    });
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)

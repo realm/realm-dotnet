@@ -141,7 +141,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm);
+            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -549,7 +549,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public bool IsInTransaction() => NativeMethods.is_in_transaction(this);
+        public bool IsInTransaction()
+        {
+            var result = NativeMethods.is_in_transaction(this, out var ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
 
         public bool Refresh()
         {

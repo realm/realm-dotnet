@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -267,6 +268,18 @@ namespace Realms.Native
             }
 
             return realm.MakeObject(objectMetadata, handle);
+        }
+
+        public bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
+        {
+            if (Type == RealmValueType.Object)
+            {
+                handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
+                return true;
+            }
+
+            handle = null;
+            return false;
         }
 
         [StructLayout(LayoutKind.Sequential)]

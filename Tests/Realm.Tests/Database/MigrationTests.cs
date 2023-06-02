@@ -24,8 +24,10 @@ using Realms.Exceptions;
 using Realms.Extensions;
 using Realms.Schema;
 #if TEST_WEAVER
+using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -723,6 +725,137 @@ namespace Realms.Tests.Database
             Assert.That(obj1.StringValue, Is.EqualTo("1"));
             Assert.That(obj2.StringValue, Is.EqualTo("2"));
         }
+
+        [Test]
+        public void Migration_ToEmbedded_DuplicatesObjects()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(ObjectV1), typeof(ObjectContainerV1) }
+            };
+
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    var obj = oldRealm.Add(new ObjectV1
+                    {
+                        Id = 1,
+                        Value = "foo"
+                    });
+
+                    var container1 = oldRealm.Add(new ObjectContainerV1
+                    {
+                        Value = "container1",
+                        Link = obj,
+                        List = { obj, obj }
+                    });
+
+                    var obj2 = oldRealm.Add(new ObjectV1
+                    {
+                        Id = 2,
+                        Value = "bar"
+                    });
+
+                    var container2 = oldRealm.Add(new ObjectContainerV1
+                    {
+                        Value = "container2",
+                        Link = obj,
+                        List = { obj2, obj2, obj }
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                Schema = new[] { typeof(ObjectContainerEmbedded), typeof(ObjectEmbedded) },
+            };
+
+            using var newRealm = GetRealm(newRealmConfig);
+            var container = newRealm.All<ObjectContainerEmbedded>().Single(c => c.Value == "container1");
+
+            Assert.That(container.Link, Is.Not.Null);
+            Assert.That(container.Link!.Value, Is.EqualTo("foo"));
+            Assert.That(container.List.Select(l => l.Value), Is.EquivalentTo(new[] { "foo", "foo" }));
+
+            var container2 = newRealm.All<ObjectContainerEmbedded>().Single(c => c.Value == "container2");
+            Assert.That(container2.Link, Is.Not.Null);
+            Assert.That(container2.Link!.Value, Is.EqualTo("foo"));
+            Assert.That(container2.List.Select(l => l.Value), Is.EquivalentTo(new[] { "bar", "bar", "foo" }));
+
+            Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Count(), Is.EqualTo(7));
+        }
+
+        [Test]
+        public void Migration_ToEmbedded_DeletesOrphans()
+        {
+            var oldRealmConfig = new RealmConfiguration(Guid.NewGuid().ToString())
+            {
+                Schema = new[] { typeof(ObjectV1), typeof(ObjectContainerV1) }
+            };
+
+            using (var oldRealm = GetRealm(oldRealmConfig))
+            {
+                oldRealm.Write(() =>
+                {
+                    var obj = oldRealm.Add(new ObjectV1
+                    {
+                        Id = 1,
+                        Value = "foo"
+                    });
+
+                    var orphanedObj = oldRealm.Add(new ObjectV1
+                    {
+                        Id = 2,
+                        Value = "bar"
+                    });
+
+                    var container = oldRealm.Add(new ObjectContainerV1
+                    {
+                        Value = "container",
+                        Link = obj
+                    });
+                });
+            }
+
+            var newRealmConfig = new RealmConfiguration(oldRealmConfig.DatabasePath)
+            {
+                SchemaVersion = 1,
+                Schema = new[] { typeof(ObjectContainerEmbedded), typeof(ObjectEmbedded) },
+            };
+
+            using var newRealm = GetRealm(newRealmConfig);
+            var container = newRealm.All<ObjectContainerEmbedded>().Single();
+
+            Assert.That(container.Value, Is.EqualTo("container"));
+            Assert.That(container.Link!.Value, Is.EqualTo("foo"));
+
+            Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Count(), Is.EqualTo(1));
+            Assert.That(newRealm.AllEmbedded<ObjectEmbedded>().Any(e => e.Value == "bar"), Is.False);
+        }
+    }
+
+    [Explicit]
+    [MapTo("ObjectContainer")]
+    public partial class ObjectContainerV1 : TestRealmObject
+    {
+        public string? Value { get; set; }
+
+        public ObjectV1? Link { get; set; }
+
+        public IList<ObjectV1> List { get; } = null!;
+    }
+
+    [Explicit]
+    [MapTo("ObjectContainer")]
+    public partial class ObjectContainerEmbedded : TestRealmObject
+    {
+        public string? Value { get; set; }
+
+        public ObjectEmbedded? Link { get; set; }
+
+        public IList<ObjectEmbedded> List { get; } = null!;
     }
 
     [Explicit]
@@ -742,6 +875,13 @@ namespace Realms.Tests.Database
         [PrimaryKey]
         public string? Id { get; set; }
 
+        public string? Value { get; set; }
+    }
+
+    [Explicit]
+    [MapTo("Object")]
+    public partial class ObjectEmbedded : TestEmbeddedObject
+    {
         public string? Value { get; set; }
     }
 }
