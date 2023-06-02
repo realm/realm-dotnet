@@ -936,6 +936,29 @@ namespace Realms.Tests.Database
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
         }
 
+        [Test]
+        public void EmbeddedObject_WhenReassignedToSameValue_IsNoOp()
+        {
+            var parent = _realm.Write(() =>
+            {
+                return _realm.Add(new ObjectWithEmbeddedProperties
+                {
+                    RecursiveObject = new EmbeddedLevel1
+                    {
+                        String = "abc"
+                    }
+                });
+            });
+
+            var child = parent.RecursiveObject;
+            Assert.DoesNotThrow(() => _realm.Write(() =>
+            {
+                parent.RecursiveObject = child;
+            }));
+
+            Assert.That(parent.RecursiveObject!.String, Is.EqualTo("abc"));
+        }
+
         private static EmbeddedAllTypesObject CreateEmbeddedAllTypesObject()
         {
             return new EmbeddedAllTypesObject

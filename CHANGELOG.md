@@ -15,6 +15,7 @@
 * Access token refresh for websockets was not updating the location metadata. (Core 13.13.0)
 * Using both synchronous and asynchronous transactions on the same thread or scheduler could hit the assertion failure "!realm.is_in_transaction()" if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction. (Core 13.13.0)
 * Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. (Core 13.14.0)
+* Setting a property containing an embedded object to the same embedded object used to throw an exception with the text `Can't link to an embedded object that is already managed`. Now it is a no-op instead. (Issue [#3262](https://github.com/realm/realm-dotnet/issues/3262))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
