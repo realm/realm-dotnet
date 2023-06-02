@@ -1880,6 +1880,9 @@ namespace Realms.Tests.Database
             QueryArgument charArg = 'A';
             Assert.That(charArg.ToString(), Is.EqualTo(((int)'A').ToString()));
 
+            QueryArgument boolArg = true;
+            Assert.That(boolArg.ToString(), Is.EqualTo("True"));
+
             QueryArgument byteArg = (byte)5;
             Assert.That(byteArg.ToString(), Is.EqualTo("5"));
 
@@ -1917,6 +1920,9 @@ namespace Realms.Tests.Database
             QueryArgument nullableCharArg = (char?)'A';
             Assert.That(nullableCharArg.ToString(), Is.EqualTo(((int)'A').ToString()));
 
+            QueryArgument nullableBoolArg = (bool?)true;
+            Assert.That(nullableBoolArg.ToString(), Is.EqualTo("True"));
+
             QueryArgument nullableByteArg = (byte?)5;
             Assert.That(nullableByteArg.ToString(), Is.EqualTo("5"));
 
@@ -1950,6 +1956,34 @@ namespace Realms.Tests.Database
             QueryArgument nullableGuidArg = (Guid?)new Guid("E30AB544-67B5-42E2-80F7-C2D2E8E01B22");
             Assert.That(nullableGuidArg.ToString(), Is.EqualTo("e30ab544-67b5-42e2-80f7-c2d2e8e01b22"));
 
+            RealmInteger<byte> byteInteger = 5;
+            QueryArgument byteIntegerArg = byteInteger;
+            Assert.That(byteIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableByteIntegerArg = (RealmInteger<byte>?)byteInteger;
+            Assert.That(nullableByteIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<short> shortInteger = 5;
+            QueryArgument shortIntegerArg = shortInteger;
+            Assert.That(shortIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableShortIntegerArg = (RealmInteger<short>?)shortInteger;
+            Assert.That(nullableShortIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<int> intInteger = 5;
+            QueryArgument intIntegerArg = intInteger;
+            Assert.That(intIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableIntIntegerArg = (RealmInteger<int>?)intInteger;
+            Assert.That(nullableIntIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<long> longInteger = 5;
+            QueryArgument longIntegerArg = longInteger;
+            Assert.That(longIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableLongIntegerArg = (RealmInteger<long>?)longInteger;
+            Assert.That(nullableLongIntegerArg.ToString(), Is.EqualTo("5"));
+
             QueryArgument stringArg = "abc";
             Assert.That(stringArg.ToString(), Is.EqualTo("abc"));
 
@@ -1958,6 +1992,18 @@ namespace Realms.Tests.Database
 
             QueryArgument objArg = (RealmObjectBase?)null;
             Assert.That(objArg.ToString(), Is.EqualTo("<null>"));
+
+            Assert.That(stringArg.ToNative().Value.ToString(), Does.Contain("primitive String"));
+        }
+
+        [Test]
+        public void RealmResults_ICollection_UnsupportedAPI()
+        {
+            var results = (ICollection<Person>)_realm.All<Person>();
+            Assert.That(results.IsReadOnly);
+
+            Assert.Throws<NotSupportedException>(() => results.Add(new Person()));
+            Assert.Throws<NotSupportedException>(() => results.Remove(null!));
         }
 
         private void PopulateAObjects(params int[] values)
