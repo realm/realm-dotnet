@@ -16,22 +16,24 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(DogObjectHelper))]
+    [Woven(typeof(DogObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class Dog : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="Dog"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Dog", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
-            Realms.Schema.Property.Primitive("Color", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Color"),
-            Realms.Schema.Property.Primitive("Vaccinated", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Vaccinated"),
-            Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Age"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Color", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Color"),
+            Realms.Schema.Property.Primitive("Vaccinated", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Vaccinated"),
+            Realms.Schema.Property.Primitive("Age", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Age"),
             Realms.Schema.Property.Backlinks("Owners", "Owner", "ListOfDogs", managedName: "Owners"),
         }.Build();
 
@@ -43,28 +45,35 @@ namespace Realms.Tests
 
         internal IDogAccessor Accessor => _accessor ??= new DogUnmanagedAccessor(typeof(Dog));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IDogAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -72,19 +81,19 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string?))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(!skipDefaults || oldAccessor.Color != default(string))
+                if (!skipDefaults || oldAccessor.Color != default(string?))
                 {
                     newAccessor.Color = oldAccessor.Color;
                 }
-                if(!skipDefaults || oldAccessor.Vaccinated != default(bool))
+                if (!skipDefaults || oldAccessor.Vaccinated != default(bool))
                 {
                     newAccessor.Vaccinated = oldAccessor.Vaccinated;
                 }
-                if(!skipDefaults || oldAccessor.Age != default(int))
+                if (!skipDefaults || oldAccessor.Age != default(int))
                 {
                     newAccessor.Age = oldAccessor.Age;
                 }
@@ -112,6 +121,7 @@ namespace Realms.Tests
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -180,13 +190,32 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator Dog(Realms.RealmValue val) => val.AsRealmObject<Dog>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="Dog"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="Dog"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator Dog?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Dog>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="Dog"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(Dog? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="Dog"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(Dog? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -212,11 +241,13 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DogObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -228,14 +259,14 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new Dog();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDogAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -249,7 +280,7 @@ namespace Realms.Tests
             System.Linq.IQueryable<Realms.Tests.Owner> Owners { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogManagedAccessor : Realms.ManagedAccessor, IDogAccessor
         {
             public string? Name
@@ -291,7 +322,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DogUnmanagedAccessor : Realms.UnmanagedAccessor, IDogAccessor
         {
             public override ObjectSchema ObjectSchema => Dog.RealmSchema;

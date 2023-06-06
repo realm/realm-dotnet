@@ -37,6 +37,6 @@ namespace SourceGeneratorPlayground
         public int Id { get; set; }
 
         [PrimaryKey]
-        public UnsupportedBacklink InverseLink { get; set; }
+        public UnsupportedBacklink? InverseLink { get; set; }
     }
 }

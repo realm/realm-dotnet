@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
+// #include json.hpp needs to be before #include realm.hpp due to https://github.com/nlohmann/json/issues/2129
+#include <external/json/json.hpp>
+
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -25,8 +29,6 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
-
-#include <external/json/json.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -269,23 +271,6 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void realm_syncuser_push_register(SharedSyncUser& user, SharedApp& app, uint16_t* service_buf, size_t service_len, uint16_t* token_buf, size_t token_len, void* tcs_ptr, NativeException::Marshallable& ex)
-    {
-        handle_errors(ex, [&] {
-            Utf16StringAccessor service(service_buf, service_len);
-            Utf16StringAccessor token(token_buf, token_len);
-            app->push_notification_client(service).register_device(token, user, get_callback_handler(tcs_ptr));
-        });
-    }
-
-    REALM_EXPORT void realm_syncuser_push_deregister(SharedSyncUser& user, SharedApp& app, uint16_t* service_buf, size_t service_len, void* tcs_ptr, NativeException::Marshallable& ex)
-    {
-        handle_errors(ex, [&] {
-            Utf16StringAccessor service(service_buf, service_len);
-            app->push_notification_client(service).deregister_device(user, get_callback_handler(tcs_ptr));
-        });
-    }
-
 #pragma region ApiKeys
 
     REALM_EXPORT void realm_syncuser_api_key_create(SharedSyncUser& user, SharedApp& app, uint16_t* name_buf, size_t name_len, void* tcs_ptr, NativeException::Marshallable& ex)
@@ -342,5 +327,23 @@ extern "C" {
     REALM_EXPORT void realm_syncuser_destroy(SharedSyncUser* user)
     {
         delete user;
+    }
+
+    REALM_EXPORT size_t realm_syncuser_get_path_for_realm(SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            std::string path;
+            if (partition_buf) {
+                Utf16StringAccessor partition(partition_buf, partition_len);
+                auto sync_config = SyncConfig(user, partition);
+                path = user->sync_manager()->path_for_realm(std::move(sync_config));
+            }
+            else {
+                auto sync_config = SyncConfig(user, realm::SyncConfig::FLXSyncEnabled{});
+                path = user->sync_manager()->path_for_realm(std::move(sync_config), "default");
+            }
+
+            return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
+        });
     }
 }

@@ -18,51 +18,54 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(AllTypesClassObjectHelper))]
+    [Woven(typeof(AllTypesClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AllTypesClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="AllTypesClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AllTypesClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("CharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "CharProperty"),
-            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
-            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
-            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
-            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
-            Realms.Schema.Property.Primitive("SingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "SingleProperty"),
-            Realms.Schema.Property.Primitive("DoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DoubleProperty"),
-            Realms.Schema.Property.Primitive("BooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "BooleanProperty"),
-            Realms.Schema.Property.Primitive("DateTimeOffsetProperty", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DateTimeOffsetProperty"),
-            Realms.Schema.Property.Primitive("DecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalProperty"),
-            Realms.Schema.Property.Primitive("Decimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Property"),
-            Realms.Schema.Property.Primitive("ObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ObjectIdProperty"),
-            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "GuidProperty"),
-            Realms.Schema.Property.Primitive("RequiredStringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RequiredStringProperty"),
-            Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "StringProperty"),
-            Realms.Schema.Property.Primitive("RequiredByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RequiredByteArrayProperty"),
-            Realms.Schema.Property.Primitive("ByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "ByteArrayProperty"),
-            Realms.Schema.Property.Primitive("NullableCharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableCharProperty"),
-            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
-            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
-            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
-            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
-            Realms.Schema.Property.Primitive("NullableSingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableSingleProperty"),
-            Realms.Schema.Property.Primitive("NullableDoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDoubleProperty"),
-            Realms.Schema.Property.Primitive("NullableBooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableBooleanProperty"),
-            Realms.Schema.Property.Primitive("NullableDateTimeOffsetProperty", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDateTimeOffsetProperty"),
-            Realms.Schema.Property.Primitive("NullableDecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimalProperty"),
-            Realms.Schema.Property.Primitive("NullableDecimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableDecimal128Property"),
-            Realms.Schema.Property.Primitive("NullableObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableObjectIdProperty"),
-            Realms.Schema.Property.Primitive("NullableGuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableGuidProperty"),
-            Realms.Schema.Property.Primitive("ByteCounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteCounterProperty"),
-            Realms.Schema.Property.Primitive("Int16CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16CounterProperty"),
-            Realms.Schema.Property.Primitive("Int32CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32CounterProperty"),
-            Realms.Schema.Property.Primitive("Int64CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64CounterProperty"),
+            Realms.Schema.Property.Primitive("CharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "CharProperty"),
+            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "ByteProperty"),
+            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int16Property"),
+            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int32Property"),
+            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int64Property"),
+            Realms.Schema.Property.Primitive("SingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "SingleProperty"),
+            Realms.Schema.Property.Primitive("DoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DoubleProperty"),
+            Realms.Schema.Property.Primitive("BooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "BooleanProperty"),
+            Realms.Schema.Property.Primitive("DateTimeOffsetProperty", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DateTimeOffsetProperty"),
+            Realms.Schema.Property.Primitive("DecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DecimalProperty"),
+            Realms.Schema.Property.Primitive("Decimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Decimal128Property"),
+            Realms.Schema.Property.Primitive("ObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "ObjectIdProperty"),
+            Realms.Schema.Property.Primitive("GuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "GuidProperty"),
+            Realms.Schema.Property.Primitive("RequiredStringProperty", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "RequiredStringProperty"),
+            Realms.Schema.Property.Primitive("StringProperty", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "StringProperty"),
+            Realms.Schema.Property.Primitive("RequiredByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "RequiredByteArrayProperty"),
+            Realms.Schema.Property.Primitive("ByteArrayProperty", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "ByteArrayProperty"),
+            Realms.Schema.Property.Primitive("NullableCharProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableCharProperty"),
+            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableByteProperty"),
+            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt16Property"),
+            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt32Property"),
+            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt64Property"),
+            Realms.Schema.Property.Primitive("NullableSingleProperty", Realms.RealmValueType.Float, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableSingleProperty"),
+            Realms.Schema.Property.Primitive("NullableDoubleProperty", Realms.RealmValueType.Double, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableDoubleProperty"),
+            Realms.Schema.Property.Primitive("NullableBooleanProperty", Realms.RealmValueType.Bool, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableBooleanProperty"),
+            Realms.Schema.Property.Primitive("NullableDateTimeOffsetProperty", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableDateTimeOffsetProperty"),
+            Realms.Schema.Property.Primitive("NullableDecimalProperty", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableDecimalProperty"),
+            Realms.Schema.Property.Primitive("NullableDecimal128Property", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableDecimal128Property"),
+            Realms.Schema.Property.Primitive("NullableObjectIdProperty", Realms.RealmValueType.ObjectId, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableObjectIdProperty"),
+            Realms.Schema.Property.Primitive("NullableGuidProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableGuidProperty"),
+            Realms.Schema.Property.Primitive("ByteCounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "ByteCounterProperty"),
+            Realms.Schema.Property.Primitive("Int16CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int16CounterProperty"),
+            Realms.Schema.Property.Primitive("Int32CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int32CounterProperty"),
+            Realms.Schema.Property.Primitive("Int64CounterProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int64CounterProperty"),
             Realms.Schema.Property.RealmValue("RealmValueProperty", managedName: "RealmValueProperty"),
             Realms.Schema.Property.Object("ObjectProperty", "AllTypesClass", managedName: "ObjectProperty"),
             Realms.Schema.Property.ObjectList("ObjectCollectionProperty", "AllTypesClass", managedName: "ObjectCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("IntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "IntCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("NullableIntCollectionProperty", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableIntCollectionProperty"),
-            Realms.Schema.Property.PrimitiveList("StringCollectionProperty", Realms.RealmValueType.String, areElementsNullable: true, managedName: "StringCollectionProperty"),
+            Realms.Schema.Property.PrimitiveList("StringCollectionProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringCollectionProperty"),
             Realms.Schema.Property.PrimitiveList("RequiredStringListProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringListProperty"),
             Realms.Schema.Property.PrimitiveSet("RequiredStringSetProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringSetProperty"),
             Realms.Schema.Property.PrimitiveDictionary("RequiredStringDictionaryProperty", Realms.RealmValueType.String, areElementsNullable: false, managedName: "RequiredStringDictionaryProperty"),
@@ -79,28 +82,35 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal IAllTypesClassAccessor Accessor => _accessor ??= new AllTypesClassUnmanagedAccessor(typeof(AllTypesClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IAllTypesClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -122,72 +132,132 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.NonRequiredStringDictionaryProperty.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.CharProperty != default(char))
+                if (!skipDefaults || oldAccessor.CharProperty != default(char))
                 {
                     newAccessor.CharProperty = oldAccessor.CharProperty;
                 }
-                if(!skipDefaults || oldAccessor.ByteProperty != default(byte))
+                if (!skipDefaults || oldAccessor.ByteProperty != default(byte))
                 {
                     newAccessor.ByteProperty = oldAccessor.ByteProperty;
                 }
-                if(!skipDefaults || oldAccessor.Int16Property != default(short))
+                if (!skipDefaults || oldAccessor.Int16Property != default(short))
                 {
                     newAccessor.Int16Property = oldAccessor.Int16Property;
                 }
-                if(!skipDefaults || oldAccessor.Int32Property != default(int))
+                if (!skipDefaults || oldAccessor.Int32Property != default(int))
                 {
                     newAccessor.Int32Property = oldAccessor.Int32Property;
                 }
-                if(!skipDefaults || oldAccessor.Int64Property != default(long))
+                if (!skipDefaults || oldAccessor.Int64Property != default(long))
                 {
                     newAccessor.Int64Property = oldAccessor.Int64Property;
                 }
-                if(!skipDefaults || oldAccessor.SingleProperty != default(float))
+                if (!skipDefaults || oldAccessor.SingleProperty != default(float))
                 {
                     newAccessor.SingleProperty = oldAccessor.SingleProperty;
                 }
-                if(!skipDefaults || oldAccessor.DoubleProperty != default(double))
+                if (!skipDefaults || oldAccessor.DoubleProperty != default(double))
                 {
                     newAccessor.DoubleProperty = oldAccessor.DoubleProperty;
                 }
-                if(!skipDefaults || oldAccessor.BooleanProperty != default(bool))
+                if (!skipDefaults || oldAccessor.BooleanProperty != default(bool))
                 {
                     newAccessor.BooleanProperty = oldAccessor.BooleanProperty;
                 }
                 newAccessor.DateTimeOffsetProperty = oldAccessor.DateTimeOffsetProperty;
-                newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
-                newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
-                newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
-                newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                if (!skipDefaults || oldAccessor.DecimalProperty != default(decimal))
+                {
+                    newAccessor.DecimalProperty = oldAccessor.DecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.Decimal128Property != default(MongoDB.Bson.Decimal128))
+                {
+                    newAccessor.Decimal128Property = oldAccessor.Decimal128Property;
+                }
+                if (!skipDefaults || oldAccessor.ObjectIdProperty != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.ObjectIdProperty = oldAccessor.ObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.GuidProperty != default(System.Guid))
+                {
+                    newAccessor.GuidProperty = oldAccessor.GuidProperty;
+                }
                 newAccessor.RequiredStringProperty = oldAccessor.RequiredStringProperty;
-                if(!skipDefaults || oldAccessor.StringProperty != default(string))
+                if (!skipDefaults || oldAccessor.StringProperty != default(string?))
                 {
                     newAccessor.StringProperty = oldAccessor.StringProperty;
                 }
                 newAccessor.RequiredByteArrayProperty = oldAccessor.RequiredByteArrayProperty;
-                if(!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]))
+                if (!skipDefaults || oldAccessor.ByteArrayProperty != default(byte[]?))
                 {
                     newAccessor.ByteArrayProperty = oldAccessor.ByteArrayProperty;
                 }
-                newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
-                newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
-                newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
-                newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
-                newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
-                newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
-                newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
-                newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
+                if (!skipDefaults || oldAccessor.NullableCharProperty != default(char?))
+                {
+                    newAccessor.NullableCharProperty = oldAccessor.NullableCharProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteProperty != default(byte?))
+                {
+                    newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16Property != default(short?))
+                {
+                    newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32Property != default(int?))
+                {
+                    newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64Property != default(long?))
+                {
+                    newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableSingleProperty != default(float?))
+                {
+                    newAccessor.NullableSingleProperty = oldAccessor.NullableSingleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDoubleProperty != default(double?))
+                {
+                    newAccessor.NullableDoubleProperty = oldAccessor.NullableDoubleProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableBooleanProperty != default(bool?))
+                {
+                    newAccessor.NullableBooleanProperty = oldAccessor.NullableBooleanProperty;
+                }
                 newAccessor.NullableDateTimeOffsetProperty = oldAccessor.NullableDateTimeOffsetProperty;
-                newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
-                newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
-                newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
-                newAccessor.NullableGuidProperty = oldAccessor.NullableGuidProperty;
-                newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
-                newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
-                newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
-                newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
+                if (!skipDefaults || oldAccessor.NullableDecimalProperty != default(decimal?))
+                {
+                    newAccessor.NullableDecimalProperty = oldAccessor.NullableDecimalProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableDecimal128Property != default(MongoDB.Bson.Decimal128?))
+                {
+                    newAccessor.NullableDecimal128Property = oldAccessor.NullableDecimal128Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableObjectIdProperty != default(MongoDB.Bson.ObjectId?))
+                {
+                    newAccessor.NullableObjectIdProperty = oldAccessor.NullableObjectIdProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableGuidProperty != default(System.Guid?))
+                {
+                    newAccessor.NullableGuidProperty = oldAccessor.NullableGuidProperty;
+                }
+                if (!skipDefaults || oldAccessor.ByteCounterProperty != default(Realms.RealmInteger<byte>))
+                {
+                    newAccessor.ByteCounterProperty = oldAccessor.ByteCounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int16CounterProperty != default(Realms.RealmInteger<short>))
+                {
+                    newAccessor.Int16CounterProperty = oldAccessor.Int16CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int32CounterProperty != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.Int32CounterProperty = oldAccessor.Int32CounterProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int64CounterProperty != default(Realms.RealmInteger<long>))
+                {
+                    newAccessor.Int64CounterProperty = oldAccessor.Int64CounterProperty;
+                }
                 newAccessor.RealmValueProperty = oldAccessor.RealmValueProperty;
-                if(oldAccessor.ObjectProperty != null)
+                if (oldAccessor.ObjectProperty != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.ObjectProperty, update);
                 }
@@ -226,6 +296,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -294,13 +365,32 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AllTypesClass(Realms.RealmValue val) => val.AsRealmObject<AllTypesClass>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="AllTypesClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="AllTypesClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator AllTypesClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AllTypesClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="AllTypesClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(AllTypesClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="AllTypesClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(AllTypesClass? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -326,11 +416,13 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AllTypesClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -342,14 +434,14 @@ namespace SourceGeneratorAssemblyToProcess
 
             public Realms.IRealmObjectBase CreateInstance() => new AllTypesClass();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAllTypesClassAccessor : Realms.IRealmAccessor
         {
             char CharProperty { get; set; }
@@ -430,7 +522,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; }
 
-            System.Collections.Generic.IList<string?> StringCollectionProperty { get; }
+            System.Collections.Generic.IList<string> StringCollectionProperty { get; }
 
             System.Collections.Generic.IList<string> RequiredStringListProperty { get; }
 
@@ -445,7 +537,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Collections.Generic.IDictionary<string, string?> NonRequiredStringDictionaryProperty { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassManagedAccessor : Realms.ManagedAccessor, IAllTypesClassAccessor
         {
             public char CharProperty
@@ -528,7 +620,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public string RequiredStringProperty
             {
-                get => (string)GetValue("RequiredStringProperty");
+                get => (string)GetValue("RequiredStringProperty")!;
                 set => SetValue("RequiredStringProperty", value);
             }
 
@@ -540,7 +632,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public byte[] RequiredByteArrayProperty
             {
-                get => (byte[])GetValue("RequiredByteArrayProperty");
+                get => (byte[])GetValue("RequiredByteArrayProperty")!;
                 set => SetValue("RequiredByteArrayProperty", value);
             }
 
@@ -706,14 +798,14 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private System.Collections.Generic.IList<string?> _stringCollectionProperty = null!;
-            public System.Collections.Generic.IList<string?> StringCollectionProperty
+            private System.Collections.Generic.IList<string> _stringCollectionProperty = null!;
+            public System.Collections.Generic.IList<string> StringCollectionProperty
             {
                 get
                 {
                     if (_stringCollectionProperty == null)
                     {
-                        _stringCollectionProperty = GetListValue<string?>("StringCollectionProperty");
+                        _stringCollectionProperty = GetListValue<string>("StringCollectionProperty");
                     }
 
                     return _stringCollectionProperty;
@@ -805,7 +897,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AllTypesClassUnmanagedAccessor : Realms.UnmanagedAccessor, IAllTypesClassAccessor
         {
             public override ObjectSchema ObjectSchema => AllTypesClass.RealmSchema;
@@ -953,7 +1045,7 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private string _requiredStringProperty = null!;
+            private string _requiredStringProperty = "";
             public string RequiredStringProperty
             {
                 get => _requiredStringProperty;
@@ -975,7 +1067,7 @@ namespace SourceGeneratorAssemblyToProcess
                 }
             }
 
-            private byte[] _requiredByteArrayProperty = null!;
+            private byte[] _requiredByteArrayProperty = Array.Empty<byte>();
             public byte[] RequiredByteArrayProperty
             {
                 get => _requiredByteArrayProperty;
@@ -1212,7 +1304,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public System.Collections.Generic.IList<int?> NullableIntCollectionProperty { get; } = new List<int?>();
 
-            public System.Collections.Generic.IList<string?> StringCollectionProperty { get; } = new List<string?>();
+            public System.Collections.Generic.IList<string> StringCollectionProperty { get; } = new List<string>();
 
             public System.Collections.Generic.IList<string> RequiredStringListProperty { get; } = new List<string>();
 
@@ -1318,13 +1410,13 @@ namespace SourceGeneratorAssemblyToProcess
                         GuidProperty = (System.Guid)val;
                         return;
                     case "RequiredStringProperty":
-                        RequiredStringProperty = (string)val;
+                        RequiredStringProperty = (string)val!;
                         return;
                     case "StringProperty":
                         StringProperty = (string?)val;
                         return;
                     case "RequiredByteArrayProperty":
-                        RequiredByteArrayProperty = (byte[])val;
+                        RequiredByteArrayProperty = (byte[])val!;
                         return;
                     case "ByteArrayProperty":
                         ByteArrayProperty = (byte[]?)val;
@@ -1399,27 +1491,25 @@ namespace SourceGeneratorAssemblyToProcess
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "ObjectCollectionProperty" => (IList<T>)ObjectCollectionProperty,
-                "IntCollectionProperty" => (IList<T>)IntCollectionProperty,
-                "NullableIntCollectionProperty" => (IList<T>)NullableIntCollectionProperty,
-                "StringCollectionProperty" => (IList<T>)StringCollectionProperty,
-                "RequiredStringListProperty" => (IList<T>)RequiredStringListProperty,
-                "NonRequiredStringListProperty" => (IList<T>)NonRequiredStringListProperty,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "ObjectCollectionProperty" => (IList<T>)ObjectCollectionProperty,
+                    "IntCollectionProperty" => (IList<T>)IntCollectionProperty,
+                    "NullableIntCollectionProperty" => (IList<T>)NullableIntCollectionProperty,
+                    "StringCollectionProperty" => (IList<T>)StringCollectionProperty,
+                    "RequiredStringListProperty" => (IList<T>)RequiredStringListProperty,
+                    "NonRequiredStringListProperty" => (IList<T>)NonRequiredStringListProperty,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "RequiredStringSetProperty" => (ISet<T>)RequiredStringSetProperty,
-                "NonRequiredStringSetProperty" => (ISet<T>)NonRequiredStringSetProperty,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "RequiredStringSetProperty" => (ISet<T>)RequiredStringSetProperty,
+                    "NonRequiredStringSetProperty" => (ISet<T>)NonRequiredStringSetProperty,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

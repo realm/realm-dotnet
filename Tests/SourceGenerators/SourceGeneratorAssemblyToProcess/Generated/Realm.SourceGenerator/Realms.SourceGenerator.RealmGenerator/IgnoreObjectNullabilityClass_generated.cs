@@ -17,9 +17,12 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(IgnoreObjectNullabilityClassObjectHelper))]
+    [Woven(typeof(IgnoreObjectNullabilityClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IgnoreObjectNullabilityClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="IgnoreObjectNullabilityClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IgnoreObjectNullabilityClass", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.Object("NullableObject", "IgnoreObjectNullabilityClass", managedName: "NullableObject"),
@@ -42,28 +45,35 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal IIgnoreObjectNullabilityClassAccessor Accessor => _accessor ??= new IgnoreObjectNullabilityClassUnmanagedAccessor(typeof(IgnoreObjectNullabilityClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IIgnoreObjectNullabilityClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -81,12 +91,12 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.DictionaryNullableObject.Clear();
                 }
 
-                if(oldAccessor.NullableObject != null)
+                if (oldAccessor.NullableObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
                 }
                 newAccessor.NullableObject = oldAccessor.NullableObject;
-                if(oldAccessor.NonNullableObject != null)
+                if (oldAccessor.NonNullableObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NonNullableObject, update);
                 }
@@ -121,6 +131,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -189,13 +200,32 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IgnoreObjectNullabilityClass(Realms.RealmValue val) => val.AsRealmObject<IgnoreObjectNullabilityClass>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="IgnoreObjectNullabilityClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="IgnoreObjectNullabilityClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator IgnoreObjectNullabilityClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<IgnoreObjectNullabilityClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="IgnoreObjectNullabilityClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(IgnoreObjectNullabilityClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="IgnoreObjectNullabilityClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(IgnoreObjectNullabilityClass? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -221,11 +251,13 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IgnoreObjectNullabilityClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -237,14 +269,14 @@ namespace SourceGeneratorAssemblyToProcess
 
             public Realms.IRealmObjectBase CreateInstance() => new IgnoreObjectNullabilityClass();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IIgnoreObjectNullabilityClassAccessor : Realms.IRealmAccessor
         {
             SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject { get; set; }
@@ -268,7 +300,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass> BacklinkNonNullableObject { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IgnoreObjectNullabilityClassManagedAccessor : Realms.ManagedAccessor, IIgnoreObjectNullabilityClassAccessor
         {
             public SourceGeneratorAssemblyToProcess.IgnoreObjectNullabilityClass? NullableObject
@@ -396,7 +428,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IgnoreObjectNullabilityClassUnmanagedAccessor : Realms.UnmanagedAccessor, IIgnoreObjectNullabilityClassAccessor
         {
             public override ObjectSchema ObjectSchema => IgnoreObjectNullabilityClass.RealmSchema;
@@ -478,23 +510,21 @@ namespace SourceGeneratorAssemblyToProcess
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "ListNonNullableObject" => (IList<T>)ListNonNullableObject,
-                "ListNullableObject" => (IList<T>)ListNullableObject,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "ListNonNullableObject" => (IList<T>)ListNonNullableObject,
+                    "ListNullableObject" => (IList<T>)ListNullableObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
-                "SetNullableObject" => (ISet<T>)SetNullableObject,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
+                    "SetNullableObject" => (ISet<T>)SetNullableObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

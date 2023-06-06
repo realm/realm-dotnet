@@ -25,19 +25,19 @@ namespace Realms.Tests
     [Preserve(AllMembers = true)]
     public abstract class RealmInstanceTest : RealmTest
     {
-        protected RealmConfiguration _configuration;
+        protected RealmConfiguration _configuration = null!;
 
-        private Lazy<Realm> _lazyRealm;
+        private Lazy<Realm> _lazyRealm = null!;
 
         protected Realm _realm => _lazyRealm.Value;
 
-        protected virtual RealmConfiguration CreateConfiguration(string path) => new RealmConfiguration(path);
+        protected virtual RealmConfiguration CreateConfiguration(string path) => new(path);
 
         protected T Freeze<T>(T obj)
             where T : IRealmObjectBase
         {
             var result = obj.Freeze();
-            CleanupOnTearDown(result.Realm);
+            CleanupOnTearDown(result.Realm!);
             return result;
         }
 

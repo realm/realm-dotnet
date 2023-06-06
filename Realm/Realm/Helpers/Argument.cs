@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Realms.Logging;
 
 namespace Realms.Helpers
@@ -38,18 +39,26 @@ namespace Realms.Helpers
             }
         }
 
-        public static void Ensure<T>(bool condition, string message)
+        public static void EnsureRange(double value, double min, double max, string paramName)
+        {
+            if (value < min || value > max)
+            {
+                throw new ArgumentException($"{paramName} must be a value in the range of [{min}, {max}]", paramName);
+            }
+        }
+
+        public static void Ensure<T>([DoesNotReturnIf(false)] bool condition, string message)
             where T : Exception
         {
             if (!condition)
             {
-                throw (T)Activator.CreateInstance(typeof(T), message);
+                throw (T)Activator.CreateInstance(typeof(T), message)!;
             }
         }
 
         public static T EnsureType<T>(object obj, string message, string paramName)
         {
-            if (!(obj is T tObj))
+            if (obj is not T tObj)
             {
                 throw new ArgumentException(message, paramName);
             }
@@ -57,7 +66,7 @@ namespace Realms.Helpers
             return tObj;
         }
 
-        public static void Ensure(bool condition, string message, string paramName)
+        public static void Ensure([DoesNotReturnIf(false)] bool condition, string message, string paramName)
         {
             if (!condition)
             {
@@ -65,7 +74,7 @@ namespace Realms.Helpers
             }
         }
 
-        public static void NotNull(object value, string paramName)
+        public static void NotNull(object? value, string paramName)
         {
             if (value == null)
             {
@@ -73,6 +82,7 @@ namespace Realms.Helpers
             }
         }
 
+        [return: NotNullIfNotNull("value")]
         public static T ValidateNotNull<T>(T value, string paramName)
         {
             if (value is null)

@@ -25,12 +25,12 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// If applied at the assembly level, then all classes in that assembly will be considered explicit and will not be added to
-    /// the default schema. To include explicit classes in a Realm's schema, you should include them in the
-    /// <see cref="RealmConfigurationBase.ObjectClasses"/> array:
+    /// the default schema. To include explicit classes in a Realm's schema, you should include them in
+    /// <see cref="RealmConfigurationBase.Schema"/>:
     /// <code>
     /// var config = new RealmConfiguration
     /// {
-    ///     ObjectClasses = new[] { typeof(MyExplicitClass) }
+    ///     Schema = new[] { typeof(MyExplicitClass) }
     /// };
     ///
     /// var realm = Realm.GetInstance(config);

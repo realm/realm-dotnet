@@ -18,7 +18,6 @@
 
 using System.Threading;
 using Realms;
-using Realms.Logging;
 using UnityEngine;
 
 namespace UnityUtils
@@ -34,7 +33,7 @@ namespace UnityUtils
             {
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
                 Realms.Logging.Logger.Console = new UnityLogger();
-                UnityEngine.Application.quitting += () =>
+                Application.quitting += () =>
                 {
                     NativeCommon.CleanupNativeResources("Application is exiting");
                 };

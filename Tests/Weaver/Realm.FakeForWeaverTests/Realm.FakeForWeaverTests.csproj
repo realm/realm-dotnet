@@ -1,39 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Realm</AssemblyName>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Realm</AssemblyName>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Include="..\..\..\Realm\Realm\Attributes\BacklinkAttribute.cs" Link="Attributes\BacklinkAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\IgnoredAttribute.cs" Link="Attributes\IgnoredAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\IndexedAttribute.cs" Link="Attributes\IndexedAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\MapToAttribute.cs" Link="Attributes\MapToAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\PreserveAttribute.cs" Link="Attributes\PreserveAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\PrimaryKeyAttribute.cs" Link="Attributes\PrimaryKeyAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\RequiredAttribute.cs" Link="Attributes\RequiredAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\GeneratedAttribute.cs" Link="Attributes\GeneratedAttribute.cs" />
-        <Compile Include="..\..\..\Realm\Realm\DatabaseTypes\RealmValueType.cs" Link="RealmValueType.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Schema\PropertyType.cs" Link="PropertyType.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />
-        <Compile Include="..\..\..\Realm\Realm\Attributes\ExplicitAttribute.cs">
-            <Link>Attributes\ExplicitAttribute.cs</Link>
-        </Compile>
-        <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAssemblyAttribute.cs">
-            <Link>Attributes\WovenAssemblyAttribute.cs</Link>
-        </Compile>
-        <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAttribute.cs">
-            <Link>Attributes\WovenAttribute.cs</Link>
-        </Compile>
-        <Compile Include="..\..\..\Realm\Realm\Attributes\WovenPropertyAttribute.cs">
-            <Link>Attributes\WovenPropertyAttribute.cs</Link>
-        </Compile>
-    </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\BacklinkAttribute.cs" Link="Attributes\BacklinkAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\IgnoredAttribute.cs" Link="Attributes\IgnoredAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\MapToAttribute.cs" Link="Attributes\MapToAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\PreserveAttribute.cs" Link="Attributes\PreserveAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\PrimaryKeyAttribute.cs" Link="Attributes\PrimaryKeyAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\RequiredAttribute.cs" Link="Attributes\RequiredAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\GeneratedAttribute.cs" Link="Attributes\GeneratedAttribute.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\IndexType.cs" Link="Attributes\IndexType.cs" />
+    <Compile Include="..\..\..\Realm\Realm\DatabaseTypes\RealmValueType.cs" Link="RealmValueType.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Schema\PropertyType.cs" Link="PropertyType.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Weaving\IRealmObjectHelper.cs" Link="IRealmObjectHelper.cs" />
+    <Compile Include="..\..\..\Realm\Realm\Attributes\ExplicitAttribute.cs">
+      <Link>Attributes\ExplicitAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAssemblyAttribute.cs">
+      <Link>Attributes\WovenAssemblyAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenAttribute.cs">
+      <Link>Attributes\WovenAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\Realm\Realm\Attributes\WovenPropertyAttribute.cs">
+      <Link>Attributes\WovenPropertyAttribute.cs</Link>
+    </Compile>
+  </ItemGroup>
 
-    <ItemGroup Label="References">
-        <PackageReference Include="MongoDB.Bson" Version="2.11.4" />
-        <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-    </ItemGroup>
+  <ItemGroup Label="References">
+    <PackageReference Include="MongoDB.Bson" Version="2.11.4" />
+    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
 
 </Project>

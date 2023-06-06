@@ -34,20 +34,20 @@ namespace Realms.Tests.Sync
     public class FlexibleSyncTests : SyncTestBase
     {
         [Test]
-        public void Realm_Subscriptions_WhenLocalRealm_ReturnsNull()
+        public void Realm_Subscriptions_WhenLocalRealm_Throws()
         {
             var realm = GetRealm();
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
-        public void Realm_Subscriptions_WhenPBS_ReturnsNull()
+        public void Realm_Subscriptions_WhenPBS_Throws()
         {
             var config = GetFakeConfig();
             var realm = GetRealm(config);
 
-            Assert.That(realm.Subscriptions, Is.Null);
+            Assert.That(() => realm.Subscriptions, Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
@@ -76,8 +76,8 @@ namespace Realms.Tests.Sync
                 });
 
                 // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRefs = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
-                var weakSubs = (WeakReference<SubscriptionSet>)subsRefs.GetValue(realm);
+                var subsRefs = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance)!;
+                var weakSubs = (WeakReference<SubscriptionSet>)subsRefs.GetValue(realm)!;
 
                 Assert.That(weakSubs, Is.Not.Null);
                 Assert.That(weakSubs.TryGetTarget(out _), Is.False);
@@ -110,8 +110,8 @@ namespace Realms.Tests.Sync
                 });
 
                 // This tests things via reflection because we don't want to expose private members, even internally.
-                var subsRef = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance);
-                var weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
+                var subsRef = typeof(Realm).GetField("_subscriptionRef", BindingFlags.NonPublic | BindingFlags.Instance)!;
+                var weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm)!;
 
                 Assert.That(weakSubs, Is.Not.Null);
                 Assert.That(weakSubs.TryGetTarget(out _), Is.False);
@@ -119,7 +119,7 @@ namespace Realms.Tests.Sync
                 // The old one was gc-ed, so we should get a new one here
                 var subsAgain = realm.Subscriptions;
 
-                weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm);
+                weakSubs = (WeakReference<SubscriptionSet>)subsRef.GetValue(realm)!;
 
                 Assert.That(weakSubs, Is.Not.Null);
                 Assert.That(weakSubs.TryGetTarget(out var subsFromList), Is.True);
@@ -202,7 +202,7 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Add_ComplexQuery_AddsSubscription()
         {
             var realm = GetFakeFLXRealm();
-            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty.StartsWith("foo") && (o.BooleanProperty || o.DoubleProperty > 0.5));
+            var query = realm.All<SyncAllTypesObject>().Where(o => o.StringProperty!.StartsWith("foo") && (o.BooleanProperty || o.DoubleProperty > 0.5));
             var expectedQueryString = "StringProperty BEGINSWITH \"foo\" and (BooleanProperty == true or DoubleProperty > 0.5)";
 
             realm.Subscriptions.Update(() =>
@@ -350,7 +350,7 @@ namespace Realms.Tests.Sync
         {
             var realm = GetFakeFLXRealm();
             var query1 = realm.All<SyncAllTypesObject>();
-            var query2 = query1.Where(a => a.StringProperty.StartsWith("foo"));
+            var query2 = query1.Where(a => a.StringProperty!.StartsWith("foo"));
 
             realm.Subscriptions.Update(() =>
             {
@@ -612,10 +612,7 @@ namespace Realms.Tests.Sync
 
             Assert.That(realm.Subscriptions.Count, Is.EqualTo(2));
             var sub = realm.Subscriptions[0];
-            var nonExistent = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var nonExistent = new Subscription(ObjectId.GenerateNewId(), "a", nameof(SyncAllTypesObject), "TRUEPREDICATE", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             realm.Subscriptions.Update(() =>
             {
@@ -641,10 +638,7 @@ namespace Realms.Tests.Sync
         public void SubscriptionSet_Remove_Subscription_OutsideUpdate_Throws()
         {
             var realm = GetFakeFLXRealm();
-            var sub = new Subscription
-            {
-                Id = ObjectId.GenerateNewId()
-            };
+            var sub = new Subscription(ObjectId.GenerateNewId(), "a", "b", "c", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
             Assert.Throws<InvalidOperationException>(() => realm.Subscriptions.Remove(sub));
         }
@@ -967,9 +961,9 @@ namespace Realms.Tests.Sync
 
                 realm.Dispose();
 
-                var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance);
-                var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs);
-                var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs);
+                var handleField = typeof(SubscriptionSet).GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+                var subsHandle = (SubscriptionSetHandle)handleField.GetValue(subs)!;
+                var updatedSubsHandle = (SubscriptionSetHandle)handleField.GetValue(updatedSubs)!;
                 Assert.That(subsHandle.IsClosed);
                 Assert.That(updatedSubsHandle.IsClosed);
 
@@ -1001,7 +995,7 @@ namespace Realms.Tests.Sync
 
                 // Now we do something that throws an error.
                 throw new Exception("Oh no!");
-            }));
+            }))!;
 
             Assert.That(ex.Message, Is.EqualTo("Oh no!"));
             Assert.That(subs.Count, Is.EqualTo(1));
@@ -1019,7 +1013,7 @@ namespace Realms.Tests.Sync
             var ex = Assert.Throws<InvalidOperationException>(() => subs.Update(() =>
             {
                 subs.Update(() => { });
-            }));
+            }))!;
 
             Assert.That(ex.Message, Does.Contain("already being updated"));
         }
@@ -1050,10 +1044,10 @@ namespace Realms.Tests.Sync
             var index = 0;
 
             IEnumerable enumerableSubs = realm.Subscriptions;
-            foreach (Subscription sub in enumerableSubs)
+            foreach (Subscription? sub in enumerableSubs)
             {
                 Assert.That(sub, Is.Not.Null);
-                Assert.That(sub.Id, Is.EqualTo(realm.Subscriptions[index++].Id));
+                Assert.That(sub!.Id, Is.EqualTo(realm.Subscriptions[index++].Id));
             }
         }
 
@@ -1126,7 +1120,7 @@ namespace Realms.Tests.Sync
 
                 await AddSomeData(testGuid);
 
-                Task waitTask = null;
+                Task waitTask = null!;
                 using (var realm = await GetFLXIntegrationRealmAsync())
                 {
                     realm.Subscriptions.Update(() =>
@@ -1317,7 +1311,7 @@ namespace Realms.Tests.Sync
                 CollectionAssert.AreEqual(new[] { 1, 2 }, intObjects.AsEnumerable().Select(o => o.Int));
 
                 // We subscribed to ato 2 and 3, but intObject 1 and 2. So 2 should point to 2, 3 to null
-                Assert.That(atos.ElementAt(0).ObjectProperty.Int, Is.EqualTo(2));
+                Assert.That(atos.ElementAt(0).ObjectProperty!.Int, Is.EqualTo(2));
                 Assert.That(atos.ElementAt(1).ObjectProperty, Is.Null);
 
                 realm1.Write(() =>
@@ -1330,7 +1324,7 @@ namespace Realms.Tests.Sync
                 // intObject3 should sync down so we'll end up with 3 intObjects
                 await TestHelpers.WaitForConditionAsync(() => intObjects.Count() == 3);
 
-                Assert.That(atos.ElementAt(1).ObjectProperty.Int, Is.EqualTo(-1));
+                Assert.That(atos.ElementAt(1).ObjectProperty!.Int, Is.EqualTo(-1));
 
                 SyncAllTypesObject getAtoWithLink(int value) => new()
                 {
@@ -1376,10 +1370,10 @@ namespace Realms.Tests.Sync
 
                 Assert.That(atos.Count(), Is.EqualTo(2));
                 Assert.That(atos.ElementAt(0).Int64Property, Is.EqualTo(2));
-                Assert.That(atos.ElementAt(0).EmbeddedObjectProperty.Int, Is.EqualTo(2));
+                Assert.That(atos.ElementAt(0).EmbeddedObjectProperty!.Int, Is.EqualTo(2));
 
                 Assert.That(atos.ElementAt(1).Int64Property, Is.EqualTo(3));
-                Assert.That(atos.ElementAt(1).EmbeddedObjectProperty.Int, Is.EqualTo(3));
+                Assert.That(atos.ElementAt(1).EmbeddedObjectProperty!.Int, Is.EqualTo(3));
 
                 realm1.Write(() =>
                 {
@@ -1389,7 +1383,7 @@ namespace Realms.Tests.Sync
                 await TestHelpers.WaitForConditionAsync(() => atos.Count() == 1);
 
                 Assert.That(atos.Single().Int64Property, Is.EqualTo(2));
-                Assert.That(atos.Single().EmbeddedObjectProperty.Int, Is.EqualTo(2));
+                Assert.That(atos.Single().EmbeddedObjectProperty!.Int, Is.EqualTo(2));
 
                 SyncAllTypesObject getAtoWithEmbedded(int value) => new()
                 {
@@ -1474,10 +1468,10 @@ namespace Realms.Tests.Sync
 
                 Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(5));
                 Assert.That(colObj2.ObjectDict["1"], Is.Null);
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
-                Assert.That(colObj2.ObjectDict["3"].Int, Is.EqualTo(3));
+                Assert.That(colObj2.ObjectDict["2"]!.Int, Is.EqualTo(2));
+                Assert.That(colObj2.ObjectDict["3"]!.Int, Is.EqualTo(3));
                 Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["3_again"].Int, Is.EqualTo(3));
+                Assert.That(colObj2.ObjectDict["3_again"]!.Int, Is.EqualTo(3));
                 Assert.That(colObj2.ObjectDict["3_again"], Is.EqualTo(colObj2.ObjectDict["3"]));
 
                 // Add 4th element from the second client
@@ -1498,7 +1492,7 @@ namespace Realms.Tests.Sync
                 Assert.That(colObj1.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 1, 2, 3, 4 }));
 
                 Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(6));
-                Assert.That(colObj1.ObjectDict["4"].Int, Is.EqualTo(4));
+                Assert.That(colObj1.ObjectDict["4"]!.Int, Is.EqualTo(4));
 
                 // Move an element out of view from client1
                 realm1.Write(() =>
@@ -1517,11 +1511,11 @@ namespace Realms.Tests.Sync
 
                 Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
                 Assert.That(colObj2.ObjectDict["1"], Is.Null);
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
+                Assert.That(colObj2.ObjectDict["2"]!.Int, Is.EqualTo(2));
                 Assert.That(colObj2.ObjectDict["3"], Is.Null);
                 Assert.That(colObj2.ObjectDict["1_again"], Is.Null);
                 Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
+                Assert.That(colObj2.ObjectDict["4"]!.Int, Is.EqualTo(4));
 
                 // Move an element into view from client1
                 realm1.Write(() =>
@@ -1540,12 +1534,12 @@ namespace Realms.Tests.Sync
                 Assert.That(colObj2.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 100, 2, 4 }));
 
                 Assert.That(colObj2.ObjectDict.Count, Is.EqualTo(6));
-                Assert.That(colObj2.ObjectDict["1"].Int, Is.EqualTo(100));
-                Assert.That(colObj2.ObjectDict["2"].Int, Is.EqualTo(2));
+                Assert.That(colObj2.ObjectDict["1"]!.Int, Is.EqualTo(100));
+                Assert.That(colObj2.ObjectDict["2"]!.Int, Is.EqualTo(2));
                 Assert.That(colObj2.ObjectDict["3"], Is.Null);
-                Assert.That(colObj2.ObjectDict["1_again"].Int, Is.EqualTo(100));
+                Assert.That(colObj2.ObjectDict["1_again"]!.Int, Is.EqualTo(100));
                 Assert.That(colObj2.ObjectDict["3_again"], Is.Null);
-                Assert.That(colObj2.ObjectDict["4"].Int, Is.EqualTo(4));
+                Assert.That(colObj2.ObjectDict["4"]!.Int, Is.EqualTo(4));
                 Assert.That(colObj2.ObjectDict["1_again"], Is.EqualTo(colObj2.ObjectDict["1"]));
             });
         }
@@ -1630,8 +1624,8 @@ namespace Realms.Tests.Sync
                 Assert.That(colObj1.ObjectSet.Select(o => o.Int), Is.EquivalentTo(new[] { 1 }));
 
                 Assert.That(colObj1.ObjectDict.Count, Is.EqualTo(5));
-                Assert.That(colObj1.ObjectDict["1"].Int, Is.EqualTo(1));
-                Assert.That(colObj1.ObjectDict["1_again"].Int, Is.EqualTo(1));
+                Assert.That(colObj1.ObjectDict["1"]!.Int, Is.EqualTo(1));
+                Assert.That(colObj1.ObjectDict["1_again"]!.Int, Is.EqualTo(1));
                 Assert.That(colObj1.ObjectDict["2"], Is.Null);
                 Assert.That(colObj1.ObjectDict["3"], Is.Null);
                 Assert.That(colObj1.ObjectDict["3_again"], Is.Null);
@@ -1780,7 +1774,7 @@ namespace Realms.Tests.Sync
                 }
 
                 Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Error), "State should be 'Error' when querying unqueryable field");
-                Assert.That(realm.Subscriptions.Error.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
+                Assert.That(realm.Subscriptions.Error!.Message, Does.Contain("SUBQUERY").And.Contains(nameof(SyncCollectionsObject)));
 
                 var testGuid = Guid.NewGuid();
 
@@ -2002,7 +1996,7 @@ namespace Realms.Tests.Sync
                 var compensatingError = error as CompensatingWriteException;
 
                 Assert.That(compensatingError, Is.Not.Null);
-                Assert.That(compensatingError.CompensatingWrites.Count(), Is.EqualTo(1));
+                Assert.That(compensatingError!.CompensatingWrites.Count(), Is.EqualTo(1));
 
                 var errorInfo = compensatingError.CompensatingWrites.Single();
                 Assert.That(errorInfo.ObjectType, Is.EqualTo(nameof(SyncAllTypesObject)));
@@ -2041,7 +2035,7 @@ namespace Realms.Tests.Sync
 
         private Realm GetFakeFLXRealm() => GetRealm(GetFakeFLXConfig());
 
-        private static void AssertSubscriptionDetails(Subscription sub, string type, string query = "TRUEPREDICATE", string name = null, bool expectUpdateOnly = false)
+        private static void AssertSubscriptionDetails(Subscription sub, string type, string query = "TRUEPREDICATE", string? name = null, bool expectUpdateOnly = false)
         {
             Assert.That(sub.Id, Is.Not.EqualTo(ObjectId.Empty));
             Assert.That(sub.Name, Is.EqualTo(name).IgnoreCase);

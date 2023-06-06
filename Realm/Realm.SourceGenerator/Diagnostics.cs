@@ -50,7 +50,8 @@ namespace Realms.SourceGenerator
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
             NotPersistedPropertyWithRealmAttributes = 26,
-            ParentOfNestedClassIsNotPartial = 27
+            ParentOfNestedClassIsNotPartial = 27,
+            IndexedPrimaryKey = 28,
         }
 
         #region Errors
@@ -119,6 +120,33 @@ namespace Realms.SourceGenerator
                 location);
         }
 
+        public static Diagnostic FullTextIndexedWrongType(string className, string propertyName, string propertyType, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedWrongType,
+                "[Indexed(IndexType.FullText)] is only allowed on string properties",
+                $"{className}.{propertyName} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {propertyType}.",
+                location);
+        }
+
+        public static Diagnostic IndexedModeNone(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedWrongType,
+                "[Indexed(IndexType.None)] is not allowed",
+                $"{className}.{propertyName} is annotated as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, removed the [Indexed] attribute.",
+                location);
+        }
+
+        public static Diagnostic IndexPrimaryKey(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticError(
+                Id.IndexedPrimaryKey,
+                "[Indexed] is not allowed in combination with [PrimaryKey]",
+                $"{className}.{propertyName} is marked has both [Indexed] and [PrimaryKey] attributes which is not allowed. PrimaryKey properties are indexed by default so the [Indexed] attribute is redundant.",
+                location);
+        }
+
         public static Diagnostic RequiredWrongType(string className, string propertyName, string propertyType, Location location)
         {
             return CreateDiagnosticError(
@@ -151,7 +179,7 @@ namespace Realms.SourceGenerator
             return CreateDiagnosticError(
                 Id.PrimaryKeyWrongType,
                 "[PrimaryKey] is only allowed on specific types",
-                $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {propertyType}.",
+                $"{className}.{propertyName} is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on {propertyType}.",
                 location);
         }
 
@@ -306,7 +334,7 @@ namespace Realms.SourceGenerator
         #endregion
 
         private static Diagnostic CreateDiagnostic(Id id, string title, string messageFormat, DiagnosticSeverity severity,
-            Location location, string category, string description)
+            Location location, string category, string? description)
         {
             var reportedId = $"RLM{(int)id:000}";
             DiagnosticDescriptor descriptor = new(reportedId, title, messageFormat, category, severity, isEnabledByDefault: true, description: description);
@@ -315,11 +343,11 @@ namespace Realms.SourceGenerator
         }
 
         private static Diagnostic CreateDiagnosticError(Id id, string title, string messageFormat,
-            Location location, string category = "RealmClassGeneration", string description = null)
+            Location location, string category = "RealmClassGeneration", string? description = null)
             => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Error, location, category, description);
 
         private static Diagnostic CreateDiagnosticWarning(Id id, string title, string messageFormat,
-            Location location, string category = "RealmClassGeneration", string description = null)
+            Location location, string category = "RealmClassGeneration", string? description = null)
             => CreateDiagnostic(id, title, messageFormat, DiagnosticSeverity.Warning, location, category, description);
     }
 }

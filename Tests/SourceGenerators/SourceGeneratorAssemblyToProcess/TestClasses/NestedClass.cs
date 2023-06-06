@@ -8,7 +8,7 @@ namespace SourceGeneratorPlayground
         {
             public int Id { get; set; }
 
-            public NestedClass Link { get; set; }
+            public NestedClass? Link { get; set; }
         }
     }
 }

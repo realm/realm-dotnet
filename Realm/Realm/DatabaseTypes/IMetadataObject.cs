@@ -26,6 +26,6 @@ namespace Realms
         /// <summary>
         /// Gets a value representing the object's metadata.
         /// </summary>
-        Metadata Metadata { get; }
+        Metadata? Metadata { get; }
     }
 }

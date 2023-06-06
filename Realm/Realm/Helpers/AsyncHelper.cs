@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,13 +40,13 @@ namespace Realms.Helpers
             }
         }
 
-        public static bool TryGetValidContext(out SynchronizationContext synchronizationContext)
+        public static bool TryGetValidContext([MaybeNullWhen(false)] out SynchronizationContext synchronizationContext)
         {
             synchronizationContext = SynchronizationContext.Current;
             return synchronizationContext != null;
         }
 
-        public static bool TryGetScheduler(out TaskScheduler scheduler)
+        public static bool TryGetScheduler([MaybeNullWhen(false)] out TaskScheduler scheduler)
         {
             if (TryGetValidContext(out _))
             {

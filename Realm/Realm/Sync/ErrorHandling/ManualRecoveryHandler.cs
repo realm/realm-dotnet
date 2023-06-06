@@ -32,7 +32,7 @@ namespace Realms.Sync.ErrorHandling
         /// must be moved manually from the backup Realm to the new one.
         /// </summary>
         /// <value>Callback invoked on Client Reset.</value>
-        public ClientResetCallback OnClientReset => ManualClientReset;
+        public ClientResetCallback OnClientReset => ManualClientReset!;
 
         internal override ClientResyncMode ClientResetMode => ClientResyncMode.Manual;
 
@@ -45,17 +45,6 @@ namespace Realms.Sync.ErrorHandling
         public ManualRecoveryHandler(ClientResetCallback onClientReset)
         {
             ManualClientReset = onClientReset;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ManualRecoveryHandler"/> class that uses the Session.Error as handler for client resets.
-        /// </summary>
-        /// <remarks>
-        /// This obsolete constructor should be used only when the user wants to use the obsolete Session.Error event for handling session errors and client resets.
-        /// </remarks>
-        [Obsolete("Use ManualRecoveryHandler(ClientResetCallback onClientReset) instead.")]
-        public ManualRecoveryHandler()
-        {
         }
     }
 }

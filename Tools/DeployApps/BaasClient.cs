@@ -26,12 +26,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
-using static Baas.BaasClient.FunctionReturn;
 
 namespace Baas
 {
@@ -127,13 +125,12 @@ namespace Baas
 
         private readonly HttpClient _client = new();
 
-        private readonly string _clusterName;
+        private readonly string? _clusterName;
 
-        [SuppressMessage("Usage", "CA2213:Disposable fields should be disposed", Justification = "We don't own the writer")]
         private readonly TextWriter _output;
 
-        private string _groupId;
-        private string _refreshToken;
+        private string _groupId = null!;
+        private string? _refreshToken;
 
         private string _shortDifferentiator
         {
@@ -145,8 +142,8 @@ namespace Baas
                 }
 
                 using var sha = SHA256.Create();
-                byte[] inputBytes = Encoding.ASCII.GetBytes(Differentiator);
-                byte[] hashBytes = sha.ComputeHash(inputBytes);
+                var inputBytes = Encoding.ASCII.GetBytes(Differentiator);
+                var hashBytes = sha.ComputeHash(inputBytes);
 
                 var sb = new StringBuilder();
                 for (var i = 0; i < 4; i++)
@@ -162,7 +159,7 @@ namespace Baas
 
         public string Differentiator { get; }
 
-        private BaasClient(Uri baseUri, string differentiator, TextWriter output, string clusterName = null)
+        private BaasClient(Uri baseUri, string differentiator, TextWriter output, string? clusterName = null)
         {
             _client.BaseAddress = new Uri(baseUri, "api/admin/v3.0/");
             _client.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "application/json");
@@ -182,7 +179,7 @@ namespace Baas
             });
 
             var groupDoc = await result.GetAsync<BsonDocument>("auth/profile");
-            result._groupId = groupDoc["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
+            result._groupId = groupDoc!["roles"].AsBsonArray[0].AsBsonDocument["group_id"].AsString;
 
             return result;
         }
@@ -201,7 +198,7 @@ namespace Baas
             return result;
         }
 
-        public static async Task<(BaasClient Client, Uri BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
+        public static async Task<(BaasClient? Client, Uri? BaseUrl, string[] RemainingArgs)> CreateClientFromArgs(string[] args, TextWriter output)
         {
             if (args == null)
             {
@@ -210,23 +207,18 @@ namespace Baas
 
             var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "baasurl", "baascluster", "baasapikey", "baasprivateapikey", "baasprojectid", "baasdifferentiator");
 
-            extracted.TryGetValue("baasurl", out var baseUrl);
-            extracted.TryGetValue("baascluster", out var baasCluster);
-            extracted.TryGetValue("baasapikey", out var baasApiKey);
-            extracted.TryGetValue("baasprivateapikey", out var baasPrivateApiKey);
-            extracted.TryGetValue("baasprojectid", out var groupId);
-            extracted.TryGetValue("baasdifferentiator", out var differentiator);
-
-            if (string.IsNullOrEmpty(baseUrl))
+            if (!extracted.TryGetValue("baasurl", out var baseUrl) || string.IsNullOrEmpty(baseUrl))
             {
                 return (null, null, remaining);
             }
 
             var baseUri = new Uri(baseUrl);
+            var baasCluster = extracted.GetValueOrDefault("baascluster");
+            var differentiator = extracted.GetValueOrDefault("baasdifferentiator", "local")!;
 
             var client = string.IsNullOrEmpty(baasCluster)
                 ? await Docker(baseUri, differentiator, output)
-                : await Atlas(baseUri, differentiator, output, baasCluster, baasApiKey, baasPrivateApiKey, groupId);
+                : await Atlas(baseUri, differentiator, output, baasCluster!, extracted["baasapikey"], extracted["baasprivateapikey"], extracted["baasprojectid"]);
 
             return (client, baseUri, remaining);
         }
@@ -235,7 +227,7 @@ namespace Baas
         {
             var authDoc = await PostAsync<BsonDocument>($"auth/providers/{provider}/login", credentials);
 
-            _refreshToken = authDoc["refresh_token"].AsString;
+            _refreshToken = authDoc!["refresh_token"].AsString;
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authDoc["access_token"].AsString);
         }
 
@@ -330,12 +322,6 @@ namespace Baas
                 new AuthMetadataField("maxAge", "max_age"),
             });
 
-            await CreateService(app, "gcm", "gcm", new
-            {
-                senderId = "gcm",
-                apiKey = "gcm",
-            });
-
             return app;
         }
 
@@ -356,7 +342,15 @@ namespace Baas
                         permissions = new
                         {
                             read = true,
-                            write = true,
+                            write = new BsonDocument
+                            {
+                                {
+                                    "%%partition", new BsonDocument
+                                    {
+                                        { "$ne", "read-only" }
+                                    }
+                                }
+                            },
                         }
                     }
                 }
@@ -426,10 +420,10 @@ namespace Baas
         public async Task SetAutomaticRecoveryEnabled(BaasApp app, bool enabled)
         {
             var services = await GetAsync<BsonArray>($"groups/{_groupId}/apps/{app}/services");
-            var mongoServiceId = services.Single(s => s.AsBsonDocument["name"] == "BackingDB")["_id"].AsString;
+            var mongoServiceId = services!.Single(s => s.AsBsonDocument["name"] == "BackingDB")["_id"].AsString;
             var config = await GetAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config");
 
-            var syncType = config.Contains("flexible_sync") ? "flexible_sync" : "sync";
+            var syncType = config!.Contains("flexible_sync") ? "flexible_sync" : "sync";
             config[syncType]["is_recovery_mode_disabled"] = !enabled;
 
             // An empty fragment with just the sync configuration is necessary,
@@ -444,7 +438,7 @@ namespace Baas
         private async Task<(BaasApp App, string MongoServiceId)> CreateAppCore(string name, object syncConfig)
         {
             var doc = await PostAsync<BsonDocument>($"groups/{_groupId}/apps", new { name = $"{name}{_appSuffix}" });
-            var appId = doc["_id"].AsString;
+            var appId = doc!["_id"].AsString;
             var clientAppId = doc["client_app_id"].AsString;
             var app = new BaasApp(appId, clientAppId, name);
 
@@ -477,7 +471,7 @@ namespace Baas
             return (app, mongoServiceId);
         }
 
-        private async Task EnableProvider(BaasApp app, string type, object config = null, AuthMetadataField[] metadataFields = null)
+        private async Task EnableProvider(BaasApp app, string type, object? config = null, AuthMetadataField[]? metadataFields = null)
         {
             _output.WriteLine($"Enabling provider {type} for {app.Name}...");
 
@@ -487,7 +481,7 @@ namespace Baas
             if (type == "api-key")
             {
                 var providers = await GetAsync<BsonArray>(url);
-                var apiKeyProviderId = providers.Select(p => p.AsBsonDocument)
+                var apiKeyProviderId = providers!.Select(p => p.AsBsonDocument)
                     .Single(p => p["type"] == "api-key")["_id"].AsString;
 
                 await PutAsync<BsonDocument>($"{url}/{apiKeyProviderId}/enable", new { });
@@ -518,13 +512,13 @@ namespace Baas
                 source = source
             });
 
-            return response["_id"].AsString;
+            return response!["_id"].AsString;
         }
 
         private async Task<BaasApp[]> GetApps()
         {
             var response = await GetAsync<BsonArray>($"groups/{_groupId}/apps");
-            return response
+            return response!
                 .Select(x => x.AsBsonDocument)
                 .Where(doc => doc["name"].AsString.EndsWith(_appSuffix))
                 .Select(doc =>
@@ -536,10 +530,11 @@ namespace Baas
                         return null;
                     }
 
-                    var appName = name.Substring(0, name.Length - _appSuffix.Length);
+                    var appName = name[..^_appSuffix.Length];
                     return new BaasApp(doc["_id"].AsString, doc["client_app_id"].AsString, appName);
                 })
                 .Where(a => a != null)
+                .Select(a => a!)
                 .ToArray();
         }
 
@@ -554,7 +549,7 @@ namespace Baas
                 config
             });
 
-            return response["_id"].AsString;
+            return response!["_id"].AsString;
         }
 
         private static HttpContent GetJsonContent(object obj)
@@ -632,15 +627,15 @@ namespace Baas
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", doc["access_token"].AsString);
         }
 
-        private Task<T> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
+        private Task<T?> PostAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Post, relativePath, obj);
 
-        private Task<T> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
+        private Task<T?> GetAsync<T>(string relativePath) => SendAsync<T>(HttpMethod.Get, relativePath);
 
-        private Task<T> PutAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Put, relativePath, obj);
+        private Task<T?> PutAsync<T>(string relativePath, object obj) => SendAsync<T>(HttpMethod.Put, relativePath, obj);
 
-        private Task<T> PatchAsync<T>(string relativePath, object obj) => SendAsync<T>(new HttpMethod("PATCH"), relativePath, obj);
+        private Task<T?> PatchAsync<T>(string relativePath, object obj) => SendAsync<T>(new HttpMethod("PATCH"), relativePath, obj);
 
-        private async Task<T> SendAsync<T>(HttpMethod method, string relativePath, object payload = null)
+        private async Task<T?> SendAsync<T>(HttpMethod method, string relativePath, object? payload = null)
         {
             using var message = new HttpRequestMessage(method, new Uri(relativePath, UriKind.Relative));
             if (payload != null)
@@ -816,4 +811,20 @@ namespace Baas
             GenericBaasRule(differentiator, "foos"));
         }
     }
+
+#if !NETCOREAPP2_1_OR_GREATER
+    internal static class DictionaryExtensions
+    {
+        [return: NotNullIfNotNull("defaultValue")]
+        public static T? GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T? defaultValue = default)
+        {
+            if (dictionary.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            return defaultValue;
+        }
+    }
+#endif
 }

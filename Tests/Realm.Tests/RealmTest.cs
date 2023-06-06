@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,7 +32,7 @@ namespace Realms.Tests
     public abstract class RealmTest
     {
         private readonly ConcurrentQueue<StrongBox<Realm>> _realms = new();
-        private Logger _originalLogger;
+        private Logger _originalLogger = null!;
         private LogLevel _originalLogLevel;
 
         private bool _isSetup;
@@ -109,7 +108,7 @@ namespace Realms.Tests
         {
             foreach (var realm in _realms)
             {
-                realm.Value.Dispose();
+                realm.Value!.Dispose();
             }
 
             _realms.DrainQueue(realm =>
@@ -138,7 +137,7 @@ namespace Realms.Tests
             return false;
         }
 
-        protected Realm GetRealm(RealmConfigurationBase config = null)
+        protected Realm GetRealm(RealmConfigurationBase? config = null)
         {
             var result = Realm.GetInstance(config);
             CleanupOnTearDown(result);
@@ -152,13 +151,12 @@ namespace Realms.Tests
             return result;
         }
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "cts is disposed by the using - the compiler seems to be having a hard time due to the ternary")]
         protected async Task<Realm> GetRealmAsync(RealmConfigurationBase config, int timeout = 10000, CancellationToken? cancellationToken = default)
         {
             using var cts = cancellationToken != null ? null : new CancellationTokenSource(timeout);
             try
             {
-                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts.Token);
+                var result = await Realm.GetInstanceAsync(config, cancellationToken ?? cts!.Token);
                 CleanupOnTearDown(result);
                 return result;
             }

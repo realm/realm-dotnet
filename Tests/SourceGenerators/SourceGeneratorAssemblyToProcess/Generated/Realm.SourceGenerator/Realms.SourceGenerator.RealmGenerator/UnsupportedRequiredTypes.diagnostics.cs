@@ -4,10 +4,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.NullableRealmIntegerProp is marked as [Required], but the type RealmInteger<int> supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 27,
+      "StartLine": 29,
       "StartColumn": 9,
-      "EndLine": 28,
+      "EndLine": 30,
       "EndColumn": 73
     }
   },
@@ -16,10 +15,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.BoolProp is marked as [Required], but the type bool supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 33,
+      "StartLine": 35,
       "StartColumn": 9,
-      "EndLine": 34,
+      "EndLine": 36,
       "EndColumn": 43
     }
   },
@@ -28,10 +26,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DateProp is marked as [Required], but the type DateTimeOffset supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 36,
+      "StartLine": 38,
       "StartColumn": 9,
-      "EndLine": 37,
+      "EndLine": 39,
       "EndColumn": 53
     }
   },
@@ -40,10 +37,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.FloatProp is marked as [Required], but the type float supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 39,
+      "StartLine": 41,
       "StartColumn": 9,
-      "EndLine": 40,
+      "EndLine": 42,
       "EndColumn": 45
     }
   },
@@ -52,10 +48,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DoubleProp is marked as [Required], but the type double supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 42,
+      "StartLine": 44,
       "StartColumn": 9,
-      "EndLine": 43,
+      "EndLine": 45,
       "EndColumn": 47
     }
   },
@@ -64,10 +59,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.ObjectProp is marked as [Required] which is only allowed on strings or byte[] types, not on RealmObj.",
     "Location": {
-      "Path": null,
-      "StartLine": 45,
+      "StartLine": 47,
       "StartColumn": 9,
-      "EndLine": 46,
+      "EndLine": 48,
       "EndColumn": 49
     }
   },
@@ -76,10 +70,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.RealmvalueProp is marked as [Required], but the type RealmValue supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 48,
+      "StartLine": 50,
       "StartColumn": 9,
-      "EndLine": 49,
+      "EndLine": 51,
       "EndColumn": 55
     }
   },
@@ -88,10 +81,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.DecimalProp is marked as [Required], but the type decimal supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 51,
+      "StartLine": 53,
       "StartColumn": 9,
-      "EndLine": 52,
+      "EndLine": 54,
       "EndColumn": 49
     }
   },
@@ -100,10 +92,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.ObjectIdProp is marked as [Required], but the type ObjectId supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 54,
+      "StartLine": 56,
       "StartColumn": 9,
-      "EndLine": 55,
+      "EndLine": 57,
       "EndColumn": 51
     }
   },
@@ -112,10 +103,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.GuidProp is marked as [Required], but the type Guid supports nullability annotations. Please use nullability annotations instead of the attribute.",
     "Location": {
-      "Path": null,
-      "StartLine": 57,
+      "StartLine": 59,
       "StartColumn": 9,
-      "EndLine": 58,
+      "EndLine": 60,
       "EndColumn": 43
     }
   },
@@ -124,10 +114,9 @@
     "Severity": 3,
     "Message": "UnsupportedRequiredTypes.UnsupportedProp is of type 'int[]' which is not yet supported. If that is supposed to be a model class, make sure it implements IRealmObject/IEmbeddedObject/IAsymmetricObject.",
     "Location": {
-      "Path": null,
-      "StartLine": 60,
+      "StartLine": 62,
       "StartColumn": 9,
-      "EndLine": 61,
+      "EndLine": 63,
       "EndColumn": 51
     }
   }

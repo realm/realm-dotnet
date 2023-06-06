@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -206,7 +207,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateOne/"/>
-            public async Task<UpdateResult> UpdateOneAsync(object filter, object updateDocument, bool upsert = false)
+            public async Task<UpdateResult> UpdateOneAsync(object? filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -236,7 +237,7 @@ namespace Realms.Sync
             /// upsert.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.updateMany/"/>
-            public async Task<UpdateResult> UpdateManyAsync(object filter, object updateDocument, bool upsert = false)
+            public async Task<UpdateResult> UpdateManyAsync(object? filter, object updateDocument, bool upsert = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -255,7 +256,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteOne/"/>
-            public Task<DeleteResult> DeleteOneAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteOne", "query", filter);
+            public Task<DeleteResult> DeleteOneAsync(object? filter = null) => InvokeOperationAsync<DeleteResult>("deleteOne", "query", filter);
 
             /// <summary>
             /// Removes one or more documents from a collection. If no documents match the <paramref name="filter"/>, the collection is not modified.
@@ -269,7 +270,7 @@ namespace Realms.Sync
             /// of deleted documents.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.deleteMany/"/>
-            public Task<DeleteResult> DeleteManyAsync(object filter = null) => InvokeOperationAsync<DeleteResult>("deleteMany", "query", filter);
+            public Task<DeleteResult> DeleteManyAsync(object? filter = null) => InvokeOperationAsync<DeleteResult>("deleteMany", "query", filter);
 
             /// <summary>
             /// Finds the all documents in the collection up to <paramref name="limit"/>.
@@ -287,7 +288,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote find operation. The result of the task is an array containing the documents that match the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.find/"/>
-            public Task<TDocument[]> FindAsync(object filter = null, object sort = null, object projection = null, long? limit = null)
+            public Task<TDocument[]> FindAsync(object? filter = null, object? sort = null, object? projection = null, long? limit = null)
                 => InvokeOperationAsync<TDocument[]>("find", "query", filter, "project", projection, "sort", sort, "limit", limit);
 
             /// <summary>
@@ -305,7 +306,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOne/"/>
-            public Task<TDocument> FindOneAsync(object filter = null, object sort = null, object projection = null)
+            public Task<TDocument> FindOneAsync(object? filter = null, object? sort = null, object? projection = null)
                 => InvokeOperationAsync<TDocument>("findOne", "query", filter, "project", projection, "sort", sort);
 
             /// <summary>
@@ -335,7 +336,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndUpdate/"/>
-            public async Task<TDocument> FindOneAndUpdateAsync(object filter, object updateDocument, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            public async Task<TDocument> FindOneAndUpdateAsync(object? filter, object updateDocument, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(updateDocument, nameof(updateDocument));
 
@@ -373,7 +374,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndReplace/"/>
-            public async Task<TDocument> FindOneAndReplaceAsync(object filter, TDocument replacementDoc, object sort = null, object projection = null, bool upsert = false, bool returnNewDocument = false)
+            public async Task<TDocument> FindOneAndReplaceAsync(object? filter, TDocument replacementDoc, object? sort = null, object? projection = null, bool upsert = false, bool returnNewDocument = false)
             {
                 Argument.NotNull(replacementDoc, nameof(replacementDoc));
 
@@ -395,7 +396,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> representing the remote find one operation. The result of the task is the first document that matches the find criteria.
             /// </returns>
             /// <seealso href="https://docs.mongodb.com/manual/reference/method/db.collection.findOneAndDelete/"/>
-            public Task<TDocument> FindOneAndDeleteAsync(object filter = null, object sort = null, object projection = null)
+            public Task<TDocument> FindOneAndDeleteAsync(object? filter = null, object? sort = null, object? projection = null)
                 => InvokeOperationAsync<TDocument>("findOneAndDelete", "filter", filter, "projection", projection, "sort", sort);
 
             /// <summary>
@@ -437,9 +438,9 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task"/> representing the remote count operation. The result of the task is the number of documents that match the
             /// <paramref name="filter"/> and <paramref name="limit"/> criteria.
             /// </returns>
-            public Task<long> CountAsync(object filter = null, long? limit = null) => InvokeOperationAsync<long>("count", "query", filter, "limit", limit);
+            public Task<long> CountAsync(object? filter = null, long? limit = null) => InvokeOperationAsync<long>("count", "query", filter, "limit", limit);
 
-            private async Task<T> InvokeOperationAsync<T>(string functionName, params object[] args)
+            private async Task<T> InvokeOperationAsync<T>(string functionName, params object?[] args)
             {
                 var jsonBuilder = new StringBuilder();
                 jsonBuilder.Append($"[{{\"database\":\"{Database.Name}\",\"collection\":\"{Name}\"");
@@ -487,7 +488,7 @@ namespace Realms.Sync
             /// <value>The <c>_id</c> of the inserted document or <c>null</c> if the operation didn't result in an insertion.</value>
             [BsonElement("upsertedId")]
             [Preserve]
-            public object UpsertedId { get; private set; }
+            public object? UpsertedId { get; private set; }
         }
 
         /// <summary>
@@ -501,7 +502,7 @@ namespace Realms.Sync
             /// <value>The <c>_id</c> of the inserted document.</value>
             [BsonElement("insertedId")]
             [Preserve]
-            public object InsertedId { get; private set; }
+            public object InsertedId { get; private set; } = null!;
         }
 
         /// <summary>
@@ -515,7 +516,7 @@ namespace Realms.Sync
             /// <value>The <c>_id</c>s of the inserted documents.</value>
             [BsonElement("insertedIds")]
             [Preserve]
-            public object[] InsertedIds { get; private set; }
+            public object[] InsertedIds { get; private set; } = Array.Empty<object>();
         }
 
         /// <summary>

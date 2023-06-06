@@ -35,8 +35,9 @@ namespace Realms
         private readonly Realm _realm;
         private readonly Metadata _metadata;
 
-        private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-        private SortDescriptorHandle _sortDescriptor;
+        // These are set when we recurse down to VisitConstant
+        private QueryHandle _coreQueryHandle = null!;
+        private SortDescriptorHandle _sortDescriptor = null!;
 
         private static class Methods
         {
@@ -44,7 +45,7 @@ namespace Realms
             {
                 return new LazyMethod(() =>
                 {
-                    var method = (lambda.Body as MethodCallExpression).Method;
+                    var method = ((MethodCallExpression)lambda.Body).Method;
                     if (method.IsGenericMethod)
                     {
                         method = method.GetGenericMethodDefinition();
@@ -58,16 +59,24 @@ namespace Realms
             {
                 internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
-                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+#pragma warning disable CS0618 // Type or member is obsolete
+                internal static readonly LazyMethod InstanceContainsStringComparison = Capture<string>(s => s.Contains(string.Empty, StringComparison.Ordinal));
+#pragma warning restore CS0618 // Type or member is obsolete
 
-                internal static readonly LazyMethod Like = Capture<string>(s => s.Like(string.Empty, true));
+                internal static readonly LazyMethod ContainsStringComparison = Capture<string>(s => QueryMethods.Contains(s, string.Empty, StringComparison.Ordinal));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
+#pragma warning disable CS0618 // Type or member is obsolete
+                internal static readonly LazyMethod LegacyLike = Capture<string>(s => s.Like(string.Empty, true));
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                internal static readonly LazyMethod Like = Capture<string>(s => QueryMethods.Like(s, string.Empty, true));
+
+                internal static readonly LazyMethod FullTextSearch = Capture<string>(s => QueryMethods.FullTextSearch(s, string.Empty));
+
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
                 internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
@@ -77,6 +86,11 @@ namespace Realms
                 internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
 
                 internal static readonly LazyMethod EqualsStringComparison = Capture<string>(s => s.Equals(string.Empty, StringComparison.Ordinal));
+            }
+
+            internal static class EmbeddedObject
+            {
+                internal static readonly LazyMethod GeoWithin = Capture<IEmbeddedObject>(o => QueryMethods.GeoWithin(o, null!));
             }
         }
 
@@ -116,7 +130,7 @@ namespace Realms
 
         private void AddSort(LambdaExpression lambda, bool isAscending, bool isReplacing)
         {
-            if (!(lambda.Body is MemberExpression body))
+            if (lambda.Body is not MemberExpression body)
             {
                 throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
             }
@@ -152,13 +166,13 @@ namespace Realms
             }
         }
 
-        private IntPtr[] TraverseSort(MemberExpression expression)
+        private IntPtr[] TraverseSort(MemberExpression? expression)
         {
             var chain = new List<IntPtr>();
 
             while (expression != null)
             {
-                var type = expression.Expression.Type;
+                var type = expression.Expression!.Type;
                 var typeName = type.GetMappedOrOriginalName();
                 if (!_realm.Metadata.TryGetValue(typeName, out var metadata))
                 {
@@ -286,7 +300,7 @@ namespace Realms
                 if (node.Method.Name.StartsWith(nameof(Queryable.ElementAt), StringComparison.OrdinalIgnoreCase))
                 {
                     Visit(node.Arguments.First());
-                    if (!TryExtractConstantValue(node.Arguments.Last(), out object argument) || argument.GetType() != typeof(int))
+                    if (!TryExtractConstantValue(node.Arguments.Last(), out var argument) || argument?.GetType() != typeof(int))
                     {
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single integer constant argument or closure variable");
                     }
@@ -298,13 +312,33 @@ namespace Realms
                 }
             }
 
-            if (node.Method.DeclaringType == typeof(string) ||
-                node.Method.DeclaringType == typeof(StringExtensions))
+            if (node.Method.DeclaringType == typeof(QueryMethods))
             {
-                QueryHandle.Operation<string> queryMethod = null;
+                if (AreMethodsSame(node.Method, Methods.EmbeddedObject.GeoWithin.Value))
+                {
+                    var member = (MemberExpression)node.Arguments[0];
+                    var columnName = GetColumnName(member, node.NodeType);
+                    var propertyIndex = _metadata.PropertyIndices[columnName];
+                    if (!TryExtractConstantValue(node.Arguments[1], out var argument) ||
+                        argument is not GeoShapeBase geoShape)
+                    {
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single GeoShapeBase argument or closure variable");
+                    }
+
+                    _coreQueryHandle.GeoWithin(_realm.SharedRealmHandle, propertyIndex, geoShape);
+
+                    return node;
+                }
+            }
+
+            if (node.Method.DeclaringType == typeof(string) ||
+                node.Method.DeclaringType == typeof(StringExtensions) ||
+                node.Method.DeclaringType == typeof(QueryMethods))
+            {
+                QueryHandle.Operation<string?>? queryMethod = null;
 
                 // For extension methods, member should be m.Arguments[0] as MemberExpression;
-                MemberExpression member = null;
+                MemberExpression? member = null;
 
                 // For extension methods, that should be 1
                 var stringArgumentIndex = 0;
@@ -366,16 +400,31 @@ namespace Realms
                 {
                     queryMethod = (q, r, p, v) => q.StringEqual(r, p, v, GetComparisonCaseSensitive(node));
                 }
-                else if (AreMethodsSame(node.Method, Methods.String.Like.Value))
+                else if (AreMethodsSame(node.Method, Methods.String.Like.Value) || AreMethodsSame(node.Method, Methods.String.LegacyLike.Value))
                 {
                     member = node.Arguments[0] as MemberExpression;
                     stringArgumentIndex = 1;
-                    if (!TryExtractConstantValue(node.Arguments.Last(), out object caseSensitive) || !(caseSensitive is bool))
+                    if (!TryExtractConstantValue(node.Arguments.Last(), out var caseSensitive) || caseSensitive is not bool)
                     {
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a string and boolean constant arguments.");
                     }
 
                     queryMethod = (q, r, p, v) => q.StringLike(r, p, v, (bool)caseSensitive);
+                }
+                else if (AreMethodsSame(node.Method, Methods.String.FullTextSearch.Value))
+                {
+                    member = node.Arguments[0] as MemberExpression;
+                    stringArgumentIndex = 1;
+
+                    queryMethod = (q, r, p, v) =>
+                    {
+                        if (v == null)
+                        {
+                            throw new ArgumentNullException("terms", "Cannot perform a Full-Text search against null string");
+                        }
+
+                        q.StringFTS(r, p, v);
+                    };
                 }
 
                 if (queryMethod != null)
@@ -390,13 +439,13 @@ namespace Realms
                     var columnName = GetColumnName(member, node.NodeType);
                     var propertyIndex = _metadata.PropertyIndices[columnName];
 
-                    if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out object argument) ||
+                    if (!TryExtractConstantValue(node.Arguments[stringArgumentIndex], out var argument) ||
                         (argument != null && argument.GetType() != typeof(string)))
                     {
                         throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
 
-                    queryMethod(_coreQueryHandle, _realm.SharedRealmHandle, propertyIndex, (string)argument);
+                    queryMethod(_coreQueryHandle, _realm.SharedRealmHandle, propertyIndex, (string?)argument);
                     return node;
                 }
             }
@@ -440,13 +489,19 @@ namespace Realms
         private static bool IsStringContainsWithComparison(MethodInfo method, out int stringArgumentIndex)
         {
 #if !NETCOREAPP2_1_OR_GREATER
-            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            if (AreMethodsSame(method, Methods.String.InstanceContainsStringComparison.Value))
             {
                 // This is an extension method, so the string to compare against is at position 1.
                 stringArgumentIndex = 1;
                 return true;
             }
 #endif
+
+            if (AreMethodsSame(method, Methods.String.ContainsStringComparison.Value))
+            {
+                stringArgumentIndex = 1;
+                return true;
+            }
 
             // On .NET Core 2.1+ and Xamarin platforms, there's a built-in
             // string.Contains overload that accepts comparison.
@@ -483,7 +538,7 @@ namespace Realms
             _coreQueryHandle.GroupEnd();
         }
 
-        internal static bool TryExtractConstantValue(Expression expr, out object value)
+        internal static bool TryExtractConstantValue(Expression expr, out object? value)
         {
             if (expr.NodeType == ExpressionType.Convert)
             {
@@ -507,7 +562,7 @@ namespace Realms
                     return true;
                 }
 
-                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
+                if (TryExtractConstantValue(memberAccess.Expression!, out var targetObject))
                 {
                     value = fieldInfo.GetValue(targetObject);
                     return true;
@@ -522,7 +577,7 @@ namespace Realms
                     return true;
                 }
 
-                if (TryExtractConstantValue(memberAccess.Expression, out object targetObject))
+                if (TryExtractConstantValue(memberAccess.Expression!, out var targetObject))
                 {
                     value = propertyInfo.GetValue(targetObject);
                     return true;
@@ -565,7 +620,7 @@ namespace Realms
                     throw new NotSupportedException($"The lhs of the binary operator '{leftExpression.NodeType}' should be a member expression accessing a property on a managed RealmObjectBase.\nUnable to process '{node.Left}'.");
                 }
 
-                if (!TryExtractConstantValue(node.Right, out object rightValue))
+                if (!TryExtractConstantValue(node.Right, out var rightValue))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a constant or closure variable expression.\nUnable to process '{node.Right}'.");
                 }
@@ -575,7 +630,7 @@ namespace Realms
                     throw new NotSupportedException($"The rhs of the binary operator '{rightExpression.NodeType}' should be a managed RealmObjectBase.\nUnable to process '{node.Right}'.");
                 }
 
-                string leftName = null;
+                string? leftName = null;
 
                 if (IsRealmValueTypeExpression(memberExpression, out leftName))
                 {
@@ -655,7 +710,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryEqual(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
 
@@ -678,7 +733,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
@@ -700,7 +755,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
@@ -715,7 +770,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
@@ -730,7 +785,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
@@ -745,7 +800,7 @@ namespace Realms
             }
         }
 
-        private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value, Type columnType)
+        private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object? value, Type columnType)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
             switch (value)
@@ -762,7 +817,7 @@ namespace Realms
 
         private delegate void QueryAction(SharedRealmHandle realm, IntPtr propertyIndex, in RealmValue value);
 
-        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object value, Type columnType, QueryAction action)
+        private static void AddQueryForConvertibleTypes(SharedRealmHandle realm, IntPtr propertyIndex, object? value, Type columnType, QueryAction action)
         {
             if (columnType.IsConstructedGenericType && columnType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
@@ -819,7 +874,8 @@ namespace Realms
             }
             else if (typeof(IRealmObjectBase).IsAssignableFrom(columnType))
             {
-                action(realm, propertyIndex, RealmValue.Object(Operator.Convert<IRealmObjectBase>(value)));
+                var obj = Operator.Convert<IRealmObjectBase>(value);
+                action(realm, propertyIndex, obj == null ? RealmValue.Null : RealmValue.Object(obj));
             }
             else if (columnType == typeof(RealmValue))
             {
@@ -833,7 +889,7 @@ namespace Realms
 
         private static bool GetComparisonCaseSensitive(MethodCallExpression m)
         {
-            if (!TryExtractConstantValue(m.Arguments.Last(), out object argument) || !(argument is StringComparison))
+            if (!TryExtractConstantValue(m.Arguments.Last(), out var argument) || argument is not StringComparison)
             {
                 throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and StringComparison constant arguments.");
             }
@@ -854,8 +910,8 @@ namespace Realms
             if (parentType.HasValue)
             {
                 if (name == null ||
-                    memberExpression.Expression.NodeType != ExpressionType.Parameter ||
-                    !(memberExpression.Member is PropertyInfo) ||
+                    memberExpression!.Expression!.NodeType != ExpressionType.Parameter ||
+                    memberExpression.Member is not PropertyInfo ||
                     !_metadata.Schema.TryFindProperty(name, out var property) ||
                     property.Type.HasFlag(PropertyType.Array) ||
                     property.Type.HasFlag(PropertyType.Set))
@@ -864,10 +920,10 @@ namespace Realms
                 }
             }
 
-            return name;
+            return name!;
         }
 
-        private bool IsRealmValueTypeExpression(MemberExpression memberExpression, out string leftName)
+        private bool IsRealmValueTypeExpression(MemberExpression memberExpression, [MaybeNullWhen(false)] out string leftName)
         {
             leftName = null;
 

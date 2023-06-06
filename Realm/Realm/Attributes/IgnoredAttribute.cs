@@ -23,6 +23,10 @@ namespace Realms
     /// <summary>
     /// An attribute that indicates an ignored property. Ignored properties will not be persisted in the Realm.
     /// </summary>
+    /// <remarks>
+    /// Non-autoimplemented properties are automatically ignored, as are properties that only have a setter or
+    /// a getter.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class IgnoredAttribute : Attribute
     {

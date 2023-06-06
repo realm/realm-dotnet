@@ -26,7 +26,7 @@ namespace SetupUnityPackage
     internal class RealmOptions : OptionsBase
     {
         [Option("packages-path", Required = true, HelpText = "Path to the folder containing Realm.nupkg, Realm.UnityUtils.nupkg, and Realm.UnityWeaver.nupkg to use.")]
-        public string PackagesPath { get; set; }
+        public string PackagesPath { get; set; } = null!;
 
         [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
         public bool Pack { get; set; }
@@ -38,9 +38,7 @@ namespace SetupUnityPackage
 
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
-            "Realm.SourceGenerator",
             "Microsoft.CSharp",
-            "Realm.Fody",
             "Fody",
             "System.Dynamic.Runtime",
         };
@@ -86,11 +84,8 @@ namespace SetupUnityPackage
                 { "runtimes/win10-arm64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/ARM64/realm-wrappers.dll" },
                 { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86_64/realm-wrappers.dll" },
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86/realm-wrappers.dll" },
-            }, _realmDependencies),
-            new PackageInfo("Realm.SourceGenerator", new Dictionary<string, string>
-            {
                 { "analyzers/dotnet/cs/Realm.SourceGenerator.dll", "Editor/Realm.SourceGenerator.dll" },
-            }),
+            }, _realmDependencies),
             new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityUtils.dll", "Runtime/Realm.UnityUtils.dll" },

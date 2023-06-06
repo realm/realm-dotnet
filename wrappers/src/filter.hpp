@@ -33,7 +33,7 @@ inline Results* get_empty_results()
 
 inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableRef table, 
                                         Query query, uint16_t* query_buf, size_t query_len,
-                                        realm_value_t* arguments, size_t args_count, DescriptorOrdering new_order)
+                                        query_argument* arguments, size_t args_count, DescriptorOrdering new_order)
 {
     if (!table) {
         return get_empty_results();
@@ -46,12 +46,33 @@ inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableR
 
     std::vector<Mixed> mixed_args;
     mixed_args.reserve(args_count);
+    
+    std::vector<Geospatial> geo_store;
+    geo_store.reserve(args_count);
+
     for (size_t i = 0; i < args_count; ++i) {
-        if (arguments[i].type != realm_value_type::RLM_TYPE_LINK) {
-            mixed_args.push_back(from_capi(arguments[i]));
-        }
-        else {
-            mixed_args.push_back(from_capi(arguments[i].link.object, true));
+        switch (arguments[i].type) {
+        case query_argument_type::PRIMITIVE: {
+            auto primitive = arguments[i].primitive;
+            if (primitive.type != realm_value_type::RLM_TYPE_LINK) {
+                mixed_args.push_back(from_capi(primitive));
+            }
+            else {
+                mixed_args.push_back(from_capi(primitive.link.object, true));
+            }
+        } break;
+        case query_argument_type::BOX:
+            geo_store.push_back(from_capi(arguments[i].box));
+            mixed_args.push_back(Mixed(&geo_store.back()));
+            break;
+        case query_argument_type::CIRCLE:
+            geo_store.push_back(from_capi(arguments[i].circle));
+            mixed_args.push_back(Mixed(&geo_store.back()));
+            break;
+        case query_argument_type::POLYGON:
+            geo_store.push_back(from_capi(arguments[i].polygon));
+            mixed_args.push_back(Mixed(&geo_store.back()));
+            break;
         }
     }
 

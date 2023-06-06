@@ -6,20 +6,26 @@
     <StyleCopTreatErrorsAsWarnings>true</StyleCopTreatErrorsAsWarnings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Title>Realm</Title>
     <PackageReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</PackageReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
+    <NoWarn>NU5100</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="MongoDB.Bson" Version="2.11.3" />
+    <PackageReference Include="PolySharp" Version="1.12.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.205">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -28,16 +34,19 @@
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6" />
     <PackageReference Include="Remotion.Linq" Version="2.2.0" />
-    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
-    <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile" />
+    <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="Package">
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
-    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
-    <None Update="Helpers\Operator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Operator.cs</LastGenOutput>
-    </None>
+    <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
+    <None Include="wrappers-props\Realm.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />
+    <None Include="..\Realm.Fody\Realm.Fody.xcf" PackagePath="weaver\Realm.Fody.xcf" Pack="true" Visible="false" />
+    <None Include="..\Realm.Fody\bin\$(Configuration)\netstandard2.0\Realm.Fody.dll" PackagePath="weaver\Realm.Fody.dll" Pack="true" Visible="false" />
     <!-- iOS -->
     <Content Include="wrappers-props\xamarinios\Realm.dll.config">
       <Pack>true</Pack>
@@ -83,10 +92,20 @@
       <Link>wrappers\Darwin\librealm-wrappers.dylib</Link>
     </None>
     <!-- Linux -->
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x86_64\librealm-wrappers.so">
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\native</PackagePath>
-      <Link>wrappers\Linux\librealm-wrappers.so</Link>
+      <Link>wrappers\Linux-x86_64\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-armv7l\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm\native</PackagePath>
+      <Link>wrappers\Linux-armhf\librealm-wrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-aarch64\librealm-wrappers.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm64\native</PackagePath>
+      <Link>wrappers\Linux-aarch64\librealm-wrappers.so</Link>
     </None>
     <!-- Android -->
     <Content Include="wrappers-props\monoandroid\wrappers.props" Pack="true" PackagePath="build\monoandroid\Realm.props" />
@@ -150,10 +169,24 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />
+    <None Update="Helpers\Operator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Operator.cs</LastGenOutput>
+    </None>
     <Compile Update="Helpers\Operator.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Operator.tt</DependentUpon>
+    </Compile>
+    <None Update="DatabaseTypes\QueryArgument.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryArgument.cs</LastGenOutput>
+    </None>
+    <Compile Update="DatabaseTypes\QueryArgument.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QueryArgument.tt</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

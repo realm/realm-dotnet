@@ -30,31 +30,31 @@ namespace Realms.Tests.Database
     {
         #region TestCaseSources
 
-        private static object[] GetTestCases<T>(IEnumerable<T?[]> values)
+        private static object?[] GetTestCases<T>(IEnumerable<T?[]> values)
             where T : struct
         {
-            var cases = new List<object>
+            var cases = new List<object?>
             {
-                new object[] { null }
+                new object?[] { null }
             };
 
-            var filteredValues = values.Select(v => v.Where(i => i.HasValue).Select(i => i.Value).ToArray())
+            var filteredValues = values.Select(v => v.Where(i => i.HasValue).Select(i => i!.Value).ToArray())
                                        .Where(v => v.Any());
 
             foreach (var item in filteredValues)
             {
-                cases.Add(new object[] { item });
+                cases.Add(new object?[] { item });
             }
 
             return cases.ToArray();
         }
 
-        private static object[] GetTestCases<T>(IEnumerable<T[]> values)
+        private static object?[] GetTestCases<T>(IEnumerable<T?[]> values)
             where T : class
         {
-            var cases = new List<object>
+            var cases = new List<object?>
             {
-                new object[] { null }
+                new object?[] { null }
             };
 
             var filteredValues = values.Select(v => v.Where(i => i != null).ToArray())
@@ -62,22 +62,22 @@ namespace Realms.Tests.Database
 
             foreach (var item in filteredValues)
             {
-                cases.Add(new object[] { item });
+                cases.Add(new object?[] { item });
             }
 
             return cases.ToArray();
         }
 
-        private static object[] GetNullableTestCases<T>(IEnumerable<T[]> values)
+        private static object?[] GetNullableTestCases<T>(IEnumerable<T[]> values)
         {
-            var cases = new List<object>
+            var cases = new List<object?>
             {
-                new object[] { null }
+                new object?[] { null }
             };
 
             foreach (var item in values)
             {
-                cases.Add(new object[] { item });
+                cases.Add(new object?[] { item });
             }
 
             return cases.ToArray();
@@ -90,9 +90,9 @@ namespace Realms.Tests.Database
             new bool?[] { true, true, null, false },
         };
 
-        public static readonly object[] BooleanTestValues = GetTestCases(_booleanValues);
+        public static readonly object?[] BooleanTestValues = GetTestCases(_booleanValues);
 
-        public static readonly object[] NullableBooleanTestValues = GetNullableTestCases(_booleanValues);
+        public static readonly object?[] NullableBooleanTestValues = GetNullableTestCases(_booleanValues);
 
         private static readonly IEnumerable<byte?[]> _byteValues = new[]
         {
@@ -102,9 +102,9 @@ namespace Realms.Tests.Database
             new byte?[] { 1, 2, 3, null },
         };
 
-        public static readonly object[] ByteTestValues = GetTestCases(_byteValues);
+        public static readonly object?[] ByteTestValues = GetTestCases(_byteValues);
 
-        public static readonly object[] NullableByteTestValues = GetNullableTestCases(_byteValues);
+        public static readonly object?[] NullableByteTestValues = GetNullableTestCases(_byteValues);
 
         private static readonly IEnumerable<char?[]> _charValues = new[]
         {
@@ -114,9 +114,9 @@ namespace Realms.Tests.Database
             new char?[] { 'a', 'b', 'c', 'b', null }
         };
 
-        public static readonly object[] CharTestValues = GetTestCases(_charValues);
+        public static readonly object?[] CharTestValues = GetTestCases(_charValues);
 
-        public static readonly object[] NullableCharTestValues = GetNullableTestCases(_charValues);
+        public static readonly object?[] NullableCharTestValues = GetNullableTestCases(_charValues);
 
         private static readonly IEnumerable<double?[]> _doubleValues = new[]
         {
@@ -126,9 +126,9 @@ namespace Realms.Tests.Database
             new double?[] { -1, 3.4, null, 5.3, 9 }
         };
 
-        public static readonly object[] DoubleTestValues = GetTestCases(_doubleValues);
+        public static readonly object?[] DoubleTestValues = GetTestCases(_doubleValues);
 
-        public static readonly object[] NullableDoubleTestValues = GetNullableTestCases(_doubleValues);
+        public static readonly object?[] NullableDoubleTestValues = GetNullableTestCases(_doubleValues);
 
         private static readonly IEnumerable<short?[]> _shortValues = new[]
         {
@@ -138,9 +138,9 @@ namespace Realms.Tests.Database
             new short?[] { 3, -1, null, 45, null },
         };
 
-        public static readonly object[] Int16TestValues = GetTestCases(_shortValues);
+        public static readonly object?[] Int16TestValues = GetTestCases(_shortValues);
 
-        public static readonly object[] NullableInt16TestValues = GetNullableTestCases(_shortValues);
+        public static readonly object?[] NullableInt16TestValues = GetNullableTestCases(_shortValues);
 
         private static readonly IEnumerable<int?[]> _intValues = new[]
         {
@@ -150,9 +150,9 @@ namespace Realms.Tests.Database
             new int?[] { -5, 3, 9, null, 350 },
         };
 
-        public static readonly object[] Int32TestValues = GetTestCases(_intValues);
+        public static readonly object?[] Int32TestValues = GetTestCases(_intValues);
 
-        public static readonly object[] NullableInt32TestValues = GetNullableTestCases(_intValues);
+        public static readonly object?[] NullableInt32TestValues = GetNullableTestCases(_intValues);
 
         private static readonly IEnumerable<long?[]> _longValues = new[]
         {
@@ -162,9 +162,9 @@ namespace Realms.Tests.Database
             new long?[] { 4, -39, 81, null, -69324 },
         };
 
-        public static readonly object[] Int64TestValues = GetTestCases(_longValues);
+        public static readonly object?[] Int64TestValues = GetTestCases(_longValues);
 
-        public static readonly object[] NullableInt64TestValues = GetNullableTestCases(_longValues);
+        public static readonly object?[] NullableInt64TestValues = GetNullableTestCases(_longValues);
 
         private static readonly IEnumerable<decimal?[]> _decimalValues = new[]
         {
@@ -174,9 +174,9 @@ namespace Realms.Tests.Database
             new decimal?[] { -1, 3.4M, null, 5.3M, 9.54375843758349634963634M }
         };
 
-        public static readonly object[] DecimalTestValues = GetTestCases(_decimalValues);
+        public static readonly object?[] DecimalTestValues = GetTestCases(_decimalValues);
 
-        public static readonly object[] NullableDecimalTestValues = GetNullableTestCases(_decimalValues);
+        public static readonly object?[] NullableDecimalTestValues = GetNullableTestCases(_decimalValues);
 
         private static readonly IEnumerable<Decimal128?[]> _decimal128Values = new[]
         {
@@ -186,9 +186,9 @@ namespace Realms.Tests.Database
             new Decimal128?[] { -1, 3.4M, null, 5.3M, -23.424389584396384963M }
         };
 
-        public static readonly object[] Decimal128TestValues = GetTestCases(_decimal128Values);
+        public static readonly object?[] Decimal128TestValues = GetTestCases(_decimal128Values);
 
-        public static readonly object[] NullableDecimal128TestValues = GetNullableTestCases(_decimal128Values);
+        public static readonly object?[] NullableDecimal128TestValues = GetNullableTestCases(_decimal128Values);
 
         private static readonly IEnumerable<ObjectId?[]> _objectIdValues = new[]
         {
@@ -198,9 +198,9 @@ namespace Realms.Tests.Database
             new ObjectId?[] { new ObjectId("5f651b2930643efeef987e5d"), TestHelpers.GenerateRepetitiveObjectId(byte.MaxValue), null, new ObjectId("5f651c4cf755604f2fbf7440") }
         };
 
-        public static readonly object[] ObjectIdTestValues = GetTestCases(_objectIdValues);
+        public static readonly object?[] ObjectIdTestValues = GetTestCases(_objectIdValues);
 
-        public static readonly object[] NullableObjectIdTestValues = GetNullableTestCases(_objectIdValues);
+        public static readonly object?[] NullableObjectIdTestValues = GetNullableTestCases(_objectIdValues);
 
         private static readonly IEnumerable<Guid?[]> _guidValues = new[]
         {
@@ -210,9 +210,9 @@ namespace Realms.Tests.Database
             new Guid?[] { Guid.Parse("d31e0d4c-fa23-48eb-8d24-0b2a7288922c"), Guid.Parse("7ca0a661-1146-4c94-81cd-87a7ba9e9d0a"), null },
         };
 
-        public static readonly object[] GuidTestValues = GetTestCases(_guidValues);
+        public static readonly object?[] GuidTestValues = GetTestCases(_guidValues);
 
-        public static readonly object[] NullableGuidTestValues = GetNullableTestCases(_guidValues);
+        public static readonly object?[] NullableGuidTestValues = GetNullableTestCases(_guidValues);
 
         private static readonly DateTimeOffset _someDate = new(2021, 12, 3, 4, 5, 6, TimeSpan.FromHours(-1));
         private static readonly IEnumerable<DateTimeOffset?[]> _dateValues = new[]
@@ -223,36 +223,36 @@ namespace Realms.Tests.Database
             new DateTimeOffset?[] { _someDate.AddDays(5), null, _someDate.AddDays(-39), _someDate.AddDays(81), _someDate.AddDays(-69324) },
         };
 
-        public static readonly object[] DateTestValues = GetTestCases(_dateValues);
+        public static readonly object?[] DateTestValues = GetTestCases(_dateValues);
 
-        public static readonly object[] NullableDateTestValues = GetNullableTestCases(_dateValues);
+        public static readonly object?[] NullableDateTestValues = GetNullableTestCases(_dateValues);
 
-        private static readonly IEnumerable<string[]> _stringValues = new[]
+        private static readonly IEnumerable<string?[]> _stringValues = new[]
         {
-            new string[] { string.Empty },
-            new string[] { null },
-            new string[] { " " },
-            new string[] { "abc", "cdf", "az" },
-            new string[] { "a", null, "foo", "bar", null },
+            new string?[] { string.Empty },
+            new string?[] { null },
+            new string?[] { " " },
+            new string?[] { "abc", "cdf", "az" },
+            new string?[] { "a", null, "foo", "bar", null },
         };
 
-        public static readonly object[] StringTestValues = GetTestCases(_stringValues);
+        public static readonly object?[] StringTestValues = GetTestCases(_stringValues);
 
-        public static readonly object[] NullableStringTestValues = GetNullableTestCases(_stringValues);
+        public static readonly object?[] NullableStringTestValues = GetNullableTestCases(_stringValues);
 
-        private static readonly IEnumerable<byte[][]> _byteArrayValues = new[]
+        private static readonly IEnumerable<byte[]?[]> _byteArrayValues = new[]
         {
-            new byte[][] { Array.Empty<byte>() },
-            new byte[][] { null },
-            new byte[][] { new byte[] { 0 } },
-            new byte[][] { new byte[] { 0, byte.MinValue, byte.MaxValue } },
-            new byte[][] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) },
-            new byte[][] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null },
+            new byte[]?[] { Array.Empty<byte>() },
+            new byte[]?[] { null },
+            new byte[]?[] { new byte[] { 0 } },
+            new byte[]?[] { new byte[] { 0, byte.MinValue, byte.MaxValue } },
+            new byte[]?[] { TestHelpers.GetBytes(3), TestHelpers.GetBytes(5), TestHelpers.GetBytes(7) },
+            new byte[]?[] { TestHelpers.GetBytes(1), null, TestHelpers.GetBytes(3), TestHelpers.GetBytes(3), null },
         };
 
-        public static readonly object[] ByteArrayTestValues = GetTestCases(_byteArrayValues);
+        public static readonly object?[] ByteArrayTestValues = GetTestCases(_byteArrayValues);
 
-        public static readonly object[] NullableByteArrayTestValues = GetNullableTestCases(_byteArrayValues);
+        public static readonly object?[] NullableByteArrayTestValues = GetNullableTestCases(_byteArrayValues);
 
         private static readonly IEnumerable<RealmValue[]> _realmValueValues = new[]
         {
@@ -277,7 +277,7 @@ namespace Realms.Tests.Database
         };
 
         // Technically RealmValue can't be nullable and _realmValueValues will not contain null
-        public static readonly object[] RealmValueTestValues = GetNullableTestCases(_realmValueValues);
+        public static readonly object?[] RealmValueTestValues = GetNullableTestCases(_realmValueValues);
 
         #endregion TestCaseSources
 
@@ -481,7 +481,7 @@ namespace Realms.Tests.Database
             var obj = new ObjectWithRequiredStringList();
             _realm.Write(() => _realm.Add(obj));
 
-            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => obj.Strings.Add(null)));
+            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => obj.Strings.Add(null!)))!;
             Assert.That(ex.Message, Does.Contain("Attempted to add null to a list of required values"));
         }
 
@@ -502,9 +502,9 @@ namespace Realms.Tests.Database
         public void RequiredStringList_WhenContainsNull_CanNotAddToRealm()
         {
             var obj = new ObjectWithRequiredStringList();
-            obj.Strings.Add(null);
+            obj.Strings.Add(null!);
             obj.Strings.Add("strings.NonEmpty");
-            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => _realm.Add(obj)));
+            var ex = Assert.Throws<ArgumentException>(() => _realm.Write(() => _realm.Add(obj)))!;
             Assert.That(ex.Message, Does.Contain("Attempted to add null to a list of required values"));
         }
 
@@ -737,10 +737,7 @@ namespace Realms.Tests.Database
 
             public ListTestCaseData(params T[] listData)
             {
-                if (listData == null)
-                {
-                    listData = Array.Empty<T>();
-                }
+                listData ??= Array.Empty<T>();
 
                 referenceList.AddRange(listData);
             }
@@ -948,7 +945,7 @@ namespace Realms.Tests.Database
                     Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
 
                     using var bgRealm = Realm.GetInstance(list.AsRealmCollection().Realm.Config);
-                    var backgroundList = bgRealm.ResolveReference(tsr);
+                    var backgroundList = bgRealm.ResolveReference(tsr)!;
 
                     for (var i = 0; i < backgroundList.Count; i++)
                     {
@@ -969,10 +966,8 @@ namespace Realms.Tests.Database
                 var realm = list.AsRealmCollection().Realm;
 
                 var changeSetList = new List<ChangeSet>();
-                using var token = list.SubscribeForNotifications((collection, changes, error) =>
+                using var token = list.SubscribeForNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         changeSetList.Add(changes);
@@ -1090,7 +1085,7 @@ namespace Realms.Tests.Database
 
             private static void WriteIfNecessary(IEnumerable<T> collection, Action writeAction)
             {
-                Transaction transaction = null;
+                Transaction? transaction = null;
                 try
                 {
                     if (collection is RealmCollectionBase<T> realmCollection)

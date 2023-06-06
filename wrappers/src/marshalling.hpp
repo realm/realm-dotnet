@@ -19,18 +19,18 @@
 #pragma once
 
 #include <realm.hpp>
-#include <realm/util/utf8.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/binding_context.hpp>
 
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
 #include "shared_realm_cs.hpp"
+#include "utf8.hpp"
 
 namespace realm {
 namespace binding {
 
-enum class realm_value_type : unsigned char {
+enum class realm_value_type : uint8_t {
     RLM_TYPE_NULL,
     RLM_TYPE_INT,
     RLM_TYPE_BOOL,
@@ -43,6 +43,13 @@ enum class realm_value_type : unsigned char {
     RLM_TYPE_OBJECT_ID,
     RLM_TYPE_LINK,
     RLM_TYPE_UUID,
+};
+
+enum class query_argument_type : uint8_t {
+    PRIMITIVE,
+    BOX,
+    POLYGON,
+    CIRCLE,
 };
 
 typedef struct realm_string {
@@ -104,6 +111,40 @@ typedef struct realm_value {
         return integer == 1;
     }
 } realm_value_t;
+
+struct geo_point {
+    double latitude;
+    double longitude;
+};
+
+struct geo_box {
+    double left;
+    double top;
+    double right;
+    double bottom;
+};
+
+struct geo_circle {
+    geo_point center;
+    double radius_radians;
+};
+
+struct geo_polygon {
+    geo_point* points;
+    size_t* rings_lengths;
+    size_t num_rings;
+};
+
+struct query_argument {
+    union {
+        realm_value_t primitive;
+        geo_box box;
+        geo_circle circle;
+        geo_polygon polygon;
+    };
+
+    query_argument_type type;
+};
 
 typedef struct realm_sync_error_compensating_write_info {
     realm_string_t reason;
@@ -208,6 +249,42 @@ static inline realm_decimal128_t to_capi(const Decimal128& dec)
 static inline Decimal128 from_capi(realm_decimal128_t dec)
 {
     return Decimal128{ Decimal128::Bid128{{dec.w[0], dec.w[1]}} };
+}
+
+static inline GeoPoint from_capi(geo_point point)
+{
+    return GeoPoint(point.longitude, point.latitude);
+}
+
+static inline GeoBox from_capi(geo_box box)
+{
+    return GeoBox{ GeoPoint(box.left, box.bottom), GeoPoint(box.right, box.top) };
+}
+
+static inline GeoCircle from_capi(geo_circle circle)
+{
+    return GeoCircle{ circle.radius_radians, from_capi(circle.center) };
+}
+
+static inline GeoPolygon from_capi(geo_polygon polygon)
+{
+    std::vector<std::vector<GeoPoint>> rings;
+    rings.reserve(polygon.num_rings);
+
+    int points_index = 0;
+    for (int i = 0; i < polygon.num_rings; i++) {
+        std::vector<GeoPoint> points;
+        int points_len = polygon.rings_lengths[i];
+        points.reserve(points_len);
+
+        for (int j = 0; j < points_len; j++) {
+            points.push_back(from_capi(polygon.points[points_index++]));
+        }
+
+        rings.push_back(points);
+    }
+
+    return GeoPolygon(rings);
 }
 
 static inline realm_object_id_t to_capi(ObjectId oid)

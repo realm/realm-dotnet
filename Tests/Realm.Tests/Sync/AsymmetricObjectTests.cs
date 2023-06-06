@@ -26,15 +26,12 @@ using NUnit.Framework.Internal;
 using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Sync;
-using Realms.Sync.Exceptions;
 #if TEST_WEAVER
 using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
 #endif
 
 namespace Realms.Tests.Sync
@@ -199,7 +196,7 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(realm);
                 var documents = await GetRemoteObjects<AsymmetricObjectWithAllTypes>(flxConfig.User, "_id", BsonValue.Create(id));
                 Assert.That(documents.Length, Is.EqualTo(1));
-                Assert.That(documents[0].ByteArrayProperty.Count, Is.EqualTo(ObjectSize));
+                Assert.That(documents[0].ByteArrayProperty!.Count, Is.EqualTo(ObjectSize));
             });
         }
 
@@ -226,7 +223,7 @@ namespace Realms.Tests.Sync
                 Assert.That(asymmetribObj.IsManaged);
                 Assert.That(asymmetribObj.IsValid, Is.False);
 
-                var ex = Assert.Throws<RealmInvalidObjectException>(() => _ = asymmetribObj.PartitionLike);
+                var ex = Assert.Throws<RealmInvalidObjectException>(() => _ = asymmetribObj.PartitionLike)!;
                 Assert.That(ex.Message.Contains("Attempted to access detached row"));
             });
         }
@@ -329,7 +326,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 config.Schema = new[] { typeof(BasicAsymmetricObject) };
 
-                var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+                var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config))!;
                 Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in partition based sync"));
             });
         }
@@ -340,7 +337,7 @@ namespace Realms.Tests.Sync
             var config = (RealmConfiguration)RealmConfiguration.DefaultConfiguration;
             config.Schema = new[] { typeof(BasicAsymmetricObject) };
 
-            var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config));
+            var ex = Assert.Throws<RealmSchemaValidationException>(() => GetRealm(config))!;
             Assert.That(ex.Message, Does.Contain($"Asymmetric table '{nameof(BasicAsymmetricObject)}' not allowed in a local Realm"));
         }
 
@@ -422,7 +419,7 @@ namespace Realms.Tests.Sync
                 {
                     realm.Add(parent);
 
-                    Assert.That(parent, Is.EqualTo(parent.EmbeddedDictionaryObject["child"].Parent));
+                    Assert.That(parent, Is.EqualTo(parent.EmbeddedDictionaryObject["child"]!.Parent));
                 });
             });
         }
@@ -635,7 +632,7 @@ namespace Realms.Tests.Sync
 
                 realm.Write(() =>
                 {
-                    var asymmetricObj = (IAsymmetricObject)(object)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
+                    var asymmetricObj = (IAsymmetricObject)realm.DynamicApi.CreateObject(nameof(AsymmetricObjectWithAllTypes), ObjectId.GenerateNewId());
 
                     if (isDynamic)
                     {
@@ -718,7 +715,7 @@ namespace Realms.Tests.Sync
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-        public string PartitionLike { get; set; }
+        public string? PartitionLike { get; set; }
     }
 
     [Explicit]
@@ -751,12 +748,14 @@ namespace Realms.Tests.Sync
 
         public Guid GuidProperty { get; set; }
 
+#if TEST_WEAVER
         [Required]
-        public string RequiredStringProperty { get; set; }
+#endif
+        public string RequiredStringProperty { get; set; } = string.Empty;
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[]? ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
@@ -816,7 +815,7 @@ namespace Realms.Tests.Sync
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-        public IList<EmbeddedIntPropertyObject> EmbeddedListObject { get; }
+        public IList<EmbeddedIntPropertyObject> EmbeddedListObject { get; } = null!;
     }
 
     [Explicit]
@@ -825,7 +824,7 @@ namespace Realms.Tests.Sync
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-        public EmbeddedLevel1 RecursiveObject { get; set; }
+        public EmbeddedLevel1? RecursiveObject { get; set; }
     }
 
     [Explicit]
@@ -834,6 +833,6 @@ namespace Realms.Tests.Sync
         [PrimaryKey, MapTo("_id")]
         public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedDictionaryObject { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject?> EmbeddedDictionaryObject { get; } = null!;
     }
 }

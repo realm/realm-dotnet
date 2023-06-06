@@ -114,14 +114,14 @@ namespace Realms.Helpers
             _ = new ExpandoObjectSerializer();
         }
 
-        public static string ToNativeJson(this object value)
+        public static string ToNativeJson(this object? value)
         {
             if (value is RealmValue rv)
             {
                 return rv.AsAny().ToNativeJson();
             }
 
-            if (value is object[] arr)
+            if (value is object?[] arr)
             {
                 var elements = arr.Select(ToNativeJson);
                 return $"[{string.Join(",", elements)}]";
@@ -137,7 +137,7 @@ namespace Realms.Helpers
 
         private class RealmSerializationProvider : IBsonSerializationProvider
         {
-            public IBsonSerializer GetSerializer(Type type) => type switch
+            public IBsonSerializer? GetSerializer(Type type) => type switch
             {
                 _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
                 _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),

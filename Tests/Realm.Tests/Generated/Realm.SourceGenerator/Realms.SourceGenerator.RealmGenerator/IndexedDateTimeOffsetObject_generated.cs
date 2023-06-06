@@ -21,12 +21,15 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(IndexedDateTimeOffsetObjectObjectHelper))]
+    [Woven(typeof(IndexedDateTimeOffsetObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class IndexedDateTimeOffsetObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="IndexedDateTimeOffsetObject"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("IndexedDateTimeOffsetObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("DateTimeOffset", Realms.RealmValueType.Date, isPrimaryKey: false, isIndexed: true, isNullable: false, managedName: "DateTimeOffset"),
+            Realms.Schema.Property.Primitive("DateTimeOffset", Realms.RealmValueType.Date, isPrimaryKey: false, indexType: IndexType.General, isNullable: false, managedName: "DateTimeOffset"),
         }.Build();
 
         #region IRealmObject implementation
@@ -37,28 +40,35 @@ namespace Realms.Tests.Database
 
         internal IIndexedDateTimeOffsetObjectAccessor Accessor => _accessor ??= new IndexedDateTimeOffsetObjectUnmanagedAccessor(typeof(IndexedDateTimeOffsetObject));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IIndexedDateTimeOffsetObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -91,6 +101,7 @@ namespace Realms.Tests.Database
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -159,13 +170,32 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator IndexedDateTimeOffsetObject(Realms.RealmValue val) => val.AsRealmObject<IndexedDateTimeOffsetObject>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="IndexedDateTimeOffsetObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="IndexedDateTimeOffsetObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator IndexedDateTimeOffsetObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<IndexedDateTimeOffsetObject>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="IndexedDateTimeOffsetObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(IndexedDateTimeOffsetObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="IndexedDateTimeOffsetObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(IndexedDateTimeOffsetObject? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -191,11 +221,13 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class IndexedDateTimeOffsetObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -207,20 +239,20 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new IndexedDateTimeOffsetObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IIndexedDateTimeOffsetObjectAccessor : Realms.IRealmAccessor
         {
             System.DateTimeOffset DateTimeOffset { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IndexedDateTimeOffsetObjectManagedAccessor : Realms.ManagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
             public System.DateTimeOffset DateTimeOffset
@@ -230,7 +262,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class IndexedDateTimeOffsetObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IIndexedDateTimeOffsetObjectAccessor
         {
             public override ObjectSchema ObjectSchema => IndexedDateTimeOffsetObject.RealmSchema;

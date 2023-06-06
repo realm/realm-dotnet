@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using MongoDB.Bson;
 
 namespace Realms
 {
@@ -24,7 +25,8 @@ namespace Realms
     /// An attribute that indicates the primary key property. It allows quick lookup of objects and enforces uniqueness of the values stored. It may only be applied to a single property in a class.
     /// </summary>
     /// <remarks>
-    /// Only char, integral types, and strings can be used as primary keys.
+    /// Valid primary key types are <see cref="char"/>, <see cref="byte"/>, <see cref="short"/>, <see cref="int"/>, <see cref="long"/>,
+    /// <see cref="string"/>, <see cref="ObjectId"/>, <see cref="Guid"/>, as well as their nullable versions.
     /// Once an object with a Primary Key has been added to the Realm, that property may not be changed.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Property)]

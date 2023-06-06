@@ -18,7 +18,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -26,17 +26,17 @@ namespace Realms.SourceGenerator
 {
     internal record ClassInfo
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public ObjectType ObjectType { get; set; }
 
-        public string MapTo { get; set; }
+        public string? MapTo { get; set; }
 
-        public NamespaceInfo NamespaceInfo { get; set; }
+        public NamespaceInfo NamespaceInfo { get; set; } = null!;
 
         public Accessibility Accessibility { get; set; }
 
-        public ITypeSymbol TypeSymbol { get; set; }
+        public ITypeSymbol TypeSymbol { get; set; } = null!;
 
         public List<PropertyInfo> Properties { get; } = new();
 
@@ -63,45 +63,49 @@ namespace Realms.SourceGenerator
 
     internal record NamespaceInfo
     {
-        public string OriginalName { get; set; }
+        public string? OriginalName { get; }
 
-        public bool IsGlobal { get; set; }
+        [MemberNotNullWhen(returnValue: false, member: nameof(OriginalName))]
+        public bool IsGlobal { get; }
+
+        public static NamespaceInfo Global() => new(originalName: null, isGlobal: true);
+
+        public static NamespaceInfo Local(string originalName) => new(originalName: originalName, isGlobal: false);
+
+        private NamespaceInfo(string? originalName, bool isGlobal)
+        {
+            OriginalName = originalName;
+            IsGlobal = isGlobal;
+        }
 
         public string ComputedName => IsGlobal ? "Global" : OriginalName;
     }
 
-    internal record EnclosingClassInfo
+    internal record EnclosingClassInfo(string Name, Accessibility Accessibility);
+
+    internal record PropertyInfo(string Name)
     {
-        public string Name { get; set; }
-
-        public Accessibility Accessibility { get; set; }
-    }
-
-    internal record PropertyInfo
-    {
-        public string Name { get; set; }
-
-        public bool IsIndexed { get; set; }
+        public IndexType? Index { get; set; }
 
         public bool IsRequired { get; set; }
 
         public bool IsPrimaryKey { get; set; }
 
-        public string MapTo { get; set; }
+        public string? MapTo { get; set; }
 
-        public string Backlink { get; set; }
+        public string? Backlink { get; set; }
 
-        public string BacklinkMapTo { get; set; }
+        public string? BacklinkMapTo { get; set; }
 
-        public PropertyTypeInfo TypeInfo { get; set; }
+        public PropertyTypeInfo TypeInfo { get; set; } = null!;
 
         public Accessibility Accessibility { get; set; }
 
-        public string Initializer { get; set; }
+        public string? Initializer { get; set; }
 
         public string GetMappedOrOriginalName() => MapTo ?? Name;
 
-        public string GetMappedOrOriginalBacklink() => BacklinkMapTo ?? Backlink;
+        public string? GetMappedOrOriginalBacklink() => BacklinkMapTo ?? Backlink;
     }
 
     internal abstract record PropertyTypeInfo
@@ -134,6 +138,7 @@ namespace Realms.SourceGenerator
 
         public virtual CollectionType CollectionType { get; }
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public virtual bool IsRealmInteger { get; set; }
 
         // NullabilityAnnotation != None for all value types and for ref types with nullability annotations enabled
@@ -142,31 +147,35 @@ namespace Realms.SourceGenerator
         public bool IsNullable => NullableAnnotation == NullableAnnotation.None || NullableAnnotation == NullableAnnotation.Annotated;
 
         // Only valid if ScalarType == Object;
-        public string MapTo { get; set; }
+        public string? MapTo { get; set; }
 
-        public string Namespace { get; set; }
+        public string? Namespace { get; set; }
 
         public ObjectType ObjectType { get; set; }
 
-        public ITypeSymbol TypeSymbol { get; set; }
+        public ITypeSymbol TypeSymbol { get; set; } = null!;
 
         // This includes the eventual nullability annotation ("?")
-        public ITypeSymbol CompleteTypeSymbol { get; set; }
+        public ITypeSymbol CompleteTypeSymbol { get; set; } = null!;
 
-        public PropertyTypeInfo InternalType { get; set; }
+        public PropertyTypeInfo? InternalType { get; set; }
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsCollection => CollectionType != CollectionType.None;
 
-        public bool IsSimpleType => ScalarType != ScalarType.None;
-
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsListOrSet => IsList || IsSet;
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsSet => CollectionType == CollectionType.Set;
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsList => CollectionType == CollectionType.List;
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsDictionary => CollectionType == CollectionType.Dictionary;
 
+        [MemberNotNullWhen(returnValue: true, member: nameof(InternalType))]
         public bool IsBacklink => CollectionType == CollectionType.Backlink;
 
         public virtual bool IsUnsupported => false;
@@ -227,10 +236,9 @@ namespace Realms.SourceGenerator
             return _indexableTypes.Contains(ScalarType);
         }
 
-        public bool IsSupportedPrimaryKeyType()
-        {
-            return _primaryKeyTypes.Contains(ScalarType);
-        }
+        public bool IsSupportedFullTextType() => ScalarType == ScalarType.String;
+
+        public bool IsSupportedPrimaryKeyType() => _primaryKeyTypes.Contains(ScalarType);
 
         public bool IsSupportedRequiredType()
         {
@@ -285,7 +293,7 @@ namespace Realms.SourceGenerator
          * </code>
          * If we would take the nullability of AllTypesClass on his own, this would be nullable. This can't be nullable though, because it can't be nullable in a list.
          */
-        public (string CompleteType, string InternalType, bool NeedsNullForgiving) GetCorrectlyAnnotatedTypeName(bool isRequired)
+        public (string CompleteType, string? InternalType, bool NeedsNullForgiving) GetCorrectlyAnnotatedTypeName(bool isRequired)
         {
             var internalTypeString = InternalType?.CompleteFullyQualifiedString;
             var nullableInternalTypeString = $"{internalTypeString}?";
@@ -315,7 +323,7 @@ namespace Realms.SourceGenerator
                 return (CompleteFullyQualifiedString + "?", null, false);
             }
 
-            if (CollectionType == CollectionType.Dictionary && InternalType.ScalarType == ScalarType.Object && InternalType.NullableAnnotation == NullableAnnotation.None)
+            if (IsDictionary && InternalType.ScalarType == ScalarType.Object && InternalType.NullableAnnotation == NullableAnnotation.None)
             {
                 return ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString, true);
             }

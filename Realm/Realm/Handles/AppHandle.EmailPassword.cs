@@ -26,8 +26,6 @@ namespace Realms.Sync
     {
         private static class EmailNativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
             public static extern void register_user(AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
@@ -63,8 +61,6 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string function_args, IntPtr function_args_len,
                 IntPtr tcs_ptr, out NativeException ex);
-
-#pragma warning restore IDE1006 // Naming Styles
         }
 
         public readonly EmailPasswordApi EmailPassword;
@@ -78,55 +74,115 @@ namespace Realms.Sync
                 _appHandle = handle;
             }
 
-            public void RegisterUser(string username, string password, TaskCompletionSource<object> tcs)
+            public async Task RegisterUserAsync(string username, string password)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.register_user(_appHandle, username, (IntPtr)username.Length, password, (IntPtr)password.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.register_user(_appHandle, username, (IntPtr)username.Length, password, (IntPtr)password.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
 
-            public void ConfirmUser(string token, string tokenId, TaskCompletionSource<object> tcs)
+            public async Task ConfirmUserAsync(string token, string tokenId)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.confirm_user(_appHandle, token, (IntPtr)token.Length, tokenId, (IntPtr)tokenId.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.confirm_user(_appHandle, token, (IntPtr)token.Length, tokenId, (IntPtr)tokenId.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
 
-            public void ResendConfirmationEmail(string email, TaskCompletionSource<object> tcs)
+            public async Task ResendConfirmationEmailAsync(string email)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.resend_confirmation_email(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.resend_confirmation_email(_appHandle, email, (IntPtr)email.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
 
-            public void SendResetPasswordEmail(string username, TaskCompletionSource<object> tcs)
+            public async Task SendResetPasswordEmailAsync(string username)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.send_reset_password_email(_appHandle, username, (IntPtr)username.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.send_reset_password_email(_appHandle, username, (IntPtr)username.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
 
-            public void ResetPassword(string password, string token, string tokenId, TaskCompletionSource<object> tcs)
+            public async Task ResetPasswordAsync(string password, string token, string tokenId)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.reset_password(
-                    _appHandle,
-                    password, (IntPtr)password.Length,
-                    token, (IntPtr)token.Length,
-                    tokenId, (IntPtr)tokenId.Length,
-                    GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.reset_password(
+                        _appHandle,
+                        password, (IntPtr)password.Length,
+                        token, (IntPtr)token.Length,
+                        tokenId, (IntPtr)tokenId.Length,
+                        GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
 
-            public void CallResetPasswordFunction(string username, string password, string functionArgs, TaskCompletionSource<object> tcs)
+            public async Task CallResetPasswordFunctionAsync(string username, string password, string functionArgs)
             {
+                var tcs = new TaskCompletionSource();
                 var tcsHandle = GCHandle.Alloc(tcs);
-                EmailNativeMethods.call_reset_password_function(_appHandle,
-                    username, (IntPtr)username.Length,
-                    password, (IntPtr)password.Length,
-                    functionArgs, (IntPtr)functionArgs.Length,
-                    GCHandle.ToIntPtr(tcsHandle), out var ex);
-                ex.ThrowIfNecessary();
+
+                try
+                {
+                    EmailNativeMethods.call_reset_password_function(_appHandle,
+                        username, (IntPtr)username.Length,
+                        password, (IntPtr)password.Length,
+                        functionArgs, (IntPtr)functionArgs.Length,
+                        GCHandle.ToIntPtr(tcsHandle), out var ex);
+                    ex.ThrowIfNecessary();
+                    await tcs.Task;
+                }
+                finally
+                {
+                    tcsHandle.Free();
+                }
             }
         }
     }

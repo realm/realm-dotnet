@@ -17,23 +17,26 @@ using System.Xml.Serialization;
 namespace SourceGeneratorAssemblyToProcess
 {
     [Generated]
-    [Woven(typeof(NullableClassObjectHelper))]
+    [Woven(typeof(NullableClassObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class NullableClass : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="NullableClass"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullableClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("NonNullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableInt"),
-            Realms.Schema.Property.Primitive("NullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt"),
-            Realms.Schema.Property.Primitive("NonNullableString", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableString"),
-            Realms.Schema.Property.Primitive("NullableString", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableString"),
-            Realms.Schema.Property.Primitive("NonNullableData", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableData"),
-            Realms.Schema.Property.Primitive("NullableData", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableData"),
+            Realms.Schema.Property.Primitive("NonNullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableInt"),
+            Realms.Schema.Property.Primitive("NullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt"),
+            Realms.Schema.Property.Primitive("NonNullableString", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableString"),
+            Realms.Schema.Property.Primitive("NullableString", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableString"),
+            Realms.Schema.Property.Primitive("NonNullableData", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableData"),
+            Realms.Schema.Property.Primitive("NullableData", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableData"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNullableInt", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "CollectionOfNullableInt"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNonNullableInt", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CollectionOfNonNullableInt"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNullableString", Realms.RealmValueType.String, areElementsNullable: true, managedName: "CollectionOfNullableString"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNonNullableString", Realms.RealmValueType.String, areElementsNullable: false, managedName: "CollectionOfNonNullableString"),
-            Realms.Schema.Property.Primitive("NonNullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableRealmInt"),
-            Realms.Schema.Property.Primitive("NullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableRealmInt"),
+            Realms.Schema.Property.Primitive("NonNullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableRealmInt"),
+            Realms.Schema.Property.Primitive("NullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableRealmInt"),
             Realms.Schema.Property.Object("NullableObject", "NullableClass", managedName: "NullableObject"),
             Realms.Schema.Property.ObjectList("ListNonNullabeObject", "NullableClass", managedName: "ListNonNullabeObject"),
             Realms.Schema.Property.ObjectSet("SetNonNullableObject", "NullableClass", managedName: "SetNonNullableObject"),
@@ -50,28 +53,35 @@ namespace SourceGeneratorAssemblyToProcess
 
         internal INullableClassAccessor Accessor => _accessor ??= new NullableClassUnmanagedAccessor(typeof(NullableClass));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (INullableClassAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -90,28 +100,37 @@ namespace SourceGeneratorAssemblyToProcess
                     newAccessor.DictionaryNullableObject.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.NonNullableInt != default(int))
+                if (!skipDefaults || oldAccessor.NonNullableInt != default(int))
                 {
                     newAccessor.NonNullableInt = oldAccessor.NonNullableInt;
                 }
-                newAccessor.NullableInt = oldAccessor.NullableInt;
-                if(!skipDefaults || oldAccessor.NonNullableString != default(string))
+                if (!skipDefaults || oldAccessor.NullableInt != default(int?))
                 {
-                    newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                    newAccessor.NullableInt = oldAccessor.NullableInt;
                 }
-                newAccessor.NullableString = oldAccessor.NullableString;
-                if(!skipDefaults || oldAccessor.NonNullableData != default(byte[]))
+                newAccessor.NonNullableString = oldAccessor.NonNullableString;
+                if (!skipDefaults || oldAccessor.NullableString != default(string?))
                 {
-                    newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                    newAccessor.NullableString = oldAccessor.NullableString;
                 }
-                newAccessor.NullableData = oldAccessor.NullableData;
+                newAccessor.NonNullableData = oldAccessor.NonNullableData;
+                if (!skipDefaults || oldAccessor.NullableData != default(byte[]?))
+                {
+                    newAccessor.NullableData = oldAccessor.NullableData;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableInt, newAccessor.CollectionOfNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableInt, newAccessor.CollectionOfNonNullableInt, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNullableString, newAccessor.CollectionOfNullableString, update, skipDefaults);
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.CollectionOfNonNullableString, newAccessor.CollectionOfNonNullableString, update, skipDefaults);
-                newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
-                newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
-                if(oldAccessor.NullableObject != null)
+                if (!skipDefaults || oldAccessor.NonNullableRealmInt != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.NonNullableRealmInt = oldAccessor.NonNullableRealmInt;
+                }
+                if (!skipDefaults || oldAccessor.NullableRealmInt != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableRealmInt = oldAccessor.NullableRealmInt;
+                }
+                if (oldAccessor.NullableObject != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.NullableObject, update);
                 }
@@ -144,6 +163,7 @@ namespace SourceGeneratorAssemblyToProcess
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -212,13 +232,32 @@ namespace SourceGeneratorAssemblyToProcess
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator NullableClass(Realms.RealmValue val) => val.AsRealmObject<NullableClass>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="NullableClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="NullableClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator NullableClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<NullableClass>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="NullableClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(NullableClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="NullableClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(NullableClass? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -244,11 +283,13 @@ namespace SourceGeneratorAssemblyToProcess
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class NullableClassObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -260,14 +301,14 @@ namespace SourceGeneratorAssemblyToProcess
 
             public Realms.IRealmObjectBase CreateInstance() => new NullableClass();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface INullableClassAccessor : Realms.IRealmAccessor
         {
             int NonNullableInt { get; set; }
@@ -307,7 +348,7 @@ namespace SourceGeneratorAssemblyToProcess
             System.Linq.IQueryable<SourceGeneratorAssemblyToProcess.NullableClass> Backlink { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NullableClassManagedAccessor : Realms.ManagedAccessor, INullableClassAccessor
         {
             public int NonNullableInt
@@ -324,7 +365,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public string NonNullableString
             {
-                get => (string)GetValue("NonNullableString");
+                get => (string)GetValue("NonNullableString")!;
                 set => SetValue("NonNullableString", value);
             }
 
@@ -336,7 +377,7 @@ namespace SourceGeneratorAssemblyToProcess
 
             public byte[] NonNullableData
             {
-                get => (byte[])GetValue("NonNullableData");
+                get => (byte[])GetValue("NonNullableData")!;
                 set => SetValue("NonNullableData", value);
             }
 
@@ -483,7 +524,7 @@ namespace SourceGeneratorAssemblyToProcess
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class NullableClassUnmanagedAccessor : Realms.UnmanagedAccessor, INullableClassAccessor
         {
             public override ObjectSchema ObjectSchema => NullableClass.RealmSchema;
@@ -648,13 +689,13 @@ namespace SourceGeneratorAssemblyToProcess
                         NullableInt = (int?)val;
                         return;
                     case "NonNullableString":
-                        NonNullableString = (string)val;
+                        NonNullableString = (string)val!;
                         return;
                     case "NullableString":
                         NullableString = (string?)val;
                         return;
                     case "NonNullableData":
-                        NonNullableData = (byte[])val;
+                        NonNullableData = (byte[])val!;
                         return;
                     case "NullableData":
                         NullableData = (byte[]?)val;
@@ -684,25 +725,23 @@ namespace SourceGeneratorAssemblyToProcess
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "CollectionOfNullableInt" => (IList<T>)CollectionOfNullableInt,
-                "CollectionOfNonNullableInt" => (IList<T>)CollectionOfNonNullableInt,
-                "CollectionOfNullableString" => (IList<T>)CollectionOfNullableString,
-                "CollectionOfNonNullableString" => (IList<T>)CollectionOfNonNullableString,
-                "ListNonNullabeObject" => (IList<T>)ListNonNullabeObject,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "CollectionOfNullableInt" => (IList<T>)CollectionOfNullableInt,
+                    "CollectionOfNonNullableInt" => (IList<T>)CollectionOfNonNullableInt,
+                    "CollectionOfNullableString" => (IList<T>)CollectionOfNullableString,
+                    "CollectionOfNonNullableString" => (IList<T>)CollectionOfNonNullableString,
+                    "ListNonNullabeObject" => (IList<T>)ListNonNullabeObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "SetNonNullableObject" => (ISet<T>)SetNonNullableObject,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

@@ -22,11 +22,11 @@ namespace Realms.Sync
 {
     internal class Observer<T> : IObserver<T>
     {
-        private readonly Action<T> _onNext;
-        private readonly Action _onCompleted;
-        private readonly Action<Exception> _onError;
+        private readonly Action<T>? _onNext;
+        private readonly Action? _onCompleted;
+        private readonly Action<Exception>? _onError;
 
-        public Observer(Action<T> onNext = null, Action onCompleted = null, Action<Exception> onError = null)
+        public Observer(Action<T>? onNext = null, Action? onCompleted = null, Action<Exception>? onError = null)
         {
             _onNext = onNext;
             _onCompleted = onCompleted;

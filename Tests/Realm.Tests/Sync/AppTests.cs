@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -36,23 +35,17 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCreate_CreatesApp()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
                 BaseUri = new Uri("http://foo.bar"),
                 LocalAppName = "My app",
                 LocalAppVersion = "1.2.3",
-                LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
                 BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
-                CustomLogger = (message, level) => { },
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
@@ -66,48 +59,6 @@ namespace Realms.Tests.Sync
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.Id, Is.Not.Null);
-            });
-        }
-
-        [TestCase(LogLevel.Debug)]
-        [TestCase(LogLevel.Info)]
-        public void App_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var logBuilder = new StringBuilder();
-
-                var appConfig = SyncTestHelpers.GetAppConfig();
-#pragma warning disable CS0618 // Type or member is obsolete
-                appConfig.LogLevel = logLevel;
-                appConfig.CustomLogger = (message, level) =>
-                {
-                    lock (logBuilder)
-                    {
-                        logBuilder.AppendLine($"[{level}] {message}");
-                    }
-                };
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                var app = CreateApp(appConfig);
-
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = await GetRealmAsync(config);
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
-                });
-
-                await WaitForUploadAsync(realm);
-
-                string log;
-                lock (logBuilder)
-                {
-                    log = logBuilder.ToString();
-                }
-
-                Assert.That(log, Does.Contain($"[{logLevel}]"));
-                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
             });
         }
 
@@ -142,7 +93,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                App app = null;
+                App app = null!;
                 var gcTask = TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     var handler = new HttpClientHandler();
@@ -174,7 +125,7 @@ namespace Realms.Tests.Sync
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                Requests.Add((request.Method, request.RequestUri.AbsoluteUri));
+                Requests.Add((request.Method, request.RequestUri!.AbsoluteUri));
                 return base.SendAsync(request, cancellationToken);
             }
         }

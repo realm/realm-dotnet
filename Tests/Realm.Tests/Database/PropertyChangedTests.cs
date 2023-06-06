@@ -27,8 +27,6 @@ using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -42,7 +40,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                string notifiedPropertyName = null;
+                string? notifiedPropertyName = null;
                 var person = new Person();
 
                 var handler = new PropertyChangedEventHandler((sender, e) =>
@@ -135,20 +133,22 @@ namespace Realms.Tests.Database
             });
         }
 
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
+        [Test]
         public void ManagedObject_WhenAnotherThreadInstanceChanged()
         {
             TestHelpers.RunAsyncTest(() =>
             {
                 return TestManagedAsync(async (_, name) =>
                 {
-                    await _realm.WriteAsync(otherRealm =>
+                    await Task.Run(() =>
                     {
-                        var otherPersonInstance = otherRealm.All<Person>().First();
-                        otherPersonInstance.FirstName = name;
+                        using var bgRealm = GetRealm(_realm.Config);
+                        bgRealm.Write(() =>
+                        {
+                            var otherPersonInstance = bgRealm.All<Person>().First();
+                            otherPersonInstance.FirstName = name;
+                        });
                     });
-
-                    await Task.Delay(50);
                 });
             });
         }
@@ -177,7 +177,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var notifiedPropertyNames = new List<string>();
+                var notifiedPropertyNames = new List<string?>();
                 var person = new Person();
                 _realm.Write(() =>
                 {
@@ -210,7 +210,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_MultipleProperties()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -250,8 +250,8 @@ namespace Realms.Tests.Database
         [Test]
         public void MultipleManagedObjects()
         {
-            var firstNotifiedPropertyNames = new List<string>();
-            var secondNotifiedPropertyNames = new List<string>();
+            var firstNotifiedPropertyNames = new List<string?>();
+            var secondNotifiedPropertyNames = new List<string?>();
             var first = new Person();
             var second = new Person();
             _realm.Write(() =>
@@ -293,7 +293,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_AfterSubscribe_CanRemove()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -325,8 +325,8 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_MultipleSubscribers()
         {
-            var subscriber1Properties = new List<string>();
-            var subscriber2Properties = new List<string>();
+            var subscriber1Properties = new List<string?>();
+            var subscriber2Properties = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -370,7 +370,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenMappedTo_ShouldUsePropertyName()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -395,7 +395,7 @@ namespace Realms.Tests.Database
         [Test]
         public void UnmanagedObject_WhenMappedTo_ShouldUsePropertyName()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
 
             person.PropertyChanged += (sender, e) =>
@@ -414,7 +414,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var notifiedPropertyNames = new List<string>();
+                var notifiedPropertyNames = new List<string?>();
                 await TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     var person = _realm.Write(() => _realm.Add(new Person()));
@@ -458,7 +458,7 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(item));
 
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             item.PropertyChanged += (sender, e) =>
             {
                 notifiedPropertyNames.Add(e.PropertyName);
@@ -474,7 +474,7 @@ namespace Realms.Tests.Database
             Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
         }
 
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
+        [Test]
         public void ManagedObject_WhenChangedOnAnotherThread_CallsOnPropertyChanged()
         {
             TestHelpers.RunAsyncTest(async () =>
@@ -486,19 +486,23 @@ namespace Realms.Tests.Database
 
                 _realm.Write(() => _realm.Add(item));
 
-                var notifiedPropertyNames = new List<string>();
+                var notifiedPropertyNames = new List<string?>();
                 item.PropertyChanged += (sender, e) =>
                 {
                     notifiedPropertyNames.Add(e.PropertyName);
                 };
 
-                await _realm.WriteAsync(r =>
+                await Task.Run(() =>
                 {
-                    var otherThreadInstance = r.All<AgedObject>().Single();
-                    otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                    using var bgRealm = GetRealm(_realm.Config);
+                    bgRealm.Write(() =>
+                    {
+                        var otherThreadInstance = bgRealm.All<AgedObject>().Single();
+                        otherThreadInstance.Birthday = DateTimeOffset.UtcNow.AddYears(-6);
+                    });
                 });
 
-                await Task.Yield();
+                _realm.Refresh();
 
                 Assert.That(notifiedPropertyNames, Is.EquivalentTo(new[] { nameof(AgedObject.Birthday), nameof(AgedObject.Age) }));
             });
@@ -512,7 +516,7 @@ namespace Realms.Tests.Database
                 Birthday = DateTimeOffset.UtcNow.AddYears(-5)
             };
 
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             item.PropertyChanged += (sender, e) =>
             {
                 notifiedPropertyNames.Add(e.PropertyName);
@@ -526,7 +530,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSubscribedDuringTransaction_AfterCommit_ShouldGetNotifications()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -566,7 +570,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSubscribedDuringTransaction_AfterRollback_ShouldGetNotifications()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -603,7 +607,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSubscribedDuringCreation_AfterCommit_ShouldReceiveNotifications()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
@@ -633,7 +637,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSubscribedDuringCreation_AfterRollback_ShouldNotThrow()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
@@ -658,7 +662,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenSubscribedDuringDeletion_AfterCommit_ShouldNotThrow()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -685,7 +689,7 @@ namespace Realms.Tests.Database
         [Test, Ignore("After remove + rollback, the object handle is invalid - https://github.com/realm/realm-dotnet/issues/1332")]
         public void ManagedObject_WhenSubscribedDuringDeletion_AfterRollback_ShouldReceiveNotifications()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -719,7 +723,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenPropertyIsAfterBacklinks()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var obj = new BacklinkObject
             {
                 AfterBacklinks = "a",
@@ -757,7 +761,7 @@ namespace Realms.Tests.Database
         [Test]
         public void ManagedObject_WhenDeleted_NotifiesIsValidChanged()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -781,9 +785,9 @@ namespace Realms.Tests.Database
             Assert.That(person.IsValid, Is.False);
         }
 
-        private async Task TestManagedAsync(Func<Person, string, Task> writeFirstNameAction)
+        private async Task TestManagedAsync(Func<Person, string?, Task> writeFirstNameAction)
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -819,9 +823,9 @@ namespace Realms.Tests.Database
             Assert.That(notifiedPropertyNames, Is.Empty);
         }
 
-        private void TestManagedRollback(Action<Person, string> writeFirstNameAction, Func<Transaction> transactionFactory)
+        private void TestManagedRollback(Action<Person, string?> writeFirstNameAction, Func<Transaction> transactionFactory)
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
             var person = new Person();
             _realm.Write(() =>
             {
@@ -848,17 +852,17 @@ namespace Realms.Tests.Database
 
     public partial class BacklinkObject : TestRealmObject
     {
-        public string BeforeBacklinks { get; set; }
+        public string? BeforeBacklinks { get; set; }
 
         [Backlink(nameof(SomeClass.BacklinkObject))]
-        public IQueryable<SomeClass> Links { get; }
+        public IQueryable<SomeClass> Links { get; } = null!;
 
-        public string AfterBacklinks { get; set; }
+        public string? AfterBacklinks { get; set; }
     }
 
     public partial class SomeClass : TestRealmObject
     {
-        public BacklinkObject BacklinkObject { get; set; }
+        public BacklinkObject? BacklinkObject { get; set; }
     }
 
     public partial class AgedObject : TestRealmObject
@@ -883,7 +887,7 @@ namespace Realms.Tests.Database
 #if TEST_WEAVER
         protected override void OnPropertyChanged(string propertyName)
 #else
-        partial void OnPropertyChanged(string propertyName)
+        partial void OnPropertyChanged(string? propertyName)
 #endif
         {
             if (propertyName == nameof(Birthday))

@@ -23,8 +23,6 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Exceptions;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestRealmObject = Realms.IRealmObject;
@@ -242,7 +240,7 @@ namespace Realms.Tests.Database
                     typeof(Foo.DuplicateClass),
                     typeof(Bar.DuplicateClass)
                 }
-            });
+            })!;
 
             Assert.That(ex.Message, Does.Contain("Foo.DuplicateClass"));
             Assert.That(ex.Message, Does.Contain("Bar.DuplicateClass"));
@@ -281,6 +279,6 @@ namespace Bar
     [Realms.Explicit]
     public partial class DuplicateClass : TestRealmObject
     {
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
     }
 }

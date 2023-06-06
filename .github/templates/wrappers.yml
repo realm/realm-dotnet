@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode", "linuxArchs")
 
 #@ wrappersTimeout = 90
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -99,36 +99,27 @@ jobs:
         target: [ 'Device', 'Simulator' ]
     _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}", "wrappers-${{ matrix.platform }}-${{ matrix.target }}", enableLto = False, intermediateSteps = [setupXcode()]))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-" + x + "-Device != 'true'" for x in applePlatforms ])
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-" + x + "-Device != 'true'" for x in applePlatforms ] + [ "needs.check-cache.outputs.wrappers-" + x + "-Simulator != 'true'" for x in applePlatforms ])
   linux:
     runs-on: ubuntu-latest
     name: Linux
+    strategy:
+      matrix:
+        arch: #@ linuxArchs
     timeout-minutes: #@ wrappersTimeout
     needs:
       - check-cache
-    if: needs.check-cache.outputs.wrappers-linux != 'true'
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-linux-" + x + " != 'true'" for x in linuxArchs ])
     steps:
       - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux")
-      - uses: #@ actionDockerLayerCaching
-        continue-on-error: true
-        if: #@ wrappersCacheCondition
-      - name: Build CentOS image
-        uses: #@ actionDockerBuild
-        with:
-          tags: wrappers-centos:latest
-          file: ./wrappers/centos.Dockerfile
-          push: false
+      - #@ checkCache("wrappers-linux-${{ matrix.arch }}")
+      - name: Install Ninja
+        run: sudo apt install ninja-build
         if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: #@ actionDockerRun
-        with:
-          image: wrappers-centos:latest
-          shell: bash
-          options: -v ${{ github.workspace }}:/work
-          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
+        run: #@ getWrapperBuildCommand("./wrappers/build-linux.sh -a=${{ matrix.arch }}")
         if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
+      - #@ uploadArtifacts("wrappers-linux-${{ matrix.arch }}", "wrappers/build/**", 1)
   android:
     runs-on: ubuntu-20.04
     name: Android

@@ -14,22 +14,23 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Database
 {
     [Generated]
-    [Woven(typeof(DynamicOwnerObjectHelper))]
+    [Woven(typeof(DynamicOwnerObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DynamicOwner : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="DynamicOwner"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DynamicOwner", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+            Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Name"),
             Realms.Schema.Property.Object("TopDog", "DynamicDog", managedName: "TopDog"),
             Realms.Schema.Property.ObjectList("Dogs", "DynamicDog", managedName: "Dogs"),
-            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: true, managedName: "Tags"),
+            Realms.Schema.Property.PrimitiveList("Tags", Realms.RealmValueType.String, areElementsNullable: false, managedName: "Tags"),
             Realms.Schema.Property.ObjectDictionary("DogsDictionary", "DynamicDog", managedName: "DogsDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("TagsDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "TagsDictionary"),
             Realms.Schema.Property.ObjectSet("DogsSet", "DynamicDog", managedName: "DogsSet"),
@@ -44,28 +45,35 @@ namespace Realms.Tests.Database
 
         internal IDynamicOwnerAccessor Accessor => _accessor ??= new DynamicOwnerUnmanagedAccessor(typeof(DynamicOwner));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IDynamicOwnerAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -83,11 +91,11 @@ namespace Realms.Tests.Database
                     newAccessor.TagsSet.Clear();
                 }
 
-                if(!skipDefaults || oldAccessor.Name != default(string))
+                if (!skipDefaults || oldAccessor.Name != default(string?))
                 {
                     newAccessor.Name = oldAccessor.Name;
                 }
-                if(oldAccessor.TopDog != null)
+                if (oldAccessor.TopDog != null && newAccessor.Realm != null)
                 {
                     newAccessor.Realm.Add(oldAccessor.TopDog, update);
                 }
@@ -122,6 +130,7 @@ namespace Realms.Tests.Database
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -190,13 +199,32 @@ namespace Realms.Tests.Database
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DynamicOwner(Realms.RealmValue val) => val.AsRealmObject<DynamicOwner>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="DynamicOwner"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="DynamicOwner"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator DynamicOwner?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DynamicOwner>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="DynamicOwner"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(DynamicOwner? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="DynamicOwner"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(DynamicOwner? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -222,11 +250,13 @@ namespace Realms.Tests.Database
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DynamicOwnerObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -238,14 +268,14 @@ namespace Realms.Tests.Database
 
             public Realms.IRealmObjectBase CreateInstance() => new DynamicOwner();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDynamicOwnerAccessor : Realms.IRealmAccessor
         {
             string? Name { get; set; }
@@ -254,7 +284,7 @@ namespace Realms.Tests.Database
 
             System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; }
 
-            System.Collections.Generic.IList<string?> Tags { get; }
+            System.Collections.Generic.IList<string> Tags { get; }
 
             System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; }
 
@@ -265,7 +295,7 @@ namespace Realms.Tests.Database
             System.Collections.Generic.ISet<string?> TagsSet { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicOwnerManagedAccessor : Realms.ManagedAccessor, IDynamicOwnerAccessor
         {
             public string? Name
@@ -294,14 +324,14 @@ namespace Realms.Tests.Database
                 }
             }
 
-            private System.Collections.Generic.IList<string?> _tags = null!;
-            public System.Collections.Generic.IList<string?> Tags
+            private System.Collections.Generic.IList<string> _tags = null!;
+            public System.Collections.Generic.IList<string> Tags
             {
                 get
                 {
                     if (_tags == null)
                     {
-                        _tags = GetListValue<string?>("Tags");
+                        _tags = GetListValue<string>("Tags");
                     }
 
                     return _tags;
@@ -365,7 +395,7 @@ namespace Realms.Tests.Database
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DynamicOwnerUnmanagedAccessor : Realms.UnmanagedAccessor, IDynamicOwnerAccessor
         {
             public override ObjectSchema ObjectSchema => DynamicOwner.RealmSchema;
@@ -394,7 +424,7 @@ namespace Realms.Tests.Database
 
             public System.Collections.Generic.IList<Realms.Tests.Database.DynamicDog> Dogs { get; } = new List<Realms.Tests.Database.DynamicDog>();
 
-            public System.Collections.Generic.IList<string?> Tags { get; } = new List<string?>();
+            public System.Collections.Generic.IList<string> Tags { get; } = new List<string>();
 
             public System.Collections.Generic.IDictionary<string, Realms.Tests.Database.DynamicDog?> DogsDictionary { get; } = new Dictionary<string, Realms.Tests.Database.DynamicDog?>();
 
@@ -441,23 +471,21 @@ namespace Realms.Tests.Database
             public override IList<T> GetListValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "Dogs" => (IList<T>)Dogs,
-                "Tags" => (IList<T>)Tags,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
-                            };
+                {
+                    "Dogs" => (IList<T>)Dogs,
+                    "Tags" => (IList<T>)Tags,
+                    _ => throw new MissingMemberException($"The object does not have a Realm list property with name {propertyName}"),
+                };
             }
 
             public override ISet<T> GetSetValue<T>(string propertyName)
             {
                 return propertyName switch
-                            {
-                "DogsSet" => (ISet<T>)DogsSet,
-                "TagsSet" => (ISet<T>)TagsSet,
-
-                                _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
-                            };
+                {
+                    "DogsSet" => (ISet<T>)DogsSet,
+                    "TagsSet" => (ISet<T>)TagsSet,
+                    _ => throw new MissingMemberException($"The object does not have a Realm set property with name {propertyName}"),
+                };
             }
 
             public override IDictionary<string, TValue> GetDictionaryValue<TValue>(string propertyName)

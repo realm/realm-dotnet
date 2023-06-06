@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "downloadAllArtifacts", "readVersionFromPackage", "uploadPackagesToSleet")
+#@ load("common.lib.yml", "checkoutCode", "downloadAllArtifacts", "readVersionFromPackage", "uploadPackagesToSleet", "uploadToNpm")
 
 ---
 name: Publish Prerelease
@@ -13,3 +13,4 @@ jobs:
     - #@ template.replace(downloadAllArtifacts("completed"))
     - #@ template.replace(readVersionFromPackage())
     - #@ template.replace(uploadPackagesToSleet())
+    - #@ template.replace(uploadToNpm("alpha"))

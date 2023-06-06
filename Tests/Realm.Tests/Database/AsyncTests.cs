@@ -30,87 +30,6 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class AsyncTests : RealmInstanceTest
     {
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
-        public void AsyncWrite_ShouldExecuteOnWorkerThread()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var currentThreadId = Environment.CurrentManagedThreadId;
-                var otherThreadId = currentThreadId;
-
-                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-                Assert.That(SynchronizationContext.Current != null);
-                await _realm.WriteAsync(realm =>
-                {
-                    otherThreadId = Environment.CurrentManagedThreadId;
-                    realm.Add(new Person());
-                });
-
-                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-                Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
-            });
-        }
-
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
-        public void AsyncWrite_WhenOnBackgroundThread_ShouldExecuteOnSameThread()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                await Task.Run(async () =>
-                {
-                    var currentThreadId = Environment.CurrentManagedThreadId;
-                    var otherThreadId = -1;
-
-                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-                    Assert.That(SynchronizationContext.Current == null);
-
-                    await _realm.WriteAsync(realm =>
-                    {
-                        otherThreadId = Environment.CurrentManagedThreadId;
-                        realm.Add(new Person());
-                    });
-
-                    Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
-                    Assert.That(otherThreadId, Is.EqualTo(currentThreadId));
-
-                    _realm.Dispose();
-                });
-            });
-        }
-
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
-        public void AsyncWrite_UpdateViaPrimaryKey()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                IntPrimaryKeyWithValueObject obj = null;
-                _realm.Write(() =>
-                {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject { Id = 123 });
-                });
-
-                await _realm.WriteAsync(realm =>
-                {
-                    var dataObj = realm.Find<IntPrimaryKeyWithValueObject>(123);
-                    dataObj.StringValue = "foobar";
-                });
-
-                // Make sure the changes are immediately visible on the caller thread
-                Assert.That(obj.StringValue, Is.EqualTo("foobar"));
-            });
-        }
-
-        [Test, Obsolete("Tests deprecated WriteAsync API")]
-        public void AsyncWrite_ShouldRethrowExceptions()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                const string message = "this is an exception from user code";
-                var ex = await TestHelpers.AssertThrows<Exception>(() => _realm.WriteAsync(_ => throw new Exception(message)));
-                Assert.That(ex.Message, Is.EqualTo(message));
-            });
-        }
-
         [Test]
         public void RefreshAsync_Tests()
         {
@@ -118,10 +37,9 @@ namespace Realms.Tests.Database
             {
                 Assert.That(SynchronizationContext.Current != null);
 
-                IntPrimaryKeyWithValueObject obj = null;
-                _realm.Write(() =>
+                var obj = _realm.Write(() =>
                 {
-                    obj = _realm.Add(new IntPrimaryKeyWithValueObject());
+                    return _realm.Add(new IntPrimaryKeyWithValueObject());
                 });
 
                 var reference = ThreadSafeReference.Create(obj);
@@ -129,7 +47,7 @@ namespace Realms.Tests.Database
                 Task.Run(() =>
                 {
                     using var realm = GetRealm(_realm.Config);
-                    var bgObj = realm.ResolveReference(reference);
+                    var bgObj = realm.ResolveReference(reference)!;
                     realm.Write(() =>
                     {
                         bgObj.StringValue = "123";
@@ -304,7 +222,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                Exception ex = null;
+                Exception? ex = null;
                 try
                 {
                     await _realm.WriteAsync(() =>
@@ -317,7 +235,7 @@ namespace Realms.Tests.Database
                     ex = e;
                 }
 
-                Assert.That(ex.Message, Is.EqualTo("User exception"));
+                Assert.That(ex!.Message, Is.EqualTo("User exception"));
             });
         }
 
@@ -434,14 +352,14 @@ namespace Realms.Tests.Database
             {
                 var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
 
                 var syncTask = Task.Run(() => AsyncContext.Run(async () =>
                 {
                     using var realm = GetRealm(_realm.Config);
                     using var transaction = realm.BeginWrite();
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                     cts.Cancel();
                     await Task.Delay(1000);
                 }));
@@ -472,7 +390,7 @@ namespace Realms.Tests.Database
             {
                 var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
 
                 var syncTask = Task.Run(() => AsyncContext.Run(() =>
@@ -480,7 +398,7 @@ namespace Realms.Tests.Database
                     using var realm = GetRealm(_realm.Config);
                     var transaction = realm.BeginWrite();
 
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
 
                     cts.Cancel();
                     transaction.Rollback();

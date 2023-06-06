@@ -19,12 +19,8 @@
 using System;
 using System.Collections.Generic;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
 
@@ -33,9 +29,9 @@ namespace Realms.Tests.Database
     public partial class Person : TestRealmObject
     {
         // Automatically implemented (overridden) properties
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         public float Score { get; set; }
 
@@ -49,9 +45,9 @@ namespace Realms.Tests.Database
 
         public DateTimeOffset Birthday { get; set; }
 
-        public byte[] PublicCertificateBytes { get; set; }
+        public byte[]? PublicCertificateBytes { get; set; }
 
-        public string OptionalAddress { get; set; }
+        public string? OptionalAddress { get; set; }
 
         // Property that's not persisted in Realm
         [Ignored]
@@ -70,17 +66,17 @@ namespace Realms.Tests.Database
             {
                 var parts = value.Split(' ');
                 FirstName = parts[0];
-                LastName = parts[parts.Length - 1];
+                LastName = parts[^1];
             }
         }
 
         // Re-mapped property
         [MapTo("Email")]
-        private string Email_ { get; set; }
+        private string? Email_ { get; set; }
 
         // Wrapped version of previous property
         [Ignored]
-        public string Email
+        public string? Email
         {
             get
             {
@@ -89,7 +85,7 @@ namespace Realms.Tests.Database
 
             set
             {
-                if (!value.Contains("@"))
+                if (value?.Contains("@") != true)
                 {
                     throw new Exception("Invalid email address");
                 }
@@ -100,9 +96,9 @@ namespace Realms.Tests.Database
 
         public bool IsInteresting { get; set; }
 
-        private string _nickname;
+        private string? _nickname;
 
-        public string Nickname
+        public string? Nickname
         {
             get
             {
@@ -115,8 +111,8 @@ namespace Realms.Tests.Database
             }
         }
 
-        public IList<Person> Friends { get; }
+        public IList<Person> Friends { get; } = null!;
 
-        public override string ToString() => $"{FirstName} {LastName}";
+        public override string? ToString() => $"{FirstName} {LastName}";
     }
 }

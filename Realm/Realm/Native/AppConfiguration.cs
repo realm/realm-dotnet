@@ -18,7 +18,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.Logging;
 
 namespace Realms.Sync.Native
 {
@@ -60,33 +59,33 @@ namespace Realms.Sync.Native
             set
             {
                 base_url = value;
-                base_url_len = (IntPtr)(value?.Length ?? 0);
+                base_url_len = value.IntPtrLength();
             }
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string local_app_name;
+        private string? local_app_name;
         private IntPtr local_app_name_len;
 
-        internal string LocalAppName
+        internal string? LocalAppName
         {
             set
             {
                 local_app_name = value;
-                local_app_name_len = (IntPtr)(value?.Length ?? 0);
+                local_app_name_len = value.IntPtrLength();
             }
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string local_app_version;
+        private string? local_app_version;
         private IntPtr local_app_version_len;
 
-        internal string LocalAppVersion
+        internal string? LocalAppVersion
         {
             set
             {
                 local_app_version = value;
-                local_app_version_len = (IntPtr)(value?.Length ?? 0);
+                local_app_version_len = value.IntPtrLength();
             }
         }
 
@@ -105,10 +104,6 @@ namespace Realms.Sync.Native
                 metadata_persistence_has_value = value.HasValue;
             }
         }
-
-        internal LogLevel log_level;
-
-        internal IntPtr managed_logger;
 
         internal IntPtr managed_http_client;
 

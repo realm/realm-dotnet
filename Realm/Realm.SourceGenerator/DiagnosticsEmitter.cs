@@ -76,20 +76,14 @@ namespace Realms.SourceGenerator
 
         private static DiagnosticInfo Convert(Diagnostic diag)
         {
-            return new DiagnosticInfo
-            {
-                Id = diag.Id,
-                Severity = diag.Severity,
-                Message = diag.GetMessage(),
-                Location = Convert(diag.Location),
-            };
+            return new(diag.Id, diag.Severity, diag.GetMessage(), location: Convert(diag.Location));
         }
 
         private static DiagnosticLocation Convert(Location location)
         {
             // The +1 are necessary because line position start counting at 0
             var mapped = location.GetLineSpan();
-            return new DiagnosticLocation
+            return new()
             {
                 StartColumn = mapped.StartLinePosition.Character + 1,
                 StartLine = mapped.StartLinePosition.Line + 1,
@@ -101,19 +95,25 @@ namespace Realms.SourceGenerator
 
     internal class DiagnosticInfo
     {
-        public string Id { get; set; }
+        public string Id { get; }
 
-        public DiagnosticSeverity Severity { get; set; }
+        public DiagnosticSeverity Severity { get; }
 
-        public string Message { get; set; }
+        public string Message { get; }
 
-        public DiagnosticLocation Location { get; set; }
+        public DiagnosticLocation Location { get; }
+
+        public DiagnosticInfo(string id, DiagnosticSeverity severity, string message, DiagnosticLocation location)
+        {
+            Id = id;
+            Severity = severity;
+            Message = message;
+            Location = location;
+        }
     }
 
     internal class DiagnosticLocation
     {
-        public string Path { get; set; }
-
         public int StartLine { get; set; }
 
         public int StartColumn { get; set; }

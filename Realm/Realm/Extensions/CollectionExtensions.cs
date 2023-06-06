@@ -41,7 +41,7 @@ namespace Realms
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             Argument.NotNull(query, nameof(query));
 
@@ -60,7 +60,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -293,7 +293,7 @@ namespace Realms
         /// </code>
         /// </example>
         /// <exception cref="ArgumentException">Thrown if the dictionary is not managed by Realm.</exception>
-        public static IQueryable<T> AsRealmQueryable<T>(this IDictionary<string, T> dictionary)
+        public static IQueryable<T> AsRealmQueryable<T>(this IDictionary<string, T?> dictionary)
             where T : IRealmObjectBase
         {
             Argument.NotNull(dictionary, nameof(dictionary));
@@ -368,7 +368,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params QueryArgument[] arguments)
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
@@ -404,7 +404,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -441,7 +441,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -477,7 +477,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IDictionary<string, T> dictionary, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IDictionary<string, T?> dictionary, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -488,18 +488,16 @@ namespace Realms
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
-        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object?> valueGetter)
         {
             Argument.NotNull(target, nameof(target));
 

@@ -16,7 +16,6 @@ using Realms.Weaving;
 using static Realms.Sync.ErrorHandling.ClientResetHandlerBase;
 using static Realms.Tests.TestHelpers;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -31,18 +30,23 @@ using TestRealmObject = Realms.IRealmObject;
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(ObjectWithPartitionValueObjectHelper))]
+    [Woven(typeof(ObjectWithPartitionValueObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class ObjectWithPartitionValue : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="ObjectWithPartitionValue"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("ObjectWithPartitionValue", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, isIndexed: false, isNullable: true, managedName: "Id"),
-            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Value"),
-            Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Partition"),
-            Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Guid"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.String, isPrimaryKey: true, indexType: IndexType.None, isNullable: true, managedName: "Id"),
+            Realms.Schema.Property.Primitive("Value", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Value"),
+            Realms.Schema.Property.Primitive("realm_id", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Partition"),
+            Realms.Schema.Property.Primitive("Guid", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Guid"),
         }.Build();
 
+        #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private ObjectWithPartitionValue() {}
+        #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         #region IRealmObject implementation
 
@@ -52,28 +56,35 @@ namespace Realms.Tests.Sync
 
         internal IObjectWithPartitionValueAccessor Accessor => _accessor ??= new ObjectWithPartitionValueUnmanagedAccessor(typeof(ObjectWithPartitionValue));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IObjectWithPartitionValueAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -81,19 +92,22 @@ namespace Realms.Tests.Sync
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(string))
+                if (!skipDefaults || oldAccessor.Id != default(string?))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                if(!skipDefaults || oldAccessor.Value != default(string))
+                if (!skipDefaults || oldAccessor.Value != default(string?))
                 {
                     newAccessor.Value = oldAccessor.Value;
                 }
-                if(!skipDefaults || oldAccessor.Partition != default(string))
+                if (!skipDefaults || oldAccessor.Partition != default(string?))
                 {
                     newAccessor.Partition = oldAccessor.Partition;
                 }
-                newAccessor.Guid = oldAccessor.Guid;
+                if (!skipDefaults || oldAccessor.Guid != default(System.Guid))
+                {
+                    newAccessor.Guid = oldAccessor.Guid;
+                }
             }
 
             if (_propertyChanged != null)
@@ -118,6 +132,7 @@ namespace Realms.Tests.Sync
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -186,13 +201,32 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator ObjectWithPartitionValue(Realms.RealmValue val) => val.AsRealmObject<ObjectWithPartitionValue>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="ObjectWithPartitionValue"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="ObjectWithPartitionValue"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator ObjectWithPartitionValue?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<ObjectWithPartitionValue>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="ObjectWithPartitionValue"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(ObjectWithPartitionValue? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="ObjectWithPartitionValue"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(ObjectWithPartitionValue? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -218,11 +252,13 @@ namespace Realms.Tests.Sync
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class ObjectWithPartitionValueObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -234,14 +270,14 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new ObjectWithPartitionValue();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IObjectWithPartitionValueAccessor)instance.Accessor).Id;
                 return true;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IObjectWithPartitionValueAccessor : Realms.IRealmAccessor
         {
             string? Id { get; set; }
@@ -253,7 +289,7 @@ namespace Realms.Tests.Sync
             System.Guid Guid { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueManagedAccessor : Realms.ManagedAccessor, IObjectWithPartitionValueAccessor
         {
             public string? Id
@@ -281,7 +317,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class ObjectWithPartitionValueUnmanagedAccessor : Realms.UnmanagedAccessor, IObjectWithPartitionValueAccessor
         {
             public override ObjectSchema ObjectSchema => ObjectWithPartitionValue.RealmSchema;

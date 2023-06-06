@@ -18,11 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Realms;
 
 namespace RealmWeaver
 {
@@ -530,16 +532,33 @@ Analytics payload
             }
 
             var backingField = prop.GetBackingField();
-            var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-            if (isIndexed && !prop.IsIndexable(_references))
+            var indexedAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "IndexedAttribute");
+            if (indexedAttribute != null)
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
+                if (!prop.IsIndexable(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool, DateTimeOffset, ObjectId, and Guid not on {prop.PropertyType.FullName}.");
+                }
+
+                if (indexedAttribute.ConstructorArguments.Count > 0)
+                {
+                    var mode = (IndexType)(int)indexedAttribute.ConstructorArguments[0].Value;
+                    if (mode == IndexType.None)
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
+                    }
+
+                    if (mode == IndexType.FullText && prop.PropertyType.FullName != StringTypeName)
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
+                    }
+                }
             }
 
             var isPrimaryKey = prop.IsPrimaryKey(_references);
             if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
+                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on {prop.PropertyType.FullName}.");
             }
 
             var isRequired = prop.IsRequired(_references);
@@ -718,6 +737,8 @@ Analytics payload
             prop.CustomAttributes.Add(wovenPropertyAttribute);
 
             var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
+
+            var isIndexed = indexedAttribute != null;
             var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
             _logger.Debug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
             return WeavePropertyResult.Success(prop, backingField, isPrimaryKey, isIndexed);
@@ -951,13 +972,7 @@ Analytics payload
                     convertType = _references.RealmObjectBase;
                 }
 
-                var convertMethod = new MethodReference("op_Implicit", _references.RealmValue, _references.RealmValue)
-                {
-                    Parameters = { new ParameterDefinition(convertType) },
-                    HasThis = false
-                };
-
-                il.Append(il.Create(OpCodes.Call, convertMethod));
+                il.Append(il.Create(OpCodes.Call, _references.RealmValue_op_Implicit(convertType)));
             }
 
             il.Append(il.Create(OpCodes.Call, setValueReference));
@@ -1225,44 +1240,32 @@ Analytics payload
                 var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, _references.IRealmObjectBase);
                 getPrimaryKeyValue.Parameters.Add(instanceParameter);
 
-                var valueParameter = new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(_moduleDefinition.TypeSystem.Object))
+                var valueParameter = new ParameterDefinition("value", ParameterAttributes.Out, new ByReferenceType(_references.RealmValue))
                 {
                     IsOut = true
                 };
                 getPrimaryKeyValue.Parameters.Add(valueParameter);
-
-                getPrimaryKeyValue.Body.Variables.Add(new VariableDefinition(_moduleDefinition.ImportReference(realmObjectType)));
 
                 var il = getPrimaryKeyValue.Body.GetILProcessor();
                 var pkProperty = properties.FirstOrDefault(p => p.IsPrimaryKey);
 
                 if (pkProperty != null)
                 {
-                    getPrimaryKeyValue.Body.InitLocals = true;
-
+                    il.Emit(OpCodes.Ldarg_2);
                     il.Emit(OpCodes.Ldarg_1);
                     il.Emit(OpCodes.Castclass, _moduleDefinition.ImportReference(realmObjectType));
-                    il.Emit(OpCodes.Stloc_0);
-                    il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldloc_0);
                     il.Emit(OpCodes.Callvirt, _moduleDefinition.ImportReference(pkProperty.Property.GetMethod));
-                    if (!pkProperty.Property.IsString())
-                    {
-                        il.Emit(OpCodes.Box, pkProperty.Property.PropertyType);
-                    }
-
-                    il.Emit(OpCodes.Stind_Ref);
-                    il.Emit(OpCodes.Ldc_I4_1);
-                    il.Emit(OpCodes.Ret);
+                    il.Emit(OpCodes.Call, _references.RealmValue_op_Implicit(pkProperty.Property.PropertyType));
                 }
                 else
                 {
                     il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldnull);
-                    il.Emit(OpCodes.Stind_Ref);
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Ret);
+                    il.Emit(OpCodes.Call, _references.RealmValue_GetNull);
                 }
+
+                il.Emit(OpCodes.Stobj, _references.RealmValue);
+                il.Emit(pkProperty != null ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+                il.Emit(OpCodes.Ret);
             }
 
             getPrimaryKeyValue.CustomAttributes.Add(new CustomAttribute(_references.PreserveAttribute_Constructor));

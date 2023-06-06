@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -240,23 +241,10 @@ namespace Realms.Native
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        public string AsString()
-        {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
-            return string_value;
-        }
+        public string AsString() => string_value!;
 
         public byte[] AsBinary()
         {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
             var bytes = new byte[(int)data_value.size];
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -280,6 +268,18 @@ namespace Realms.Native
             }
 
             return realm.MakeObject(objectMetadata, handle);
+        }
+
+        public bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
+        {
+            if (Type == RealmValueType.Object)
+            {
+                handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
+                return true;
+            }
+
+            handle = null;
+            return false;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -323,8 +323,6 @@ namespace Realms.Native
         public byte* data;
         public IntPtr size;
 
-        public string AsString() => data == null ? null : Encoding.UTF8.GetString(data, (int)size);
-
-        public static implicit operator string(StringValue value) => value.AsString();
+        public static implicit operator string?(StringValue value) => value.data == null ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

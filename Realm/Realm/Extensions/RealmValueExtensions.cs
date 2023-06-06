@@ -17,14 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
-using Realms.Exceptions;
 using Realms.Native;
 
 namespace Realms
 {
     internal static class RealmValueExtensions
     {
-        private static readonly HashSet<RealmValueType> _numericTypes = new HashSet<RealmValueType>
+        private static readonly HashSet<RealmValueType> _numericTypes = new()
         {
             RealmValueType.Int,
             RealmValueType.Float,
@@ -34,22 +33,16 @@ namespace Realms
 
         public static bool IsNumeric(this RealmValueType type) => _numericTypes.Contains(type);
 
-        public static (PrimitiveValue[] Values, RealmValue.HandlesToCleanup?[] Handles) ToPrimitiveValues(this RealmValue[] arguments)
+        public static (NativeQueryArgument[] Values, RealmValue.HandlesToCleanup?[] Handles) ToNativeValues(this QueryArgument[] arguments)
         {
-            var primitiveValues = new PrimitiveValue[arguments.Length];
+            var nativeArgs = new NativeQueryArgument[arguments.Length];
             var handles = new RealmValue.HandlesToCleanup?[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
             {
-                var argument = arguments[i];
-                if (argument.Type == RealmValueType.Object && !argument.AsIRealmObject().IsManaged)
-                {
-                    throw new RealmException("Can't use unmanaged object as argument of Filter");
-                }
-
-                (primitiveValues[i], handles[i]) = argument.ToNative();
+                (nativeArgs[i], handles[i]) = arguments[i].ToNative();
             }
 
-            return (primitiveValues, handles);
+            return (nativeArgs, handles);
         }
 
         public static void Dispose(this RealmValue.HandlesToCleanup?[] handles)

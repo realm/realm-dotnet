@@ -58,13 +58,13 @@ namespace Realms.Sync.ErrorHandling
         /// Gets or sets the callback that indicates a Client Reset is about to happen.
         /// </summary>
         /// <value>Callback invoked right before a Client Reset.</value>
-        public BeforeResetCallback OnBeforeReset { get; set; }
+        public BeforeResetCallback? OnBeforeReset { get; set; }
 
         /// <summary>
         /// Gets or sets the callback that indicates that an automatic Client Reset just happened.
         /// </summary>
         /// <value>Callback invoked right after a Client Reset.</value>
-        public AfterResetCallback OnAfterRecovery { get; set; }
+        public AfterResetCallback? OnAfterRecovery { get; set; }
 
         /// <summary>
         /// Gets or sets the callback that indicates that the discard unsynced changes fallback for a Client Reset just happened.
@@ -75,14 +75,14 @@ namespace Realms.Sync.ErrorHandling
         /// the <see cref="OnAfterDiscard"/> callback is called.
         /// </remarks>
         /// <value>Callback invoked right after a Client Reset that fell back to discard unsynced changes.</value>
-        public AfterResetCallback OnAfterDiscard { get; set; }
+        public AfterResetCallback? OnAfterDiscard { get; set; }
 
         /// <summary>
         /// Gets or sets the callback triggered when an error has occurred that makes the operation unable to complete,
         /// for example in the case of a destructive schema change.
         /// </summary>
         /// <value>Callback invoked if automatic Client Reset handling fails.</value>
-        public ClientResetCallback ManualResetFallback
+        public ClientResetCallback? ManualResetFallback
         {
             get => ManualClientReset;
             set => ManualClientReset = value;

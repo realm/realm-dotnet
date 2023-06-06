@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms.Sync.Exceptions
 {
     /// <summary>
@@ -32,24 +30,9 @@ namespace Realms.Sync.Exceptions
         Unknown = -1,
 
         /// <summary>
-        /// Session has been closed (no error).
-        /// </summary>
-        SessionClosed = 200,
-
-        /// <summary>
         /// Other session level error has occurred.
         /// </summary>
         OtherSessionError = 201,
-
-        /// <summary>
-        /// Access token has already expired.
-        /// </summary>
-        AccessTokenExpired = 202,
-
-        /// <summary>
-        /// Failed to authenticate user.
-        /// </summary>
-        BadUserAuthentication = 203,
 
         /// <summary>
         /// Path to Realm is invalid.
@@ -57,19 +40,9 @@ namespace Realms.Sync.Exceptions
         IllegalRealmPath = 204,
 
         /// <summary>
-        /// Path points to non-existing Realm.
-        /// </summary>
-        NoSuchRealm = 205,
-
-        /// <summary>
         /// Permission to Realm has been denied.
         /// </summary>
         PermissionDenied = 206,
-
-        /// <summary>
-        /// The server file identifier is invalid.
-        /// </summary>
-        BadServerFileIdentifier = 207,
 
         /// <summary>
         /// The client file identifier is invalid.
@@ -95,12 +68,6 @@ namespace Realms.Sync.Exceptions
         /// The changeset is invalid.
         /// </summary>
         BadChangeset = 212,
-
-        /// <summary>
-        /// The session has been disabled.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        DisabledSession = 213,
 
         /// <summary>
         /// The client file is invalid.
@@ -165,69 +132,9 @@ namespace Realms.Sync.Exceptions
         CompensatingWrite = 231,
 
         /// <summary>
-        /// Your request parameters did not validate.
+        /// An error sent by the server when its data structures used to track client progress
+        /// become corrupted.
         /// </summary>
-        [Obsolete("This error can no longer happen")]
-        InvalidParameters = 601,
-
-        /// <summary>
-        /// Your request did not validate because of missing parameters.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        MissingParameters = 602,
-
-        /// <summary>
-        /// The provided credentials are invalid.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        InvalidCredentials = 611,
-
-        /// <summary>
-        /// The account does not exist.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        UnknownAccount = 612,
-
-        /// <summary>
-        /// The account cannot be registered as it exists already.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        ExistingAccount = 613,
-
-        /// <summary>
-        /// The path is invalid or current user has no access.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        AccessDenied = 614,
-
-        /// <summary>
-        /// The refresh token is expired.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        ExpiredRefreshToken = 615,
-
-        /// <summary>
-        /// The server is not authoritative for this URL.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        InvalidHost = 616,
-
-        /// <summary>
-        /// The permission offer is expired.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        ExpiredPermissionOffer = 701,
-
-        /// <summary>
-        /// The token used on the permission request does match more than a single permission offer.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        AmbiguousPermissionOfferToken = 702,
-
-        /// <summary>
-        /// The Realm file at the specified path is not available for shared access.
-        /// </summary>
-        [Obsolete("This error can no longer happen")]
-        FileMayNotBeShared = 703,
+        BadProgress = 233,
     }
 }

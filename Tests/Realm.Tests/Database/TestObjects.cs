@@ -23,11 +23,9 @@ using System.Linq;
 using MongoDB.Bson;
 using Realms.Tests.Database;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
 using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 #endif
@@ -62,12 +60,14 @@ namespace Realms.Tests
 
         public Guid GuidProperty { get; set; }
 
+#if TEST_WEAVER
         [Required]
-        public string RequiredStringProperty { get; set; }
+#endif
+        public string RequiredStringProperty { get; set; } = string.Empty;
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[]? ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
@@ -115,260 +115,276 @@ namespace Realms.Tests
 
     public partial class ListsObject : TestRealmObject
     {
-        public IList<char> CharList { get; }
+        public IList<char> CharList { get; } = null!;
 
-        public IList<byte> ByteList { get; }
+        public IList<byte> ByteList { get; } = null!;
 
-        public IList<short> Int16List { get; }
+        public IList<short> Int16List { get; } = null!;
 
-        public IList<int> Int32List { get; }
+        public IList<int> Int32List { get; } = null!;
 
-        public IList<long> Int64List { get; }
+        public IList<long> Int64List { get; } = null!;
 
-        public IList<float> SingleList { get; }
+        public IList<float> SingleList { get; } = null!;
 
-        public IList<double> DoubleList { get; }
+        public IList<double> DoubleList { get; } = null!;
 
-        public IList<bool> BooleanList { get; }
+        public IList<bool> BooleanList { get; } = null!;
 
-        public IList<decimal> DecimalList { get; }
+        public IList<decimal> DecimalList { get; } = null!;
 
-        public IList<Decimal128> Decimal128List { get; }
+        public IList<Decimal128> Decimal128List { get; } = null!;
 
-        public IList<ObjectId> ObjectIdList { get; }
+        public IList<ObjectId> ObjectIdList { get; } = null!;
 
-        public IList<Guid> GuidList { get; }
+        public IList<Guid> GuidList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<string> StringList { get; }
+#endif
+        public IList<string> StringList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<byte[]> ByteArrayList { get; }
+#endif
+        public IList<byte[]> ByteArrayList { get; } = null!;
 
-        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+        public IList<DateTimeOffset> DateTimeOffsetList { get; } = null!;
 
-        public IList<char?> NullableCharList { get; }
+        public IList<char?> NullableCharList { get; } = null!;
 
-        public IList<byte?> NullableByteList { get; }
+        public IList<byte?> NullableByteList { get; } = null!;
 
-        public IList<short?> NullableInt16List { get; }
+        public IList<short?> NullableInt16List { get; } = null!;
 
-        public IList<int?> NullableInt32List { get; }
+        public IList<int?> NullableInt32List { get; } = null!;
 
-        public IList<long?> NullableInt64List { get; }
+        public IList<long?> NullableInt64List { get; } = null!;
 
-        public IList<float?> NullableSingleList { get; }
+        public IList<float?> NullableSingleList { get; } = null!;
 
-        public IList<double?> NullableDoubleList { get; }
+        public IList<double?> NullableDoubleList { get; } = null!;
 
-        public IList<bool?> NullableBooleanList { get; }
+        public IList<bool?> NullableBooleanList { get; } = null!;
 
-        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; } = null!;
 
-        public IList<decimal?> NullableDecimalList { get; }
+        public IList<decimal?> NullableDecimalList { get; } = null!;
 
-        public IList<Decimal128?> NullableDecimal128List { get; }
+        public IList<Decimal128?> NullableDecimal128List { get; } = null!;
 
-        public IList<ObjectId?> NullableObjectIdList { get; }
+        public IList<ObjectId?> NullableObjectIdList { get; } = null!;
 
-        public IList<Guid?> NullableGuidList { get; }
+        public IList<Guid?> NullableGuidList { get; } = null!;
 
-        public IList<string> NullableStringList { get; }
+        public IList<string?> NullableStringList { get; } = null!;
 
-        public IList<byte[]> NullableByteArrayList { get; }
+        public IList<byte[]?> NullableByteArrayList { get; } = null!;
 
-        public IList<RealmValue> RealmValueList { get; }
+        public IList<RealmValue> RealmValueList { get; } = null!;
     }
 
     public partial class CollectionsObject : TestRealmObject
     {
-        public ISet<char> CharSet { get; }
+        public ISet<char> CharSet { get; } = null!;
 
-        public ISet<byte> ByteSet { get; }
+        public ISet<byte> ByteSet { get; } = null!;
 
-        public ISet<short> Int16Set { get; }
+        public ISet<short> Int16Set { get; } = null!;
 
-        public ISet<int> Int32Set { get; }
+        public ISet<int> Int32Set { get; } = null!;
 
-        public ISet<long> Int64Set { get; }
+        public ISet<long> Int64Set { get; } = null!;
 
-        public ISet<float> SingleSet { get; }
+        public ISet<float> SingleSet { get; } = null!;
 
-        public ISet<double> DoubleSet { get; }
+        public ISet<double> DoubleSet { get; } = null!;
 
-        public ISet<bool> BooleanSet { get; }
+        public ISet<bool> BooleanSet { get; } = null!;
 
-        public ISet<decimal> DecimalSet { get; }
+        public ISet<decimal> DecimalSet { get; } = null!;
 
-        public ISet<Decimal128> Decimal128Set { get; }
+        public ISet<Decimal128> Decimal128Set { get; } = null!;
 
-        public ISet<ObjectId> ObjectIdSet { get; }
+        public ISet<ObjectId> ObjectIdSet { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public ISet<string> StringSet { get; }
+#endif
+        public ISet<string> StringSet { get; } = null!;
 
-        public ISet<string> NullableStringSet { get; }
+        public ISet<string?> NullableStringSet { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public ISet<byte[]> ByteArraySet { get; }
+#endif
+        public ISet<byte[]> ByteArraySet { get; } = null!;
 
-        public ISet<byte[]> NullableByteArraySet { get; }
+        public ISet<byte[]?> NullableByteArraySet { get; } = null!;
 
-        public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
+        public ISet<DateTimeOffset> DateTimeOffsetSet { get; } = null!;
 
-        public ISet<char?> NullableCharSet { get; }
+        public ISet<char?> NullableCharSet { get; } = null!;
 
-        public ISet<byte?> NullableByteSet { get; }
+        public ISet<byte?> NullableByteSet { get; } = null!;
 
-        public ISet<short?> NullableInt16Set { get; }
+        public ISet<short?> NullableInt16Set { get; } = null!;
 
-        public ISet<int?> NullableInt32Set { get; }
+        public ISet<int?> NullableInt32Set { get; } = null!;
 
-        public ISet<long?> NullableInt64Set { get; }
+        public ISet<long?> NullableInt64Set { get; } = null!;
 
-        public ISet<float?> NullableSingleSet { get; }
+        public ISet<float?> NullableSingleSet { get; } = null!;
 
-        public ISet<double?> NullableDoubleSet { get; }
+        public ISet<double?> NullableDoubleSet { get; } = null!;
 
-        public ISet<bool?> NullableBooleanSet { get; }
+        public ISet<bool?> NullableBooleanSet { get; } = null!;
 
-        public ISet<DateTimeOffset?> NullableDateTimeOffsetSet { get; }
+        public ISet<DateTimeOffset?> NullableDateTimeOffsetSet { get; } = null!;
 
-        public ISet<decimal?> NullableDecimalSet { get; }
+        public ISet<decimal?> NullableDecimalSet { get; } = null!;
 
-        public ISet<Decimal128?> NullableDecimal128Set { get; }
+        public ISet<Decimal128?> NullableDecimal128Set { get; } = null!;
 
-        public ISet<ObjectId?> NullableObjectIdSet { get; }
+        public ISet<ObjectId?> NullableObjectIdSet { get; } = null!;
 
-        public ISet<IntPropertyObject> ObjectSet { get; }
+        public ISet<IntPropertyObject> ObjectSet { get; } = null!;
 
-        public ISet<RealmValue> RealmValueSet { get; }
+        public ISet<RealmValue> RealmValueSet { get; } = null!;
 
-        public IList<char> CharList { get; }
+        public IList<char> CharList { get; } = null!;
 
-        public IList<byte> ByteList { get; }
+        public IList<byte> ByteList { get; } = null!;
 
-        public IList<short> Int16List { get; }
+        public IList<short> Int16List { get; } = null!;
 
-        public IList<int> Int32List { get; }
+        public IList<int> Int32List { get; } = null!;
 
-        public IList<long> Int64List { get; }
+        public IList<long> Int64List { get; } = null!;
 
-        public IList<float> SingleList { get; }
+        public IList<float> SingleList { get; } = null!;
 
-        public IList<double> DoubleList { get; }
+        public IList<double> DoubleList { get; } = null!;
 
-        public IList<bool> BooleanList { get; }
+        public IList<bool> BooleanList { get; } = null!;
 
-        public IList<decimal> DecimalList { get; }
+        public IList<decimal> DecimalList { get; } = null!;
 
-        public IList<Decimal128> Decimal128List { get; }
+        public IList<Decimal128> Decimal128List { get; } = null!;
 
-        public IList<ObjectId> ObjectIdList { get; }
+        public IList<ObjectId> ObjectIdList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<string> StringList { get; }
+#endif
+        public IList<string> StringList { get; } = null!;
 
-        public IList<string> NullableStringList { get; }
+        public IList<string?> NullableStringList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<byte[]> ByteArrayList { get; }
+#endif
+        public IList<byte[]> ByteArrayList { get; } = null!;
 
-        public IList<byte[]> NullableByteArrayList { get; }
+        public IList<byte[]?> NullableByteArrayList { get; } = null!;
 
-        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+        public IList<DateTimeOffset> DateTimeOffsetList { get; } = null!;
 
-        public IList<char?> NullableCharList { get; }
+        public IList<char?> NullableCharList { get; } = null!;
 
-        public IList<byte?> NullableByteList { get; }
+        public IList<byte?> NullableByteList { get; } = null!;
 
-        public IList<short?> NullableInt16List { get; }
+        public IList<short?> NullableInt16List { get; } = null!;
 
-        public IList<int?> NullableInt32List { get; }
+        public IList<int?> NullableInt32List { get; } = null!;
 
-        public IList<long?> NullableInt64List { get; }
+        public IList<long?> NullableInt64List { get; } = null!;
 
-        public IList<float?> NullableSingleList { get; }
+        public IList<float?> NullableSingleList { get; } = null!;
 
-        public IList<double?> NullableDoubleList { get; }
+        public IList<double?> NullableDoubleList { get; } = null!;
 
-        public IList<bool?> NullableBooleanList { get; }
+        public IList<bool?> NullableBooleanList { get; } = null!;
 
-        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; }
+        public IList<DateTimeOffset?> NullableDateTimeOffsetList { get; } = null!;
 
-        public IList<decimal?> NullableDecimalList { get; }
+        public IList<decimal?> NullableDecimalList { get; } = null!;
 
-        public IList<Decimal128?> NullableDecimal128List { get; }
+        public IList<Decimal128?> NullableDecimal128List { get; } = null!;
 
-        public IList<ObjectId?> NullableObjectIdList { get; }
+        public IList<ObjectId?> NullableObjectIdList { get; } = null!;
 
-        public IList<IntPropertyObject> ObjectList { get; }
+        public IList<IntPropertyObject> ObjectList { get; } = null!;
 
-        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = null!;
 
-        public IList<RealmValue> RealmValueList { get; }
+        public IList<RealmValue> RealmValueList { get; } = null!;
 
-        public IDictionary<string, char> CharDict { get; }
+        public IDictionary<string, char> CharDict { get; } = null!;
 
-        public IDictionary<string, byte> ByteDict { get; }
+        public IDictionary<string, byte> ByteDict { get; } = null!;
 
-        public IDictionary<string, short> Int16Dict { get; }
+        public IDictionary<string, short> Int16Dict { get; } = null!;
 
-        public IDictionary<string, int> Int32Dict { get; }
+        public IDictionary<string, int> Int32Dict { get; } = null!;
 
-        public IDictionary<string, long> Int64Dict { get; }
+        public IDictionary<string, long> Int64Dict { get; } = null!;
 
-        public IDictionary<string, float> SingleDict { get; }
+        public IDictionary<string, float> SingleDict { get; } = null!;
 
-        public IDictionary<string, double> DoubleDict { get; }
+        public IDictionary<string, double> DoubleDict { get; } = null!;
 
-        public IDictionary<string, bool> BooleanDict { get; }
+        public IDictionary<string, bool> BooleanDict { get; } = null!;
 
-        public IDictionary<string, decimal> DecimalDict { get; }
+        public IDictionary<string, decimal> DecimalDict { get; } = null!;
 
-        public IDictionary<string, Decimal128> Decimal128Dict { get; }
+        public IDictionary<string, Decimal128> Decimal128Dict { get; } = null!;
 
-        public IDictionary<string, ObjectId> ObjectIdDict { get; }
+        public IDictionary<string, ObjectId> ObjectIdDict { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, string> StringDict { get; }
+#endif
+        public IDictionary<string, string> StringDict { get; } = null!;
 
-        public IDictionary<string, string> NullableStringDict { get; }
+        public IDictionary<string, string?> NullableStringDict { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, byte[]> ByteArrayDict { get; }
+#endif
+        public IDictionary<string, byte[]> ByteArrayDict { get; } = null!;
 
-        public IDictionary<string, byte[]> NullableByteArrayDict { get; }
+        public IDictionary<string, byte[]?> NullableByteArrayDict { get; } = null!;
 
-        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; } = null!;
 
-        public IDictionary<string, char?> NullableCharDict { get; }
+        public IDictionary<string, char?> NullableCharDict { get; } = null!;
 
-        public IDictionary<string, byte?> NullableByteDict { get; }
+        public IDictionary<string, byte?> NullableByteDict { get; } = null!;
 
-        public IDictionary<string, short?> NullableInt16Dict { get; }
+        public IDictionary<string, short?> NullableInt16Dict { get; } = null!;
 
-        public IDictionary<string, int?> NullableInt32Dict { get; }
+        public IDictionary<string, int?> NullableInt32Dict { get; } = null!;
 
-        public IDictionary<string, long?> NullableInt64Dict { get; }
+        public IDictionary<string, long?> NullableInt64Dict { get; } = null!;
 
-        public IDictionary<string, float?> NullableSingleDict { get; }
+        public IDictionary<string, float?> NullableSingleDict { get; } = null!;
 
-        public IDictionary<string, double?> NullableDoubleDict { get; }
+        public IDictionary<string, double?> NullableDoubleDict { get; } = null!;
 
-        public IDictionary<string, bool?> NullableBooleanDict { get; }
+        public IDictionary<string, bool?> NullableBooleanDict { get; } = null!;
 
-        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict { get; }
+        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDict { get; } = null!;
 
-        public IDictionary<string, decimal?> NullableDecimalDict { get; }
+        public IDictionary<string, decimal?> NullableDecimalDict { get; } = null!;
 
-        public IDictionary<string, Decimal128?> NullableDecimal128Dict { get; }
+        public IDictionary<string, Decimal128?> NullableDecimal128Dict { get; } = null!;
 
-        public IDictionary<string, ObjectId?> NullableObjectIdDict { get; }
+        public IDictionary<string, ObjectId?> NullableObjectIdDict { get; } = null!;
 
-        public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+        public IDictionary<string, IntPropertyObject?> ObjectDict { get; } = null!;
 
-        public IDictionary<string, RealmValue> RealmValueDict { get; }
+        public IDictionary<string, RealmValue> RealmValueDict { get; } = null!;
     }
 
     // This is a stripped-down version of SetsObject because Sync doesn't support
@@ -381,111 +397,123 @@ namespace Realms.Tests
 
         public Guid GuidProperty { get; set; }
 
-        public IList<char> CharList { get; }
+        public IList<char> CharList { get; } = null!;
 
-        public IList<byte> ByteList { get; }
+        public IList<byte> ByteList { get; } = null!;
 
-        public IList<short> Int16List { get; }
+        public IList<short> Int16List { get; } = null!;
 
-        public IList<int> Int32List { get; }
+        public IList<int> Int32List { get; } = null!;
 
-        public IList<long> Int64List { get; }
+        public IList<long> Int64List { get; } = null!;
 
-        public IList<float> FloatList { get; }
+        public IList<float> FloatList { get; } = null!;
 
-        public IList<double> DoubleList { get; }
+        public IList<double> DoubleList { get; } = null!;
 
-        public IList<bool> BooleanList { get; }
+        public IList<bool> BooleanList { get; } = null!;
 
-        public IList<decimal> DecimalList { get; }
+        public IList<decimal> DecimalList { get; } = null!;
 
-        public IList<Decimal128> Decimal128List { get; }
+        public IList<Decimal128> Decimal128List { get; } = null!;
 
-        public IList<ObjectId> ObjectIdList { get; }
+        public IList<ObjectId> ObjectIdList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<string> StringList { get; }
+#endif
+        public IList<string> StringList { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IList<byte[]> ByteArrayList { get; }
+#endif
+        public IList<byte[]> ByteArrayList { get; } = null!;
 
-        public IList<DateTimeOffset> DateTimeOffsetList { get; }
+        public IList<DateTimeOffset> DateTimeOffsetList { get; } = null!;
 
-        public IList<IntPropertyObject> ObjectList { get; }
+        public IList<IntPropertyObject> ObjectList { get; } = null!;
 
-        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; }
+        public IList<EmbeddedIntPropertyObject> EmbeddedObjectList { get; } = null!;
 
-        public IList<RealmValue> RealmValueList { get; }
+        public IList<RealmValue> RealmValueList { get; } = null!;
 
-        public ISet<char> CharSet { get; }
+        public ISet<char> CharSet { get; } = null!;
 
-        public ISet<byte> ByteSet { get; }
+        public ISet<byte> ByteSet { get; } = null!;
 
-        public ISet<short> Int16Set { get; }
+        public ISet<short> Int16Set { get; } = null!;
 
-        public ISet<int> Int32Set { get; }
+        public ISet<int> Int32Set { get; } = null!;
 
-        public ISet<long> Int64Set { get; }
+        public ISet<long> Int64Set { get; } = null!;
 
-        public ISet<float> FloatSet { get; }
+        public ISet<float> FloatSet { get; } = null!;
 
-        public ISet<double> DoubleSet { get; }
+        public ISet<double> DoubleSet { get; } = null!;
 
-        public ISet<bool> BooleanSet { get; }
+        public ISet<bool> BooleanSet { get; } = null!;
 
-        public ISet<decimal> DecimalSet { get; }
+        public ISet<decimal> DecimalSet { get; } = null!;
 
-        public ISet<Decimal128> Decimal128Set { get; }
+        public ISet<Decimal128> Decimal128Set { get; } = null!;
 
-        public ISet<ObjectId> ObjectIdSet { get; }
+        public ISet<ObjectId> ObjectIdSet { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public ISet<string> StringSet { get; }
+#endif
+        public ISet<string> StringSet { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public ISet<byte[]> ByteArraySet { get; }
+#endif
+        public ISet<byte[]> ByteArraySet { get; } = null!;
 
-        public ISet<DateTimeOffset> DateTimeOffsetSet { get; }
+        public ISet<DateTimeOffset> DateTimeOffsetSet { get; } = null!;
 
-        public ISet<IntPropertyObject> ObjectSet { get; }
+        public ISet<IntPropertyObject> ObjectSet { get; } = null!;
 
-        public ISet<RealmValue> RealmValueSet { get; }
+        public ISet<RealmValue> RealmValueSet { get; } = null!;
 
-        public IDictionary<string, char> CharDict { get; }
+        public IDictionary<string, char> CharDict { get; } = null!;
 
-        public IDictionary<string, byte> ByteDict { get; }
+        public IDictionary<string, byte> ByteDict { get; } = null!;
 
-        public IDictionary<string, short> Int16Dict { get; }
+        public IDictionary<string, short> Int16Dict { get; } = null!;
 
-        public IDictionary<string, int> Int32Dict { get; }
+        public IDictionary<string, int> Int32Dict { get; } = null!;
 
-        public IDictionary<string, long> Int64Dict { get; }
+        public IDictionary<string, long> Int64Dict { get; } = null!;
 
-        public IDictionary<string, float> FloatDict { get; }
+        public IDictionary<string, float> FloatDict { get; } = null!;
 
-        public IDictionary<string, double> DoubleDict { get; }
+        public IDictionary<string, double> DoubleDict { get; } = null!;
 
-        public IDictionary<string, bool> BooleanDict { get; }
+        public IDictionary<string, bool> BooleanDict { get; } = null!;
 
-        public IDictionary<string, decimal> DecimalDict { get; }
+        public IDictionary<string, decimal> DecimalDict { get; } = null!;
 
-        public IDictionary<string, Decimal128> Decimal128Dict { get; }
+        public IDictionary<string, Decimal128> Decimal128Dict { get; } = null!;
 
-        public IDictionary<string, ObjectId> ObjectIdDict { get; }
+        public IDictionary<string, ObjectId> ObjectIdDict { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, string> StringDict { get; }
+#endif
+        public IDictionary<string, string> StringDict { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, byte[]> ByteArrayDict { get; }
+#endif
+        public IDictionary<string, byte[]> ByteArrayDict { get; } = null!;
 
-        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; }
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDict { get; } = null!;
 
-        public IDictionary<string, IntPropertyObject> ObjectDict { get; }
+        public IDictionary<string, IntPropertyObject?> ObjectDict { get; } = null!;
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDict { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject?> EmbeddedObjectDict { get; } = null!;
 
-        public IDictionary<string, RealmValue> RealmValueDict { get; }
+        public IDictionary<string, RealmValue> RealmValueDict { get; } = null!;
     }
 
     // This is a stripped-down version of SetsObject because Sync doesn't support
@@ -522,84 +550,88 @@ namespace Realms.Tests
 
         public Guid GuidProperty { get; set; }
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[]? ByteArrayProperty { get; set; }
 
         public RealmValue RealmValueProperty { get; set; }
 
-        public IntPropertyObject ObjectProperty { get; set; }
+        public IntPropertyObject? ObjectProperty { get; set; }
 
-        public EmbeddedIntPropertyObject EmbeddedObjectProperty { get; set; }
+        public EmbeddedIntPropertyObject? EmbeddedObjectProperty { get; set; }
     }
 
     public partial class DictionariesObject : TestRealmObject
     {
-        public IDictionary<string, char> CharDictionary { get; }
+        public IDictionary<string, char> CharDictionary { get; } = null!;
 
-        public IDictionary<string, byte> ByteDictionary { get; }
+        public IDictionary<string, byte> ByteDictionary { get; } = null!;
 
-        public IDictionary<string, short> Int16Dictionary { get; }
+        public IDictionary<string, short> Int16Dictionary { get; } = null!;
 
-        public IDictionary<string, int> Int32Dictionary { get; }
+        public IDictionary<string, int> Int32Dictionary { get; } = null!;
 
-        public IDictionary<string, long> Int64Dictionary { get; }
+        public IDictionary<string, long> Int64Dictionary { get; } = null!;
 
-        public IDictionary<string, float> SingleDictionary { get; }
+        public IDictionary<string, float> SingleDictionary { get; } = null!;
 
-        public IDictionary<string, double> DoubleDictionary { get; }
+        public IDictionary<string, double> DoubleDictionary { get; } = null!;
 
-        public IDictionary<string, bool> BooleanDictionary { get; }
+        public IDictionary<string, bool> BooleanDictionary { get; } = null!;
 
-        public IDictionary<string, decimal> DecimalDictionary { get; }
+        public IDictionary<string, decimal> DecimalDictionary { get; } = null!;
 
-        public IDictionary<string, Decimal128> Decimal128Dictionary { get; }
+        public IDictionary<string, Decimal128> Decimal128Dictionary { get; } = null!;
 
-        public IDictionary<string, ObjectId> ObjectIdDictionary { get; }
+        public IDictionary<string, ObjectId> ObjectIdDictionary { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, string> StringDictionary { get; }
+#endif
+        public IDictionary<string, string> StringDictionary { get; } = null!;
 
-        public IDictionary<string, string> NullableStringDictionary { get; }
+        public IDictionary<string, string?> NullableStringDictionary { get; } = null!;
 
-        public IDictionary<string, byte[]> ByteArrayDictionary { get; }
+        public IDictionary<string, byte[]> ByteArrayDictionary { get; } = null!;
 
-        public IDictionary<string, DateTimeOffset> DateTimeOffsetDictionary { get; }
+        public IDictionary<string, DateTimeOffset> DateTimeOffsetDictionary { get; } = null!;
 
-        public IDictionary<string, char?> NullableCharDictionary { get; }
+        public IDictionary<string, char?> NullableCharDictionary { get; } = null!;
 
-        public IDictionary<string, byte?> NullableByteDictionary { get; }
+        public IDictionary<string, byte?> NullableByteDictionary { get; } = null!;
 
-        public IDictionary<string, short?> NullableInt16Dictionary { get; }
+        public IDictionary<string, short?> NullableInt16Dictionary { get; } = null!;
 
-        public IDictionary<string, int?> NullableInt32Dictionary { get; }
+        public IDictionary<string, int?> NullableInt32Dictionary { get; } = null!;
 
-        public IDictionary<string, long?> NullableInt64Dictionary { get; }
+        public IDictionary<string, long?> NullableInt64Dictionary { get; } = null!;
 
-        public IDictionary<string, float?> NullableSingleDictionary { get; }
+        public IDictionary<string, float?> NullableSingleDictionary { get; } = null!;
 
-        public IDictionary<string, double?> NullableDoubleDictionary { get; }
+        public IDictionary<string, double?> NullableDoubleDictionary { get; } = null!;
 
-        public IDictionary<string, bool?> NullableBooleanDictionary { get; }
+        public IDictionary<string, bool?> NullableBooleanDictionary { get; } = null!;
 
-        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDictionary { get; }
+        public IDictionary<string, DateTimeOffset?> NullableDateTimeOffsetDictionary { get; } = null!;
 
-        public IDictionary<string, decimal?> NullableDecimalDictionary { get; }
+        public IDictionary<string, decimal?> NullableDecimalDictionary { get; } = null!;
 
-        public IDictionary<string, Decimal128?> NullableDecimal128Dictionary { get; }
+        public IDictionary<string, Decimal128?> NullableDecimal128Dictionary { get; } = null!;
 
-        public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; }
+        public IDictionary<string, ObjectId?> NullableObjectIdDictionary { get; } = null!;
 
-        public IDictionary<string, byte[]> NullableBinaryDictionary { get; }
+        public IDictionary<string, byte[]?> NullableBinaryDictionary { get; } = null!;
 
+#if TEST_WEAVER
         [Required]
-        public IDictionary<string, byte[]> BinaryDictionary { get; }
+#endif
+        public IDictionary<string, byte[]> BinaryDictionary { get; } = null!;
 
-        public IDictionary<string, IntPropertyObject> ObjectDictionary { get; }
+        public IDictionary<string, IntPropertyObject?> ObjectDictionary { get; } = null!;
 
-        public IDictionary<string, EmbeddedIntPropertyObject> EmbeddedObjectDictionary { get; }
+        public IDictionary<string, EmbeddedIntPropertyObject?> EmbeddedObjectDictionary { get; } = null!;
 
-        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
+        public IDictionary<string, RealmValue> RealmValueDictionary { get; } = null!;
     }
 
     public partial class CounterObject : TestRealmObject
@@ -633,7 +665,7 @@ namespace Realms.Tests
         [MapTo("_id")]
         public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
     }
 
     public partial class IntPrimaryKeyWithValueObject : TestRealmObject
@@ -642,7 +674,7 @@ namespace Realms.Tests
         [MapTo("_id")]
         public int Id { get; set; }
 
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
     }
 
     public partial class PrimaryKeyCharObject : TestRealmObject
@@ -684,19 +716,21 @@ namespace Realms.Tests
     {
         [PrimaryKey]
         [MapTo("_id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 
     public partial class RequiredPrimaryKeyStringObject : TestRealmObject
     {
         [PrimaryKey]
+#if TEST_WEAVER
         [Required]
+#endif
         [MapTo("_id")]
-        public string Id { get; set; }
+        public string Id { get; set; } = null!;
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 
     public partial class PrimaryKeyObjectIdObject : TestRealmObject
@@ -764,24 +798,24 @@ namespace Realms.Tests
 
     public partial class ClassWithUnqueryableMembers : TestRealmObject
     {
-        public string RealPropertyToSatisfyWeaver { get; set; }
+        public string? RealPropertyToSatisfyWeaver { get; set; }
 
-        public string PublicField;
+        public string? PublicField;
 
         [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance method.")]
-        public string PublicMethod()
+        public string? PublicMethod()
         {
             return null;
         }
 
         [Ignored]
-        public string IgnoredProperty { get; set; }
+        public string? IgnoredProperty { get; set; }
 
         [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance property.")]
-        public string NonAutomaticProperty => null;
+        public string? NonAutomaticProperty => null;
 
         [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "This is intentionally an instance property.")]
-        public string PropertyWithOnlyGet
+        public string? PropertyWithOnlyGet
         {
             get
             {
@@ -789,72 +823,74 @@ namespace Realms.Tests
             }
         }
 
-        public Person RealmObjectProperty { get; set; }
+        public Person? RealmObjectProperty { get; set; }
 
-        public IList<Person> RealmListProperty { get; }
+        public IList<Person> RealmListProperty { get; } = null!;
 
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [Backlink(nameof(UnqueryableBacklinks.Parent))]
-        public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; }
+        public IQueryable<UnqueryableBacklinks> BacklinkProperty { get; } = null!;
 
-        public static string StaticProperty { get; set; }
+        public static string? StaticProperty { get; set; }
     }
 
     public partial class UnqueryableBacklinks : TestRealmObject
     {
-        public ClassWithUnqueryableMembers Parent { get; set; }
+        public ClassWithUnqueryableMembers? Parent { get; set; }
     }
 
     public partial class Dog : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public string Color { get; set; }
+        public string? Color { get; set; }
 
         public bool Vaccinated { get; set; }
 
         public int Age { get; set; }
 
         [Backlink(nameof(Owner.ListOfDogs))]
-        public IQueryable<Owner> Owners { get; }
+        public IQueryable<Owner> Owners { get; } = null!;
     }
 
     public partial class Owner : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public Dog TopDog { get; set; }
+        public Dog? TopDog { get; set; }
 
-        public IList<Dog> ListOfDogs { get; }
+        public IList<Dog> ListOfDogs { get; } = null!;
 
-        public ISet<Dog> SetOfDogs { get; }
+        public ISet<Dog> SetOfDogs { get; } = null!;
 
-        public IDictionary<string, Dog> DictOfDogs { get; }
+        public IDictionary<string, Dog?> DictOfDogs { get; } = null!;
     }
 
     // A copy of Owner that verifies that different objects referring to the same type (Dog)
     // results in the correct backlink count being calculated
     public partial class Walker : TestRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
-        public Dog TopDog { get; set; }
+        public Dog? TopDog { get; set; }
 
-        public IList<Dog> ListOfDogs { get; }
+        public IList<Dog> ListOfDogs { get; } = null!;
 
-        public ISet<Dog> SetOfDogs { get; }
+        public ISet<Dog> SetOfDogs { get; } = null!;
     }
 
     public partial class RequiredStringObject : TestRealmObject
     {
+#if TEST_WEAVER
         [Required]
-        public string String { get; set; }
+#endif
+        public string String { get; set; } = null!;
     }
 
     public partial class ContainerObject : TestRealmObject
     {
-        public IList<IntPropertyObject> Items { get; }
+        public IList<IntPropertyObject> Items { get; } = null!;
     }
 
     public partial class IntPropertyObject : TestRealmObject
@@ -868,16 +904,16 @@ namespace Realms.Tests
         public Guid GuidProperty { get; set; }
 
         [Backlink(nameof(SyncCollectionsObject.ObjectList))]
-        public IQueryable<SyncCollectionsObject> ContainingCollections { get; }
+        public IQueryable<SyncCollectionsObject> ContainingCollections { get; } = null!;
 
         public override string ToString() => $"Int: {Int}";
     }
 
     public partial class ObjectWithObjectProperties : TestRealmObject
     {
-        public IntPropertyObject StandaloneObject { get; set; }
+        public IntPropertyObject? StandaloneObject { get; set; }
 
-        public EmbeddedIntPropertyObject EmbeddedObject { get; set; }
+        public EmbeddedIntPropertyObject? EmbeddedObject { get; set; }
     }
 
     public partial class EmbeddedIntPropertyObject : TestEmbeddedObject
@@ -891,10 +927,10 @@ namespace Realms.Tests
     {
         public int Id { get; set; }
 
-        public RecursiveBacklinksObject Parent { get; set; }
+        public RecursiveBacklinksObject? Parent { get; set; }
 
         [Backlink(nameof(Parent))]
-        public IQueryable<RecursiveBacklinksObject> Children { get; }
+        public IQueryable<RecursiveBacklinksObject> Children { get; } = null!;
     }
 
     public partial class RemappedPropertiesObject : TestRealmObject
@@ -904,7 +940,7 @@ namespace Realms.Tests
         public int Id { get; set; }
 
         [MapTo("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 
     [MapTo("__RemappedTypeObject")]
@@ -914,30 +950,32 @@ namespace Realms.Tests
         [MapTo("_id")]
         public int Id { get; set; }
 
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
 
-        public RemappedTypeObject NormalLink { get; set; }
+        public RemappedTypeObject? NormalLink { get; set; }
 
         [MapTo("__mappedLink")]
-        public RemappedTypeObject MappedLink { get; set; }
+        public RemappedTypeObject? MappedLink { get; set; }
 
-        public IList<RemappedTypeObject> NormalList { get; }
+        public IList<RemappedTypeObject> NormalList { get; } = null!;
 
         [MapTo("__mappedList")]
-        public IList<RemappedTypeObject> MappedList { get; }
+        public IList<RemappedTypeObject> MappedList { get; } = null!;
 
         [Backlink(nameof(NormalLink))]
-        public IQueryable<RemappedTypeObject> NormalBacklink { get; }
+        public IQueryable<RemappedTypeObject> NormalBacklink { get; } = null!;
 
         [Backlink(nameof(MappedLink))]
         [MapTo("__mappedBacklink")]
-        public IQueryable<RemappedTypeObject> MappedBacklink { get; }
+        public IQueryable<RemappedTypeObject> MappedBacklink { get; } = null!;
     }
 
     public partial class ObjectWithRequiredStringList : TestRealmObject
     {
+#if TEST_WEAVER
         [Required]
-        public IList<string> Strings { get; }
+#endif
+        public IList<string> Strings { get; } = null!;
     }
 
     public partial class ObjectWithEmbeddedProperties : TestRealmObject
@@ -945,13 +983,13 @@ namespace Realms.Tests
         [PrimaryKey]
         public int PrimaryKey { get; set; }
 
-        public EmbeddedAllTypesObject AllTypesObject { get; set; }
+        public EmbeddedAllTypesObject? AllTypesObject { get; set; }
 
-        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; }
+        public IList<EmbeddedAllTypesObject> ListOfAllTypesObjects { get; } = null!;
 
-        public EmbeddedLevel1 RecursiveObject { get; set; }
+        public EmbeddedLevel1? RecursiveObject { get; set; }
 
-        public IDictionary<string, EmbeddedAllTypesObject> DictionaryOfAllTypesObjects { get; }
+        public IDictionary<string, EmbeddedAllTypesObject?> DictionaryOfAllTypesObjects { get; } = null!;
     }
 
     public partial class EmbeddedAllTypesObject : TestEmbeddedObject
@@ -976,7 +1014,7 @@ namespace Realms.Tests
 
         public bool BooleanProperty { get; set; }
 
-        public string StringProperty { get; set; }
+        public string? StringProperty { get; set; }
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
@@ -984,7 +1022,7 @@ namespace Realms.Tests
 
         public Guid GuidProperty { get; set; }
 
-        public byte[] ByteArrayProperty { get; set; }
+        public byte[]? ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
 
@@ -1025,30 +1063,30 @@ namespace Realms.Tests
         public RealmInteger<long>? NullableInt64CounterProperty { get; set; }
 
         [Backlink(nameof(ObjectWithEmbeddedProperties.AllTypesObject))]
-        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; }
+        public IQueryable<ObjectWithEmbeddedProperties> ContainersObjects { get; } = null!;
     }
 
     public partial class EmbeddedLevel1 : TestEmbeddedObject
     {
-        public string String { get; set; }
+        public string? String { get; set; }
 
-        public EmbeddedLevel2 Child { get; set; }
+        public EmbeddedLevel2? Child { get; set; }
 
-        public IList<EmbeddedLevel2> Children { get; }
+        public IList<EmbeddedLevel2> Children { get; } = null!;
     }
 
     public partial class EmbeddedLevel2 : TestEmbeddedObject
     {
-        public string String { get; set; }
+        public string? String { get; set; }
 
-        public EmbeddedLevel3 Child { get; set; }
+        public EmbeddedLevel3? Child { get; set; }
 
-        public IList<EmbeddedLevel3> Children { get; }
+        public IList<EmbeddedLevel3> Children { get; } = null!;
     }
 
     public partial class EmbeddedLevel3 : TestEmbeddedObject
     {
-        public string String { get; set; }
+        public string? String { get; set; }
     }
 
     public partial class HugeSyncObject : TestRealmObject
@@ -1057,7 +1095,7 @@ namespace Realms.Tests
         [MapTo("_id")]
         public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
 
-        public byte[] Data { get; set; }
+        public byte[]? Data { get; set; }
 
         public HugeSyncObject()
         {
@@ -1079,13 +1117,46 @@ namespace Realms.Tests
 
         public RealmValue RealmValueProperty { get; set; }
 
-        public IList<RealmValue> RealmValueList { get; }
+        public IList<RealmValue> RealmValueList { get; } = null!;
 
-        public ISet<RealmValue> RealmValueSet { get; }
+        public ISet<RealmValue> RealmValueSet { get; } = null!;
 
-        public IDictionary<string, RealmValue> RealmValueDictionary { get; }
+        public IDictionary<string, RealmValue> RealmValueDictionary { get; } = null!;
 
-        public IDictionary<string, int> TestDict { get; }
+        public IDictionary<string, int> TestDict { get; } = null!;
+    }
+
+    public partial class ObjectWithFtsIndex : TestRealmObject
+    {
+        [PrimaryKey]
+#if TEST_WEAVER
+        [Required]
+        public string Title { get; set; } = null!;
+#else
+        public string Title { get; set; }
+#endif
+
+#if TEST_WEAVER
+        [Required]
+#endif
+        [Indexed(IndexType.FullText)]
+        public string Summary { get; set; } = string.Empty;
+
+        [Indexed(IndexType.FullText)]
+        public string? NullableSummary { get; set; }
+
+        public ObjectWithFtsIndex(string title, string summary)
+        {
+            Title = title;
+            Summary = summary;
+            NullableSummary = summary;
+        }
+
+#if TEST_WEAVER
+        private ObjectWithFtsIndex()
+        {
+        }
+#endif
     }
 
     [Explicit]
@@ -1095,7 +1166,7 @@ namespace Realms.Tests
         [MapTo("_id")]
         private string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         public string GetId() => Id;
     }

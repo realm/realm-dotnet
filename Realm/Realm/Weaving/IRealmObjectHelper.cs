@@ -46,12 +46,12 @@ namespace Realms.Weaving
         /// <returns><c>true</c>, if the class has primary key, <c>false</c> otherwise.</returns>
         /// <param name="instance">The RealmObjectBase instance.</param>
         /// <param name="value">The value of the primary key.</param>
-        bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out object value);
+        bool TryGetPrimaryKeyValue(IRealmObjectBase instance, out RealmValue value);
 
         /// <summary>
         /// Creates an instance of a ManagedAccessor.
         /// </summary>
         /// <returns>The ManagedAccessor.</returns>
-        ManagedAccessor CreateAccessor();
+        ManagedAccessor? CreateAccessor();
     }
 }

@@ -27,6 +27,6 @@ namespace SourceGeneratorAssemblyToProcess
 
     public partial class PartialClass : IRealmObject
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
     }
 }

@@ -27,28 +27,28 @@ namespace Realms.Sync.Native
         internal AuthProvider provider;
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string token;
+        private string? token;
         private IntPtr token_len;
 
-        internal string Token
+        internal string? Token
         {
             set
             {
                 token = value;
-                token_len = (IntPtr)(value?.Length ?? 0);
+                token_len = value.IntPtrLength();
             }
         }
 
         [MarshalAs(UnmanagedType.LPWStr)]
-        private string additional_info;
+        private string? additional_info;
         private IntPtr additional_info_len;
 
-        internal string AdditionalInfo
+        internal string? AdditionalInfo
         {
             set
             {
                 additional_info = value;
-                additional_info_len = (IntPtr)(value?.Length ?? 0);
+                additional_info_len = value.IntPtrLength();
             }
         }
     }

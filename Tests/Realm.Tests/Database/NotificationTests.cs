@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -65,8 +64,8 @@ namespace Realms.Tests.Database
         public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();
-            ChangeSet changes = null;
-            void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e) => changes = c;
+            ChangeSet? changes = null;
+            void OnNotification(IRealmCollection<Person> s, ChangeSet? c) => changes = c;
 
             using (query.SubscribeForNotifications(OnNotification))
             {
@@ -74,7 +73,7 @@ namespace Realms.Tests.Database
 
                 _realm.Refresh();
                 Assert.That(changes, Is.Not.Null);
-                Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+                Assert.That(changes!.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
             }
         }
 
@@ -83,8 +82,8 @@ namespace Realms.Tests.Database
         {
             var container = new OrderedContainer();
             _realm.Write(() => _realm.Add(container));
-            ChangeSet changes = null;
-            void OnNotification(IRealmCollection<OrderedObject> s, ChangeSet c, Exception e) => changes = c;
+            ChangeSet? changes = null;
+            void OnNotification(IRealmCollection<OrderedObject> s, ChangeSet? c) => changes = c;
 
             using (container.Items.SubscribeForNotifications(OnNotification))
             {
@@ -92,7 +91,7 @@ namespace Realms.Tests.Database
 
                 _realm.Refresh();
                 Assert.That(changes, Is.Not.Null);
-                Assert.That(changes.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+                Assert.That(changes!.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
             }
         }
 
@@ -100,7 +99,7 @@ namespace Realms.Tests.Database
         public void UnsubscribeInNotificationCallback()
         {
             var query = _realm.All<Person>();
-            IDisposable notificationToken = null;
+            IDisposable notificationToken = null!;
 
             var notificationCount = 0;
             notificationToken = query.SubscribeForNotifications(delegate
@@ -125,7 +124,7 @@ namespace Realms.Tests.Database
                 return _realm.Add(new OrderedContainer());
             });
 
-            IDisposable notificationToken = null;
+            IDisposable notificationToken = null!;
 
             var notificationCount = 0;
             notificationToken = container.ItemsDictionary.SubscribeForKeyNotifications(delegate
@@ -149,7 +148,7 @@ namespace Realms.Tests.Database
             var (token, container) = _realm.Write(() =>
             {
                 var container = _realm.Add(new OrderedContainer());
-                var token = container.ItemsDictionary.SubscribeForKeyNotifications((dict, changes, error) =>
+                var token = container.ItemsDictionary.SubscribeForKeyNotifications((dict, changes) =>
                 {
                     notificationsCount++;
                 });
@@ -247,7 +246,7 @@ namespace Realms.Tests.Database
 
             testObject.PropertyChanged += (sender, e) =>
             {
-                propertyEventArgs.Add(e.PropertyName);
+                propertyEventArgs.Add(e.PropertyName!);
             };
 
             var person = new Person();
@@ -306,7 +305,7 @@ namespace Realms.Tests.Database
             var propertyEventArgs = new List<string>();
             testObject.PropertyChanged += (sender, e) =>
             {
-                propertyEventArgs.Add(e.PropertyName);
+                propertyEventArgs.Add(e.PropertyName!);
             };
 
             var targetObject = new TestNotificationObject();
@@ -370,15 +369,15 @@ namespace Realms.Tests.Database
             var propertyEventArgs = new List<string>();
             testObject.PropertyChanged += (sender, e) =>
             {
-                propertyEventArgs.Add(e.PropertyName);
+                propertyEventArgs.Add(e.PropertyName!);
             };
 
             _realm.Write(() =>
             {
                 // Should should only fire for 'testObject.StringProperty = "foo"' since this isn't a nested property.
                 testObject.StringProperty = "foo";
-                testObject.LinkSameType.StringProperty = "bar";
-                testObject.LinkDifferentType.Nickname = "foobar";
+                testObject.LinkSameType!.StringProperty = "bar";
+                testObject.LinkDifferentType!.Nickname = "foobar";
             });
             _realm.Refresh();
             Assert.That(propertyEventArgs.Count, Is.EqualTo(1));
@@ -416,7 +415,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(3));
+            Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
             eventArgs.Clear();
 
             // Modifications
@@ -451,7 +450,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
-            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(3));
+            Assert.That(eventArgs[0].OldItems!.Count, Is.EqualTo(3));
         }
 
         [Test]
@@ -462,7 +461,7 @@ namespace Realms.Tests.Database
             var eventArgsForFilter = new List<NotifyCollectionChangedEventArgs>();
 
             var query = _realm.All<TestNotificationObject>().AsRealmCollection();
-            var queryWithFilter = _realm.All<TestNotificationObject>().Where(t => t.StringProperty.Contains("f")).AsRealmCollection();
+            var queryWithFilter = _realm.All<TestNotificationObject>().Where(t => t.StringProperty!.Contains("f")).AsRealmCollection();
 
             query.CollectionChanged += (sender, e) => eventArgs.Add(e);
             queryWithFilter.CollectionChanged += (sender, e) => eventArgsForFilter.Add(e);
@@ -481,7 +480,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(3));
+            Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(3));
             eventArgs.Clear();
 
             // Modifications
@@ -539,13 +538,13 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(1));
             eventArgs.Clear();
 
             // Modifications
             _realm.Write(() =>
             {
-                testObject.DictionarySameType["1"].StringProperty = "foo1";
+                testObject.DictionarySameType["1"]!.StringProperty = "foo1";
             });
             _realm.Refresh();
             Assert.That(eventArgs, Is.Empty);
@@ -558,7 +557,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
-            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].OldItems!.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -578,7 +577,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-            Assert.That(eventArgs[0].NewItems.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].NewItems!.Count, Is.EqualTo(1));
             eventArgs.Clear();
 
             // Modifications
@@ -597,7 +596,7 @@ namespace Realms.Tests.Database
             _realm.Refresh();
             Assert.That(eventArgs.Count, Is.EqualTo(1));
             Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
-            Assert.That(eventArgs[0].OldItems.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].OldItems!.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -612,7 +611,7 @@ namespace Realms.Tests.Database
                 });
             });
 
-            Exception error = null;
+            Exception? error = null;
             _realm.Error += (sender, e) =>
             {
                 error = e.Exception;
@@ -624,7 +623,7 @@ namespace Realms.Tests.Database
             var handler = new NotifyCollectionChangedEventHandler((sender, e) => eventArgs.Add(e));
 
             var propertyEventArgs = new List<string>();
-            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
+            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName!));
 
             query.CollectionChanged += handler;
             query.PropertyChanged += propertyHandler;
@@ -702,7 +701,7 @@ namespace Realms.Tests.Database
                 _realm.Add(first);
             });
 
-            Exception error = null;
+            Exception? error = null;
             _realm.Error += (sender, e) =>
             {
                 error = e.Exception;
@@ -714,7 +713,7 @@ namespace Realms.Tests.Database
             query.CollectionChanged += (sender, e) => eventArgs.Add(e);
 
             var propertyEventArgs = new List<string>();
-            query.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+            query.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName!);
 
             Assert.That(error, Is.Null);
 
@@ -751,7 +750,7 @@ namespace Realms.Tests.Database
             });
 
             var propertyEventArgs = new List<string>();
-            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName));
+            var propertyHandler = new PropertyChangedEventHandler((sender, e) => propertyEventArgs.Add(e.PropertyName!));
 
             var collection = container.Items.AsRealmCollection();
             collection.CollectionChanged += handler;
@@ -800,7 +799,7 @@ namespace Realms.Tests.Database
 
             var collection = container.Items.AsRealmCollection();
             collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
-            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName!);
 
             _realm.Write(() =>
             {
@@ -824,8 +823,8 @@ namespace Realms.Tests.Database
         [TestCase(1, 3, 1, 3, NotifyCollectionChangedAction.Move)] // a b c d e -> c d a b e
         public void ListMove_MultipleMovedItemssTests(int oldIndex1, int newIndex1, int oldIndex2, int newIndex2, NotifyCollectionChangedAction expectedAction)
         {
-            OrderedObject object1 = null;
-            OrderedObject object2 = null;
+            OrderedObject object1 = null!;
+            OrderedObject object2 = null!;
             var args = TestMoves(items =>
             {
                 object1 = items[oldIndex1];
@@ -865,7 +864,7 @@ namespace Realms.Tests.Database
         [TestCase(2, 1)]
         public void ListMove_SingleMovedItemTests(int oldIndex, int newIndex)
         {
-            OrderedObject movedObject = null;
+            OrderedObject movedObject = null!;
             var args = TestMoves(items =>
             {
                 movedObject = items[oldIndex];
@@ -876,6 +875,50 @@ namespace Realms.Tests.Database
             Assert.That(args.NewStartingIndex, Is.EqualTo(newIndex));
             Assert.That(args.OldItems, Is.EquivalentTo(new[] { movedObject }));
             Assert.That(args.NewItems, Is.EquivalentTo(new[] { movedObject }));
+        }
+
+        [Test]
+        public void ListReplace_RaisesReplaceNotifications()
+        {
+            var container = new OrderedContainer();
+            for (var i = 0; i < 5; i++)
+            {
+                container.Items.Add(new OrderedObject
+                {
+                    Order = i
+                });
+            }
+
+            _realm.Write(() => _realm.Add(container));
+
+            var eventArgs = new List<NotifyCollectionChangedEventArgs>();
+            var propertyEventArgs = new List<string>();
+
+            var collection = container.Items.AsRealmCollection();
+            collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName!);
+
+            var oldItem = container.Items[1];
+            _realm.Write(() => container.Items[1] = container.Items[4]);
+
+            _realm.Refresh();
+
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(eventArgs[0].Action, Is.EqualTo(NotifyCollectionChangedAction.Replace));
+            Assert.That(eventArgs[0].OldStartingIndex, Is.EqualTo(1));
+            Assert.That(eventArgs[0].NewStartingIndex, Is.EqualTo(1));
+            Assert.That(eventArgs[0].OldItems, Is.EquivalentTo(new[] { InvalidObject.Instance }));
+            Assert.That(eventArgs[0].NewItems, Is.EquivalentTo(new[] { container.Items[4] }));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
+            Assert.That(propertyEventArgs, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+            // Verify that modifying an object doesn't raise notifications
+            _realm.Write(() => container.Items[2].Order = 999);
+            _realm.Refresh();
+
+            // No notifications should have arrived
+            Assert.That(eventArgs.Count, Is.EqualTo(1));
+            Assert.That(propertyEventArgs.Count, Is.EqualTo(2));
         }
 
         // Adds 5 OrderedObject to a List, executes moveAction and returns the single change notification argument.
@@ -897,7 +940,7 @@ namespace Realms.Tests.Database
 
             var collection = container.Items.AsRealmCollection();
             collection.CollectionChanged += (sender, e) => eventArgs.Add(e);
-            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName);
+            collection.PropertyChanged += (sender, e) => propertyEventArgs.Add(e.PropertyName!);
 
             _realm.Write(() => moveAction(container.Items));
 
@@ -922,7 +965,7 @@ namespace Realms.Tests.Database
 
             _realm.Write(() => _realm.Add(container));
 
-            Exception error = null;
+            Exception? error = null;
             _realm.Error += (sender, e) =>
             {
                 error = e.Exception;
@@ -934,7 +977,7 @@ namespace Realms.Tests.Database
             var propertyEventArgs = new List<string>();
 
             collection.CollectionChanged += (o, e) => eventArgs.Add(e);
-            collection.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
+            collection.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName!);
 
             Assert.That(error, Is.Null);
             _realm.Write(() =>
@@ -971,7 +1014,7 @@ namespace Realms.Tests.Database
             {
                 Assert.That(arg.Action == action);
                 Assert.That(arg.NewStartingIndex, Is.EqualTo(initial.Length));
-                Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
+                Assert.That(arg.NewItems!.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
             }
             else if (action == NotifyCollectionChangedAction.Remove)
             {
@@ -983,7 +1026,7 @@ namespace Realms.Tests.Database
                 {
                     Assert.That(arg.Action == action);
                     Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
-                    Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
+                    Assert.That(arg.OldItems!.Count, Is.EqualTo(change.Length));
                 }
             }
             else if (action == NotifyCollectionChangedAction.Reset)
@@ -1010,7 +1053,7 @@ namespace Realms.Tests.Database
                 }
             });
 
-            Exception error = null;
+            Exception? error = null;
             _realm.Error += (sender, e) =>
             {
                 error = e.Exception;
@@ -1022,7 +1065,7 @@ namespace Realms.Tests.Database
             var propertyEventArgs = new List<string>();
 
             query.CollectionChanged += (o, e) => eventArgs.Add(e);
-            query.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName);
+            query.PropertyChanged += (o, e) => propertyEventArgs.Add(e.PropertyName!);
 
             Assert.That(error, Is.Null);
             _realm.Write(() =>
@@ -1074,12 +1117,12 @@ namespace Realms.Tests.Database
                 if (action == NotifyCollectionChangedAction.Add)
                 {
                     Assert.That(arg.NewStartingIndex, Is.EqualTo(startIndex));
-                    Assert.That(arg.NewItems.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
+                    Assert.That(arg.NewItems!.Cast<OrderedObject>().Select(o => o.Order), Is.EquivalentTo(change));
                 }
                 else if (action == NotifyCollectionChangedAction.Remove || action == NotifyCollectionChangedAction.Reset)
                 {
                     Assert.That(arg.OldStartingIndex, Is.EqualTo(startIndex));
-                    Assert.That(arg.OldItems.Count, Is.EqualTo(change.Length));
+                    Assert.That(arg.OldItems!.Count, Is.EqualTo(change.Length));
                 }
             }
 
@@ -1094,13 +1137,9 @@ namespace Realms.Tests.Database
             {
                 var tcs = new TaskCompletionSource<ChangeSet>();
                 var query = _realm.All<Person>();
-                void OnNotification(IRealmCollection<Person> s, ChangeSet c, Exception e)
+                void OnNotification(IRealmCollection<Person> s, ChangeSet? c)
                 {
-                    if (e != null)
-                    {
-                        tcs.TrySetException(e);
-                    }
-                    else if (c != null)
+                    if (c != null)
                     {
                         tcs.TrySetResult(c);
                     }
@@ -1125,7 +1164,7 @@ namespace Realms.Tests.Database
             {
                 var initCalls = 0;
                 var updateCalls = 0;
-                void OnNotification(IRealmCollection<Person> _, ChangeSet changes, Exception __)
+                void OnNotification(IRealmCollection<Person> _, ChangeSet? changes)
                 {
                     if (changes == null)
                     {
@@ -1165,8 +1204,8 @@ namespace Realms.Tests.Database
         [Test]
         public void ModifiedIndices_ReportCorrectlyForOldAndNewVersions()
         {
-            ChangeSet changes = null;
-            void cb(IRealmCollection<IntPrimaryKeyWithValueObject> s, ChangeSet c, Exception e) => changes = c;
+            ChangeSet? changes = null;
+            void cb(IRealmCollection<IntPrimaryKeyWithValueObject> s, ChangeSet? c) => changes = c;
 
             var toDelete = new IntPrimaryKeyWithValueObject { Id = 1 };
             var toModify = new IntPrimaryKeyWithValueObject { Id = 2 };
@@ -1191,7 +1230,7 @@ namespace Realms.Tests.Database
 
                 _realm.Refresh();
                 Assert.That(changes, Is.Not.Null);
-                Assert.That(changes.DeletedIndices, Is.EquivalentTo(new int[] { 0 }));
+                Assert.That(changes!.DeletedIndices, Is.EquivalentTo(new int[] { 0 }));
 
                 // Modified should be in the old collection
                 Assert.That(changes.ModifiedIndices, Is.EquivalentTo(new int[] { 1 }));
@@ -1210,7 +1249,7 @@ namespace Realms.Tests.Database
                 var person = new Person();
                 _realm.Write(() => _realm.Add(person));
 
-                var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs>();
+                var eventHelper = new EventHelper<IRealmCollection<Person>, NotifyCollectionChangedEventArgs?>();
 
                 person.Friends.AsRealmCollection().CollectionChanged += eventHelper.OnEvent;
 
@@ -1221,7 +1260,7 @@ namespace Realms.Tests.Database
 
                 var changeEvent = await eventHelper.GetNextEventAsync();
 
-                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+                Assert.That(changeEvent.Args!.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
                 Assert.That(changeEvent.Args.NewStartingIndex, Is.EqualTo(0));
 
                 _realm.Write(() =>
@@ -1232,7 +1271,7 @@ namespace Realms.Tests.Database
 
                 changeEvent = await eventHelper.GetNextEventAsync();
 
-                Assert.That(changeEvent.Args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
+                Assert.That(changeEvent.Args!.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
                 Assert.That(changeEvent.Sender.IsValid, Is.False);
             });
         }
@@ -1262,7 +1301,7 @@ namespace Realms.Tests.Database
             // This is testing using the internal API because we're not exposing the shallow/keypath functionality publicly yet.
             var results = (RealmResults<TestNotificationObject>)_realm.All<TestNotificationObject>();
 
-            using var token = results.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = results.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1300,7 +1339,7 @@ namespace Realms.Tests.Database
 
             var list = (RealmList<IntPropertyObject>)testObject.ObjectList;
 
-            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = list.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1361,7 +1400,7 @@ namespace Realms.Tests.Database
 
             var list = (RealmList<int>)testObject.Int32List;
 
-            using var token = list.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = list.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1415,7 +1454,7 @@ namespace Realms.Tests.Database
 
             var set = (RealmSet<IntPropertyObject>)testObject.ObjectSet;
 
-            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = set.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1461,7 +1500,7 @@ namespace Realms.Tests.Database
 
             var set = (RealmSet<int>)testObject.Int32Set;
 
-            using var token = set.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = set.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1500,7 +1539,7 @@ namespace Realms.Tests.Database
 
             var dict = (RealmDictionary<IntPropertyObject>)testObject.ObjectDict;
 
-            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1553,7 +1592,7 @@ namespace Realms.Tests.Database
 
             var dict = (RealmDictionary<int>)testObject.Int32Dict;
 
-            using var token = dict.SubscribeForNotificationsImpl((sender, changes, error) =>
+            using var token = dict.SubscribeForNotificationsImpl((sender, changes) =>
             {
                 if (changes != null)
                 {
@@ -1592,10 +1631,10 @@ namespace Realms.Tests.Database
         }
 
         private void VerifyNotifications(List<ChangeSet> notifications,
-            int[] expectedInserted = null,
-            int[] expectedModified = null,
-            int[] expectedDeleted = null,
-            Move[] expectedMoves = null,
+            int[]? expectedInserted = null,
+            int[]? expectedModified = null,
+            int[]? expectedDeleted = null,
+            Move[]? expectedMoves = null,
             bool expectedCleared = false,
             bool expectedNotifications = true)
         {
@@ -1616,9 +1655,9 @@ namespace Realms.Tests.Database
 
     public partial class OrderedContainer : TestRealmObject
     {
-        public IList<OrderedObject> Items { get; }
+        public IList<OrderedObject> Items { get; } = null!;
 
-        public IDictionary<string, OrderedObject> ItemsDictionary { get; }
+        public IDictionary<string, OrderedObject?> ItemsDictionary { get; } = null!;
     }
 
     public partial class OrderedObject : TestRealmObject

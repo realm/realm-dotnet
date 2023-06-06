@@ -16,16 +16,18 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(DictionariesObjectObjectHelper))]
+    [Woven(typeof(DictionariesObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class DictionariesObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="DictionariesObject"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DictionariesObject", ObjectSchema.ObjectType.RealmObject)
         {
             Realms.Schema.Property.PrimitiveDictionary("CharDictionary", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CharDictionary"),
@@ -41,7 +43,7 @@ namespace Realms.Tests
             Realms.Schema.Property.PrimitiveDictionary("ObjectIdDictionary", Realms.RealmValueType.ObjectId, areElementsNullable: false, managedName: "ObjectIdDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("StringDictionary", Realms.RealmValueType.String, areElementsNullable: false, managedName: "StringDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableStringDictionary", Realms.RealmValueType.String, areElementsNullable: true, managedName: "NullableStringDictionary"),
-            Realms.Schema.Property.PrimitiveDictionary("ByteArrayDictionary", Realms.RealmValueType.Data, areElementsNullable: true, managedName: "ByteArrayDictionary"),
+            Realms.Schema.Property.PrimitiveDictionary("ByteArrayDictionary", Realms.RealmValueType.Data, areElementsNullable: false, managedName: "ByteArrayDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("DateTimeOffsetDictionary", Realms.RealmValueType.Date, areElementsNullable: false, managedName: "DateTimeOffsetDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableCharDictionary", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableCharDictionary"),
             Realms.Schema.Property.PrimitiveDictionary("NullableByteDictionary", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "NullableByteDictionary"),
@@ -70,28 +72,35 @@ namespace Realms.Tests
 
         internal IDictionariesObjectAccessor Accessor => _accessor ??= new DictionariesObjectUnmanagedAccessor(typeof(DictionariesObject));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IDictionariesObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -191,6 +200,7 @@ namespace Realms.Tests
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -259,13 +269,32 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator DictionariesObject(Realms.RealmValue val) => val.AsRealmObject<DictionariesObject>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="DictionariesObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="DictionariesObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator DictionariesObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<DictionariesObject>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="DictionariesObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(DictionariesObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="DictionariesObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(DictionariesObject? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -291,11 +320,13 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class DictionariesObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -307,14 +338,14 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new DictionariesObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
-                value = null;
+                value = RealmValue.Null;
                 return false;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IDictionariesObjectAccessor : Realms.IRealmAccessor
         {
             System.Collections.Generic.IDictionary<string, char> CharDictionary { get; }
@@ -343,7 +374,7 @@ namespace Realms.Tests
 
             System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; }
 
-            System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; }
+            System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; }
 
             System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; }
 
@@ -382,7 +413,7 @@ namespace Realms.Tests
             System.Collections.Generic.IDictionary<string, Realms.RealmValue> RealmValueDictionary { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DictionariesObjectManagedAccessor : Realms.ManagedAccessor, IDictionariesObjectAccessor
         {
             private System.Collections.Generic.IDictionary<string, char> _charDictionary = null!;
@@ -567,14 +598,14 @@ namespace Realms.Tests
                 }
             }
 
-            private System.Collections.Generic.IDictionary<string, byte[]?> _byteArrayDictionary = null!;
-            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary
+            private System.Collections.Generic.IDictionary<string, byte[]> _byteArrayDictionary = null!;
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary
             {
                 get
                 {
                     if (_byteArrayDictionary == null)
                     {
-                        _byteArrayDictionary = GetDictionaryValue<byte[]?>("ByteArrayDictionary");
+                        _byteArrayDictionary = GetDictionaryValue<byte[]>("ByteArrayDictionary");
                     }
 
                     return _byteArrayDictionary;
@@ -834,7 +865,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class DictionariesObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IDictionariesObjectAccessor
         {
             public override ObjectSchema ObjectSchema => DictionariesObject.RealmSchema;
@@ -865,7 +896,7 @@ namespace Realms.Tests
 
             public System.Collections.Generic.IDictionary<string, string?> NullableStringDictionary { get; } = new Dictionary<string, string?>();
 
-            public System.Collections.Generic.IDictionary<string, byte[]?> ByteArrayDictionary { get; } = new Dictionary<string, byte[]?>();
+            public System.Collections.Generic.IDictionary<string, byte[]> ByteArrayDictionary { get; } = new Dictionary<string, byte[]>();
 
             public System.Collections.Generic.IDictionary<string, System.DateTimeOffset> DateTimeOffsetDictionary { get; } = new Dictionary<string, System.DateTimeOffset>();
 

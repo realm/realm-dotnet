@@ -76,3 +76,15 @@ When you run the tests, it's usually valuable to explicitly provide a log file f
 location. To specify custom log file location, invoke the executable with `-logFile ./myrun.log`. The test player will only output the "run started"
 and "run finished" messages at the `Error` level, so individual test runs will not show up in the in-game console, but they'll show up in the log file.
 Currently only completed tests are logged, but you can change that if necessary by implementing `TestManager.TestStarted`.
+
+## UWP certificate renewal
+
+UWP certficates are generated for 1 year at a time. This means that they need to be recreated every year and uploaded to CI.
+
+1. In Visual Studio for Windows, open `Tests.UWP/Package.appxmanifest`.
+2. Go to Packaging and click on `Choose Cetificate`.
+3. Click on `Create` and fill in the publisher name (e.g. `RealmTests`) and generate a new password.
+4. Call `[System.Convert]::ToBase64String([IO.File]::ReadAllBytes("$pwd\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx")) | Set-Clipboard` from the repo root. This will base64 encode the certificate and copy it to clipboard.
+5. Go to `https://github.com/realm/realm-dotnet/settings/secrets/actions` and update the following secrets
+  * `BASE64_ENCODED_PFX` with the content of the certificate we copied in 4.
+  * `PFX_PASSWORD` with the password generated in 3.

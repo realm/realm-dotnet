@@ -100,7 +100,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
-        public BsonDocument GetCustomData()
+        public BsonDocument? GetCustomData()
         {
             var serialized = Handle.GetCustomData();
             if (string.IsNullOrEmpty(serialized) || !BsonDocument.TryParse(serialized, out var doc))
@@ -120,7 +120,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <returns>A document containing the user data.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/users/enable-custom-user-data/">Custom User Data Docs</seealso>
-        public T GetCustomData<T>()
+        public T? GetCustomData<T>()
             where T : class
         {
             var customData = GetCustomData();
@@ -162,14 +162,14 @@ namespace Realms.Sync
         internal readonly SyncUserHandle Handle;
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
-        internal User(SyncUserHandle handle, App app = null)
+        internal User(SyncUserHandle handle, App? app = null)
         {
             if (app == null && handle.TryGetApp(out var appHandle))
             {
                 app = new App(appHandle);
             }
 
-            App = app;
+            App = app!;
             Handle = handle;
             Profile = new UserProfile(this);
             ApiKeys = new ApiKeyClient(this);
@@ -189,7 +189,7 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is a <see cref="BsonDocument"/>
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData"/> will also be updated with the new information.
         /// </returns>
-        public async Task<BsonDocument> RefreshCustomDataAsync()
+        public async Task<BsonDocument?> RefreshCustomDataAsync()
         {
             await Handle.RefreshCustomDataAsync();
 
@@ -204,7 +204,7 @@ namespace Realms.Sync
         /// An awaitable <see cref="Task{T}"/> that represents the remote refresh operation. The result is an object
         /// containing the updated custom user data. The value returned by <see cref="GetCustomData{T}"/> will also be updated with the new information.
         /// </returns>
-        public async Task<T> RefreshCustomDataAsync<T>()
+        public async Task<T?> RefreshCustomDataAsync<T>()
             where T : class
         {
             var result = await RefreshCustomDataAsync();
@@ -221,20 +221,7 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="serviceName">The name of the service as configured on the server.</param>
         /// <returns>A <see cref="MongoClient"/> instance that can interact with the databases exposed in the remote service.</returns>
-        public MongoClient GetMongoClient(string serviceName) => new MongoClient(this, serviceName);
-
-        /// <summary>
-        /// Gets a client for interacting the with Firebase Cloud Messaging service exposed in Atlas App Services.
-        /// </summary>
-        /// <remarks>
-        /// The FCM service needs to be configured and enabled in the App Services UI before devices can register
-        /// and receive push notifications.
-        /// </remarks>
-        /// <param name="serviceName">The name of the service as configured in the App Services UI.</param>
-        /// <returns>A client that exposes API to register/deregister push notification tokens.</returns>
-        /// <seealso href="https://docs.mongodb.com/realm/services/send-mobile-push-notifications/index.html#send-a-push-notification">Send Mobile Push Notifications Docs</seealso>
-        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
-        public PushClient GetPushClient(string serviceName) => new PushClient(this, serviceName);
+        public MongoClient GetMongoClient(string serviceName) => new(this, serviceName);
 
         /// <summary>
         /// Links the current user with a new user identity represented by the given credentials.
@@ -275,23 +262,38 @@ namespace Realms.Sync
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => Equals(obj as User);
+        public override bool Equals(object? obj) => Equals(obj as User);
 
         /// <summary>
         /// Determines whether this instance and another <see cref="User"/> instance are equal by comparing their identities.
         /// </summary>
         /// <param name="other">The <see cref="User"/> instance to compare with.</param>
         /// <returns>true if the two instances are equal; false otherwise.</returns>
-        public bool Equals(User other) => Id.Equals(other?.Id);
+        public bool Equals(User? other) => Id.Equals(other?.Id);
 
         /// <inheritdoc />
         public override int GetHashCode() => Id.GetHashCode();
 
-        public static bool operator ==(User user1, User user2) => user1?.Id == user2?.Id;
+        /// <summary>
+        /// Determines whether two <see cref="User"/> instances are equal.
+        /// </summary>
+        /// <param name="user1">The first user to compare.</param>
+        /// <param name="user2">The second user to compare.</param>
+        /// <returns><c>true</c> if the two instances are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==(User? user1, User? user2) => user1?.Id == user2?.Id;
 
-        public static bool operator !=(User user1, User user2) => !(user1 == user2);
+        /// <summary>
+        /// Determines whether two <see cref="User"/> instances are different.
+        /// </summary>
+        /// <param name="user1">The first user to compare.</param>
+        /// <param name="user2">The second user to compare.</param>
+        /// <returns><c>true</c> if the two instances are different; <c>false</c> otherwise.</returns>
+        public static bool operator !=(User? user1, User? user2) => !(user1 == user2);
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
             return $"User {Id}, State: {State}, Provider: {Provider}";
@@ -338,7 +340,7 @@ namespace Realms.Sync
             /// <returns>
             /// An awaitable <see cref="Task{T}"/> representing the asynchronous lookup operation.
             /// </returns>
-            public Task<ApiKey> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
+            public Task<ApiKey?> FetchAsync(ObjectId id) => Handle404(_user.Handle.FetchApiKeyAsync(_user.App.Handle, id));
 
             /// <summary>
             /// Fetches all API keys associated with the user.
@@ -375,7 +377,7 @@ namespace Realms.Sync
             /// <seealso cref="DisableAsync(ObjectId)"/>
             public Task EnableAsync(ObjectId id) => Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
 
-            private static async Task<T> Handle404<T>(Task<T> task)
+            private static async Task<T?> Handle404<T>(Task<T> task)
             {
                 try
                 {
@@ -425,7 +427,7 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function.
             /// </returns>
-            public Task<BsonValue> CallAsync(string name, params object[] args) => CallAsync<BsonValue>(name, args);
+            public Task<BsonValue> CallAsync(string name, params object?[] args) => CallAsync<BsonValue>(name, args);
 
             /// <summary>
             /// Calls a remote function with the supplied arguments.
@@ -448,63 +450,15 @@ namespace Realms.Sync
             /// An awaitable <see cref="Task{T}"/> wrapping the asynchronous call function operation. The result of the task is
             /// the value returned by the function decoded as <typeparamref name="T"/>.
             /// </returns>
-            public Task<T> CallAsync<T>(string name, params object[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
+            public Task<T> CallAsync<T>(string name, params object?[] args) => CallSerializedAsync<T>(name, args.ToNativeJson());
 
-            internal async Task<T> CallSerializedAsync<T>(string name, string args, string serviceName = null)
+            internal async Task<T> CallSerializedAsync<T>(string name, string args, string? serviceName = null)
             {
                 Argument.NotNullOrEmpty(name, nameof(name));
 
                 var response = await _user.Handle.CallFunctionAsync(_user.App.Handle, name, args, serviceName);
 
                 return BsonSerializer.Deserialize<T>(response);
-            }
-        }
-
-        /// <summary>
-        /// The Push client exposes an API to register/deregister for push notifications from a client app.
-        /// </summary>
-        [Obsolete("The push notifications functionality has been deprecated: https://www.mongodb.com/docs/atlas/app-services/reference/push-notifications/")]
-        public class PushClient
-        {
-            private readonly User _user;
-            private readonly string _service;
-
-            internal PushClient(User user, string service)
-            {
-                _user = user;
-                _service = service;
-            }
-
-            /// <summary>
-            /// Registers the given Firebase Cloud Messaging registration token with the user's device on Atlas App Services.
-            /// </summary>
-            /// <param name="token">The FCM registration token.</param>
-            /// <returns>
-            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the registration token was registered
-            /// by Atlas App Services and this device can now receive push notifications.
-            /// </returns>
-            public Task RegisterDeviceAsync(string token)
-            {
-                Argument.NotNullOrEmpty(token, nameof(token));
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.RegisterPushToken(_user.App.Handle, _service, token, tcs);
-
-                return tcs.Task;
-            }
-
-            /// <summary>
-            /// Deregister the user's device from Firebase Cloud Messaging.
-            /// </summary>
-            /// <returns>
-            /// An awaitable <see cref="Task"/> representing the remote operation. Successful completion indicates that the device's registration token
-            /// was removed from Atlas App Services and it will no longer receive push notifications.
-            /// </returns>
-            public Task DeregisterDeviceAsync()
-            {
-                var tcs = new TaskCompletionSource<object>();
-                _user.Handle.DeregisterPushToken(_user.App.Handle, _service, tcs);
-
-                return tcs.Task;
             }
         }
     }

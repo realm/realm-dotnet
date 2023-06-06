@@ -49,17 +49,17 @@ namespace Realms
 
         internal readonly Lazy<CollectionHandleBase> Handle;
 
-        internal readonly Metadata Metadata;
+        internal readonly Metadata? Metadata;
 
         internal bool IsDynamic;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event NotifyCollectionChangedEventHandler _collectionChanged;
+        private event NotifyCollectionChangedEventHandler? _collectionChanged;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
+        private event PropertyChangedEventHandler? _propertyChanged;
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add
             {
@@ -76,7 +76,7 @@ namespace Realms
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -108,9 +108,9 @@ namespace Realms
         }
 
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema? ObjectSchema => Metadata?.Schema;
 
-        Metadata IMetadataObject.Metadata => Metadata;
+        Metadata? IMetadataObject.Metadata => Metadata;
 
         [IgnoreDataMember]
         public bool IsManaged => Realm != null;
@@ -139,7 +139,7 @@ namespace Realms
             }
         }
 
-        internal RealmCollectionBase(Realm realm, Metadata metadata)
+        internal RealmCollectionBase(Realm realm, Metadata? metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
@@ -160,7 +160,7 @@ namespace Realms
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
-        internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
+        internal RealmResults<T> GetFilteredResults(string query, QueryArgument[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
@@ -239,7 +239,7 @@ namespace Realms
         protected static IEmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
         {
             var result = value.AsRealmObject<IEmbeddedObject>();
-            if (result?.IsManaged == true)
+            if (result.IsManaged)
             {
                 throw new RealmException("Can't add to the collection an embedded object that is already managed.");
             }
@@ -254,13 +254,9 @@ namespace Realms
 
         #region INotifyCollectionChanged
 
-        private void OnChange(IRealmCollection<T> sender, ChangeSet change, Exception error)
+        private void OnChange(IRealmCollection<T> sender, ChangeSet? change)
         {
-            if (error != null)
-            {
-                Realm.NotifyError(error);
-            }
-            else if (!sender.IsValid)
+            if (!sender.IsValid)
             {
                 RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
@@ -316,28 +312,37 @@ namespace Realms
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
-                if (raiseAdded || raiseRemoved)
-                {
-                    if ((raiseAdded && raiseRemoved) ||
-                        (raiseAdded && addedItems == null) ||
-                        (raiseRemoved && removedItems == null))
-                    {
-                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                        RaisePropertyChanged();
-                        return;
-                    }
+                var raiseReplaced = TryGetConsecutive(change.NewModifiedIndices, i => this[i], out var replacedItems, out var replacedStartIndex);
 
+                // Only raise specialized notifications if we have exactly one change type to report
+                if (raiseAdded + raiseReplaced + raiseRemoved == 1)
+                {
                     if (removedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, removedStartIndex));
                         RaisePropertyChanged();
                     }
-
-                    if (addedItems != null)
+                    else if (addedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems, addedStartIndex));
                         RaisePropertyChanged();
                     }
+                    else if (replacedItems != null)
+                    {
+                        // Until we get a snapshot of the old collection, we won't be able to provide meaningful value for old items.
+                        var oldItems = Enumerable.Range(0, replacedItems.Count).Select(_ => InvalidObject.Instance).ToList();
+                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, replacedItems, oldItems, replacedStartIndex));
+                        RaisePropertyChanged();
+                    }
+                    else
+                    {
+                        Debug.Assert(false, "This should never happen");
+                    }
+                }
+                else
+                {
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    RaisePropertyChanged();
                 }
             }
         }
@@ -353,7 +358,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
+        private static int TryGetConsecutive(int[] indices, Func<int, object?> getter, out IList? items, out int startIndex)
         {
             items = null;
 
@@ -365,13 +370,13 @@ namespace Realms
                     items = Enumerable.Range(startIndex, indices.Length)
                                       .Select(getter)
                                       .ToList();
-                }
 
-                return true;
+                    return 1;
+                }
             }
 
             startIndex = -1;
-            return false;
+            return 0;
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is called when subscribing to events and the dispose token is retained by the collection.")]
@@ -394,7 +399,7 @@ namespace Realms
 
         void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
         {
-            ChangeSet changeset = null;
+            ChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;
@@ -422,35 +427,39 @@ namespace Realms
 
         public bool IsSynchronized => false;
 
-        public object SyncRoot => null;
+        public object SyncRoot => this;
 
-        object IList.this[int index] { get => this[index]; set => throw new NotSupportedException(); }
+        object? IList.this[int index]
+        {
+            get => this[index];
+            set => throw new NotSupportedException();
+        }
 
         public void Clear() => Handle.Value.Clear();
 
-        public int IndexOf(object value)
+        public int IndexOf(object? value)
         {
             if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return IndexOf((T)value);
+            return IndexOf((T?)value);
         }
 
-        public bool Contains(object value)
+        public bool Contains(object? value)
         {
             if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return Contains((T)value);
+            return Contains((T?)value);
         }
 
-        public virtual bool Contains(T value) => IndexOf(value) > -1;
+        public virtual bool Contains([AllowNull] T value) => IndexOf(value) > -1;
 
-        public abstract int IndexOf(T value);
+        public abstract int IndexOf([AllowNull] T value);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -472,30 +481,28 @@ namespace Realms
             }
         }
 
-        public virtual int Add(object value)
+        public virtual int Add(object? value)
         {
-            if (value is T tValue)
-            {
-                Add(tValue);
-                return Count - 1;
-            }
-
-            throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
-        }
-
-        public virtual void Insert(int index, object value)
-        {
-            if (value is T tValue)
-            {
-                Insert(index, tValue);
-            }
-            else
+            if (value is not T tValue)
             {
                 throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
             }
+
+            Add(tValue);
+            return Count - 1;
         }
 
-        public void Remove(object value)
+        public virtual void Insert(int index, object? value)
+        {
+            if (value is not T tValue)
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+
+            Insert(index, tValue);
+        }
+
+        public void Remove(object? value)
         {
             if (value is T tValue)
             {
@@ -541,12 +548,12 @@ namespace Realms
                 // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
                 // snapshot if the collection is frozen.
                 _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
-                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
+                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata!) : parent;
             }
 
             public T Current => _enumerating[_index];
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public bool MoveNext()
             {
@@ -593,7 +600,7 @@ namespace Realms
     {
         private readonly RealmCollectionBase<T> _parent;
 
-        private readonly Dictionary<KeyPath, (NotificationTokenHandle Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+        private readonly Dictionary<KeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
 
         public NotificationCallbacks(RealmCollectionBase<T> parent)
         {
@@ -611,7 +618,7 @@ namespace Realms
                 {
                     // If Core already delivered the initial notification, we need to manually invoke the callback as it won't be invoked by Core.
                     // It's part of the SubscribeForNotifications API contract that an initial callback with `null` changes is always delivered.
-                    callback(_parent, null, null);
+                    callback(_parent, null);
                 }
 
                 // If we have a subscription already, we just add the callback to the list we're managing
@@ -651,7 +658,7 @@ namespace Realms
             return false;
         }
 
-        public void Notify(ChangeSet changes, bool shallow)
+        public void Notify(ChangeSet? changes, bool shallow)
         {
             var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
             if (_subscriptions.TryGetValue(keyPath, out var subscription))
@@ -663,7 +670,7 @@ namespace Realms
 
                 foreach (var callback in subscription.Callbacks.ToArray())
                 {
-                    callback(_parent, changes, null);
+                    callback(_parent, changes);
                 }
             }
         }
@@ -672,7 +679,7 @@ namespace Realms
         {
             foreach (var token in _subscriptions.Values.Select(c => c.Token))
             {
-                token.Dispose();
+                token?.Dispose();
             }
         }
     }
@@ -699,7 +706,7 @@ namespace Realms
         internal static InvalidObject Instance { get; } = new InvalidObject();
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             // This is to resolve the WPF bug
             return true;

@@ -38,7 +38,7 @@ namespace SourceGeneratorTests
         [OneTimeSetUp]
         public void Setup()
         {
-            var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location);
+            var buildFolder = Path.GetDirectoryName(typeof(SourceGenerationTest).Assembly.Location)!;
             var testFolder = buildFolder.Substring(0, buildFolder.IndexOf("Realm.SourceGenerator.Test", StringComparison.InvariantCulture));
             var assemblyToProcessFolder = Path.Combine(testFolder, "SourceGeneratorAssemblyToProcess");
             _testClassesPath = Path.Combine(assemblyToProcessFolder, "TestClasses");
@@ -69,20 +69,20 @@ namespace SourceGeneratorTests
         protected string GetGeneratedForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, GetGeneratedFileNameForClass(className));
-            return File.Exists(fileName) ? File.ReadAllText(fileName) : null;
+            return File.Exists(fileName) ? File.ReadAllText(fileName) : throw new Exception($"File not found: {fileName}");
         }
 
         protected List<DiagnosticInfo> GetDiagnosticsForClass(string className)
         {
             var fileName = Path.Combine(_generatedFilesPath, GetDiagnosticFileNameForClass(className));
-            return File.Exists(fileName) ? JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName)) : null;
+            return File.Exists(fileName) ? JsonConvert.DeserializeObject<List<DiagnosticInfo>>(File.ReadAllText(fileName))! : throw new Exception($"File not found: {fileName}");
         }
 
-        protected async Task RunComparisonTest(string fileName, IEnumerable<string> classNames = null)
+        protected async Task RunComparisonTest(string fileName, IEnumerable<string> classNames)
         {
-            if (!classNames?.Any() == true)
+            if (!classNames.Any())
             {
-                classNames = classNames.Append(fileName);
+                classNames = new[] { fileName };
             }
 
             var source = GetSource(fileName, ClassFolder.Test);
@@ -101,11 +101,11 @@ namespace SourceGeneratorTests
             await test.RunAsync();
         }
 
-        protected async Task RunErrorTest(string fileName, IEnumerable<string> classNames = null)
+        protected async Task RunErrorTest(string fileName, IEnumerable<string> classNames)
         {
-            if (!classNames?.Any() == true)
+            if (!classNames.Any())
             {
-                classNames = classNames.Append(fileName);
+                classNames = new[] { fileName };
             }
 
             var source = GetSource(fileName, ClassFolder.Error);

@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -30,8 +31,6 @@ namespace Realms.Sync
     {
         private static class NativeMethods
         {
-#pragma warning disable IDE1006 // Naming Styles
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_id", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_user_id(SyncUserHandle user, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
 
@@ -75,7 +74,7 @@ namespace Realms.Sync
             public static extern void call_function(SyncUserHandle handle, AppHandle app,
                 [MarshalAs(UnmanagedType.LPWStr)] string function_name, IntPtr function_name_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string args, IntPtr args_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string service_name, IntPtr service_name_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string? service_name, IntPtr service_name_len,
                 IntPtr tcs_ptr, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_link_credentials", CallingConvention = CallingConvention.Cdecl)]
@@ -83,21 +82,6 @@ namespace Realms.Sync
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_serialized_identities", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_identities(SyncUserHandle handle, IntPtr buffer, IntPtr bufsize, out NativeException ex);
-
-            #region Push
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_push_register", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void push_register(SyncUserHandle handle, AppHandle app,
-                [MarshalAs(UnmanagedType.LPWStr)] string service, IntPtr service_len,
-                [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
-                IntPtr tcs_ptr, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_push_deregister", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void push_deregister(SyncUserHandle handle, AppHandle app,
-                [MarshalAs(UnmanagedType.LPWStr)] string service, IntPtr service_len,
-                IntPtr tcs_ptr, out NativeException ex);
-
-            #endregion
 
             #region Api Keys
 
@@ -123,7 +107,8 @@ namespace Realms.Sync
 
             #endregion
 
-#pragma warning restore IDE1006 // Naming Styles
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncuser_get_path_for_realm", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_path_for_realm(SyncUserHandle handle, [MarshalAs(UnmanagedType.LPWStr)] string? partition, IntPtr partition_len, IntPtr buffer, IntPtr bufsize, out NativeException ex);
         }
 
         [Preserve]
@@ -137,7 +122,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_user_id(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public string GetRefreshToken()
@@ -146,7 +131,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_refresh_token(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public string GetAccessToken()
@@ -155,7 +140,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_access_token(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public string GetDeviceId()
@@ -164,7 +149,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_device_id(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public UserState GetState()
@@ -181,7 +166,7 @@ namespace Realms.Sync
             return result;
         }
 
-        public bool TryGetApp(out AppHandle appHandle)
+        public bool TryGetApp([MaybeNullWhen(false)] out AppHandle appHandle)
         {
             var result = NativeMethods.get_app(this, out var ex);
             ex.ThrowIfNecessary();
@@ -204,7 +189,7 @@ namespace Realms.Sync
 
         public async Task RefreshCustomDataAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
@@ -219,7 +204,7 @@ namespace Realms.Sync
             }
         }
 
-        public string GetProfileData(UserProfileField field)
+        public string? GetProfileData(UserProfileField field)
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
@@ -227,7 +212,7 @@ namespace Realms.Sync
             });
         }
 
-        public string GetCustomData()
+        public string? GetCustomData()
         {
             return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
             {
@@ -235,7 +220,7 @@ namespace Realms.Sync
             });
         }
 
-        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args, string service)
+        public async Task<string> CallFunctionAsync(AppHandle app, string name, string args, string? service)
         {
             var tcs = new TaskCompletionSource<string>();
             var tcsHandle = GCHandle.Alloc(tcs);
@@ -276,28 +261,8 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_identities(this, buffer, length, out ex);
-            });
+            })!;
         }
-
-        #region Push
-
-        public void RegisterPushToken(AppHandle app, string service, string token, TaskCompletionSource<object> tcs)
-        {
-            var tcsHandle = GCHandle.Alloc(tcs);
-
-            NativeMethods.push_register(this, app, service, (IntPtr)service.Length, token, (IntPtr)token.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
-        }
-
-        public void DeregisterPushToken(AppHandle app, string service, TaskCompletionSource<object> tcs)
-        {
-            var tcsHandle = GCHandle.Alloc(tcs);
-
-            NativeMethods.push_deregister(this, app, service, (IntPtr)service.Length, GCHandle.ToIntPtr(tcsHandle), out var ex);
-            ex.ThrowIfNecessary();
-        }
-
-        #endregion
 
         #region Api Keys
 
@@ -323,7 +288,7 @@ namespace Realms.Sync
             }
         }
 
-        public async Task<ApiKey> FetchApiKeyAsync(AppHandle app, ObjectId id)
+        public async Task<ApiKey?> FetchApiKeyAsync(AppHandle app, ObjectId id)
         {
             var tcs = new TaskCompletionSource<ApiKey[]>();
             var tcsHandle = GCHandle.Alloc(tcs);
@@ -366,7 +331,7 @@ namespace Realms.Sync
 
         public async Task DeleteApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             try
             {
@@ -384,7 +349,7 @@ namespace Realms.Sync
 
         public async Task DisableApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -403,7 +368,7 @@ namespace Realms.Sync
 
         public async Task EnableApiKeyAsync(AppHandle app, ObjectId id)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -425,6 +390,15 @@ namespace Realms.Sync
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        public string GetRealmPath(string? partition = null)
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr bufferLength, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_path_for_realm(this, partition, partition.IntPtrLength(), buffer, bufferLength, out ex);
+            })!;
         }
     }
 }

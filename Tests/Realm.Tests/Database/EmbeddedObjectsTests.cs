@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -77,7 +76,7 @@ namespace Realms.Tests.Database
             Assert.That(obj.RecursiveObject.String, Is.EqualTo("first"));
             Assert.That(obj.RecursiveObject.Child.String, Is.EqualTo("second"));
             Assert.That(obj.RecursiveObject.Child.Child.String, Is.EqualTo("third"));
-            Assert.That(obj.RecursiveObject.Children[0].Child.String, Is.EqualTo("child in a list"));
+            Assert.That(obj.RecursiveObject.Children[0].Child!.String, Is.EqualTo("child in a list"));
             Assert.That(obj.RecursiveObject.Children[0].Children[0].String, Is.EqualTo("children in a list"));
         }
 
@@ -225,8 +224,8 @@ namespace Realms.Tests.Database
             Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(2));
             Assert.That(parent.DictionaryOfAllTypesObjects.ContainsKey("first"));
             Assert.That(parent.DictionaryOfAllTypesObjects.ContainsKey("second"));
-            Assert.That(parent.DictionaryOfAllTypesObjects["first"].Int32Property, Is.EqualTo(1));
-            Assert.That(parent.DictionaryOfAllTypesObjects["second"].Int32Property, Is.EqualTo(2));
+            Assert.That(parent.DictionaryOfAllTypesObjects["first"]!.Int32Property, Is.EqualTo(1));
+            Assert.That(parent.DictionaryOfAllTypesObjects["second"]!.Int32Property, Is.EqualTo(2));
         }
 
         [Test]
@@ -273,7 +272,7 @@ namespace Realms.Tests.Database
             Assert.That(parent.DictionaryOfAllTypesObjects, Is.SameAs(dict));
             Assert.That(dict.Count, Is.EqualTo(1));
             Assert.That(dict.ContainsKey("first"));
-            Assert.That(dict["first"].DecimalProperty, Is.EqualTo(123.456M));
+            Assert.That(dict["first"]!.DecimalProperty, Is.EqualTo(123.456M));
         }
 
         [Test]
@@ -379,7 +378,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dict.Count, Is.EqualTo(1));
 
-            var firstItem = dict["a"];
+            var firstItem = dict["a"]!;
             Assert.That(firstItem.StringProperty, Is.EqualTo("first"));
 
             _realm.Write(() =>
@@ -392,7 +391,7 @@ namespace Realms.Tests.Database
 
             Assert.That(dict.Count, Is.EqualTo(1));
             Assert.That(firstItem.IsValid, Is.False);
-            Assert.That(dict["a"].StringProperty, Is.EqualTo("updated"));
+            Assert.That(dict["a"]!.StringProperty, Is.EqualTo("updated"));
         }
 
         [Test]
@@ -461,7 +460,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(0));
-            Assert.That(firstItem.IsValid, Is.False);
+            Assert.That(firstItem!.IsValid, Is.False);
 
             _realm.Write(() =>
             {
@@ -474,11 +473,11 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                parent.DictionaryOfAllTypesObjects.Remove(new KeyValuePair<string, EmbeddedAllTypesObject>("boo", secondItem));
+                parent.DictionaryOfAllTypesObjects.Remove(new KeyValuePair<string, EmbeddedAllTypesObject?>("boo", secondItem));
             });
 
             Assert.That(parent.DictionaryOfAllTypesObjects.Count, Is.EqualTo(0));
-            Assert.That(secondItem.IsValid, Is.False);
+            Assert.That(secondItem!.IsValid, Is.False);
         }
 
         [Test]
@@ -506,7 +505,7 @@ namespace Realms.Tests.Database
                 {
                     parent2.RecursiveObject = parent.RecursiveObject;
                 });
-            });
+            })!;
             Assert.That(ex.Message, Does.Contain("Can't link to an embedded object that is already managed."));
         }
 
@@ -533,7 +532,7 @@ namespace Realms.Tests.Database
                 {
                     parent.RecursiveObject.Children.Add(parent.RecursiveObject.Child);
                 });
-            });
+            })!;
             Assert.That(ex.Message, Is.EqualTo("Can't add to the collection an embedded object that is already managed."));
         }
 
@@ -571,7 +570,7 @@ namespace Realms.Tests.Database
                 };
             });
 
-            Assert.That(parent.RecursiveObject.Child.Child.IsManaged);
+            Assert.That(parent.RecursiveObject.Child.Child!.IsManaged);
             Assert.That(parent.RecursiveObject.Child.Child.String, Is.EqualTo("c"));
         }
 
@@ -791,7 +790,7 @@ namespace Realms.Tests.Database
                 _realm.Add(parent);
             });
 
-            Assert.That(parent, Is.EqualTo(parent.DictionaryOfAllTypesObjects["child"].Parent));
+            Assert.That(parent, Is.EqualTo(parent.DictionaryOfAllTypesObjects["child"]!.Parent));
         }
 
         [Test]
@@ -854,7 +853,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Uses and tests for the obsoleted RealmObjectBase.GetBacklinks")]
         public void DynamicBacklinks()
         {
             TestHelpers.IgnoreOnUnity();
@@ -936,6 +934,29 @@ namespace Realms.Tests.Database
             // This should be empty because no objects link to it via .Children
             var secondLevelChildrenBacklinks = parent.RecursiveObject.Child.DynamicApi.GetBacklinksFromType(nameof(EmbeddedLevel1), nameof(EmbeddedLevel1.Children));
             Assert.That(secondLevelChildrenBacklinks.Count(), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void EmbeddedObject_WhenReassignedToSameValue_IsNoOp()
+        {
+            var parent = _realm.Write(() =>
+            {
+                return _realm.Add(new ObjectWithEmbeddedProperties
+                {
+                    RecursiveObject = new EmbeddedLevel1
+                    {
+                        String = "abc"
+                    }
+                });
+            });
+
+            var child = parent.RecursiveObject;
+            Assert.DoesNotThrow(() => _realm.Write(() =>
+            {
+                parent.RecursiveObject = child;
+            }));
+
+            Assert.That(parent.RecursiveObject!.String, Is.EqualTo("abc"));
         }
 
         private static EmbeddedAllTypesObject CreateEmbeddedAllTypesObject()

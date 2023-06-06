@@ -49,7 +49,7 @@ namespace Realms
 
         private class Scheduler
         {
-            private static readonly Lazy<FieldInfo> XunitInnerContext = new(() =>
+            private static readonly Lazy<FieldInfo?> XunitInnerContext = new(() =>
             {
                 try
                 {
@@ -65,7 +65,7 @@ namespace Realms
             private readonly int _threadId;
 
             private volatile bool _isReleased;
-            private SynchronizationContext _context;
+            private SynchronizationContext? _context;
 
             internal Scheduler(SynchronizationContext context)
             {
@@ -79,13 +79,13 @@ namespace Realms
             {
                 _context?.Post(f_ptr =>
                 {
-                    scheduler_invoke_function((IntPtr)f_ptr, !_isReleased);
+                    scheduler_invoke_function((IntPtr)f_ptr!, !_isReleased);
                 }, function_ptr);
             }
 
-            internal bool IsOnContext(Scheduler other) => AreContextsEqual(_context, other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);
+            internal bool IsOnContext(Scheduler? other) => AreContextsEqual(_context, other?._context ?? SynchronizationContext.Current) || _threadId == (other?._threadId ?? Environment.CurrentManagedThreadId);
 
-            private static bool AreContextsEqual(SynchronizationContext first, SynchronizationContext second)
+            private static bool AreContextsEqual(SynchronizationContext? first, SynchronizationContext? second)
             {
                 if (first == second)
                 {
@@ -107,7 +107,7 @@ namespace Realms
             // });
             // See: https://github.com/xunit/xunit/blob/c27a91f8cbcee37cb45699a3a81287bca225e876/src/xunit.v3.core/Sdk/MaxConcurrencySyncContext.cs
             // See: https://github.com/xunit/xunit/blob/c27a91f8cbcee37cb45699a3a81287bca225e876/src/xunit.v3.core/Sdk/AsyncTestSyncContext.cs
-            private static SynchronizationContext TryGetInnerContext(SynchronizationContext outer)
+            private static SynchronizationContext? TryGetInnerContext(SynchronizationContext? outer)
             {
                 if (outer != null &&
                     XunitInnerContext.Value != null &&
@@ -145,7 +145,7 @@ namespace Realms
         {
             if (context != IntPtr.Zero)
             {
-                var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target;
+                var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target!;
                 scheduler.Post(user_data);
             }
         }
@@ -156,7 +156,7 @@ namespace Realms
             if (context != IntPtr.Zero)
             {
                 var gcHandle = GCHandle.FromIntPtr(context);
-                ((Scheduler)gcHandle.Target).Invalidate();
+                ((Scheduler)gcHandle.Target!).Invalidate();
                 gcHandle.Free();
             }
         }
@@ -166,11 +166,11 @@ namespace Realms
         {
             if (context != IntPtr.Zero)
             {
-                var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target;
-                Scheduler targetScheduler = null;
+                var scheduler = (Scheduler)GCHandle.FromIntPtr(context).Target!;
+                Scheduler? targetScheduler = null;
                 if (targetContext != IntPtr.Zero)
                 {
-                    targetScheduler = (Scheduler)GCHandle.FromIntPtr(targetContext).Target;
+                    targetScheduler = (Scheduler)GCHandle.FromIntPtr(targetContext).Target!;
                 }
 
                 return scheduler.IsOnContext(targetScheduler);

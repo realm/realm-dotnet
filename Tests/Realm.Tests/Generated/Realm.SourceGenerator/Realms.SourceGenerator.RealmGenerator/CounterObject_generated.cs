@@ -16,27 +16,29 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Xml.Serialization;
-using TestAsymmetricObject = Realms.IAsymmetricObject;
 using TestEmbeddedObject = Realms.IEmbeddedObject;
 using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests
 {
     [Generated]
-    [Woven(typeof(CounterObjectObjectHelper))]
+    [Woven(typeof(CounterObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class CounterObject : IRealmObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="CounterObject"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("CounterObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "ByteProperty"),
-            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int16Property"),
-            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
-            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int64Property"),
-            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableByteProperty"),
-            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt16Property"),
-            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt32Property"),
-            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt64Property"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("ByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "ByteProperty"),
+            Realms.Schema.Property.Primitive("Int16Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int16Property"),
+            Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int32Property"),
+            Realms.Schema.Property.Primitive("Int64Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int64Property"),
+            Realms.Schema.Property.Primitive("NullableByteProperty", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableByteProperty"),
+            Realms.Schema.Property.Primitive("NullableInt16Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt16Property"),
+            Realms.Schema.Property.Primitive("NullableInt32Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt32Property"),
+            Realms.Schema.Property.Primitive("NullableInt64Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt64Property"),
         }.Build();
 
         #region IRealmObject implementation
@@ -47,28 +49,35 @@ namespace Realms.Tests
 
         internal ICounterObjectAccessor Accessor => _accessor ??= new CounterObjectUnmanagedAccessor(typeof(CounterObject));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (ICounterObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -76,18 +85,42 @@ namespace Realms.Tests
 
             if (helper != null && oldAccessor != null)
             {
-                if(!skipDefaults || oldAccessor.Id != default(int))
+                if (!skipDefaults || oldAccessor.Id != default(int))
                 {
                     newAccessor.Id = oldAccessor.Id;
                 }
-                newAccessor.ByteProperty = oldAccessor.ByteProperty;
-                newAccessor.Int16Property = oldAccessor.Int16Property;
-                newAccessor.Int32Property = oldAccessor.Int32Property;
-                newAccessor.Int64Property = oldAccessor.Int64Property;
-                newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
-                newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
-                newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
-                newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                if (!skipDefaults || oldAccessor.ByteProperty != default(Realms.RealmInteger<byte>))
+                {
+                    newAccessor.ByteProperty = oldAccessor.ByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.Int16Property != default(Realms.RealmInteger<short>))
+                {
+                    newAccessor.Int16Property = oldAccessor.Int16Property;
+                }
+                if (!skipDefaults || oldAccessor.Int32Property != default(Realms.RealmInteger<int>))
+                {
+                    newAccessor.Int32Property = oldAccessor.Int32Property;
+                }
+                if (!skipDefaults || oldAccessor.Int64Property != default(Realms.RealmInteger<long>))
+                {
+                    newAccessor.Int64Property = oldAccessor.Int64Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableByteProperty != default(Realms.RealmInteger<byte>?))
+                {
+                    newAccessor.NullableByteProperty = oldAccessor.NullableByteProperty;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt16Property != default(Realms.RealmInteger<short>?))
+                {
+                    newAccessor.NullableInt16Property = oldAccessor.NullableInt16Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt32Property != default(Realms.RealmInteger<int>?))
+                {
+                    newAccessor.NullableInt32Property = oldAccessor.NullableInt32Property;
+                }
+                if (!skipDefaults || oldAccessor.NullableInt64Property != default(Realms.RealmInteger<long>?))
+                {
+                    newAccessor.NullableInt64Property = oldAccessor.NullableInt64Property;
+                }
             }
 
             if (_propertyChanged != null)
@@ -112,6 +145,7 @@ namespace Realms.Tests
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -180,13 +214,32 @@ namespace Realms.Tests
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator CounterObject(Realms.RealmValue val) => val.AsRealmObject<CounterObject>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="CounterObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="CounterObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator CounterObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<CounterObject>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="CounterObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(CounterObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="CounterObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(CounterObject? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -212,9 +265,10 @@ namespace Realms.Tests
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class CounterObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -226,14 +280,14 @@ namespace Realms.Tests
 
             public Realms.IRealmObjectBase CreateInstance() => new CounterObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((ICounterObjectAccessor)instance.Accessor).Id;
                 return true;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface ICounterObjectAccessor : Realms.IRealmAccessor
         {
             int Id { get; set; }
@@ -255,7 +309,7 @@ namespace Realms.Tests
             Realms.RealmInteger<long>? NullableInt64Property { get; set; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CounterObjectManagedAccessor : Realms.ManagedAccessor, ICounterObjectAccessor
         {
             public int Id
@@ -313,7 +367,7 @@ namespace Realms.Tests
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class CounterObjectUnmanagedAccessor : Realms.UnmanagedAccessor, ICounterObjectAccessor
         {
             public override ObjectSchema ObjectSchema => CounterObject.RealmSchema;

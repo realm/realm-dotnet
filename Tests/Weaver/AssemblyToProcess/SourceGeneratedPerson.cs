@@ -23,34 +23,34 @@ namespace AssemblyToProcess
 {
     public partial class SourceGeneratedPerson : IRealmObject
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public int Id { get; set; }
 
         [Ignored]
-        public string Nickname { get; set; }
+        public string? Nickname { get; set; }
     }
 
     [Generated]
     public partial class SourceGeneratedPerson : IRealmObject
     {
-        private ISourceGeneratedPersonAccessor _accessor;
+        private ISourceGeneratedPersonAccessor? _accessor;
 
         internal ISourceGeneratedPersonAccessor Accessor => _accessor = _accessor ?? new SourceGeneratedPersonAccessor();
 
-        public List<string> LogList => (Accessor as SourceGeneratedPersonAccessor).LogList;
+        public List<string> LogList => (Accessor as SourceGeneratedPersonAccessor)!.LogList;
 
         internal interface ISourceGeneratedPersonAccessor
         {
-            string Name { get; set; }
+            string? Name { get; set; }
 
             int Id { get; set; }
         }
 
         internal class SourceGeneratedPersonAccessor : ISourceGeneratedPersonAccessor
         {
-            private string _name;
-            public string Name
+            private string? _name;
+            public string? Name
             {
                 get
                 {
@@ -79,7 +79,7 @@ namespace AssemblyToProcess
                 }
             }
 
-            public List<string> LogList = new List<string>();
+            public List<string> LogList = new();
 
             private void LogString(string s)
             {

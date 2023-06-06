@@ -28,7 +28,7 @@ namespace Realms.Tests.Android
     [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
     public class TestRunnerInstrumentation : Instrumentation
     {
-        private List<string> _args = new List<string>()
+        private List<string> _args = new()
         {
             "--headless",
             "--result=/storage/emulated/0/Documents/TestResults.Android.xml"
@@ -38,11 +38,11 @@ namespace Realms.Tests.Android
         {
         }
 
-        public override void OnCreate(Bundle arguments)
+        public override void OnCreate(Bundle? arguments)
         {
             base.OnCreate(arguments);
 
-            var args = arguments.GetString("args");
+            var args = arguments?.GetString("args");
             if (args != null)
             {
                 _args.AddRange(TestHelpers.SplitArguments(args));
@@ -53,11 +53,10 @@ namespace Realms.Tests.Android
 
         public override void OnStart()
         {
-
-            var intent = new Intent(Context, typeof(MainActivity));
+            var intent = new Intent(Context!, typeof(MainActivity));
             intent.PutExtra("args", _args.ToArray());
             intent.SetFlags(ActivityFlags.NewTask);
-            var activity = (MainActivity)StartActivitySync(intent);
+            var activity = (MainActivity)StartActivitySync(intent)!;
             activity.OnFinished = result =>
             {
                 Console.WriteLine("Instrumentation finished...");

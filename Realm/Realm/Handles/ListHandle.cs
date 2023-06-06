@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -88,7 +87,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_filtered_results(ListHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
-                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                [MarshalAs(UnmanagedType.LPArray), In] NativeQueryArgument[] arguments, IntPtr args_count,
                 out NativeException ex);
         }
 
@@ -138,7 +137,7 @@ namespace Realms
 
             var result = NativeMethods.add_embedded(this, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public void Set(int targetIndex, in RealmValue value)
@@ -157,7 +156,7 @@ namespace Realms
 
             var result = NativeMethods.set_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public void Insert(int targetIndex, in RealmValue value)
@@ -176,7 +175,7 @@ namespace Realms
 
             var result = NativeMethods.insert_embedded(this, (IntPtr)targetIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public int Find(in RealmValue value)
@@ -220,7 +219,7 @@ namespace Realms
 
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public override int Count()
@@ -249,7 +248,7 @@ namespace Realms
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
@@ -263,7 +262,7 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+        protected override IntPtr GetFilteredResultsCore(string query, NativeQueryArgument[] arguments, out NativeException ex)
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);

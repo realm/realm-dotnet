@@ -22,13 +22,16 @@ namespace Realms.Tests.Database
     public partial class AddOrUpdateTests
     {
         [Generated]
-        [Woven(typeof(ChildObjectHelper))]
+        [Woven(typeof(ChildObjectHelper)), Realms.Preserve(AllMembers = true)]
         public partial class Child : IRealmObject, INotifyPropertyChanged, IReflectableType
         {
+            /// <summary>
+            /// Defines the schema for the <see cref="Child"/> class.
+            /// </summary>
             public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("Child", ObjectSchema.ObjectType.RealmObject)
             {
-                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
-                Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "Name"),
+                Realms.Schema.Property.Primitive("Id", Realms.RealmValueType.Int, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
+                Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "Name"),
                 Realms.Schema.Property.Object("Parent", "Parent", managedName: "Parent"),
             }.Build();
 
@@ -40,28 +43,35 @@ namespace Realms.Tests.Database
 
             internal IChildAccessor Accessor => _accessor ??= new ChildUnmanagedAccessor(typeof(Child));
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
             public bool IsManaged => Accessor.IsManaged;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
             public bool IsValid => Accessor.IsValid;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
             public bool IsFrozen => Accessor.IsFrozen;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Realm Realm => Accessor.Realm;
+            public Realms.Realm? Realm => Accessor.Realm;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
-            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+            public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
             public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+            /// <inheritdoc />
             [IgnoreDataMember, XmlIgnore]
             public int BacklinksCount => Accessor.BacklinksCount;
 
-            public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+            void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
             {
                 var newAccessor = (IChildAccessor)managedAccessor;
                 var oldAccessor = _accessor;
@@ -69,15 +79,15 @@ namespace Realms.Tests.Database
 
                 if (helper != null && oldAccessor != null)
                 {
-                    if(!skipDefaults || oldAccessor.Id != default(long))
+                    if (!skipDefaults || oldAccessor.Id != default(long))
                     {
                         newAccessor.Id = oldAccessor.Id;
                     }
-                    if(!skipDefaults || oldAccessor.Name != default(string))
+                    if (!skipDefaults || oldAccessor.Name != default(string?))
                     {
                         newAccessor.Name = oldAccessor.Name;
                     }
-                    if(oldAccessor.Parent != null)
+                    if (oldAccessor.Parent != null && newAccessor.Realm != null)
                     {
                         newAccessor.Realm.Add(oldAccessor.Parent, update);
                     }
@@ -106,6 +116,7 @@ namespace Realms.Tests.Database
 
             private event PropertyChangedEventHandler? _propertyChanged;
 
+            /// <inheritdoc />
             public event PropertyChangedEventHandler? PropertyChanged
             {
                 add
@@ -174,13 +185,32 @@ namespace Realms.Tests.Database
                 Accessor.UnsubscribeFromNotifications();
             }
 
-            public static explicit operator Child(Realms.RealmValue val) => val.AsRealmObject<Child>();
+            /// <summary>
+            /// Converts a <see cref="Realms.RealmValue"/> to <see cref="Child"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+            /// </summary>
+            /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+            /// <returns>The <see cref="Child"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+            public static explicit operator Child?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<Child>();
 
+            /// <summary>
+            /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="Child"/>.
+            /// </summary>
+            /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+            /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
             public static implicit operator Realms.RealmValue(Child? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+            /// <summary>
+            /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="Child"/>.
+            /// </summary>
+            /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+            /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+            public static implicit operator Realms.QueryArgument(Child? val) => (Realms.RealmValue)val;
+
+            /// <inheritdoc />
             [EditorBrowsable(EditorBrowsableState.Never)]
             public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+            /// <inheritdoc />
             public override bool Equals(object? obj)
             {
                 if (obj is null)
@@ -206,11 +236,13 @@ namespace Realms.Tests.Database
                 return Accessor.Equals(iro.Accessor);
             }
 
+            /// <inheritdoc />
             public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+            /// <inheritdoc />
             public override string? ToString() => Accessor.ToString();
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             private class ChildObjectHelper : Realms.Weaving.IRealmObjectHelper
             {
                 public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -222,14 +254,14 @@ namespace Realms.Tests.Database
 
                 public Realms.IRealmObjectBase CreateInstance() => new Child();
 
-                public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+                public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
                 {
                     value = ((IChildAccessor)instance.Accessor).Id;
                     return true;
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal interface IChildAccessor : Realms.IRealmAccessor
             {
                 long Id { get; set; }
@@ -239,7 +271,7 @@ namespace Realms.Tests.Database
                 Realms.Tests.Database.AddOrUpdateTests.Parent? Parent { get; set; }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class ChildManagedAccessor : Realms.ManagedAccessor, IChildAccessor
             {
                 public long Id
@@ -261,7 +293,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            [EditorBrowsable(EditorBrowsableState.Never)]
+            [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
             internal class ChildUnmanagedAccessor : Realms.UnmanagedAccessor, IChildAccessor
             {
                 public override ObjectSchema ObjectSchema => Child.RealmSchema;

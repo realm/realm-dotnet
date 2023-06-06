@@ -39,7 +39,6 @@ using namespace app;
 
 using SharedSyncUser = std::shared_ptr<SyncUser>;
 
-using LogMessageCallbackT = void(void* managed_handler, realm_value_t message, util::Logger::Level level);
 using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
 using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
 using StringCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
@@ -50,13 +49,10 @@ namespace realm {
         std::string s_framework;
         std::string s_framework_version;
         std::string s_sdk_version;
-        std::string s_platform;
         std::string s_platform_version;
-        std::string s_cpu_arch;
         std::string s_device_name;
         std::string s_device_version;
 
-        std::function<LogMessageCallbackT> s_log_message_callback;
         std::function<UserCallbackT> s_user_callback;
         std::function<VoidCallbackT> s_void_callback;
         std::function<StringCallbackT> s_string_callback;
@@ -85,10 +81,6 @@ namespace realm {
 
             bool metadata_mode_has_value;
 
-            util::Logger::Level log_level;
-
-            void* managed_logger;
-
             void* managed_http_client;
 
             uint64_t sync_connect_timeout_ms;
@@ -101,20 +93,6 @@ namespace realm {
 
             uint64_t sync_fast_reconnect_limit;
         };
-
-        class SyncLogger : public util::Logger {
-        public:
-            SyncLogger(void* delegate)
-                : managed_logger(delegate)
-            {
-            }
-        protected:
-            void do_log(util::Logger::Level level, const std::string& message) override final {
-                s_log_message_callback(managed_logger, to_capi(Mixed(message)), level);
-            }
-        private:
-            void* managed_logger;
-        };
     }
 }
 
@@ -123,41 +101,23 @@ extern "C" {
         uint16_t* framework_version, size_t framework_version_len,
         uint16_t* sdk_version, size_t sdk_version_len,
         uint16_t* platform_version, size_t platform_version_len,
-        uint16_t* cpu_arch, size_t cpu_arch_len,
         uint16_t* device_name, size_t device_name_len,
         uint16_t* device_version, size_t device_version_len,
         UserCallbackT* user_callback,
         VoidCallbackT* void_callback,
         StringCallbackT* string_callback,
-        LogMessageCallbackT* log_message_callback,
         ApiKeysCallbackT* api_keys_callback)
     {
         s_framework = Utf16StringAccessor(framework, framework_len);
         s_framework_version = Utf16StringAccessor(framework_version, framework_version_len);
         s_sdk_version = Utf16StringAccessor(sdk_version, sdk_version_len);
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
-        s_cpu_arch = Utf16StringAccessor(cpu_arch, cpu_arch_len);
         s_device_name = Utf16StringAccessor(device_name, device_name_len);
         s_device_version = Utf16StringAccessor(device_version, device_version_len);
-
-#if REALM_ANDROID
-        s_platform = "Android";
-#elif REALM_WINDOWS
-        s_platform = "Windows";
-#elif REALM_UWP
-        s_platform = "UWP";
-#elif REALM_IOS
-        s_platform = "iOS";
-#elif REALM_PLATFORM_APPLE
-        s_platform = "macOS";
-#else
-        s_platform = "Linux";
-#endif
 
         s_user_callback = wrap_managed_callback(user_callback);
         s_void_callback = wrap_managed_callback(void_callback);
         s_string_callback = wrap_managed_callback(string_callback);
-        s_log_message_callback = wrap_managed_callback(log_message_callback);
         s_api_keys_callback = wrap_managed_callback(api_keys_callback);
 
         realm::binding::s_can_call_managed = true;
@@ -173,17 +133,12 @@ extern "C" {
             config.device_info.framework_version = s_framework_version;
             config.device_info.sdk_version = s_sdk_version;
             config.device_info.sdk = "Dotnet";
-            config.device_info.platform = s_platform;
             config.device_info.platform_version = s_platform_version;
-            config.device_info.cpu_arch = s_cpu_arch;
             config.device_info.device_name = s_device_name;
             config.device_info.device_version = s_device_version;
 
             config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
-
-            if (app_config.base_url != nullptr) {
-                config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
-            }
+            config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
 
             if (app_config.local_app_name != nullptr) {
                 config.local_app_name = Utf16StringAccessor(app_config.local_app_name, app_config.local_app_name_len).to_string();
@@ -198,7 +153,6 @@ extern "C" {
             }
 
             SyncClientConfig sync_client_config;
-            sync_client_config.log_level = app_config.log_level;
             sync_client_config.base_file_path = Utf16StringAccessor(app_config.base_file_path, app_config.base_file_path_len);
             sync_client_config.timeouts.connection_linger_time = app_config.sync_connection_linger_time_ms;
             sync_client_config.timeouts.connect_timeout = app_config.sync_connect_timeout_ms;
@@ -220,15 +174,6 @@ extern "C" {
             if (encryption_key) {
                 auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
-            }
-
-            void* managed_logger = app_config.managed_logger;
-            if (managed_logger) {
-                sync_client_config.logger_factory = [managed_logger](util::Logger::Level level) {
-                    auto logger = std::make_shared<SyncLogger>(managed_logger);
-                    logger->set_level_threshold(level);
-                    return logger;
-                };
             }
 
             return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));
@@ -317,30 +262,6 @@ extern "C" {
     {
         return handle_errors(ex, [&]() {
             app->delete_user(user, get_callback_handler(tcs_ptr));
-        });
-    }
-
-    REALM_EXPORT size_t shared_app_sync_get_path_for_realm(SharedApp& app, SharedSyncUser& user, uint16_t* partition_buf, size_t partition_len, uint16_t* pathbuffer, size_t pathbuffer_len, NativeException::Marshallable& ex)
-    {
-        return handle_errors(ex, [&]() {
-            std::string path;
-            if (partition_buf) {
-                Utf16StringAccessor partition(partition_buf, partition_len);
-                auto sync_config = SyncConfig(user, partition);
-                path = app->sync_manager()->path_for_realm(std::move(sync_config));
-            }
-            else {
-                // We're using flx, so we don't have a partition. However, the default
-                // path in core is flx_sync_default while the .NET SDK has been using
-                // `default`. To avoid losing users' data, we're passing `default` as
-                // custom_file_name. We're passing a dummy partition to the SyncConfig
-                // because Core asserts that the name when using FLX config is flx_sync_default.
-                // TODO: revisit once https://github.com/realm/realm-core/issues/5473 is addressed.
-                auto sync_config = SyncConfig(user, "\"\"");
-                path = app->sync_manager()->path_for_realm(std::move(sync_config), util::Optional<std::string>("default"));
-            }
-
-            return stringdata_to_csharpstringbuffer(path, pathbuffer, pathbuffer_len);
         });
     }
 

@@ -9,7 +9,6 @@ using Realms.Dynamic;
 using Realms.Exceptions;
 using Realms.Schema;
 using Realms.Sync;
-using Realms.Sync.Exceptions;
 using Realms.Tests.Sync;
 using Realms.Weaving;
 using System;
@@ -22,18 +21,19 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using TestAsymmetricObject = Realms.IAsymmetricObject;
-using TestEmbeddedObject = Realms.IEmbeddedObject;
-using TestRealmObject = Realms.IRealmObject;
 
 namespace Realms.Tests.Sync
 {
     [Generated]
-    [Woven(typeof(AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper))]
+    [Woven(typeof(AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper)), Realms.Preserve(AllMembers = true)]
     public partial class AsymmetricObjectWithEmbeddedDictionaryObject : IAsymmetricObject, INotifyPropertyChanged, IReflectableType
     {
+        /// <summary>
+        /// Defines the schema for the <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/> class.
+        /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("AsymmetricObjectWithEmbeddedDictionaryObject", ObjectSchema.ObjectType.AsymmetricObject)
         {
-            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, isIndexed: false, isNullable: false, managedName: "Id"),
+            Realms.Schema.Property.Primitive("_id", Realms.RealmValueType.ObjectId, isPrimaryKey: true, indexType: IndexType.None, isNullable: false, managedName: "Id"),
             Realms.Schema.Property.ObjectDictionary("EmbeddedDictionaryObject", "EmbeddedIntPropertyObject", managedName: "EmbeddedDictionaryObject"),
         }.Build();
 
@@ -45,28 +45,35 @@ namespace Realms.Tests.Sync
 
         internal IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor Accessor => _accessor ??= new AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor(typeof(AsymmetricObjectWithEmbeddedDictionaryObject));
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsManaged => Accessor.IsManaged;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsValid => Accessor.IsValid;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public bool IsFrozen => Accessor.IsFrozen;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Realm Realm => Accessor.Realm;
+        public Realms.Realm? Realm => Accessor.Realm;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
-        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+        public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+        /// <inheritdoc />
         [IgnoreDataMember, XmlIgnore]
         public int BacklinksCount => Accessor.BacklinksCount;
 
-        public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+        void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
         {
             var newAccessor = (IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor)managedAccessor;
             var oldAccessor = _accessor;
@@ -79,7 +86,10 @@ namespace Realms.Tests.Sync
                     newAccessor.EmbeddedDictionaryObject.Clear();
                 }
 
-                newAccessor.Id = oldAccessor.Id;
+                if (!skipDefaults || oldAccessor.Id != default(MongoDB.Bson.ObjectId))
+                {
+                    newAccessor.Id = oldAccessor.Id;
+                }
                 Realms.CollectionExtensions.PopulateCollection(oldAccessor.EmbeddedDictionaryObject, newAccessor.EmbeddedDictionaryObject, update, skipDefaults);
             }
 
@@ -105,6 +115,7 @@ namespace Realms.Tests.Sync
 
         private event PropertyChangedEventHandler? _propertyChanged;
 
+        /// <inheritdoc />
         public event PropertyChangedEventHandler? PropertyChanged
         {
             add
@@ -173,13 +184,32 @@ namespace Realms.Tests.Sync
             Accessor.UnsubscribeFromNotifications();
         }
 
-        public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject(Realms.RealmValue val) => val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
+        /// <summary>
+        /// Converts a <see cref="Realms.RealmValue"/> to <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+        /// </summary>
+        /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+        /// <returns>The <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
+        public static explicit operator AsymmetricObjectWithEmbeddedDictionaryObject?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<AsymmetricObjectWithEmbeddedDictionaryObject>();
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+        /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(AsymmetricObjectWithEmbeddedDictionaryObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="AsymmetricObjectWithEmbeddedDictionaryObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(AsymmetricObjectWithEmbeddedDictionaryObject? val) => (Realms.RealmValue)val;
+
+        /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             if (obj is null)
@@ -205,11 +235,13 @@ namespace Realms.Tests.Sync
             return Accessor.Equals(iro.Accessor);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+        /// <inheritdoc />
         public override string? ToString() => Accessor.ToString();
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         private class AsymmetricObjectWithEmbeddedDictionaryObjectObjectHelper : Realms.Weaving.IRealmObjectHelper
         {
             public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -221,14 +253,14 @@ namespace Realms.Tests.Sync
 
             public Realms.IRealmObjectBase CreateInstance() => new AsymmetricObjectWithEmbeddedDictionaryObject();
 
-            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+            public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
             {
                 value = ((IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor)instance.Accessor).Id;
                 return true;
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal interface IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor : Realms.IRealmAccessor
         {
             MongoDB.Bson.ObjectId Id { get; set; }
@@ -236,7 +268,7 @@ namespace Realms.Tests.Sync
             System.Collections.Generic.IDictionary<string, Realms.Tests.EmbeddedIntPropertyObject?> EmbeddedDictionaryObject { get; }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedDictionaryObjectManagedAccessor : Realms.ManagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public MongoDB.Bson.ObjectId Id
@@ -260,7 +292,7 @@ namespace Realms.Tests.Sync
             }
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
         internal class AsymmetricObjectWithEmbeddedDictionaryObjectUnmanagedAccessor : Realms.UnmanagedAccessor, IAsymmetricObjectWithEmbeddedDictionaryObjectAccessor
         {
             public override ObjectSchema ObjectSchema => AsymmetricObjectWithEmbeddedDictionaryObject.RealmSchema;

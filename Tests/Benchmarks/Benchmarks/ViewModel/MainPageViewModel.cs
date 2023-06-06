@@ -49,7 +49,7 @@ namespace Benchmarks.ViewModel
         private readonly string[] _args;
 
         private bool _isRunning;
-        private string _resultsLocation;
+        private string? _resultsLocation;
 
         public ObservableCollection<BenchmarkResult> BenchmarkResults { get; private set; }
 
@@ -65,7 +65,7 @@ namespace Benchmarks.ViewModel
 
         public ICommand RunBenchmarksCommand { get; }
 
-        public string ResultsLocation
+        public string? ResultsLocation
         {
             get => _resultsLocation;
             private set => SetProperty(ref _resultsLocation, value);
@@ -100,8 +100,8 @@ namespace Benchmarks.ViewModel
 
             if (_args.Contains("--headless"))
             {
-                string artifactPath = null;
-                string[] filterPatterns = null;
+                string? artifactPath = null;
+                string[]? filterPatterns = null;
 
                 var artifactArgumentIndex = Array.IndexOf(_args, "--artifacts");
                 if (artifactArgumentIndex >= 0)
@@ -131,7 +131,7 @@ namespace Benchmarks.ViewModel
         }
 
         private async Task RunBenchmarks(bool headless = false, bool join = false,
-            string[] filterPatterns = null, string artifactsPath = null)
+            string[]? filterPatterns = null, string? artifactsPath = null)
         {
             var config = PerformanceTests.Program.GetCustomConfig();
 
@@ -152,13 +152,13 @@ namespace Benchmarks.ViewModel
                 config = config.WithArtifactsPath(artifactsPath);
             }
 
-            filterPatterns ??= Config.Filters.Split(";");
+            filterPatterns ??= Config.Filters?.Split(";");
             if (filterPatterns?.Any() == true)
             {
                 config = config.AddFilter(new GlobFilter(filterPatterns));
             }
 
-            Summary[] summaries = null;
+            var summaries = Array.Empty<Summary>();
 
             IsRunning = true;
 

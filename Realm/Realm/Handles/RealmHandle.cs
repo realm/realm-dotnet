@@ -97,14 +97,14 @@ namespace Realms
         /// The Realm instance that owns this handle. Ownership means that this handle will be closed whenever the parent
         /// Realm is disposed.
         /// </summary>
-        public readonly SharedRealmHandle Root;
+        public readonly SharedRealmHandle? Root;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmHandle"/> class by providing a
         /// SharedRealm parent. We should always try to pass in a parent here to ensure that the
         /// child handle gets closed as soon as the parent gets closed.
         /// </summary>
-        protected RealmHandle(SharedRealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
+        protected RealmHandle(SharedRealmHandle? root, IntPtr handle) : base(IntPtr.Zero, true)
         {
             SetHandle(handle);
 

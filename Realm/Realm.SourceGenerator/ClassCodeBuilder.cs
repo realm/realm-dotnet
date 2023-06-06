@@ -109,7 +109,7 @@ namespace Realms.SourceGenerator
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
@@ -178,7 +178,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
                     if (property.TypeInfo.ObjectType == ObjectType.RealmObject)
                     {
-                        copyToRealm.AppendLine(@$"if(oldAccessor.{property.Name} != null)
+                        copyToRealm.AppendLine(@$"if (oldAccessor.{property.Name} != null && newAccessor.Realm != null)
 {{
     newAccessor.Realm.Add(oldAccessor.{property.Name}, update);
 }}");
@@ -196,17 +196,20 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                 {
                     var realmValueType = GetRealmValueType(property.TypeInfo);
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
-                    var isIndexed = property.IsIndexed.ToCodeString();
+                    var indexType = property.Index.ToCodeString();
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, indexType: {indexType}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
+                    // The rules for determining whether to always set the property value are:
+                    // 1. If the property has [Required], always set it - this is only the case for string and byte[] properties.
+                    // 2. If the property is a string or byte[], and it's not nullable, always set it. This is because Core's default
+                    //    for these properties is "" and byte[0], which is different from the C# default (null).
+                    // 3. If the property is a DateTimeOffset, always set it. This is because Core's default for this property is
+                    //    1970-01-01T00:00:00Z, which is different from the C# default (0000-00-00T00:00:00Z).
                     var shouldSetAlways = property.IsRequired ||
-                        property.TypeInfo.NullableAnnotation == NullableAnnotation.Annotated ||
-                        property.TypeInfo.IsRealmInteger ||
-                        property.TypeInfo.ScalarType == ScalarType.Date ||
-                        property.TypeInfo.ScalarType == ScalarType.Decimal ||
-                        property.TypeInfo.ScalarType == ScalarType.ObjectId ||
-                        property.TypeInfo.ScalarType == ScalarType.Guid;
+                        (property.TypeInfo.ScalarType == ScalarType.String && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||
+                        (property.TypeInfo.ScalarType == ScalarType.Data && property.TypeInfo.NullableAnnotation != NullableAnnotation.Annotated) ||
+                        property.TypeInfo.ScalarType == ScalarType.Date;
 
                     if (shouldSetAlways)
                     {
@@ -214,7 +217,7 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                     }
                     else
                     {
-                        copyToRealm.AppendLine(@$"if(!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
+                        copyToRealm.AppendLine(@$"if (!skipDefaults || oldAccessor.{property.Name} != default({property.TypeInfo.CompleteFullyQualifiedString}))
 {{
     newAccessor.{property.Name} = oldAccessor.{property.Name};
 }}");
@@ -235,15 +238,22 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
 
             var objectTypeString = $"ObjectSchema.ObjectType.{_classInfo.ObjectType}";
 
-            var schema = @$"public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
+            var schema = @$"/// <summary>
+/// Defines the schema for the <see cref=""{_classInfo.Name}""/> class.
+/// </summary>
+public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder(""{_classInfo.MapTo ?? _classInfo.Name}"", {objectTypeString})
 {{
 {schemaProperties.Indent(trimNewLines: true)}
 }}.Build();";
 
             var baseInterface = $"I{_classInfo.ObjectType}";
-            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor ? string.Empty : $"private {_classInfo.Name}() {{}}";
+            var parameterlessConstructorString = _classInfo.HasParameterlessConstructor
+                ? string.Empty
+                : @$"#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+private {_classInfo.Name}() {{}}
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.";
 
-            string helperString = string.Empty;
+            var helperString = string.Empty;
 
             if (!string.IsNullOrEmpty(skipDefaults) || copyToRealm.Length > 0)
             {
@@ -276,32 +286,40 @@ Realms.IRealmAccessor Realms.IRealmObjectBase.Accessor => Accessor;
 
 internal {_accessorInterfaceName} Accessor => _accessor ??= new {_unmanagedAccessorClassName}(typeof({_classInfo.Name}));
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsManaged => Accessor.IsManaged;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsValid => Accessor.IsValid;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public bool IsFrozen => Accessor.IsFrozen;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
-public Realms.Realm Realm => Accessor.Realm;
+public Realms.Realm? Realm => Accessor.Realm;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
-public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema;
+public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+/// <inheritdoc />
 [IgnoreDataMember, XmlIgnore]
 public int BacklinksCount => Accessor.BacklinksCount;
 
 {(_classInfo.ObjectType != ObjectType.EmbeddedObject ? string.Empty :
-$@"[IgnoreDataMember, XmlIgnore]
-public Realms.IRealmObjectBase Parent => Accessor.GetParent();")}
+$@"/// <inheritdoc />
+[IgnoreDataMember, XmlIgnore]
+public Realms.IRealmObjectBase? Parent => Accessor.GetParent();")}
 
-public void SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper = null, bool update = false, bool skipDefaults = false)
+void ISettableManagedAccessor.SetManagedAccessor(Realms.IRealmAccessor managedAccessor, Realms.Weaving.IRealmObjectHelper? helper, bool update, bool skipDefaults)
 {{
     var newAccessor = ({_accessorInterfaceName})managedAccessor;
     var oldAccessor = _accessor;
@@ -332,6 +350,7 @@ partial void OnManaged();
 {(_classInfo.HasPropertyChangedEvent ? string.Empty :
 $@"private event PropertyChangedEventHandler? _propertyChanged;
 
+/// <inheritdoc />
 public event PropertyChangedEventHandler? PropertyChanged
 {{
     add
@@ -400,15 +419,34 @@ private void UnsubscribeFromNotifications()
     Accessor.UnsubscribeFromNotifications();
 }}")}
 
-public static explicit operator {_classInfo.Name}(Realms.RealmValue val) => val.AsRealmObject<{_classInfo.Name}>();
+/// <summary>
+/// Converts a <see cref=""Realms.RealmValue""/> to <see cref=""{_classInfo.Name}""/>. Equivalent to <see cref=""Realms.RealmValue.AsNullableRealmObject{{T}}""/>.
+/// </summary>
+/// <param name=""val"">The <see cref=""Realms.RealmValue""/> to convert.</param>
+/// <returns>The <see cref=""{_classInfo.Name}""/> stored in the <see cref=""Realms.RealmValue""/>.</returns>
+public static explicit operator {_classInfo.Name}?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<{_classInfo.Name}>();
 
+/// <summary>
+/// Implicitly constructs a <see cref=""Realms.RealmValue""/> from <see cref=""{_classInfo.Name}""/>.
+/// </summary>
+/// <param name=""val"">The value to store in the <see cref=""Realms.RealmValue""/>.</param>
+/// <returns>A <see cref=""Realms.RealmValue""/> containing the supplied <paramref name=""val""/>.</returns>
 public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+/// <summary>
+/// Implicitly constructs a <see cref=""Realms.QueryArgument""/> from <see cref=""{_classInfo.Name}""/>.
+/// </summary>
+/// <param name=""val"">The value to store in the <see cref=""Realms.QueryArgument""/>.</param>
+/// <returns>A <see cref=""Realms.QueryArgument""/> containing the supplied <paramref name=""val""/>.</returns>
+public static implicit operator Realms.QueryArgument({_classInfo.Name}? val) => (Realms.RealmValue)val;
+
+/// <inheritdoc />
 [EditorBrowsable(EditorBrowsableState.Never)]
 public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
 {(_classInfo.OverridesEquals ? string.Empty :
-$@"public override bool Equals(object? obj)
+$@"/// <inheritdoc />
+public override bool Equals(object? obj)
 {{
     if (obj is null)
     {{
@@ -434,13 +472,15 @@ $@"public override bool Equals(object? obj)
 }}")}
 
 {(_classInfo.OverridesGetHashCode ? string.Empty :
-$@"public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
+$@"/// <inheritdoc />
+public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();")}
 
 {(_classInfo.OverridesToString ? string.Empty :
-$@"public override string? ToString() => Accessor.ToString();")}";
+$@"/// <inheritdoc />
+public override string? ToString() => Accessor.ToString();")}";
 
             var classString = $@"[Generated]
-[Woven(typeof({_helperClassName}))]
+[Woven(typeof({_helperClassName})), Realms.Preserve(AllMembers = true)]
 {SyntaxFacts.GetText(_classInfo.Accessibility)} partial class {_classInfo.Name} : {baseInterface}, INotifyPropertyChanged, IReflectableType
 {{
 {contents.Indent()}
@@ -476,9 +516,9 @@ $@"public override string? ToString() => Accessor.ToString();")}";
         private string GenerateClassObjectHelper()
         {
             var primaryKeyProperty = _classInfo.PrimaryKey;
-            var valueAccessor = primaryKeyProperty == null ? "null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
+            var valueAccessor = primaryKeyProperty == null ? "RealmValue.Null" : $"(({_accessorInterfaceName})instance.Accessor).{primaryKeyProperty.Name}";
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 {{
     public void CopyToRealm(Realms.IRealmObjectBase instance, bool update, bool skipDefaults)
@@ -490,7 +530,7 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
 
     public Realms.IRealmObjectBase CreateInstance() => new {_classInfo.Name}();
 
-    public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out object? value)
+    public bool TryGetPrimaryKeyValue(Realms.IRealmObjectBase instance, out RealmValue value)
     {{
         value = {valueAccessor};
         return {BoolToString(primaryKeyProperty != null)};
@@ -594,6 +634,8 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
                     // SetValue/SetValueUnique
                     setValueLines.AppendLine($@"case ""{stringName}"":");
 
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
                     if (property.IsPrimaryKey)
                     {
                         setValueLines.AppendLine($@"throw new InvalidOperationException(""Cannot set the value of a primary key property with SetValue. You need to use SetValueUnique"");".Indent());
@@ -603,11 +645,11 @@ private class {_helperClassName} : Realms.Weaving.IRealmObjectHelper
     throw new InvalidOperationException($""Cannot set the value of non primary key property ({{propertyName}}) with SetValueUnique"");
 }}
 
-{name} = ({type})val;");
+{name} = ({type})val{forceNotNullable};");
                     }
                     else
                     {
-                        setValueLines.AppendLine(@$"{name} = ({type})val;
+                        setValueLines.AppendLine(@$"{name} = ({type})val{forceNotNullable};
 return;".Indent());
                     }
                 }
@@ -662,10 +704,10 @@ return;".Indent());
             else
             {
                 getListValueBody = $@"return propertyName switch
-            {{
-{getListValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
-            }};";
+{{
+{getListValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm list property with name {{propertyName}}""),
+}};";
             }
 
             // GetSetValue
@@ -678,10 +720,10 @@ return;".Indent());
             else
             {
                 getSetValueBody = $@"return propertyName switch
-            {{
-{getSetValueLines}
-                _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
-            }};";
+{{
+{getSetValueLines.Indent(trimNewLines: true)}
+    _ => throw new MissingMemberException($""The object does not have a Realm set property with name {{propertyName}}""),
+}};";
             }
 
             // GetDictionaryValue
@@ -695,12 +737,12 @@ return;".Indent());
             {
                 getDictionaryValueBody = $@"return propertyName switch
 {{
-{getDictionaryValueLines.Indent(1, trimNewLines: true)}
+{getDictionaryValueLines.Indent(trimNewLines: true)}
     _ => throw new MissingMemberException($""The object does not have a Realm dictionary property with name {{propertyName}}""),
 }};";
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_unmanagedAccessorClassName} : Realms.UnmanagedAccessor, {_accessorInterfaceName}
 {{
     public override ObjectSchema ObjectSchema => {_classInfo.Name}.RealmSchema;
@@ -792,7 +834,9 @@ public {type} {name}
                 }
                 else
                 {
-                    var getterString = $@"get => ({type})GetValue(""{stringName}"");";
+                    var forceNotNullable = type == "string" || type == "byte[]" ? "!" : string.Empty;
+
+                    var getterString = $@"get => ({type})GetValue(""{stringName}""){forceNotNullable};";
 
                     var setterMethod = property.IsPrimaryKey ? "SetValueUnique" : "SetValue";
                     var setterString = $@"set => {setterMethod}(""{stringName}"", value);";
@@ -807,7 +851,7 @@ public {type} {name}
                 propertiesBuilder.AppendLine();
             }
 
-            return $@"[EditorBrowsable(EditorBrowsableState.Never)]
+            return $@"[EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]
 internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorInterfaceName}
 {{
 {propertiesBuilder.Indent(trimNewLines: true)}
@@ -816,7 +860,7 @@ internal class {_managedAccessorClassName} : Realms.ManagedAccessor, {_accessorI
 
         private static string GetBackingFieldName(string propertyName)
         {
-            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName.Substring(1);
+            return "_" + char.ToLowerInvariant(propertyName[0]) + propertyName[1..];
         }
 
         private static string GetRealmValueType(PropertyTypeInfo propertyTypeInfo)

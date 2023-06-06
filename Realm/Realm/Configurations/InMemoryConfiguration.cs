@@ -36,16 +36,6 @@ namespace Realms
         /// <value>The identifier for this configuration.</value>
         public string Identifier { get; }
 
-        /// <inheritdoc/>
-        [Obsolete("Encryption is not supported for in-memory realms. This property will be removed in a future version.")]
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-        public override byte[] EncryptionKey
-#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
-        {
-            get => base.EncryptionKey;
-            set => throw new NotSupportedException("Encryption is not supported for in-memory realms");
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryConfiguration"/> class with a specified identifier.
         /// </summary>
@@ -60,7 +50,7 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override SharedRealmHandle CreateHandle(RealmSchema schema) => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, EncryptionKey);
+        internal override SharedRealmHandle CreateHandle(RealmSchema schema) => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, encryptionKey: null);
 
         internal override Configuration CreateNativeConfiguration()
         {

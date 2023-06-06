@@ -34,7 +34,7 @@ namespace SourceGeneratorPlayground
         public double DoubleProp { get; set; }
 
         [Indexed]
-        public RealmObj ObjectProp { get; set; }
+        public RealmObj? ObjectProp { get; set; }
 
         [Indexed]
         public RealmValue RealmvalueProp { get; set; }
@@ -43,6 +43,31 @@ namespace SourceGeneratorPlayground
         public decimal DecimalProp { get; set; }
 
         [Indexed]
-        public int[] UnsupportedProp { get; set; }
+        public int[] UnsupportedProp { get; set; } = null!;
+
+        [Indexed(IndexType.FullText)]
+        public int FtsIntProp { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public bool FtsBoolProp { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public RealmValue FtsRealmValueProp { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public RealmObj? FtsObjectProp { get; set; }
+
+        [Indexed(IndexType.FullText)]
+        public double FtsDoubleProp { get; set; }
+
+        [Indexed(IndexType.None)]
+        public int NoneIndexedInt { get; set; }
+
+        [Indexed(IndexType.General)]
+        public RealmValue GeneralRealmValueProp { get; set; }
+
+        [PrimaryKey]
+        [Indexed]
+        public int IndexedPrimaryKeyProp { get; set; }
     }
 }

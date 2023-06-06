@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -29,7 +28,7 @@ namespace Realms.Tests.Database
         [Test]
         public void CommittingAWriteTransactionShouldRefreshQueries()
         {
-            Person p1 = null;
+            Person p1 = null!;
 
             _realm.Write(() =>
             {

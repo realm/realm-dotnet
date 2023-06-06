@@ -17,17 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Foundation;
-using UIKit;
-using NUnitLite;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NUnit.Common;
-using System.Diagnostics;
 using System.Text;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using Foundation;
+using NUnit.Common;
+using NUnitLite;
+using UIKit;
 
 namespace Realms.Tests.XamarinTVOS
 {
@@ -36,8 +36,8 @@ namespace Realms.Tests.XamarinTVOS
         private readonly ConcurrentQueue<(string Message, ColorStyle Style, bool NewLine)> _logsQueue = new();
         private readonly List<NSAttributedString> _logs = new();
 
-        private Task _testsTask;
-        private Task _streamLogsTask;
+        private Task? _testsTask;
+        private Task? _streamLogsTask;
 
         public ViewController(IntPtr handle) : base(handle)
         {
@@ -49,10 +49,7 @@ namespace Realms.Tests.XamarinTVOS
             LogsTableView.DataSource = this;
             LogsTableView.PanGestureRecognizer.AllowedTouchTypes = new[] { new NSNumber((long)UITouchType.Indirect) };
 
-            if (_streamLogsTask == null)
-            {
-                _streamLogsTask = StreamLogs();
-            }
+            _streamLogsTask ??= StreamLogs();
 
             if (TestHelpers.IsHeadlessRun(Application.Args))
             {
@@ -88,7 +85,7 @@ namespace Realms.Tests.XamarinTVOS
             {
                 using var reader = new StringReader(string.Empty);
                 using var writer = new DebugWriter((msg, style, newLine) => _logsQueue.Enqueue((msg, style, newLine)));
-           
+
                 var autorun = new AutoRun(typeof(TestHelpers).Assembly);
 
                 autorun.Execute(Application.Args.Where(a => a != "--headless").ToArray(), writer, reader);
@@ -195,7 +192,7 @@ namespace Realms.Tests.XamarinTVOS
 
         public UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
         {
-            var cell = tableView.DequeueReusableCell("LogCell", indexPath) as LogCell;
+            var cell = (LogCell)tableView.DequeueReusableCell("LogCell", indexPath);
             var text = _logs[indexPath.Row];
             cell.SetText(text);
             return cell;
