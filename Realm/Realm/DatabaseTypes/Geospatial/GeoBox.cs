@@ -26,16 +26,28 @@ namespace Realms
     public class GeoBox : GeoShapeBase
     {
         /// <summary>
-        /// Gets the bottom left corner of the rectangle.
+        /// Gets the longitude of the left edge of the rectangle.
         /// </summary>
-        /// <value>The box's bottom left corner.</value>
-        public GeoPoint BottomLeftCorner { get; }
+        /// <value>The box's left edge.</value>
+        public double Left { get; }
 
         /// <summary>
-        /// Gets the top right corner of the rectangle.
+        /// Gets the latitude of the top edge of the rectangle.
         /// </summary>
-        /// <value>The box's top right corner.</value>
-        public GeoPoint TopRightCorner { get; }
+        /// <value>The box's top edge.</value>
+        public double Top { get; }
+
+        /// <summary>
+        /// Gets the longitude of the right edge of the rectangle.
+        /// </summary>
+        /// <value>The box's right edge.</value>
+        public double Right { get; }
+
+        /// <summary>
+        /// Gets the latitude of the bottom edge of the rectangle.
+        /// </summary>
+        /// <value>The box's bottom edge.</value>
+        public double Bottom { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeoBox"/> class from the provided coordinates.
@@ -44,13 +56,30 @@ namespace Realms
         /// <param name="topRightCorner">The top right corner of the rectangle.</param>
         public GeoBox(GeoPoint bottomLeftCorner, GeoPoint topRightCorner)
         {
-            BottomLeftCorner = bottomLeftCorner;
-            TopRightCorner = topRightCorner;
+            Left = bottomLeftCorner.Longitude;
+            Bottom = bottomLeftCorner.Latitude;
+            Right = topRightCorner.Longitude;
+            Top = topRightCorner.Latitude;
         }
 
-        internal NativeGeoBox ToNative() => new(BottomLeftCorner.ToNative(), TopRightCorner.ToNative());
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeoBox"/> class from the provided coordinates.
+        /// </summary>
+        /// <param name="left">The longitude of the left edge of the rectangle.</param>
+        /// <param name="top">The latitude of the top edge of the rectangle.</param>
+        /// <param name="right">The longitude of the right edge of the rectangle.</param>
+        /// <param name="bottom">The latitude of the bottom edge of the rectangle.</param>
+        public GeoBox(double left, double top, double right, double bottom)
+        {
+            Left = left;
+            Top = top;
+            Right = right;
+            Bottom = bottom;
+        }
+
+        internal NativeGeoBox ToNative() => new(Left, Top, Right, Bottom);
 
         /// <inheritdoc />
-        public override string ToString() => $"Box: {{ {BottomLeftCorner}, {TopRightCorner} }}";
+        public override string ToString() => $"Box: {{ left: {Left}, top: {Top}, right: {Right}, bottom: {Bottom} }}";
     }
 }

@@ -327,10 +327,10 @@ namespace Realms.Tests.Database
         public void NativeGeoBox_ToString()
         {
             var box = new GeoBox((1, 2), (3, 4));
-            Assert.That(box.ToNative().ToString(), Does.Contain("Box").And.Contains("[1, 2]").And.Contains("[3, 4]"));
+            Assert.That(box.ToNative().ToString(), Does.Contain("Box").And.Contains("{ 2, 3, 4, 1 }"));
 
             QueryArgument arg = box;
-            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("[1, 2]").And.Contains("[3, 4]"));
+            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("{ 2, 3, 4, 1 }"));
         }
 
         [Test]

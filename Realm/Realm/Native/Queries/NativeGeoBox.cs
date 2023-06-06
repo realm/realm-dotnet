@@ -23,15 +23,19 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal readonly struct NativeGeoBox
     {
-        private readonly NativeGeoPoint _bottom_left_corner;
-        private readonly NativeGeoPoint _top_right_corner;
+        private readonly double _left;
+        private readonly double _top;
+        private readonly double _right;
+        private readonly double _bottom;
 
-        public NativeGeoBox(NativeGeoPoint bottom_left, NativeGeoPoint top_right)
+        public NativeGeoBox(double left, double top, double right, double bottom)
         {
-            _bottom_left_corner = bottom_left;
-            _top_right_corner = top_right;
+            _left = left;
+            _top = top;
+            _right = right;
+            _bottom = bottom;
         }
 
-        public override string ToString() => $"Box {{bl: {_bottom_left_corner}, tr: {_top_right_corner}}}";
+        public override string ToString() => $"Box {{ {_left}, {_top}, {_right}, {_bottom} }}";
     }
 }
