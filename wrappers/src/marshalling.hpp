@@ -118,8 +118,10 @@ struct geo_point {
 };
 
 struct geo_box {
-    geo_point bottom_left;
-    geo_point top_right;
+    double left;
+    double top;
+    double right;
+    double bottom;
 };
 
 struct geo_circle {
@@ -256,7 +258,7 @@ static inline GeoPoint from_capi(geo_point point)
 
 static inline GeoBox from_capi(geo_box box)
 {
-    return GeoBox{ from_capi(box.bottom_left), from_capi(box.top_right) };
+    return GeoBox{ GeoPoint(box.left, box.bottom), GeoPoint(box.right, box.top) };
 }
 
 static inline GeoCircle from_capi(geo_circle circle)
