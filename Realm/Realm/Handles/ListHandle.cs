@@ -87,7 +87,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "list_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_filtered_results(ListHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
-                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                [MarshalAs(UnmanagedType.LPArray), In] NativeQueryArgument[] arguments, IntPtr args_count,
                 out NativeException ex);
         }
 
@@ -262,7 +262,7 @@ namespace Realms
 
         public override void Unbind() => NativeMethods.destroy(handle);
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+        protected override IntPtr GetFilteredResultsCore(string query, NativeQueryArgument[] arguments, out NativeException ex)
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);

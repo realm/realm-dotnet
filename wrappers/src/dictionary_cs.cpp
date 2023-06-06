@@ -243,7 +243,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT Results* realm_dictionary_get_filtered_results(const object_store::Dictionary& dictionary, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+    REALM_EXPORT Results* realm_dictionary_get_filtered_results(const object_store::Dictionary& dictionary, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             realm::Results values = dictionary.get_values();

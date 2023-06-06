@@ -368,7 +368,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params QueryArgument[] arguments)
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
@@ -404,7 +404,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -441,7 +441,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -477,7 +477,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IDictionary<string, T?> dictionary, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IDictionary<string, T?> dictionary, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));

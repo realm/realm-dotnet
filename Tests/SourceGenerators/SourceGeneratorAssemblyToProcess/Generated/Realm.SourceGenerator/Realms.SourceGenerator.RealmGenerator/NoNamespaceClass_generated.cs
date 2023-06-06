@@ -177,6 +177,13 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
     public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="NoNamespaceClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+    /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+    public static implicit operator Realms.QueryArgument(NoNamespaceClass? val) => (Realms.RealmValue)val;
+
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

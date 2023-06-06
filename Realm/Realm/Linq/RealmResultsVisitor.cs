@@ -24,7 +24,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Serializers;
 using Realms.Helpers;
 using Realms.Schema;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -74,12 +73,10 @@ namespace Realms
 
                 internal static readonly LazyMethod FullTextSearch = Capture<string>(s => QueryMethods.FullTextSearch(s, string.Empty));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture StartsWith(string).")]
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
                 internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
 
-                [SuppressMessage("Globalization", "CA1310:Specify StringComparison for correctness", Justification = "We want to capture EndsWith(string).")]
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
                 internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
@@ -89,6 +86,11 @@ namespace Realms
                 internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
 
                 internal static readonly LazyMethod EqualsStringComparison = Capture<string>(s => s.Equals(string.Empty, StringComparison.Ordinal));
+            }
+
+            internal static class EmbeddedObject
+            {
+                internal static readonly LazyMethod GeoWithin = Capture<IEmbeddedObject>(o => QueryMethods.GeoWithin(o, null!));
             }
         }
 
@@ -307,6 +309,25 @@ namespace Realms
                     using var rh = MakeResultsForQuery();
 
                     return GetObjectAtIndex(index, rh, node.Method.Name);
+                }
+            }
+
+            if (node.Method.DeclaringType == typeof(QueryMethods))
+            {
+                if (AreMethodsSame(node.Method, Methods.EmbeddedObject.GeoWithin.Value))
+                {
+                    var member = (MemberExpression)node.Arguments[0];
+                    var columnName = GetColumnName(member, node.NodeType);
+                    var propertyIndex = _metadata.PropertyIndices[columnName];
+                    if (!TryExtractConstantValue(node.Arguments[1], out var argument) ||
+                        argument is not GeoShapeBase geoShape)
+                    {
+                        throw new NotSupportedException($"The method '{node.Method}' has to be invoked with a single GeoShapeBase argument or closure variable");
+                    }
+
+                    _coreQueryHandle.GeoWithin(_realm.SharedRealmHandle, propertyIndex, geoShape);
+
+                    return node;
                 }
             }
 

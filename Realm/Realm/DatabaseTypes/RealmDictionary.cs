@@ -105,7 +105,7 @@ namespace Realms
         }
 
         // Get filtered results from dictionary's values
-        internal RealmResults<TValue> GetFilteredValueResults(string query, RealmValue[] arguments)
+        internal RealmResults<TValue> GetFilteredValueResults(string query, QueryArgument[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
