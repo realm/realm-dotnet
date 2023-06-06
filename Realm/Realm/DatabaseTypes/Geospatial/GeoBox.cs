@@ -21,7 +21,7 @@ using Realms.Native;
 namespace Realms
 {
     /// <summary>
-    /// Represents a rectangle for a geospatial geoWithin query.
+    /// Represents a rectangle for a geospatial <see cref="QueryMethods.GeoWithin"/> query.
     /// </summary>
     public class GeoBox : GeoShapeBase
     {

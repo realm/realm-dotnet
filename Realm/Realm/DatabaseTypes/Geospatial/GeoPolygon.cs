@@ -26,7 +26,7 @@ using Realms.Native;
 namespace Realms
 {
     /// <summary>
-    /// A polygon describes a shape comprised of 3 or more line segments.
+    /// A polygon describes a shape comprised of 3 or more line segments for a geospatial <see cref="QueryMethods.GeoWithin"/> query.
     /// </summary>
     /// <remarks>
     /// A polygon comprises of one outer ring and 0 or more rings representing holes with the following restrictions:

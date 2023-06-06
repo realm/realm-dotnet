@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Linq;
+
 namespace Realms
 {
     /// <summary>
@@ -23,6 +25,11 @@ namespace Realms
     /// instead you should use one of its inheritors, such as <see cref="GeoBox"/>, <see cref="GeoCircle"/>, or
     /// <see cref="GeoPolygon"/>.
     /// </summary>
+    /// <remarks>
+    /// <see cref="GeoShapeBase"/> and its inheritors cannot be used as properties in a Realm model. Instead,
+    /// they are only used as an argument to <see cref="QueryMethods.GeoWithin"/> or
+    /// <see cref="CollectionExtensions.Filter{T}(IQueryable{T}, string, QueryArgument[])"/>.
+    /// </remarks>
     /// <seealso cref="QueryMethods.GeoWithin"/>
     public abstract class GeoShapeBase
     {

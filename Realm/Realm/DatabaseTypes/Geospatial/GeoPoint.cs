@@ -26,6 +26,12 @@ namespace Realms
     /// <summary>
     /// Represents a point geometry.
     /// </summary>
+    /// <remarks>
+    /// This type cannot be used for persistence - i.e. you can't declare a Realm property
+    /// that is of type <see cref="GeoPoint"/>. It is only used as a building block for the
+    /// geospatial shape types, such as <see cref="GeoBox"/>, <see cref="GeoCircle"/>, and
+    /// <see cref="GeoPolygon"/>.
+    /// </remarks>
     public readonly struct GeoPoint : IEquatable<GeoPoint>
     {
         /// <summary>

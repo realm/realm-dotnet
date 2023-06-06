@@ -22,7 +22,7 @@ using Realms.Native;
 namespace Realms
 {
     /// <summary>
-    /// Represents a circle on the surface of a sphere.
+    /// Represents a circle on the surface of a sphere for a geospatial <see cref="QueryMethods.GeoWithin"/> query.
     /// </summary>
     public class GeoCircle : GeoShapeBase
     {
