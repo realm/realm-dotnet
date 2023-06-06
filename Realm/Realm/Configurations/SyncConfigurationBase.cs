@@ -153,6 +153,8 @@ namespace Realms.Sync
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
+            var (proxyAddress, proxyPort) = GetSystemProxy();
+
             return new Native.SyncConfiguration
             {
                 SyncUserHandle = User.Handle,
@@ -160,7 +162,27 @@ namespace Realms.Sync
                 schema_mode = _schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
                 cancel_waits_on_nonfatal_error = CancelAsyncOperationsOnNonFatalErrors,
+                ProxyAddress = proxyAddress,
+                proxy_port = proxyPort,
             };
+        }
+
+        private static readonly Uri FakeProxyAddress = new("wss://realm.mongodb.com");
+
+        private static (string? Address, ushort Port) GetSystemProxy()
+        {
+            var proxyUrl = System.Net.WebRequest.DefaultWebProxy?.GetProxy(FakeProxyAddress);
+            if (proxyUrl != null && proxyUrl != FakeProxyAddress)
+            {
+                if (proxyUrl.Scheme != "http")
+                {
+                    throw new InvalidOperationException($"Unsupported proxy scheme '${proxyUrl.Scheme}', expected 'http'");
+                }
+
+                return (proxyUrl.Host, (ushort)proxyUrl.Port);
+            }
+
+            return (null, 0);
         }
     }
 }

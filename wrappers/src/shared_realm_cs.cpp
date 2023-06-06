@@ -204,6 +204,14 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.cache = configuration.enable_cache;
 
+    if (sync_configuration.proxy_address) {
+        config.sync_config->proxy_config = {
+            SyncConfig::ProxyConfig::Type::HTTP,
+            Utf16StringAccessor(sync_configuration.proxy_address, sync_configuration.proxy_address_len),
+            sync_configuration.proxy_port
+        };
+    }
+
     return config;
 }
 
