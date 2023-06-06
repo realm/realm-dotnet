@@ -1,10 +1,14 @@
 ## 11.0.1-proxy.1 (2023-06-06)
 
+**DO NOT USE THIS RELEASE**
+
+This is a private release with automatic proxy resolution. Proxy resolution only works for HTTP proxies and is not considered stable.
+
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.6.0.
 
 ## 11.0.0 (2023-05-08)
 
