@@ -1,10 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
-
-### Fixed
-* None
+## 11.0.1-proxy.1 (2023-06-06)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
