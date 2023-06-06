@@ -80,6 +80,11 @@ struct SyncConfiguration
     ClientResyncMode client_resync_mode;
 
     bool cancel_waits_on_nonfatal_error;
+
+    uint16_t* proxy_address;
+    size_t proxy_address_len;
+
+    uint16_t proxy_port;
 };
 
 inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)

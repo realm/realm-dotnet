@@ -59,5 +59,27 @@ namespace Realms.Sync.Native
 
         [MarshalAs(UnmanagedType.I1)]
         internal bool cancel_waits_on_nonfatal_error;
+
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string? proxy_address;
+        private nint proxy_address_len;
+
+        internal string? ProxyAddress
+        {
+            set
+            {
+                if (value is not null)
+                {
+                    proxy_address = value;
+                    proxy_address_len = value.Length;
+                }
+                else
+                {
+                    proxy_address = null;
+                }
+            }
+        }
+
+        internal ushort proxy_port;
     }
 }
