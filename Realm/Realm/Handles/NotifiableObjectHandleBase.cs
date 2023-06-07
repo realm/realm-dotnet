@@ -40,8 +40,11 @@ namespace Realms
             }
 
             public MarshaledVector<Move> Moves;
-            [MarshalAs(UnmanagedType.U1)]
-            public bool Cleared;
+
+            private byte cleared;
+
+            public readonly bool Cleared => cleared == 1;
+
             public MarshaledVector<int> Properties;
         }
 
