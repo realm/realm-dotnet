@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
@@ -30,6 +31,12 @@ namespace Realms
         private readonly T* items;
 
         public readonly nint Count;
+
+        private MarshaledVector(T* items, nint count)
+        {
+            this.items = items;
+            Count = count;
+        }
 
         public ref readonly T this[nint index]
         {
@@ -93,6 +100,25 @@ namespace Realms
             }
 
             return ret;
+        }
+
+        public static MarshaledVector<T> AllocateEmpty(int capacity)
+        {
+            var buffer = BufferPool.Current.Rent<T>(capacity);
+            Unsafe.InitBlock(buffer.Data, 0, (uint)capacity);
+            return new MarshaledVector<T>(buffer.Data, capacity);
+        }
+
+        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection)
+        {
+            var buffer = BufferPool.Current.Rent<T>(collection.Count);
+            var i = 0;
+            foreach (var item in collection)
+            {
+                buffer.Data[i++] = item;
+            }
+
+            return new MarshaledVector<T>(buffer.Data, buffer.Length);
         }
     }
 }
