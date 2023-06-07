@@ -85,7 +85,7 @@ namespace Realms.Tests.Sync
                     break;
                 case "Mac Catalyst":
                     Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad"));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad").Or.EqualTo("x86_64)"));
+                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad").Or.EqualTo("x86_64"));
                     break;
                 default:
                     Assert.Fail($"Unknown OS: {os}");
