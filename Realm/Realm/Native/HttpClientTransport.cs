@@ -141,22 +141,27 @@ namespace Realms.Native
                 try
                 {
                     var httpClient = request.HttpClient;
-                    using var pool = BufferPool.Enter();
+                    using var pool = new BufferPool();
 
                     using var message = BuildRequest(request);
                     using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
                     var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
-                    var headers = response.Headers.Concat(response.Content.Headers)
-                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key), StringValue.AllocateFrom(h.Value.FirstOrDefault())))
-                        .ToArray();
 
-                    var nativeResponse = new HttpClientResponse
+                    HttpClientResponse nativeResponse;
+                    using (pool.MakeCurrent())
                     {
-                        http_status_code = (int)response.StatusCode,
-                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers),
-                        body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
-                    };
+                        var headers = response.Headers.Concat(response.Content.Headers)
+                            .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key), StringValue.AllocateFrom(h.Value.FirstOrDefault())))
+                            .ToArray();
+
+                        nativeResponse = new HttpClientResponse
+                        {
+                            http_status_code = (int)response.StatusCode,
+                            headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers),
+                            body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
+                        };
+                    }
 
                     respond(nativeResponse, callback);
                 }

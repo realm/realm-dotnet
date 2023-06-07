@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Realms.Native;
@@ -104,6 +105,7 @@ namespace Realms
 
         public static MarshaledVector<T> AllocateEmpty(int capacity)
         {
+            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
             var buffer = BufferPool.Current.Rent<T>(capacity);
             Unsafe.InitBlock(buffer.Data, 0, (uint)capacity);
             return new MarshaledVector<T>(buffer.Data, capacity);
@@ -111,6 +113,7 @@ namespace Realms
 
         public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection)
         {
+            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
             var buffer = BufferPool.Current.Rent<T>(collection.Count);
             var i = 0;
             foreach (var item in collection)

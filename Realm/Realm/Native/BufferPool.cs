@@ -21,31 +21,18 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using Realms.Helpers;
 
 namespace Realms.Native
 {
     internal class BufferPool : IDisposable
     {
         private readonly List<IDisposable> _buffers = new();
-        private static readonly AsyncLocal<Stack<BufferPool>> _pools = new();
-        private readonly Stack<BufferPool> _stack;
 
-        public static BufferPool Current => _pools.Value!.Peek();
+        public static BufferPool? Current => MakeCurrentHelper.CurrentBufferPool;
 
-        private BufferPool(Stack<BufferPool> stack)
+        public BufferPool()
         {
-            _stack = stack;
-        }
-
-        public static BufferPool Enter()
-        {
-            var stack = _pools.Value ??= new();
-            var pool = new BufferPool(stack);
-            stack.Push(pool);
-            return pool;
         }
 
         public unsafe Buffer<T> Rent<T>(int count = 1)
@@ -61,12 +48,11 @@ namespace Realms.Native
             return buffer;
         }
 
+        public IDisposable MakeCurrent() => new MakeCurrentHelper(this);
+
         public void Dispose()
         {
             _buffers.ForEach(b => b.Dispose());
-            Debug.Assert(_stack == _pools.Value, "BufferPool expected to be disposed on the same async context as the pool was entered on.");
-            var popped = _stack.Pop();
-            Debug.Assert(this == popped, "Expected BufferPool to be at the top of the stack when disposed.");
         }
 
         public unsafe class Buffer<T> : MemoryManager<T>
@@ -101,6 +87,32 @@ namespace Realms.Native
             protected override void Dispose(bool disposing)
             {
                 Marshal.FreeHGlobal((IntPtr)Data);
+            }
+        }
+
+        private class MakeCurrentHelper : IDisposable
+        {
+            private static readonly AsyncLocal<Stack<BufferPool>> _pools = new();
+            private readonly Stack<BufferPool> _stack;
+            private readonly BufferPool _parent;
+
+            public static BufferPool? CurrentBufferPool => _pools.Value?.Count > 0 ? _pools.Value?.Peek() : null;
+
+            public MakeCurrentHelper(BufferPool parent)
+            {
+                _stack = _pools.Value ??= new();
+                _parent = parent;
+
+                Debug.Assert(!_stack.Contains(parent), "BufferPool is not reentrant");
+
+                _stack.Push(parent);
+            }
+
+            public void Dispose()
+            {
+                Debug.Assert(_stack == _pools.Value, "BufferPool expected to be disposed on the same async context as the pool was entered on.");
+                var popped = _stack.Pop();
+                Debug.Assert(_parent == popped, "Expected BufferPool to be at the top of the stack when disposed.");
             }
         }
     }

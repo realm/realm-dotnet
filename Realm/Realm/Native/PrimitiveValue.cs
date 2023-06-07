@@ -330,6 +330,8 @@ namespace Realms.Native
                 return new StringValue { data = null, size = 0 };
             }
 
+            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
+
             var byteCount = Encoding.UTF8.GetByteCount(value);
             var buffer = BufferPool.Current.Rent<byte>(byteCount + 1);
             fixed (char* stringBytes = value)
