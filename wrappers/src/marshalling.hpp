@@ -164,7 +164,7 @@ struct realm_sync_error {
     realm_string_t log_url;
     bool is_client_reset;
 
-    marshaled_vector<std::pair<char*, char*>> user_info_pairs;
+    marshaled_vector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
     marshaled_vector<realm_sync_error_compensating_write_info_t> compensating_writes;
 };
 

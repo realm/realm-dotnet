@@ -131,11 +131,11 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     auto configuration_handle = std::make_shared<GCHandleHolder>(configuration.managed_config);
 
     config.sync_config->error_handler = [configuration_handle](SharedSyncSession session, SyncError error) {
-        std::vector<std::pair<char*, char*>> user_info_pairs;
+        std::vector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
         std::vector<realm_sync_error_compensating_write_info_t> compensating_writes;
 
         for (const auto& p : error.user_info) {
-            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
+            user_info_pairs.push_back(std::make_pair(to_capi(p.first), to_capi(p.second)));
         }
 
         for (const auto& cw : error.compensating_writes_info) {

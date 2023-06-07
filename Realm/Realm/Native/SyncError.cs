@@ -16,9 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Realms.Sync.Exceptions;
-using Realms.Sync.Native;
 
 namespace Realms.Native
 {
@@ -34,7 +34,7 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public bool is_client_reset;
 
-        public MarshaledVector<StringStringPair> user_info_pairs;
+        public MarshaledVector<KeyValuePair<StringValue, StringValue>> user_info_pairs;
 
         public MarshaledVector<CompensatingWriteInfo> compensating_writes;
 
