@@ -28,22 +28,22 @@ using namespace realm::binding;
 
 namespace realm {
 struct MarshallableCollectionChangeSet {
-    marshaled_vector<int32_t> deletions;
-    marshaled_vector<int32_t> insertions;
-    marshaled_vector<int32_t> modifications;
-    marshaled_vector<int32_t> modifications_new;
+    MarshaledVector<size_t> deletions;
+    MarshaledVector<size_t> insertions;
+    MarshaledVector<size_t> modifications;
+    MarshaledVector<size_t> modifications_new;
 
-    marshaled_vector<CollectionChangeSet::Move> moves;
+    MarshaledVector<CollectionChangeSet::Move> moves;
 
     bool cleared;
 
-    marshaled_vector<int32_t> properties;
+    MarshaledVector<int32_t> properties;
 };
 
 struct MarshallableDictionaryChangeSet {
-    marshaled_vector<realm_value_t> deletions;
-    marshaled_vector<realm_value_t> insertions;
-    marshaled_vector<realm_value_t> modifications;
+    MarshaledVector<realm_value_t> deletions;
+    MarshaledVector<realm_value_t> insertions;
+    MarshaledVector<realm_value_t> modifications;
 };
 
 struct ManagedNotificationTokenContext {
@@ -72,13 +72,13 @@ inline int32_t get_property_index(const ObjectSchema* schema, const ColKey colum
     return -1;
 }
 
-inline std::vector<int32_t> get_indexes_vector(const IndexSet& indexSet)
+inline std::vector<size_t> get_indexes_vector(const IndexSet& indexSet)
 {
     if (indexSet.count() < (size_t)-1) {
-        return std::vector<int32_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
+        return std::vector<size_t>(indexSet.as_indexes().begin(), indexSet.as_indexes().end());
     }
 
-    return std::vector<int32_t>();
+    return std::vector<size_t>();
 }
 
 static inline std::vector<realm_value_t> get_keys_vector(const std::vector<Mixed>& keySet)
@@ -112,13 +112,13 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
         }
 
         MarshallableCollectionChangeSet marshallable_changes{
-            { deletions.data(), deletions.size() },
-            { insertions.data(), insertions.size() },
-            { modifications.data(), modifications.size() },
-            { modifications_new.data(), modifications_new.size() },
-            { changes.moves.data(), changes.moves.size() },
+            deletions,
+            insertions,
+            modifications,
+            modifications_new,
+            changes.moves,
             changes.collection_was_cleared,
-            { properties.data(), properties.size() }
+            properties
         };
 
         s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);

@@ -27,10 +27,10 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
         {
-            public MarshaledVector<int> Deletions;
-            public MarshaledVector<int> Insertions;
-            public MarshaledVector<int> Modifications;
-            public MarshaledVector<int> Modifications_New;
+            public MarshaledVector<nint> Deletions;
+            public MarshaledVector<nint> Insertions;
+            public MarshaledVector<nint> Modifications;
+            public MarshaledVector<nint> Modifications_New;
 
             [StructLayout(LayoutKind.Sequential)]
             public struct Move

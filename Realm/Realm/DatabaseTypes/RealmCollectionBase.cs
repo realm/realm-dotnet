@@ -404,10 +404,10 @@ namespace Realms
             {
                 var actualChanges = changes.Value;
                 changeset = new ChangeSet(
-                    insertedIndices: actualChanges.Insertions.ToArray(),
-                    modifiedIndices: actualChanges.Modifications.ToArray(),
-                    newModifiedIndices: actualChanges.Modifications_New.ToArray(),
-                    deletedIndices: actualChanges.Deletions.ToArray(),
+                    insertedIndices: actualChanges.Insertions.ToEnumerable().Cast<int>().ToArray(),
+                    modifiedIndices: actualChanges.Modifications.ToEnumerable().Cast<int>().ToArray(),
+                    newModifiedIndices: actualChanges.Modifications_New.ToEnumerable().Cast<int>().ToArray(),
+                    deletedIndices: actualChanges.Deletions.ToEnumerable().Cast<int>().ToArray(),
                     moves: actualChanges.Moves.ToEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
                     cleared: actualChanges.Cleared);
             }

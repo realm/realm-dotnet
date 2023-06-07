@@ -152,12 +152,6 @@ typedef struct realm_sync_error_compensating_write_info {
     realm_value_t primary_key;
 } realm_sync_error_compensating_write_info_t;
 
-template <typename T>
-struct marshaled_vector {
-    T* data;
-    size_t count;
-};
-
 struct realm_sync_error {
     int32_t error_code;
     realm_string_t message;
