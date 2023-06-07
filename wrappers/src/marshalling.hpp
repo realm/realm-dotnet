@@ -30,6 +30,27 @@
 namespace realm {
 namespace binding {
 
+template <typename T>
+struct MarshaledVector
+{
+    const T* items;
+    size_t count;
+
+    MarshaledVector(const std::vector<T>& vector)
+        : items(vector.data())
+        , count(vector.size())
+    {
+    }
+
+    MarshaledVector(const std::vector<T>&&) = delete;
+
+    MarshaledVector()
+        : items(nullptr)
+        , count(0)
+    {
+    }
+};
+
 enum class realm_value_type : uint8_t {
     RLM_TYPE_NULL,
     RLM_TYPE_INT,
@@ -158,8 +179,8 @@ struct realm_sync_error {
     realm_string_t log_url;
     bool is_client_reset;
 
-    marshaled_vector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
-    marshaled_vector<realm_sync_error_compensating_write_info_t> compensating_writes;
+    MarshaledVector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
+    MarshaledVector<realm_sync_error_compensating_write_info_t> compensating_writes;
 };
 
 static inline realm_string_t to_capi(StringData data)
@@ -563,32 +584,6 @@ static inline bool are_equal(realm_value_t realm_value, Mixed mixed_value)
     return (mixed_value.is_type(realm::DataType::Type::Link) && realm_value.type == realm_value_type::RLM_TYPE_LINK && mixed_value == from_capi(realm_value.link.object, false)) ||
         mixed_value == from_capi(realm_value);
 }
-
-struct StringValue
-{
-    const char* value;
-};
-
-template <typename T>
-struct MarshaledVector
-{
-    const T* items;
-    size_t count;
-
-    MarshaledVector(const std::vector<T>& vector)
-        : items(vector.data())
-        , count(vector.size())
-    {
-    }
-
-    MarshaledVector(const std::vector<T>&&) = delete;
-
-    MarshaledVector()
-        : items(nullptr)
-        , count(0)
-    {
-    }
-};
 
 template<typename T, typename Collection>
 inline T get(Collection& collection, size_t ndx, NativeException::Marshallable& ex)

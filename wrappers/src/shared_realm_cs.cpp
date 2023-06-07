@@ -151,8 +151,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             to_capi(error.simple_message),
             to_capi(error.logURL),
             error.is_client_reset_requested(),
-            { user_info_pairs.data(), user_info_pairs.size() },
-            { compensating_writes.data(), compensating_writes.size() },
+            user_info_pairs,
+            compensating_writes,
         };
 
         s_session_error_callback(new SharedSyncSession(session), marshaled_error, configuration_handle->handle());
