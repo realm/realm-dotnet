@@ -1344,6 +1344,15 @@ namespace Realms.Tests.Database
             Assert.That(() => query.IndexOf(123), Throws.InstanceOf<ArgumentException>());
         }
 
+        [Test]
+        public void Queryable_ToString_SerializesTheQuery()
+        {
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => QueryMethods.Contains(o.StringValue, "foo", StringComparison.OrdinalIgnoreCase));
+            var description = query.ToString();
+
+            Assert.That(description, Does.Contain("StringValue CONTAINS[c] \"foo\""));
+        }
+
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()
         {
             _realm.Write(() =>

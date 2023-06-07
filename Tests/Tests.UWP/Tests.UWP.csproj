@@ -25,9 +25,7 @@
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <PackageCertificateKeyFile>
-    </PackageCertificateKeyFile>
-    <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">DC86DF96F20D7AD28FF9647D95E895E969F7FDD1</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile Condition="Exists('Tests.UWP_TemporaryKey.pfx')">Tests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>

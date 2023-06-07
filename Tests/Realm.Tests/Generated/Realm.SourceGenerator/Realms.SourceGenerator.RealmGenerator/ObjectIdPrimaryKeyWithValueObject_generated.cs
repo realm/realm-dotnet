@@ -193,6 +193,13 @@ namespace Realms.Tests
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(ObjectIdPrimaryKeyWithValueObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="ObjectIdPrimaryKeyWithValueObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(ObjectIdPrimaryKeyWithValueObject? val) => (Realms.RealmValue)val;
+
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);

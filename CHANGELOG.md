@@ -6,6 +6,71 @@
 * New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). (Core 13.10.1)
 * Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm (including the original support released in Core 11.0.0) will receive a "switch to flexible sync" error message when trying to sync with the app. (Core 13.11.0)
 * Support sort/distinct based on values from a dictionary e.g. `.Filter("TRUEPREDICATE SORT(meta['age'])")`. (Core 13.14.0)
+* Added initial support for geospatial queries on points. (Issue [#3299](https://github.com/realm/realm-dotnet/issues/3299))
+  * In this version, only queries of the form "is this point contained in this shape" (equivalent to [$geoWithin](https://www.mongodb.com/docs/manual/reference/operator/query/geoWithin/) in MongoDB) are supported.
+  * There is no index support right now.
+  * There is no dedicated type for persisted geospatial points. Instead, points should be stored as GeoJson-shaped embedded object and queries will use duck-typing to check if the shape contains the object. For convenience, here's an example embedded object that you can use in lieu of a Realm-provided dedicated type:
+    ```csharp
+    public partial class Location : IEmbeddedObject
+    {
+      // The coordinates and type properties are mandatory but may be private.
+      // You can add more fields if necessary - those will be ignored when doing
+      // geospatial queries.
+      [MapTo("coordinates")]
+      private IList<double> Coordinates { get; } = null!;
+
+      [MapTo("type")]
+      private string Type { get; set; } = "Point";
+
+      public double Latitude => Coordinates.Count > 1 ? Coordinates[1] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+
+      public double Longitude => Coordinates.Count > 1 ? Coordinates[0] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+
+      public Location(double latitude, double longitude)
+      {
+        // According to the GeoJson spec, longitude must come first in the
+        // coordinates array.
+        Coordinates.Add(longitude);
+        Coordinates.Add(latitude);
+      }
+    }
+
+    // Example usage
+    public partial class Company : IRealmObject
+    {
+      public Location Location { get; set; }
+    }
+    ```
+  * Three new shape types and one helper point type are added to allow you to check for containment:
+    * `GeoPoint`: a building block for the other shape types - it cannot be used as a property type on your models and is only intended to construct the other shape types. It can be constructed implicitly from a value tuple of latitude and longitude:
+      ```csharp
+      var point = new GeoPoint(latitude: 12.345, longitude: 67.890);
+      var point = (12.345, 67.890);
+      ```
+    * `GeoCircle`: a shape representing a circle on a sphere constructed from a center and radius:
+      ```csharp
+      var circle = new GeoCircle(center: (12.34, 56.78), radius: 10); // radius in radians
+      var circle = new GeoCircle((12.34, 56.78), Distance.FromKilometers(10));
+      ```
+    * `GeoBox`: a shape representing a box on a sphere constructed from its bottom left and top right corners:
+      ```csharp
+      var box = new GeoBox((12.34, 56.78), (15.34, 59.78));
+      ```
+    * `GeoPolygon`: an arbitrary polygon constructed from an outer ring and optional holes:
+      ```csharp
+      var polygon = new GeoPolygon((10, 10), (20, 20), (0, 20), (10, 10)); // a triangle with no holes
+
+      var outerRing = new GeoPoint[] { (10, 10), (20, 20), (0, 20), (10, 10) };
+      var hole1 = new GeoPoint[] { (1, 1), (2, 2), (0, 2), (1, 1) };
+      var hole2 = new GeoPoint[] { (5, 5), (6, 6), (4, 6), (5, 5) };
+
+      var polygon = new GeoPolygon(outerRing, hole1, hole2); // A triangle with two smaller triangular holes
+      ```
+  * Querying can be done either via LINQ or RQL:
+    ```csharp
+    var matches = realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, circle));
+    var matches = realm.All<Company>().Filter("Location GEOWITHIN $0", circle);
+    ```
 
 ### Fixed
 * Fixed a fatal error (reported to the sync error handler) during client reset (or automatic PBS to FLX migration) if the reset has been triggered during an async open and the schema being applied has added new classes. (Core 13.11.0)

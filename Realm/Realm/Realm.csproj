@@ -180,6 +180,15 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Operator.tt</DependentUpon>
     </Compile>
+    <None Update="DatabaseTypes\QueryArgument.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>QueryArgument.cs</LastGenOutput>
+    </None>
+    <Compile Update="DatabaseTypes\QueryArgument.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>QueryArgument.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />

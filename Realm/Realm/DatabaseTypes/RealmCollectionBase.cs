@@ -160,7 +160,7 @@ namespace Realms
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
-        internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
+        internal RealmResults<T> GetFilteredResults(string query, QueryArgument[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
