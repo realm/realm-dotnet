@@ -22,8 +22,8 @@ namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => "Apple";
+        public string Name => "Apple";
 
-        public string DeviceVersion => NativeHelpers.GetSysctlProperty("hw.model") ?? Unknown;
+        public string Version => NativeHelpers.GetSysctlProperty("hw.model") ?? Unknown;
     }
 }

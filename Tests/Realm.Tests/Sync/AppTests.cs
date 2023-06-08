@@ -40,8 +40,8 @@ namespace Realms.Tests.Sync
         {
             if (TestHelpers.IsUnity)
             {
-                Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
-                Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
                 return;
             }
 
@@ -52,40 +52,51 @@ namespace Realms.Tests.Sync
             {
                 case "Windows":
                 case "Linux":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Is.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown));
                     break;
                 case "macOS":
                     // We don't detect the device on .NET Core apps, only Xamarin or net6.0-maccatalyst.
                     if (framework?.Contains(".NETCoreApp") == true)
                     {
-                        Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo(Platform.Unknown));
-                        Assert.That(Platform.DeviceInfo.DeviceVersion, Is.EqualTo(Platform.Unknown));
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown));
                     }
                     else
                     {
-                        Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple"));
-                        Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple"));
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
                     }
 
                     break;
                 case "iOS":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPhone"));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPhone").Or.EqualTo("x86_64"));
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPhone"));
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64"));
                     break;
                 case "Android":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.Not.EqualTo(Platform.Unknown));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Is.Not.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown));
+                    Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
                     break;
                 case "UWP":
+                    if (TestHelpers.IsUWP)
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown));
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
+                    }
+                    else
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown));
+                    }
+
                     break;
                 case "tvOS":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("Apple TV"));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("AppleTV").Or.EqualTo("x86_64"));
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple TV"));
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("AppleTV").Or.EqualTo("x86_64"));
                     break;
                 case "Mac Catalyst":
-                    Assert.That(Platform.DeviceInfo.DeviceName, Is.EqualTo("iPad"));
-                    Assert.That(Platform.DeviceInfo.DeviceVersion, Does.Contain("iPad").Or.EqualTo("x86_64"));
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPad"));
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64"));
                     break;
                 default:
                     Assert.Fail($"Unknown OS: {os}");

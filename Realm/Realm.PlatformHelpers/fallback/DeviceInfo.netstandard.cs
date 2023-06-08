@@ -22,8 +22,8 @@ namespace Realms.PlatformHelpers
 {
     internal class DeviceInfo : IDeviceInfo
     {
-        public string DeviceName => Unknown;
+        public string Name => Unknown;
 
-        public string DeviceVersion => Unknown;
+        public string Version => Unknown;
     }
 }

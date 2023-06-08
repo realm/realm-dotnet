@@ -171,8 +171,23 @@ namespace Realms.Sync
                 platformVersion += $" {Environment.OSVersion.ServicePack}";
             }
 
-            var deviceName = Platform.DeviceInfo.DeviceName;
-            var deviceVersion = Platform.DeviceInfo.DeviceVersion;
+            string deviceName;
+            string deviceVersion;
+            try
+            {
+                deviceName = Platform.DeviceInfo.Name;
+                deviceVersion = Platform.DeviceInfo.Version;
+            }
+            catch
+            {
+                // If we can't get the device info, don't crash the app.
+                deviceName = Platform.Unknown;
+                deviceVersion = Platform.Unknown;
+
+#if DEBUG
+                throw;
+#endif
+            }
 
             NativeMethods.initialize(
                 frameworkName, frameworkName.IntPtrLength(),

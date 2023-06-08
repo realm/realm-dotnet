@@ -274,7 +274,7 @@ static inline GeoPolygon from_capi(geo_polygon polygon)
     int points_index = 0;
     for (int i = 0; i < polygon.num_rings; i++) {
         std::vector<GeoPoint> points;
-        int points_len = polygon.rings_lengths[i];
+        int points_len = (int)polygon.rings_lengths[i];
         points.reserve(points_len);
 
         for (int j = 0; j < points_len; j++) {

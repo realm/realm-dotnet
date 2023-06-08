@@ -24,8 +24,8 @@ namespace Realms.PlatformHelpers
     {
         private static EasClientDeviceInformation deviceInfo = new();
 
-        public string DeviceName => deviceInfo.SystemManufacturer;
+        public string Name => deviceInfo.SystemManufacturer;
 
-        public string DeviceVersion => deviceInfo.SystemProductName;
+        public string Version => deviceInfo.SystemProductName;
     }
 }

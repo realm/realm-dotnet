@@ -20,8 +20,8 @@ namespace Realms.PlatformHelpers
 {
     internal interface IDeviceInfo
     {
-        string DeviceName { get; }
+        string Name { get; }
 
-        string DeviceVersion { get; }
+        string Version { get; }
     }
 }
