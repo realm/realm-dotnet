@@ -68,12 +68,8 @@ inline AuthProvider to_auth_provider(const std::string& provider) {
         return AuthProvider::FUNCTION;
     }
 
-    if (provider == IdentityProviderUserAPIKey) {
-        return AuthProvider::USER_API_KEY;
-    }
-
-    if (provider == IdentityProviderServerAPIKey) {
-        return AuthProvider::SERVER_API_KEY;
+    if (provider == IdentityProviderAPIKey) {
+        return AuthProvider::API_KEY;
     }
 
     return (AuthProvider)999;

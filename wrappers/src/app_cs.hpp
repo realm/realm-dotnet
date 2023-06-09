@@ -100,11 +100,8 @@ namespace binding {
             case AuthProvider::FUNCTION:
                 return AppCredentials::function(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::USER_API_KEY:
-                return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
-
-            case AuthProvider::SERVER_API_KEY:
-                return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
+            case AuthProvider::API_KEY:
+                return AppCredentials::api_key(Utf16StringAccessor(token, token_len));
 
             default:
                 REALM_UNREACHABLE();
