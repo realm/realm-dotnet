@@ -80,8 +80,12 @@ namespace Realms.Tests.Sync
                 case "UWP":
                     if (TestHelpers.IsUWP)
                     {
+#if DEBUG
+                        // Extracting device info only works for local builds - in many cases we don't have registry access on CI
+                        // so we can't make assumptions about what value we'll get for Name/Version.
                         Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
                         Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+#endif
                     }
                     else
                     {
