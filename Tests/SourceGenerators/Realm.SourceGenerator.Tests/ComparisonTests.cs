@@ -35,6 +35,7 @@ namespace SourceGeneratorTests
         [TestCase("NestedClass")]
         [TestCase("NullableClass")]
         [TestCase("PersonWithDog", "Person", "Dog")]
+        [TestCase("IndexedClass")]
         public async Task ComparisonTest(string filename, params string[] classNames)
         {
             await RunComparisonTest(filename, classNames);

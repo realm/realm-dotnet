@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -24,8 +24,6 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 #if TEST_WEAVER
-using TestAsymmetricObject = Realms.AsymmetricObject;
-using TestEmbeddedObject = Realms.EmbeddedObject;
 using TestRealmObject = Realms.RealmObject;
 #else
 using TestRealmObject = Realms.IRealmObject;
@@ -36,6 +34,12 @@ namespace Realms.Tests.Database
     [TestFixture, Preserve(AllMembers = true)]
     public class CollectionTests : RealmInstanceTest
     {
+        private const string AnimalFarm = "Animal Farm";
+        private const string LordOfTheRings = "The Lord of the Rings";
+        private const string LordOfTheFlies = "Lord of the Flies";
+        private const string WheelOfTime = "The Wheel of Time";
+        private const string Silmarillion = "The Silmarillion";
+
         [Test]
         public void ListInsert_WhenIndexIsNegative_ShouldThrow()
         {
@@ -1260,7 +1264,7 @@ namespace Realms.Tests.Database
             var matches = _realm.All<AllTypesObject>().Filter("NullableInt32Property = $0", (int?)null);
             Assert.AreEqual(matches.Single(), nullableObjMatch);
 
-            RealmValue[] argumentsArray = null!;
+            QueryArgument[] argumentsArray = null!;
             Assert.Throws<ArgumentNullException>(() => _realm.All<Dog>().Filter("Name = $0", argumentsArray));
         }
 
@@ -1806,6 +1810,202 @@ namespace Realms.Tests.Database
             Assert.That(() => realm2.Write(() => obj2.EmbeddedObjectList.Add(embeddedItem)), Throws.TypeOf<RealmException>().And.Message.Contains("embedded object that is already managed"));
         }
 
+        public struct FtsTestData
+        {
+            public string Query;
+            public string[] ExpectedResults;
+
+            public FtsTestData(string query, params string[] expectedResults)
+            {
+                Query = query;
+                ExpectedResults = expectedResults;
+            }
+
+            public override string ToString() => Query;
+        }
+
+        private static readonly object[] FtsTestCases = new object[]
+        {
+            new object[] { new FtsTestData("lord of the", LordOfTheFlies, LordOfTheRings, WheelOfTime, Silmarillion) },
+            new object[] { new FtsTestData("fantasy novel", LordOfTheRings, WheelOfTime) },
+            new object[] { new FtsTestData("popular english", LordOfTheFlies, Silmarillion) },
+            new object[] { new FtsTestData("amazing awesome stuff") },
+            new object[] { new FtsTestData("fantasy -novel", Silmarillion) },
+        };
+
+        [TestCaseSource(nameof(FtsTestCases))]
+        public void Fts_Filter_SimpleTerm(FtsTestData testData)
+        {
+            PopulateFtsData();
+
+            var summaryMatches = _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.Summary)} TEXT $0", testData.Query).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+
+            var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.NullableSummary)} TEXT $0", testData.Query).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+        }
+
+        [TestCaseSource(nameof(FtsTestCases))]
+        public void Fts_Linq_SimpleTerm(FtsTestData testData)
+        {
+            PopulateFtsData();
+
+            var summaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, testData.Query)).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+
+            var nullableSummaryMatches = _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, testData.Query)).ToArray().Select(o => o.Title);
+            Assert.That(summaryMatches, Is.EquivalentTo(testData.ExpectedResults));
+        }
+
+        [Test]
+        public void Fts_Linq_WhenTermsIsNull_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Summary, null!)).ToArray());
+            Assert.Throws<ArgumentNullException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.NullableSummary, null!)).ToArray());
+        }
+
+        [Test]
+        public void Fts_OnNonIndexedProperty_Throws()
+        {
+            var ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Where(o => QueryMethods.FullTextSearch(o.Title, "value")).ToArray());
+            Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
+
+            ex = Assert.Throws<RealmException>(() => _realm.All<ObjectWithFtsIndex>().Filter($"{nameof(ObjectWithFtsIndex.Title)} TEXT $0", "value").ToArray());
+            Assert.That(ex!.Message, Does.Contain("Column has no fulltext index"));
+        }
+
+        [Test]
+        public void QueryArgument_ToString()
+        {
+            QueryArgument charArg = 'A';
+            Assert.That(charArg.ToString(), Is.EqualTo(((int)'A').ToString()));
+
+            QueryArgument boolArg = true;
+            Assert.That(boolArg.ToString(), Is.EqualTo("True"));
+
+            QueryArgument byteArg = (byte)5;
+            Assert.That(byteArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument shortArg = (short)10;
+            Assert.That(shortArg.ToString(), Is.EqualTo("10"));
+
+            QueryArgument intArg = -20;
+            Assert.That(intArg.ToString(), Is.EqualTo("-20"));
+
+            QueryArgument longArg = 9999999999999999;
+            Assert.That(longArg.ToString(), Is.EqualTo("9999999999999999"));
+
+            QueryArgument floatArg = 1.234f;
+            Assert.That(floatArg.ToString(), Is.EqualTo("1.234"));
+
+            QueryArgument doubleArg = 4.5;
+            Assert.That(doubleArg.ToString(), Is.EqualTo("4.5"));
+
+            var date = new DateTimeOffset(2023, 10, 5, 2, 3, 4, TimeSpan.Zero);
+            QueryArgument dateArg = date;
+            Assert.That(dateArg.ToString(), Is.EqualTo(date.ToString()));
+
+            QueryArgument decimalArg = 1.23456789123456789M;
+            Assert.That(decimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+
+            QueryArgument decimal128Arg = (Decimal128)10.20M;
+            Assert.That(decimal128Arg.ToString(), Is.EqualTo("10.20"));
+
+            QueryArgument objectIdArg = new ObjectId("507f1f77bcf86cd799439011");
+            Assert.That(objectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));
+
+            QueryArgument guidArg = new Guid("E30AB544-67B5-42E2-80F7-C2D2E8E01B22");
+            Assert.That(guidArg.ToString(), Is.EqualTo("e30ab544-67b5-42e2-80f7-c2d2e8e01b22"));
+
+            QueryArgument nullableCharArg = (char?)'A';
+            Assert.That(nullableCharArg.ToString(), Is.EqualTo(((int)'A').ToString()));
+
+            QueryArgument nullableBoolArg = (bool?)true;
+            Assert.That(nullableBoolArg.ToString(), Is.EqualTo("True"));
+
+            QueryArgument nullableByteArg = (byte?)5;
+            Assert.That(nullableByteArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableShortArg = (short?)10;
+            Assert.That(nullableShortArg.ToString(), Is.EqualTo("10"));
+
+            QueryArgument nullableIntArg = (int?)-20;
+            Assert.That(nullableIntArg.ToString(), Is.EqualTo("-20"));
+
+            QueryArgument nullableLongArg = (long?)9999999999999999;
+            Assert.That(nullableLongArg.ToString(), Is.EqualTo("9999999999999999"));
+
+            QueryArgument nullableFloatArg = (float?)1.234f;
+            Assert.That(nullableFloatArg.ToString(), Is.EqualTo("1.234"));
+
+            QueryArgument nullableDoubleArg = (double?)4.5;
+            Assert.That(nullableDoubleArg.ToString(), Is.EqualTo("4.5"));
+
+            QueryArgument nullableDateArg = (DateTimeOffset?)date;
+            Assert.That(nullableDateArg.ToString(), Is.EqualTo(date.ToString()));
+
+            QueryArgument nullableDecimalArg = (decimal?)1.23456789123456789M;
+            Assert.That(nullableDecimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+
+            QueryArgument nullableDecimal128Arg = (Decimal128?)10.20M;
+            Assert.That(nullableDecimal128Arg.ToString(), Is.EqualTo("10.20"));
+
+            QueryArgument nullableObjectIdArg = (ObjectId?)new ObjectId("507f1f77bcf86cd799439011");
+            Assert.That(nullableObjectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));
+
+            QueryArgument nullableGuidArg = (Guid?)new Guid("E30AB544-67B5-42E2-80F7-C2D2E8E01B22");
+            Assert.That(nullableGuidArg.ToString(), Is.EqualTo("e30ab544-67b5-42e2-80f7-c2d2e8e01b22"));
+
+            RealmInteger<byte> byteInteger = 5;
+            QueryArgument byteIntegerArg = byteInteger;
+            Assert.That(byteIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableByteIntegerArg = (RealmInteger<byte>?)byteInteger;
+            Assert.That(nullableByteIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<short> shortInteger = 5;
+            QueryArgument shortIntegerArg = shortInteger;
+            Assert.That(shortIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableShortIntegerArg = (RealmInteger<short>?)shortInteger;
+            Assert.That(nullableShortIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<int> intInteger = 5;
+            QueryArgument intIntegerArg = intInteger;
+            Assert.That(intIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableIntIntegerArg = (RealmInteger<int>?)intInteger;
+            Assert.That(nullableIntIntegerArg.ToString(), Is.EqualTo("5"));
+
+            RealmInteger<long> longInteger = 5;
+            QueryArgument longIntegerArg = longInteger;
+            Assert.That(longIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument nullableLongIntegerArg = (RealmInteger<long>?)longInteger;
+            Assert.That(nullableLongIntegerArg.ToString(), Is.EqualTo("5"));
+
+            QueryArgument stringArg = "abc";
+            Assert.That(stringArg.ToString(), Is.EqualTo("abc"));
+
+            QueryArgument byteArrayArg = new byte[] { 1, 2, 3 };
+            Assert.That(byteArrayArg.ToString(), Is.EqualTo("System.Byte[]"));
+
+            QueryArgument objArg = (RealmObjectBase?)null;
+            Assert.That(objArg.ToString(), Is.EqualTo("<null>"));
+
+            Assert.That(stringArg.ToNative().Value.ToString(), Does.Contain("primitive String"));
+        }
+
+        [Test]
+        public void RealmResults_ICollection_UnsupportedAPI()
+        {
+            var results = (ICollection<Person>)_realm.All<Person>();
+            Assert.That(results.IsReadOnly);
+
+            Assert.Throws<NotSupportedException>(() => results.Add(new Person()));
+            Assert.Throws<NotSupportedException>(() => results.Remove(null!));
+        }
+
         private void PopulateAObjects(params int[] values)
         {
             if (values.Length == 0)
@@ -1859,6 +2059,22 @@ namespace Realms.Tests.Database
             _realm.Write(() => _realm.Add(container));
 
             return container;
+        }
+
+        private void PopulateFtsData()
+        {
+            _realm.Write(() =>
+            {
+                _realm.Add(new ObjectWithFtsIndex("N/A", string.Empty)
+                {
+                    NullableSummary = null
+                });
+                _realm.Add(new ObjectWithFtsIndex(AnimalFarm, "Animal Farm is a beast fable, in the form of a satirical allegorical novella, by George Orwell, first published in England on 17 August 1945. It tells the story of a group of farm animals who rebel against their human farmer, hoping to create a society where the animals can be equal, free, and happy. Ultimately, the rebellion is betrayed, and under the dictatorship of a pig named Napoleon, the farm ends up in a state as bad as it was before. According to Orwell, Animal Farm reflects events leading up to the Russian Revolution of 1917 and then on into the Stalinist era of the Soviet Union. Orwell, a democratic socialist, was a critic of Joseph Stalin and hostile to Moscow-directed Stalinism, an attitude that was critically shaped by his experiences during the Barcelona May Days conflicts between the POUM and Stalinist forces during the Spanish Civil War. In a letter to Yvonne Davet, Orwell described Animal Farm as a satirical tale against Stalin (\"un conte satirique contre Staline\"), and in his essay \"Why I Write\" (1946), wrote that Animal Farm was the first book in which he tried, with full consciousness of what he was doing, \"to fuse political purpose and artistic purpose into one whole\". The original title was Animal Farm: A Fairy Story, but US publishers dropped the subtitle when it was published in 1946, and only one of the translations during Orwell's lifetime, the Telugu version, kept it. Other titular variations include subtitles like \"A Satire\" and \"A Contemporary Satire\". Orwell suggested the title Union des républiques socialistes animales for the French translation, which abbreviates to URSA, the Latin word for \"bear\", a symbol of Russia. It also played on the French name of the Soviet Union, Union des républiques socialistes soviétiques. Orwell wrote the book between November 1943 and February 1944, when the United Kingdom was in its wartime alliance with the Soviet Union against Nazi Germany, and the British intelligentsia held Stalin in high esteem, a phenomenon Orwell hated. The manuscript was initially rejected by several British and American publishers, including one of Orwell's own, Victor Gollancz, which delayed its publication. It became a great commercial success when it did appear partly because international relations were transformed as the wartime alliance gave way to the Cold War. Time magazine chose the book as one of the 100 best English-language novels (1923 to 2005); it also featured at number 31 on the Modern Library List of Best 20th-Century Novels, and number 46 on the BBC's The Big Read poll. It won a Retrospective Hugo Award in 1996 and is included in the Great Books of the Western World selection."));
+                _realm.Add(new ObjectWithFtsIndex(LordOfTheRings, "The Lord of the Rings is an epic high-fantasy novel by English author and scholar J. R. R. Tolkien. Set in Middle-earth, the story began as a sequel to Tolkien's 1937 children's book The Hobbit, but eventually developed into a much larger work. Written in stages between 1937 and 1949, The Lord of the Rings is one of the best-selling books ever written, with over 150 million copies sold. The title refers to the story's main antagonist, the Dark Lord Sauron, who, in an earlier age, created the One Ring to rule the other Rings of Power given to Men, Dwarves, and Elves, in his campaign to conquer all of Middle-earth. From homely beginnings in the Shire, a hobbit land reminiscent of the English countryside, the story ranges across Middle-earth, following the quest to destroy the One Ring, seen mainly through the eyes of the hobbits Frodo, Sam, Merry and Pippin. Although often called a trilogy, the work was intended by Tolkien to be one volume of a two-volume set along with The Silmarillion. For economic reasons, The Lord of the Rings was published over the course of a year from 29 July 1954 to 20 October 1955 in three volumes titled The Fellowship of the Ring, The Two Towers, and The Return of the King. The work is divided internally into six books, two per volume, with several appendices of background material. Some later editions print the entire work in a single volume, following the author's original intent. Tolkien's work, after an initially mixed reception by the literary establishment, has been the subject of extensive analysis of its themes and origins. Influences on this earlier work, and on the story of The Lord of the Rings, include philology, mythology, Christianity, earlier fantasy works, and his own experiences in the First World War."));
+                _realm.Add(new ObjectWithFtsIndex(LordOfTheFlies, "Lord of the Flies is a 1954 novel by the Nobel Prize-winning British author William Golding. The plot concerns a group of British boys who are stranded on an uninhabited island and their disastrous attempts to govern themselves. Themes include the tension between groupthink and individuality, between rational and emotional reactions, and between morality and immorality. The novel, which was Golding's debut, was generally well received. It was named in the Modern Library 100 Best Novels, reaching number 41 on the editor's list, and 25 on the reader's list. In 2003, it was listed at number 70 on the BBC's The Big Read poll, and in 2005 Time magazine named it as one of the 100 best English-language novels published between 1923 and 2005, and included it in its list of the 100 Best Young-Adult Books of All Time. Popular reading in schools, especially in the English-speaking world, Lord of the Flies was ranked third in the nation's favourite books from school in a 2016 UK poll."));
+                _realm.Add(new ObjectWithFtsIndex(WheelOfTime, "The Wheel of Time is a series of high fantasy novels by American author Robert Jordan, with Brandon Sanderson as a co-author for the final three novels. Originally planned as a six-book series at its debut in 1990, The Wheel of Time came to span 14 volumes, in addition to a prequel novel and two companion books. Jordan died in 2007 while working on what was planned to be the final volume in the series. He prepared extensive notes which enabled fellow fantasy author Brandon Sanderson to complete the final book, which grew into three volumes: The Gathering Storm (2009), Towers of Midnight (2010), and A Memory of Light (2013). The series draws on numerous elements of both European and Asian mythology, most notably the cyclical nature of time found in Buddhism and Hinduism; the metaphysical concepts of balance, duality, and a respect for nature found in Taoism; the Abrahamic concepts of God and Satan; and Leo Tolstoy's War and Peace. The Wheel of Time is notable for its length, detailed imaginary world, and magic system, and its large cast of characters. The eighth through fourteenth books each reached number one on the New York Times Best Seller list. After its completion, the series was nominated for a Hugo Award. As of 2021, the series has sold over 90 million copies worldwide, making it one of the best-selling epic fantasy series since The Lord of the Rings. Its popularity has spawned a collectible card game, a video game, a roleplaying game, and a soundtrack album. A TV series adaptation produced by Sony Pictures and Amazon Studios premiered in 2021.The Wheel of Time is a series of high fantasy novels by American author Robert Jordan, with Brandon Sanderson as a co-author for the final three novels. Originally planned as a six-book series at its debut in 1990, The Wheel of Time came to span 14 volumes, in addition to a prequel novel and two companion books. Jordan died in 2007 while working on what was planned to be the final volume in the series. He prepared extensive notes which enabled fellow fantasy author Brandon Sanderson to complete the final book, which grew into three volumes: The Gathering Storm (2009), Towers of Midnight (2010), and A Memory of Light (2013). The series draws on numerous elements of both European and Asian mythology, most notably the cyclical nature of time found in Buddhism and Hinduism; the metaphysical concepts of balance, duality, and a respect for nature found in Taoism; the Abrahamic concepts of God and Satan; and Leo Tolstoy's War and Peace. The Wheel of Time is notable for its length, detailed imaginary world, and magic system, and its large cast of characters. The eighth through fourteenth books each reached number one on the New York Times Best Seller list. After its completion, the series was nominated for a Hugo Award. As of 2021, the series has sold over 90 million copies worldwide, making it one of the best-selling epic fantasy series since The Lord of the Rings. Its popularity has spawned a collectible card game, a video game, a roleplaying game, and a soundtrack album. A TV series adaptation produced by Sony Pictures and Amazon Studios premiered in 2021. "));
+                _realm.Add(new ObjectWithFtsIndex(Silmarillion, "The Silmarillion (Quenya: [silmaˈrilliɔn]) is a collection of myths and stories in varying styles by the English writer J. R. R. Tolkien. It was edited and published posthumously by his son Christopher Tolkien in 1977, assisted by the fantasy author Guy Gavriel Kay. It tells of Eä, a fictional universe that includes the Blessed Realm of Valinor, the once-great region of Beleriand, the sunken island of Númenor, and the continent of Middle-earth, where Tolkien's most popular works—The Hobbit and The Lord of the Rings—are set. The Silmarillion has five parts. The first, Ainulindalë, tells in mythic style of the creation of Eä, the \"world that is.\" The second part, Valaquenta, gives a description of the Valar and Maiar, supernatural powers of Eä. The next section, Quenta Silmarillion, which forms the bulk of the collection, chronicles the history of the events before and during the First Age, including the wars over three jewels, the Silmarils, that gave the book its title. The fourth part, Akallabêth, relates the history of the Downfall of Númenor and its people, which takes place in the Second Age. The final part, Of the Rings of Power and the Third Age, is a brief summary of the events of The Lord of the Rings and those that led to them. The book shows the influence of many sources, including the Finnish epic Kalevala, Greek mythology in the lost island of Atlantis (as Númenor) and the Olympian gods (in the shape of the Valar, though these also resemble the Norse Æsir)."));
+            });
         }
     }
 

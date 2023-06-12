@@ -31,11 +31,11 @@ namespace Realms.Tests.Database
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedGuidType", ObjectSchema.ObjectType.EmbeddedObject)
         {
-            Realms.Schema.Property.Primitive("RegularProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "RegularProperty"),
+            Realms.Schema.Property.Primitive("RegularProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "RegularProperty"),
             Realms.Schema.Property.PrimitiveList("GuidList", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidList"),
             Realms.Schema.Property.PrimitiveSet("GuidSet", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidSet"),
             Realms.Schema.Property.PrimitiveDictionary("GuidDict", Realms.RealmValueType.Guid, areElementsNullable: false, managedName: "GuidDict"),
-            Realms.Schema.Property.Primitive("OptionalProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "OptionalProperty"),
+            Realms.Schema.Property.Primitive("OptionalProperty", Realms.RealmValueType.Guid, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "OptionalProperty"),
             Realms.Schema.Property.PrimitiveList("OptionalList", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalList"),
             Realms.Schema.Property.PrimitiveSet("OptionalSet", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalSet"),
             Realms.Schema.Property.PrimitiveDictionary("OptionalDict", Realms.RealmValueType.Guid, areElementsNullable: true, managedName: "OptionalDict"),
@@ -236,6 +236,13 @@ namespace Realms.Tests.Database
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(EmbeddedGuidType? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="EmbeddedGuidType"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(EmbeddedGuidType? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

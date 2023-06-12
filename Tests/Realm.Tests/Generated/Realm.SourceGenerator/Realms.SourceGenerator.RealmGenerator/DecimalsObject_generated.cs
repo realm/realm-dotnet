@@ -30,8 +30,8 @@ namespace Realms.Tests
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("DecimalsObject", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("DecimalValue", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "DecimalValue"),
-            Realms.Schema.Property.Primitive("Decimal128Value", Realms.RealmValueType.Decimal128, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Decimal128Value"),
+            Realms.Schema.Property.Primitive("DecimalValue", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "DecimalValue"),
+            Realms.Schema.Property.Primitive("Decimal128Value", Realms.RealmValueType.Decimal128, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Decimal128Value"),
         }.Build();
 
         #region IRealmObject implementation
@@ -192,6 +192,13 @@ namespace Realms.Tests
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(DecimalsObject? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="DecimalsObject"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(DecimalsObject? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

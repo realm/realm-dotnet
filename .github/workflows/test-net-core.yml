@@ -44,11 +44,11 @@ jobs:
           runtime: osx-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net6.0
+        - framework: net7.0
           os:
             runner: macos-arm
             runtime: osx-arm64
-        - framework: netcoreapp3.1
+        - framework: net7.0
           os:
             runner: win81
             runtime: win-x64
@@ -64,22 +64,17 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Cleanup Workspace
       run: git clean -fdx
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.Fody.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - uses: realm/ci-actions/mdb-realm/deploy@187889c026eb16673dba3152906a46ed87406e30
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
       if: ${{ inputs.realmUrl }}
       with:
         projectId: ${{ secrets.AtlasProjectId}}
@@ -88,11 +83,6 @@ jobs:
         apiKey: ${{ secrets.AtlasPublicKey}}
         privateApiKey: ${{ secrets.AtlasPrivateKey }}
         clusterSize: M10
-    - name: Configure .NET
-      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
-      with:
-        dotnet-version: 6.0.x
     - name: Publish Tests/Realm.Tests
       run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path

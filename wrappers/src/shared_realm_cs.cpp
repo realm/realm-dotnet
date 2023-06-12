@@ -33,6 +33,8 @@
 #include <realm/object-store/sync/app.hpp>
 #include <realm/sync/subscriptions.hpp>
 #include <realm/exceptions.hpp>
+#include <realm/util/logger.hpp>
+#include <realm/util/platform_info.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -41,12 +43,13 @@
 using namespace realm;
 using namespace realm::binding;
 using namespace realm::sync;
+using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using ReleaseGCHandleT = void(void* managed_handle);
-using LogMessageT = void(realm_value_t message, util::Logger::Level level);
+using LogMessageT = void(realm_string_t message, util::Logger::Level level);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
@@ -96,10 +99,13 @@ namespace binding {
         s_realm_changed(m_managed_state_handle.handle());
     }
 
-    void log_message(std::string message, util::Logger::Level level)
-    {
-        s_log_message(to_capi(Mixed(message)), level);
-    }
+    class DotNetLogger : public Logger {
+    protected:
+        void do_log(Level level, const std::string& message) override final
+        {
+            s_log_message(to_capi(message), level);
+        }
+    };
 }
 
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
@@ -113,6 +119,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+    config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
     if (sync_configuration.is_flexible_sync) {
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
@@ -250,6 +257,13 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_initialize_data = wrap_managed_callback(initialize_data);
 
     realm::binding::s_can_call_managed = true;
+
+    Logger::set_default_logger(std::make_shared<DotNetLogger>());
+    Logger::set_default_level_threshold(Logger::Level::info);
+}
+
+REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
+    Logger::set_default_level_threshold(level);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -259,6 +273,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+        config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
         if (configuration.fallback_path) {
             config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
@@ -330,10 +345,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         auto realm = Realm::get_shared_realm(std::move(config));
         if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
             if (configuration.read_only) {
-                static constexpr char message_format[] = "Realm at path %1 may contain legacy guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
-                log_message(
-                    util::format(message_format, realm->config().path),
-                    realm::util::Logger::Level::warn);
+                static constexpr char message_format[] = "Realm at path %1 may contain legacy Guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
+                Logger::get_default_logger()->log(Logger::Level::warn, message_format, realm->config().path);
             }
             else {
                 bool found_non_v4_uuid = false;
@@ -341,15 +354,11 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 apply_guid_representation_fix(realm, found_non_v4_uuid, found_guid_columns);
                 if (found_non_v4_uuid) {
                     static constexpr char message_format[] = "Realm at path %1 was found to contain Guid values in little-endian format and was automatically migrated to store them in big-endian format.";
-                    log_message(
-                        util::format(message_format, realm->config().path),
-                        realm::util::Logger::Level::info);
+                    Logger::get_default_logger()->log(Logger::Level::info, message_format, realm->config().path);
                 }
                 else if (found_guid_columns) {
                     static constexpr char message_format[] = "Realm at path %1 was not marked as having migrated its Guid values, but none of the values appeared to be in little-endian format. The Realm was marked as migrated, but the values have not been modified.";
-                    log_message(
-                        util::format(message_format, realm->config().path),
-                        realm::util::Logger::Level::warn);
+                    Logger::get_default_logger()->log(Logger::Level::warn, message_format, realm->config().path);
                 }
             }
         }
@@ -517,9 +526,13 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
-    return realm->is_in_transaction() || realm->is_in_async_transaction();
+    return handle_errors(ex, [&]() {
+        realm->verify_thread();
+
+        return realm->is_in_transaction() || realm->is_in_async_transaction();
+    });
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)
@@ -833,5 +846,10 @@ REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_t
     });
 }
 
+REALM_EXPORT size_t shared_realm_get_operating_system(uint16_t* buffer, size_t buffer_length)
+{
+    std::string platform = realm::util::get_library_platform();
+    return stringdata_to_csharpstringbuffer(platform, buffer, buffer_length);
 }
 
+}

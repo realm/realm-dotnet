@@ -21,7 +21,7 @@ jobs:
       id: get-version
       run: |
         cd Realm/packages
-        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
         echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure AWS Credentials
@@ -38,18 +38,16 @@ jobs:
         {
           aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
         }
-    - name: NuGet Publish Realm.SourceGenerator.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}/Realm.SourceGenerator.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
-    - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
-      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
       with:
-        node-version: 12.x
+        node-version: 16.x
         registry-url: https://registry.npmjs.org
-    - name: Npm Publish io.realm.unity-${{ steps.get-version.outputs.version }}
-      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz/io.realm.unity-${{ steps.get-version.outputs.version }}.tgz
+    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag latest
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: Find Release PR
@@ -108,7 +106,7 @@ jobs:
         number: ${{ steps.vnext-pr.outputs.pull-request-number }}
         method: squash
     - name: 'Post to #realm-releases'
-      uses: realm/ci-actions/release-to-slack@187889c026eb16673dba3152906a46ed87406e30
+      uses: realm/ci-actions/release-to-slack@729a80d203351eab7df4eca564daa275e76ec52f
       with:
         changelog: Realm/packages/ExtractedChangelog/ExtractedChangelog.md
         sdk: .NET

@@ -25,18 +25,18 @@ namespace SourceGeneratorAssemblyToProcess
         /// </summary>
         public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NullableClass", ObjectSchema.ObjectType.RealmObject)
         {
-            Realms.Schema.Property.Primitive("NonNullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableInt"),
-            Realms.Schema.Property.Primitive("NullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableInt"),
-            Realms.Schema.Property.Primitive("NonNullableString", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableString"),
-            Realms.Schema.Property.Primitive("NullableString", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableString"),
-            Realms.Schema.Property.Primitive("NonNullableData", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableData"),
-            Realms.Schema.Property.Primitive("NullableData", Realms.RealmValueType.Data, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableData"),
+            Realms.Schema.Property.Primitive("NonNullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableInt"),
+            Realms.Schema.Property.Primitive("NullableInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableInt"),
+            Realms.Schema.Property.Primitive("NonNullableString", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableString"),
+            Realms.Schema.Property.Primitive("NullableString", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableString"),
+            Realms.Schema.Property.Primitive("NonNullableData", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableData"),
+            Realms.Schema.Property.Primitive("NullableData", Realms.RealmValueType.Data, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableData"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNullableInt", Realms.RealmValueType.Int, areElementsNullable: true, managedName: "CollectionOfNullableInt"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNonNullableInt", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "CollectionOfNonNullableInt"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNullableString", Realms.RealmValueType.String, areElementsNullable: true, managedName: "CollectionOfNullableString"),
             Realms.Schema.Property.PrimitiveList("CollectionOfNonNullableString", Realms.RealmValueType.String, areElementsNullable: false, managedName: "CollectionOfNonNullableString"),
-            Realms.Schema.Property.Primitive("NonNullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "NonNullableRealmInt"),
-            Realms.Schema.Property.Primitive("NullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: true, managedName: "NullableRealmInt"),
+            Realms.Schema.Property.Primitive("NonNullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "NonNullableRealmInt"),
+            Realms.Schema.Property.Primitive("NullableRealmInt", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: true, managedName: "NullableRealmInt"),
             Realms.Schema.Property.Object("NullableObject", "NullableClass", managedName: "NullableObject"),
             Realms.Schema.Property.ObjectList("ListNonNullabeObject", "NullableClass", managedName: "ListNonNullabeObject"),
             Realms.Schema.Property.ObjectSet("SetNonNullableObject", "NullableClass", managedName: "SetNonNullableObject"),
@@ -245,6 +245,13 @@ namespace SourceGeneratorAssemblyToProcess
         /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
         /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
         public static implicit operator Realms.RealmValue(NullableClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+
+        /// <summary>
+        /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="NullableClass"/>.
+        /// </summary>
+        /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+        /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+        public static implicit operator Realms.QueryArgument(NullableClass? val) => (Realms.RealmValue)val;
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

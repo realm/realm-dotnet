@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' == 'true'">netstandard2.1</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' != 'true'">netstandard2.0</TargetFramework>
     <PackageId>Realm.UnityUtils</PackageId>
     <Title>Realm.UnityUtils</Title>
     <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
@@ -22,6 +22,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' == 'true'">
+    <PackageReference Include="Unity3D" Version="2.1.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' != 'true'">
     <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
   </ItemGroup>
 

@@ -22,7 +22,7 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     /// </summary>
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("NoNamespaceClass", ObjectSchema.ObjectType.RealmObject)
     {
-        Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Name"),
+        Realms.Schema.Property.Primitive("Name", Realms.RealmValueType.String, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Name"),
     }.Build();
 
     #region IRealmObject implementation
@@ -176,6 +176,13 @@ public partial class NoNamespaceClass : IRealmObject, INotifyPropertyChanged, IR
     /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
     /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
     public static implicit operator Realms.RealmValue(NoNamespaceClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="NoNamespaceClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+    /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+    public static implicit operator Realms.QueryArgument(NoNamespaceClass? val) => (Realms.RealmValue)val;
 
     /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]

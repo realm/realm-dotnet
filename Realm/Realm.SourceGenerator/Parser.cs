@@ -162,7 +162,7 @@ namespace Realms.SourceGenerator
                 var info = new PropertyInfo(propSymbol.Name)
                 {
                     Accessibility = propSymbol.DeclaredAccessibility,
-                    IsIndexed = propSymbol.HasAttribute("IndexedAttribute"),
+                    Index = propSymbol.GetIndexType(),
                     IsRequired = propSymbol.HasAttribute("RequiredAttribute"),
                     IsPrimaryKey = propSymbol.HasAttribute("PrimaryKeyAttribute"),
                     MapTo = (string?)propSymbol.GetAttributeArgument("MapToAttribute"),
@@ -239,11 +239,23 @@ namespace Realms.SourceGenerator
                     {
                         classInfo.Diagnostics.Add(Diagnostics.PrimaryKeyWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
                     }
-                }
 
-                if (info.IsIndexed && !info.TypeInfo.IsSupportedIndexType())
+                    if (info.Index != null)
+                    {
+                        classInfo.Diagnostics.Add(Diagnostics.IndexPrimaryKey(classInfo.Name, info.Name, propSyntax.GetLocation()));
+                    }
+                }
+                else if (info.Index == IndexType.General && !info.TypeInfo.IsSupportedIndexType())
                 {
                     classInfo.Diagnostics.Add(Diagnostics.IndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                }
+                else if (info.Index == IndexType.FullText && !info.TypeInfo.IsSupportedFullTextType())
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.FullTextIndexedWrongType(classInfo.Name, info.Name, info.TypeInfo.TypeString, propSyntax.GetLocation()));
+                }
+                else if (info.Index == IndexType.None)
+                {
+                    classInfo.Diagnostics.Add(Diagnostics.IndexedModeNone(classInfo.Name, info.Name, propSyntax.GetLocation()));
                 }
 
                 if (info.IsRequired)

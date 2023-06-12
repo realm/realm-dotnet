@@ -13,6 +13,7 @@
     <NoWarn>$(NoWarn),1591, NU5100, NU5128</NoWarn>
     <LangVersion>9.0</LangVersion>
     <IncludeSymbols>False</IncludeSymbols>
+    <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="6.*" PrivateAssets="All" />
@@ -24,12 +25,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Weaver.props" Pack="true" PackagePath="build\Realm.Fody.props" />
-    <TfmSpecificPackageFile Include="Realm.Fody.xcf" Pack="true" PackagePath="$(BuildOutputTargetFolder)\$(TargetFramework)">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </TfmSpecificPackageFile>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="$(ProjectDir)..\..\stylecop.json" />

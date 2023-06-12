@@ -65,7 +65,7 @@ namespace Realms
             public delegate void DisposeGCHandleCallback(IntPtr handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void LogMessageCallback(PrimitiveValue message, LogLevel level);
+            public delegate void LogMessageCallback(StringValue message, LogLevel level);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void HandleTaskCompletionCallback(IntPtr tcs_ptr, [MarshalAs(UnmanagedType.U1)] bool invoke_async, NativeException ex);
@@ -141,7 +141,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_in_transaction", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
-            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm);
+            public static extern bool is_in_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -234,6 +234,12 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool refresh_async(SharedRealmHandle realm, IntPtr tcs_handle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
+            public static extern bool set_log_level(LogLevel level);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -271,6 +277,8 @@ namespace Realms
 
             NativeMethods.install_callbacks(notifyRealm, getNativeSchema, openRealm, disposeGCHandle, logMessage, notifyObject, notifyDictionary, onMigration, shouldCompact, handleTaskCompletion, onInitialization);
         }
+
+        public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);
 
         [Preserve]
         public SharedRealmHandle(IntPtr handle) : base(handle)
@@ -541,7 +549,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public bool IsInTransaction() => NativeMethods.is_in_transaction(this);
+        public bool IsInTransaction()
+        {
+            var result = NativeMethods.is_in_transaction(this, out var ex);
+            ex.ThrowIfNecessary();
+            return result;
+        }
 
         public bool Refresh()
         {
@@ -749,6 +762,16 @@ namespace Realms
             }
         }
 
+        public static string GetNativeLibraryOS()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                ex = default;
+                return NativeMethods.get_operating_system(buffer, length);
+            })!;
+        }
+
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
         private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
         {
@@ -765,7 +788,6 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.OpenRealmCallback))]
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Realm will be owned by the creator of the tcs")]
         private static void HandleOpenRealmCallback(IntPtr taskCompletionSource, IntPtr realm_reference, NativeException ex)
         {
             var handleTcs = GCHandle.FromIntPtr(taskCompletionSource);
@@ -793,9 +815,9 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.LogMessageCallback))]
-        private static void LogMessage(PrimitiveValue message, LogLevel level)
+        private static void LogMessage(StringValue message, LogLevel level)
         {
-            Logger.LogDefault(level, message.AsString());
+            Logger.LogDefault(level, message!);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
@@ -963,8 +985,8 @@ namespace Realms
                     type = property.Type,
                     object_type = property.ObjectType,
                     link_origin_property_name = property.LinkOriginPropertyName,
-                    is_indexed = property.IsIndexed,
-                    is_primary = property.IsPrimaryKey
+                    is_primary = property.IsPrimaryKey,
+                    index = property.IndexType,
                 };
             }
         }

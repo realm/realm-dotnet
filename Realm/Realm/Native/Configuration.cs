@@ -78,5 +78,8 @@ namespace Realms.Native
 
         [MarshalAs(UnmanagedType.U1)]
         internal bool invoke_migration_callback;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool automatically_migrate_embedded;
     }
 }

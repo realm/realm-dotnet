@@ -4,7 +4,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.NullableCollection has type IList<string>?, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 27,
       "StartColumn": 9,
       "EndLine": 27,
@@ -16,7 +15,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.NonNullableObject has type NullableErrorClass, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 29,
       "StartColumn": 9,
       "EndLine": 29,
@@ -28,7 +26,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.NullableRealmValue has type RealmValue?, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 31,
       "StartColumn": 9,
       "EndLine": 31,
@@ -40,7 +37,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.NullableBacklink has type IQueryable<NullableErrorClass>?, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 35,
       "StartColumn": 9,
       "EndLine": 36,
@@ -52,7 +48,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.ListNullableObject has type IList<NullableErrorClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 38,
       "StartColumn": 9,
       "EndLine": 38,
@@ -64,7 +59,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.SetNullableObject has type IList<NullableErrorClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 40,
       "StartColumn": 9,
       "EndLine": 40,
@@ -76,7 +70,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.DictionaryNonNullableObject has type IDictionary<string, NullableErrorClass>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 42,
       "StartColumn": 9,
       "EndLine": 42,
@@ -88,7 +81,6 @@
     "Severity": 3,
     "Message": "NullableErrorClass.BacklinkOfNullableObject has type IQueryable<NullableErrorClass?>, that does not support the assigned nullability annotation.",
     "Location": {
-      "Path": null,
       "StartLine": 44,
       "StartColumn": 9,
       "EndLine": 45,

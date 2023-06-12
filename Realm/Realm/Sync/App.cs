@@ -23,7 +23,6 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
-using Realms.Logging;
 
 namespace Realms.Sync
 {
@@ -110,7 +109,6 @@ namespace Realms.Sync
         /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
         public User? CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
 
         /// <summary>
@@ -167,7 +165,6 @@ namespace Realms.Sync
                 sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
                 sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
                 sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
-                managed_logger = Logger.Default != null ? GCHandle.ToIntPtr(Logger.Default.GCHandle) : IntPtr.Zero,
             };
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);

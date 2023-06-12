@@ -50,6 +50,8 @@ namespace Realms.Tests.Database
 
         public static readonly bool[] BoolValues = new[] { true, false };
 
+        public static readonly IndexType[] IndexTypes = new[] { IndexType.None, IndexType.General };
+
         public static readonly bool?[] NullableBoolValues = new[] { true, false, (bool?)null };
 
         [Test]
@@ -106,7 +108,7 @@ namespace Realms.Tests.Database
             [ValueSource(nameof(FromTypeTestCases))] FromTypeTestData typeInfo,
             [ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
-            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(NullableBoolValues))] bool? isNullable)
         {
             var expectedType = isNullable switch
@@ -116,13 +118,13 @@ namespace Realms.Tests.Database
                 _ => typeInfo.InherentType
             };
 
-            var expectedIsIndexed = isIndexed || isPrimaryKey;
+            var expectedIndexType = isPrimaryKey ? IndexType.General : indexType;
             Property getProperty() => collectionModifier switch
             {
-                PropertyType.Array => Property.FromType("foo", typeof(IList<>).MakeGenericType(typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Set => Property.FromType("foo", typeof(ISet<>).MakeGenericType(typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Dictionary => Property.FromType("foo", typeof(IDictionary<,>).MakeGenericType(typeof(string), typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                _ => Property.FromType("foo", typeInfo.Type, isPrimaryKey, isIndexed, isNullable),
+                PropertyType.Array => Property.FromType("foo", typeof(IList<>).MakeGenericType(typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                PropertyType.Set => Property.FromType("foo", typeof(ISet<>).MakeGenericType(typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                PropertyType.Dictionary => Property.FromType("foo", typeof(IDictionary<,>).MakeGenericType(typeof(string), typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                _ => Property.FromType("foo", typeInfo.Type, isPrimaryKey, indexType, isNullable),
             };
 
             if (isPrimaryKey && (collectionModifier != default || !Property.PrimaryKeyTypes.Contains(typeInfo.InherentType & ~PropertyType.Nullable)))
@@ -130,17 +132,27 @@ namespace Realms.Tests.Database
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be primary key"));
             }
-            else if (expectedIsIndexed && (collectionModifier != default || !Property.IndexableTypes.Contains(typeInfo.InherentType & ~PropertyType.Nullable)))
+            else if (isPrimaryKey && indexType == IndexType.FullText)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("PrimaryKey properties cannot have a FullText index"));
+            }
+            else if (expectedIndexType == IndexType.General && (collectionModifier != default || !Property.IndexableTypes.Contains(typeInfo.InherentType & ~PropertyType.Nullable)))
             {
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be indexed"));
+            }
+            else if (expectedIndexType == IndexType.FullText && typeInfo.Type != typeof(string))
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("cannot have a FullText index added to it"));
             }
             else
             {
                 var property = getProperty();
                 Assert.That(property.Name, Is.EqualTo("foo"));
                 Assert.That(property.IsPrimaryKey, Is.EqualTo(isPrimaryKey), $"Expect property.IsPrimaryKey to be {isPrimaryKey}");
-                Assert.That(property.IsIndexed, Is.EqualTo(expectedIsIndexed), $"Expect property.IsIndexed to be {isIndexed} || {isPrimaryKey}");
+                Assert.That(property.IndexType, Is.EqualTo(expectedIndexType));
                 Assert.That(property.Type, Is.EqualTo(expectedType | collectionModifier));
             }
         }
@@ -156,15 +168,15 @@ namespace Realms.Tests.Database
             [ValueSource(nameof(ObjectTypeTestCases))] TypeInfoTestCase typeInfo,
             [ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
-            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(NullableBoolValues))] bool? isNullable)
         {
             Property getProperty() => collectionModifier switch
             {
-                PropertyType.Array => Property.FromType("foo", typeof(IList<>).MakeGenericType(typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Set => Property.FromType("foo", typeof(ISet<>).MakeGenericType(typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Dictionary => Property.FromType("foo", typeof(IDictionary<,>).MakeGenericType(typeof(string), typeInfo.Type), isPrimaryKey, isIndexed, isNullable),
-                _ => Property.FromType("foo", typeInfo.Type, isPrimaryKey, isIndexed, isNullable),
+                PropertyType.Array => Property.FromType("foo", typeof(IList<>).MakeGenericType(typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                PropertyType.Set => Property.FromType("foo", typeof(ISet<>).MakeGenericType(typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                PropertyType.Dictionary => Property.FromType("foo", typeof(IDictionary<,>).MakeGenericType(typeof(string), typeInfo.Type), isPrimaryKey, indexType, isNullable),
+                _ => Property.FromType("foo", typeInfo.Type, isPrimaryKey, indexType, isNullable),
             };
 
             if (isPrimaryKey)
@@ -172,10 +184,15 @@ namespace Realms.Tests.Database
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be primary key"));
             }
-            else if (isIndexed)
+            else if (indexType == IndexType.General)
             {
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be indexed"));
+            }
+            else if (indexType == IndexType.FullText)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("cannot have a FullText index"));
             }
             else if (isNullable == true && (collectionModifier == PropertyType.Array || collectionModifier == PropertyType.Set))
             {
@@ -193,7 +210,7 @@ namespace Realms.Tests.Database
                 var property = getProperty();
                 Assert.That(property.Name, Is.EqualTo("foo"));
                 Assert.That(property.IsPrimaryKey, Is.False);
-                Assert.That(property.IsIndexed, Is.False);
+                Assert.That(property.IndexType, Is.EqualTo(IndexType.None));
                 Assert.That(property.Type, Is.EqualTo(PropertyType.Object | nullableModifier | collectionModifier));
                 Assert.That(property.ObjectType, Is.EqualTo(typeInfo.ExpectedObjectName));
             }
@@ -203,7 +220,7 @@ namespace Realms.Tests.Database
         public void Property_FromType_Generic_String(
             [ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
-            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(NullableBoolValues))] bool? isNullable)
         {
             var inherentType = PropertyType.String | PropertyType.Nullable;
@@ -214,12 +231,14 @@ namespace Realms.Tests.Database
                 _ => inherentType
             };
 
+            var expectedIndexType = isPrimaryKey ? IndexType.General : indexType;
+
             Property getProperty() => collectionModifier switch
             {
-                PropertyType.Array => Property.FromType<IList<string>>("foo", isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Set => Property.FromType<ISet<string>>("foo", isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Dictionary => Property.FromType<IDictionary<string, string>>("foo", isPrimaryKey, isIndexed, isNullable),
-                _ => Property.FromType<string>("foo", isPrimaryKey, isIndexed, isNullable),
+                PropertyType.Array => Property.FromType<IList<string>>("foo", isPrimaryKey, indexType, isNullable),
+                PropertyType.Set => Property.FromType<ISet<string>>("foo", isPrimaryKey, indexType, isNullable),
+                PropertyType.Dictionary => Property.FromType<IDictionary<string, string>>("foo", isPrimaryKey, indexType, isNullable),
+                _ => Property.FromType<string>("foo", isPrimaryKey, indexType, isNullable),
             };
 
             if (isPrimaryKey && collectionModifier != default)
@@ -227,7 +246,7 @@ namespace Realms.Tests.Database
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be primary key"));
             }
-            else if (isIndexed && collectionModifier != default)
+            else if (indexType == IndexType.General && collectionModifier != default)
             {
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be indexed"));
@@ -237,7 +256,7 @@ namespace Realms.Tests.Database
                 var property = getProperty();
                 Assert.That(property.Name, Is.EqualTo("foo"));
                 Assert.That(property.IsPrimaryKey, Is.EqualTo(isPrimaryKey), $"Expect property.IsPrimaryKey to be {isPrimaryKey}");
-                Assert.That(property.IsIndexed, Is.EqualTo(isIndexed || isPrimaryKey), $"Expect property.IsIndexed to be {isIndexed} || {isPrimaryKey}");
+                Assert.That(property.IndexType, Is.EqualTo(expectedIndexType));
                 Assert.That(property.Type, Is.EqualTo(expectedType | collectionModifier));
             }
         }
@@ -246,15 +265,15 @@ namespace Realms.Tests.Database
         public void Property_FromTypeGeneric_Object(
             [ValueSource(nameof(CollectionModifiers))] PropertyType collectionModifier,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
-            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(NullableBoolValues))] bool? isNullable)
         {
             Property getProperty() => collectionModifier switch
             {
-                PropertyType.Array => Property.FromType<IList<Person>>("foo", isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Set => Property.FromType<ISet<Person>>("foo", isPrimaryKey, isIndexed, isNullable),
-                PropertyType.Dictionary => Property.FromType<IDictionary<string, Person>>("foo", isPrimaryKey, isIndexed, isNullable),
-                _ => Property.FromType<Person>("foo", isPrimaryKey, isIndexed, isNullable),
+                PropertyType.Array => Property.FromType<IList<Person>>("foo", isPrimaryKey, indexType, isNullable),
+                PropertyType.Set => Property.FromType<ISet<Person>>("foo", isPrimaryKey, indexType, isNullable),
+                PropertyType.Dictionary => Property.FromType<IDictionary<string, Person>>("foo", isPrimaryKey, indexType, isNullable),
+                _ => Property.FromType<Person>("foo", isPrimaryKey, indexType, isNullable),
             };
 
             if (isPrimaryKey)
@@ -262,10 +281,15 @@ namespace Realms.Tests.Database
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be primary key"));
             }
-            else if (isIndexed)
+            else if (indexType == IndexType.General)
             {
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be indexed"));
+            }
+            else if (indexType == IndexType.FullText)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("cannot have a FullText index"));
             }
             else if (isNullable == true && (collectionModifier == PropertyType.Array || collectionModifier == PropertyType.Set))
             {
@@ -283,7 +307,7 @@ namespace Realms.Tests.Database
                 var property = getProperty();
                 Assert.That(property.Name, Is.EqualTo("foo"));
                 Assert.That(property.IsPrimaryKey, Is.False);
-                Assert.That(property.IsIndexed, Is.False);
+                Assert.That(property.IndexType, Is.EqualTo(IndexType.None));
                 Assert.That(property.Type, Is.EqualTo(PropertyType.Object | nullableModifier | collectionModifier));
                 Assert.That(property.ObjectType, Is.EqualTo(nameof(Person)));
             }
@@ -295,10 +319,10 @@ namespace Realms.Tests.Database
         public void Property_Primitive_Tests(
             [ValueSource(nameof(PrimitiveTypes))] RealmValueType type,
             [ValueSource(nameof(BoolValues))] bool isPrimaryKey,
-            [ValueSource(nameof(BoolValues))] bool isIndexed,
+            [ValueSource(nameof(IndexTypes))] IndexType indexType,
             [ValueSource(nameof(BoolValues))] bool isNullable)
         {
-            Property getProperty() => Property.Primitive("foo", type, isPrimaryKey, isIndexed, isNullable);
+            Property getProperty() => Property.Primitive("foo", type, isPrimaryKey, indexType, isNullable);
 
             if (type == RealmValueType.Null || type == RealmValueType.Object)
             {
@@ -307,6 +331,7 @@ namespace Realms.Tests.Database
                 return;
             }
 
+            var expectedIndexType = isPrimaryKey ? IndexType.General : indexType;
             var expectedType = type.ToPropertyType(isNullable);
 
             if (isPrimaryKey && !Property.PrimaryKeyTypes.Contains(expectedType & ~PropertyType.Nullable))
@@ -314,10 +339,20 @@ namespace Realms.Tests.Database
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be primary key"));
             }
-            else if (isIndexed && !Property.IndexableTypes.Contains(expectedType & ~PropertyType.Nullable))
+            else if (isPrimaryKey && indexType == IndexType.FullText)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("PrimaryKey properties cannot have a FullText index"));
+            }
+            else if (indexType == IndexType.General && !Property.IndexableTypes.Contains(expectedType & ~PropertyType.Nullable))
             {
                 var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
                 Assert.That(ex.Message, Does.Contain("cannot be indexed"));
+            }
+            else if (indexType == IndexType.FullText && (expectedType & ~PropertyType.Nullable) != PropertyType.String)
+            {
+                var ex = Assert.Throws<ArgumentException>(() => getProperty())!;
+                Assert.That(ex.Message, Does.Contain("cannot have a FullText index"));
             }
             else
             {
@@ -326,7 +361,7 @@ namespace Realms.Tests.Database
                 Assert.That(property.ObjectType, Is.Null);
                 Assert.That(property.LinkOriginPropertyName, Is.Null);
                 Assert.That(property.IsPrimaryKey, Is.EqualTo(isPrimaryKey), $"Expect property.IsPrimaryKey to be {isPrimaryKey}");
-                Assert.That(property.IsIndexed, Is.EqualTo(isPrimaryKey || isIndexed), $"Expect property.IsIndexed to be {isIndexed} || {isPrimaryKey}");
+                Assert.That(property.IndexType, Is.EqualTo(expectedIndexType));
                 Assert.That(property.Type, Is.EqualTo(expectedType));
             }
         }
@@ -357,7 +392,7 @@ namespace Realms.Tests.Database
             var property = getProperty();
             Assert.That(property.Name, Is.EqualTo("foo"));
             Assert.That(property.IsPrimaryKey, Is.False);
-            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.IndexType, Is.EqualTo(IndexType.None));
             Assert.That(property.ObjectType, Is.Null);
             Assert.That(property.LinkOriginPropertyName, Is.Null);
             Assert.That(property.Type, Is.EqualTo(expectedType));
@@ -380,7 +415,7 @@ namespace Realms.Tests.Database
             var property = getProperty();
             Assert.That(property.Name, Is.EqualTo("foo"));
             Assert.That(property.IsPrimaryKey, Is.False);
-            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.IndexType, Is.EqualTo(IndexType.None));
             Assert.That(property.ObjectType, Is.EqualTo("Bar"));
             Assert.That(property.LinkOriginPropertyName, Is.Null);
             Assert.That(property.Type, Is.EqualTo(expectedType));
@@ -392,7 +427,7 @@ namespace Realms.Tests.Database
             var property = Property.Backlinks("foo", "Bar", "OriginProperty");
             Assert.That(property.Name, Is.EqualTo("foo"));
             Assert.That(property.IsPrimaryKey, Is.False);
-            Assert.That(property.IsIndexed, Is.False);
+            Assert.That(property.IndexType, Is.EqualTo(IndexType.None));
             Assert.That(property.ObjectType, Is.EqualTo("Bar"));
             Assert.That(property.LinkOriginPropertyName, Is.EqualTo("OriginProperty"));
             Assert.That(property.Type, Is.EqualTo(PropertyType.Array | PropertyType.LinkingObjects));
@@ -538,6 +573,25 @@ namespace Realms.Tests.Database
         {
             Assert.Throws<ArgumentNullException>(() => new ObjectSchema.Builder(null!));
             Assert.Throws<ArgumentException>(() => new ObjectSchema.Builder(typeof(string)));
+        }
+
+        [Test]
+        public void ObjectSchemaBuilder_FromType_Indexes()
+        {
+            var builder = new ObjectSchema.Builder(typeof(IndexesClass));
+            Assert.That(builder.Name, Is.EqualTo(nameof(IndexesClass)));
+            Assert.That(builder.Count, Is.EqualTo(8));
+
+            Assert.That(builder[nameof(IndexesClass.Id)].IndexType, Is.EqualTo(IndexType.General));
+            Assert.That(builder[nameof(IndexesClass.Id)].IsPrimaryKey, Is.True);
+
+            Assert.That(builder[nameof(IndexesClass.StringFts)].IndexType, Is.EqualTo(IndexType.FullText));
+            Assert.That(builder[nameof(IndexesClass.StringGeneral)].IndexType, Is.EqualTo(IndexType.General));
+            Assert.That(builder[nameof(IndexesClass.StringDefault)].IndexType, Is.EqualTo(IndexType.General));
+            Assert.That(builder[nameof(IndexesClass.StringNone)].IndexType, Is.EqualTo(IndexType.None));
+            Assert.That(builder[nameof(IndexesClass.IntGeneral)].IndexType, Is.EqualTo(IndexType.General));
+            Assert.That(builder[nameof(IndexesClass.IntDefault)].IndexType, Is.EqualTo(IndexType.General));
+            Assert.That(builder[nameof(IndexesClass.IntNone)].IndexType, Is.EqualTo(IndexType.None));
         }
 
         [Test]
@@ -795,7 +849,7 @@ namespace Realms.Tests.Database
             {
                 Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
                 Property.Primitive("PK", RealmValueType.Int, isPrimaryKey: true),
-                Property.Primitive("SomeOtherProp", RealmValueType.Int, isIndexed: true),
+                Property.Primitive("SomeOtherProp", RealmValueType.Int, indexType: IndexType.General),
             };
 
             var schema = builder.Build();
@@ -809,7 +863,7 @@ namespace Realms.Tests.Database
             var builder = new ObjectSchema.Builder("MyClass", ObjectSchema.ObjectType.RealmObject)
             {
                 Property.Primitive("Foo", RealmValueType.Date, isNullable: true),
-                Property.Primitive("SomeOtherProp", RealmValueType.Int, isIndexed: true),
+                Property.Primitive("SomeOtherProp", RealmValueType.Int, indexType: IndexType.General),
             };
 
             var schema = builder.Build();
@@ -1574,5 +1628,30 @@ namespace Realms.Tests.Database
     public partial class ExplicitClass : TestRealmObject
     {
         public int Foo { get; set; }
+    }
+
+    public partial class IndexesClass : TestRealmObject
+    {
+        [PrimaryKey]
+        public ObjectId Id { get; set;  }
+
+        [Indexed(IndexType.FullText)]
+        public string? StringFts { get; set; }
+
+        [Indexed(IndexType.General)]
+        public string? StringGeneral { get; set; }
+
+        [Indexed]
+        public string? StringDefault { get; set; }
+
+        public string? StringNone { get; set; }
+
+        [Indexed(IndexType.General)]
+        public int IntGeneral { get; set; }
+
+        [Indexed]
+        public int IntDefault { get; set; }
+
+        public int IntNone { get; set; }
     }
 }

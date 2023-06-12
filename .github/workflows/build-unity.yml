@@ -23,10 +23,10 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - name: Fetch Realm.Fody
+    - name: Fetch Realm.PlatformHelpers
       uses: actions/download-artifact@v3
       with:
-        name: Realm.Fody.${{ inputs.version }}
+        name: Realm.PlatformHelpers.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
@@ -42,11 +42,6 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.SourceGenerator
-      uses: actions/download-artifact@v3
-      with:
-        name: Realm.SourceGenerator.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack

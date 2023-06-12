@@ -196,9 +196,9 @@ internal interface {_accessorInterfaceName} : Realms.IRealmAccessor
                 {
                     var realmValueType = GetRealmValueType(property.TypeInfo);
                     var isPrimaryKey = property.IsPrimaryKey.ToCodeString();
-                    var isIndexed = property.IsIndexed.ToCodeString();
+                    var indexType = property.Index.ToCodeString();
                     var isNullable = property.IsRequired ? "false" : property.TypeInfo.IsNullable.ToCodeString();
-                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, isIndexed: {isIndexed}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
+                    schemaProperties.AppendLine(@$"Realms.Schema.Property.Primitive(""{property.GetMappedOrOriginalName()}"", {realmValueType}, isPrimaryKey: {isPrimaryKey}, indexType: {indexType}, isNullable: {isNullable}, managedName: ""{property.Name}""),");
 
                     // The rules for determining whether to always set the property value are:
                     // 1. If the property has [Required], always set it - this is only the case for string and byte[] properties.
@@ -432,6 +432,13 @@ public static explicit operator {_classInfo.Name}?(Realms.RealmValue val) => val
 /// <param name=""val"">The value to store in the <see cref=""Realms.RealmValue""/>.</param>
 /// <returns>A <see cref=""Realms.RealmValue""/> containing the supplied <paramref name=""val""/>.</returns>
 public static implicit operator Realms.RealmValue({_classInfo.Name}? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
+
+/// <summary>
+/// Implicitly constructs a <see cref=""Realms.QueryArgument""/> from <see cref=""{_classInfo.Name}""/>.
+/// </summary>
+/// <param name=""val"">The value to store in the <see cref=""Realms.QueryArgument""/>.</param>
+/// <returns>A <see cref=""Realms.QueryArgument""/> containing the supplied <paramref name=""val""/>.</returns>
+public static implicit operator Realms.QueryArgument({_classInfo.Name}? val) => (Realms.RealmValue)val;
 
 /// <inheritdoc />
 [EditorBrowsable(EditorBrowsableState.Never)]

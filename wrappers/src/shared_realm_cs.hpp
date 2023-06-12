@@ -62,6 +62,8 @@ struct Configuration
     bool invoke_initial_data_callback;
 
     bool invoke_migration_callback;
+
+    bool automatically_migrate_embedded;
 };
 
 struct SyncConfiguration
@@ -182,8 +184,6 @@ private:
     GCHandleHolder m_managed_state_handle;
     TcsRegistryWithVersion m_pending_refresh_callbacks;
 };
-
-void log_message(std::string message, util::Logger::Level level = util::Logger::Level::info);
 
 } // namespace bindings
 } // namespace realm

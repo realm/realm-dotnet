@@ -1,4 +1,94 @@
-## 11.0.0 (TBD)
+## vNext (TBD)
+
+### Enhancements
+* Deprecate the `Realm.SourceGenerator` and `Realm.Fody` packages. The source generation and weaver assemblies are now contained in the main `Realm` package. This should be a transparent change for users who only referenced the `Realm` package, but if you explicitly added a package reference to `Realm.SourceGenerator` or `Realm.Fody`, you should remove it. (PR [#3319](https://github.com/realm/realm-dotnet/pull/3319))
+* Automatically handle `RealmObject`->`EmbeddedObject` migrations by duplicating objects referenced by multiple parents as well as removing "orphaned" objects. (Issue [#2408](https://github.com/realm/realm-dotnet/issues/2408))
+* New notifiers can now be registered in write transactions until changes have actually been made in the write transaction. This makes it so that new notifications can be registered inside change notifications triggered by beginning a write transaction (unless a previous callback performed writes). (Core 13.10.1)
+* Partition-Based to Flexible Sync Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync is officially supported with this release. Any clients using an older version of Realm (including the original support released in Core 11.0.0) will receive a "switch to flexible sync" error message when trying to sync with the app. (Core 13.11.0)
+* Support sort/distinct based on values from a dictionary e.g. `.Filter("TRUEPREDICATE SORT(meta['age'])")`. (Core 13.14.0)
+* Added initial support for geospatial queries on points. (Issue [#3299](https://github.com/realm/realm-dotnet/issues/3299))
+  * In this version, only queries of the form "is this point contained in this shape" (equivalent to [$geoWithin](https://www.mongodb.com/docs/manual/reference/operator/query/geoWithin/) in MongoDB) are supported.
+  * There is no index support right now.
+  * There is no dedicated type for persisted geospatial points. Instead, points should be stored as GeoJson-shaped embedded object and queries will use duck-typing to check if the shape contains the object. For convenience, here's an example embedded object that you can use in lieu of a Realm-provided dedicated type:
+    ```csharp
+    public partial class Location : IEmbeddedObject
+    {
+      // The coordinates and type properties are mandatory but may be private.
+      // You can add more fields if necessary - those will be ignored when doing
+      // geospatial queries.
+      [MapTo("coordinates")]
+      private IList<double> Coordinates { get; } = null!;
+
+      [MapTo("type")]
+      private string Type { get; set; } = "Point";
+
+      public double Latitude => Coordinates.Count > 1 ? Coordinates[1] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+
+      public double Longitude => Coordinates.Count > 1 ? Coordinates[0] : throw new Exception($"Invalid coordinate array. Expected at least 2 elements, but got: {Coordinates.Count}");
+
+      public Location(double latitude, double longitude)
+      {
+        // According to the GeoJson spec, longitude must come first in the
+        // coordinates array.
+        Coordinates.Add(longitude);
+        Coordinates.Add(latitude);
+      }
+    }
+
+    // Example usage
+    public partial class Company : IRealmObject
+    {
+      public Location Location { get; set; }
+    }
+    ```
+  * Three new shape types and one helper point type are added to allow you to check for containment:
+    * `GeoPoint`: a building block for the other shape types - it cannot be used as a property type on your models and is only intended to construct the other shape types. It can be constructed implicitly from a value tuple of latitude and longitude:
+      ```csharp
+      var point = new GeoPoint(latitude: 12.345, longitude: 67.890);
+      var point = (12.345, 67.890);
+      ```
+    * `GeoCircle`: a shape representing a circle on a sphere constructed from a center and radius:
+      ```csharp
+      var circle = new GeoCircle(center: (12.34, 56.78), radius: 10); // radius in radians
+      var circle = new GeoCircle((12.34, 56.78), Distance.FromKilometers(10));
+      ```
+    * `GeoBox`: a shape representing a box on a sphere constructed from its bottom left and top right corners:
+      ```csharp
+      var box = new GeoBox((12.34, 56.78), (15.34, 59.78));
+      ```
+    * `GeoPolygon`: an arbitrary polygon constructed from an outer ring and optional holes:
+      ```csharp
+      var polygon = new GeoPolygon((10, 10), (20, 20), (0, 20), (10, 10)); // a triangle with no holes
+
+      var outerRing = new GeoPoint[] { (10, 10), (20, 20), (0, 20), (10, 10) };
+      var hole1 = new GeoPoint[] { (1, 1), (2, 2), (0, 2), (1, 1) };
+      var hole2 = new GeoPoint[] { (5, 5), (6, 6), (4, 6), (5, 5) };
+
+      var polygon = new GeoPolygon(outerRing, hole1, hole2); // A triangle with two smaller triangular holes
+      ```
+  * Querying can be done either via LINQ or RQL:
+    ```csharp
+    var matches = realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, circle));
+    var matches = realm.All<Company>().Filter("Location GEOWITHIN $0", circle);
+    ```
+
+### Fixed
+* Fixed a fatal error (reported to the sync error handler) during client reset (or automatic PBS to FLX migration) if the reset has been triggered during an async open and the schema being applied has added new classes. (Core 13.11.0)
+* Full text search would sometimes find words where the word only matches the beginning of the search token. (Core 13.11.0)
+* We could crash when removing backlinks in cases where forward links did not have a corresponding backlink due to corruption. We now silently ignore this inconsistency in release builds, allowing the app to continue. (Core 13.12.0)
+* `IDictionary<string, IRealmObject?>` would expose unresolved links rather than mapping them to null. In addition to allowing invalid objects to be read from Dictionaries, this resulted in queries on Dictionaries sometimes having incorrect results. (Core 13.12.0)
+* Access token refresh for websockets was not updating the location metadata. (Core 13.13.0)
+* Using both synchronous and asynchronous transactions on the same thread or scheduler could hit the assertion failure "!realm.is_in_transaction()" if one of the callbacks for an asynchronous transaction happened to be scheduled during a synchronous transaction. (Core 13.13.0)
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. (Core 13.14.0)
+* Setting a property containing an embedded object to the same embedded object used to throw an exception with the text `Can't link to an embedded object that is already managed`. Now it is a no-op instead. (Issue [#3262](https://github.com/realm/realm-dotnet/issues/3262))
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.13.0.
+
+## 11.0.0 (2023-05-08)
 
 ### Breaking changes
 * The `error` argument in `NotificationCallbackDelegate` and `DictionaryNotificationCallbackDelegate` used in `*collection*.SubscribeForNotifications` has been removed. It has been unused for a long time, since internal changes to the database made it impossible for errors to occur during notification callbacks. (Issue [#3014](https://github.com/realm/realm-dotnet/issues/3014))
@@ -45,32 +135,59 @@
 * `Realm.Subscriptions` will now throw an error if the Realm is not opened with a `FlexibleSyncConfiguration` - before it used to return `null`. (PR [#3245](https://github.com/realm/realm-dotnet/pull/3245))
 * Removed `PermissionDeniedException` as it was no longer possible to get it. (Issue [#3272](https://github.com/realm/realm-dotnet/issues/3272))
 * Removed some obsolete error codes from the `ErrorCode` enum. All codes removed were obsolete and no longer emitted by the server. (PR [3273](https://github.com/realm/realm-dotnet/issues/3273))
+* Removed `IncompatibleSyncedFileException` as it was no longer possible to get it. (Issue [#3167](https://github.com/realm/realm-dotnet/issues/3167))
+* The `Realms.Schema.Property` API now use `IndexType` rather than a boolean indicating whether a property is indexed. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+* The extension methods in `StringExtensions` (`Like`, `Contains`) are now deprecated. Use the identical ones in `QueryMethods` instead - e.g. `realm.All<Foo>().Where(f => f.Name.Like("Mic*l"))` would need to be rewritten like `realm.All<Foo>().Where(f => QueryMethods.Like(f.Name, "Mic*l"))`.
 
 ### Enhancements
 * Added nullability annotations to the Realm assembly. Now methods returning reference types are correctly annotated to indicate whether the returned value may or may not be null. (Issue [#3248](https://github.com/realm/realm-dotnet/issues/3248))
-* Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
+* Replacing a value at an index (i.e. `myList[1] = someObj`) will now correctly raise `CollectionChange` notifications with the `Replace` action. (Issue [#2854](https://github.com/realm/realm-dotnet/issues/2854))
+* It is now possible to change the log level at any point of the application's lifetime. (PR [#3277](https://github.com/realm/realm-dotnet/pull/3277))
+* Some log messages have been added to the Core database. Events, such as opening a Realm or committing a transaction will now be logged. (Issue [#2910](https://github.com/realm/realm-dotnet/issues/2910))
+* Added support for Full-Text search (simple term) queries. (Issue [#3281](https://github.com/realm/realm-dotnet/issues/3281))
+  * To enable FTS queries on string properties, add the `[Indexed(IndexType.FullText)]` attribute.
+  * To run LINQ queries, use `QueryMethods.FullTextSearch`: `realm.All<Book>().Where(b => QueryMethods.FullTextSearch(b.Description, "fantasy novel"))`.
+  * To run `Filter` queries, use the `TEXT` operator: `realm.All<Book>().Filter("Description TEXT $0", "fantasy novel")`.
+* Performance improvement for the following queries (Core 13.8.0):
+  * Significant (~75%) improvement when counting (`IQueryable.Count()`) the number of exact matches (with no other query conditions) on a string/int/UUID/ObjectID property that has an index. This improvement will be especially noticiable if there are a large number of results returned (duplicate values).
+  * Significant (~99%) improvement when querying for an exact match on a `DateTimeOffset` property that has an index.
+  * Significant (~99%) improvement when querying for a case insensitive match on a `RealmValue` property that has an index.
+  * Moderate (~25%) improvement when querying for an exact match on a Boolean property that has an index.
+  * Small (~5%) improvement when querying for a case insensitive match on a `RealmValue` property that does not have an index.
+  * Moderate (~30%) improvement of equality queries on a non-indexed `RealmValue`.
+* Enable multiple processes to operate on an encrypted Realm simultaneously. (Core 13.9.0)
+* Improve performance of rolling back write transactions after making changes. If no notifications events are subscribed to, this is now constant time rather than taking time proportional to the number of changes to be rolled back. Rollbacks when there are notifications subscriptions are 10-20% faster. (Core 13.9.4)
+* PBS to FLX Migration for migrating a client app that uses partition based sync to use flexible sync under the hood if the server has been migrated to flexible sync. (Core 13.10.0)
 
 ### Fixed
-
-### Compatibility
-* Realm Studio: 12.0.0 or later.
-
-### Internal
-* Using Core x.y.z.
-
-## vNext (TBD)
-
-### Enhancements
-* None
-
-### Fixed
-* None
+* Fixed an issue that could cause a `The specified table name is already in use` exception when creating a new Realm file on multiple threads. (Issue [#3302](https://github.com/realm/realm-dotnet/issues/3302))
+* Fixed a bug that may have resulted in arrays being in different orders on different devices. Some cases of “Invalid prior_size” may be fixed too. (Core 13.7.1)
+* Fixed a crash when querying a `RealmValue` property with a string operator (contains/like/beginswith/endswith) or with case insensitivity. (Core 13.8.0)
+* Querying for equality of a string on an indexed `RealmValue` property was returning case insensitive matches. For example querying for `myIndexedValue == "Foo"` would incorrectly match on values of "foo" or "FOO" etc. (Core 13.8.0)
+* Adding an index to a `RealmValue` property on a non-empty table would crash with an assertion. (Core 13.8.0)
+* `SyncSession.Stop()` could hold a reference to the database open after shutting down the sync session, preventing users from being able to delete the realm. (Core 13.8.0)
+* Fix a stack overflow crash when using the query parser with long chains of AND/OR conditions. (Core 13.9.0)
+* `ClientResetException.InitiateClientReset()` no longer ignores the result of trying to remove a realm. This could have resulted in a client reset action being reported as successful when it actually failed on windows if the `Realm` was still open. (Core 13.9.0)
+* Fix a data race where if one thread committed a write transaction which increased the number of live versions above the previous highest seen during the current session at the same time as another thread began a read, the reading thread could read from a no-longer-valid memory mapping (Core 13.9.0).
+* Performing a query like `{1, 2, 3, ...} IN list` where the array is longer than 8 and all elements are smaller than some values in list, the program would crash (Core 13.9.4)
+* Performing a large number of queries without ever performing a write resulted in steadily increasing memory usage, some of which was never fully freed due to an unbounded cache (Core 13.9.4)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.10.0.
+
+## 10.21.1 (2023-04-21)
+
+### Fixed
+* Fixed a crash that occurs when the server sends a PermissionDenied error. (Issue [#3292](https://github.com/realm/realm-dotnet/issues/3292))
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core 13.6.0.
 
 ## 10.21.0 (2023-03-24)
 
@@ -79,10 +196,12 @@
 * Added `AppConfiguration.SyncTimeoutOptions` which has a handful of properties that control sync timeouts, such as the connection timeout, ping-pong intervals, and others. (Issue [#3223](https://github.com/realm/realm-dotnet/issues/3223))
 * Updated some of the exceptions being thrown by the SDK to align them better with system exceptions and include more information - for example, we'll now throw `ArgumentException` when invalid arguments are provided rather than `RealmException`. (Issue [#2796](https://github.com/realm/realm-dotnet/issues/2796))
 * Added a new exception - `CompensatingWriteException` that contains information about the writes that have been reverted by the server due to permissions. It will be passed to the supplied `FlexibleSyncConfiguration.OnSessionError` callback similarly to other session errors. (Issue [#3258](https://github.com/realm/realm-dotnet/issues/3258))
+* Added support for Linux Arm/Arm64 in .NET applications. (Issue [#721](https://github.com/realm/realm-dotnet/issues/721))
 
 ### Fixed
 * Changed the way the Realm SDK registers BsonSerializers. Previously, it would indiscriminately register them via `BsonSerializer.RegisterSerializer`, which would conflict if your app was using the `MongoDB.Bson` package and defined its own serializers for `DateTimeOffset`, `decimal`, or `Guid`. Now, registration happens via `BsonSerializer.RegisterSerializationProvider`, which means that the default serializers used by the SDK can be overriden by calling `BsonSerializer.RegisterSerializer` at any point before a serializer is instantiated or by calling `BsonSerializer.RegisterSerializationProvider` after creating an App/opening a Realm. (Issue [#3225](https://github.com/realm/realm-dotnet/issues/3225))
 * Creating subscriptions with queries having unicode parameters causes a server error. (Core 13.6.0)
+* Fixed an issue with Unity 2022 and later that would result in builds failing with `Specified method is not supported` error. (Issue [#3306](https://github.com/realm/realm-dotnet/issues/3306))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

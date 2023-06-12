@@ -1,17 +1,8 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "uploadPackagesToSleet", "cleanupWorkspace", "dotnetPublish", "actionDownloadArtifact", "fetchPackageArtifacts")
 #@ load("test.lib.yml", "dotnetBuildTests")
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "ignoreSkippedJobsCondition", "buildUnity")
 
-#@ def fetchPackageArtifacts():
-#@ for pkg in [ "Realm", "Realm.Fody", "Realm.SourceGenerator" ]:
-  - name: #@ "Fetch " + pkg
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ pkg + ".${{ needs.build-packages.outputs.package_version }}"
-      path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
 ---
 name: main
 "on":
@@ -49,12 +40,12 @@ jobs:
     if: #@ ignoreSkippedJobsCondition + " && (github.event_name == 'push' || github.event.inputs.publish-prerelease)"
     steps:
     - #@ template.replace(checkoutCode(False, False))
-    - #@ template.replace(fetchPackageArtifacts())
+    - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
     - #@ template.replace(uploadPackagesToSleet("needs.build-packages.outputs.package_version", True))
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(runTests(".NET Framework"))
   _: #@ template.replace(runTests("UWP Managed", additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
-  _: #@ template.replace(runNetCoreTests("[\"netcoreapp3.1\", \"net6.0\"]"))
+  _: #@ template.replace(runNetCoreTests("[\"net6.0\", \"net7.0\"]"))
   _: #@ template.replace(runTests("macOS"))
   _: #@ template.replace(runTests("iOS"))
   _: #@ template.replace(runTests("tvOS", runSyncTests = False))
@@ -68,8 +59,7 @@ jobs:
     if: #@ ignoreSkippedJobsCondition
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupDotnet()
+      - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
       - #@ template.replace(dotnetPublish("Tests/Tests.XUnit", "net6.0", "win-x64", { "RestoreConfigFile": "Tests/Test.NuGet.Config", "UseRealmNupkgsWithVersion": "${{ needs.build-packages.outputs.package_version }}" }))
       - name: Run Tests
         run: dotnet test ${{ steps.dotnet-publish.outputs.executable-path }}/Tests.XUnit.dll --logger GitHubActions
@@ -86,7 +76,7 @@ jobs:
     steps:
       - #@ template.replace(cleanupWorkspace())
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version"))
       - #@ template.replace(dotnetBuildTests("Tests/Benchmarks/PerformanceTests", "net6.0", "linux-x64", "needs.build-packages.outputs.package_version"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/PerformanceTests -f \"*\" --join"

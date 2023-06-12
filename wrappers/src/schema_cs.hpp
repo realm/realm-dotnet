@@ -34,7 +34,7 @@ struct SchemaProperty
     const char* object_type;
     const char* link_origin_property_name;
     bool is_primary;
-    bool is_indexed;
+    IndexType index;
     
     static SchemaProperty for_marshalling(const Property&);
 };
@@ -58,6 +58,17 @@ struct SchemaForMarshaling
     
 };
 
+REALM_FORCEINLINE IndexType get_index_type(const Property& property)
+{
+    if (property.is_fulltext_indexed)
+        return IndexType::Fulltext;
+
+    if (property.is_indexed)
+        return IndexType::General;
+
+    return IndexType::None;
+}
+
 REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property& property)
 {
     return {
@@ -66,7 +77,7 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
         property.object_type.c_str(),
         property.link_origin_property_name.c_str(),
         property.is_primary,
-        property.is_indexed
+        get_index_type(property),
     };
 }
 

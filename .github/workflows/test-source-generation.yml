@@ -16,9 +16,8 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
-    - uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
-      with:
-        dotnet-version: 6.0.x
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
     - name: Output executable path

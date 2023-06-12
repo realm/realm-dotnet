@@ -34,6 +34,8 @@ using static RealmWeaver.Analytics;
 using CpuArchitecture = RealmWeaver.Metric.CpuArchitecture;
 using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
+using BindingFlags = System.Reflection.BindingFlags;
+
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
@@ -45,6 +47,8 @@ namespace RealmWeaver
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
         private const string UnityPackageName = "io.realm.unity";
+
+        private static readonly int _UnityMajorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
 
         private static bool _analyticsEnabled;
 
@@ -291,14 +295,16 @@ namespace RealmWeaver
                 return;
             }
 
+            var files = GetFiles(report);
+
             // This is a bit hacky - we need actual references, not directories, containing references, so we pass folder/dummy.dll
             // knowing that dummy.dll will be stripped.
             var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(ApiCompatibilityLevel.NET_Standard_2_0).Select(d => Path.Combine(d, "dummy.dll"));
             var referencePaths = systemAssemblies
-                .Concat(report.files.Select(f => f.path))
+                .Concat(files.Select(f => f.path))
                 .ToArray();
 
-            var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
+            var assembliesToWeave = files.Where(f => f.role == "ManagedLibrary");
             var config = GetAnalyticsConfig(report.summary.platform);
 
             foreach (var file in assembliesToWeave)
@@ -308,7 +314,7 @@ namespace RealmWeaver
 
             if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
             {
-                var realmAssemblyPath = report.files
+                var realmAssemblyPath = files
                     .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
                     .path;
 
@@ -436,6 +442,36 @@ namespace RealmWeaver
             if (target == null)
             {
                 return Environment.OSVersion.Version.ToString();
+            }
+
+            return target switch
+            {
+                BuildTarget.Android => ((int)PlayerSettings.Android.targetSdkVersion).ToString(),
+                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
+                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
+                _ => Metric.Unknown(),
+            };
+        }
+
+        private static BuildFile[] GetFiles(BuildReport report)
+        {
+            try
+            {
+                if (_UnityMajorVersion < 2022)
+                {
+                    var getFilesPI = typeof(BuildReport).GetProperty("files", BindingFlags.Public | BindingFlags.Instance);
+                    return (BuildFile[])getFilesPI.GetValue(report);
+                }
+
+                // Starting with 2022, BuildReport.files is replaced with BuildReport.GetFiles. This is a
+                // bit hacky, but allows us to target both versions with the same assembly.
+                var getFilesMI = typeof(BuildReport).GetMethod("GetFiles", BindingFlags.Public | BindingFlags.Instance);
+                return (BuildFile[])getFilesMI.Invoke(report, null);
+            }
+            catch (Exception e)
+            {
+                UnityLogger.Instance.Error($"Failed to obtain list of files from report. Please report this error on http://github.com/realm/realm-dotnet/issues. Unity version: {Application.unityVersion}, error message: {e.Message}.");
+                throw;
             }
 
             return target switch

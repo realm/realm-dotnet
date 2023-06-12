@@ -3,6 +3,7 @@
     <_RealmNugetRuntimesPath Condition="'$(_RealmNugetRuntimesPath)' == ''">$(MSBuildThisFileDirectory)..\..\runtimes\</_RealmNugetRuntimesPath>
   </PropertyGroup>
   <ItemGroup>
+    <WeaverFiles Include="$(MsBuildThisFileDirectory)..\..\weaver\Realm.Fody.dll" />
     <AndroidNativeLibrary Include="$(_RealmNugetRuntimesPath)android-arm\native\librealm-wrappers.so">
       <Abi>armeabi-v7a</Abi>
     </AndroidNativeLibrary>

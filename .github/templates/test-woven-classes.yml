@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "actionSetupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "wovenClassesBuildTests")
+#@ load("common.lib.yml", "checkoutCode", "fetchPackageArtifacts")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "wovenClassesBuildTests")
 
 ---
 name: test-woven-classes
@@ -12,11 +12,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - #@ template.replace(checkoutCode())
-      - uses: #@ actionSetupDotnet
-        with:
-          dotnet-version: '6.0.x'
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(wovenClassesBuildTests("Tests/Realm.Tests", "net6.0", "win-x64"))
+      - #@ template.replace(wovenClassesBuildTests("Tests/Realm.Tests", "net7.0", "win-x64"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.WovenClasses.xml --labels=After" + baasTestArgs("weaved-classes")
       - #@ publishTestsResults("TestResults.WovenClasses.xml", "Woven classes")

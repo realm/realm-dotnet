@@ -39,6 +39,14 @@ namespace Realms.Helpers
             }
         }
 
+        public static void EnsureRange(double value, double min, double max, string paramName)
+        {
+            if (value < min || value > max)
+            {
+                throw new ArgumentException($"{paramName} must be a value in the range of [{min}, {max}]", paramName);
+            }
+        }
+
         public static void Ensure<T>([DoesNotReturnIf(false)] bool condition, string message)
             where T : Exception
         {

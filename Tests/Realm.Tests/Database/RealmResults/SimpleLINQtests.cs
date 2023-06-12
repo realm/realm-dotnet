@@ -690,12 +690,24 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri")).ToArray().Length, Is.EqualTo(2));
 
             // case sensitive
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, "atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, "atri", StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
 
             // ignore case
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, "atri", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, "atri", StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            // case sensitive obsolete extensions
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+
+            // ignore case obsolete extensions
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Test]
@@ -710,12 +722,24 @@ namespace Realms.Tests.Database
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString)).ToArray().Length, Is.EqualTo(2));
 
             // case sensitive
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, searchString, StringComparison.Ordinal)).Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, searchString, StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
+
+            // ignore case
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, searchString, StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, searchString, StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            // case sensitive obsolete extensions
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.Ordinal)).Count(), Is.EqualTo(2));
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.Ordinal)).ToArray().Length, Is.EqualTo(2));
 
-            // ignore case
+            // ignore case obsolete extensions
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.OrdinalIgnoreCase)).Count(), Is.EqualTo(3));
             Assert.That(_realm.All<Person>().Where(p => p.FirstName!.Contains(searchString, StringComparison.OrdinalIgnoreCase)).ToArray().Length, Is.EqualTo(3));
+
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Test]
@@ -755,7 +779,14 @@ namespace Realms.Tests.Database
 
             Assert.That(() =>
             {
+                _realm.All<Person>().Where(p => QueryMethods.Contains(p.FirstName, "atri", StringComparison.CurrentCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+#pragma warning disable CS0618 // Type or member is obsolete
                 _realm.All<Person>().Where(p => p.FirstName!.Contains("atri", StringComparison.CurrentCulture)).Count();
+#pragma warning restore CS0618 // Type or member is obsolete
             }, Throws.TypeOf<NotSupportedException>());
         }
 
@@ -764,8 +795,15 @@ namespace Realms.Tests.Database
         {
             _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject { Id = 1, StringValue = str }));
 
-            var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue!.Like(pattern, caseSensitive));
-            var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue!.Like(pattern, caseSensitive));
+            var regularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => QueryMethods.Like(o.StringValue, pattern, caseSensitive));
+            var negatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !QueryMethods.Like(o.StringValue, pattern, caseSensitive));
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            var obsoleteRegularQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => o.StringValue!.Like(pattern, caseSensitive));
+            var obsoleteNegatedQuery = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => !o.StringValue!.Like(pattern, caseSensitive));
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (expected)
             {
@@ -773,6 +811,11 @@ namespace Realms.Tests.Database
                 Assert.That(regularQuery.Single().Id, Is.EqualTo(1));
 
                 Assert.That(negatedQuery.Count(), Is.EqualTo(0));
+
+                Assert.That(obsoleteRegularQuery.Count(), Is.EqualTo(1));
+                Assert.That(obsoleteRegularQuery.Single().Id, Is.EqualTo(1));
+
+                Assert.That(obsoleteNegatedQuery.Count(), Is.EqualTo(0));
             }
             else
             {
@@ -780,6 +823,11 @@ namespace Realms.Tests.Database
 
                 Assert.That(negatedQuery.Count(), Is.EqualTo(1));
                 Assert.That(negatedQuery.Single().Id, Is.EqualTo(1));
+
+                Assert.That(obsoleteRegularQuery.Count(), Is.EqualTo(0));
+
+                Assert.That(obsoleteNegatedQuery.Count(), Is.EqualTo(1));
+                Assert.That(obsoleteNegatedQuery.Single().Id, Is.EqualTo(1));
             }
         }
 
@@ -1294,6 +1342,15 @@ namespace Realms.Tests.Database
         {
             var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
             Assert.That(() => query.IndexOf(123), Throws.InstanceOf<ArgumentException>());
+        }
+
+        [Test]
+        public void Queryable_ToString_SerializesTheQuery()
+        {
+            var query = _realm.All<IntPrimaryKeyWithValueObject>().Where(o => QueryMethods.Contains(o.StringValue, "foo", StringComparison.OrdinalIgnoreCase));
+            var description = query.ToString();
+
+            Assert.That(description, Does.Contain("StringValue CONTAINS[c] \"foo\""));
         }
 
         private IQueryable<RemappedPropertiesObject> MakeThreeMappedObjects()

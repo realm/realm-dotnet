@@ -1350,17 +1350,27 @@ namespace Realms
         internal readonly struct HandlesToCleanup
         {
             private readonly GCHandle _handle;
+
+            // This is only needed for GeoPolygon. We could make it into an array, but
+            // that would mean we'd be allocating arrays even for a single handle argument
+            // and this happens on a hot path (string/byte[] property access). While this
+            // is quite ugly, it is cheaper and keeps all allocations on the stack, reducing
+            // GC pressure.
+            private readonly GCHandle? _handle2;
             private readonly byte[]? _buffer;
 
-            public HandlesToCleanup(GCHandle handle, byte[]? buffer = null)
+            public HandlesToCleanup(GCHandle handle, byte[]? buffer = null, GCHandle? handle2 = null)
             {
                 _handle = handle;
                 _buffer = buffer;
+                _handle2 = handle2;
             }
 
             public void Dispose()
             {
                 _handle.Free();
+                _handle2?.Free();
+
                 if (_buffer != null)
                 {
                     ArrayPool<byte>.Shared.Return(_buffer);

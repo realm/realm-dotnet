@@ -18,12 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using Realms;
 
 namespace RealmWeaver
 {
@@ -519,10 +520,27 @@ namespace RealmWeaver
             }
 
             var backingField = prop.GetBackingField();
-            var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-            if (isIndexed && !prop.IsIndexable(_references))
+            var indexedAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "IndexedAttribute");
+            if (indexedAttribute != null)
             {
-                return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
+                if (!prop.IsIndexable(_references))
+                {
+                    return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool, DateTimeOffset, ObjectId, and Guid not on {prop.PropertyType.FullName}.");
+                }
+
+                if (indexedAttribute.ConstructorArguments.Count > 0)
+                {
+                    var mode = (IndexType)(int)indexedAttribute.ConstructorArguments[0].Value;
+                    if (mode == IndexType.None)
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
+                    }
+
+                    if (mode == IndexType.FullText && prop.PropertyType.FullName != StringTypeName)
+                    {
+                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
+                    }
+                }
             }
 
             var isPrimaryKey = prop.IsPrimaryKey(_references);
@@ -707,6 +725,8 @@ namespace RealmWeaver
             prop.CustomAttributes.Add(wovenPropertyAttribute);
 
             var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
+
+            var isIndexed = indexedAttribute != null;
             var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
             _logger.Debug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
             return WeavePropertyResult.Success(prop, backingField, isPrimaryKey, isIndexed);

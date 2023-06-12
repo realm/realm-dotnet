@@ -16,6 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+
+// #include json.hpp needs to be before #include realm.hpp due to https://github.com/nlohmann/json/issues/2129
+#include <external/json/json.hpp>
+
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
@@ -25,8 +29,6 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include "app_cs.hpp"
-
-#include <external/json/json.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -66,12 +68,8 @@ inline AuthProvider to_auth_provider(const std::string& provider) {
         return AuthProvider::FUNCTION;
     }
 
-    if (provider == IdentityProviderUserAPIKey) {
-        return AuthProvider::USER_API_KEY;
-    }
-
-    if (provider == IdentityProviderServerAPIKey) {
-        return AuthProvider::SERVER_API_KEY;
+    if (provider == IdentityProviderAPIKey) {
+        return AuthProvider::API_KEY;
     }
 
     return (AuthProvider)999;
