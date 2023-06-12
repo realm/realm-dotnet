@@ -26,8 +26,8 @@ jobs:
       - name: Update Analytics.cs
         uses: jacobtomlinson/gha-find-replace@0dfd0777cc234ef6947ec1f20873c632114c4167 #! 0.1.4
         with:
-          find: '_coreVersion = "\w*"'
-          replace: '_coreVersion = "${{ steps.get-core-version.outputs.core-version }}"'
+          find: 'CoreVersion = "\w*"'
+          replace: 'CoreVersion = "${{ steps.get-core-version.outputs.core-version }}"'
           include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog

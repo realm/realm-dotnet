@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -38,10 +39,17 @@ namespace Realms.Tests.Sync
         [Test]
         public void DeviceInfo_OutputsMeaningfulInfo()
         {
+            void AssertBundleId(params string[] expectedValues)
+            {
+                var values = expectedValues.Concat(new[] { "ReSharperTestRunner" }).Select(Platform.Sha256).ToArray();
+                Assert.That(values, Does.Contain(Platform.BundleId));
+            }
+
             if (TestHelpers.IsUnity)
             {
                 Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
                 Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
+                Assert.That(Platform.BundleId, Is.EqualTo(Platform.Sha256("Tests.Unity")));
                 return;
             }
 
@@ -54,6 +62,7 @@ namespace Realms.Tests.Sync
                 case "Linux":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    AssertBundleId("Realm.Tests");
                     break;
                 case "macOS":
                     // We don't detect the device on .NET Core apps, only Xamarin or net6.0-maccatalyst.
@@ -61,21 +70,25 @@ namespace Realms.Tests.Sync
                     {
                         Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
                         Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                        AssertBundleId("Realm.Tests");
                     }
                     else
                     {
                         Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple"), "Name");
                         Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                        AssertBundleId("Tests.XamarinMac");
                     }
 
                     break;
                 case "iOS":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPhone"), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.iOS", "Tests.Maui");
                     break;
                 case "Android":
                     Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                    AssertBundleId("Tests.Android", "Tests.Maui");
                     break;
                 case "UWP":
                     if (TestHelpers.IsUWP)
@@ -93,14 +106,17 @@ namespace Realms.Tests.Sync
                         Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
                     }
 
+                    AssertBundleId("Tests.UWP");
                     break;
                 case "tvOS":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple TV"), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Does.Contain("AppleTV").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.XamarinTVOS");
                     break;
                 case "Mac Catalyst":
                     Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPad"), "Name");
                     Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.Maui");
                     break;
                 default:
                     Assert.Fail($"Unknown OS: {os}");

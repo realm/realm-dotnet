@@ -66,7 +66,7 @@ namespace RealmWeaver
     internal class Analytics
     {
         // The value of this field is modified by CI in the "prepare-release" action, so do not change its name.
-        private const string _coreVersion = "13.1.2";
+        private const string CoreVersion = "13.1.2";
 
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
@@ -80,7 +80,7 @@ namespace RealmWeaver
 
         private readonly Config _config;
 
-        private Task _analyzeUserAssemblyTask;
+        private readonly Task _analyzeUserAssemblyTask;
 
         public Analytics(Config config, ImportedReferences references, ILogger logger, ModuleDefinition module)
         {
@@ -100,12 +100,12 @@ namespace RealmWeaver
                 ["Class"] = member =>
                     member is PropertyDefinition property && property.PropertyType.IsAnyRealmObject(_references) ?
                     new(true, Feature.RealmObjectReference) : default,
-                [Feature.RealmValue] = member => new(true, Feature.RealmValue),
+                [Feature.RealmValue] = _ => new(true, Feature.RealmValue),
                 ["IList`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveList, Feature.ReferenceList),
                 ["IDictionary`2"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveDictionary, Feature.ReferenceDictionary, 1),
                 ["ISet`1"] = member => AnalyzeCollectionProperty(member, Feature.PrimitiveSet, Feature.ReferenceSet),
-                ["RealmInteger`1"] = member => new(true, Feature.RealmInteger),
-                [Feature.BacklinkAttribute] = member => new(true, Feature.BacklinkAttribute)
+                ["RealmInteger`1"] = _ => new(true, Feature.RealmInteger),
+                [Feature.BacklinkAttribute] = _ => new(true, Feature.BacklinkAttribute)
             };
 
             _apiAnalysisSetters = new()
@@ -125,9 +125,9 @@ namespace RealmWeaver
                     methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
                     instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
                     new(true, Feature.Add) : default,
-                [Feature.ShouldCompactOnLaunch] = instruction => new(true, Feature.ShouldCompactOnLaunch),
-                [Feature.MigrationCallback] = instruction => new(true, Feature.MigrationCallback),
-                [Feature.RealmChanged] = instruction => new(true, Feature.RealmChanged),
+                [Feature.ShouldCompactOnLaunch] = _ => new(true, Feature.ShouldCompactOnLaunch),
+                [Feature.MigrationCallback] = _ => new(true, Feature.MigrationCallback),
+                [Feature.RealmChanged] = _ => new(true, Feature.RealmChanged),
                 ["SubscribeForNotifications"] = instruction =>
                 {
                     if (instruction.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction.Operand))
@@ -176,13 +176,13 @@ namespace RealmWeaver
                     var shouldDelete = ContainsAllRelatedFeatures(key, Feature.ObjectNotification, Feature.ConnectionNotification);
                     return new(shouldDelete, key);
                 },
-                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
-                [Feature.RecoverUnsyncedChangesHandler] = instruction => new(true, Feature.RecoverUnsyncedChangesHandler),
-                [Feature.DiscardUnsyncedChangesHandler] = instruction => new(true, Feature.DiscardUnsyncedChangesHandler),
-                [Feature.ManualRecoveryHandler] = instruction => new(true, Feature.ManualRecoveryHandler),
-                [Feature.GetProgressObservable] = instruction => new(true, Feature.GetProgressObservable),
-                [Feature.PartitionSyncConfiguration] = instruction => new(true, Feature.PartitionSyncConfiguration),
-                [Feature.FlexibleSyncConfiguration] = instruction => new(true, Feature.FlexibleSyncConfiguration),
+                [Feature.RecoverOrDiscardUnsyncedChangesHandler] = _ => new(true, Feature.RecoverOrDiscardUnsyncedChangesHandler),
+                [Feature.RecoverUnsyncedChangesHandler] = _ => new(true, Feature.RecoverUnsyncedChangesHandler),
+                [Feature.DiscardUnsyncedChangesHandler] = _ => new(true, Feature.DiscardUnsyncedChangesHandler),
+                [Feature.ManualRecoveryHandler] = _ => new(true, Feature.ManualRecoveryHandler),
+                [Feature.GetProgressObservable] = _ => new(true, Feature.GetProgressObservable),
+                [Feature.PartitionSyncConfiguration] = _ => new(true, Feature.PartitionSyncConfiguration),
+                [Feature.FlexibleSyncConfiguration] = _ => new(true, Feature.FlexibleSyncConfiguration),
                 [Feature.Anonymous] = instruction => AnalyzeRealmApi(instruction, Feature.Anonymous),
                 [Feature.EmailPassword] = instruction => AnalyzeRealmApi(instruction, Feature.EmailPassword),
                 [Feature.Facebook] = instruction => AnalyzeRealmApi(instruction, Feature.Facebook),
@@ -192,8 +192,8 @@ namespace RealmWeaver
                 [Feature.ApiKey] = instruction => AnalyzeRealmApi(instruction, Feature.ApiKey),
                 [Feature.Function] = instruction => AnalyzeRealmApi(instruction, Feature.Function),
                 [Feature.CallAsync] = instruction => AnalyzeRealmApi(instruction, Feature.CallAsync),
-                [Feature.GetMongoClient] = instruction => new(true, Feature.GetMongoClient),
-                [Feature.DynamicApi] = instruction => new(true, Feature.DynamicApi)
+                [Feature.GetMongoClient] = _ => new(true, Feature.GetMongoClient),
+                [Feature.DynamicApi] = _ => new(true, Feature.DynamicApi)
             };
 
             _analyzeUserAssemblyTask = Task.Run(() =>
@@ -248,7 +248,7 @@ namespace RealmWeaver
                 // collect environment details
                 _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.LegacyUserId] = GetLegacyAnonymizedUserId();
-                _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(module.Name));
+                _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(_config.ProjectId ?? module.Assembly.Name.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = "dotnet";
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 _realmEnvMetrics[UserEnvironment.Language] = "c#";
@@ -260,7 +260,7 @@ namespace RealmWeaver
                 _realmEnvMetrics[UserEnvironment.TargetCpuArch] = _config.TargetArchitecture;
                 _realmEnvMetrics[UserEnvironment.TargetOsVersion] = _config.TargetOsVersion;
                 _realmEnvMetrics[UserEnvironment.TargetOsMinimumVersion] = _config.TargetOsMinimumVersion;
-                _realmEnvMetrics[UserEnvironment.CoreVersion] = _coreVersion;
+                _realmEnvMetrics[UserEnvironment.CoreVersion] = CoreVersion;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunction] = _config.FrameworkName;
                 _realmEnvMetrics[UserEnvironment.FrameworkUsedInConjunctionVersion] = _config.FrameworkVersion;
                 _realmEnvMetrics[UserEnvironment.SdkInstallationMethod] = _config.InstallationMethod;
@@ -472,12 +472,12 @@ namespace RealmWeaver
 
             return jsonPayload.ToString();
 
-            void AppendKeyValues<Tvalue>(IDictionary<string, Tvalue> dict, IDictionary<string, string> keyMapping = null)
+            void AppendKeyValues<TValue>(IDictionary<string, TValue> dict, IDictionary<string, string> keyMapping = null)
             {
                 var mapping = dict
                     .Select(kvp =>
                     {
-                        if ((kvp.Value is byte b && b == 0) ||
+                        if (kvp.Value is byte and 0 ||
                             (kvp.Value is string s && string.IsNullOrEmpty(s)))
                         {
                             // skip empty strings/0
@@ -536,6 +536,8 @@ namespace RealmWeaver
             public string TargetOsVersion { get; set; } = Metric.Unknown();
 
             public string TargetOsMinimumVersion { get; set; } = Metric.Unknown();
+
+            public string ProjectId { get; set; }
         }
 
         public enum AnalyticsCollection

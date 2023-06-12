@@ -95,10 +95,9 @@ namespace RealmWeaver
                 { "Windows.Foundation.UniversalApiContract", Framework.Uwp },
             };
 
-            AssemblyNameReference frameworkUsedInConjunction = null;
             foreach (var kvp in possibleFrameworks)
             {
-                frameworkUsedInConjunction = module.AssemblyReferences.Where(a => a.Name == kvp.Key).SingleOrDefault();
+                var frameworkUsedInConjunction = module.AssemblyReferences.SingleOrDefault(a => a.Name == kvp.Key);
                 if (frameworkUsedInConjunction != null)
                 {
                     return new(kvp.Value, frameworkUsedInConjunction.Version.ToString());
@@ -197,7 +196,7 @@ namespace RealmWeaver
                     var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
                     var match = regex.Match(machineIdToParse);
 
-                    if (match?.Groups.Count > 1)
+                    if (match.Groups.Count > 1)
                     {
                         id = match.Groups[1].Value;
                     }
@@ -208,7 +207,7 @@ namespace RealmWeaver
                     var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
                     var match = regex.Match(machineIdToParse);
 
-                    if (match?.Groups.Count > 1)
+                    if (match.Groups.Count > 1)
                     {
                         id = match.Groups[1].Value;
                     }
@@ -225,7 +224,7 @@ namespace RealmWeaver
 
                 // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
                 // unrelated projects that use the same mechanics to obtain a machine's ID
-                var salt = "realm is great";
+                const string salt = "Realm is great";
                 var saltedId = Encoding.UTF8.GetBytes(id + salt);
                 return SHA256Hash(saltedId);
             }

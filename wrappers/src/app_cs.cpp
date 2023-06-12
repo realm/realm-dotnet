@@ -52,6 +52,7 @@ namespace realm {
         std::string s_platform_version;
         std::string s_device_name;
         std::string s_device_version;
+        std::string s_bundle_id;
 
         std::function<UserCallbackT> s_user_callback;
         std::function<VoidCallbackT> s_void_callback;
@@ -103,6 +104,7 @@ extern "C" {
         uint16_t* platform_version, size_t platform_version_len,
         uint16_t* device_name, size_t device_name_len,
         uint16_t* device_version, size_t device_version_len,
+        uint16_t* bundle_id, size_t bundle_id_len,
         UserCallbackT* user_callback,
         VoidCallbackT* void_callback,
         StringCallbackT* string_callback,
@@ -114,6 +116,7 @@ extern "C" {
         s_platform_version = Utf16StringAccessor(platform_version, platform_version_len);
         s_device_name = Utf16StringAccessor(device_name, device_name_len);
         s_device_version = Utf16StringAccessor(device_version, device_version_len);
+        s_bundle_id = Utf16StringAccessor(bundle_id, bundle_id_len);
 
         s_user_callback = wrap_managed_callback(user_callback);
         s_void_callback = wrap_managed_callback(void_callback);
@@ -136,6 +139,7 @@ extern "C" {
             config.device_info.platform_version = s_platform_version;
             config.device_info.device_name = s_device_name;
             config.device_info.device_version = s_device_version;
+            config.device_info.bundle_id = s_bundle_id;
 
             config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
             config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();

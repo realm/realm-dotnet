@@ -17,6 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Realms.PlatformHelpers
 {
@@ -26,7 +29,7 @@ namespace Realms.PlatformHelpers
 
         private static IDeviceInfo? _deviceInfo;
 
-        private static Lazy<IDeviceInfo> _deviceInfoLazy = new(() => _deviceInfo ?? new DeviceInfo());
+        private static readonly Lazy<IDeviceInfo> _deviceInfoLazy = new(() => _deviceInfo ?? new DeviceInfo());
 
         public static IDeviceInfo DeviceInfo
         {
@@ -40,6 +43,25 @@ namespace Realms.PlatformHelpers
 
                 _deviceInfo = value;
             }
+        }
+
+        private static string? _bundleId;
+        public static string BundleId
+        {
+            get => Sha256(_bundleId ?? Assembly.GetEntryAssembly()?.GetName().Name);
+            set => _bundleId = value;
+        }
+
+        internal static string Sha256(string? value)
+        {
+            if (value == null)
+            {
+                return Unknown;
+            }
+            
+            using var sha256 = SHA256.Create();
+            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
+            return Convert.ToBase64String(hash);
         }
     }
 }

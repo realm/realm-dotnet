@@ -515,6 +515,7 @@ namespace RealmWeaver
                 TargetArchitecture = GetCpuArchitecture(target),
                 TargetOsVersion = GetTargetOsVersion(target),
                 TargetOsMinimumVersion = GetMinimumOsVersion(target),
+                ProjectId = PlayerSettings.productName,
             };
         }
 

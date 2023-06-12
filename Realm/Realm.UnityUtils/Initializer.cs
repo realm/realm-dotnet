@@ -34,6 +34,7 @@ namespace UnityUtils
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
                 Platform.DeviceInfo = new UnityDeviceInfo();
+                Platform.BundleId = Application.productName;
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
                 Realms.Logging.Logger.Console = new UnityLogger();
                 Application.quitting += () =>
