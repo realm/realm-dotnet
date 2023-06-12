@@ -473,14 +473,6 @@ namespace RealmWeaver
                 UnityLogger.Instance.Error($"Failed to obtain list of files from report. Please report this error on http://github.com/realm/realm-dotnet/issues. Unity version: {Application.unityVersion}, error message: {e.Message}.");
                 throw;
             }
-
-            return target switch
-            {
-                BuildTarget.Android => ((int)PlayerSettings.Android.targetSdkVersion).ToString(),
-                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
-                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
-                _ => Metric.Unknown(),
-            };
         }
 
         private static string GetMinimumOsVersion(BuildTarget? target)

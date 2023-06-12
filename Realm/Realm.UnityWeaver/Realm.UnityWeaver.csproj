@@ -7,10 +7,9 @@
     <Title>Realm.UnityWeaver</Title>
     <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>9.0</LangVersion>
     <AssemblyName>Realm.UnityWeaver</AssemblyName>
     <NoWarn>1701;1702;NU1701</NoWarn>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>10</LangVersion>
     <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
   </PropertyGroup>
 
