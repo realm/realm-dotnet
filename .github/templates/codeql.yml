@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild")
+#@ load("common.lib.yml", "configuration", "nugetPackages", "checkoutCode", "actionCodeQLInit", "actionCodeQLAnalyze", "actionSetupMSBuild", "setupAndroid", "setupWorkloads")
 
 #@ def runCodeQL(language, buildSteps = []):
   - name: Initialize CodeQL
@@ -20,6 +20,8 @@
 #@ end
 
 #@ def buildPackages():
+  - #@ template.replace(setupAndroid())
+  - #@ setupWorkloads('tvos ios maccatalyst android')
   - name: Add msbuild to PATH
     uses: #@ actionSetupMSBuild
 #@ for pkgName in nugetPackages:
@@ -45,6 +47,9 @@ name: "CodeQL"
       - '.github/workflows/codeql.yml'
 env:
   REALM_DISABLE_ANALYTICS: true
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   analyze-csharp:
     name: Analyze C#

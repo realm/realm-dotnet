@@ -237,6 +237,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_set_log_level", CallingConvention = CallingConvention.Cdecl)]
             public static extern bool set_log_level(LogLevel level);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_operating_system", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_operating_system(IntPtr buffer, IntPtr buffer_length);
+
 #pragma warning restore SA1121 // Use built-in type alias
 #pragma warning restore IDE0049 // Use built-in type alias
         }
@@ -757,6 +760,16 @@ namespace Realms
             {
                 tcsHandle.Free();
             }
+        }
+
+        public static string GetNativeLibraryOS()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                ex = default;
+                return NativeMethods.get_operating_system(buffer, length);
+            })!;
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]

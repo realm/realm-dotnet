@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2020 Realm Inc.
 //
@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Native;
+using Realms.PlatformHelpers;
 using Realms.Sync.Exceptions;
 using Realms.Sync.Native;
 
@@ -170,9 +171,23 @@ namespace Realms.Sync
                 platformVersion += $" {Environment.OSVersion.ServicePack}";
             }
 
-            // TODO: try and infer device information as part of RNET-849
-            var deviceName = "unknown";
-            var deviceVersion = "unknown";
+            string deviceName;
+            string deviceVersion;
+            try
+            {
+                deviceName = Platform.DeviceInfo.Name;
+                deviceVersion = Platform.DeviceInfo.Version;
+            }
+            catch
+            {
+                // If we can't get the device info, don't crash the app.
+                deviceName = Platform.Unknown;
+                deviceVersion = Platform.Unknown;
+
+#if DEBUG
+                throw;
+#endif
+            }
 
             NativeMethods.initialize(
                 frameworkName, frameworkName.IntPtrLength(),

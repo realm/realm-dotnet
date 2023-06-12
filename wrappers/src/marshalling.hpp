@@ -253,12 +253,12 @@ static inline Decimal128 from_capi(realm_decimal128_t dec)
 
 static inline GeoPoint from_capi(geo_point point)
 {
-    return GeoPoint(point.longitude, point.latitude);
+    return GeoPoint{ point.longitude, point.latitude };
 }
 
 static inline GeoBox from_capi(geo_box box)
 {
-    return GeoBox{ GeoPoint(box.left, box.bottom), GeoPoint(box.right, box.top) };
+    return GeoBox{ GeoPoint{box.left, box.bottom}, GeoPoint{box.right, box.top} };
 }
 
 static inline GeoCircle from_capi(geo_circle circle)
@@ -274,7 +274,7 @@ static inline GeoPolygon from_capi(geo_polygon polygon)
     int points_index = 0;
     for (int i = 0; i < polygon.num_rings; i++) {
         std::vector<GeoPoint> points;
-        int points_len = polygon.rings_lengths[i];
+        int points_len = (int)polygon.rings_lengths[i];
         points.reserve(points_len);
 
         for (int j = 0; j < points_len; j++) {
@@ -284,13 +284,13 @@ static inline GeoPolygon from_capi(geo_polygon polygon)
         rings.push_back(points);
     }
 
-    return GeoPolygon(rings);
+    return GeoPolygon{ rings };
 }
 
 static inline realm_object_id_t to_capi(ObjectId oid)
 {
     const auto& bytes = oid.to_bytes();
-    realm_object_id_t result;
+    realm_object_id_t result = {};
     for (int i = 0; i < 12; i++)
     {
         result.bytes[i] = bytes[i];
@@ -309,7 +309,7 @@ static inline realm_value_t to_capi_value(ObjectId oid)
 
 static inline ObjectId from_capi(realm_object_id_t oid)
 {
-    std::array<uint8_t, 12> bytes;
+    std::array<uint8_t, 12> bytes = {};
     std::copy(std::begin(oid.bytes), std::end(oid.bytes), bytes.begin());
     return ObjectId(std::move(bytes));
 }
@@ -328,7 +328,7 @@ static inline realm_uuid_t to_capi(UUID uuid)
 
 static inline UUID from_capi(realm_uuid_t uuid)
 {
-    std::array<uint8_t, 16> bytes;
+    std::array<uint8_t, 16> bytes = {};
     std::copy(std::begin(uuid.bytes), std::end(uuid.bytes), bytes.begin());
     return UUID(std::move(bytes));
 }

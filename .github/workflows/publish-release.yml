@@ -38,6 +38,8 @@ jobs:
         {
           aws s3 sync --acl public-read "${{ github.workspace }}\Realm\packages\_site" s3://realm-sdks/docs/realm-sdks/dotnet/$ver/
         }
+    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+      run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: dotnet nuget push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --skip-duplicate --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
     - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e

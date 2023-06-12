@@ -1,6 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "nugetPackages", "actionDownloadArtifact")
-#@ load("test.lib.yml", "fetchPackageArtifacts")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "nugetPackages", "actionDownloadArtifact", "fetchPackageArtifacts")
 
 #@ unityPkgName = "io.realm.unity-${{ inputs.version }}.tgz"
 

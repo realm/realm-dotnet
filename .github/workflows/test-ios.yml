@@ -39,6 +39,11 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:
@@ -90,6 +95,11 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:
@@ -101,8 +111,7 @@ jobs:
         sudo xcode-select -s "/Applications/Xcode_14.3.app"
         echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
     - name: Setup workloads
-      run: |
-        dotnet workload install maui
+      run: dotnet workload install maui
     - name: Build the tests
       run: dotnet build Tests/Tests.Maui -c Release -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Run the tests

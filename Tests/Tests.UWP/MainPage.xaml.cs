@@ -39,6 +39,8 @@ namespace Realms.Tests.UWP
         {
             base.OnNavigatedTo(e);
 
+            TestHelpers.IsUWP = true;
+
             var outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
             TestHelpers.Output = outputWriter;
 
