@@ -88,7 +88,7 @@
       <Name>Realm</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
-      <Project>{4C9BE4FA-9CB2-4091-B86A-4EC557A78991}</Project>
+      <Project>{D08C71CE-0F5B-4855-A77C-58062A5ECB78}</Project>
       <Name>Realm.PlatformHelpers</Name>
     </ProjectReference>
     <AndroidNativeLibrary Include="..\..\wrappers\build\android\$(Configuration)-x86\librealm-wrappers.so">
