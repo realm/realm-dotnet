@@ -23,9 +23,12 @@ using TestRealmObject = Realms.IRealmObject;
 [Woven(typeof(EmbeddedTestClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged, IReflectableType
 {
+    /// <summary>
+    /// Defines the schema for the <see cref="EmbeddedTestClass"/> class.
+    /// </summary>
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("EmbeddedTestClass", ObjectSchema.ObjectType.EmbeddedObject)
     {
-        Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Int32Property"),
+        Realms.Schema.Property.Primitive("Int32Property", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Int32Property"),
     }.Build();
 
     #region IEmbeddedObject implementation
@@ -36,27 +39,35 @@ public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged
 
     internal IEmbeddedTestClassAccessor Accessor => _accessor ??= new EmbeddedTestClassUnmanagedAccessor(typeof(EmbeddedTestClass));
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsManaged => Accessor.IsManaged;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsValid => Accessor.IsValid;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsFrozen => Accessor.IsFrozen;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.Realm? Realm => Accessor.Realm;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.IRealmObjectBase? Parent => Accessor.GetParent();
 
@@ -96,6 +107,7 @@ public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged
 
     private event PropertyChangedEventHandler? _propertyChanged;
 
+    /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged
     {
         add
@@ -164,13 +176,32 @@ public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged
         Accessor.UnsubscribeFromNotifications();
     }
 
+    /// <summary>
+    /// Converts a <see cref="Realms.RealmValue"/> to <see cref="EmbeddedTestClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+    /// </summary>
+    /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+    /// <returns>The <see cref="EmbeddedTestClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
     public static explicit operator EmbeddedTestClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<EmbeddedTestClass>();
 
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="EmbeddedTestClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+    /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
     public static implicit operator Realms.RealmValue(EmbeddedTestClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="EmbeddedTestClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+    /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+    public static implicit operator Realms.QueryArgument(EmbeddedTestClass? val) => (Realms.RealmValue)val;
+
+    /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+    /// <inheritdoc />
     public override bool Equals(object? obj)
     {
         if (obj is null)
@@ -196,8 +227,10 @@ public partial class EmbeddedTestClass : IEmbeddedObject, INotifyPropertyChanged
         return Accessor.Equals(iro.Accessor);
     }
 
+    /// <inheritdoc />
     public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+    /// <inheritdoc />
     public override string? ToString() => Accessor.ToString();
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]

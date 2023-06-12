@@ -28,6 +28,8 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} --no-self-contained
     - name: Output executable path
@@ -40,7 +42,7 @@ jobs:
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
-        name: Results Weaver
+        name: Results Weaver ${{ matrix.os.runtime }}
         path: TestResults.Weaver.xml
         reporter: java-junit
         list-suites: failed

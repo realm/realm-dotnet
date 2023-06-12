@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -97,11 +98,11 @@ namespace Analytics
         [Test]
         public void ValidateHostOS()
         {
-            var currentOs = Environment.OSVersion;
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             CompileAnalyticsProject();
             ValidateAnalyticsPayloadAllFrameworks(new[] {
-                (featureName: Metric.Environment.HostOsType, expectedValue: ConvertToMetricOS(currentOs.Platform)),
-                (featureName: Metric.Environment.HostOsVersion, expectedValue: currentOs.Version.ToString()) });
+                (featureName: Metric.Environment.HostOsType, expectedValue: GetMetricsOS()),
+                (featureName: Metric.Environment.HostOsVersion, expectedValue: Environment.OSVersion.Version.ToString()) });
         }
 
         [Test]
@@ -140,14 +141,25 @@ namespace Analytics
             }
         }
 
-        private static string ConvertToMetricOS(PlatformID platformID) =>
-            platformID switch
+        private static string GetMetricsOS()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE => Metric.OperatingSystem.Windows,
-                PlatformID.MacOSX => Metric.OperatingSystem.MacOS,
-                PlatformID.Unix => Metric.OperatingSystem.Linux,
-                _ => platformID.ToString()
-            };
+                return Metric.OperatingSystem.Windows;
+            }
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Metric.OperatingSystem.MacOS;
+            }
+            
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return Metric.OperatingSystem.Linux;
+            }
+
+            return Environment.OSVersion.Platform.ToString();
+        }
 
         private void ValidateAnalyticsPayloadAllFrameworks((string featureName, string expectedValue)[] payloadFeatures)
         {

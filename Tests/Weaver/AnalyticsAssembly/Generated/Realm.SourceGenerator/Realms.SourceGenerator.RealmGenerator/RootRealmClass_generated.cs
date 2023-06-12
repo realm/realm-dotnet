@@ -23,6 +23,9 @@ using TestRealmObject = Realms.IRealmObject;
 [Woven(typeof(RootRealmClassObjectHelper)), Realms.Preserve(AllMembers = true)]
 public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IReflectableType
 {
+    /// <summary>
+    /// Defines the schema for the <see cref="RootRealmClass"/> class.
+    /// </summary>
     public static Realms.Schema.ObjectSchema RealmSchema = new Realms.Schema.ObjectSchema.Builder("RootRealmClass", ObjectSchema.ObjectType.RealmObject)
     {
         Realms.Schema.Property.Object("JustForRef", "JustForObjectReference", managedName: "JustForRef"),
@@ -32,7 +35,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         Realms.Schema.Property.PrimitiveDictionary("PrimitiveDictionary", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "PrimitiveDictionary"),
         Realms.Schema.Property.ObjectSet("ReferenceSet", "JustForObjectReference", managedName: "ReferenceSet"),
         Realms.Schema.Property.PrimitiveSet("PrimitiveSet", Realms.RealmValueType.Int, areElementsNullable: false, managedName: "PrimitiveSet"),
-        Realms.Schema.Property.Primitive("Counter", Realms.RealmValueType.Int, isPrimaryKey: false, isIndexed: false, isNullable: false, managedName: "Counter"),
+        Realms.Schema.Property.Primitive("Counter", Realms.RealmValueType.Int, isPrimaryKey: false, indexType: IndexType.None, isNullable: false, managedName: "Counter"),
         Realms.Schema.Property.RealmValue("RealmValue", managedName: "RealmValue"),
         Realms.Schema.Property.Backlinks("JustBackLink", "JustForObjectReference", "UseAsBacklink", managedName: "JustBackLink"),
     }.Build();
@@ -45,24 +48,31 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
     internal IRootRealmClassAccessor Accessor => _accessor ??= new RootRealmClassUnmanagedAccessor(typeof(RootRealmClass));
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsManaged => Accessor.IsManaged;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsValid => Accessor.IsValid;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public bool IsFrozen => Accessor.IsFrozen;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.Realm? Realm => Accessor.Realm;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.Schema.ObjectSchema ObjectSchema => Accessor.ObjectSchema!;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public Realms.DynamicObjectApi DynamicApi => Accessor.DynamicApi;
 
+    /// <inheritdoc />
     [IgnoreDataMember, XmlIgnore]
     public int BacklinksCount => Accessor.BacklinksCount;
 
@@ -95,7 +105,10 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
             Realms.CollectionExtensions.PopulateCollection(oldAccessor.PrimitiveDictionary, newAccessor.PrimitiveDictionary, update, skipDefaults);
             Realms.CollectionExtensions.PopulateCollection(oldAccessor.ReferenceSet, newAccessor.ReferenceSet, update, skipDefaults);
             Realms.CollectionExtensions.PopulateCollection(oldAccessor.PrimitiveSet, newAccessor.PrimitiveSet, update, skipDefaults);
-            newAccessor.Counter = oldAccessor.Counter;
+            if (!skipDefaults || oldAccessor.Counter != default(Realms.RealmInteger<int>))
+            {
+                newAccessor.Counter = oldAccessor.Counter;
+            }
             newAccessor.RealmValue = oldAccessor.RealmValue;
         }
 
@@ -121,6 +134,7 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
 
     private event PropertyChangedEventHandler? _propertyChanged;
 
+    /// <inheritdoc />
     public event PropertyChangedEventHandler? PropertyChanged
     {
         add
@@ -189,13 +203,32 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         Accessor.UnsubscribeFromNotifications();
     }
 
+    /// <summary>
+    /// Converts a <see cref="Realms.RealmValue"/> to <see cref="RootRealmClass"/>. Equivalent to <see cref="Realms.RealmValue.AsNullableRealmObject{T}"/>.
+    /// </summary>
+    /// <param name="val">The <see cref="Realms.RealmValue"/> to convert.</param>
+    /// <returns>The <see cref="RootRealmClass"/> stored in the <see cref="Realms.RealmValue"/>.</returns>
     public static explicit operator RootRealmClass?(Realms.RealmValue val) => val.Type == Realms.RealmValueType.Null ? null : val.AsRealmObject<RootRealmClass>();
 
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.RealmValue"/> from <see cref="RootRealmClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.RealmValue"/>.</param>
+    /// <returns>A <see cref="Realms.RealmValue"/> containing the supplied <paramref name="val"/>.</returns>
     public static implicit operator Realms.RealmValue(RootRealmClass? val) => val == null ? Realms.RealmValue.Null : Realms.RealmValue.Object(val);
 
+    /// <summary>
+    /// Implicitly constructs a <see cref="Realms.QueryArgument"/> from <see cref="RootRealmClass"/>.
+    /// </summary>
+    /// <param name="val">The value to store in the <see cref="Realms.QueryArgument"/>.</param>
+    /// <returns>A <see cref="Realms.QueryArgument"/> containing the supplied <paramref name="val"/>.</returns>
+    public static implicit operator Realms.QueryArgument(RootRealmClass? val) => (Realms.RealmValue)val;
+
+    /// <inheritdoc />
     [EditorBrowsable(EditorBrowsableState.Never)]
     public TypeInfo GetTypeInfo() => Accessor.GetTypeInfo(this);
 
+    /// <inheritdoc />
     public override bool Equals(object? obj)
     {
         if (obj is null)
@@ -221,8 +254,10 @@ public partial class RootRealmClass : IRealmObject, INotifyPropertyChanged, IRef
         return Accessor.Equals(iro.Accessor);
     }
 
+    /// <inheritdoc />
     public override int GetHashCode() => IsManaged ? Accessor.GetHashCode() : base.GetHashCode();
 
+    /// <inheritdoc />
     public override string? ToString() => Accessor.ToString();
 
     [EditorBrowsable(EditorBrowsableState.Never), Realms.Preserve(AllMembers = true)]

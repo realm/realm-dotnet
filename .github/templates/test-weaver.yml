@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "dotnetPublish")
+#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "setupWorkloads")
 #@ load("test.lib.yml", "publishTestsResults")
 
 ---
@@ -25,7 +25,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - #@ template.replace(checkoutCode())
+      - #@ setupWorkloads('tvos ios maccatalyst android')
       - #@ template.replace(dotnetPublish("Tests/Weaver/Realm.Fody.Tests", "net6.0", "${{ matrix.os.runtime }}"))
       - name: Run Tests
         run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
-      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver")
+      - #@ publishTestsResults("TestResults.Weaver.xml", "Weaver ${{ matrix.os.runtime }}")
