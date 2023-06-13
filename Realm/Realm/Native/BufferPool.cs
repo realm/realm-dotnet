@@ -43,7 +43,8 @@ namespace Realms.Native
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            var buffer = new Buffer<T>((T*)Marshal.AllocHGlobal(count * sizeof(T)), count);
+            var memory = MemoryPool<T>.Shared.Rent(count);
+            var buffer = new Buffer<T>(memory, count);
             _buffers.Add(buffer);
             return buffer;
         }
@@ -52,41 +53,35 @@ namespace Realms.Native
 
         public void Dispose()
         {
-            _buffers.ForEach(b => b.Dispose());
+            foreach (var buffer in _buffers)
+            {
+                buffer.Dispose();
+            }
         }
 
-        public unsafe class Buffer<T> : MemoryManager<T>
+        public class Buffer<T> : IDisposable
             where T : unmanaged
         {
-            public T* Data { get; }
+            private readonly IMemoryOwner<T> _memory;
+            private readonly MemoryHandle _handle;
+
+            public unsafe T* Data => (T*)_handle.Pointer;
 
             public int Length { get; }
 
-            internal Buffer(T* data, int length)
+            internal Buffer(IMemoryOwner<T> memory, int length)
             {
-                Data = data;
+                _memory = memory;
+                _handle = _memory.Memory.Pin();
                 Length = length;
             }
 
-            public override Span<T> GetSpan() => new Span<T>(Data, Length);
-
-            public override MemoryHandle Pin(int elementIndex = 0)
+            void IDisposable.Dispose()
             {
-                if (elementIndex < 0 || elementIndex >= Length)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(elementIndex));
-                }
-
-                return new MemoryHandle(Data + elementIndex);
-            }
-
-            public override void Unpin()
-            {
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                Marshal.FreeHGlobal((IntPtr)Data);
+                Debug.WriteLine("Disposing buffer.");
+                _handle.Dispose();
+                _memory.Dispose();
+                Debug.WriteLine("Disposed buffer.");
             }
         }
 

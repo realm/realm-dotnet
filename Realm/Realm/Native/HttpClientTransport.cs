@@ -60,7 +60,7 @@ namespace Realms.Native
 
             public UInt64 timeout_ms;
 
-            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
+            public MarshaledVector<Pair<StringValue, StringValue>> headers;
 
             private StringValue body;
 
@@ -92,7 +92,7 @@ namespace Realms.Native
 
             public CustomErrorCode custom_status_code;
 
-            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
+            public MarshaledVector<Pair<StringValue, StringValue>> headers;
 
             public StringValue body;
         }
@@ -151,14 +151,20 @@ namespace Realms.Native
                     HttpClientResponse nativeResponse;
                     using (pool.MakeCurrent())
                     {
-                        var headers = response.Headers.Concat(response.Content.Headers)
-                            .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key), StringValue.AllocateFrom(h.Value.FirstOrDefault())))
+                        //var headers = response.Headers.Concat(response.Content.Headers)
+                        //    .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key), StringValue.AllocateFrom(h.Value.FirstOrDefault())))
+                        //    .ToArray();
+
+                        var headers1 = response.Headers.Concat(response.Content.Headers)
+                            .Select(h => new KeyValuePair<string, string>(h.Key, h.Value.FirstOrDefault()!))
                             .ToArray();
+
+                        var headers = headers1.Select(kvp => new Pair<StringValue, StringValue>(StringValue.AllocateFrom(kvp.Key), StringValue.AllocateFrom(kvp.Value))).ToArray();
 
                         nativeResponse = new HttpClientResponse
                         {
                             http_status_code = (int)response.StatusCode,
-                            headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers),
+                            headers = MarshaledVector<Pair<StringValue, StringValue>>.AllocateFrom(headers),
                             body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
                         };
                     }
