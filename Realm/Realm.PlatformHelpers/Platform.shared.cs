@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -48,7 +49,25 @@ namespace Realms.PlatformHelpers
         private static string? _bundleId;
         public static string BundleId
         {
-            get => Sha256(_bundleId ?? Assembly.GetEntryAssembly()?.GetName().Name);
+            get
+            {
+                var bundleId = _bundleId ?? Assembly.GetEntryAssembly()?.GetName().Name;
+
+                if (bundleId == null)
+                {
+                    // On Android, the entry assembly is null (there's no main() method), so we need to find
+                    // the first assembly that has the ResourceDesignerAttribute with IsApplication = true.
+                    var entryAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                        .FirstOrDefault(a => a.CustomAttributes.Any(att =>
+                            att.AttributeType.FullName == "Android.Runtime.ResourceDesignerAttribute" &&
+                            att.NamedArguments.FirstOrDefault(arg => arg.MemberName == "IsApplication").TypedValue.Value is bool isApplication &&
+                            isApplication));
+
+                    bundleId = entryAssembly?.GetName().Name;
+                }
+
+                return Sha256(bundleId);
+            }
             set => _bundleId = value;
         }
 
@@ -58,7 +77,7 @@ namespace Realms.PlatformHelpers
             {
                 return Unknown;
             }
-            
+
             using var sha256 = SHA256.Create();
             var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
             return Convert.ToBase64String(hash);

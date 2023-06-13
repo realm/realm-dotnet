@@ -87,7 +87,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SourceGeneratorAssemblyToPr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Maui", "Tests\Tests.Maui\Tests.Maui.csproj", "{C84EBA8B-5F7F-4519-BB34-EDE93E275D66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyticsAssembly", "Tests\Weaver\AnalyticsAssembly\AnalyticsAssembly.csproj", "{1FBD9F7D-2C7F-4788-9C1E-22A40549AFA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyticsAssembly", "Tests\Weaver\AnalyticsAssembly\AnalyticsAssembly.csproj", "{1FBD9F7D-2C7F-4788-9C1E-22A40549AFA5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeployApps", "Tools\DeployApps\DeployApps.csproj", "{10026D09-FC37-48B3-AAEA-B322AA6D89CE}"
 EndProject
@@ -300,8 +300,9 @@ Global
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|iPhone.Build.0 = Debug|Any CPU
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
-		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x64.Build.0 = Debug|Any CPU
+		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x64.ActiveCfg = Debug|x64
+		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x64.Build.0 = Debug|x64
+		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x64.Deploy.0 = Debug|x64
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.Debug|x86.Build.0 = Debug|Any CPU
 		{10725A22-B22F-46AB-B5C4-7BC505A1E74A}.MinSizeRel|Any CPU.ActiveCfg = Release|Any CPU
