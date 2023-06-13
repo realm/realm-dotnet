@@ -48,17 +48,17 @@ internal static class PropertyDefinitionExtensions
         return property.GetMethod.CustomAttributes.Any(attr => attr.AttributeType.FullName == typeof(CompilerGeneratedAttribute).FullName);
     }
 
-    internal static bool IsIList(this PropertyDefinition property)
+    private static bool IsIList(this PropertyDefinition property)
     {
         return property.IsType("IList`1", "System.Collections.Generic");
     }
 
-    internal static bool IsISet(this PropertyDefinition property)
+    private static bool IsISet(this PropertyDefinition property)
     {
         return property.IsType("ISet`1", "System.Collections.Generic");
     }
 
-    internal static bool IsIDictionary(this PropertyDefinition property)
+    private static bool IsIDictionary(this PropertyDefinition property)
     {
         return property.IsType("IDictionary`2", "System.Collections.Generic");
     }
@@ -157,7 +157,7 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.Resolve().BaseType.IsSameAs(other);
     }
 
-    internal static FieldReference GetBackingField(this PropertyDefinition property)
+    internal static FieldReference? GetBackingField(this PropertyDefinition property)
     {
         return property.GetMethod.Body.Instructions
             .Where(o => o.OpCode == OpCodes.Ldfld)
@@ -209,5 +209,5 @@ internal static class PropertyDefinitionExtensions
         return property.PropertyType.Name == name && property.PropertyType.Namespace == @namespace;
     }
 
-    public static SequencePoint GetSequencePoint(this PropertyDefinition property) => property.GetMethod?.DebugInformation?.SequencePoints.FirstOrDefault() ?? property.SetMethod?.DebugInformation?.SequencePoints.FirstOrDefault();
+    public static SequencePoint? GetSequencePoint(this PropertyDefinition property) => property.GetMethod?.DebugInformation?.SequencePoints.FirstOrDefault() ?? property.SetMethod?.DebugInformation?.SequencePoints.FirstOrDefault();
 }

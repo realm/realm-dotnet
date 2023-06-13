@@ -27,11 +27,11 @@ namespace RealmWeaver
 
     public abstract class WeaverTestBase
     {
-        protected readonly List<string> _warnings = new List<string>();
-        protected readonly List<string> _errors = new List<string>();
-        protected readonly List<string> _messages = new List<string>();
+        protected readonly List<string> _warnings = new();
+        protected readonly List<string> _errors = new();
+        protected readonly List<string> _messages = new();
 
-        protected TestResult WeaveRealm(string assemblyPath, XElement config = null)
+        protected TestResult WeaveRealm(string assemblyPath, XElement? config = null)
         {
             var weaver = new realm::ModuleWeaver();
             if (config != null)

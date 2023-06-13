@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Mono.Cecil;
@@ -29,11 +30,11 @@ internal static class TypeReferenceExtensions
 {
     private static readonly Regex NullableRegex = new("^System.Nullable`1<(?<typeName>.*)>$");
 
-    public static SequencePoint GetSequencePoint(this TypeDefinition @this)
+    public static SequencePoint? GetSequencePoint(this TypeDefinition @this)
     {
         return GetCtorSequencePoint() ?? GetPropSequencePoint();
 
-        SequencePoint GetCtorSequencePoint()
+        SequencePoint? GetCtorSequencePoint()
         {
             return @this.GetConstructors()
                 .OrderBy(c => c.Parameters.Count)
@@ -41,7 +42,7 @@ internal static class TypeReferenceExtensions
                 .FirstOrDefault();
         }
 
-        SequencePoint GetPropSequencePoint()
+        SequencePoint? GetPropSequencePoint()
         {
             return @this.Properties
                 .Select(p => p.GetSequencePoint())
@@ -62,7 +63,7 @@ internal static class TypeReferenceExtensions
     public static bool IsEmbeddedObjectDescendant(this TypeReference @this, ImportedReferences references) =>
         IsDescendantOf(@this, references.EmbeddedObject);
 
-    public static bool IsSameAs(this TypeReference @this, TypeReference other)
+    public static bool IsSameAs(this TypeReference? @this, TypeReference? other)
     {
         if (@this is null || other is null)
         {
@@ -72,17 +73,14 @@ internal static class TypeReferenceExtensions
         return @this.FullName == other.FullName && @this.GetAssemblyName() == other.GetAssemblyName();
     }
 
-    public static string GetAssemblyName(this TypeReference @this)
+    private static string GetAssemblyName(this TypeReference @this)
     {
-        switch (@this.Scope.MetadataScopeType)
+        return @this.Scope.MetadataScopeType switch
         {
-            case MetadataScopeType.AssemblyNameReference:
-                return ((AssemblyNameReference)@this.Scope).FullName;
-            case MetadataScopeType.ModuleReference:
-                return ((ModuleReference)@this.Scope).Name;
-            default:
-                return ((ModuleDefinition)@this.Scope).Assembly.FullName;
-        }
+            MetadataScopeType.AssemblyNameReference => ((AssemblyNameReference)@this.Scope).FullName,
+            MetadataScopeType.ModuleReference => ((ModuleReference)@this.Scope).Name,
+            _ => ((ModuleDefinition)@this.Scope).Assembly.FullName
+        };
     }
 
     public static string ToFriendlyString(this TypeReference type)
@@ -95,7 +93,7 @@ internal static class TypeReferenceExtensions
         return type.ToString();
     }
 
-    public static bool IsRealmInteger(this TypeReference type, out bool isNullable, out TypeReference genericArgumentType)
+    public static bool IsRealmInteger(this TypeReference type, out bool isNullable, [NotNullWhen(true)] out TypeReference? genericArgumentType)
     {
         var nullableMatch = NullableRegex.Match(type.FullName);
         isNullable = nullableMatch.Success;
@@ -120,10 +118,10 @@ internal static class TypeReferenceExtensions
     public static bool IsNullable(this TypeReference reference) =>
         NullableRegex.IsMatch(reference.FullName);
 
-    public static bool IsIRealmObjectBaseImplementor(this TypeReference type, ImportedReferences references) =>
+    private static bool IsIRealmObjectBaseImplementor(this TypeReference type, ImportedReferences references) =>
         IsImplementorOf(type, references.IRealmObjectBase);
 
-    private static bool IsDescendantOf(TypeReference @this, params TypeReference[] targetTypes)
+    private static bool IsDescendantOf(TypeReference? @this, params TypeReference[] targetTypes)
     {
         try
         {
@@ -134,7 +132,7 @@ internal static class TypeReferenceExtensions
                     return false;
                 }
 
-                var definition = @this?.Resolve();
+                var definition = @this.Resolve();
                 if (definition == null)
                 {
                     return false;
@@ -160,7 +158,7 @@ internal static class TypeReferenceExtensions
         return false;
     }
 
-    private static bool IsImplementorOf(TypeReference @this, params TypeReference[] targetInterfaces)
+    private static bool IsImplementorOf(TypeReference? @this, params TypeReference[] targetInterfaces)
     {
         try
         {
@@ -169,13 +167,8 @@ internal static class TypeReferenceExtensions
                 return false;
             }
 
-            var definition = @this?.Resolve();
-            if (definition == null)
-            {
-                return false;
-            }
-
-            return TypeDefinitionExtensions.IsImplementorOf(definition, targetInterfaces);
+            var definition = @this.Resolve();
+            return definition != null && TypeDefinitionExtensions.IsImplementorOf(definition, targetInterfaces);
         }
         catch
         {

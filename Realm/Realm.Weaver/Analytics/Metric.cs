@@ -23,10 +23,10 @@ namespace RealmWeaver
 {
     internal static class Metric
     {
-        public static string Unknown(string clarifier = null)
+        public static string Unknown(string? clarifier = null)
         {
             var result = "Unknown";
-            if (!string.IsNullOrEmpty(clarifier))
+            if (!clarifier.IsNullOrEmpty())
             {
                 result += $" ({clarifier})";
             }
@@ -105,6 +105,7 @@ namespace RealmWeaver
 
         public static class Feature
         {
+            // ReSharper disable InconsistentNaming
             public const string IEmbeddedObject = nameof(IEmbeddedObject);
             public const string IAsymmetricObject = nameof(IAsymmetricObject);
             public const string ReferenceList = nameof(ReferenceList);

@@ -24,7 +24,8 @@ using Mono.Cecil.Cil;
 using RealmWeaver;
 using static RealmWeaver.Analytics;
 
-public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
+// ReSharper disable once CheckNamespace
+public class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
 {
     public override void Execute()
     {
@@ -106,12 +107,12 @@ public partial class ModuleWeaver : Fody.BaseModuleWeaver, ILogger
         WriteInfo(message);
     }
 
-    void ILogger.Error(string message, SequencePoint sequencePoint)
+    void ILogger.Error(string message, SequencePoint? sequencePoint)
     {
         WriteError(message, sequencePoint);
     }
 
-    void ILogger.Warning(string message, SequencePoint sequencePoint)
+    void ILogger.Warning(string message, SequencePoint? sequencePoint)
     {
         WriteWarning(message, sequencePoint);
     }

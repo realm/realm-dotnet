@@ -42,7 +42,7 @@ namespace Analytics
 
         private static readonly Lazy<string[]> _frameworks = new(() =>
         {
-            var targetProject = Path.Combine(_analyticsAssemblyLocation.Value, "AnalyticsAssembly.csproj");
+            var targetProject = Path.Combine(_analyticsAssemblyLocation!.Value, "AnalyticsAssembly.csproj");
             var doc = XDocument.Parse(File.ReadAllText(targetProject));
             return doc.Descendants("TargetFrameworks").Single().Value.Split(';');
         });
@@ -55,7 +55,7 @@ namespace Analytics
                 folder = Path.GetDirectoryName(folder);
             }
 
-            return Path.Combine(folder, "Tests", "Weaver", "AnalyticsAssembly");
+            return Path.Combine(folder!, "Tests", "Weaver", "AnalyticsAssembly");
         });
 
         private static string ConvertToUpperCase(string target)
@@ -117,7 +117,7 @@ namespace Analytics
                 var payload = BsonSerializer.Deserialize<BsonDocument>(response).AsBsonDocument;
 
                 var environmentMetrics = typeof(Metric.Environment).GetFields(BindingFlags.Static | BindingFlags.Public)
-                    .Select(f => (string)f.GetValue(null))
+                    .Select(f => (string)f.GetValue(null)!)
                     .ToArray();
 
                 foreach (var metric in environmentMetrics)
@@ -128,11 +128,11 @@ namespace Analytics
         }
 
         [Test]
-        public void Metirc_SdkFeatures_ContainsAllFeatureConstants()
+        public void Metric_SdkFeatures_ContainsAllFeatureConstants()
         {
             var sdkFeatures = Metric.SdkFeatures;
             var featureConstants = typeof(Metric.Feature).GetFields(BindingFlags.Static | BindingFlags.Public)
-                .Select(f => (string)f.GetValue(null))
+                .Select(f => (string)f.GetValue(null)!)
                 .ToArray();
 
             foreach (var constant in featureConstants)

@@ -26,7 +26,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-
 using static RealmWeaver.AnalyticsUtils;
 
 using Feature = RealmWeaver.Metric.Feature;
@@ -85,14 +84,18 @@ namespace RealmWeaver
         public Analytics(Config config, ImportedReferences references, ILogger logger, ModuleDefinition module)
         {
             _config = config;
+            _references = references;
+            _logger = logger;
 
             if (config.AnalyticsCollection == AnalyticsCollection.Disabled)
             {
+                _realmFeaturesToAnalyze = new();
+                _classAnalysisSetters = new();
+                _apiAnalysisSetters = new();
+                _analyzeUserAssemblyTask = Task.CompletedTask;
                 return;
             }
 
-            _references = references;
-            _logger = logger;
             _realmFeaturesToAnalyze = Metric.SdkFeatures.Keys.ToDictionary(c => c, _ => (byte)0);
 
             _classAnalysisSetters = new()
@@ -155,7 +158,7 @@ namespace RealmWeaver
                 },
                 ["PropertyChanged"] = instruction =>
                 {
-                    string key = null;
+                    string? key = null;
                     if (instruction.Operand is MemberReference reference)
                     {
                         if (reference.DeclaringType.IsAnyRealmObject(_references))
@@ -300,11 +303,11 @@ namespace RealmWeaver
                     continue;
                 }
 
-                foreach (var propertyResult in type.Properties)
+                foreach (var propertyResult in type.Properties.Where(p => p.Woven))
                 {
                     var property = propertyResult.Property;
 
-                    var key = property.PropertyType.Name;
+                    var key = property!.PropertyType.Name;
                     if (!_classAnalysisSetters.ContainsKey(key) && property.PropertyType.MetadataType == MetadataType.Class)
                     {
                         key = "Class";
@@ -376,7 +379,7 @@ namespace RealmWeaver
                 foreach (var cil in method.Body.Instructions)
                 {
                     var key = (cil.Operand as MemberReference)?.Name;
-                    if (string.IsNullOrEmpty(key))
+                    if (key.IsNullOrEmpty())
                     {
                         continue;
                     }
@@ -392,7 +395,7 @@ namespace RealmWeaver
                         // add_RealmChanged
                         // add_PropertyChanged
                         // get_DynamicApi
-                        key = key.Substring(prefix.Length);
+                        key = key[prefix.Length..];
                     }
 
                     if (!_apiAnalysisSetters.ContainsKey(key) &&
@@ -408,19 +411,21 @@ namespace RealmWeaver
                         key = ((MemberReference)cil.Operand).DeclaringType.Name;
                     }
 
-                    if (_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
+                    if (!_apiAnalysisSetters.TryGetValue(key, out var featureFunc))
                     {
-                        var analysisResult = featureFunc.Invoke(cil);
+                        continue;
+                    }
 
-                        if (!string.IsNullOrEmpty(analysisResult.DictKey))
-                        {
-                            _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
-                        }
+                    var analysisResult = featureFunc.Invoke(cil);
 
-                        if (analysisResult.ShouldDelete)
-                        {
-                            _apiAnalysisSetters.Remove(key);
-                        }
+                    if (!string.IsNullOrEmpty(analysisResult.DictKey))
+                    {
+                        _realmFeaturesToAnalyze[analysisResult.DictKey] = 1;
+                    }
+
+                    if (analysisResult.ShouldDelete)
+                    {
+                        _apiAnalysisSetters.Remove(key);
                     }
                 }
             }
@@ -438,7 +443,7 @@ namespace RealmWeaver
 
                 try
                 {
-                    var sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/v2/metric?data=";
+                    const string sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/v2/metric?data=";
                     payload = GetJsonPayload();
 
                     if (_config.AnalyticsCollection != AnalyticsCollection.DryRun)
@@ -453,7 +458,7 @@ namespace RealmWeaver
                 }
             }
 
-            if (!string.IsNullOrEmpty(_config.AnalyticsLogPath))
+            if (!_config.AnalyticsLogPath.IsNullOrEmpty())
             {
                 File.WriteAllText(_config.AnalyticsLogPath, payload);
             }
@@ -472,7 +477,7 @@ namespace RealmWeaver
 
             return jsonPayload.ToString();
 
-            void AppendKeyValues<TValue>(IDictionary<string, TValue> dict, IDictionary<string, string> keyMapping = null)
+            void AppendKeyValues<TValue>(IDictionary<string, TValue> dict, IDictionary<string, string>? keyMapping = null)
             {
                 var mapping = dict
                     .Select(kvp =>
@@ -512,32 +517,32 @@ namespace RealmWeaver
 
         public class Config
         {
-            public AnalyticsCollection AnalyticsCollection { get; set; }
+            public AnalyticsCollection AnalyticsCollection { get; init; }
 
-            public string AnalyticsLogPath { get; set; }
+            public string? AnalyticsLogPath { get; init; }
 
-            public string TargetOSName { get; set; }
+            required public string TargetOSName { get; init; }
 
-            public string NetFrameworkTarget { get; set; }
+            required public string NetFrameworkTarget { get; init; }
 
-            public string NetFrameworkTargetVersion { get; set; }
+            required public string NetFrameworkTargetVersion { get; init; }
 
-            public string InstallationMethod { get; set; }
+            required public string InstallationMethod { get; init; }
 
-            public string FrameworkName { get; set; }
+            required public string FrameworkName { get; init; }
 
-            public string FrameworkVersion { get; set; }
+            required public string FrameworkVersion { get; init; }
 
-            public string Compiler { get; set; }
+            required public string Compiler { get; init; }
 
             // These are only available on Unity for now.
-            public string TargetArchitecture { get; set; } = Metric.Unknown();
+            public string TargetArchitecture { get; init; } = Metric.Unknown();
 
-            public string TargetOsVersion { get; set; } = Metric.Unknown();
+            public string TargetOsVersion { get; init; } = Metric.Unknown();
 
-            public string TargetOsMinimumVersion { get; set; } = Metric.Unknown();
+            public string TargetOsMinimumVersion { get; init; } = Metric.Unknown();
 
-            public string ProjectId { get; set; }
+            public string? ProjectId { get; init; }
         }
 
         public enum AnalyticsCollection

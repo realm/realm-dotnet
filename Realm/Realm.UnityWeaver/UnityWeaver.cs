@@ -36,6 +36,7 @@ using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
 using BindingFlags = System.Reflection.BindingFlags;
 
+// ReSharper disable once CheckNamespace
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
@@ -48,7 +49,7 @@ namespace RealmWeaver
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
         private const string UnityPackageName = "io.realm.unity";
 
-        private static readonly int _UnityMajorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
+        private static readonly int UnityMajorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
 
         private static bool _analyticsEnabled;
 
@@ -64,8 +65,8 @@ namespace RealmWeaver
         }
 
         private static bool _weaveEditorAssemblies;
-        private static ListRequest _listRequest;
-        private static TaskCompletionSource<string> _installMethodTask;
+        private static ListRequest? _listRequest;
+        private static TaskCompletionSource<string>? _installMethodTask;
 
         private static bool WeaveEditorAssemblies
         {
@@ -107,7 +108,7 @@ namespace RealmWeaver
                 WeaveAssembliesOnEditorLaunch();
             };
 
-            CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
+            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
             {
                 if (string.IsNullOrEmpty(assemblyPath))
                 {
@@ -128,25 +129,27 @@ namespace RealmWeaver
 
         private static void OnEditorApplicationUpdate()
         {
-            if (_listRequest.IsCompleted)
+            if (_listRequest?.IsCompleted != true)
             {
-                EditorApplication.update -= OnEditorApplicationUpdate;
-
-                var installMethod = Metric.Unknown();
-
-                if (_listRequest.Status == StatusCode.Success)
-                {
-                    var realmPackage = _listRequest.Result.FirstOrDefault(p => p.name == UnityPackageName);
-                    installMethod = realmPackage?.source switch
-                    {
-                        PackageSource.LocalTarball => "Manual",
-                        PackageSource.Registry => "NPM",
-                        _ => Metric.Unknown(realmPackage?.source.ToString()),
-                    };
-                }
-
-                _installMethodTask.SetResult(installMethod);
+                return;
             }
+
+            EditorApplication.update -= OnEditorApplicationUpdate;
+
+            var installMethod = Metric.Unknown();
+
+            if (_listRequest.Status == StatusCode.Success)
+            {
+                var realmPackage = _listRequest.Result.FirstOrDefault(p => p.name == UnityPackageName);
+                installMethod = realmPackage?.source switch
+                {
+                    PackageSource.LocalTarball => "Manual",
+                    PackageSource.Registry => "NPM",
+                    _ => Metric.Unknown(realmPackage?.source.ToString()),
+                };
+            }
+
+            _installMethodTask!.SetResult(installMethod);
         }
 
         [MenuItem("Tools/Realm/Weave Assemblies")]
@@ -178,14 +181,14 @@ namespace RealmWeaver
         private static void WeaveAssembliesOnEditorLaunch()
         {
             // This code is susceptible to the year 2038 problem. Refactor before 2037!
-            const string AutomaticWeavePrefKey = "realm_last_automatic_weave";
-            var lastAutomaticWeave = EditorPrefs.GetInt(AutomaticWeavePrefKey, 0);
+            const string automaticWeavePrefKey = "realm_last_automatic_weave";
+            var lastAutomaticWeave = EditorPrefs.GetInt(automaticWeavePrefKey, 0);
             var timeSinceLastWeave = (DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(lastAutomaticWeave)).TotalSeconds;
             if (timeSinceLastWeave > EditorApplication.timeSinceStartup)
             {
                 // We haven't executed the automatic weaver in this editor session
                 _ = WeaveAllAssemblies();
-                EditorPrefs.SetInt(AutomaticWeavePrefKey, (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+                EditorPrefs.SetInt(automaticWeavePrefKey, (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             }
         }
 
@@ -312,26 +315,35 @@ namespace RealmWeaver
                 WeaveAssemblyCore(file.path, referencePaths, config);
             }
 
-            if (report.summary.platform == BuildTarget.iOS || report.summary.platform == BuildTarget.tvOS)
+            if (report.summary.platform != BuildTarget.iOS && report.summary.platform != BuildTarget.tvOS)
             {
-                var realmAssemblyPath = files
-                    .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
-                    .path;
+                return;
+            }
 
-                var realmResolutionResult = WeaverAssemblyResolver.Resolve(realmAssemblyPath, referencePaths);
-                using (realmResolutionResult)
+            var realmAssemblyPath = files
+                .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
+                .path;
+
+            var realmResolutionResult = WeaverAssemblyResolver.Resolve(realmAssemblyPath, referencePaths);
+            if (realmResolutionResult == null)
+            {
+                return;
+            }
+
+            using (realmResolutionResult)
+            {
+                var wrappersReference = realmResolutionResult.Module.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
+                if (wrappersReference == null)
                 {
-                    var wrappersReference = realmResolutionResult.Module.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
-                    if (wrappersReference != null)
-                    {
-                        wrappersReference.Name = "__Internal";
-                        realmResolutionResult.SaveModuleUpdates();
-                    }
+                    return;
                 }
+
+                wrappersReference.Name = "__Internal";
+                realmResolutionResult.SaveModuleUpdates();
             }
         }
 
-        public void OnPostprocessBuild(BuildReport report)
+        public void OnPostprocessBuild(BuildReport? report)
         {
             switch (report?.summary.platform)
             {
@@ -342,7 +354,7 @@ namespace RealmWeaver
             }
         }
 
-        public void OnPreprocessBuild(BuildReport report)
+        public void OnPreprocessBuild(BuildReport? report)
         {
             bool enableForDevice;
             bool enableForSimulator;
@@ -366,21 +378,21 @@ namespace RealmWeaver
         /// <summary>
         /// Updates the native module import config for the wrappers framework. Unity doesn't support
         /// xcframework, which means that it won't correctly include it when building for iOS. This is
-        /// a somewhat hacky solution that will manually update the compatibilify flag and the AddToEmbeddedBinaries
+        /// a somewhat hacky solution that will manually update the compatibility flag and the AddToEmbeddedBinaries
         /// flag just for the slice that is compatible with the current build target (simulator or device).
         /// </summary>
         private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator, BuildTarget buildTarget)
         {
-            const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
+            const string errorMessage = "Failed to find the native Realm framework at '{0}'. " +
                 "Please double check that you have imported Realm correctly and that the file exists. " +
                 "Typically, it should be located at Packages/io.realm.unity/Runtime/{1}";
-            const string SimulatorPath = "Simulator";
-            const string DevicePath = "Device";
+            const string simulatorPath = "Simulator";
+            const string devicePath = "Device";
 
             var importers = PluginImporter.GetAllImporters();
 
-            UpdateiOSFramework(SimulatorPath, enableForSimulator);
-            UpdateiOSFramework(DevicePath, enableForDevice);
+            UpdateiOSFramework(simulatorPath, enableForSimulator);
+            UpdateiOSFramework(devicePath, enableForDevice);
 
             void UpdateiOSFramework(string path, bool enabled)
             {
@@ -388,7 +400,7 @@ namespace RealmWeaver
                 var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
                 if (frameworkImporter == null)
                 {
-                    throw new Exception(string.Format(ErrorMessage, path, buildTarget));
+                    throw new Exception(string.Format(errorMessage, path, buildTarget));
                 }
 
                 frameworkImporter.SetCompatibleWithPlatform(buildTarget, enabled);
@@ -457,20 +469,20 @@ namespace RealmWeaver
         {
             try
             {
-                if (_UnityMajorVersion < 2022)
+                if (UnityMajorVersion < 2022)
                 {
-                    var getFilesPI = typeof(BuildReport).GetProperty("files", BindingFlags.Public | BindingFlags.Instance);
+                    var getFilesPI = typeof(BuildReport).GetProperty("files", BindingFlags.Public | BindingFlags.Instance)!;
                     return (BuildFile[])getFilesPI.GetValue(report);
                 }
 
                 // Starting with 2022, BuildReport.files is replaced with BuildReport.GetFiles. This is a
                 // bit hacky, but allows us to target both versions with the same assembly.
-                var getFilesMI = typeof(BuildReport).GetMethod("GetFiles", BindingFlags.Public | BindingFlags.Instance);
+                var getFilesMI = typeof(BuildReport).GetMethod("GetFiles", BindingFlags.Public | BindingFlags.Instance)!;
                 return (BuildFile[])getFilesMI.Invoke(report, null);
             }
             catch (Exception e)
             {
-                UnityLogger.Instance.Error($"Failed to obtain list of files from report. Please report this error on http://github.com/realm/realm-dotnet/issues. Unity version: {Application.unityVersion}, error message: {e.Message}.");
+                UnityLogger.Instance.Error($"Failed to obtain list of files from report. Please report this error on https://github.com/realm/realm-dotnet/issues. Unity version: {Application.unityVersion}, error message: {e.Message}.");
                 throw;
             }
         }
@@ -509,7 +521,7 @@ namespace RealmWeaver
                 NetFrameworkTarget = netFrameworkInfo.Name,
                 NetFrameworkTargetVersion = netFrameworkInfo.Version,
                 AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                InstallationMethod = _installMethodTask!.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
                 FrameworkName = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
                 FrameworkVersion = Application.unityVersion,
                 TargetArchitecture = GetCpuArchitecture(target),
@@ -530,7 +542,7 @@ namespace RealmWeaver
 
             var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
 
-            // conversion necessary as after unity verison 2021.1, entry NET_4_6 and NET_Standard_2_0
+            // conversion necessary as after unity version 2021.1, entry NET_4_6 and NET_Standard_2_0
             // are actually representing .NET 4.8 and .NET Standard 2.1
             // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
             if (unityVersion >= new Version("2021.2"))
@@ -609,7 +621,7 @@ namespace RealmWeaver
                 System.Diagnostics.Debug.WriteLine(message);
             }
 
-            public void Error(string message, SequencePoint sequencePoint = null)
+            public void Error(string message, SequencePoint? sequencePoint = null)
             {
                 UnityEngine.Debug.LogError(GetMessage(message, sequencePoint));
             }
@@ -619,19 +631,14 @@ namespace RealmWeaver
                 UnityEngine.Debug.Log(message);
             }
 
-            public void Warning(string message, SequencePoint sequencePoint = null)
+            public void Warning(string message, SequencePoint? sequencePoint = null)
             {
                 UnityEngine.Debug.LogWarning(GetMessage(message, sequencePoint));
             }
 
-            private static string GetMessage(string message, SequencePoint sp)
+            private static string GetMessage(string message, SequencePoint? sp)
             {
-                if (sp == null)
-                {
-                    return message;
-                }
-
-                return $"{sp.Document.Url}({sp.StartLine}, {sp.StartColumn}): {message}";
+                return sp == null ? message : $"{sp.Document.Url}({sp.StartLine}, {sp.StartColumn}): {message}";
             }
         }
     }
