@@ -94,6 +94,7 @@ jobs:
     - #@ template.replace(downloadAllArtifacts())
     - #@ template.replace(readVersionFromPackage())
     - #@ template.replace(uploadDocsToS3())
+    - #@ template.replace(uploadToNuget("Realm.PlatformHelpers"))
     - #@ template.replace(uploadToNuget("Realm"))
     - #@ template.replace(uploadToNpm())
     - #@ template.replace(mergeReleasePR())

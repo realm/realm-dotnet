@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator", "fetchPackageArtifacts", "setupWorkloads")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-ios
@@ -34,9 +34,7 @@ jobs:
         run: |
           sudo xcode-select -s "/Applications/Xcode_14.3.app"
           echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
-      - name: Setup workloads
-        run: |
-          dotnet workload install maui
+      - #@ setupWorkloads()
       - name: Build the tests
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests

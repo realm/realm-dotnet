@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Threading;
+using Realm.UnityUtils;
 using Realms;
+using Realms.PlatformHelpers;
 using UnityEngine;
 
 namespace UnityUtils
@@ -31,6 +33,7 @@ namespace UnityUtils
         {
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
+                Platform.DeviceInfo = new UnityDeviceInfo();
                 InteropConfig.AddPotentialStorageFolder(FileHelper.GetStorageFolder());
                 Realms.Logging.Logger.Console = new UnityLogger();
                 Application.quitting += () =>

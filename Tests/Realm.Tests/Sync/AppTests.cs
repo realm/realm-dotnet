@@ -20,10 +20,13 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+using Realms.PlatformHelpers;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -32,6 +35,79 @@ namespace Realms.Tests.Sync
     [TestFixture, Preserve(AllMembers = true)]
     public class AppTests : SyncTestBase
     {
+        [Test]
+        public void DeviceInfo_OutputsMeaningfulInfo()
+        {
+            if (TestHelpers.IsUnity)
+            {
+                Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
+                return;
+            }
+
+            var framework = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
+
+            var os = SharedRealmHandle.GetNativeLibraryOS();
+            switch (os)
+            {
+                case "Windows":
+                case "Linux":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    break;
+                case "macOS":
+                    // We don't detect the device on .NET Core apps, only Xamarin or net6.0-maccatalyst.
+                    if (framework?.Contains(".NETCoreApp") == true)
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    }
+                    else
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple"), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                    }
+
+                    break;
+                case "iOS":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPhone"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64"), "Version");
+                    break;
+                case "Android":
+                    Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                    break;
+                case "UWP":
+                    if (TestHelpers.IsUWP)
+                    {
+#if DEBUG
+                        // Extracting device info only works for local builds - in many cases we don't have registry access on CI
+                        // so we can't make assumptions about what value we'll get for Name/Version.
+                        Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+#endif
+                    }
+                    else
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    }
+
+                    break;
+                case "tvOS":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple TV"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("AppleTV").Or.EqualTo("x86_64"), "Version");
+                    break;
+                case "Mac Catalyst":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPad"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64"), "Version");
+                    break;
+                default:
+                    Assert.Fail($"Unknown OS: {os}");
+                    break;
+            }
+        }
+
         [Test]
         public void AppCreate_CreatesApp()
         {

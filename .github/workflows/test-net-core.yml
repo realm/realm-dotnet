@@ -64,6 +64,11 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Cleanup Workspace
       run: git clean -fdx
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:

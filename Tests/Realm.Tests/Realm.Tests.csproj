@@ -28,7 +28,7 @@
     <PackageId>Realm.Tests</PackageId>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
-    <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
+    <RealmDllsPath Condition="'$(RealmDllsPath)' == ''">..\..\Realm\Realm.Unity\Runtime</RealmDllsPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestWeavedClasses)' == 'true'">
@@ -53,7 +53,11 @@
     the same dll here, otherwise when we try to ilrepack the test dependencies, we won't find MongoDB.Bson and friends.
     -->
     <Reference Include="Realm">
-      <HintPath>$(RealmDllPath)</HintPath>
+      <HintPath>$(RealmDllsPath)\Realm.dll</HintPath>
+    </Reference>
+
+    <Reference Include="Realm.PlatformHelpers">
+      <HintPath>$(RealmDllsPath)\Realm.PlatformHelpers.dll</HintPath>
     </Reference>
 
     <!--
@@ -115,7 +119,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Linux\$(Configuration)-aarch64\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

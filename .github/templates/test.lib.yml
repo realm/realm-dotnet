@@ -1,15 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode")
-
-#@ def fetchPackageArtifacts(versionExpression = "inputs.version", packages = [ "Realm" ]):
-#@ for pkg in packages:
-  - name: #@ "Fetch " + pkg
-    uses: #@ actionDownloadArtifact
-    with:
-      name: #@ pkg + ".${{ " + versionExpression + " }}"
-      path: ${{ github.workspace }}/Realm/packages/
-#@ end
-#@ end
+#@ load("common.lib.yml", "actionDownloadArtifact", "msbuild", "dotnetPublish", "fetchWrapperBinaries", "checkoutCode", "fetchPackageArtifacts")
 
 #@ def baasTestArgs(differentiator):
 #@   return " --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=" + differentiator

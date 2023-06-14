@@ -34,6 +34,7 @@
 #include <realm/sync/subscriptions.hpp>
 #include <realm/exceptions.hpp>
 #include <realm/util/logger.hpp>
+#include <realm/util/platform_info.hpp>
 
 #include <list>
 #include <unordered_set>
@@ -845,5 +846,10 @@ REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_t
     });
 }
 
+REALM_EXPORT size_t shared_realm_get_operating_system(uint16_t* buffer, size_t buffer_length)
+{
+    std::string platform = realm::util::get_library_platform();
+    return stringdata_to_csharpstringbuffer(platform, buffer, buffer_length);
 }
 
+}

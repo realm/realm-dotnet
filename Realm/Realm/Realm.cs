@@ -1093,7 +1093,6 @@ namespace Realms
         public T? Find<T>(Guid? primaryKey)
             where T : IRealmObject => FindCore<T>(primaryKey);
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
         internal T? FindCore<T>(RealmValue primaryKey)
             where T : IRealmObject
         {
@@ -1657,7 +1656,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public IEmbeddedObject AddEmbeddedObjectToList(object list)
             {
                 return PerformEmbeddedListOperation(list, listHandle => listHandle.AddEmbedded());
@@ -1676,7 +1674,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public IEmbeddedObject InsertEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
@@ -1703,7 +1700,6 @@ namespace Realms
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>
             /// <seealso cref="SetEmbeddedObjectInList"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public IEmbeddedObject SetEmbeddedObjectInList(object list, int index)
             {
                 if (index < 0)
@@ -1726,7 +1722,6 @@ namespace Realms
             /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="SetEmbeddedObjectInDictionary"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public IEmbeddedObject AddEmbeddedObjectToDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
@@ -1746,7 +1741,6 @@ namespace Realms
             /// <see cref="IDictionary{String, TValue}.Add"/> and <see cref="IDictionary{String, TValue}.this[String]"/>.
             /// </remarks>
             /// <seealso cref="AddEmbeddedObjectToDictionary"/>
-            [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Argument is validated in PerformEmbeddedListOperation.")]
             public IEmbeddedObject SetEmbeddedObjectInDictionary(object dictionary, string key)
             {
                 Argument.NotNull(key, nameof(key));
@@ -1840,7 +1834,6 @@ namespace Realms
             /// </exception>
             public IRealmObject? Find(string className, Guid? primaryKey) => FindCore(className, primaryKey);
 
-            [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The RealmObjectBase instance will own its handle.")]
             internal IRealmObject? FindCore(string className, RealmValue primaryKey)
             {
                 _realm.ThrowIfDisposed();

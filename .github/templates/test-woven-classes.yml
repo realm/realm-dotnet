@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "wovenClassesBuildTests")
+#@ load("common.lib.yml", "checkoutCode", "fetchPackageArtifacts")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "wovenClassesBuildTests")
 
 ---
 name: test-woven-classes

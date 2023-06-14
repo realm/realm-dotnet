@@ -1,0 +1,59 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.22">
+
+  <PropertyGroup>
+    <Product>Realm Platform Helpers</Product>
+    <Description>
+      A set of platform-specific helpers used in conjunction with Realm. This package is always referenced by the main Realm package
+      and should never be added directly to your project.
+    </Description>
+
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <!-- Mono MSBuild (16.0) on macOS cannot target .NET 6 so we can only add the .NET 6 tfms for dotnet build/Windows MSBuild -->
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows')) OR (!$([MSBuild]::IsOsPlatform('Linux')) AND '$(MSBuildVersion)' &gt;= '17.0')">
+      $(TargetFrameworks);net6.0-ios;net6.0-android;net6.0-maccatalyst;net6.0-tvos
+    </TargetFrameworks>
+    <!-- dotnet build on macOS cannot target Xamarin.XYZ -->
+    <!-- Additionally, the Xamarin targets are not available on Arm64 Windows -->
+    <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR (!$([MSBuild]::IsOsPlatform('Linux')) AND '$(MSBuildVersion)' &lt; '17.0')">
+      $(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20
+    </TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <LangVersion>9.0</LangVersion>
+    <nullable>enable</nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.shared.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard'))">
+    <Compile Include="**\*.netstandard.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
+    <SDKReference Include="WindowsDesktop, Version=10.0.19041.0">
+      <Name>Windows Desktop Extensions for the UWP</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsMobile, Version=10.0.19041.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+    <Compile Include="**\*.uwp.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('MonoAndroid')) OR $(TargetFramework.StartsWith('net6.0-android'))">
+    <Compile Include="**\*.android.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.iOS')) OR $(TargetFramework.StartsWith('net6.0-ios')) OR $(TargetFramework.StartsWith('Xamarin.TVOS')) OR $(TargetFramework.StartsWith('net6.0-tvos')) OR $(TargetFramework.StartsWith('net6.0-maccatalyst'))">
+    <Compile Include="**\*.ios.*.cs" />
+    <Compile Include="**\*.ios.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('Xamarin.Mac'))">
+    <Compile Include="**\*.mac.*.cs" />
+    <Compile Include="**\*.mac.cs" />
+  </ItemGroup>
+
+  <Import Project="..\AssemblyInfo.props " />
+</Project>

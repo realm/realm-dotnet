@@ -38,6 +38,7 @@
     <ProjectReference Include="..\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj" />
     <ProjectReference Include="..\Realm.SourceGenerator\Realm.SourceGenerator.csproj" PrivateAssets="Compile">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
@@ -199,8 +200,8 @@
   <UsingTask TaskName="ExtractChangelog" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
 
     <ParameterGroup>
-        <FilePath ParameterType="System.String" Required="true" />
-        <ExtractedText ParameterType="System.String" Output="true" />
+      <FilePath ParameterType="System.String" Required="true" />
+      <ExtractedText ParameterType="System.String" Output="true" />
     </ParameterGroup>
 
     <Task>
@@ -208,7 +209,7 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Text.RegularExpressions" />
       <Code Type="Fragment" Language="cs">
-<![CDATA[
+        <![CDATA[
 try
 {
     var textToParse = File.ReadAllText(FilePath);
