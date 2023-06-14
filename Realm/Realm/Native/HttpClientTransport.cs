@@ -60,7 +60,7 @@ namespace Realms.Native
 
             public UInt64 timeout_ms;
 
-            public MarshaledVector<Pair<StringValue, StringValue>> headers;
+            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
 
             private StringValue body;
 
@@ -92,7 +92,7 @@ namespace Realms.Native
 
             public CustomErrorCode custom_status_code;
 
-            public MarshaledVector<Pair<StringValue, StringValue>> headers;
+            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
 
             public StringValue body;
         }
@@ -138,36 +138,26 @@ namespace Realms.Native
         {
             try
             {
+                using var pool = new BufferPool();
                 try
                 {
                     var httpClient = request.HttpClient;
-                    using var pool = new BufferPool();
 
                     using var message = BuildRequest(request);
                     using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
                     var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
 
-                    HttpClientResponse nativeResponse;
-                    using (pool.MakeCurrent())
+                    var headers = response.Headers.Concat(response.Content.Headers)
+                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, pool), StringValue.AllocateFrom(h.Value.FirstOrDefault(), pool)))
+                        .ToArray();
+
+                    var nativeResponse = new HttpClientResponse
                     {
-                        //var headers = response.Headers.Concat(response.Content.Headers)
-                        //    .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key), StringValue.AllocateFrom(h.Value.FirstOrDefault())))
-                        //    .ToArray();
-
-                        var headers1 = response.Headers.Concat(response.Content.Headers)
-                            .Select(h => new KeyValuePair<string, string>(h.Key, h.Value.FirstOrDefault()!))
-                            .ToArray();
-
-                        var headers = headers1.Select(kvp => new Pair<StringValue, StringValue>(StringValue.AllocateFrom(kvp.Key), StringValue.AllocateFrom(kvp.Value))).ToArray();
-
-                        nativeResponse = new HttpClientResponse
-                        {
-                            http_status_code = (int)response.StatusCode,
-                            headers = MarshaledVector<Pair<StringValue, StringValue>>.AllocateFrom(headers),
-                            body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
-                        };
-                    }
+                        http_status_code = (int)response.StatusCode,
+                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers, pool),
+                        body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false), pool),
+                    };
 
                     respond(nativeResponse, callback);
                 }
@@ -187,7 +177,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.UnknownHttp,
-                        body = StringValue.AllocateFrom(sb.ToString()),
+                        body = StringValue.AllocateFrom(sb.ToString(), pool),
                     };
 
                     respond(nativeResponse, callback);
@@ -197,7 +187,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Timeout,
-                        body = StringValue.AllocateFrom($"Operation failed to complete within {request.timeout_ms} ms."),
+                        body = StringValue.AllocateFrom($"Operation failed to complete within {request.timeout_ms} ms.", pool),
                     };
 
                     respond(nativeResponse, callback);
@@ -207,7 +197,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.HttpClientDisposed,
-                        body = StringValue.AllocateFrom(ode.Message),
+                        body = StringValue.AllocateFrom(ode.Message, pool),
                     };
 
                     respond(nativeResponse, callback);
@@ -217,7 +207,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Unknown,
-                        body = StringValue.AllocateFrom(ex.Message),
+                        body = StringValue.AllocateFrom(ex.Message, pool),
                     };
 
                     respond(nativeResponse, callback);

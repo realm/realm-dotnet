@@ -19,95 +19,69 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Realms.Native
 {
     internal class BufferPool : IDisposable
     {
         private readonly List<IDisposable> _buffers = new();
+        private bool _disposed;
 
-        public static BufferPool? Current => MakeCurrentHelper.CurrentBufferPool;
-
-        public BufferPool()
-        {
-        }
-
-        public unsafe Buffer<T> Rent<T>(int count = 1)
+        public Buffer<T> Rent<T>(int count = 1)
             where T : unmanaged
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(typeof(BufferPool).Name);
+            }
+
             if (count < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            var memory = MemoryPool<T>.Shared.Rent(count);
-            var buffer = new Buffer<T>(memory, count);
+            var buffer = new Buffer<T>(ArrayPool<T>.Shared, count);
             _buffers.Add(buffer);
             return buffer;
         }
 
-        public IDisposable MakeCurrent() => new MakeCurrentHelper(this);
-
         public void Dispose()
         {
+            _disposed = true;
+
             foreach (var buffer in _buffers)
             {
                 buffer.Dispose();
             }
+
+            _buffers.Clear();
         }
 
-        public class Buffer<T> : IDisposable
+        public readonly struct Buffer<T> : IDisposable
             where T : unmanaged
         {
-            private readonly IMemoryOwner<T> _memory;
-            private readonly MemoryHandle _handle;
+            private readonly ArrayPool<T> _pool;
+            private readonly T[] _buffer;
+            private readonly GCHandle _handle;
 
-            public unsafe T* Data => (T*)_handle.Pointer;
+            public unsafe T* Data => (T*)_handle.AddrOfPinnedObject();
 
             public int Length { get; }
 
-            internal Buffer(IMemoryOwner<T> memory, int length)
+            internal Buffer(ArrayPool<T> pool, int length)
             {
-                _memory = memory;
-                _handle = _memory.Memory.Pin();
+                _pool = pool;
+                _buffer = pool.Rent(length);
+                _handle = GCHandle.Alloc(_buffer, GCHandleType.Pinned);
                 Length = length;
             }
 
             void IDisposable.Dispose()
             {
-                Debug.WriteLine("Disposing buffer.");
-                _handle.Dispose();
-                _memory.Dispose();
-                Debug.WriteLine("Disposed buffer.");
-            }
-        }
+                _handle.Free();
+                _pool.Return(_buffer);
 
-        private class MakeCurrentHelper : IDisposable
-        {
-            private static readonly AsyncLocal<Stack<BufferPool>> _pools = new();
-            private readonly Stack<BufferPool> _stack;
-            private readonly BufferPool _parent;
-
-            public static BufferPool? CurrentBufferPool => _pools.Value?.Count > 0 ? _pools.Value?.Peek() : null;
-
-            public MakeCurrentHelper(BufferPool parent)
-            {
-                _stack = _pools.Value ??= new();
-                _parent = parent;
-
-                Debug.Assert(!_stack.Contains(parent), "BufferPool is not reentrant");
-
-                _stack.Push(parent);
-            }
-
-            public void Dispose()
-            {
-                Debug.Assert(_stack == _pools.Value, "BufferPool expected to be disposed on the same async context as the pool was entered on.");
-                var popped = _stack.Pop();
-                Debug.Assert(_parent == popped, "Expected BufferPool to be at the top of the stack when disposed.");
             }
         }
     }

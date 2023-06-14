@@ -323,21 +323,19 @@ namespace Realms.Native
         public byte* data;
         public nint size;
 
-        public static StringValue AllocateFrom(string? value)
+        public static StringValue AllocateFrom(string? value, BufferPool pool)
         {
             if (value is null)
             {
                 return new StringValue { data = null, size = 0 };
             }
 
-            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
-
-            var byteCount = Encoding.UTF8.GetByteCount(value);
-            var buffer = BufferPool.Current.Rent<byte>(byteCount + 1);
+            var byteCount = Encoding.UTF8.GetMaxByteCount(value.Length);
+            var buffer = pool.Rent<byte>(byteCount + 1);
             fixed (char* stringBytes = value)
             {
-                Encoding.UTF8.GetBytes(stringBytes, value.Length, buffer.Data, byteCount);
-                buffer.Data[buffer.Length] = 0;
+                byteCount = Encoding.UTF8.GetBytes(stringBytes, value.Length, buffer.Data, buffer.Length);
+                buffer.Data[byteCount] = 0;
             }
 
             return new StringValue { data = buffer.Data, size = byteCount };

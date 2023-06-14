@@ -103,18 +103,16 @@ namespace Realms
             return ret;
         }
 
-        public static MarshaledVector<T> AllocateEmpty(int capacity)
+        public static MarshaledVector<T> AllocateEmpty(int capacity, BufferPool pool)
         {
-            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
-            var buffer = BufferPool.Current.Rent<T>(capacity);
+            var buffer = pool.Rent<T>(capacity);
             Unsafe.InitBlock(buffer.Data, 0, (uint)capacity);
             return new MarshaledVector<T>(buffer.Data, capacity);
         }
 
-        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection)
+        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection, BufferPool pool)
         {
-            Debug.Assert(BufferPool.Current != null, "Did you forget to set up a BufferPool?");
-            var buffer = BufferPool.Current.Rent<T>(collection.Count);
+            var buffer = pool.Rent<T>(collection.Count);
             var i = 0;
             foreach (var item in collection)
             {
