@@ -6,7 +6,16 @@ env:
   DOTNET_NOLOGO: true
 jobs:
   run-tests-weaver:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os:
+        - runner: windows-latest
+          runtime: win-x64
+        - runner: ubuntu-latest
+          runtime: linux-x64
+        - runner: macos-latest
+          runtime: osx-x64
+    runs-on: ${{ matrix.os.runner }}
     name: Weaver
     timeout-minutes: 15
     steps:
@@ -19,11 +28,13 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Setup workloads
+      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
-      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f netcoreapp3.1 -r win-x64 --no-self-contained
+      run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/netcoreapp3.1/win-x64' >> $GITHUB_OUTPUT
+      run: echo 'executable-path=./Tests/Weaver/Realm.Fody.Tests/bin/Release/net6.0/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
       shell: bash
     - name: Run Tests
       run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Fody.Tests --result=TestResults.Weaver.xml --labels=After
@@ -31,7 +42,7 @@ jobs:
       uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
-        name: Results Weaver
+        name: Results Weaver ${{ matrix.os.runtime }}
         path: TestResults.Weaver.xml
         reporter: java-junit
         list-suites: failed

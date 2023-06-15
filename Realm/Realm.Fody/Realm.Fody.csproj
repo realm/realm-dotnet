@@ -10,14 +10,19 @@
     <Description>Realm.Fody is a Fody weaver used to replace the property setters and getters of your Realm models with Realm-backed ones.</Description>
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn),1591, NU5100, NU5128</NoWarn>
-    <LangVersion>8.0</LangVersion>
+    <NoWarn>$(NoWarn),1591, NU5100, NU5128, CA1050</NoWarn>
+    <LangVersion>11.0</LangVersion>
     <IncludeSymbols>False</IncludeSymbols>
     <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup Label="References">
     <PackageReference Include="FodyHelpers" Version="6.*" PrivateAssets="All" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PolySharp" Version="1.13.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

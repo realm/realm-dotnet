@@ -9,8 +9,9 @@
     <CodeAnalysisRuleSet>$(ProjectDir)..\..\global.ruleset</CodeAnalysisRuleSet>
     <AssemblyName>Realm.UnityWeaver</AssemblyName>
     <NoWarn>1701;1702;NU1701</NoWarn>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>11</LangVersion>
     <DefineConstants>$(DefineConstants);PRIVATE_INDEXTYPE</DefineConstants>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+    <PackageReference Include="PolySharp" Version="1.13.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup Condition="'$(LocalUnityReference)' == 'true'">

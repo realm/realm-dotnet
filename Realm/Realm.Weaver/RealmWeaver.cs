@@ -18,14 +18,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Realms;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable MemberCanBePrivate.Global
 namespace RealmWeaver
 {
     /// <summary>
@@ -65,7 +65,7 @@ namespace RealmWeaver
         internal const string NullableObjectIdTypeName = "System.Nullable`1<MongoDB.Bson.ObjectId>";
         internal const string NullableGuidTypeName = "System.Nullable`1<System.Guid>";
 
-        private static readonly HashSet<string> _realmValueTypes = new HashSet<string>
+        private static readonly HashSet<string> _realmValueTypes = new()
         {
             CharTypeName,
             SingleTypeName,
@@ -125,7 +125,7 @@ namespace RealmWeaver
             NullableGuidTypeName
         };
 
-        private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
+        private static readonly HashSet<string> RealmPropertyAttributes = new()
         {
             "PrimaryKeyAttribute",
             "IndexedAttribute",
@@ -182,8 +182,15 @@ namespace RealmWeaver
         {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
-            if (_references.WovenAssemblyAttribute == null)
+            var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
+
+            // This is necessary because some frameworks, e.g. xamarin, have the models in one assembly and the platform
+            // specific code in another assembly, but we still want to report what target the user is building for
+            if (_references.Realm == null)
             {
+                // Don't wait for submission
+                _ = analytics.SubmitAnalytics();
+
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             }
 
@@ -192,28 +199,6 @@ namespace RealmWeaver
             {
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
-
-            var submitAnalytics = Task.Run(() =>
-            {
-                analyticsConfig.ModuleName = _moduleDefinition.Name;
-                analyticsConfig.IsUsingSync = IsUsingSync();
-                var analytics = new Analytics(analyticsConfig);
-                try
-                {
-                    var payload = analytics.SubmitAnalytics();
-#if DEBUG
-                    _logger.Info($@"
-----------------------------------
-Analytics payload
-{payload}
-----------------------------------");
-#endif
-                }
-                catch (Exception e)
-                {
-                    _logger.Debug("Error submitting analytics: " + e.Message);
-                }
-            });
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
@@ -238,9 +223,12 @@ Analytics payload
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
 
-            submitAnalytics.Wait();
+            analytics.AnalyzeRealmClassProperties(weaveResults);
 
-            var failedResults = weaveResults.Where(r => !r.IsSuccessful);
+            // Don't wait for submission
+            _ = analytics.SubmitAnalytics();
+
+            var failedResults = weaveResults.Where(r => !r.IsSuccessful).ToArray();
             if (failedResults.Any())
             {
                 return WeaveModuleResult.Error($"The following types had errors when woven: {string.Join(", ", failedResults.Select(f => f.Type))}");
@@ -270,7 +258,7 @@ Analytics payload
                     var instruction = constructor.Body.Instructions[i];
 
                     // If it comes across "Stfld <backing_field>"
-                    // it considers this the end index of backing field initializaion instructions.
+                    // it considers this the end index of backing field initialization instructions.
                     if (instruction.OpCode == OpCodes.Stfld && instruction.Operand is FieldReference field)
                     {
                         if (backingFields.Contains(field.MetadataToken))
@@ -280,7 +268,7 @@ Analytics payload
                     }
 
                     // If it comes across "Ldarg 0",
-                    // it considers this the start index of backing field initializaion instructions
+                    // it considers this the start index of backing field initialization instructions
                     // and removes all backing field instructions from end to start.
                     else if (instruction.OpCode == OpCodes.Ldarg_0)
                     {
@@ -394,7 +382,7 @@ Analytics payload
             //// This is equivalent to:
             ////   set => Accessor.Property = value;
 
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+            // Whilst we're only targeting auto-properties here, someone like PropertyChanged.Fody
             // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
             var il = prop.SetMethod.Body.GetILProcessor();
             prop.SetMethod.Body.Instructions.Clear();
@@ -421,7 +409,7 @@ Analytics payload
 
             var didSucceed = true;
             var persistedProperties = new List<WeavePropertyResult>();
-            foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
+            foreach (var prop in type.Properties.Where(x => x.HasThis && x.CustomAttributes.All(a => a.AttributeType.Name != "IgnoredAttribute")))
             {
                 try
                 {
@@ -433,7 +421,7 @@ Analytics payload
                     else
                     {
                         var sequencePoint = prop.GetSequencePoint();
-                        if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
+                        if (!weaveResult.ErrorMessage.IsNullOrEmpty())
                         {
                             // We only want one error point, so even though there may be more problems, we only log the first one.
                             _logger.Error(weaveResult.ErrorMessage, sequencePoint);
@@ -443,7 +431,7 @@ Analytics payload
                         }
                         else
                         {
-                            if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                            if (!weaveResult.WarningMessage.IsNullOrEmpty())
                             {
                                 _logger.Warning(weaveResult.WarningMessage, sequencePoint);
                             }
@@ -452,7 +440,8 @@ Analytics payload
                                                           .Select(a => a.AttributeType.Name)
                                                           .Intersect(RealmPropertyAttributes)
                                                           .OrderBy(a => a)
-                                                          .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+                                                          .Select(a => $"[{a.Replace("Attribute", string.Empty)}]")
+                                                          .ToArray();
 
                             if (realmAttributeNames.Any())
                             {
@@ -481,7 +470,7 @@ Analytics payload
             var pkProperty = persistedProperties.FirstOrDefault(p => p.IsPrimaryKey);
             if (type.IsEmbeddedObjectInheritor(_references) && pkProperty != null)
             {
-                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property.Name} defined.", type.GetSequencePoint());
+                _logger.Error($"Class {type.Name} is an EmbeddedObject but has a primary key {pkProperty.Property!.Name} defined.", type.GetSequencePoint());
                 return WeaveTypeResult.Error(type.Name);
             }
 
@@ -531,7 +520,6 @@ Analytics payload
                 return WeavePropertyResult.Skipped();
             }
 
-            var backingField = prop.GetBackingField();
             var indexedAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "IndexedAttribute");
             if (indexedAttribute != null)
             {
@@ -543,14 +531,12 @@ Analytics payload
                 if (indexedAttribute.ConstructorArguments.Count > 0)
                 {
                     var mode = (IndexType)(int)indexedAttribute.ConstructorArguments[0].Value;
-                    if (mode == IndexType.None)
+                    switch (mode)
                     {
-                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
-                    }
-
-                    if (mode == IndexType.FullText && prop.PropertyType.FullName != StringTypeName)
-                    {
-                        return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
+                        case IndexType.None:
+                            return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.");
+                        case IndexType.FullText when prop.PropertyType.FullName != StringTypeName:
+                            return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on {prop.PropertyType.FullName}.");
                     }
                 }
             }
@@ -591,6 +577,12 @@ Analytics payload
             if (backlinkAttribute != null && !prop.IsIQueryable())
             {
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} has [Backlink] applied, but is not IQueryable.");
+            }
+
+            var backingField = prop.GetBackingField();
+            if (backingField == null)
+            {
+                return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is an automatic property without a backing field.");
             }
 
             if (_realmValueTypes.Contains(prop.PropertyType.FullName))
@@ -881,7 +873,7 @@ Analytics payload
             il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call [ this -> this, this]
             il.InsertBefore(start, il.Create(OpCodes.Call, _references.RealmObject_get_IsManaged));  // [ this, this -> this,  isManaged ]
 
-            // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
+            // push in the label then go relative to that - so we can forward-ref the label insert if/else blocks backwards
             var labelElse = il.Create(OpCodes.Nop);  // [this]
             il.InsertBefore(start, labelElse); // else
             il.InsertBefore(start, il.Create(OpCodes.Call, new GenericInstanceMethod(_references.System_Linq_Enumerable_Empty) { GenericArguments = { elementType } })); // [this, enumerable]
@@ -936,7 +928,7 @@ Analytics payload
                 throw new ArgumentNullException(nameof(setValueReference));
             }
 
-            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+            // Whilst we're only targeting auto-properties here, someone like PropertyChanged.Fody
             // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
             var il = prop.SetMethod.Body.GetILProcessor();
             prop.SetMethod.Body.Instructions.Clear();
@@ -1012,7 +1004,7 @@ Analytics payload
                     var castInstance = (ObjectType)instance;
 
                     *foreach* non-list woven property in castInstance's schema
-                    *if* castInstace.field is a RealmObject descendant
+                    *if* castInstance.field is a RealmObject descendant
                         castInstance.Realm.Add(castInstance.field, update);
                         castInstance.Property = castInstance.Field;
                     *else if* property is PK
@@ -1073,10 +1065,10 @@ Analytics payload
                 il.Append(il.Create(OpCodes.Stloc_0));
 
                 // We'll process collections separately as those require variable access
-                foreach (var prop in properties.Where(p => !p.IsPrimaryKey && !p.Property.IsCollection(out _)))
+                foreach (var prop in properties.Where(p => !p.IsPrimaryKey && !p.Property!.IsCollection(out _)))
                 {
-                    var property = prop.Property;
-                    var field = prop.Field;
+                    var property = prop.Property!;
+                    var field = prop.Field!;
 
                     if (property.SetMethod != null)
                     {
@@ -1088,7 +1080,7 @@ Analytics payload
                         // castInstance.Property = castInstance.field;
                         //
                         // *addPlaceholder* will be the Brfalse instruction that will skip the call to Add if the field is null.
-                        Instruction addPlaceholder = null;
+                        Instruction? addPlaceholder = null;
 
                         // We can skip setting properties that have their default values unless:
                         var shouldSetAlways = property.IsNullable() || // The property is nullable - those should be set explicitly to null
@@ -1110,7 +1102,7 @@ Analytics payload
                         // *updatePlaceholder* will be the Brtrue instruction that will skip the default check and move to the
                         // property setting logic. The default check branching instruction is inserted above the *setStartPoint*
                         // instruction later on.
-                        Instruction skipDefaultsPlaceholder = null;
+                        Instruction? skipDefaultsPlaceholder = null;
                         if (property.ContainsRealmObject(_references))
                         {
                             il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1196,7 +1188,7 @@ Analytics payload
                 // Process collection properties
                 foreach (var prop in properties)
                 {
-                    if (!prop.Property.IsCollection(out var collectionType))
+                    if (prop.Property?.IsCollection(out var collectionType) != true)
                     {
                         continue;
                     }
@@ -1254,7 +1246,7 @@ Analytics payload
                     il.Emit(OpCodes.Ldarg_2);
                     il.Emit(OpCodes.Ldarg_1);
                     il.Emit(OpCodes.Castclass, _moduleDefinition.ImportReference(realmObjectType));
-                    il.Emit(OpCodes.Callvirt, _moduleDefinition.ImportReference(pkProperty.Property.GetMethod));
+                    il.Emit(OpCodes.Callvirt, _moduleDefinition.ImportReference(pkProperty.Property!.GetMethod));
                     il.Emit(OpCodes.Call, _references.RealmValue_op_Implicit(pkProperty.Property.PropertyType));
                 }
                 else
@@ -1288,29 +1280,6 @@ Analytics payload
             realmObjectType.NestedTypes.Add(helperType);
 
             return helperType;
-        }
-
-        private bool IsUsingSync()
-        {
-            try
-            {
-                return IsMethodUsed(_references.SyncConfiguration);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool IsMethodUsed(TypeReference type)
-        {
-            return _moduleDefinition.GetTypes()
-                       .SelectMany(t => t.Methods)
-                       .Where(m => m.HasBody)
-                       .SelectMany(m => m.Body.Instructions)
-                       .Any(i => i.OpCode == OpCodes.Newobj &&
-                                 i.Operand is MethodReference mRef &&
-                                 mRef.ConstructsType(type));
         }
 
         private MethodReference GetOrAddPropertyChanged_DoNotNotify()
@@ -1348,7 +1317,7 @@ Analytics payload
             return userAssembly_DoNotNotify_Ctor;
         }
 
-        private struct MatchingType
+        private readonly struct MatchingType
         {
             public bool IsGenerated { get; }
 

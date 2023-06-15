@@ -17,9 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
 using Mono.Cecil;
 
+// ReSharper disable MemberCanBeProtected.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable InconsistentNaming
 namespace RealmWeaver
 {
 #pragma warning disable CS0618 // Type or member is obsolete - Mono.Cecil.TypeSystem is obsolete, but we need it in Unity
@@ -30,21 +32,11 @@ namespace RealmWeaver
 
         public TypeReference ICollectionOfT { get; }
 
-        public MethodReference ICollectionOfT_Add { get; private set; }
-
-        public MethodReference ICollectionOfT_Clear { get; private set; }
-
-        public MethodReference ICollectionOfT_get_Count { get; private set; }
-
         public TypeReference IListOfT { get; }
-
-        public MethodReference IListOfT_get_Item { get; private set; }
 
         public abstract TypeReference ISetOfT { get; }
 
         public TypeReference IDictionaryOfTKeyTValue { get; }
-
-        public MethodReference ISetOfT_UnionWith { get; private set; }
 
         public abstract TypeReference IQueryableOfT { get; }
 
@@ -68,17 +60,11 @@ namespace RealmWeaver
 
         public TypeReference System_ValueType { get; }
 
-        public TypeReference System_IFormattable { get; }
-
         public TypeReference System_IComparableOfT { get; }
 
         public TypeReference System_NullableOfT { get; }
 
-        public MethodReference System_NullableOfT_GetValueOrDefault { get; }
-
-        public MethodReference System_NullableOfT_Ctor { get; }
-
-        public TypeReference Realm { get; private set; }
+        public TypeReference? Realm { get; private set; }
 
         public MethodReference Realm_Add { get; private set; }
 
@@ -89,6 +75,10 @@ namespace RealmWeaver
         public TypeReference RealmObjectBase { get; private set; }
 
         public TypeReference IRealmObjectBase { get; private set; }
+
+        public TypeReference IEmbeddedObject { get; private set; }
+
+        public TypeReference IAsymmetricObject { get; private set; }
 
         public TypeReference ManagedAccessor { get; private set; }
 
@@ -146,17 +136,19 @@ namespace RealmWeaver
 
         public TypeReference RealmSchema_PropertyType { get; private set; }
 
-        public TypeReference SyncConfiguration { get; private set; }
-
         public MethodReference CollectionExtensions_PopulateCollection { get; private set; }
 
         public MethodReference CollectionExtensions_PopulateDictionary { get; private set; }
+
+        public TypeReference SyncSession { get; private set; }
 
         protected ModuleDefinition Module { get; }
 
         public TypeSystem Types { get; }
 
+#pragma warning disable CS8618
         protected ImportedReferences(ModuleDefinition module, TypeSystem types)
+#pragma warning restore CS8618
         {
             Module = module;
             Types = types;
@@ -176,8 +168,6 @@ namespace RealmWeaver
 
             System_ValueType = new TypeReference("System", "ValueType", Module, Module.TypeSystem.CoreLibrary);
 
-            System_IFormattable = new TypeReference("System", "IFormattable", Module, Module.TypeSystem.CoreLibrary);
-
             System_IComparableOfT = new TypeReference("System", "IComparable`1", Module, Module.TypeSystem.CoreLibrary);
             System_IComparableOfT.GenericParameters.Add(new GenericParameter(System_IComparableOfT));
 
@@ -186,17 +176,6 @@ namespace RealmWeaver
             {
                 Constraints = { new GenericParameterConstraint(System_ValueType) }
             });
-
-            System_NullableOfT_GetValueOrDefault = new MethodReference("GetValueOrDefault", System_NullableOfT.GenericParameters[0], System_NullableOfT)
-            {
-                HasThis = true
-            };
-
-            System_NullableOfT_Ctor = new MethodReference(".ctor", Types.Void, System_NullableOfT)
-            {
-                HasThis = true,
-                Parameters = { new ParameterDefinition(System_NullableOfT.GenericParameters[0]) }
-            };
 
             var runtimeTypeHandle = new TypeReference("System", "RuntimeTypeHandle", Module, Module.TypeSystem.CoreLibrary)
             {
@@ -222,28 +201,6 @@ namespace RealmWeaver
 
         private void InitializeFrameworkMethods()
         {
-            ICollectionOfT_Add = new MethodReference("Add", Types.Void, ICollectionOfT)
-            {
-                HasThis = true,
-                Parameters = { new ParameterDefinition(ICollectionOfT.GenericParameters.Single()) }
-            };
-
-            ICollectionOfT_Clear = new MethodReference("Clear", Types.Void, ICollectionOfT) { HasThis = true };
-
-            ICollectionOfT_get_Count = new MethodReference("get_Count", Types.Int32, ICollectionOfT) { HasThis = true };
-
-            IListOfT_get_Item = new MethodReference("get_Item", IListOfT.GenericParameters.Single(), IListOfT)
-            {
-                HasThis = true,
-                Parameters = { new ParameterDefinition(Types.Int32) }
-            };
-
-            ISetOfT_UnionWith = new MethodReference("UnionWith", Types.Void, ISetOfT)
-            {
-                HasThis = true,
-                Parameters = { new ParameterDefinition(new GenericInstanceType(IEnumerableOfT) { GenericArguments = { ISetOfT.GenericParameters.Single() } }) }
-            };
-
             {
                 System_Linq_Enumerable_Empty = new MethodReference("Empty", Types.Void, System_Linq_Enumerable);
                 var T = new GenericParameter(System_Linq_Enumerable_Empty);
@@ -271,6 +228,8 @@ namespace RealmWeaver
             AsymmetricObject = new TypeReference("Realms", "AsymmetricObject", Module, realmAssembly);
             RealmSchema_PropertyType = new TypeReference("Realms.Schema", "PropertyType", Module, realmAssembly, valueType: true);
             RealmValue = new TypeReference("Realms", "RealmValue", Module, realmAssembly, valueType: true);
+            IEmbeddedObject = new TypeReference("Realms", "IEmbeddedObject", Module, realmAssembly, valueType: false);
+            IAsymmetricObject = new TypeReference("Realms", "IAsymmetricObject", Module, realmAssembly, valueType: false);
             RealmValue_GetNull = new MethodReference("get_Null", RealmValue, RealmValue) { HasThis = false };
 
             {
@@ -301,7 +260,7 @@ namespace RealmWeaver
             {
                 RealmObject_GetListValue = new MethodReference("GetListValue", new GenericInstanceType(IListOfT), RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetListValue);
-                (RealmObject_GetListValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
+                (RealmObject_GetListValue.ReturnType as GenericInstanceType)!.GenericArguments.Add(T);
                 RealmObject_GetListValue.GenericParameters.Add(T);
                 RealmObject_GetListValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
@@ -309,7 +268,7 @@ namespace RealmWeaver
             {
                 RealmObject_GetSetValue = new MethodReference("GetSetValue", new GenericInstanceType(ISetOfT), RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetSetValue);
-                (RealmObject_GetSetValue.ReturnType as GenericInstanceType).GenericArguments.Add(T);
+                (RealmObject_GetSetValue.ReturnType as GenericInstanceType)!.GenericArguments.Add(T);
                 RealmObject_GetSetValue.GenericParameters.Add(T);
                 RealmObject_GetSetValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
@@ -317,8 +276,8 @@ namespace RealmWeaver
             {
                 RealmObject_GetDictionaryValue = new MethodReference("GetDictionaryValue", new GenericInstanceType(IDictionaryOfTKeyTValue), RealmObjectBase) { HasThis = true };
                 var TValue = new GenericParameter(RealmObject_GetSetValue);
-                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType).GenericArguments.Add(Types.String);
-                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType).GenericArguments.Add(TValue);
+                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType)!.GenericArguments.Add(Types.String);
+                (RealmObject_GetDictionaryValue.ReturnType as GenericInstanceType)!.GenericArguments.Add(TValue);
                 RealmObject_GetDictionaryValue.GenericParameters.Add(TValue);
                 RealmObject_GetDictionaryValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
@@ -326,14 +285,17 @@ namespace RealmWeaver
             {
                 RealmObject_GetBacklinks = new MethodReference("GetBacklinks", new GenericInstanceType(IQueryableOfT), RealmObjectBase) { HasThis = true };
                 var T = new GenericParameter(RealmObject_GetBacklinks) { Constraints = { new GenericParameterConstraint(RealmObjectBase) } };
-                (RealmObject_GetBacklinks.ReturnType as GenericInstanceType).GenericArguments.Add(T);
+                (RealmObject_GetBacklinks.ReturnType as GenericInstanceType)!.GenericArguments.Add(T);
                 RealmObject_GetBacklinks.GenericParameters.Add(T);
                 RealmObject_GetBacklinks.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
             {
-                RealmObject_GetValue = new MethodReference("GetValue", Types.Void, RealmObjectBase) { HasThis = true };
-                RealmObject_GetValue.ReturnType = RealmValue;
+                RealmObject_GetValue = new MethodReference("GetValue", Types.Void, RealmObjectBase)
+                {
+                    HasThis = true,
+                    ReturnType = RealmValue
+                };
                 RealmObject_GetValue.Parameters.Add(new ParameterDefinition(Types.String));
             }
 
@@ -385,7 +347,7 @@ namespace RealmWeaver
                 RealmSchema_AddDefaultTypes.Parameters.Add(new ParameterDefinition(ienumerableOfType));
             }
 
-            SyncConfiguration = new TypeReference("Realms.Sync", "SyncConfiguration", Module, realmAssembly);
+            SyncSession = new TypeReference("Realms.Sync", "Session", Module, realmAssembly);
 
             var collectionExtensions = new TypeReference("Realms", "CollectionExtensions", Module, realmAssembly);
             CollectionExtensions_PopulateCollection = new MethodReference("PopulateCollection", Types.Void, collectionExtensions) { HasThis = false };

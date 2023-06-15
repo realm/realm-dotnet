@@ -175,7 +175,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates credentials represetning a login with Realm function.
+        /// Creates credentials representing a login with Realm function.
         /// </summary>
         /// <param name="payload">The payload that will be passed as an argument to the server function.</param>
         /// <returns>A Credentials that can be used to authenticate a user by invoking a server function.</returns>

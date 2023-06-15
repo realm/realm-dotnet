@@ -23,6 +23,7 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Pdb;
 
+// ReSharper disable once CheckNamespace
 namespace RealmWeaver
 {
     public class ResolutionResult : IDisposable
@@ -63,7 +64,7 @@ namespace RealmWeaver
     {
         private readonly IDictionary<string, AssemblyDefinition> _cache = new Dictionary<string, AssemblyDefinition>();
 
-        public static string ApplicationDataPath { get; set; }
+        public static string ApplicationDataPath { get; set; } = null!;
 
         private WeaverAssemblyResolver(IEnumerable<string> references)
         {
@@ -74,7 +75,7 @@ namespace RealmWeaver
             }
         }
 
-        public static ResolutionResult Resolve(string assemblyPath, IEnumerable<string> references)
+        public static ResolutionResult? Resolve(string? assemblyPath, IEnumerable<string> references)
         {
             if (assemblyPath == null)
             {
@@ -105,6 +106,7 @@ namespace RealmWeaver
             }
             catch
             {
+                // ignored
             }
 
             return new ResolutionResult(module, absolutePath, resolver, hasDebugInfo);
@@ -120,7 +122,7 @@ namespace RealmWeaver
             return Path.Combine(ApplicationDataPath, "..", assemblyPath);
         }
 
-        public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
+        public override AssemblyDefinition? Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
             if (name == null)
             {
@@ -136,6 +138,7 @@ namespace RealmWeaver
                 }
                 catch
                 {
+                    // ignored
                 }
             }
 

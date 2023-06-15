@@ -58,7 +58,7 @@ namespace Realms.SourceGenerator
 
         public bool HasDuplicatedName { get; set; }
 
-        public PropertyInfo PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
+        public PropertyInfo? PrimaryKey => Properties.FirstOrDefault(p => p.IsPrimaryKey);
     }
 
     internal record NamespaceInfo
@@ -282,7 +282,7 @@ namespace Realms.SourceGenerator
             return true;
         }
 
-        /** This method returns the type with the type string with correct nullability annotation wether they were enabled or not in the original file,
+        /** This method returns the type with the type string with correct nullability annotation whether they were enabled or not in the original file,
          * together with the same annotation for the internal type (for collections). In some cases we were just getting the internal type string on his own, and this would be wrong for some collections.
          * Simplified example from a generated unmanaged accessor:
          * <code>
@@ -306,7 +306,7 @@ namespace Realms.SourceGenerator
                 }
 
                 if (IsCollection && InternalType.NullableAnnotation == NullableAnnotation.None
-                    && (InternalType.ScalarType == ScalarType.Data || InternalType.ScalarType == ScalarType.String))
+                                 && (InternalType.ScalarType == ScalarType.Data || InternalType.ScalarType == ScalarType.String))
                 {
                     return CollectionType switch
                     {
@@ -328,13 +328,8 @@ namespace Realms.SourceGenerator
                 return ($"System.Collections.Generic.IDictionary<string, {nullableInternalTypeString}>", nullableInternalTypeString, true);
             }
 
-            var nullForgiving = false;
-
-            if (NullableAnnotation != NullableAnnotation.Annotated &&
-                (ScalarType == ScalarType.Data || ScalarType == ScalarType.String || ScalarType == ScalarType.Object || IsCollection))
-            {
-                nullForgiving = true;
-            }
+            var nullForgiving = NullableAnnotation != NullableAnnotation.Annotated &&
+                                 (IsCollection || ScalarType is ScalarType.Data or ScalarType.String or ScalarType.Object);
 
             return (CompleteFullyQualifiedString, internalTypeString, nullForgiving);
         }
@@ -345,9 +340,7 @@ namespace Realms.SourceGenerator
         public override bool IsUnsupported => true;
     }
 
-    internal abstract record CollectionTypeInfo : PropertyTypeInfo
-    {
-    }
+    internal abstract record CollectionTypeInfo : PropertyTypeInfo;
 
     internal record ListTypeInfo : CollectionTypeInfo
     {
