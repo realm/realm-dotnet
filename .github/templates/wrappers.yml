@@ -32,7 +32,7 @@ with:
   - name: Setup MSVC
     uses: ilammy/msvc-dev-cmd@v1
     with:
-      toolset: "14.35"
+      vsversion: "17.5.5"
 #@ end
 ---
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
