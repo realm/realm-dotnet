@@ -61,11 +61,11 @@ namespace RealmWeaver
     // - What framework and what framework version Realm is being used with (e.g. Xamarin, MAUI, etc.)
     // - How the Realm SDK was installed (e.g. Nuget, manual, etc.)
     // - What APIs of the Realm SDK you're using
-    // - An anonymized MAC address and assembly name ID to aggregate the other information on.
+    // - An anonymized identifier and assembly name ID to aggregate the other information on.
     internal class Analytics
     {
         // The value of this field is modified by CI in the "prepare-release" action, so do not change its name.
-        private const string CoreVersion = "13.1.2";
+        private const string CoreVersion = "13.15.0";
 
         private readonly ImportedReferences _references;
         private readonly ILogger _logger;
@@ -490,7 +490,8 @@ namespace RealmWeaver
                         }
 
                         var key = keyMapping == null ? kvp.Key : keyMapping[kvp.Key];
-                        return $"\"{key}\":\"{kvp.Value}\"";
+                        var value = kvp.Value is string ? $"\"{kvp.Value}\"" : $"{kvp.Value}";
+                        return $"\"{key}\":{value}";
                     })
                     .Where(s => s != null);
 
