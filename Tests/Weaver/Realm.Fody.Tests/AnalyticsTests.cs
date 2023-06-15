@@ -80,7 +80,7 @@ namespace Analytics
         public void ValidateFeatureUsage(string feature, string constant)
         {
             CompileAnalyticsProject(constant);
-            ValidateAnalyticsPayloadAllFrameworks(new[] { (featureName: Metric.SdkFeatures[feature], expectedValue: "1") });
+            ValidateAnalyticsPayloadAllFrameworks(new[] { (featureName: Metric.SdkFeatures[feature], expectedValue: BsonValue.Create(1)) });
         }
 
         [Test]
@@ -101,8 +101,8 @@ namespace Analytics
             RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             CompileAnalyticsProject();
             ValidateAnalyticsPayloadAllFrameworks(new[] {
-                (featureName: Metric.Environment.HostOsType, expectedValue: GetMetricsOS()),
-                (featureName: Metric.Environment.HostOsVersion, expectedValue: Environment.OSVersion.Version.ToString()) });
+                (featureName: Metric.Environment.HostOsType, expectedValue: BsonValue.Create(GetMetricsOS())),
+                (featureName: Metric.Environment.HostOsVersion, expectedValue: BsonValue.Create(Environment.OSVersion.Version.ToString())) });
         }
 
         [Test]
@@ -161,7 +161,7 @@ namespace Analytics
             return Environment.OSVersion.Platform.ToString();
         }
 
-        private void ValidateAnalyticsPayloadAllFrameworks((string featureName, string expectedValue)[] payloadFeatures)
+        private void ValidateAnalyticsPayloadAllFrameworks((string featureName, BsonValue expectedValue)[] payloadFeatures)
         {
             foreach (var framework in _frameworks.Value)
             {
@@ -170,7 +170,7 @@ namespace Analytics
 
                 foreach (var (featureName, expectedValue) in payloadFeatures)
                 {
-                    Assert.That(payload[featureName].AsString, Is.EqualTo(expectedValue),
+                    Assert.That(payload[featureName], Is.EqualTo(expectedValue),
                         $"For framework {framework}, field \"{expectedValue}\" doesn't match the expected value \"{expectedValue}\"");
                 }
             }
