@@ -50,7 +50,7 @@ namespace Realms
             }
             finally
             {
-                NativeCommon.delete_pointer(messageBytes);
+                NativeCommon.realm_free(messageBytes);
             }
         }
 

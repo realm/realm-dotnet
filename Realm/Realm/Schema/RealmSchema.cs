@@ -24,6 +24,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms.Schema
 {
@@ -161,19 +162,15 @@ namespace Realms.Schema
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
+        internal static RealmSchema CreateFromObjectStoreSchema(in MarshaledVector<SchemaObject> nativeSchema)
         {
             var builder = new Builder();
-            for (var i = 0; i < nativeSchema.objects_len; i++)
+            foreach (var objectSchema in nativeSchema)
             {
-                var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
-
-                var osBuilder = new ObjectSchema.Builder(objectSchema.name, objectSchema.table_type);
-
-                for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
+                var osBuilder = new ObjectSchema.Builder(objectSchema.name!, objectSchema.table_type);
+                foreach (var property in objectSchema.properties)
                 {
-                    var nativeProperty = Marshal.PtrToStructure<Native.SchemaProperty>(IntPtr.Add(nativeSchema.properties, n * Native.SchemaProperty.Size));
-                    osBuilder.Add(new Property(nativeProperty));
+                    osBuilder.Add(new Property(property));
                 }
 
                 builder.Add(osBuilder);
@@ -181,6 +178,8 @@ namespace Realms.Schema
 
             return builder.Build();
         }
+
+        internal MarshaledVector<SchemaObject> ToNative(BufferPool pool) => MarshaledVector<SchemaObject>.AllocateFrom(this.Select(o => o.ToNative(pool)).ToArray(), pool);
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="ObjectSchema"/> instances.

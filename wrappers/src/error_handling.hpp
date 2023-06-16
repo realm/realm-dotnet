@@ -66,15 +66,12 @@ public:
     struct Marshallable {
         int code;
         int m_categories;
-        void* messagesBytes;
+        char* messagesBytes;
         size_t messageLength;
         void* managed_error = nullptr;
     };
 
     Marshallable for_marshalling() const {
-        auto messageCopy = ::operator new (m_message.size());
-        m_message.copy(reinterpret_cast<char*>(messageCopy), m_message.length());
-
         int code = m_code;
         if (m_custom_error != CustomError::None) {
             REALM_ASSERT_DEBUG(m_code == ErrorCodes::Error::CustomError);
@@ -84,7 +81,7 @@ public:
         return {
             (ErrorCodes::Error)code,
             ErrorCodes::error_categories(m_code).value(),
-            messageCopy,
+            strdup(m_message.c_str()), // to be freed with realm_free() on the native side
             m_message.size(),
             m_managed_error,
         };

@@ -139,12 +139,12 @@ namespace Realms
             return ret;
         }
 
-        internal override SharedRealmHandle CreateHandle(RealmSchema schema)
-            => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, EncryptionKey);
+        internal override SharedRealmHandle CreateHandle(BufferPool pool)
+            => SharedRealmHandle.Open(CreateNativeConfiguration(pool), EncryptionKey);
 
-        internal override Configuration CreateNativeConfiguration()
+        internal override Configuration CreateNativeConfiguration(BufferPool pool)
         {
-            var result = base.CreateNativeConfiguration();
+            var result = base.CreateNativeConfiguration(pool);
 
             result.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             result.read_only = IsReadOnly;
@@ -155,7 +155,7 @@ namespace Realms
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(BufferPool pool, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
@@ -163,13 +163,13 @@ namespace Realms
             {
                 return Task.Run(() =>
                 {
-                    using (CreateHandle(schema))
+                    using (CreateHandle(pool))
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateHandle(schema), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateHandle(pool), scheduler);
             }
 
-            return Task.FromResult(CreateHandle(schema));
+            return Task.FromResult(CreateHandle(pool));
         }
     }
 }

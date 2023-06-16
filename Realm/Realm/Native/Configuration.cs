@@ -58,6 +58,8 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         internal bool delete_if_migration_needed;
 
+        public MarshaledVector<SchemaObject> schema;
+
         internal ulong schema_version;
 
         [MarshalAs(UnmanagedType.U1)]

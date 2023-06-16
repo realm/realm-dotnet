@@ -47,10 +47,9 @@ using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
-using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_string_t message, util::Logger::Level level);
-using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
@@ -68,15 +67,12 @@ namespace realm {
 namespace binding {
     std::function<OpenRealmCallbackT> s_open_realm_callback;
     std::function<RealmChangedT> s_realm_changed;
-    std::function<GetNativeSchemaT> s_get_native_schema;
     std::function<ReleaseGCHandleT> s_release_gchandle;
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
     std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
     std::function<DataInitializationCallbackT> s_initialize_data;
-
-    extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -108,13 +104,13 @@ namespace binding {
     };
 }
 
-Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
+Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, uint8_t* encryption_key)
 {
     Realm::Config config;
     config.schema_mode = sync_configuration.schema_mode;
 
-    if (objects_length > 0) {
-        config.schema = create_schema(objects, objects_length, properties);
+    if (configuration.schema.size() > 0) {
+        config.schema = create_schema(configuration.schema);
     }
 
     config.schema_version = configuration.schema_version;
@@ -266,7 +262,7 @@ REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
     Logger::set_default_level_threshold(level);
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Realm::Config config;
@@ -289,8 +285,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.schema_mode = SchemaMode::SoftResetFile;
         }
 
-        if (objects_length > 0) {
-            config.schema = create_schema(objects, objects_length, properties);
+        if (configuration.schema.size() > 0) {
+            config.schema = create_schema(configuration.schema);
         }
 
         config.schema_version = configuration.schema_version;
@@ -300,20 +296,16 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.migration_function = [configuration_handle](SharedRealm oldRealm, SharedRealm newRealm, Schema& migrationSchema) {
 
                 std::vector<SchemaObject> schema_objects;
-                std::vector<SchemaProperty> schema_properties;
+                std::vector<std::vector<SchemaProperty>> schema_properties;
+                const auto& schema = oldRealm->schema();
+                schema_objects.reserve(schema.size());
+                schema_properties.reserve(schema.size());
 
-                for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
+                for (auto& object : schema) {
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties.emplace_back()));
                 }
 
-                SchemaForMarshaling schema_for_marshaling {
-                    schema_objects.data(),
-                    static_cast<int>(schema_objects.size()),
-
-                    schema_properties.data()
-                };
-
-                auto error = s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration_handle->handle());
+                auto error = s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_objects, oldRealm->schema_version(), configuration_handle->handle());
                 if (error) {
                     throw ManagedExceptionDuringCallback("Exception occurred in a Realm.MigrationCallback callback.", error);
                 }
@@ -366,10 +358,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
     });
 }
 
-REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+        auto config = get_shared_realm_config(configuration, sync_configuration, encryption_key);
 
         auto task = Realm::get_synchronized_realm(config);
         task->start([task_completion_source](ThreadSafeReference ref, std::exception_ptr error) {
@@ -386,10 +378,10 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
     });
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+        auto config = get_shared_realm_config(configuration, sync_configuration, encryption_key);
         return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
@@ -669,18 +661,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        std::vector<SchemaObject> schema_objects;
-        std::vector<SchemaProperty> schema_properties;
-
-        for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
-        }
-
-        s_get_native_schema(SchemaForMarshaling {
-            schema_objects.data(),
-            static_cast<int>(schema_objects.size()),
-            schema_properties.data()
-        }, managed_callback);
+        send_schema_to_managed(realm->schema(), managed_callback);
     });
 }
 

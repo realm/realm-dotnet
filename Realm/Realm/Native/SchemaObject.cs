@@ -24,14 +24,12 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct SchemaObject
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
+        public StringValue name;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
+        public MarshaledVector<SchemaProperty> properties;
 
-        internal int properties_start;
-        internal int properties_end;
+        public StringValue primary_key;
 
-        internal ObjectSchema.ObjectType table_type;
+        public ObjectSchema.ObjectType table_type;
     }
 }

@@ -341,6 +341,8 @@ namespace Realms.Native
             return new StringValue { data = buffer.Data, size = byteCount };
         }
 
-        public static implicit operator string?(StringValue value) => value.data == null ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+        public static implicit operator bool(StringValue value) => value.data != null;
+
+        public static implicit operator string?(StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

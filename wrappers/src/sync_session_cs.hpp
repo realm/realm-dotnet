@@ -16,22 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef SYNC_SESSION_CS_HPP
-#define SYNC_SESSION_CS_HPP
+#pragma once
 
-#include "realm_export_decls.hpp"
+#include "marshalling.hpp"
 #include <realm/sync/config.hpp>
 
+namespace realm::binding {
+
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using SessionErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using ProgressCallbackT = void(void* state, uint64_t transferred_bytes, uint64_t transferrable_bytes);
 using NotifyBeforeClientResetCallbackT = void*(SharedRealm& before_frozen, void* managed_sync_config);
 using NotifyAfterClientResetCallbackT = void*(SharedRealm& before_frozen, SharedRealm& after, void* managed_sync_config, bool did_recover);
 
-namespace realm {
-namespace binding {
-    extern std::function<ProgressCallbackT> s_progress_callback;
-    extern std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
-    extern std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
-}
-}
+extern std::function<SessionErrorCallbackT> s_session_error_callback;
+extern std::function<ProgressCallbackT> s_progress_callback;
+extern std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
+extern std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 
-#endif /* defined(SYNC_SESSION_CS_HPP) */
+} // namespace realm::binding
+

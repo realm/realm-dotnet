@@ -19,16 +19,17 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
     internal class BufferPool : IDisposable
     {
-        private readonly List<IDisposable> _buffers = new();
+        private readonly Dictionary<int, List<Slab>> _slabs = new();
         private bool _disposed;
 
-        public Buffer<T> Rent<T>(int count = 1)
+        public unsafe Buffer<T> Rent<T>(int count = 1)
             where T : unmanaged
         {
             if (_disposed)
@@ -41,47 +42,114 @@ namespace Realms.Native
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            var buffer = new Buffer<T>(ArrayPool<T>.Shared, count);
-            _buffers.Add(buffer);
-            return buffer;
+            if (!_slabs.TryGetValue(sizeof(T), out var bucket))
+            {
+                _slabs.Add(sizeof(T), bucket = new List<Slab>());
+            }
+
+            Slab? slab = null;
+            foreach (var candidate in bucket)
+            {
+                if (candidate.Fits(count))
+                {
+                    slab = candidate;
+                    break;
+                }
+            }
+
+            if (slab == null)
+            {
+                bucket.Add(slab = new Slab(sizeof(T), count));
+            }
+
+            Debug.Assert(slab.ElementSize == sizeof(T), "Trying to append to slab with the wrong element size");
+
+            return new Buffer<T>((T*)slab.Grab(count), count);
+        }
+
+        ~BufferPool()
+        {
+            Debug.Assert(_disposed, "BufferPool finalized without explicit disposal");
         }
 
         public void Dispose()
         {
             _disposed = true;
 
-            foreach (var buffer in _buffers)
+            foreach (var kvp in _slabs)
             {
-                buffer.Dispose();
+                kvp.Value.ForEach(x => x.Dispose());
             }
 
-            _buffers.Clear();
+            _slabs.Clear();
         }
 
-        public readonly struct Buffer<T> : IDisposable
+        public readonly struct Buffer<T>
             where T : unmanaged
         {
-            private readonly ArrayPool<T> _pool;
-            private readonly T[] _buffer;
-            private readonly GCHandle _handle;
-
-            public unsafe T* Data => (T*)_handle.AddrOfPinnedObject();
+            public unsafe T* Data { get; }
 
             public int Length { get; }
 
-            internal Buffer(ArrayPool<T> pool, int length)
+            internal unsafe Buffer(T* data, int length)
             {
-                _pool = pool;
-                _buffer = pool.Rent(length);
-                _handle = GCHandle.Alloc(_buffer, GCHandleType.Pinned);
+                Data = data;
                 Length = length;
             }
+        }
 
-            void IDisposable.Dispose()
+        private class Slab : IDisposable
+        {
+            public static readonly int Size = Environment.SystemPageSize;
+
+            public IntPtr Buffer { get; }
+
+            public int ElementSize { get; }
+
+            public int MaxCount { get; }
+
+            public int Count { get; private set; }
+
+            public Slab(int elementSize, int minimumCount)
             {
-                _handle.Free();
-                _pool.Return(_buffer);
+                ElementSize = elementSize;
+                Count = 0;
 
+                var elementsPerPage = Environment.SystemPageSize / elementSize;
+                if (minimumCount <= elementsPerPage)
+                {
+                    // the minimum required allocation can fit on one page
+                    MaxCount = elementsPerPage;
+                }
+                else
+                {
+                    // the minimum required allocation doesn't fit on a single page
+                    // so allocate enough pages to hold it
+                    MaxCount = (int)Math.Ceiling(minimumCount / (double)elementsPerPage) * elementsPerPage;
+                }
+
+                Buffer = Marshal.AllocHGlobal(MaxCount * elementSize);
+            }
+
+            public bool Fits(int count) => Count + count <= MaxCount;
+
+            public IntPtr Grab(int count)
+            {
+                if (count > MaxCount)
+                {
+                    throw new InvalidOperationException($"Can't fit {count} items in a slab that can hold {MaxCount} items at most");
+                }
+
+                Debug.Assert(Fits(count), "Can't grab more from the slab than it can fit");
+
+                var start = Buffer + (Count * ElementSize);
+                Count += count;
+                return start;
+            }
+
+            public void Dispose()
+            {
+                Marshal.FreeHGlobal(Buffer);
             }
         }
     }

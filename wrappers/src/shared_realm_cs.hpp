@@ -16,8 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef SHARED_REALM_CS_HPP
-#define SHARED_REALM_CS_HPP
+#pragma once
 
 #include "schema_cs.hpp"
 #include "sync_session_cs.hpp"
@@ -29,10 +28,8 @@
 #include <realm/object-store/sync/sync_session.hpp>
 #include <realm/sync/config.hpp>
 
+namespace realm::binding {
 using SharedSyncUser = std::shared_ptr<SyncUser>;
-
-using namespace realm;
-using namespace realm::binding;
 
 struct Configuration
 {
@@ -48,6 +45,7 @@ struct Configuration
     
     bool delete_if_migration_needed;
     
+    MarshaledVector<SchemaObject> schema;
     uint64_t schema_version;
     
     bool enable_cache;
@@ -88,9 +86,6 @@ inline const TableRef get_table(const SharedRealm& realm, TableKey table_key)
 {
     return realm->read_group().get_table(table_key);
 }
-
-namespace realm {
-namespace binding {
     
 extern std::function<void(void*)> s_release_gchandle;
 
@@ -185,7 +180,5 @@ private:
     TcsRegistryWithVersion m_pending_refresh_callbacks;
 };
 
-} // namespace bindings
-} // namespace realm
+} // namespace realm::binding
 
-#endif /* defined(SHARED_REALM_CS_HPP) */

@@ -166,16 +166,26 @@ namespace Realms.Schema
             IndexType = indexType;
         }
 
-        internal Property(SchemaProperty nativeProperty)
+        internal Property(in SchemaProperty nativeProperty)
         {
-            Name = nativeProperty.name;
-            ManagedName = nativeProperty.name;
+            Name = nativeProperty.name!;
+            ManagedName = nativeProperty.name!;
             Type = nativeProperty.type;
             ObjectType = nativeProperty.object_type;
             LinkOriginPropertyName = nativeProperty.link_origin_property_name;
             IsPrimaryKey = nativeProperty.is_primary;
             IndexType = nativeProperty.index;
         }
+
+        internal SchemaProperty ToNative(BufferPool pool) => new()
+        {
+            name = StringValue.AllocateFrom(Name, pool),
+            type = Type,
+            object_type = StringValue.AllocateFrom(ObjectType, pool),
+            link_origin_property_name = StringValue.AllocateFrom(LinkOriginPropertyName, pool),
+            is_primary = IsPrimaryKey,
+            index = IndexType,
+        };
 
         /// <summary>
         /// Initializes a new property from a <see cref="System.Type"/> value.

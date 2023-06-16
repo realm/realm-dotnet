@@ -24,23 +24,23 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct SchemaProperty
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaProperty>();
+        public StringValue name;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
+        public StringValue object_type;
 
-        [MarshalAs(UnmanagedType.U2)]
-        internal PropertyType type;
+        public StringValue link_origin_property_name;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string? object_type;
+        public PropertyType type;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string? link_origin_property_name;
+        private byte is_primary_byte;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool is_primary;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Native struct field")]
+        public bool is_primary
+        {
+            get => is_primary_byte == 1;
+            set => is_primary_byte = (byte)(value ? 1 : 0);
+        }
 
-        internal IndexType index;
+        public IndexType index;
     }
 }

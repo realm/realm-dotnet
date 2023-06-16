@@ -50,16 +50,16 @@ namespace Realms
             Identifier = identifier;
         }
 
-        internal override SharedRealmHandle CreateHandle(RealmSchema schema) => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, encryptionKey: null);
+        internal override SharedRealmHandle CreateHandle(BufferPool pool) => SharedRealmHandle.Open(CreateNativeConfiguration(pool), encryptionKey: null);
 
-        internal override Configuration CreateNativeConfiguration()
+        internal override Configuration CreateNativeConfiguration(BufferPool pool)
         {
-            var result = base.CreateNativeConfiguration();
+            var result = base.CreateNativeConfiguration(pool);
             result.in_memory = true;
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken)
-            => Task.FromResult(CreateHandle(schema));
+        internal override Task<SharedRealmHandle> CreateHandleAsync(BufferPool pool, CancellationToken cancellationToken)
+            => Task.FromResult(CreateHandle(pool));
     }
 }

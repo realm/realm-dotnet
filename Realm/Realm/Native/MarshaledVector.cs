@@ -106,12 +106,17 @@ namespace Realms
         public static MarshaledVector<T> AllocateEmpty(int capacity, BufferPool pool)
         {
             var buffer = pool.Rent<T>(capacity);
-            Unsafe.InitBlock(buffer.Data, 0, (uint)capacity);
+            Unsafe.InitBlock(buffer.Data, 0, (uint)(sizeof(T) * capacity));
             return new MarshaledVector<T>(buffer.Data, capacity);
         }
 
         public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection, BufferPool pool)
         {
+            if (collection.Count == 0)
+            {
+                return new MarshaledVector<T>(null, 0);
+            }
+
             var buffer = pool.Rent<T>(collection.Count);
             var i = 0;
             foreach (var item in collection)

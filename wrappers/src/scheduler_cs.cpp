@@ -22,8 +22,7 @@
 #include <thread>
 #include "marshalling.hpp"
 
-using namespace realm::binding;
-using namespace realm::util;
+namespace realm::binding {
 
 using GetContextT = void*();
 using IsOnContextT = bool(void* context, void* target_context);
@@ -35,7 +34,7 @@ std::function<IsOnContextT> s_is_on_context;
 std::function<PostOnContextT> s_post_on_context;
 std::function<ReleaseContextT> s_release_context;
 
-struct SynchronizationContextScheduler : public Scheduler {
+struct SynchronizationContextScheduler : public util::Scheduler {
 public:
     SynchronizationContextScheduler(void* context)
     : m_context(context)
@@ -43,7 +42,7 @@ public:
 
     bool can_invoke() const noexcept override { return true; }
 
-    bool is_same_as(const Scheduler* other) const noexcept override
+    bool is_same_as(const util::Scheduler* other) const noexcept override
     {
         auto o = dynamic_cast<const SynchronizationContextScheduler*>(other);
         return o != nullptr && s_is_on_context(m_context, o->m_context);
@@ -77,13 +76,13 @@ REALM_EXPORT void realm_install_scheduler_callbacks(GetContextT* get, PostOnCont
     s_release_context = wrap_managed_callback(release);
     s_is_on_context = wrap_managed_callback(is_on);
 
-    Scheduler::set_default_factory([]() -> std::shared_ptr<Scheduler> {
+    util::Scheduler::set_default_factory([]() -> std::shared_ptr<util::Scheduler> {
         void* context = s_get_context();
         if (context) {
             return std::make_shared<SynchronizationContextScheduler>(context);
         }
 
-        return Scheduler::make_generic();
+        return util::Scheduler::make_generic();
     });
 
     realm::binding::s_can_call_managed = true;
@@ -100,4 +99,5 @@ REALM_EXPORT void realm_scheduler_invoke_function(void* function_ptr, bool execu
     delete& func;
 }
 
-}
+} // extern "C"
+} // namespace realm::binding

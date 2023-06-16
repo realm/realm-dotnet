@@ -25,9 +25,7 @@
 #include <thread>
 #include <realm/object-store/sync/generic_network_transport.hpp>
 
-using namespace realm::util;
-using namespace realm::app;
-using namespace realm::binding;
+namespace realm::binding {
 
 struct HttpClientRequest {
     HttpMethod method;
@@ -46,8 +44,6 @@ struct HttpClientRequest {
 using ExecuteRequestT = void(HttpClientRequest request, void* callback);
 using ResponseFunction = util::UniqueFunction<void(const Response&)>;
 
-namespace realm {
-namespace binding {
 std::function<ExecuteRequestT> s_execute_request;
 
 struct HttpClientResponse {
@@ -79,9 +75,6 @@ void HttpClientTransport::send_request_to_server(const Request& request, Respons
     s_execute_request(std::move(client_request), new ResponseFunction(std::move(completionBlock)));
 }
 
-}
-}
-
 extern "C" {
     REALM_EXPORT void realm_http_transport_install_callbacks(ExecuteRequestT* execute)
     {
@@ -109,4 +102,5 @@ extern "C" {
 
         (*func)(std::move(response));
     }
-}
+} // extern "C"
+} // namespace realm::binding

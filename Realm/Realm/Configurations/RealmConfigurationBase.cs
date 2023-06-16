@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -199,25 +200,28 @@ namespace Realms
         internal virtual Realm CreateRealm()
         {
             var schema = Schema;
-            var sharedRealmHandle = CreateHandle(schema);
+            using var pool = new BufferPool();
+            var sharedRealmHandle = CreateHandle(pool);
             return GetRealm(sharedRealmHandle, schema);
         }
 
         internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             var schema = Schema;
-            var sharedRealmHandle = await CreateHandleAsync(schema, cancellationToken);
+            using var pool = new BufferPool();
+            var sharedRealmHandle = await CreateHandleAsync(pool, cancellationToken);
             return GetRealm(sharedRealmHandle, schema);
         }
 
-        internal virtual Native.Configuration CreateNativeConfiguration()
+        internal virtual Configuration CreateNativeConfiguration(BufferPool pool)
         {
             var managedConfig = GCHandle.Alloc(this);
 
-            var config = new Native.Configuration
+            var config = new Configuration
             {
                 Path = DatabasePath,
                 FallbackPipePath = FallbackPipePath,
+                schema = Schema.ToNative(pool),
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions,
@@ -251,8 +255,8 @@ namespace Realms
             return new Realm(sharedRealmHandle, this, schema);
         }
 
-        internal abstract SharedRealmHandle CreateHandle(RealmSchema schema);
+        internal abstract SharedRealmHandle CreateHandle(BufferPool pool);
 
-        internal abstract Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(BufferPool pool, CancellationToken cancellationToken);
     }
 }
