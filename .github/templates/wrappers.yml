@@ -143,7 +143,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ToolsetVersion 14.35", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = [setupMSVC()]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\"", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = [setupMSVC()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   uwp:
@@ -152,6 +152,6 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ToolsetVersion 14.35", "wrappers-windows-uwp-${{ matrix.arch }}", cacheVariable = "wrappers-uwp", intermediateSteps = [setupMSVC()]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\"", "wrappers-windows-uwp-${{ matrix.arch }}", cacheVariable = "wrappers-uwp", intermediateSteps = [setupMSVC()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])

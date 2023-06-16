@@ -26,7 +26,7 @@ param(
 
     [Switch]$EnableLTO,
 
-    [string]$ToolsetVersion = ''
+    [string]$ExtraCMakeArgs = ''
 )
 
 Push-Location $PSScriptRoot
@@ -75,12 +75,8 @@ foreach ($platform in $Platforms) {
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
 
-    if ($ToolsetVersion -ne '') {
-        $cmakeArgs += "-T v143,version=$ToolsetVersion"
-    }
-
     if (-Not $Incremental) {
-        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform"
+        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" $ExtraCMakeArgs
     }
 
     & $cmake --build . --target install --config $Configuration

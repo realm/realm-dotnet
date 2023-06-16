@@ -589,7 +589,7 @@ jobs:
       shell: pwsh
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ToolsetVersion 14.35 -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-${{ matrix.arch }}
       uses: actions/upload-artifact@v3
@@ -630,7 +630,7 @@ jobs:
       shell: pwsh
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Build wrappers
-      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ToolsetVersion 14.35 -Configuration Release -EnableLTO
+      run: pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs "-T v143,version=14.35" -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
     - name: Store artifacts for wrappers-windows-uwp-${{ matrix.arch }}
       uses: actions/upload-artifact@v3
