@@ -30,10 +30,9 @@ with:
 ---
 #@ def setupMSVC():
   - name: Setup MSVC
-    uses: ilammy/msvc-dev-cmd@v1
-    with:
-      toolset: "14.35"
-      arch: ${{ matrix.arch == 'ARM64' && 'amd64_arm64' || matrix.arch }}
+    run: |
+      Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.ARM64 Microsoft.VisualStudio.Component.VC.14.35.17.5.x86.x64' -Wait -PassThru
+    shell: pwsh
 #@ end
 ---
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
@@ -143,7 +142,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ToolsetVersion 14.29", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = []))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ToolsetVersion 14.35", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = [setupMSVC()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   uwp:
