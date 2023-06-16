@@ -73,7 +73,7 @@ foreach ($platform in $Platforms) {
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
     if (-Not $Incremental) {
-        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform"
+        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -T v143,version=14.35
     }
 
     & $cmake --build . --target install --config $Configuration
