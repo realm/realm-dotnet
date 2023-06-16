@@ -586,7 +586,8 @@ jobs:
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        vsversion: 17.5.5
+        toolset: "14.35"
+        arch: ${{ matrix.arch == 'ARM64' && 'amd64_arm64' || matrix.arch }}
     - name: Build wrappers
       run: pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -Configuration Release -EnableLTO
       if: steps.check-cache.outputs.cache-hit != 'true'
