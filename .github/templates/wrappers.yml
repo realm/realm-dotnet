@@ -143,7 +143,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = [setupMSVC()]))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ToolsetVersion 14.29", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = []))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   uwp:

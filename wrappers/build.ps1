@@ -19,12 +19,14 @@ param(
     [string[]]$Platforms = ('Win32'),
 
     [ValidateSet('Windows', 'WindowsStore')]
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string]$Target = 'Windows',
 
     [Switch]$Incremental,
 
-    [Switch]$EnableLTO
+    [Switch]$EnableLTO,
+
+    [string]$ToolsetVersion = ''
 )
 
 Push-Location $PSScriptRoot
@@ -72,8 +74,13 @@ foreach ($platform in $Platforms) {
     }
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
+
+    if ($ToolsetVersion -ne '') {
+        $cmakeArgs += "-T v143,version=$ToolsetVersion"
+    }
+
     if (-Not $Incremental) {
-        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -T v143,version=14.35
+        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform"
     }
 
     & $cmake --build . --target install --config $Configuration
