@@ -150,9 +150,12 @@ namespace Realms
             return (NativeQueryArgument.GeoPolygon(polygon), handles);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"Polygon: {LinearRingToString(OuterRing)}"
-            + (Holes.Count == 0 ? string.Empty : $", Holes: [ {string.Join(", ", Holes.Select(LinearRingToString))} ]");
+                                             + (Holes.Count == 0 ? string.Empty : $", Holes: [ {string.Join(", ", Holes.Select(LinearRingToString))} ]");
 
         internal static string LinearRingToString(IEnumerable<GeoPoint> points) => $"{{ {string.Join(",", points)} }}";
     }

@@ -17,9 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Sync;
 
-namespace Realms.Exceptions.Sync
+namespace Realms.Sync.Exceptions
 {
     /// <summary>
     /// An exception that describes an issue with a Flexible Sync <see cref="Subscription"/>.

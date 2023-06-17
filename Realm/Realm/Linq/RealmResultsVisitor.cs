@@ -695,7 +695,7 @@ namespace Realms
             {
                 if (methodName.EndsWith("OrDefault", StringComparison.OrdinalIgnoreCase))
                 {
-                    // For First/Last/Single/ElemetAtOrDefault - ignore
+                    // For First/Last/Single/ElementAtOrDefault - ignore
                     return Expression.Constant(null);
                 }
 

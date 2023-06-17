@@ -64,7 +64,10 @@ namespace Realms
 
         internal NativeGeoCircle ToNative() => new(Center.ToNative(), Radius);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"Circle: {{ center: {Center}, radius: {Radius} }}";
     }
 }

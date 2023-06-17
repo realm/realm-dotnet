@@ -22,11 +22,11 @@ namespace Realms.Sync.ErrorHandling
 {
     /// <summary>
     /// A client reset strategy that attempts to automatically recover any unsynchronized changes.
-    /// If that fails, this handler fallsback to the discard unsynced changes strategy.
+    /// If that fails, this handler falls back to the discard unsynced changes strategy.
     /// </summary>
     /// <remarks>
     /// The automatic recovery fails when a client that is configured for recovery is flagged on the server "as not allowed to execute automatic recovery".
-    /// In this situation this strategy fallsback to the discard unsynced one.
+    /// In this situation this strategy falls back to the discard unsynced one.
     /// To reiterate what it does: it discards all the unsynced local changes and uses the latest realm that is available on the remote sync server.
     /// You can read more about the automatic merge rules at <see href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client Resets - .NET SDK</see>.
     /// The automatic recovery mechanism creates write transactions meaning that all the changes that take place
@@ -36,9 +36,9 @@ namespace Realms.Sync.ErrorHandling
     /// <see cref="OnBeforeReset"/>, is invoked just before the client reset happens.
     /// <see cref="OnAfterRecovery"/>, is invoke if and only if an automatic client reset succeeded. The callback is never called
     /// if the automatic client reset fails.
-    /// <see cref="OnAfterDiscard"/> is invoked if and only if an automatic client reset failed and instead the discard unsynced one succeded.
+    /// <see cref="OnAfterDiscard"/> is invoked if and only if an automatic client reset failed and instead the discard unsynced one succeeded.
     /// The callback is never called if the discard unsynced client reset fails.
-    /// <see cref="ManualResetFallback"/> is invoked whenever an error occurs in either of the recovery stragegies and the system needs to fallback to a manual mode.
+    /// <see cref="ManualResetFallback"/> is invoked whenever an error occurs in either of the recovery strategies and the system needs to fallback to a manual mode.
     /// The overall recommendation for using this strategy is that using the three available callbacks should only be considered when:
     /// 1. The user needs to be notified (in <see cref="OnBeforeReset"/>) of an incoming potential data loss
     ///    of unsynced data as a result of a merge or a complete discard of unsynced local changes

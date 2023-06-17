@@ -101,6 +101,9 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\.Schema\.RealmSchema\.Builder\.GetKey
     type: Method
+- exclude:
+    uidRegex: ^Realms\.Sync\.Testing\.TestingExtensions
+    type: Type
 - include:
     hasAttribute:
       uid: System.ComponentModel.EditorBrowsableAttribute

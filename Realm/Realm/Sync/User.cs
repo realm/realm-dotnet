@@ -373,7 +373,7 @@ namespace Realms.Sync
             /// Enables an API key by id.
             /// </summary>
             /// <param name="id">The id of the key to enable.</param>
-            /// <returns>An awaitable <see cref="Task"/> representing the asynchrounous enable operation.</returns>
+            /// <returns>An awaitable <see cref="Task"/> representing the asynchronous enable operation.</returns>
             /// <seealso cref="DisableAsync(ObjectId)"/>
             public Task EnableAsync(ObjectId id) => Handle404(_user.Handle.EnableApiKeyAsync(_user.App.Handle, id), id);
 
