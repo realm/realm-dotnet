@@ -17,7 +17,7 @@
             "dest": "obj/temp/api",
             "filter": "filterConfig.yml",
             "properties": {
-                "TargetFramework": "net6.0"
+                "TargetFramework": "netstandard2.0"
             }
         }
     ],
