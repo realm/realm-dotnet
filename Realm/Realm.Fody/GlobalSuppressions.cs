@@ -13,3 +13,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Nicer organization that way.", Scope = "type", Target = "~T:RealmWeaver.WeaveTypeResult")]
 [assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Nicer organization that way", Scope = "type", Target = "~T:RealmWeaver.WeavePropertyResult")]
 [assembly: SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "It doesn't really conflict with anything.", Scope = "member", Target = "~M:RealmWeaver.ILogger.Error(System.String,Mono.Cecil.Cil.SequencePoint)")]
+[assembly: SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1000:Keywords should be spaced correctly", Justification = "In C# 9.0 we can use new() to instantiate objects and we don't need a space there", Scope = "module")]

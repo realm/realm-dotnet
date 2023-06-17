@@ -71,6 +71,8 @@
     var matches = realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, circle));
     var matches = realm.All<Company>().Filter("Location GEOWITHIN $0", circle);
     ```
+* Support sort/distinct based on values from a dictionary e.g. `realm.All<MyModel>().Filter("TRUEPREDICATE SORT(meta['age'])")`. (Core 13.14.0)
+* Fixed a potential crash when opening the realm after failing to download a fresh FLX realm during an automatic client reset. (Core 13.14.0)
 
 ### Fixed
 * Fixed a fatal error (reported to the sync error handler) during client reset (or automatic PBS to FLX migration) if the reset has been triggered during an async open and the schema being applied has added new classes. (Core 13.11.0)
@@ -86,7 +88,8 @@
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core 13.13.0.
+* Using Core 13.15.0.
+* Overhauled and extended the metrics collection of the SDK to better drive future development effort. (PR [#3209](https://github.com/realm/realm-dotnet/pull/3209))
 
 ## 11.0.0 (2023-05-08)
 

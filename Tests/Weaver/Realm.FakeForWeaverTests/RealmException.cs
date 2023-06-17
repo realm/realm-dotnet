@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
-using Mono.Cecil;
+using System;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class MethodReferenceExtensions
+namespace Realms
 {
-    public static bool ConstructsType(this MethodReference @this, TypeReference type)
+    public class RealmException : Exception
     {
-        return @this.DeclaringType.IsSameAs(type) && @this.Name == ".ctor";
+        public RealmException(string message) : base(message)
+        {
+        }
     }
 }

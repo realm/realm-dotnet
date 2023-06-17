@@ -1,6 +1,6 @@
 ﻿////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
-using Mono.Cecil;
+using System.Runtime.CompilerServices;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class MethodReferenceExtensions
-{
-    public static bool ConstructsType(this MethodReference @this, TypeReference type)
-    {
-        return @this.DeclaringType.IsSameAs(type) && @this.Name == ".ctor";
-    }
-}
+[assembly: InternalsVisibleTo("Realm.Fody.Tests")]

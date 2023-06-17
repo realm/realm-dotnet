@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
+// ReSharper disable MemberCanBePrivate.Global
 namespace RealmWeaver
 {
     internal class WeaveModuleResult
@@ -40,13 +42,13 @@ namespace RealmWeaver
             return new WeaveModuleResult(skipReason: reason);
         }
 
-        public WeaveTypeResult[] Types { get; }
+        public WeaveTypeResult[]? Types { get; }
 
-        public string SkipReason { get; }
+        public string? SkipReason { get; }
 
-        public string ErrorMessage { get; }
+        public string? ErrorMessage { get; }
 
-        private WeaveModuleResult(WeaveTypeResult[] types = null, string skipReason = null, string errorMessage = null)
+        private WeaveModuleResult(WeaveTypeResult[]? types = null, string? skipReason = null, string? errorMessage = null)
         {
             Types = types;
             SkipReason = skipReason;
@@ -66,7 +68,7 @@ namespace RealmWeaver
             }
 
             var sb = new StringBuilder();
-            var wovenMessage = Types.Length == 1 ? "class was" : "classes were";
+            var wovenMessage = Types!.Length == 1 ? "class was" : "classes were";
             sb.AppendLine($"{Types.Length} {wovenMessage} woven:");
             foreach (var type in Types)
             {
@@ -91,13 +93,14 @@ namespace RealmWeaver
 
         public string Type { get; }
 
+        [MemberNotNullWhen(true, nameof(Properties))]
         public bool IsSuccessful { get; }
 
         public bool IsGenerated { get; }
 
-        public WeavePropertyResult[] Properties { get; }
+        public WeavePropertyResult[]? Properties { get; }
 
-        private WeaveTypeResult(string type, WeavePropertyResult[] properties = null, bool success = true, bool isGenerated = false)
+        private WeaveTypeResult(string type, WeavePropertyResult[]? properties = null, bool success = true, bool isGenerated = false)
         {
             Properties = properties;
             Type = type;
@@ -152,21 +155,24 @@ namespace RealmWeaver
             return new WeavePropertyResult();
         }
 
-        public string ErrorMessage { get; }
+        public string? ErrorMessage { get; }
 
-        public string WarningMessage { get; }
+        public string? WarningMessage { get; }
 
+        [MemberNotNullWhen(true, nameof(Property))]
         public bool Woven { get; }
 
-        public PropertyDefinition Property { get; }
+        public PropertyDefinition? Property { get; }
 
-        public FieldReference Field { get; }
+        public FieldReference? Field { get; }
 
+        [MemberNotNullWhen(true, nameof(Property))]
         public bool IsPrimaryKey { get; }
 
+        [MemberNotNullWhen(true, nameof(Property))]
         public bool IsIndexed { get; }
 
-        private WeavePropertyResult(PropertyDefinition property, FieldReference field, bool isPrimaryKey, bool isIndexed)
+        private WeavePropertyResult(PropertyDefinition property, FieldReference? field, bool isPrimaryKey, bool isIndexed)
         {
             Property = property;
             Field = field;
@@ -175,7 +181,7 @@ namespace RealmWeaver
             Woven = true;
         }
 
-        private WeavePropertyResult(string error = null, string warning = null)
+        private WeavePropertyResult(string? error = null, string? warning = null)
         {
             ErrorMessage = error;
             WarningMessage = warning;
@@ -183,7 +189,7 @@ namespace RealmWeaver
 
         public override string ToString()
         {
-            return $"    <i>{Property.Name}</i>: {Property.PropertyType.ToFriendlyString()}{(IsPrimaryKey ? " [PrimaryKey]" : string.Empty)}{(IsIndexed ? " [Indexed]" : string.Empty)}";
+            return $"    <i>{Property?.Name}</i>: {Property?.PropertyType.ToFriendlyString()}{(IsPrimaryKey ? " [PrimaryKey]" : string.Empty)}{(IsIndexed ? " [Indexed]" : string.Empty)}";
         }
     }
 }

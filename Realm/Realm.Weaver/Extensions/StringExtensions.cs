@@ -1,8 +1,8 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2023 Realm Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -16,14 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.ComponentModel;
-using Mono.Cecil;
+using System.Diagnostics.CodeAnalysis;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class MethodReferenceExtensions
+internal static class StringExtensions
 {
-    public static bool ConstructsType(this MethodReference @this, TypeReference type)
-    {
-        return @this.DeclaringType.IsSameAs(type) && @this.Name == ".ctor";
-    }
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 }

@@ -55,13 +55,14 @@ namespace Realms.Sync
                 [MarshalAs(UnmanagedType.LPWStr)] string platform_version, IntPtr platform_version_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_name, IntPtr device_name_len,
                 [MarshalAs(UnmanagedType.LPWStr)] string device_version, IntPtr device_version_len,
+                [MarshalAs(UnmanagedType.LPWStr)] string bundle_id, IntPtr bundle_id_len,
                 UserCallback user_callback, VoidTaskCallback void_callback, StringCallback string_callback, ApiKeysCallback api_keys_callback);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_app(Native.AppConfiguration app_config, byte[]? encryptionKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_destroy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void destroy(IntPtr syncuserHandle);
+            public static extern void destroy(IntPtr syncUserHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_sync_immediately_run_file_actions", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -173,16 +174,19 @@ namespace Realms.Sync
 
             string deviceName;
             string deviceVersion;
+            string bundleId;
             try
             {
                 deviceName = Platform.DeviceInfo.Name;
                 deviceVersion = Platform.DeviceInfo.Version;
+                bundleId = Platform.BundleId;
             }
             catch
             {
                 // If we can't get the device info, don't crash the app.
                 deviceName = Platform.Unknown;
                 deviceVersion = Platform.Unknown;
+                bundleId = Platform.Unknown;
 
 #if DEBUG
                 throw;
@@ -196,6 +200,7 @@ namespace Realms.Sync
                 platformVersion, platformVersion.IntPtrLength(),
                 deviceName, deviceName.IntPtrLength(),
                 deviceVersion, deviceVersion.IntPtrLength(),
+                bundleId, bundleId.IntPtrLength(),
                 userLogin, taskCallback, stringCallback, apiKeysCallback);
         }
 

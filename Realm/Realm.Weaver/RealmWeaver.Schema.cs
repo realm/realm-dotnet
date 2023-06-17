@@ -31,7 +31,7 @@ namespace RealmWeaver
 
         private void WeaveSchema(TypeDefinition[] types)
         {
-            if (_references.RealmSchema_AddDefaultTypes == null)
+            if (_references.Realm == null)
             {
                 // Realm is added, but not used, so we don't need to weave schema
                 return;
@@ -74,7 +74,7 @@ namespace RealmWeaver
             }
         }
 
-        private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition module = null, HashSet<string> processedAssemblies = null)
+        private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition? module = null, HashSet<string>? processedAssemblies = null)
         {
             module ??= _moduleDefinition;
 
