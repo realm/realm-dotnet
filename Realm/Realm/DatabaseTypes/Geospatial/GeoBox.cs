@@ -79,7 +79,10 @@ namespace Realms
 
         internal NativeGeoBox ToNative() => new(Left, Top, Right, Bottom);
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"Box: {{ left: {Left}, top: {Top}, right: {Right}, bottom: {Bottom} }}";
     }
 }

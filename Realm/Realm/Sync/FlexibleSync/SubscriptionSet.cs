@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Realms.Exceptions.Sync;
 using Realms.Helpers;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -245,7 +245,7 @@ namespace Realms.Sync
         /// <summary>
         /// Removes the provided <paramref name="subscription"/> from this subscription set.
         /// </summary>
-        /// <param name="subscription">The subcription to remove.</param>
+        /// <param name="subscription">The subscription to remove.</param>
         /// <returns>
         /// <c>true</c> if the subscription existed in this subscription set and was removed; <c>false</c> otherwise.
         /// </returns>

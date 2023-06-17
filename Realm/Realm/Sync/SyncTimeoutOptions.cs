@@ -69,7 +69,7 @@ namespace Realms.Sync
         public TimeSpan PingKeepAlivePeriod { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>
-        /// Gets or sets how long to wait for a reponse to a heartbeat ping before
+        /// Gets or sets how long to wait for a response to a heartbeat ping before
         /// concluding that the connection has dropped.
         /// </summary>
         /// <remarks>
