@@ -78,10 +78,13 @@ public:
             code = m_custom_error;
         }
 
+        char* messageBytes = reinterpret_cast<char*>(malloc(m_message.size()));
+        memcpy(messageBytes, m_message.c_str(), m_message.size());
+
         return {
             (ErrorCodes::Error)code,
             ErrorCodes::error_categories(m_code).value(),
-            strdup(m_message.c_str()), // to be freed with realm_free() on the native side
+            messageBytes, // to be freed with realm_free() on the native side
             m_message.size(),
             m_managed_error,
         };
