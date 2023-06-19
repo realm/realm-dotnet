@@ -158,7 +158,7 @@ namespace RealmWeaver
         public string? ErrorMessage { get; }
 
         public string? WarningMessage { get; }
-        
+
         public string? SkipReason { get; }
 
         [MemberNotNullWhen(true, nameof(Property))]

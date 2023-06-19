@@ -476,10 +476,10 @@ namespace RealmWeaver
             {
                 "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
                 "Sensor.FirstMeasurement is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.",
-                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
                 "AccessorTestObject.SetterLessObject does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
             };
 
