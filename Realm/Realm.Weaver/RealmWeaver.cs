@@ -445,7 +445,7 @@ namespace RealmWeaver
 
                             if (realmAttributeNames.Any())
                             {
-                                _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                                _logger.Warning($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so these attributes will be ignored. Skip reason: {weaveResult.SkipReason}", sequencePoint);
                             }
                         }
                     }
@@ -517,7 +517,7 @@ namespace RealmWeaver
 
             if (prop.GetMethod == null)
             {
-                return WeavePropertyResult.Skipped();
+                return WeavePropertyResult.Skipped("Property has no getter");
             }
 
             var indexedAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "IndexedAttribute");
@@ -570,7 +570,7 @@ namespace RealmWeaver
                     return WeavePropertyResult.Warning($"{type.Name}.{prop.Name} is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.");
                 }
 
-                return WeavePropertyResult.Skipped();
+                return WeavePropertyResult.Skipped("Property is not autoimplemented");
             }
 
             var backlinkAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "BacklinkAttribute");
@@ -589,7 +589,7 @@ namespace RealmWeaver
             {
                 if (prop.SetMethod == null)
                 {
-                    return WeavePropertyResult.Skipped();
+                    return WeavePropertyResult.Skipped("Property has no setter");
                 }
 
                 var setter = isPrimaryKey ? _references.RealmObject_SetValueUnique : _references.RealmObject_SetValue;
@@ -707,7 +707,7 @@ namespace RealmWeaver
             }
             else if (prop.SetMethod == null)
             {
-                return WeavePropertyResult.Skipped();
+                return WeavePropertyResult.Skipped("Property has no setter");
             }
             else if (prop.PropertyType.FullName == "System.DateTime")
             {
