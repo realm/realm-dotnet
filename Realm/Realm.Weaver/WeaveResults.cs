@@ -150,14 +150,16 @@ namespace RealmWeaver
             return new WeavePropertyResult(error: error);
         }
 
-        public static WeavePropertyResult Skipped()
+        public static WeavePropertyResult Skipped(string reason)
         {
-            return new WeavePropertyResult();
+            return new WeavePropertyResult(skipReason: reason);
         }
 
         public string? ErrorMessage { get; }
 
         public string? WarningMessage { get; }
+        
+        public string? SkipReason { get; }
 
         [MemberNotNullWhen(true, nameof(Property))]
         public bool Woven { get; }
@@ -181,10 +183,11 @@ namespace RealmWeaver
             Woven = true;
         }
 
-        private WeavePropertyResult(string? error = null, string? warning = null)
+        private WeavePropertyResult(string? error = null, string? warning = null, string? skipReason = null)
         {
             ErrorMessage = error;
             WarningMessage = warning;
+            SkipReason = skipReason;
         }
 
         public override string ToString()
