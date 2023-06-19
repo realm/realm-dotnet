@@ -4,13 +4,14 @@
 * None
 
 ### Fixed
+* Fixed a namespacing issue that would cause Unity projects to fail to build due to `'Realm' is a namespace but is used like a type`. (Issue [#3351](https://github.com/realm/realm-dotnet/issues/3351))
 * Improved the warning message when adding Realm attributes on a non-persisted property. (Issue [#3352](https://github.com/realm/realm-dotnet/issues/3352))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.15.0.
 
 ## 11.1.0 (2023-06-17)
 

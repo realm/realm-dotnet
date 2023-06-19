@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Threading;
-using Realm.UnityUtils;
 using Realms;
 using Realms.PlatformHelpers;
 using UnityEngine;
