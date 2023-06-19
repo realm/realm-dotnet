@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
+## 11.1.1 (2023-06-19)
 
 ### Fixed
 * Fixed a namespacing issue that would cause Unity projects to fail to build due to `'Realm' is a namespace but is used like a type`. (Issue [#3351](https://github.com/realm/realm-dotnet/issues/3351))
