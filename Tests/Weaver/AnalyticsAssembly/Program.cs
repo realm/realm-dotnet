@@ -256,13 +256,6 @@ public class Program
     }
 #endif
 
-#if SERVER_API_KEY
-    public static void ServerApiKeyAuthenticationMethod()
-    {
-        _ = Credentials.ServerApiKey("serverApiKey");
-    }
-#endif
-
 #if FUNCTION
     public static void FunctionAuthenticationMethod()
     {
