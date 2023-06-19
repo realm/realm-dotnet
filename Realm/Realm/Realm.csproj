@@ -44,7 +44,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Label="Package">
-    <None Include="NuGet.md" Pack="true" PackagePath="\" />
+    <None Include="$(ProjectDir)..\..\NuGet.md" Pack="true" PackagePath="\" />
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
     <None Include="wrappers-props\Realm.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />
