@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* Improved the warning message when adding Realm attributes on a non-persisted property. (Issue [#3352](https://github.com/realm/realm-dotnet/issues/3352))
+* None
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

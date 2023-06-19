@@ -49,6 +49,7 @@ namespace Realms.SourceGenerator
             DateTimeNotSupported = 23,
             TypeNotSupported = 24,
             RealmObjectWithoutAutomaticProperty = 25,
+            NotPersistedPropertyWithRealmAttributes = 26,
             ParentOfNestedClassIsNotPartial = 27,
             IndexedPrimaryKey = 28,
         }
@@ -318,6 +319,15 @@ namespace Realms.SourceGenerator
                 Id.RealmObjectWithoutAutomaticProperty,
                 "RealmObject/EmbeddedObject properties usually indicate a relationship",
                 $"{className}.{propertyName} is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
+                location);
+        }
+
+        public static Diagnostic NotPersistedPropertyWithRealmAttributes(string className, string propertyName, Location location)
+        {
+            return CreateDiagnosticWarning(
+                Id.NotPersistedPropertyWithRealmAttributes,
+                "Not persisted property with Realm attributes",
+                $"{className}.{propertyName} has one or more Realm attributes applied, but it's not persisted, so those attributes will be ignored.",
                 location);
         }
 
