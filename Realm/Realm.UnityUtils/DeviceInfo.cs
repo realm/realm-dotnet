@@ -19,7 +19,7 @@
 using Realms.PlatformHelpers;
 using UnityEngine;
 
-namespace Realm.UnityUtils
+namespace UnityUtils
 {
     internal class UnityDeviceInfo : IDeviceInfo
     {

@@ -18,7 +18,7 @@
 
 using Realms.SourceGenerator;
 
-namespace Realm.SourceGenerator.Tests
+namespace Realms.SourceGenerator.Tests
 {
     [TestFixture]
     internal class UtilsTests

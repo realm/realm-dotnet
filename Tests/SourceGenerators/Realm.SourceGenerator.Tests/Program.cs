@@ -19,7 +19,7 @@
 using NUnitLite;
 using Realms.Tests;
 
-namespace Realm.SourceGenerator.Tests
+namespace Realms.SourceGenerator.Tests
 {
     public class Program
     {
