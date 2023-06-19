@@ -1,7 +1,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Product Condition="'$(Product)' == ''">Realm .NET</Product>
-    <VersionPrefix>11.1.0</VersionPrefix>
+    <VersionPrefix>11.1.1</VersionPrefix>
     <Description Condition="'$(Description)' == ''">Realm is a mobile database: a replacement for SQLite</Description>
     <Company>Realm Inc.</Company>
     <Copyright>Copyright © $([System.DateTime]::Now.ToString(yyyy)) Realm Inc.</Copyright>
