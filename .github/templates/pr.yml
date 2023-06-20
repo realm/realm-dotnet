@@ -1,4 +1,5 @@
 #@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "fetchPackageArtifacts", "nugetPackages")
 #@ load("build.lib.yml", "deployBaas", "cleanupBaas", "runTests", "runNetCoreTests", "runWovenClassesTests", "runSourceGenerationTests", "buildUnity", "testUnity")
 ---
 name: PR Build
@@ -54,3 +55,30 @@ jobs:
     name: Test
   _: #@ template.replace(runTests("Code Coverage"))
   _: #@ template.replace(cleanupBaas(["Code Coverage"]))
+  verify-namespaces:
+    runs-on: ubuntu-latest
+    name: Verify Namespaces
+    steps:
+      - #@ template.replace(checkoutCode("recursive", False))
+      - #@ template.replace(fetchPackageArtifacts(packages = nugetPackages))
+      - run: dotnet tool install ilspycmd -g
+      - name: Verify Namespaces
+        run: |
+          Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
+              $targetPath = Join-Path ./Realm/packages $_.BaseName
+              Expand-Archive $_.FullName -DestinationPath $targetPath
+
+              Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
+                  $ilspyOutput = ilspycmd $_.FullName --list "class,interface,struct,delegate,enum"
+
+                  $parentDll = $_.FullName
+
+                  $ilspyOutput | ForEach-Object {
+                      if ($_ -match "Realm\.") {
+                          Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                      }
+                  }
+              }
+          }
+        shell: pwsh
+
