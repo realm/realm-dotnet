@@ -21,6 +21,7 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
+    <AndroidResgenNamespace>Realms.PlatformHelpers</AndroidResgenNamespace>
   </PropertyGroup>
 
   <ItemGroup>
