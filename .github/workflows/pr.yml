@@ -177,6 +177,8 @@ jobs:
   verify-namespaces:
     runs-on: ubuntu-latest
     name: Verify Namespaces
+    needs:
+    - build-packages
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -203,6 +205,7 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - run: dotnet tool install ilspycmd -g
     - name: Verify Namespaces
       run: |
         Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {

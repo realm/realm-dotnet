@@ -58,6 +58,8 @@ jobs:
   verify-namespaces:
     runs-on: ubuntu-latest
     name: Verify Namespaces
+    needs:
+      - build-packages
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
       - #@ template.replace(fetchPackageArtifacts(packages = nugetPackages))
