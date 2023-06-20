@@ -25,22 +25,24 @@ jobs:
           $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
           echo "path=$dotnetPath/packs" >> $env:GITHUB_OUTPUT
         }
+      shell: pwsh
     - name: Get cache key
       id: workflow-cache-key
-      run: echo "key=${{ runner.os }}-workload2-$(date +'%U')-" >> "$GITHUB_OUTPUT"
+      run: echo "cacheKey=${{ runner.os }}-workload2-$(date +'%U')-" >> $env:GITHUB_OUTPUT
+      shell: pwsh
     - name: Restore cached workloads
       uses: actions/cache/restore@v3
       id: workload-restore
       with:
         path: ${{ steps.workflow-location.outputs.path }}
-        key: ${{ steps.workflow-cache-key.outputs.key }}tvos ios maccatalyst android
+        key: ${{ steps.workflow-cache-key.outputs.cacheKey }}tvos ios maccatalyst android
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
     - name: Cache workloads
       uses: actions/cache/save@v3
       with:
         path: ${{ steps.workflow-location.outputs.path }}
-        key: ${{ steps.workflow-cache-key.outputs.key }}tvos ios maccatalyst android
+        key: ${{ steps.workflow-cache-key.outputs.cacheKey }}tvos ios maccatalyst android
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
     - name: Output executable path

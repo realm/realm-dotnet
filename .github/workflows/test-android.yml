@@ -130,22 +130,24 @@ jobs:
           $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
           echo "path=$dotnetPath/packs" >> $env:GITHUB_OUTPUT
         }
+      shell: pwsh
     - name: Get cache key
       id: workflow-cache-key
-      run: echo "key=${{ runner.os }}-workload2-$(date +'%U')-" >> "$GITHUB_OUTPUT"
+      run: echo "cacheKey=${{ runner.os }}-workload2-$(date +'%U')-" >> $env:GITHUB_OUTPUT
+      shell: pwsh
     - name: Restore cached workloads
       uses: actions/cache/restore@v3
       id: workload-restore
       with:
         path: ${{ steps.workflow-location.outputs.path }}
-        key: ${{ steps.workflow-cache-key.outputs.key }}maui
+        key: ${{ steps.workflow-cache-key.outputs.cacheKey }}maui
     - name: Setup workloads
       run: dotnet workload install maui
     - name: Cache workloads
       uses: actions/cache/save@v3
       with:
         path: ${{ steps.workflow-location.outputs.path }}
-        key: ${{ steps.workflow-cache-key.outputs.key }}maui
+        key: ${{ steps.workflow-cache-key.outputs.cacheKey }}maui
     - name: Build the tests
       run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials
