@@ -26,22 +26,22 @@ jobs:
     - name: Fetch Realm.PlatformHelpers
       uses: actions/download-artifact@v3
       with:
-        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        name: Realm.PlatformHelpers.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:
-        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v3
       with:
-        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
+        name: Realm.UnityUtils.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
       uses: actions/download-artifact@v3
       with:
-        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
+        name: Realm.UnityWeaver.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Build Unity
       run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack

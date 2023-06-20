@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version", packages = nugetPackages))
+      - #@ template.replace(fetchPackageArtifacts(packages = nugetPackages))
       - name: Build Unity
         run: dotnet run --project Tools/SetupUnityPackage/ -- realm --packages-path Realm/packages --pack
       - #@ uploadArtifacts(unityPkgName, "Realm/Realm.Unity/" + unityPkgName)

@@ -62,7 +62,7 @@ jobs:
       - build-packages
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
-      - #@ template.replace(fetchPackageArtifacts(packages = nugetPackages))
+      - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version", packages = nugetPackages))
       - run: dotnet tool install ilspycmd -g
       - name: Verify Namespaces
         run: |
@@ -71,13 +71,15 @@ jobs:
               Expand-Archive $_.FullName -DestinationPath $targetPath
 
               Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
-                  $ilspyOutput = ilspycmd $_.FullName --list "class,interface,struct,delegate,enum"
+                  if (-not ($_.FullName -match "runtimes")) {
+                      $ilspyOutput = ilspycmd $_.FullName
 
-                  $parentDll = $_.FullName
+                      $parentDll = $_.FullName
 
-                  $ilspyOutput | ForEach-Object {
-                      if ($_ -match "Realm\.") {
-                          Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                      $ilspyOutput | ForEach-Object {
+                          if ($_ -match "namespace.*Realm(\.|$)") {
+                              Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                          }
                       }
                   }
               }

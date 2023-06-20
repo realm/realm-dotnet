@@ -188,22 +188,22 @@ jobs:
     - name: Fetch Realm.PlatformHelpers
       uses: actions/download-artifact@v3
       with:
-        name: Realm.PlatformHelpers.${{ inputs.version }}
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
       uses: actions/download-artifact@v3
       with:
-        name: Realm.${{ inputs.version }}
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityUtils
       uses: actions/download-artifact@v3
       with:
-        name: Realm.UnityUtils.${{ inputs.version }}
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm.UnityWeaver
       uses: actions/download-artifact@v3
       with:
-        name: Realm.UnityWeaver.${{ inputs.version }}
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
     - run: dotnet tool install ilspycmd -g
     - name: Verify Namespaces
@@ -213,13 +213,15 @@ jobs:
             Expand-Archive $_.FullName -DestinationPath $targetPath
 
             Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
-                $ilspyOutput = ilspycmd $_.FullName --list "class,interface,struct,delegate,enum"
+                if (-not ($_.FullName -match "runtimes")) {
+                    $ilspyOutput = ilspycmd $_.FullName
 
-                $parentDll = $_.FullName
+                    $parentDll = $_.FullName
 
-                $ilspyOutput | ForEach-Object {
-                    if ($_ -match "Realm\.") {
-                        Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                    $ilspyOutput | ForEach-Object {
+                        if ($_ -match "namespace.*Realm(\.|$)") {
+                            Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                        }
                     }
                 }
             }
