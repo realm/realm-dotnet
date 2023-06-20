@@ -28,25 +28,31 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Get Workload Location
+      id: workflow-location
+      run: |
+        if (${{ runner.os }} -eq "Windows") {
+          echo "path=C:\ProgramData\dotnet\workloads" >> $env:GITHUB_OUTPUT
+        } else {
+          $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
+          echo "path=$dotnetPath/packs" >> $env:GITHUB_OUTPUT
+        }
     - name: Get cache key
       id: workflow-cache-key
-      run: echo "key=${{ runner.os }}-workload-$(date +'%U')-" >> "$GITHUB_OUTPUT"
+      run: echo "key=${{ runner.os }}-workload2-$(date +'%U')-" >> "$GITHUB_OUTPUT"
     - name: Restore cached workloads
       uses: actions/cache/restore@v3
       id: workload-restore
       with:
-        path: ./workload-cache
+        path: ${{ steps.workflow-location.outputs.path }}
         key: ${{ steps.workflow-cache-key.outputs.key }}android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
-    - name: Download workloads
-      if: steps.workload-restore.outputs.cache-hit != 'true'
-      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }} --download-to-cache ./workload-cache
     - name: Setup workloads
-      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }} --from-cache ./workload-cache
+      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Cache workloads
       uses: actions/cache/save@v3
       with:
-        path: ./workload-cache
-        key: ${{ runner.os }}-workload-android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+        path: ${{ steps.workflow-location.outputs.path }}
+        key: ${{ steps.workflow-cache-key.outputs.key }}android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} --no-self-contained
     - name: Output executable path

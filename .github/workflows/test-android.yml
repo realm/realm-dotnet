@@ -121,25 +121,31 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Get Workload Location
+      id: workflow-location
+      run: |
+        if (${{ runner.os }} -eq "Windows") {
+          echo "path=C:\ProgramData\dotnet\workloads" >> $env:GITHUB_OUTPUT
+        } else {
+          $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
+          echo "path=$dotnetPath/packs" >> $env:GITHUB_OUTPUT
+        }
     - name: Get cache key
       id: workflow-cache-key
-      run: echo "key=${{ runner.os }}-workload-$(date +'%U')-" >> "$GITHUB_OUTPUT"
+      run: echo "key=${{ runner.os }}-workload2-$(date +'%U')-" >> "$GITHUB_OUTPUT"
     - name: Restore cached workloads
       uses: actions/cache/restore@v3
       id: workload-restore
       with:
-        path: ./workload-cache
+        path: ${{ steps.workflow-location.outputs.path }}
         key: ${{ steps.workflow-cache-key.outputs.key }}maui
-    - name: Download workloads
-      if: steps.workload-restore.outputs.cache-hit != 'true'
-      run: dotnet workload install maui --download-to-cache ./workload-cache
     - name: Setup workloads
-      run: dotnet workload install maui --from-cache ./workload-cache
+      run: dotnet workload install maui
     - name: Cache workloads
       uses: actions/cache/save@v3
       with:
-        path: ./workload-cache
-        key: ${{ runner.os }}-workload-maui
+        path: ${{ steps.workflow-location.outputs.path }}
+        key: ${{ steps.workflow-cache-key.outputs.key }}maui
     - name: Build the tests
       run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials
