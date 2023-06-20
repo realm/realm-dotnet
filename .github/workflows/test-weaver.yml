@@ -33,9 +33,9 @@ jobs:
       run: |
         if ($IsWindows) {
           echo "path=C:\ProgramData\dotnet\workloads" >> $env:GITHUB_OUTPUT
-        } else if ($IsLinux) {
+        } elseif ($IsLinux) {
           echo "path=~/.dotnet/packs" >> $env:GITHUB_OUTPUT
-        } else if ($IsMacOs) {
+        } elseif ($IsMacOs) {
           echo "path=/usr/local/share/dotnet/packs" >> $env:GITHUB_OUTPUT
         }
       shell: pwsh
