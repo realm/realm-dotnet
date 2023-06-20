@@ -15,7 +15,7 @@ name: CodeQL
 env:
   REALM_DISABLE_ANALYTICS: true
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: codeql-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 jobs:
   analyze-csharp:
