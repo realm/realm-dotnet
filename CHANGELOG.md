@@ -4,13 +4,13 @@
 * None
 
 ### Fixed
-* None
+* Fixed a namespacing issue that would cause Maui Android projects to fail to build due to `'Realm' is a namespace but is used like a type`. (Issue [#3351](https://github.com/realm/realm-dotnet/issues/3351))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.15.0
 
 ## 11.1.1 (2023-06-19)
 
