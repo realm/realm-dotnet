@@ -28,17 +28,24 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Get cache key
+      id: workflow-cache-key
+      run: echo "key=${{ runner.os }}-workload-$(date +'%U')-" >> "$GITHUB_OUTPUT"
     - name: Restore cached workloads
       uses: actions/cache/restore@v3
+      id: workload-restore
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-workload-android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+        path: ./workload-cache
+        key: ${{ steps.workflow-cache-key.outputs.key }}android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+    - name: Download workloads
+      if: steps.workload-restore.outputs.cache-hit != 'true'
+      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }} --download-to-cache ./workload-cache
     - name: Setup workloads
-      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+      run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }} --from-cache ./workload-cache
     - name: Cache workloads
       uses: actions/cache/save@v3
       with:
-        path: ~/.nuget/packages
+        path: ./workload-cache
         key: ${{ runner.os }}-workload-android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} --no-self-contained
