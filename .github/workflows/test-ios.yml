@@ -113,7 +113,7 @@ jobs:
     - name: Get Workload Location
       id: workflow-location
       run: |
-        if (${{ runner.os }} -eq "Windows") {
+        if ($IsWindows) {
           echo "path=C:\ProgramData\dotnet\workloads" >> $env:GITHUB_OUTPUT
         } else {
           $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
