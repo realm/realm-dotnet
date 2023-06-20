@@ -23,7 +23,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupWorkloads()
+      - #@ template.replace(setupWorkloads())
       - name: Build the tests
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests

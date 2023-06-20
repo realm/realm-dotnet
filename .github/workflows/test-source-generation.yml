@@ -16,8 +16,18 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Restore cached workloads
+      uses: actions/cache/restore@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-tvos ios maccatalyst android
     - name: Setup workloads
       run: dotnet workload install tvos ios maccatalyst android
+    - name: Cache workloads
+      uses: actions/cache/save@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-tvos ios maccatalyst android
     - name: Publish Tests/SourceGenerators/Realm.SourceGenerator.Tests
       run: dotnet publish Tests/SourceGenerators/Realm.SourceGenerator.Tests -c Release -f net6.0 -r win-x64 --no-self-contained
     - name: Output executable path

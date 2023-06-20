@@ -37,18 +37,6 @@
 
 #@ mainBranch = "main"
 ---
-
-#@ def setupNugetCache(projectPaths = []):
-#@ globs = []
-#@ for projectPath in projectPaths:
-#@   globs.append("'" + projectPath + "/*.csproj'")
-#@ end
-uses: actions/cache@v2
-with:
-  path: ~/.nuget/packages
-  key: #@ "${{ runner.os }}-nuget-${{ hashFiles(" + ", ".join(globs) + ") }}"
-#@ end
----
 #@ def msbuild(projectPath, **properties):
 #@ return msBuildMultiple([projectPath], **properties)
 #@ end
@@ -230,14 +218,18 @@ with:
 #@ end
 ---
 #@ def setupWorkloads(workloads = 'maui'):
-name: Setup workloads
-run: #@ "dotnet workload install " + workloads
-#@ end
----
-#@ def restoreWorkloads(workingDirectory = 'Realm/Realm.PlatformHelpers'):
-name: Restore workloads
-run: dotnet workload restore
-working-directory: #@ "${{ github.workspace }}/" + workingDirectory
+- name: Restore cached workloads
+  uses: actions/cache/restore@v3
+  with:
+    path: ~/.nuget/packages
+    key: #@ "${{ runner.os }}-workload-" + workloads
+- name: Setup workloads
+  run: #@ "dotnet workload install " + workloads
+- name: Cache workloads
+  uses: actions/cache/save@v3
+  with:
+    path: ~/.nuget/packages
+    key: #@ "${{ runner.os }}-workload-" + workloads
 #@ end
 ---
 #@ def setupAndroid():

@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo xcode-select -s "/Applications/Xcode_14.3.app"
           echo "MD_APPLE_SDK_ROOT=/Applications/Xcode_14.3.app" >> $GITHUB_ENV
-      - #@ setupWorkloads()
+      - #@ template.replace(setupWorkloads())
       - name: Build the tests
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-ios -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests

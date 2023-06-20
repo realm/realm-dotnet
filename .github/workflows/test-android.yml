@@ -121,8 +121,18 @@ jobs:
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
+    - name: Restore cached workloads
+      uses: actions/cache/restore@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-maui
     - name: Setup workloads
       run: dotnet workload install maui
+    - name: Cache workloads
+      uses: actions/cache/save@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-maui
     - name: Build the tests
       run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}
     - name: Configure AWS Credentials

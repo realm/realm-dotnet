@@ -28,8 +28,18 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/csc.json"
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Restore cached workloads
+      uses: actions/cache/restore@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Setup workloads
       run: dotnet workload install android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
+    - name: Cache workloads
+      uses: actions/cache/save@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-workload-android ${{ (matrix.os.runner != 'ubuntu-latest' && 'tvos ios maccatalyst') || '' }}
     - name: Publish Tests/Weaver/Realm.Fody.Tests
       run: dotnet publish Tests/Weaver/Realm.Fody.Tests -c Release -f net6.0 -r ${{ matrix.os.runtime }} --no-self-contained
     - name: Output executable path
