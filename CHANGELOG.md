@@ -1,7 +1,4 @@
-## vNext (TBD)
-
-### Enhancements
-* None
+## 11.1.2 (2023-06-20)
 
 ### Fixed
 * Fixed a namespacing issue that would cause Maui Android projects to fail to build due to `'Realm' is a namespace but is used like a type`. (Issue [#3351](https://github.com/realm/realm-dotnet/issues/3351))
