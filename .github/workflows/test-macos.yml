@@ -105,9 +105,10 @@ jobs:
       run: |
         if ($IsWindows) {
           echo "path=C:\ProgramData\dotnet\workloads" >> $env:GITHUB_OUTPUT
-        } else {
-          $dotnetPath = (get-item (get-command dotnet).Path).Directory.FullName
-          echo "path=$dotnetPath/packs" >> $env:GITHUB_OUTPUT
+        } else if ($IsLinux) {
+          echo "path=~/.dotnet/packs" >> $env:GITHUB_OUTPUT
+        } else if ($IsMacOs) {
+          echo "path=/usr/local/share/dotnet/packs" >> $env:GITHUB_OUTPUT
         }
       shell: pwsh
     - name: Get cache key
