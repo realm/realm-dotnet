@@ -129,7 +129,7 @@ jobs:
         echo "::set-output name=thumbprint::$($cert.Thumbprint)"
       shell: powershell
     - name: Publish Tests/Tests.Maui
-      run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-windows10.0.19041 -r win10-x64 -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint=${{ steps.import-pfx.outputs.thumbprint }} -p:AppxPackageTestDir=Output/ -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
+      run: dotnet publish Tests/Tests.Maui -c Release -f net6.0-windows10.0.19041 -r win10-x64 -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint=${{ steps.import-pfx.outputs.thumbprint }} -p:AppxPackageTestDir=Output/ -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
       run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net6.0-windows10.0.19041/win10-x64' >> $GITHUB_OUTPUT

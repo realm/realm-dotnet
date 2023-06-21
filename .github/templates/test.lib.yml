@@ -65,7 +65,8 @@ env:
 #@ def dotnetBuildTests(projectPath, framework, runtime, version = "inputs.version", **properties):
 #@ properties.update({
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
-#@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}"
+#@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
+#@   "RealmTestsStandaloneExe": "true"
 #@ })
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
