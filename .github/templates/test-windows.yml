@@ -29,15 +29,14 @@ jobs:
         shell: powershell
       - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")
   test-maui:
-    runs-on: windows-2019
+    runs-on: windows-latest
     name: Maui.Windows
     timeout-minutes: 45
     steps:
       - #@ template.replace(prepareTest())
-      - #@ setupDotnet()
       - #@ setupWorkloads()
       - #@ importPfx("import-pfx")
-      - #@ template.replace(dotnetBuildTests("Tests/Tests.Maui", "net6.0-windows10.0.19041", "win10-x64", GenerateAppxPackageOnBuild="true", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", AppxPackageTestDir="Output/"))
+      - #@ template.replace(dotnetBuildTests("Tests/Tests.Maui", "net7.0-windows10.0.19041", "win10-x64", GenerateAppxPackageOnBuild="true", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", AppxPackageTestDir="Output/"))
       - name: Run the tests
         #@yaml/text-templated-strings
         run: |
