@@ -62,12 +62,12 @@ env:
 #@ return msbuild(projectPath, RestoreConfigFile="Tests/Test.NuGet.Config", UseRealmNupkgsWithVersion="${{ inputs.version }}", **properties)
 #@ end
 
-#@ def dotnetBuildTests(projectPath, framework, runtime, version = "inputs.version"):
-#@ properties = {
+#@ def dotnetBuildTests(projectPath, framework, runtime, version = "inputs.version", **properties):
+#@ properties.update({
 #@   "RestoreConfigFile": "Tests/Test.NuGet.Config",
 #@   "UseRealmNupkgsWithVersion": "${{ " + version + " }}",
 #@   "RealmTestsStandaloneExe": "true"
-#@ }
+#@ })
 #@ return dotnetPublish(projectPath, framework, runtime, properties)
 #@ end
 

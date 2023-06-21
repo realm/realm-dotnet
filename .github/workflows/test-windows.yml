@@ -1,0 +1,155 @@
+name: test-windows
+"on":
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      clusterName:
+        required: false
+        type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
+    secrets:
+      AtlasProjectId:
+        required: false
+      AtlasPublicKey:
+        required: false
+      AtlasPrivateKey:
+        required: false
+env:
+  REALM_DISABLE_ANALYTICS: true
+  DOTNET_NOLOGO: true
+jobs:
+  test-uwp:
+    runs-on: windows-2019
+    name: UWP
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
+    - name: Import test certificate
+      id: import-pfx
+      run: |
+        $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=RealmTests" -KeyUsage DigitalSignature -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+        echo "::set-output name=thumbprint::$($cert.Thumbprint)"
+      shell: powershell
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+      if: ${{ runner.os == 'Windows' }}
+    - name: Build Tests/Tests.UWP
+      run: msbuild Tests/Tests.UWP -p:Configuration=Release -restore -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:AppxBundle=Always -p:PackageCertificateThumbprint=${{ steps.import-pfx.outputs.thumbprint }} -p:UseDotNetNativeToolchain=false -p:AppxBundlePlatforms=x64
+    - name: Run the tests
+      run: ./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs ' --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=uwp-managed'
+      shell: powershell
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      if: always()
+      with:
+        name: Results UWP Managed
+        path: ${{ env.TEST_RESULTS }}
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false
+  test-maui:
+    runs-on: windows-latest
+    name: Maui.Windows
+    timeout-minutes: 45
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: false
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Register csc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/csc.json"
+    - name: Register msvc problem matcher
+      run: echo "::add-matcher::.github/problem-matchers/msvc.json"
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
+    - name: Setup workloads
+      run: dotnet workload install maui
+    - name: Import test certificate
+      id: import-pfx
+      run: |
+        $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=RealmTests" -KeyUsage DigitalSignature -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+        echo "::set-output name=thumbprint::$($cert.Thumbprint)"
+      shell: powershell
+    - name: Publish Tests/Tests.Maui
+      run: dotnet publish Tests/Tests.Maui -c Release -f net7.0-windows10.0.19041 -r win10-x64 -p:GenerateAppxPackageOnBuild=true -p:PackageCertificateThumbprint=${{ steps.import-pfx.outputs.thumbprint }} -p:AppxPackageTestDir=Output/ -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} -p:RealmTestsStandaloneExe=true --no-self-contained
+    - name: Output executable path
+      id: dotnet-publish
+      run: echo 'executable-path=./Tests/Tests.Maui/bin/Release/net7.0-windows10.0.19041/win10-x64' >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run the tests
+      run: |
+        .\Tests\Tests.Maui\Output\Install.ps1 -Force
+        # Tests.Maui --headless --labels=After --result=TestResults.Windows.xml  --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=Maui.Windows
+
+        $package = Get-AppxPackage -Name realm.maui.tests
+        Start-Process "shell:AppsFolder\$($package.PackageFamilyName)!App" -ArgumentList "--headless --labels=After --result=$(pwd)\TestResults.Windows.xml --output=$(pwd)\test.log  --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=Maui.Windows"
+        Start-Sleep 5
+        echo "Waiting for tests to finish"
+        $(Get-Process Tests.Maui).WaitForExit(900000)
+        Get-Content test.log
+      shell: powershell
+    - name: Publish Unit Test Results
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
+      if: always()
+      with:
+        name: Results Maui.Windows
+        path: TestResults.Windows.xml
+        reporter: java-junit
+        list-suites: failed
+        list-tests: failed
+        path-replace-backslashes: true
+        fail-on-error: false

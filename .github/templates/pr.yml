@@ -42,7 +42,7 @@ jobs:
   _: #@ template.replace(buildUnity())
   _: #@ template.replace(testUnity('["Mono-Net4"]', '[{ "os": "windows", "testPlatform": "Windows64" }, { "os": "linux", "testPlatform": "Linux64" }]'))
   _: #@ template.replace(runTests(".NET Framework", runSyncTests = False))
-  _: #@ template.replace(runTests("UWP Managed", runSyncTests = False, additionalSecrets = ["Pfx_Password", "Base64_Encoded_Pfx"]))
+  _: #@ template.replace(runTests("Windows", runSyncTests = False))
   _: #@ template.replace(runNetCoreTests('["net7.0"]'))
   _: #@ template.replace(runTests("macOS", runSyncTests = False))
   _: #@ template.replace(runTests("iOS", runSyncTests = False))

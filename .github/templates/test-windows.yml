@@ -1,0 +1,54 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "setupDotnet", "setupWorkloads")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
+
+#@ def importPfx(id):
+name: Import test certificate
+id: #@ id
+#@yaml/text-templated-strings
+run: |
+  $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=RealmTests" -KeyUsage DigitalSignature -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+  echo "::set-output name=thumbprint::$($cert.Thumbprint)"
+shell: powershell
+#@ end
+
+---
+name: test-windows
+_: #@ template.replace(testDefinition())
+jobs:
+  test-uwp:
+    runs-on: windows-2019
+    name: UWP
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(prepareTest())
+      - #@ importPfx("import-pfx")
+      - #@ template.replace(buildTests("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
+      - name: Run the tests
+        run: #@ "./Tests/Tests.UWP/RunTests.ps1 -ExtraAppArgs '" + baasTestArgs("uwp-managed") + "'"
+        shell: powershell
+      - #@ publishTestsResults("${{ env.TEST_RESULTS }}", "UWP Managed")
+  test-maui:
+    runs-on: windows-latest
+    name: Maui.Windows
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(prepareTest())
+      - #@ setupWorkloads()
+      - #@ importPfx("import-pfx")
+      - #@ template.replace(dotnetBuildTests("Tests/Tests.Maui", "net7.0-windows10.0.19041", "win10-x64", GenerateAppxPackageOnBuild="true", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", AppxPackageTestDir="Output/"))
+      - name: Run the tests
+        #@yaml/text-templated-strings
+        run: |
+          .\Tests\Tests.Maui\Output\Install.ps1 -Force
+          # Tests.Maui --headless --labels=After --result=TestResults.Windows.xml (@= baasTestArgs('Maui.Windows') @)
+
+          $package = Get-AppxPackage -Name realm.maui.tests
+          Start-Process "shell:AppsFolder\$($package.PackageFamilyName)!App" -ArgumentList "--headless --labels=After --result=$(pwd)\TestResults.Windows.xml --output=$(pwd)\test.log (@= baasTestArgs('Maui.Windows') @)"
+          Start-Sleep 5
+          echo "Waiting for tests to finish"
+          $(Get-Process Tests.Maui).WaitForExit(900000)
+          Get-Content test.log
+        shell: powershell
+      - #@ publishTestsResults("TestResults.Windows.xml", "Maui.Windows")
+

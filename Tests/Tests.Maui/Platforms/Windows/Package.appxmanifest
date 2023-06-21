@@ -2,13 +2,19 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <Identity Publisher="CN=User Name" />
+  <Identity
+    Name="realm.maui.tests"
+    Publisher="CN=RealmTests"
+    Version="1.0.0.0" />
 
   <Properties>
-    <PublisherDisplayName>User Name</PublisherDisplayName>
+    <DisplayName>Tests.Maui</DisplayName>
+    <PublisherDisplayName>Realm</PublisherDisplayName>
   </Properties>
 
   <Dependencies>
@@ -23,6 +29,14 @@
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
       <uap:VisualElements />
+    <Extensions>
+      <uap3:Extension Category="windows.appExecutionAlias"
+                      EntryPoint="Windows.FullTrustApplication">
+        <uap3:AppExecutionAlias>
+          <desktop:ExecutionAlias Alias="Tests.Maui.exe" />
+        </uap3:AppExecutionAlias>
+      </uap3:Extension>
+    </Extensions>
     </Application>
   </Applications>
 

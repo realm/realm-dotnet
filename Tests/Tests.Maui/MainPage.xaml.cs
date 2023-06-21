@@ -69,31 +69,43 @@ public partial class MainPage : ContentPage
                 var autorun = new AutoRun(typeof(TestHelpers).Assembly);
                 var arguments = Realms.Tests.Sync.SyncTestHelpers.ExtractBaasSettings(MauiProgram.Args);
 
-                using var reader = new StringReader(string.Empty);
-                using var writer = new DebugWriter((msg, style, newLine) =>
-                {
-                    Dispatcher.Dispatch(() =>
-                    {
-                        var span = GetSpan(msg, style);
-                        var label = LogsStack.Children.LastOrDefault() as Label;
-                        if (label == null)
-                        {
-                            label = new Label { FormattedText = new FormattedString() };
-                            LogsStack.Children.Add(label);
-                        }
-                        label.FormattedText.Spans.Add(span);
-                        if (newLine)
-                        {
-                            LogsStack.Children.Add(new Label { FormattedText = new FormattedString() });
-                        }
+                int failed = default;
 
-                        if (ScrollLogsToggle.IsToggled)
+                var nunitArgs = arguments.Except(new[] { "--headless" }).ToArray();
+#if !__IOS__ && !__ANDROID__
+                if (nunitArgs.Length != arguments.Length) // arguments contained --headless
+                {
+                    failed = autorun.Execute(nunitArgs);
+                }
+                else
+#endif
+                {
+                    using var reader = new StringReader(string.Empty);
+                    using var writer = new DebugWriter((msg, style, newLine) =>
+                    {
+                        Dispatcher.Dispatch(() =>
                         {
-                            _ = LogsScrollView.ScrollToAsync(0, 999999, false);
-                        }
+                            var span = GetSpan(msg, style);
+                            var label = LogsStack.Children.LastOrDefault() as Label;
+                            if (label == null)
+                            {
+                                label = new Label { FormattedText = new FormattedString() };
+                                LogsStack.Children.Add(label);
+                            }
+                            label.FormattedText.Spans.Add(span);
+                            if (newLine)
+                            {
+                                LogsStack.Children.Add(new Label { FormattedText = new FormattedString() });
+                            }
+
+                            if (ScrollLogsToggle.IsToggled)
+                            {
+                                _ = LogsScrollView.ScrollToAsync(0, 999999, false);
+                            }
+                        });
                     });
-                });
-                var failed = autorun.Execute(arguments.Where(a => a != "--headless").ToArray(), writer, reader);
+                    failed = autorun.Execute(nunitArgs, writer, reader);
+                }
 
                 var resultPath = TestHelpers.GetResultsPath(MauiProgram.Args); 
                 if (!string.IsNullOrEmpty(resultPath))
