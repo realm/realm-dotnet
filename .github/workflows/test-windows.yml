@@ -139,8 +139,7 @@ jobs:
         Start-Process "shell:AppsFolder\$($package.PackageFamilyName)!App" -ArgumentList "--headless --labels=After --result=$(pwd)\TestResults.Windows.xml --output=$(pwd)\test.log  --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=Maui.Windows"
         Start-Sleep 5
         echo "Waiting for tests to finish"
-        $(Get-Process Tests.Maui).WaitForExit(90000)
-        Get-Content args.txt
+        $(Get-Process Tests.Maui).WaitForExit(900000)
         Get-Content test.log
       shell: powershell
     - name: Publish Unit Test Results

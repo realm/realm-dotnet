@@ -25,7 +25,7 @@ jobs:
       - #@ template.replace(fetchPackageArtifacts())
       - #@ setupWorkloads()
       - name: Build the tests
-        run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
+        run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net7.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests
-        run: #@ "Tests/Tests.Maui/bin/" + configuration + "/net6.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All" + baasTestArgs("maccatalyst")
+        run: #@ "Tests/Tests.Maui/bin/" + configuration + "/net7.0-maccatalyst/maccatalyst-x64/Tests.Maui.app/Contents/MacOS/Tests.Maui --headless --result=${{ github.workspace }}/TestResults.MacCatalyst.xml --labels=All" + baasTestArgs("maccatalyst")
       - #@ publishTestsResults("TestResults.MacCatalyst.xml", "Maui.MacCatalyst")
