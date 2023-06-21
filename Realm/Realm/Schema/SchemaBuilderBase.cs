@@ -29,7 +29,7 @@ namespace Realms.Schema
     /// <typeparam name="T">The type of the elements contained in the builder.</typeparam>
     public abstract class SchemaBuilderBase<T> : IEnumerable<T>
     {
-        protected readonly IDictionary<string, T> _values = new Dictionary<string, T>();
+        private protected readonly IDictionary<string, T> _values = new Dictionary<string, T>();
 
         /// <summary>
         /// Gets or sets an element in the builder by name.
@@ -44,6 +44,8 @@ namespace Realms.Schema
             set
             {
                 Argument.NotNull(name, nameof(name));
+                Argument.NotNull(value, nameof(value));
+
                 if (name != GetKey(value))
                 {
                     throw new ArgumentException($"The name of the element ('{GetKey(value)}') doesn't match the provided name ('{name}'). ", nameof(name));
@@ -56,10 +58,13 @@ namespace Realms.Schema
         /// <summary>
         /// Gets the number of elements the builder contains.
         /// </summary>
+        /// <value>The number of elements in the builder.</value>
         public int Count => _values.Count;
 
         protected void Add(T item)
         {
+            Argument.NotNull(item, nameof(item));
+
             var key = GetKey(item);
             if (_values.ContainsKey(key))
             {

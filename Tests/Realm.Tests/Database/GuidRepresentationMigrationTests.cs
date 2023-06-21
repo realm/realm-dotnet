@@ -23,13 +23,21 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Logging;
 using Realms.Tests.Sync;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestEmbeddedObject = Realms.IEmbeddedObject;
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class GuidRepresentationMigrationTests : SyncTestBase
     {
-        private RealmConfiguration _configuration;
+        private RealmConfiguration _configuration = null!;
 
         [Test]
         public void Migration_FlipGuid_ShouldProduceCorrectRepresentation()
@@ -75,7 +83,7 @@ namespace Realms.Tests.Database
 
             if (useLegacyRepresentation)
             {
-                Assert.That(logger.GetLog(), Is.Empty);
+                Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
             }
             else
             {
@@ -115,7 +123,7 @@ namespace Realms.Tests.Database
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
 
-            Assert.That(logger.GetLog(), Is.Empty);
+            Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
         }
 
         [Test]
@@ -192,7 +200,7 @@ namespace Realms.Tests.Database
                 Assert.That(realm.Find<GuidType>(flippedId), Is.EqualTo(actualObj));
             }
 
-            Assert.That(logger.GetLog(), Does.Contain("may contain legacy guid values but is opened as readonly so it cannot be migrated"));
+            Assert.That(logger.GetLog(), Does.Contain("may contain legacy Guid values but is opened as readonly so it cannot be migrated"));
         }
 
         [Test]
@@ -227,7 +235,7 @@ namespace Realms.Tests.Database
                 Assert.That(actualObj, Is.EqualTo(actualFound));
             }
 
-            Assert.That(logger.GetLog(), Is.Empty);
+            Assert.That(logger.GetLog(), Does.Not.Contain("Guid"));
         }
 
         [Test]
@@ -281,11 +289,11 @@ namespace Realms.Tests.Database
 
             var actualGood = realm.Find<GuidType>(expectedGoodGuid);
             Assert.That(actualGood, Is.Not.Null);
-            Assert.That(actualGood.Id, Is.EqualTo(expectedGoodGuid));
+            Assert.That(actualGood!.Id, Is.EqualTo(expectedGoodGuid));
 
             var actualBad = realm.Find<GuidType>(expectedBadGuid);
             Assert.That(actualBad, Is.Not.Null);
-            Assert.That(actualBad.Id, Is.EqualTo(expectedBadGuid));
+            Assert.That(actualBad!.Id, Is.EqualTo(expectedBadGuid));
 
             Assert.That(logger.GetLog(), Does.Contain("found to contain Guid values in little-endian format and was automatically migrated"));
         }
@@ -386,7 +394,7 @@ namespace Realms.Tests.Database
             }
             else
             {
-                Assert.That(actualEmbedded.RegularProperty, Is.EqualTo(expectedEmbedded.RegularProperty));
+                Assert.That(actualEmbedded.RegularProperty, Is.EqualTo(expectedEmbedded!.RegularProperty));
                 CollectionAssert.AreEqual(actualEmbedded.GuidList, expectedEmbedded.GuidList);
                 CollectionAssert.AreEquivalent(actualEmbedded.GuidSet, expectedEmbedded.GuidSet);
                 CollectionAssert.AreEquivalent(actualEmbedded.GuidDict, expectedEmbedded.GuidDict);
@@ -593,70 +601,70 @@ namespace Realms.Tests.Database
         }
 
         private static Guid FlipGuid(Guid guid) => GuidConverter.FromBytes(guid.ToByteArray(), GuidRepresentation.Standard);
+    }
 
-        [Explicit]
-        public class GuidType : RealmObject
-        {
-            [PrimaryKey, MapTo("_id")]
-            public Guid Id { get; set; }
+    [Explicit]
+    public partial class GuidType : TestRealmObject
+    {
+        [PrimaryKey, MapTo("_id")]
+        public Guid Id { get; set; }
 
-            public Guid RegularProperty { get; set; }
+        public Guid RegularProperty { get; set; }
 
-            public IList<Guid> GuidList { get; }
+        public IList<Guid> GuidList { get; } = null!;
 
-            public ISet<Guid> GuidSet { get; }
+        public ISet<Guid> GuidSet { get; } = null!;
 
-            public IDictionary<string, Guid> GuidDict { get; }
+        public IDictionary<string, Guid> GuidDict { get; } = null!;
 
-            public Guid? OptionalProperty { get; set; }
+        public Guid? OptionalProperty { get; set; }
 
-            public IList<Guid?> OptionalList { get; }
+        public IList<Guid?> OptionalList { get; } = null!;
 
-            public ISet<Guid?> OptionalSet { get; }
+        public ISet<Guid?> OptionalSet { get; } = null!;
 
-            public IDictionary<string, Guid?> OptionalDict { get; }
+        public IDictionary<string, Guid?> OptionalDict { get; } = null!;
 
-            public GuidType LinkProperty { get; set; }
+        public GuidType? LinkProperty { get; set; }
 
-            public RealmValue MixedProperty { get; set; }
+        public RealmValue MixedProperty { get; set; }
 
-            public IList<RealmValue> MixedList { get; }
+        public IList<RealmValue> MixedList { get; } = null!;
 
-            public ISet<RealmValue> MixedSet { get; }
+        public ISet<RealmValue> MixedSet { get; } = null!;
 
-            public IDictionary<string, RealmValue> MixedDict { get; }
+        public IDictionary<string, RealmValue> MixedDict { get; } = null!;
 
-            public EmbeddedGuidType EmbeddedProperty { get; set; }
-        }
+        public EmbeddedGuidType? EmbeddedProperty { get; set; }
+    }
 
-        [Explicit]
-        public class EmbeddedGuidType : EmbeddedObject
-        {
-            public Guid RegularProperty { get; set; }
+    [Explicit]
+    public partial class EmbeddedGuidType : TestEmbeddedObject
+    {
+        public Guid RegularProperty { get; set; }
 
-            public IList<Guid> GuidList { get; }
+        public IList<Guid> GuidList { get; } = null!;
 
-            public ISet<Guid> GuidSet { get; }
+        public ISet<Guid> GuidSet { get; } = null!;
 
-            public IDictionary<string, Guid> GuidDict { get; }
+        public IDictionary<string, Guid> GuidDict { get; } = null!;
 
-            public Guid? OptionalProperty { get; set; }
+        public Guid? OptionalProperty { get; set; }
 
-            public IList<Guid?> OptionalList { get; }
+        public IList<Guid?> OptionalList { get; } = null!;
 
-            public ISet<Guid?> OptionalSet { get; }
+        public ISet<Guid?> OptionalSet { get; } = null!;
 
-            public IDictionary<string, Guid?> OptionalDict { get; }
+        public IDictionary<string, Guid?> OptionalDict { get; } = null!;
 
-            public GuidType LinkProperty { get; set; }
+        public GuidType? LinkProperty { get; set; }
 
-            public RealmValue MixedProperty { get; set; }
+        public RealmValue MixedProperty { get; set; }
 
-            public IList<RealmValue> MixedList { get; }
+        public IList<RealmValue> MixedList { get; } = null!;
 
-            public ISet<RealmValue> MixedSet { get; }
+        public ISet<RealmValue> MixedSet { get; } = null!;
 
-            public IDictionary<string, RealmValue> MixedDict { get; }
-        }
+        public IDictionary<string, RealmValue> MixedDict { get; } = null!;
     }
 }

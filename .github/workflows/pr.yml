@@ -14,9 +14,13 @@ name: PR Build
     - .github/workflows/*.yml
     - '!.github/workflows/main.yml'
     - '!.github/workflows/publish-*.yml'
+    - .github/actions/**
 env:
   REALM_DISABLE_ANALYTICS: true
   DOTNET_NOLOGO: true
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   build-wrappers:
     uses: ./.github/workflows/wrappers.yml
@@ -25,10 +29,10 @@ jobs:
     uses: ./.github/workflows/deploy-baas.yml
     with:
       differentiators: '["code-coverage"]'
+      BaseUrl: https://realm-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   build-packages:
@@ -65,7 +69,6 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
   test-windows:
     uses: ./.github/workflows/test-windows.yml
@@ -75,8 +78,9 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
-    secrets: {}
+    secrets:
+      Pfx_Password: ${{ secrets.Pfx_Password }}
+      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
   test-net-core:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
@@ -85,7 +89,7 @@ jobs:
     uses: ./.github/workflows/test-net-core.yml
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      framework: '["net6.0"]'
+      framework: '["net7.0"]'
   test-macos:
     uses: ./.github/workflows/test-macos.yml
     name: Test
@@ -94,7 +98,6 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets: {}
   test-ios:
     uses: ./.github/workflows/test-ios.yml
@@ -104,7 +107,15 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+    secrets: {}
+  test-tvos:
+    uses: ./.github/workflows/test-tvos.yml
+    name: Test
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    needs:
+    - build-packages
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
     secrets: {}
   test-android:
     uses: ./.github/workflows/test-android.yml
@@ -114,12 +125,23 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-      clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
     secrets:
       AWS_DEVICEFARM_ACCESS_KEY_ID: ${{ secrets.AWS_DEVICEFARM_ACCESS_KEY_ID }}
       AWS_DEVICEFARM_SECRET_ACCESS_KEY: ${{ secrets.AWS_DEVICEFARM_SECRET_ACCESS_KEY }}
       DEVICEFARM_PROJECT_ARN: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
       DEVICEFARM_ANDROID_POOL_ARN: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
+  test-weaved-classes:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    needs:
+    - build-packages
+    uses: ./.github/workflows/test-woven-classes.yml
+    with:
+      version: ${{ needs.build-packages.outputs.package_version }}
+  test-source-generation:
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    name: Test
+    uses: ./.github/workflows/test-source-generation.yml
   test-weaver:
     uses: ./.github/workflows/test-weaver.yml
     name: Test
@@ -133,9 +155,10 @@ jobs:
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
       clusterName: ${{ needs.deploy-cluster.outputs.clusterName }}
+      realmUrl: https://realm-qa.mongodb.com
+      atlasUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
   cleanup-cluster:
@@ -144,9 +167,69 @@ jobs:
     name: Cleanup
     needs:
     - test-code-coverage
+    with:
+      BaseUrl: https://realm-qa.mongodb.com
+      AtlasBaseUrl: https://cloud-qa.mongodb.com
     secrets:
       AtlasProjectId: ${{ secrets.ATLAS_QA_PROJECT_ID }}
-      BaseUrl: ${{ secrets.REALM_QA_BASE_URL }}
-      AtlasBaseUrl: ${{ secrets.ATLAS_QA_BASE_URL }}
       AtlasPublicKey: ${{ secrets.ATLAS_QA_PUBLIC_API_KEY }}
       AtlasPrivateKey: ${{ secrets.ATLAS_QA_PRIVATE_API_KEY }}
+  verify-namespaces:
+    runs-on: ubuntu-latest
+    name: Verify Namespaces
+    needs:
+    - build-packages
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.PlatformHelpers.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityUtils
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.UnityUtils.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - name: Fetch Realm.UnityWeaver
+      uses: actions/download-artifact@v3
+      with:
+        name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
+        path: ${{ github.workspace }}/Realm/packages/
+    - run: dotnet tool install ilspycmd -g
+    - name: Verify Namespaces
+      run: |
+        $isFailure = $false
+        Get-ChildItem ./Realm/packages -Filter *.nupkg | Foreach-Object {
+            $targetPath = Join-Path ./Realm/packages $_.BaseName
+            Expand-Archive $_.FullName -DestinationPath $targetPath
+
+            Get-ChildItem $targetPath -Filter *.dll -Recurse | ForEach-Object {
+                if (-not ($_.FullName -match "runtimes")) {
+                    $ilspyOutput = ilspycmd $_.FullName
+
+                    $parentDll = $_.FullName
+
+                    $ilspyOutput | ForEach-Object {
+                        if ($_ -match "namespace.*Realm(\.|$)") {
+                            Write-Output "::error file=$parentDll::Realm present in namespace - $($_)"
+                            Set-Variable "isFailure" -Value $true
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($isFailure) {
+            exit 1
+        }
+      shell: pwsh

@@ -6,12 +6,12 @@ jobs:
     name: Publish package to S3
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Download all artifacts
-      uses: dawidd6/action-download-artifact@d0f291cf39bd21965ea9c4c6e210fc355c3844ed
+      uses: dawidd6/action-download-artifact@46b4ae883bf0726f5949d025d31cb62c7a5ac70c
       with:
         workflow: pr.yml
         commit: ${{ github.sha }}
@@ -21,22 +21,30 @@ jobs:
       id: get-version
       run: |
         cd Realm/packages
-        pkgVersion=$(find . -type f -iname "Realm.Fody.*.nupkg" -exec basename {} \; | sed -n 's/Realm.Fody\.\(.*\)\.nupkg$/\1/p')
-        echo "::set-output name=version::$pkgVersion"
+        pkgVersion=$(find . -type f -regex ".*Realm.[1-9].*.nupkg" -exec basename {} \; | sed -n 's/Realm\.\(.*\)\.nupkg$/\1/p')
+        echo "version=$pkgVersion" >> $GITHUB_OUTPUT
       shell: bash
     - name: Configure .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@607fce577a46308457984d59e4954e075820f10a
       with:
         dotnet-version: 6.0.x
     - name: Install sleet
       run: dotnet tool install -g sleet
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1-node16
       with:
         aws-access-key-id: ${{ secrets.NUGET_S3_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.NUGET_S3_SECRET_KEY }}
         aws-region: us-east-1
-    - name: NuGet Publish Realm.Fody.${{ steps.get-version.outputs.version }}
-      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.Fody.${{ steps.get-version.outputs.version }}/Realm.Fody.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - name: NuGet Publish Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}
+      run: sleet push ${{ github.workspace }}/Realm/packages/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}/Realm.PlatformHelpers.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
     - name: NuGet Publish Realm.${{ steps.get-version.outputs.version }}
       run: sleet push ${{ github.workspace }}/Realm/packages/Realm.${{ steps.get-version.outputs.version }}/Realm.${{ steps.get-version.outputs.version }}.nupkg --config ${{ github.workspace }}/.github/sleet.json --source NugetSource
+    - uses: actions/setup-node@16352bb09bc672a073e326c2cc1d3d7d2a3e577e
+      with:
+        node-version: 16.x
+        registry-url: https://registry.npmjs.org
+    - name: Npm Publish io.realm.unity-${{steps.get-version.outputs.version}}.tgz
+      run: npm publish ${{ github.workspace }}/Realm/packages/io.realm.unity-${{steps.get-version.outputs.version}}.tgz/io.realm.unity-${{steps.get-version.outputs.version}}.tgz --tag alpha
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

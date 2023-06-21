@@ -33,6 +33,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     [DebuggerDisplay("Count = {Count}")]
     public class RealmSet<T> : RealmCollectionBase<T>, ISet<T>, IDynamicMetaObjectProvider
     {
@@ -57,7 +58,7 @@ namespace Realms
             }
         }
 
-        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata metadata)
+        internal RealmSet(Realm realm, SetHandle adoptedSet, Metadata? metadata)
             : base(realm, metadata)
         {
             _setHandle = adoptedSet;
@@ -65,6 +66,11 @@ namespace Realms
 
         public bool Add(T value)
         {
+            if (Metadata is not null && value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
             AddToRealmIfNecessary(realmValue);
@@ -75,7 +81,7 @@ namespace Realms
         {
             var realmValue = Operator.Convert<T, RealmValue>(value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 return false;
             }
@@ -83,13 +89,13 @@ namespace Realms
             return _setHandle.Remove(realmValue);
         }
 
-        public override int IndexOf(T value) => throw new NotSupportedException();
+        public override int IndexOf([AllowNull] T value) => throw new NotSupportedException();
 
-        public override bool Contains(T value)
+        public override bool Contains([AllowNull] T value)
         {
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = Operator.Convert<T?, RealmValue>(value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 return false;
             }
@@ -352,7 +358,7 @@ namespace Realms
 
         private class BinaryEqualityComparer : EqualityComparer<byte[]>
         {
-            public override bool Equals(byte[] x, byte[] y)
+            public override bool Equals(byte[]? x, byte[]? y)
             {
                 if (x == null || y == null)
                 {

@@ -25,9 +25,9 @@
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <PackageCertificateKeyFile>
-    </PackageCertificateKeyFile>
-    <PackageCertificateThumbprint Condition=" '$(PackageCertificateKeyFile)' ==  '' ">DC86DF96F20D7AD28FF9647D95E895E969F7FDD1</PackageCertificateThumbprint>
+    <PackageCertificateKeyFile Condition="Exists('Tests.UWP_TemporaryKey.pfx')">Tests.UWP_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(UseRealmNupkgsWithVersion)' != '' And '$(RestoreConfigFile)' == '' ">
     <RestoreConfigFile>$(MSBuildProjectDirectory)\..\Test.NuGet.Config</RestoreConfigFile>
@@ -171,7 +171,7 @@
       <Version>6.2.10</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+      <Version>13.0.2</Version>
     </PackageReference>
     <PackageReference Include="Nito.AsyncEx.Context">
       <Version>5.1.0</Version>
@@ -203,6 +203,10 @@
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None">
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
+      <Project>{4C9BE4FA-9CB2-4091-B86A-4EC557A78991}</Project>
+      <Name>Realm.PlatformHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

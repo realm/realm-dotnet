@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("common.lib.yml", "checkoutCode", "configureAWSCredentials", "fetchPackageArtifacts", "setupWorkloads")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-android
@@ -11,9 +11,8 @@ jobs:
     name: Xamarin.Android
     timeout-minutes: 60
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidSupportedAbis="armeabi-v7a", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
+      - #@ template.replace(prepareTest())
+      - #@ template.replace(buildTests("Tests/Tests.Android", target="SignAndroidPackage", AndroidUseSharedRuntime="False", EmbedAssembliesIntoApk="True"))
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))
       - name: Run the tests
         uses: ./.github/actions/run-android-device-farm-test
@@ -25,7 +24,7 @@ jobs:
           project-arn: ${{ secrets.DEVICEFARM_PROJECT_ARN }}
           device-pool-arn: ${{ secrets.DEVICEFARM_ANDROID_POOL_ARN }}
           arguments: (@= baasTestArgs('android') @)
-      - #@ publishTestsResults("artifacts/Host_Machine_Files/$DEVICEFARM_LOG_DIR/TestResults.Android.xml", "Xamarin.Android")
+      - #@ publishTestsResults("${{ steps.run_tests.outputs.test-results-path }}", "Xamarin.Android")
   test-maui:
     runs-on: windows-latest
     name: Maui.Android
@@ -33,10 +32,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupDotnet()
-      - name: Setup workloads
-        run: |
-          dotnet workload install maui
+      - #@ setupWorkloads()
       - name: Build the tests
         run: #@ "dotnet publish Tests/Tests.Maui -c Release -f net6.0-android -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - #@ template.replace(configureAWSCredentials("AWS_DEVICEFARM_ACCESS_KEY_ID", "AWS_DEVICEFARM_SECRET_ACCESS_KEY", "us-west-2"))

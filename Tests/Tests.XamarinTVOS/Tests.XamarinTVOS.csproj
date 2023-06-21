@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
+    <ProjectGuid>{80B9697D-0C57-40E8-A71A-F5E81C7BF467}</ProjectGuid>
+    <ProjectTypeGuids>{06FA79CB-D6CD-4721-BB4B-1BD202089C55};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TemplateGuid>{7845f015-8eef-4d78-9b76-cd51413557df}</TemplateGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Realms.Tests.XamarinTVOS</RootNamespace>
+    <AssemblyName>Tests.XamarinTVOS</AssemblyName>
+    <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+    <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <ProvisioningType>automatic</ProvisioningType>
+    <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <MtouchFastDev>true</MtouchFastDev>
+    <IOSDebuggerPort>33827</IOSDebuggerPort>
+    <MtouchLink>None</MtouchLink>
+    <MtouchArch>x86_64</MtouchArch>
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhone\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchUseLlvm>true</MtouchUseLlvm>
+    <MtouchFloat32>true</MtouchFloat32>
+    <MtouchEnableBitcode>true</MtouchEnableBitcode>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchArch>ARM64</MtouchArch>
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\iPhoneSimulator\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <MtouchLink>None</MtouchLink>
+    <MtouchArch>x86_64</MtouchArch>
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\iPhone\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodesignKey>iPhone Developer</CodesignKey>
+    <DeviceSpecificBuild>true</DeviceSpecificBuild>
+    <MtouchDebug>true</MtouchDebug>
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <MtouchFastDev>true</MtouchFastDev>
+    <MtouchFloat32>true</MtouchFloat32>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <IOSDebuggerPort>26001</IOSDebuggerPort>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <MtouchArch>ARM64</MtouchArch>
+    <LangVersion>latestmajor</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="Xamarin.TVOS" />
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Back.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Back.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Front.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Front.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Middle.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Large.imagestack\Middle.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Back.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Back.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Front.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Front.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Middle.imagestacklayer\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\App Icon - Small.imagestack\Middle.imagestacklayer\Content.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\Top Shelf Image Wide.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\App Icon &amp; Top Shelf Image.brandassets\Top Shelf Image.imageset\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+    <ImageAsset Include="Assets.xcassets\Contents.json">
+      <Visible>false</Visible>
+    </ImageAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Info.plist" />
+    <None Include="Entitlements.plist" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Main.cs" />
+    <Compile Include="AppDelegate.cs" />
+    <Compile Include="ViewController.cs" />
+    <Compile Include="ViewController.designer.cs">
+      <DependentUpon>ViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LogCell.cs" />
+    <Compile Include="LogCell.designer.cs">
+      <DependentUpon>LogCell.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <InterfaceDefinition Include="Main.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Realm.Tests\Realm.Tests.csproj">
+      <Project>{78799FCD-BE2E-4ECE-A52E-662846615B58}</Project>
+      <Name>Realm.Tests</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
+      <Project>{4C9BE4FA-9CB2-4091-B86A-4EC557A78991}</Project>
+      <Name>Realm.PlatformHelpers</Name>
+    </ProjectReference>
+    <NativeReference Include="..\..\wrappers\build\appletvos\$(Configuration)\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhone' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <NativeReference Include="..\..\wrappers\build\appletvsimulator\$(Configuration)\realm-wrappers.framework" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+      <Kind>Framework</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
+    <Content Include="..\..\Realm\Realm\wrappers-props\xamarintvos\Realm.dll.config">
+      <Link>Realm.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnitLite">
+      <Version>3.13.2</Version>
+    </PackageReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\TVOS\Xamarin.TVOS.CSharp.targets" />
+</Project>

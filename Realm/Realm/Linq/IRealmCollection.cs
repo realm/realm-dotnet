@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Realms.Schema;
 
 namespace Realms
@@ -30,26 +31,22 @@ namespace Realms
     /// <param name="sender">The <see cref="IRealmCollection{T}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="IRealmCollection{T}"/>,
     /// or <c>null</c> if an error has occurred.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a
-    /// <see cref="IRealmCollection{T}"/> for changes, or <c>null</c> if no errors have occurred.</param>
-    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
-    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet changes, Exception error);
+    /// <typeparam name="T">Type of the values contained in the collection.</typeparam>
+    public delegate void NotificationCallbackDelegate<in T>(IRealmCollection<T> sender, ChangeSet? changes);
 
     /// <summary>
     /// A callback that will be invoked each time the contents of a <see cref="IDictionary{String, TValue}"/> have changed.
     /// </summary>
     /// <param name="sender">The <see cref="IDictionary{String, TValue}"/> being monitored for changes.</param>
     /// <param name="changes">The <see cref="DictionaryChangeSet"/> describing the changes to a <see cref="IDictionary{String, TValue}"/>,
-    /// or <c>null</c> if an has error occurred.</param>
-    /// <param name="error">An exception that might have occurred while asynchronously monitoring a
-    /// <see cref="IDictionary{String, TValue}"/> for changes, or <c>null</c> if no errors have occurred.</param>
-    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive contained in the dictionary.</typeparam>
-    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet changes, Exception error);
+    /// or <c>null</c> if this is the first notification being delivered.</param>
+    /// <typeparam name="T">Type of the value contained in the dictionary.</typeparam>
+    public delegate void DictionaryNotificationCallbackDelegate<T>(IDictionary<string, T> sender, DictionaryChangeSet? changes);
 
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObjectBase resulting from <see cref="Realm.All{T}"/> or from a LINQ query expression.
+    /// Iterable, sortable collection that is the base for all collections returned by Realm.
     /// </summary>
-    /// <typeparam name="T">Type of the <see cref="RealmObject"/>, <see cref="EmbeddedObject"/>, or primitive which is being returned.</typeparam>
+    /// <typeparam name="T">Type of the value contained in the collection.</typeparam>
     public interface IRealmCollection<out T> : IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
         /// <summary>
@@ -63,7 +60,7 @@ namespace Realms
         /// The zero-based index of the first occurrence of item within the entire <see cref="IRealmCollection{T}"/>,
         /// if found; otherwise, –1.
         /// </returns>
-        int IndexOf(object item);
+        int IndexOf(object? item);
 
         /// <summary>
         /// Determines whether an element is in the <see cref="IRealmCollection{T}"/>.
@@ -72,7 +69,7 @@ namespace Realms
         /// The object to locate in the <see cref="IRealmCollection{T}"/>.
         /// </param>
         /// <returns>true if item is found in the <see cref="IRealmCollection{T}"/>; otherwise, false.</returns>
-        bool Contains(object item);
+        bool Contains(object? item);
 
         /// <summary>
         /// Gets a value indicating whether this collection is still valid to use, i.e. the <see cref="Realm"/> instance
@@ -89,11 +86,12 @@ namespace Realms
 
         /// <summary>
         /// Gets the <see cref="Schema.ObjectSchema"/>, describing the persisted properties of the
-        /// <see cref="RealmObject"/>s or <see cref="EmbeddedObject"/>s contained in the collection. If the collection contains
-        /// primitive values, <c>ObjectSchema</c> will be <c>null</c>.
+        /// <see cref="IRealmObject"/>, <see cref="IEmbeddedObject"/>, or <see cref="IAsymmetricObject"/> instances
+        /// contained in the collection. If the collection contains primitive values, <see cref="ObjectSchema"/> will
+        /// be <c>null</c>.
         /// </summary>
-        /// <value>The ObjectSchema of the object or contained objects.</value>
-        ObjectSchema ObjectSchema { get; }
+        /// <value>The schema of the objects contained in the collection.</value>
+        ObjectSchema? ObjectSchema { get; }
 
         /// <summary>
         /// Gets a value indicating whether this collection is frozen. Frozen collections are immutable and can be accessed
@@ -117,7 +115,9 @@ namespace Realms
         /// </summary>
         /// <returns>A frozen copy of this collection.</returns>
         /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(IList{T})"/>
-        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(System.Linq.IQueryable{T})"/>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(IQueryable{T})"/>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{T}(ISet{T})"/>
+        /// <seealso cref="FrozenObjectsExtensions.Freeze{TValue}(IDictionary{string, TValue})"/>
         IRealmCollection<T> Freeze();
 
         /// <summary>
@@ -153,7 +153,10 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
         /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IList{T}, NotificationCallbackDelegate{T})"/>
-        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(System.Linq.IQueryable{T}, NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(ISet{T}, NotificationCallbackDelegate{T})"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForNotifications{T}(IDictionary{string, T}, NotificationCallbackDelegate{KeyValuePair{string, T}})"/>
+        /// <seealso cref="CollectionExtensions.SubscribeForKeyNotifications{T}(IDictionary{string, T}, DictionaryNotificationCallbackDelegate{T})"/>
         IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback);
     }
 }

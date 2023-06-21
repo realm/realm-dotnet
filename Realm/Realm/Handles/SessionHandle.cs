@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Exceptions;
@@ -36,11 +37,7 @@ namespace Realms.Sync
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void SessionErrorCallback(IntPtr session_handle_ptr,
-                                                      ErrorCode error_code,
-                                                      PrimitiveValue message,
-                                                      IntPtr user_info_pairs,
-                                                      IntPtr user_info_pairs_len,
-                                                      [MarshalAs(UnmanagedType.U1)] bool is_client_reset,
+                                                      SyncError error,
                                                       IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -53,10 +50,10 @@ namespace Realms.Sync
             public delegate void SessionPropertyChangedCallback(IntPtr managed_session, NotifiableProperty property);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managed_sync_config_handle);
+            public delegate IntPtr NotifyBeforeClientReset(IntPtr before_frozen, IntPtr managed_sync_config_handle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate bool NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle, bool did_recover);
+            public delegate IntPtr NotifyAfterClientReset(IntPtr before_frozen, IntPtr after, IntPtr managed_sync_config_handle, bool did_recover);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_syncsession_install_callbacks", CallingConvention = CallingConvention.Cdecl)]
             public static extern void install_syncsession_callbacks(SessionErrorCallback error_callback,
@@ -121,7 +118,7 @@ namespace Realms.Sync
         public override bool ForceRootOwnership => true;
 
         [Preserve]
-        public SessionHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
+        public SessionHandle(SharedRealmHandle? root, IntPtr handle) : base(root, handle)
         {
         }
 
@@ -144,17 +141,15 @@ namespace Realms.Sync
             NativeMethods.install_syncsession_callbacks(error, progress, wait, propertyChanged, beforeReset, afterReset);
         }
 
-        public bool TryGetUser(out SyncUserHandle userHandle)
+        public SyncUserHandle GetUser()
         {
             var ptr = NativeMethods.get_user(this);
             if (ptr == IntPtr.Zero)
             {
-                userHandle = null;
-                return false;
+                throw new RealmException("Unable to obtain user for session. This likely means the session is being torn down.");
             }
 
-            userHandle = new SyncUserHandle(ptr);
-            return true;
+            return new(ptr);
         }
 
         public SessionState GetState()
@@ -177,7 +172,7 @@ namespace Realms.Sync
             {
                 isNull = false;
                 return NativeMethods.get_path(this, buffer, length, out ex);
-            });
+            })!;
         }
 
         public ulong RegisterProgressNotifier(GCHandle managedHandle, ProgressDirection direction, ProgressMode mode)
@@ -216,7 +211,7 @@ namespace Realms.Sync
 
         public async Task WaitAsync(ProgressDirection direction)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
 
             try
@@ -270,54 +265,47 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionErrorCallback))]
-        private static void HandleSessionError(IntPtr sessionHandlePtr, ErrorCode errorCode, PrimitiveValue message, IntPtr userInfoPairs, IntPtr userInfoPairsLength, bool isClientReset, IntPtr managedSyncConfigurationBaseHandle)
+        private static void HandleSessionError(IntPtr sessionHandlePtr, SyncError error, IntPtr managedSyncConfigurationBaseHandle)
         {
             try
             {
+                // Filter out end of input, which the client seems to have started reporting
+                if (error.error_code == (ErrorCode)1)
+                {
+                    return;
+                }
+
                 using var handle = new SessionHandle(null, sessionHandlePtr);
                 var session = new Session(handle);
-                var messageString = message.AsString();
+                string messageString = error.message!;
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationBaseHandle);
-                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
+                var syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
-                if (isClientReset)
+                if (error.is_client_reset)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    var clientResetEx = new ClientResetException(session.User.App, messageString, errorCode, userInfo);
+                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
+                    var clientResetEx = new ClientResetException(session.User.App, messageString, error.error_code, userInfo);
 
-                    if (syncConfig.ClientResetHandler.ClientResetMode != ClientResyncMode.Manual ||
-                        syncConfig.ClientResetHandler.ManualClientReset != null)
-                    {
-                        syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
-                    }
-                    else
-                    {
-                        Session.RaiseError(session, clientResetEx);
-                    }
-
+                    syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
                     return;
                 }
 
                 SessionException exception;
-                if (errorCode == ErrorCode.PermissionDenied)
+                if (error.error_code == ErrorCode.CompensatingWrite)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(userInfoPairs, userInfoPairsLength.ToInt32());
-                    exception = new PermissionDeniedException(session.User.App, messageString, userInfo);
+                    var compensatingWrites = error.compensating_writes
+                        .AsEnumerable()
+                        .Select(c => new CompensatingWriteInfo(c.object_name!, c.reason!, new RealmValue(c.primary_key)))
+                        .ToArray();
+                    exception = new CompensatingWriteException(messageString, compensatingWrites);
                 }
                 else
                 {
-                    exception = new SessionException(messageString, errorCode);
+                    exception = new SessionException(messageString, error.error_code);
                 }
 
-                if (syncConfig.OnSessionError != null)
-                {
-                    syncConfig.OnSessionError?.Invoke(session, exception);
-                }
-                else
-                {
-                    // after deprecation: this will need to go when Session.Error is fully deprecated
-                    Session.RaiseError(session, exception);
-                }
+                exception.HelpLink = error.log_url;
+                syncConfig.OnSessionError?.Invoke(session, exception);
             }
             catch (Exception ex)
             {
@@ -326,102 +314,96 @@ namespace Realms.Sync
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyBeforeClientReset))]
-        private static bool NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
+        private static IntPtr NotifyBeforeClientReset(IntPtr beforeFrozen, IntPtr managedSyncConfigurationHandle)
         {
-            SyncConfigurationBase syncConfig = null;
+            SyncConfigurationBase? syncConfig = null;
 
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-
-#pragma warning disable CS0618 // Type or member is obsolete
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
-                    DiscardLocalResetHandler handler => handler.OnBeforeReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => handler.OnBeforeReset,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 if (cb != null)
                 {
-                    var schema = syncConfig.GetSchema();
+                    var schema = syncConfig.Schema;
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     cb.Invoke(realmBefore);
                 }
+
+                return IntPtr.Zero;
             }
             catch (Exception ex)
             {
                 var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
                 Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnBeforeReset during a client reset: {ex}");
-                return false;
-            }
 
-            return true;
+                var exHandle = GCHandle.Alloc(ex);
+                return GCHandle.ToIntPtr(exHandle);
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyAfterClientReset))]
-        private static bool NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
+        private static IntPtr NotifyAfterClientReset(IntPtr beforeFrozen, IntPtr after, IntPtr managedSyncConfigurationHandle, bool didRecover)
         {
-            SyncConfigurationBase syncConfig = null;
+            SyncConfigurationBase? syncConfig = null;
 
             try
             {
                 var syncConfigHandle = GCHandle.FromIntPtr(managedSyncConfigurationHandle);
-                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target;
-
-#pragma warning disable CS0618 // Type or member is obsolete
+                syncConfig = (SyncConfigurationBase)syncConfigHandle.Target!;
 
                 var cb = syncConfig.ClientResetHandler switch
                 {
                     DiscardUnsyncedChangesHandler handler => handler.OnAfterReset,
-                    DiscardLocalResetHandler handler => handler.OnAfterReset,
                     RecoverUnsyncedChangesHandler handler => handler.OnAfterReset,
                     RecoverOrDiscardUnsyncedChangesHandler handler => didRecover ? handler.OnAfterRecovery : handler.OnAfterDiscard,
                     _ => throw new NotSupportedException($"ClientResetHandlerBase of type {syncConfig.ClientResetHandler.GetType()} is not handled yet")
                 };
 
-#pragma warning restore CS0618 // Type or member is obsolete
-
                 if (cb != null)
                 {
-                    var schema = syncConfig.GetSchema();
+                    var schema = syncConfig.Schema;
                     using var realmBefore = new Realm(new UnownedRealmHandle(beforeFrozen), syncConfig, schema);
                     using var realmAfter = new Realm(new UnownedRealmHandle(after), syncConfig, schema);
                     cb.Invoke(realmBefore, realmAfter);
                 }
+
+                return IntPtr.Zero;
             }
             catch (Exception ex)
             {
                 var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
                 Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnAfterReset during a client reset: {ex}");
-                return false;
-            }
 
-            return true;
+                var exHandle = GCHandle.Alloc(ex);
+                return GCHandle.ToIntPtr(exHandle);
+            }
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionProgressCallback))]
         private static void HandleSessionProgress(IntPtr tokenPtr, ulong transferredBytes, ulong transferableBytes)
         {
-            var token = (ProgressNotificationToken)GCHandle.FromIntPtr(tokenPtr).Target;
-            token.Notify(transferredBytes, transferableBytes);
+            var token = (ProgressNotificationToken?)GCHandle.FromIntPtr(tokenPtr).Target;
+            token?.Notify(transferredBytes, transferableBytes);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionWaitCallback))]
         private static void HandleSessionWaitCallback(IntPtr taskCompletionSource, int error_code, PrimitiveValue message)
         {
             var handle = GCHandle.FromIntPtr(taskCompletionSource);
-            var tcs = (TaskCompletionSource<object>)handle.Target;
+            var tcs = (TaskCompletionSource)handle.Target!;
 
             if (error_code == 0)
             {
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
             }
             else
             {
@@ -446,7 +428,12 @@ namespace Realms.Sync
                     NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
-                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target;
+                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target!;
+                if (session == null)
+                {
+                    // We're taking a weak handle to the session, so it's possible that it's been collected
+                    return;
+                }
 
                 System.Threading.ThreadPool.QueueUserWorkItem(_ =>
                 {

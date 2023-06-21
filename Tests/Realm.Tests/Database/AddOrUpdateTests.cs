@@ -21,11 +21,16 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class AddOrUpdateTests : RealmInstanceTest
+    public partial class AddOrUpdateTests : RealmInstanceTest
     {
         [Test]
         public void AddOrUpdate_WhenDoesntExist_ShouldAdd()
@@ -72,7 +77,7 @@ namespace Realms.Tests.Database
                 _realm.Add(second, update: true);
             });
 
-            var queried = _realm.Find<PrimaryKeyObject>(1);
+            var queried = _realm.Find<PrimaryKeyObject>(1)!;
             Assert.That(queried.StringValue, Is.EqualTo("second"));
             Assert.That(first.StringValue, Is.EqualTo("second"));
             Assert.That(second.StringValue, Is.EqualTo("second"));
@@ -124,10 +129,10 @@ namespace Realms.Tests.Database
                 _realm.Add(first, update: true);
             });
 
-            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1)!;
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent"));
-            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child"));
+            Assert.That(queried.OtherObject!.StringValue, Is.EqualTo("child"));
         }
 
         [Test]
@@ -165,15 +170,15 @@ namespace Realms.Tests.Database
                 _realm.Add(second, update: true);
             });
 
-            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1)!;
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent"));
-            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
+            Assert.That(queried.OtherObject!.StringValue, Is.EqualTo("child2"));
 
-            var child1 = _realm.Find<PrimaryKeyObject>(1);
+            var child1 = _realm.Find<PrimaryKeyObject>(1)!;
             Assert.That(child1.StringValue, Is.EqualTo("child"));
 
-            var child2 = _realm.Find<PrimaryKeyObject>(2);
+            var child2 = _realm.Find<PrimaryKeyObject>(2)!;
             Assert.That(child2.StringValue, Is.EqualTo("child2"));
         }
 
@@ -212,12 +217,12 @@ namespace Realms.Tests.Database
                 _realm.Add(second, update: true);
             });
 
-            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1)!;
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent2"));
-            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
+            Assert.That(queried.OtherObject!.StringValue, Is.EqualTo("child2"));
 
-            var child1 = _realm.Find<PrimaryKeyObject>(1);
+            var child1 = _realm.Find<PrimaryKeyObject>(1)!;
             Assert.That(child1.StringValue, Is.EqualTo("child2"));
         }
 
@@ -295,7 +300,7 @@ namespace Realms.Tests.Database
 
             Assert.That(second.OtherObject, Is.EqualTo(first.OtherObject));
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child2"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1)!.StringValue, Is.EqualTo("child2"));
         }
 
         [Test]
@@ -337,14 +342,14 @@ namespace Realms.Tests.Database
 
             Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1)!.StringValue, Is.EqualTo("secondChild"));
         }
 
         // confirm when we do this in a single Write that child objects correctly owned
         [Test]
         public void AddOrUpdate_WhenListHasPK_ShouldUpdateListItemsSingleWrite()
         {
-            PrimaryKeyWithPKList first = null;
+            PrimaryKeyWithPKList? first = null;
             _realm.Write(() =>
             {
                 for (var i = 0; i < 10; i++)
@@ -371,10 +376,10 @@ namespace Realms.Tests.Database
                 }
             });
 
-            Assert.That(first.ListValue.Count, Is.EqualTo(2));  // did the Add keep adding dups?
-            Assert.That(_realm.Find<PrimaryKeyWithPKList>(1).ListValue.Count, Is.EqualTo(2));
-            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child"));
-            Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("secondChild"));
+            Assert.That(first!.ListValue.Count, Is.EqualTo(2));  // did the Add keep adding dups?
+            Assert.That(_realm.Find<PrimaryKeyWithPKList>(1)!.ListValue.Count, Is.EqualTo(2));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1)!.StringValue, Is.EqualTo("child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(2)!.StringValue, Is.EqualTo("secondChild"));
         }
 
         [Test]
@@ -460,8 +465,8 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
-            Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("new child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1)!.StringValue, Is.EqualTo("updated child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(2)!.StringValue, Is.EqualTo("new child"));
         }
 
         [Test]
@@ -499,7 +504,7 @@ namespace Realms.Tests.Database
 
             Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1)!.StringValue, Is.EqualTo("updated child"));
         }
 
         [Test]
@@ -569,7 +574,7 @@ namespace Realms.Tests.Database
 
             Assert.That(first.OtherObject, Is.Null);
             Assert.That(updatedFirst.OtherObject, Is.Null);
-            Assert.That(_realm.Find<PrimaryKeyWithPKRelation>(1).OtherObject, Is.Null);
+            Assert.That(_realm.Find<PrimaryKeyWithPKRelation>(1)!.OtherObject, Is.Null);
         }
 
         [Test]
@@ -593,15 +598,15 @@ namespace Realms.Tests.Database
                 _realm.Add(parent, update: true);
             });
 
-            var persistedParent = _realm.Find<Parent>(1);
-            var persistedChild = _realm.Find<Child>(1);
+            var persistedParent = _realm.Find<Parent>(1)!;
+            var persistedChild = _realm.Find<Child>(1)!;
 
             Assert.That(persistedParent.Name, Is.EqualTo("Peter"));
             Assert.That(persistedChild.Name, Is.EqualTo("Kate"));
             Assert.That(persistedParent.Child, Is.Not.Null);
             Assert.That(persistedChild.Parent, Is.Not.Null);
-            Assert.That(persistedChild.Parent.Name, Is.EqualTo("Peter"));
-            Assert.That(persistedParent.Child.Name, Is.EqualTo("Kate"));
+            Assert.That(persistedChild.Parent!.Name, Is.EqualTo("Peter"));
+            Assert.That(persistedParent.Child!.Name, Is.EqualTo("Kate"));
         }
 
         [Test]
@@ -647,12 +652,12 @@ namespace Realms.Tests.Database
                 _realm.Add(updatedParent, update: true);
             });
 
-            var persistedParent = _realm.Find<PrimaryKeyWithNonPKChildWithPKGrandChild>(1);
+            var persistedParent = _realm.Find<PrimaryKeyWithNonPKChildWithPKGrandChild>(1)!;
             Assert.That(persistedParent.StringValue, Is.EqualTo("updated parent"));
             Assert.That(persistedParent.NonPKChild, Is.Not.Null);
-            Assert.That(persistedParent.NonPKChild.StringValue, Is.EqualTo("new child"));
-            Assert.That(persistedParent.NonPKChild.OtherObject, Is.Not.Null);
-            Assert.That(persistedParent.NonPKChild.OtherObject.StringValue, Is.EqualTo("updated grandchild"));
+            Assert.That(persistedParent.NonPKChild!.StringValue, Is.EqualTo("new child"));
+            Assert.That(persistedParent.NonPKChild!.OtherObject, Is.Not.Null);
+            Assert.That(persistedParent.NonPKChild!.OtherObject!.StringValue, Is.EqualTo("updated grandchild"));
 
             Assert.That(_realm.All<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
             Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
@@ -711,10 +716,9 @@ namespace Realms.Tests.Database
                 FirstName = "Peter"
             };
 
-            Person added = null;
-            _realm.Write(() =>
+            var added = _realm.Write(() =>
             {
-                added = _realm.Add(first, update: false);
+                return _realm.Add(first, update: false);
             });
 
             Assert.That(added, Is.SameAs(first));
@@ -729,10 +733,9 @@ namespace Realms.Tests.Database
                 StringValue = "1"
             };
 
-            PrimaryKeyObject firstAdded = null;
-            _realm.Write(() =>
+            var firstAdded = _realm.Write(() =>
             {
-                firstAdded = _realm.Add(first, update: true);
+                return _realm.Add(first, update: true);
             });
 
             Assert.That(firstAdded, Is.SameAs(first));
@@ -743,10 +746,9 @@ namespace Realms.Tests.Database
                 StringValue = "2"
             };
 
-            PrimaryKeyObject secondAdded = null;
-            _realm.Write(() =>
+            var secondAdded = _realm.Write(() =>
             {
-                secondAdded = _realm.Add(second, update: true);
+                return _realm.Add(second, update: true);
             });
 
             Assert.That(secondAdded, Is.SameAs(second));
@@ -759,10 +761,9 @@ namespace Realms.Tests.Database
         [Test]
         public void Add_ShouldReturnManaged()
         {
-            Person person = null;
-            _realm.Write(() =>
+            var person = _realm.Write(() =>
             {
-                person = _realm.Add(new Person
+                return _realm.Add(new Person
                 {
                     FirstName = "Peter"
                 });
@@ -775,10 +776,9 @@ namespace Realms.Tests.Database
         [Test]
         public void AddOrUpdate_ShouldReturnManaged()
         {
-            PrimaryKeyObject item = null;
-            _realm.Write(() =>
+            var item = _realm.Write(() =>
             {
-                item = _realm.Add(new PrimaryKeyObject
+                return _realm.Add(new PrimaryKeyObject
                 {
                     Id = 1,
                     StringValue = "1"
@@ -806,8 +806,8 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    _realm.Add((RealmObject)Activator.CreateInstance(type));
-                    _realm.Add((RealmObject)Activator.CreateInstance(type));
+                    _realm.Add((IRealmObject)Activator.CreateInstance(type)!);
+                    _realm.Add((IRealmObject)Activator.CreateInstance(type)!);
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
@@ -834,7 +834,7 @@ namespace Realms.Tests.Database
                 {
                     _realm.Add(new RequiredStringObject());
                 });
-            }, Throws.TypeOf<RealmException>());
+            }, Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
@@ -1055,109 +1055,160 @@ namespace Realms.Tests.Database
             Assert.That(first.MappedLink.StringValue, Is.EqualTo("Updated"));
         }
 
-        private class Parent : RealmObject
+        [Test]
+        public void Add_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(first));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddToList_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new PrimaryKeyWithPKList
+                {
+                    ListValue = { first }
+                }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void AddMany_WhenSameRefWasDeleted_ShouldThrow()
+        {
+            var first = new PrimaryKeyObject
+            {
+                Id = 1
+            };
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Add(first));
+                _realm.Write(() => _realm.Remove(first));
+                _realm.Write(() => _realm.Add(new[] { first }));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        public partial class Parent : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
-            public Child Child { get; set; }
+            public Child? Child { get; set; }
         }
 
-        private class Child : RealmObject
+        public partial class Child : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
-            public Parent Parent { get; set; }
+            public Parent? Parent { get; set; }
         }
 
-        private class PrimaryKeyWithNonPKChildWithPKGrandChild : RealmObject
+        public partial class PrimaryKeyWithNonPKChildWithPKGrandChild : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public NonPrimaryKeyWithPKRelation NonPKChild { get; set; }
+            public NonPrimaryKeyWithPKRelation? NonPKChild { get; set; }
         }
 
-        private class NonPrimaryKeyObject : RealmObject
+        public partial class NonPrimaryKeyObject : TestRealmObject
         {
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
         }
 
-        private class PrimaryKeyObject : RealmObject
+        public partial class PrimaryKeyObject : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
         }
 
-        private class NullablePrimaryKeyObject : RealmObject
+        public partial class NullablePrimaryKeyObject : TestRealmObject
         {
             [PrimaryKey]
             public long? Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
         }
 
-        private class PrimaryKeyWithPKRelation : RealmObject
+        public partial class PrimaryKeyWithPKRelation : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public PrimaryKeyObject OtherObject { get; set; }
+            public PrimaryKeyObject? OtherObject { get; set; }
         }
 
-        private class PrimaryKeyWithNonPKRelation : RealmObject
+        public partial class PrimaryKeyWithNonPKRelation : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public NonPrimaryKeyObject OtherObject { get; set; }
+            public NonPrimaryKeyObject? OtherObject { get; set; }
         }
 
-        private class PrimaryKeyWithPKList : RealmObject
+        public partial class PrimaryKeyWithPKList : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public IList<PrimaryKeyObject> ListValue { get; }
+            public IList<PrimaryKeyObject> ListValue { get; } = null!;
         }
 
-        private class PrimaryKeyWithNoPKList : RealmObject
+        public partial class PrimaryKeyWithNoPKList : TestRealmObject
         {
             [PrimaryKey]
             public long Id { get; set; }
 
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public IList<NonPrimaryKeyObject> ListValue { get; }
+            public IList<NonPrimaryKeyObject> ListValue { get; } = null!;
         }
 
-        private class NonPrimaryKeyWithPKRelation : RealmObject
+        public partial class NonPrimaryKeyWithPKRelation : TestRealmObject
         {
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public PrimaryKeyObject OtherObject { get; set; }
+            public PrimaryKeyObject? OtherObject { get; set; }
         }
 
-        private class NonPrimaryKeyWithNonPKRelation : RealmObject
+        public partial class NonPrimaryKeyWithNonPKRelation : TestRealmObject
         {
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
 
-            public NonPrimaryKeyObject OtherObject { get; set; }
+            public NonPrimaryKeyObject? OtherObject { get; set; } = null!;
         }
     }
 }

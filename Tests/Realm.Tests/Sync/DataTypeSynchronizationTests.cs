@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -235,7 +236,7 @@ namespace Realms.Tests.Sync
         public void Dict_Binary() => TestDictionaryCore(o => o.ByteArrayDict, TestHelpers.GetBytes(10), TestHelpers.GetBytes(15), (a, b) => a.SequenceEqual(b));
 
         [Test]
-        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a.SequenceEqual(b));
+        public void Property_Binary() => TestPropertyCore(o => o.ByteArrayProperty, (o, rv) => o.ByteArrayProperty = rv, TestHelpers.GetBytes(5), TestHelpers.GetBytes(10), (a, b) => a!.SequenceEqual(b!));
 
         #endregion
 
@@ -248,7 +249,7 @@ namespace Realms.Tests.Sync
         public void Set_Object() => TestSetCore(o => o.ObjectSet, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         [Test]
-        public void Dict_Object() => TestDictionaryCore(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+        public void Dict_Object() => TestDictionaryCore(o => o.ObjectDict, new IntPropertyObject { Int = 5 }, new IntPropertyObject { Int = 456 }, (a, b) => a?.Int == b?.Int);
 
         #endregion
 
@@ -258,7 +259,7 @@ namespace Realms.Tests.Sync
         public void List_EmbeddedObject() => TestListCore(o => o.EmbeddedObjectList, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
 
         [Test]
-        public void Dict_EmbeddedObject() => TestDictionaryCore(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a.Int == b.Int);
+        public void Dict_EmbeddedObject() => TestDictionaryCore(o => o.EmbeddedObjectDict, new EmbeddedIntPropertyObject { Int = 5 }, new EmbeddedIntPropertyObject { Int = 456 }, (a, b) => a?.Int == b?.Int);
 
         #endregion
 
@@ -269,7 +270,7 @@ namespace Realms.Tests.Sync
             new object[] { (RealmValue)"abc", (RealmValue)10 },
             new object[] { (RealmValue)new ObjectId("5f63e882536de46d71877979"), (RealmValue)new Guid("{F2952191-A847-41C3-8362-497F92CB7D24}") },
             new object[] { (RealmValue)new byte[] { 0, 1, 2 }, (RealmValue)DateTimeOffset.FromUnixTimeSeconds(1616137641) },
-            new object[] { (RealmValue)true, (RealmValue)new IntPropertyObject { Int = 10 } },
+            new object[] { (RealmValue)true, RealmValue.Object(new IntPropertyObject { Int = 10 }) },
             new object[] { RealmValue.Null, (RealmValue)5m },
             new object[] { (RealmValue)12.5f, (RealmValue)15d },
         };
@@ -288,12 +289,9 @@ namespace Realms.Tests.Sync
 
         #endregion
 
-        private void TestListCore<T>(Func<SyncCollectionsObject, IList<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestListCore<T>(Func<SyncCollectionsObject, IList<T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -344,15 +342,12 @@ namespace Realms.Tests.Sync
 
                 Assert.That(list1, Is.Empty);
                 Assert.That(list2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
-        private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestSetCore<T>(Func<SyncCollectionsObject, ISet<T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -403,14 +398,14 @@ namespace Realms.Tests.Sync
 
                 Assert.That(set1, Is.Empty);
                 Assert.That(set2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
-        private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestDictionaryCore<T>(Func<SyncCollectionsObject, IDictionary<string, T>> getter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
             var comparer = new Func<KeyValuePair<string, T>, KeyValuePair<string, T>, bool>((a, b) =>
             {
-                return a.Key == b.Key && (equalsOverride?.Invoke(a.Value, b.Value) ?? a.Value.Equals(b.Value));
+                return a.Key == b.Key && (equalsOverride?.Invoke(a.Value, b.Value) ?? a.Value?.Equals(b.Value) == true);
             });
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
@@ -424,7 +419,7 @@ namespace Realms.Tests.Sync
                     return realm1.Add(new SyncCollectionsObject());
                 });
 
-                var obj2 = await WaitForObjectAsync(obj1, realm2);
+                var obj2 = await WaitForObjectAsync(obj1, realm2, "initial obj from 1 shows up in 2");
 
                 var dict1 = getter(obj1);
                 var dict2 = getter(obj2);
@@ -476,15 +471,12 @@ namespace Realms.Tests.Sync
 
                 Assert.That(dict1, Is.Empty);
                 Assert.That(dict2, Is.Empty);
-            }, ensureNoSessionErrors: true);
+            }, timeout: 60_000);
         }
 
-        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool> equalsOverride = null)
+        private void TestPropertyCore<T>(Func<SyncAllTypesObject, T> getter, Action<SyncAllTypesObject, T> setter, T item1, T item2, Func<T, T, bool>? equalsOverride = null)
         {
-            if (equalsOverride == null)
-            {
-                equalsOverride = (a, b) => a.Equals(b);
-            }
+            equalsOverride ??= (a, b) => a?.Equals(b) == true;
 
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
@@ -524,7 +516,7 @@ namespace Realms.Tests.Sync
 
                 Assert.That(equalsOverride(prop1, prop2), Is.True);
                 Assert.That(equalsOverride(prop2, item2), Is.True);
-            }, ensureNoSessionErrors: true);
+            });
         }
 
         private static RealmValue Clone(RealmValue original)
@@ -534,8 +526,8 @@ namespace Realms.Tests.Sync
                 return original;
             }
 
-            var robj = original.AsRealmObject();
-            var clone = (RealmObjectBase)Activator.CreateInstance(robj.GetType());
+            var robj = original.AsIRealmObject();
+            var clone = (IRealmObjectBase)Activator.CreateInstance(robj.GetType())!;
             var properties = robj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.CanWrite && p.CanRead && !p.HasCustomAttribute<PrimaryKeyAttribute>());
 
@@ -544,31 +536,31 @@ namespace Realms.Tests.Sync
                 prop.SetValue(clone, prop.GetValue(robj));
             }
 
-            return clone;
+            return RealmValue.Object(clone);
         }
 
         private static T CloneOrLookup<T>(T value, Realm targetRealm)
         {
             // If embedded - we need to clone as it might already be assigned to a different property
-            if (value is EmbeddedObject eobj)
+            if (value is IEmbeddedObject eobj)
             {
-                return Operator.Convert<RealmObjectBase, T>(Clone(eobj).AsRealmObject());
+                return Operator.Convert<IRealmObjectBase, T>(Clone(RealmValue.Object(eobj)).AsIRealmObject());
             }
 
-            // If RealmObject - we need to look up the existing equivalent in the correct realm
-            if (value is RealmObject robj)
+            // If IRealmObject - we need to look up the existing equivalent in the correct realm
+            if (value is IRealmObject robj)
             {
                 // item2 belongs to realm2 - we want to look up the equivalent in realm1 to add it to dict1
-                Assert.That(robj.GetObjectMetadata().Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
-                var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema.Name, Operator.Convert<RealmValue>(pk));
+                Assert.That(robj.GetObjectMetadata()!.Helper.TryGetPrimaryKeyValue(robj, out var pk), Is.True);
+                var item2InRealm1 = targetRealm.DynamicApi.FindCore(robj.ObjectSchema!.Name, Operator.Convert<RealmValue>(pk))!;
                 return Operator.Convert<IRealmObject, T>(item2InRealm1);
             }
 
             // If RealmValue that is holding an object, call CloneOrLookup
             if (value is RealmValue rvalue && rvalue.Type == RealmValueType.Object)
             {
-                var cloned = CloneOrLookup(rvalue.AsRealmObject(), targetRealm);
-                return Operator.Convert<RealmObjectBase, T>(cloned);
+                var cloned = CloneOrLookup(rvalue.AsIRealmObject(), targetRealm);
+                return Operator.Convert<IRealmObjectBase, T>(cloned);
             }
 
             return value;
@@ -587,8 +579,8 @@ namespace Realms.Tests.Sync
                 return false;
             }
 
-            var objA = a.AsRealmObject();
-            var objB = b.AsRealmObject();
+            var objA = a.AsIRealmObject();
+            var objB = b.AsIRealmObject();
 
             if (objA.GetType() != objB.GetType())
             {
@@ -606,21 +598,21 @@ namespace Realms.Tests.Sync
             return true;
         }
 
-        private static async Task WaitForPropertyChangedAsync(RealmObject realmObject, int timeout = 10 * 1000)
+        private static async Task WaitForPropertyChangedAsync(IRealmObject realmObject, int timeout = 10 * 1000)
         {
-            var tcs = new TaskCompletionSource<object>();
-            realmObject.PropertyChanged += RealmObject_PropertyChanged;
+            var tcs = new TaskCompletionSource();
+            (realmObject as INotifyPropertyChanged)!.PropertyChanged += RealmObject_PropertyChanged;
 
-            void RealmObject_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+            void RealmObject_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
             {
                 if (e != null)
                 {
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                 }
             }
 
             await tcs.Task.Timeout(timeout);
-            realmObject.PropertyChanged -= RealmObject_PropertyChanged;
+            (realmObject as INotifyPropertyChanged)!.PropertyChanged -= RealmObject_PropertyChanged;
         }
 
         private static async Task WaitForCollectionAsync<T>(IEnumerable<T> first, IEnumerable<T> second, Func<T, T, bool> comparer, string message)

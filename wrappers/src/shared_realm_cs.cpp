@@ -32,29 +32,34 @@
 #include <realm/object-store/impl/realm_coordinator.hpp>
 #include <realm/object-store/sync/app.hpp>
 #include <realm/sync/subscriptions.hpp>
+#include <realm/exceptions.hpp>
+#include <realm/util/logger.hpp>
+#include <realm/util/platform_info.hpp>
 
 #include <list>
 #include <unordered_set>
 #include <sstream>
 
-using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-
 using namespace realm;
 using namespace realm::binding;
 using namespace realm::sync;
+using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
 using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using ReleaseGCHandleT = void(void* managed_handle);
-using LogMessageT = void(realm_value_t message, util::Logger::Level level);
+using LogMessageT = void(realm_string_t message, util::Logger::Level level);
 using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
-using HandleTaskCompletionCallbackT = void(void* tcs_ptr, NativeException::Marshallable ex);
+using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, int32_t error_code, realm_value_t message, std::pair<char*, char*>* user_info_pairs, size_t user_info_pairs_len, bool is_client_reset, void* managed_sync_config);
+using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using ShouldCompactCallbackT = void*(void* managed_delegate, uint64_t total_size, uint64_t data_size, bool* should_compact);
-using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm* realm);
+using DataInitializationCallbackT = void*(void* managed_delegate, realm::SharedRealm& realm);
+
+using SharedAsyncOpenTask = std::shared_ptr<AsyncOpenTask>;
+using SharedSyncSession = std::shared_ptr<SyncSession>;
+using SharedSubscriptionSet = std::shared_ptr<SubscriptionSet>;
 
 namespace realm {
     std::function<ObjectNotificationCallbackT> s_object_notification_callback;
@@ -79,24 +84,29 @@ namespace binding {
 
     void CSharpBindingContext::did_change(std::vector<CSharpBindingContext::ObserverState> const& observed, std::vector<void*> const& invalidated, bool version_changed)
     {
+        if (auto ptr = realm.lock()) {
+            util::Optional<VersionID> version_id = *ptr->current_transaction_version();
+            if (version_id) {
+                auto tcss = m_pending_refresh_callbacks.remove_for_version((*version_id).version);
+
+                NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
+                for (auto& tcs : tcss) {
+                    s_handle_task_completion(tcs, /* invoke_async */ false, nativeEx);
+                }
+            }
+        }
+
         s_realm_changed(m_managed_state_handle.handle());
     }
 
-    void log_message(std::string message, util::Logger::Level level)
-    {
-        s_log_message(to_capi(Mixed(message)), level);
-    }
+    class DotNetLogger : public Logger {
+    protected:
+        void do_log(Level level, const std::string& message) override final
+        {
+            s_log_message(to_capi(message), level);
+        }
+    };
 }
-
-// the name of this class is an ugly hack to get around get_shared_group being private
-class TestHelper {
-public:
-    static bool has_changed(const SharedRealm& realm)
-    {
-        auto transaction = Realm::Internal::get_transaction_ref(*realm);
-        return Realm::Internal::get_db(*realm)->has_changed(transaction);
-    }
-};
 
 Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
 {
@@ -109,6 +119,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+    config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
     if (sync_configuration.is_flexible_sync) {
         config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
@@ -122,31 +133,52 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
 
     config.sync_config->error_handler = [configuration_handle](SharedSyncSession session, SyncError error) {
         std::vector<std::pair<char*, char*>> user_info_pairs;
+        std::vector<realm_sync_error_compensating_write_info_t> compensating_writes;
 
         for (const auto& p : error.user_info) {
             user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
         }
 
-        s_session_error_callback(new SharedSyncSession(session), error.error_code.value(), to_capi_value(error.message), user_info_pairs.data(), user_info_pairs.size(), error.is_client_reset_requested(), configuration_handle->handle());
+        for (const auto& cw : error.compensating_writes_info) {
+            compensating_writes.push_back(realm_sync_error_compensating_write_info_t{
+                to_capi(cw.reason),
+                to_capi(cw.object_name),
+                to_capi(cw.primary_key)
+            });
+        }
+
+        realm_sync_error marshaled_error{
+            error.get_system_error().value(),
+            to_capi(error.simple_message),
+            to_capi(error.logURL),
+            error.is_client_reset_requested(),
+            { user_info_pairs.data(), user_info_pairs.size() },
+            { compensating_writes.data(), compensating_writes.size() },
+        };
+
+        s_session_error_callback(new SharedSyncSession(session), marshaled_error, configuration_handle->handle());
     };
 
     config.sync_config->stop_policy = sync_configuration.session_stop_policy;
     config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
+    config.sync_config->cancel_waits_on_nonfatal_error = sync_configuration.cancel_waits_on_nonfatal_error;
 
     if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal ||
         sync_configuration.client_resync_mode == ClientResyncMode::Recover ||
         sync_configuration.client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
 
         config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
-            if (!s_notify_before_callback(before_frozen, configuration_handle->handle())) {
-                throw ManagedExceptionDuringClientReset();
+            auto error = s_notify_before_callback(before_frozen, configuration_handle->handle());
+            if (error) {
+                throw ManagedExceptionDuringCallback("Managed exception happened in a BeforeReset callback.", error);
             }
         };
 
         config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
             auto after = Realm::get_shared_realm(std::move(after_reference));
-            if (!s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover)) {
-                throw ManagedExceptionDuringClientReset();
+            auto error = s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover);
+            if (error) {
+                throw ManagedExceptionDuringCallback("Managed exception happened in an AfterReset callback.", error);
             }
         };
     }
@@ -154,7 +186,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     
     if (configuration.invoke_initial_data_callback) {
         config.initialization_function = [configuration_handle](SharedRealm realm) {
-            auto error = s_initialize_data(configuration_handle->handle(), &realm);
+            auto error = s_initialize_data(configuration_handle->handle(), realm);
             if (error) {
                 throw ManagedExceptionDuringCallback("Exception occurred in a Realm.InitialDataCallback callback.", error);
             }
@@ -225,6 +257,13 @@ REALM_EXPORT void shared_realm_install_callbacks(
     s_initialize_data = wrap_managed_callback(initialize_data);
 
     realm::binding::s_can_call_managed = true;
+
+    Logger::set_default_logger(std::make_shared<DotNetLogger>());
+    Logger::set_default_level_threshold(Logger::Level::info);
+}
+
+REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
+    Logger::set_default_level_threshold(level);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
@@ -234,6 +273,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
+        config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
         if (configuration.fallback_path) {
             config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
@@ -263,7 +303,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 std::vector<SchemaProperty> schema_properties;
 
                 for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
                 }
 
                 SchemaForMarshaling schema_for_marshaling {
@@ -282,7 +322,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
 
         if (configuration.invoke_initial_data_callback) {
             config.initialization_function = [configuration_handle](SharedRealm realm) {
-                auto error = s_initialize_data(configuration_handle->handle(), &realm);
+                auto error = s_initialize_data(configuration_handle->handle(), realm);
                 if (error) {
                     throw ManagedExceptionDuringCallback("Exception occurred in a Realm.PopulateInitialDatacallback.", error);
                 }
@@ -305,10 +345,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         auto realm = Realm::get_shared_realm(std::move(config));
         if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
             if (configuration.read_only) {
-                static constexpr char message_format[] = "Realm at path %1 may contain legacy guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
-                log_message(
-                    util::format(message_format, realm->config().path),
-                    realm::util::Logger::Level::warn);
+                static constexpr char message_format[] = "Realm at path %1 may contain legacy Guid values but is opened as readonly so it cannot be migrated. This is only an issue if the file was created with Realm.NET prior to 10.10.0 and uses Guid properties. See the 10.10.0 release notes for more information.";
+                Logger::get_default_logger()->log(Logger::Level::warn, message_format, realm->config().path);
             }
             else {
                 bool found_non_v4_uuid = false;
@@ -316,15 +354,11 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
                 apply_guid_representation_fix(realm, found_non_v4_uuid, found_guid_columns);
                 if (found_non_v4_uuid) {
                     static constexpr char message_format[] = "Realm at path %1 was found to contain Guid values in little-endian format and was automatically migrated to store them in big-endian format.";
-                    log_message(
-                        util::format(message_format, realm->config().path),
-                        realm::util::Logger::Level::info);
+                    Logger::get_default_logger()->log(Logger::Level::info, message_format, realm->config().path);
                 }
                 else if (found_guid_columns) {
                     static constexpr char message_format[] = "Realm at path %1 was not marked as having migrated its Guid values, but none of the values appeared to be in little-endian format. The Realm was marked as migrated, but the values have not been modified.";
-                    log_message(
-                        util::format(message_format, realm->config().path),
-                        realm::util::Logger::Level::warn);
+                    Logger::get_default_logger()->log(Logger::Level::warn, message_format, realm->config().path);
                 }
             }
         }
@@ -344,7 +378,7 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
                 s_open_realm_callback(task_completion_source, nullptr, std::move(native_ex));
             }
             else {
-                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { RealmErrorType::NoError });
+                s_open_realm_callback(task_completion_source, new ThreadSafeReference(std::move(ref)), { ErrorCodes::Error::OK});
             }
         });
 
@@ -411,7 +445,6 @@ REALM_EXPORT void shared_realm_close_all_realms(NativeException::Marshallable& e
     });
 }
 
-
 REALM_EXPORT realm_table_key shared_realm_get_table_key(SharedRealm& realm, uint16_t* object_type_buf, size_t object_type_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -446,8 +479,8 @@ REALM_EXPORT uint32_t shared_realm_begin_transaction_async(SharedRealm& realm, v
         return realm->async_begin_transaction([tcs_ptr]() {
             // s_handle_task_completion is a generic callback that always expects an exception as one of the params.
             // However, in this specific case, async_begin_transaction never throws, hence the need for a NoError nativeEx.
-            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
-            s_handle_task_completion(tcs_ptr, nativeEx);
+            NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
+            s_handle_task_completion(tcs_ptr, /* invoke_async */ true, nativeEx);
         }, /* notify_only */ true);
     });
 }
@@ -456,11 +489,11 @@ REALM_EXPORT uint32_t shared_realm_commit_transaction_async(SharedRealm& realm, 
 {
     return handle_errors(ex, [&]() {
         return realm->async_commit_transaction([tcs_ptr](std::exception_ptr err) {
-            NativeException::Marshallable nativeEx { RealmErrorType::NoError };
+            NativeException::Marshallable nativeEx{ ErrorCodes::Error::OK };
             if (err) {
                 nativeEx = convert_exception(err).for_marshalling();
             }
-            s_handle_task_completion(tcs_ptr, nativeEx);
+            s_handle_task_completion(tcs_ptr, /* invoke_async */ true, nativeEx);
         }, /* allow_grouping */ false);
     });
 }
@@ -493,9 +526,13 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm& realm, NativeExce
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm)
+REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm& realm, NativeException::Marshallable& ex)
 {
-    return realm->is_in_transaction() || realm->is_in_async_transaction();
+    return handle_errors(ex, [&]() {
+        realm->verify_thread();
+
+        return realm->is_in_transaction() || realm->is_in_async_transaction();
+    });
 }
 
 REALM_EXPORT bool shared_realm_is_same_instance(SharedRealm& lhs, SharedRealm& rhs, NativeException::Marshallable& ex)
@@ -598,7 +635,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
         const Property& primary_key_property = *object_schema.primary_key_property();
 
         if (!primary_key_property.type_is_nullable() && primitive.is_null()) {
-            throw NotNullableException(object_schema.name, primary_key_property.name);
+            throw NotNullable(object_schema.name, primary_key_property.name);
         }
 
         if (!primitive.is_null() && to_capi(primary_key_property.type) != primitive.type) {
@@ -629,7 +666,6 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
     });
 }
 
-
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -637,7 +673,7 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
         std::vector<SchemaProperty> schema_properties;
 
         for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties, object.table_type == ObjectSchema::ObjectType::Embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
         }
 
         s_get_native_schema(SchemaForMarshaling {
@@ -646,11 +682,6 @@ REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* manage
             schema_properties.data()
         }, managed_callback);
     });
-}
-
-REALM_EXPORT bool shared_realm_has_changed(const SharedRealm& realm)
-{
-    return TestHelper::has_changed(realm);
 }
 
 REALM_EXPORT bool shared_realm_get_is_frozen(const SharedRealm& realm, NativeException::Marshallable& ex)
@@ -746,10 +777,26 @@ REALM_EXPORT bool shared_realm_remove_type(const SharedRealm& realm, uint16_t* t
         // User can always exclude it from schema in config, or remove it completely
         if (obj_schema != realm->schema().end())
         {
-            throw std::runtime_error(util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
+            throw LogicError(ErrorCodes::Error::InvalidSchemaChange, util::format("Attempted to remove type '%1', that is present in the current schema", type_name_str.to_string()));
         }
 
         realm->read_group().remove_table(table->get_key());
+        return true;
+    });
+}
+
+REALM_EXPORT bool shared_realm_remove_all(const SharedRealm& realm, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        realm->verify_in_write();
+
+        auto& group = realm->read_group();
+        for (auto table_key : group.get_table_keys()) {
+            auto table = group.get_table(table_key);
+            if (table->get_name().begins_with("class_")) {
+                table->clear();
+            }
+        }
         return true;
     });
 }
@@ -761,10 +808,11 @@ REALM_EXPORT SharedSyncSession* shared_realm_get_sync_session(SharedRealm& realm
     });
 }
 
-REALM_EXPORT SubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
+REALM_EXPORT SharedSubscriptionSet* shared_realm_get_subscriptions(SharedRealm& realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&] {
-        return new SubscriptionSet(realm->get_latest_subscription_set());
+        auto p = new SubscriptionSet(realm->get_latest_subscription_set());
+        return new SharedSubscriptionSet(p);
     });
 }
 
@@ -775,5 +823,33 @@ REALM_EXPORT int64_t shared_realm_get_subscriptions_version(SharedRealm& realm, 
     });
 }
 
+REALM_EXPORT bool shared_realm_refresh_async(SharedRealm& realm, void* managed_tcs, NativeException::Marshallable& ex) {
+    return handle_errors(ex, [&]() {
+        if (realm->is_frozen()) {
+            return false;
+        }
+
+        const util::Optional<DB::version_type>& latest_snapshot_version = realm->latest_snapshot_version();
+        if (!latest_snapshot_version) {
+            return false;
+        }
+
+        const util::Optional<VersionID> current_version = realm->current_transaction_version();
+        if (!current_version || *latest_snapshot_version <= (*current_version).version) {
+            return false;
+        }
+
+        auto const& csharp_context = static_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+        csharp_context->pending_refresh_callbacks().add(*latest_snapshot_version, managed_tcs);
+
+        return true;
+    });
 }
 
+REALM_EXPORT size_t shared_realm_get_operating_system(uint16_t* buffer, size_t buffer_length)
+{
+    std::string platform = realm::util::get_library_platform();
+    return stringdata_to_csharpstringbuffer(platform, buffer, buffer_length);
+}
+
+}

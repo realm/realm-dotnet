@@ -26,7 +26,7 @@ namespace SetupUnityPackage
     internal class RealmOptions : OptionsBase
     {
         [Option("packages-path", Required = true, HelpText = "Path to the folder containing Realm.nupkg, Realm.UnityUtils.nupkg, and Realm.UnityWeaver.nupkg to use.")]
-        public string PackagesPath { get; set; }
+        public string PackagesPath { get; set; } = null!;
 
         [Option("pack", Default = false, Required = false, HelpText = "Specify whether to invoke npm version + npm pack to produce a .tgz")]
         public bool Pack { get; set; }
@@ -39,9 +39,9 @@ namespace SetupUnityPackage
         public override ISet<string> IgnoredDependencies { get; } = new HashSet<string>
         {
             "Microsoft.CSharp",
-            "Realm.Fody",
             "Fody",
             "System.Dynamic.Runtime",
+            "Realm.PlatformHelpers"
         };
 
         private static readonly IEnumerable<DependencyInfo> _realmDependencies = new[]
@@ -68,6 +68,11 @@ namespace SetupUnityPackage
                 { "runtimes/iossimulator/native/realm-wrappers.framework/Info.plist", "Runtime/iOS/Simulator/realm-wrappers.framework/Info.plist" },
                 { "runtimes/iossimulator/native/realm-wrappers.framework/realm-wrappers", "Runtime/iOS/Simulator/realm-wrappers.framework/realm-wrappers" },
                 { "runtimes/iossimulator/native/realm-wrappers.framework/_CodeSignature/CodeResources", "Runtime/iOS/Simulator/realm-wrappers.framework/_CodeSignature/CodeResources" },
+                { "runtimes/tvos/native/realm-wrappers.framework/Info.plist", "Runtime/tvOS/Device/realm-wrappers.framework/Info.plist" },
+                { "runtimes/tvos/native/realm-wrappers.framework/realm-wrappers", "Runtime/tvOS/Device/realm-wrappers.framework/realm-wrappers" },
+                { "runtimes/tvossimulator/native/realm-wrappers.framework/Info.plist", "Runtime/tvOS/Simulator/realm-wrappers.framework/Info.plist" },
+                { "runtimes/tvossimulator/native/realm-wrappers.framework/realm-wrappers", "Runtime/tvOS/Simulator/realm-wrappers.framework/realm-wrappers" },
+                { "runtimes/tvossimulator/native/realm-wrappers.framework/_CodeSignature/CodeResources", "Runtime/tvOS/Simulator/realm-wrappers.framework/_CodeSignature/CodeResources" },
                 { "runtimes/osx/native/librealm-wrappers.dylib", "Runtime/macOS/librealm-wrappers.dylib" },
                 { "runtimes/linux-x64/native/librealm-wrappers.so", "Runtime/Linux/librealm-wrappers.so" },
                 { "runtimes/android-arm/native/librealm-wrappers.so", "Runtime/Android/armeabi-v7a/librealm-wrappers.so" },
@@ -80,7 +85,12 @@ namespace SetupUnityPackage
                 { "runtimes/win10-arm64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/ARM64/realm-wrappers.dll" },
                 { "runtimes/win10-x64/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86_64/realm-wrappers.dll" },
                 { "runtimes/win10-x86/nativeassets/uap10.0/realm-wrappers.dll", "Runtime/UWP/x86/realm-wrappers.dll" },
+                { "analyzers/dotnet/cs/Realm.SourceGenerator.dll", "Editor/Realm.SourceGenerator.dll" },
             }, _realmDependencies),
+            new PackageInfo("Realm.PlatformHelpers", new Dictionary<string, string>
+            {
+                { "lib/netstandard2.0/Realm.PlatformHelpers.dll", "Runtime/Realm.PlatformHelpers.dll" },
+            }),
             new PackageInfo("Realm.UnityUtils", new Dictionary<string, string>
             {
                 { "lib/netstandard2.0/Realm.UnityUtils.dll", "Runtime/Realm.UnityUtils.dll" },

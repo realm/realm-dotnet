@@ -29,6 +29,8 @@ using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
+using NUnitExplicit = NUnit.Framework.ExplicitAttribute;
+
 namespace Realms.Tests.Sync
 {
     [TestFixture, Preserve(AllMembers = true)]
@@ -113,7 +115,7 @@ namespace Realms.Tests.Sync
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     callbacksInvoked++;
@@ -143,7 +145,7 @@ namespace Realms.Tests.Sync
                 var callbacksInvoked = 0;
 
                 var lastProgress = default(SyncProgress);
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     callbacksInvoked++;
@@ -177,7 +179,7 @@ namespace Realms.Tests.Sync
                 var logger = new Logger.InMemoryLogger();
                 Logger.Default = logger;
 
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
                 config.OnProgress = (progress) =>
                 {
                     throw new Exception("Exception in OnProgress");
@@ -204,7 +206,7 @@ namespace Realms.Tests.Sync
                 var config = await GetIntegrationConfigAsync();
                 await PopulateData(config);
 
-                config = await GetIntegrationConfigAsync((string)config.Partition);
+                config = await GetIntegrationConfigAsync((string?)config.Partition);
 
                 using var cts = new CancellationTokenSource(10);
 
@@ -245,10 +247,10 @@ namespace Realms.Tests.Sync
             Assert.That(dynamicRealm.Schema.TryFindObjectSchema(nameof(IntPrimaryKeyWithValueObject), out var objectSchema), Is.True);
             Assert.That(objectSchema, Is.Not.Null);
 
-            Assert.That(objectSchema.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
+            Assert.That(objectSchema!.TryFindProperty(nameof(IntPrimaryKeyWithValueObject.StringValue), out var stringProp));
             Assert.That(stringProp.Type, Is.EqualTo(PropertyType.String | PropertyType.Nullable));
 
-            var dynamicObj = ((IQueryable<RealmObject>)dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject))).Single();
+            var dynamicObj = dynamicRealm.DynamicApi.All(nameof(IntPrimaryKeyWithValueObject)).Single();
             Assert.That(dynamicObj.DynamicApi.Get<string>(nameof(IntPrimaryKeyWithValueObject.StringValue)), Is.EqualTo("This is a string!"));
         }
 
@@ -256,7 +258,7 @@ namespace Realms.Tests.Sync
         public void GetInstance_WhenDynamicAndDoesntExist_ReturnsEmptySchema()
         {
             var config = GetFakeConfig();
-            config.Schema = null;
+            config.Schema = null!;
             config.IsDynamic = true;
 
             using var realm = GetRealm(config);
@@ -351,6 +353,7 @@ namespace Realms.Tests.Sync
                 AddDummyData(originalRealm, true);
 
                 await WaitForUploadAsync(originalRealm);
+                await WaitForDownloadAsync(originalRealm);
 
                 originalRealm.WriteCopy(copyConfig);
 
@@ -371,7 +374,7 @@ namespace Realms.Tests.Sync
 
                 var itemInOriginal = originalRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromCopy.Id);
                 Assert.That(itemInOriginal, Is.Not.Null);
-                Assert.That(itemInOriginal.StringValue, Is.EqualTo(fromCopy.StringValue));
+                Assert.That(itemInOriginal!.StringValue, Is.EqualTo(fromCopy.StringValue));
 
                 var fromOriginal = originalRealm.Write(() =>
                 {
@@ -386,7 +389,7 @@ namespace Realms.Tests.Sync
 
                 var itemInCopy = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(fromOriginal.Id);
                 Assert.That(itemInCopy, Is.Not.Null);
-                Assert.That(itemInCopy.StringValue, Is.EqualTo(fromOriginal.StringValue));
+                Assert.That(itemInCopy!.StringValue, Is.EqualTo(fromOriginal.StringValue));
             });
         }
 
@@ -424,10 +427,10 @@ namespace Realms.Tests.Sync
                     var validKey = copyConfig.EncryptionKey;
                     copyConfig.EncryptionKey = null;
 
-                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+                    Assert.Throws<RealmInvalidDatabaseException>(() => GetRealm(copyConfig));
 
                     copyConfig.EncryptionKey = TestHelpers.GetEncryptionKey(1, 2, 3);
-                    Assert.Throws<RealmFileAccessErrorException>(() => GetRealm(copyConfig));
+                    Assert.Throws<RealmInvalidDatabaseException>(() => GetRealm(copyConfig));
 
                     copyConfig.EncryptionKey = validKey;
                 }
@@ -453,7 +456,7 @@ namespace Realms.Tests.Sync
                 await WaitForUploadAsync(anotherUserRealm);
                 await WaitForDownloadAsync(copiedRealm);
 
-                var syncedObject = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(addedObject.Id);
+                var syncedObject = copiedRealm.Find<ObjectIdPrimaryKeyWithValueObject>(addedObject.Id)!;
 
                 Assert.That(syncedObject.StringValue, Is.EqualTo("abc"));
             });
@@ -525,6 +528,43 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void RemoveAll_RemovesAllElements([Values(true, false)] bool originalEncrypted)
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realmConfig = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
+                if (originalEncrypted)
+                {
+                    realmConfig.EncryptionKey = TestHelpers.GetEncryptionKey(42);
+                }
+
+                using var realm = GetRealm(realmConfig);
+
+                AddDummyData(realm, true);
+
+                await WaitForUploadAsync(realm);
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
+
+                realm.Write(() =>
+                {
+                    realm.RemoveAll();
+                });
+
+                Assert.That(realm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+                await WaitForUploadAsync(realm);
+                realm.Dispose();
+
+                // Ensure that the Realm can be deleted from the filesystem. If the sync
+                // session was still using it, we would get a permission denied error.
+                Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
+
+                using var asyncRealm = await GetRealmAsync(realmConfig);
+                Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+            });
+        }
+
+        [Test]
         public void WriteCopy_FailsWhenNotFinished([Values(true, false)] bool originalEncrypted,
                                                    [Values(true, false)] bool copyEncrypted)
         {
@@ -561,7 +601,7 @@ namespace Realms.Tests.Sync
                 var partition = Guid.NewGuid().ToString();
                 var originalConfig = await GetIntegrationConfigAsync(partition);
                 using var originalRealm = GetRealm(originalConfig);
-                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null));
+                Assert.Throws<ArgumentNullException>(() => originalRealm.WriteCopy(null!));
             });
         }
 
@@ -573,8 +613,8 @@ namespace Realms.Tests.Sync
             openRealm.Dispose();
             Assert.That(File.Exists(config.DatabasePath));
 
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
-            Assert.That(() => DeleteRealmWithRetries(openRealm), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config), Is.True);
+            Assert.That(() => DeleteRealmWithRetries(openRealm.Config), Is.True);
         }
 
         [Test]
@@ -597,7 +637,7 @@ namespace Realms.Tests.Sync
 
                 // Ensure that the Realm can be deleted from the filesystem. If the sync
                 // session was still using it, we would get a permission denied error.
-                Assert.That(DeleteRealmWithRetries(realm), Is.True);
+                Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
 
                 using var asyncRealm = await GetRealmAsync(asyncConfig);
                 Assert.That(asyncRealm.All<ObjectIdPrimaryKeyWithValueObject>().Count(), Is.EqualTo(DummyDataSize / 2));
@@ -615,7 +655,77 @@ namespace Realms.Tests.Sync
             Assert.That(session.IsClosed);
 
             // Dispose should close the session and allow us to delete the Realm.
-            Assert.That(DeleteRealmWithRetries(realm), Is.True);
+            Assert.That(DeleteRealmWithRetries(realm.Config), Is.True);
+        }
+
+        [Test]
+        public void SyncTimeouts_ArePassedCorrectlyToCore()
+        {
+            var logger = new Logger.InMemoryLogger();
+            Logger.Default = logger;
+            Logger.LogLevel = LogLevel.Debug;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1234);
+                appConfig.SyncTimeoutOptions.ConnectionLingerTime = TimeSpan.FromMilliseconds(3456);
+                appConfig.SyncTimeoutOptions.PingKeepAlivePeriod = TimeSpan.FromMilliseconds(5678);
+                appConfig.SyncTimeoutOptions.PongKeepAliveTimeout = TimeSpan.FromMilliseconds(7890);
+                appConfig.SyncTimeoutOptions.FastReconnectLimit = TimeSpan.FromMilliseconds(9012);
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+
+                using var realm = await GetRealmAsync(config);
+
+                var logs = logger.GetLog();
+
+                Assert.That(logs, Does.Contain("Config param: connect_timeout = 1234 ms"));
+                Assert.That(logs, Does.Contain("Config param: connection_linger_time = 3456 ms"));
+                Assert.That(logs, Does.Contain("Config param: ping_keepalive_period = 5678 ms"));
+                Assert.That(logs, Does.Contain("Config param: pong_keepalive_timeout = 7890 ms"));
+                Assert.That(logs, Does.Contain("Config param: fast_reconnect_limit = 9012 ms"));
+            });
+        }
+
+        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        public void CancelAsyncOperationsOnNonFatalErrors_WhenTrue_ShouldCancelAsyncOperationsOnTimeout()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+
+                // 1 ms timeout is way too short to establish a connection
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1);
+
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+                config.CancelAsyncOperationsOnNonFatalErrors = true;
+
+                var ex = await TestHelpers.AssertThrows<RealmException>(() => GetRealmAsync(config));
+                Assert.That(ex.InnerException, Is.TypeOf<SessionException>().And.Message.Contains("Sync connection was not fully established in time"));
+            });
+        }
+
+        [Test, NUnitExplicit("Enable when https://github.com/realm/realm-core/issues/6301 is addressed")]
+        public void CancelAsyncOperationsOnNonFatalErrors_WhenFalse_ShouldNotCancelAsyncOperationsOnTimeout()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var appConfig = SyncTestHelpers.GetAppConfig();
+
+                // 1 ms timeout is way too short to establish a connection
+                appConfig.SyncTimeoutOptions.ConnectTimeout = TimeSpan.FromMilliseconds(1);
+
+                var app = CreateApp(appConfig);
+                var config = await GetIntegrationConfigAsync(app: app);
+                config.CancelAsyncOperationsOnNonFatalErrors = false;
+
+                // Connection should timeout immediately, but we should continue retrying until we eventually
+                // timeout the GetRealmAsync operation
+                var ex = await TestHelpers.AssertThrows<TimeoutException>(() => GetRealmAsync(config), timeout: 1000);
+                Assert.That(ex.Message, Does.Contain("The operation has timed out after 1000 ms"));
+            });
         }
 
         private const int DummyDataSize = 100;
@@ -623,7 +733,7 @@ namespace Realms.Tests.Sync
         private static void AddDummyData(Realm realm, bool singleTransaction)
         {
             Action<Action> write;
-            Transaction currentTransaction = null;
+            Transaction? currentTransaction = null;
 
             if (singleTransaction)
             {
@@ -648,7 +758,7 @@ namespace Realms.Tests.Sync
 
             if (singleTransaction)
             {
-                currentTransaction.Commit();
+                currentTransaction!.Commit();
                 currentTransaction = realm.BeginWrite();
             }
 
@@ -664,7 +774,7 @@ namespace Realms.Tests.Sync
 
             if (singleTransaction)
             {
-                currentTransaction.Commit();
+                currentTransaction!.Commit();
             }
         }
 

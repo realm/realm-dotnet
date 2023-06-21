@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms.Exceptions;
-using Realms.Extensions;
 using Realms.Helpers;
 
 namespace Realms
@@ -46,7 +45,7 @@ namespace Realms
     {
         internal readonly ThreadSafeReferenceHandle Handle;
 
-        internal readonly Metadata Metadata;
+        internal readonly Metadata? Metadata;
 
         internal readonly Type ReferenceType;
 

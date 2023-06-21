@@ -33,6 +33,7 @@ namespace Realms
     [Preserve(AllMembers = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     [DebuggerDisplay("Count = {Count}")]
     public class RealmDictionary<TValue>
         : RealmCollectionBase<KeyValuePair<string, TValue>>,
@@ -41,11 +42,11 @@ namespace Realms
           IRealmCollectionBase<DictionaryHandle>,
           INotifiable<DictionaryHandle.DictionaryChangeSet>
     {
-        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new List<DictionaryNotificationCallbackDelegate<TValue>>();
+        private readonly List<DictionaryNotificationCallbackDelegate<TValue>> _keyCallbacks = new();
         private readonly DictionaryHandle _dictionaryHandle;
 
         private bool _deliveredInitialKeyNotification;
-        private NotificationTokenHandle _keyNotificationToken;
+        private NotificationTokenHandle? _keyNotificationToken;
 
         public TValue this[string key]
         {
@@ -98,9 +99,21 @@ namespace Realms
             }
         }
 
+        internal RealmResults<TValue> ToResults()
+        {
+            return (RealmResults<TValue>)Values;
+        }
+
+        // Get filtered results from dictionary's values
+        internal RealmResults<TValue> GetFilteredValueResults(string query, QueryArgument[] arguments)
+        {
+            var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
+            return new RealmResults<TValue>(Realm, resultsHandle, Metadata);
+        }
+
         DictionaryHandle IRealmCollectionBase<DictionaryHandle>.NativeHandle => _dictionaryHandle;
 
-        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata metadata)
+        internal RealmDictionary(Realm realm, DictionaryHandle adoptedDictionary, Metadata? metadata)
             : base(realm, metadata)
         {
             _dictionaryHandle = adoptedDictionary;
@@ -145,7 +158,7 @@ namespace Realms
 
             var realmValue = Operator.Convert<TValue, RealmValue>(item.Value);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 return false;
             }
@@ -153,7 +166,9 @@ namespace Realms
             return _dictionaryHandle.Remove(item.Key, realmValue);
         }
 
-        public bool TryGetValue(string key, out TValue value)
+#pragma warning disable CS8767 // .NET Standard's definition of TryGetValue doesn't have [MaybeNullWhen]
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out TValue value)
+#pragma warning restore CS8767
         {
             if (key != null && _dictionaryHandle.TryGet(key, Realm, out var realmValue))
             {
@@ -175,7 +190,7 @@ namespace Realms
             }
             else if (_deliveredInitialKeyNotification)
             {
-                callback(this, null, null);
+                callback(this, null);
             }
 
             _keyCallbacks.Add(callback);
@@ -236,9 +251,11 @@ namespace Realms
 
         protected override KeyValuePair<string, TValue> GetValueAtIndex(int index) => _dictionaryHandle.GetValueAtIndex<TValue>(index, Realm);
 
-        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes)
+        void INotifiable<DictionaryHandle.DictionaryChangeSet>.NotifyCallbacks(DictionaryHandle.DictionaryChangeSet? changes, bool shallow)
         {
-            DictionaryChangeSet changeset = null;
+            Debug.Assert(!shallow, "Shallow should always be false here as we don't expose a way to configure it.");
+
+            DictionaryChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;
@@ -254,7 +271,7 @@ namespace Realms
 
             foreach (var callback in _keyCallbacks.ToArray())
             {
-                callback(this, changeset, null);
+                callback(this, changeset);
             }
         }
     }

@@ -8,10 +8,14 @@ name: test-code-coverage
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -24,14 +28,10 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
     name: Code Coverage
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
-    - name: Configure .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -40,108 +40,138 @@ jobs:
     - name: Register msvc problem matcher
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Fetch artifacts for macos
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-macos
         path: wrappers/build
-    - name: Fetch artifacts for linux
-      uses: actions/download-artifact@v2
+    - name: Fetch artifacts for catalyst
+      uses: actions/download-artifact@v3
       with:
-        name: wrappers-linux
+        name: wrappers-catalyst
         path: wrappers/build
-    - name: Fetch artifacts for ios-Simulator
-      uses: actions/download-artifact@v2
+    - name: Fetch artifacts for linux-x86_64
+      uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Simulator
+        name: wrappers-linux-x86_64
         path: wrappers/build
-    - name: Fetch artifacts for ios-Device
-      uses: actions/download-artifact@v2
+    - name: Fetch artifacts for linux-armhf
+      uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Device
+        name: wrappers-linux-armhf
         path: wrappers/build
-    - name: Fetch artifacts for ios-Catalyst
-      uses: actions/download-artifact@v2
+    - name: Fetch artifacts for linux-aarch64
+      uses: actions/download-artifact@v3
       with:
-        name: wrappers-ios-Catalyst
+        name: wrappers-linux-aarch64
+        path: wrappers/build
+    - name: Fetch artifacts for iOS-Device
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-iOS-Device
+        path: wrappers/build
+    - name: Fetch artifacts for iOS-Simulator
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-iOS-Simulator
+        path: wrappers/build
+    - name: Fetch artifacts for tvOS-Device
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-tvOS-Device
+        path: wrappers/build
+    - name: Fetch artifacts for tvOS-Simulator
+      uses: actions/download-artifact@v3
+      with:
+        name: wrappers-tvOS-Simulator
         path: wrappers/build
     - name: Fetch artifacts for android-armeabi-v7a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-armeabi-v7a
         path: wrappers/build
     - name: Fetch artifacts for android-arm64-v8a
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-arm64-v8a
         path: wrappers/build
     - name: Fetch artifacts for android-x86
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86
         path: wrappers/build
     - name: Fetch artifacts for android-x86_64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-android-x86_64
         path: wrappers/build
     - name: Fetch artifacts for windows-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-ARM64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-Win32
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-Win32
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-x64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-x64
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM
         path: wrappers/build
     - name: Fetch artifacts for windows-uwp-ARM64
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: wrappers-windows-uwp-ARM64
         path: wrappers/build
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
+      if: ${{ inputs.realmUrl }}
+      with:
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
     - name: Setup Coverlet & Report Generator
       run: |
         dotnet tool install coverlet.console --tool-path tools
         dotnet tool install dotnet-reportgenerator-globaltool --tool-path tools
         echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f net6.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f net7.0 -r linux-x64 -p:RealmTestsStandaloneExe=true --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/net6.0/linux-x64'
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/net7.0/linux-x64' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run the tests
-      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
+      run: ./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=code-coverage' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'
     - name: Publish Coverage
       id: publish-coveralls
-      uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
+      uses: coverallsapp/github-action@ca2a9dd5a20b12fa9aa428e0a6418a60a38bab22
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: ./report.lcov
+        file: ./report.lcov
         git-commit: ${{ github.event.pull_request.head.sha }}
     - name: Output Coveralls response
       run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
     - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results Code Coverage

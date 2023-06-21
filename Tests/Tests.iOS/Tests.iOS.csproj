@@ -16,6 +16,8 @@
     <MtouchHttpClientHandler>NSUrlSessionHandler</MtouchHttpClientHandler>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -160,6 +162,10 @@
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None">
       <Project>{C0DB0E07-4FBC-44D1-8E84-A074497385C6}</Project>
       <Name>Realm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
+      <Project>{D08C71CE-0F5B-4855-A77C-58062A5ECB78}</Project>
+      <Name>Realm.PlatformHelpers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

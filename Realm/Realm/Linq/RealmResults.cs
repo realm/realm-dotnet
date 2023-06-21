@@ -28,7 +28,7 @@ namespace Realms
     // The regular array implements ICollection<T> so we're not doing anything particularly unusual here.
     internal class RealmResults<T> : RealmCollectionBase<T>, IOrderedQueryable<T>, IQueryableCollection, ICollection<T>
     {
-        private readonly ResultsHandle _handle;
+        private readonly ResultsHandle? _handle;
 
         internal ResultsHandle ResultsHandle => (ResultsHandle)Handle.Value;
 
@@ -40,14 +40,14 @@ namespace Realms
 
         public override bool IsReadOnly => true;
 
-        internal RealmResults(Realm realm, Metadata metadata, RealmResultsProvider realmResultsProvider, Expression expression) : base(realm, metadata)
+        internal RealmResults(Realm realm, Metadata? metadata, RealmResultsProvider realmResultsProvider, Expression? expression) : base(realm, metadata)
         {
             Provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
         }
 
-        internal RealmResults(Realm realm, ResultsHandle handle, Metadata metadata)
-            : this(realm, metadata, new RealmResultsProvider(realm, metadata), null)
+        internal RealmResults(Realm realm, ResultsHandle handle, Metadata? metadata)
+            : this(realm, metadata, new RealmResultsProvider(realm, metadata), expression: null)
         {
             _handle = handle;
         }
@@ -78,19 +78,22 @@ namespace Realms
 
         protected override T GetValueAtIndex(int index) => ResultsHandle.GetValueAtIndex(index, Realm).As<T>();
 
-        public override int IndexOf(T value)
+        public override int IndexOf(T? value)
         {
             Argument.NotNull(value, nameof(value));
 
-            var realmValue = Operator.Convert<T, RealmValue>(value);
+            var realmValue = Operator.Convert<T, RealmValue>(value!);
 
-            if (realmValue.Type == RealmValueType.Object && !realmValue.AsRealmObject().IsManaged)
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
                 throw new ArgumentException("Value does not belong to a realm", nameof(value));
             }
 
             return ResultsHandle.Find(realmValue);
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => $"RealmResults: {ResultsHandle.Description}";
 
         void ICollection<T>.Add(T item) => throw new NotSupportedException("Adding elements to the Results collection is not supported.");
 

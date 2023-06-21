@@ -30,12 +30,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(SetAndGetValueCases))]
         public void SetAndGetValue(string propertyName, object propertyValue)
         {
-            AllTypesObject ato = null;
-            _realm.Write(() =>
+            var ato = _realm.Write(() =>
             {
-                ato = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                var result = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
 
-                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
+                TestHelpers.SetPropertyValue(result, propertyName, propertyValue);
+
+                return result;
             });
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
@@ -76,12 +77,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
-            AllTypesObject ato = null;
-            _realm.Write(() =>
+            var ato = _realm.Write(() =>
             {
-                ato = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
+                var result = _realm.Add(new AllTypesObject { RequiredStringProperty = string.Empty });
 
-                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
+                TestHelpers.SetPropertyValue(result, propertyName, propertyValue);
+
+                return result;
             });
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
@@ -119,22 +121,20 @@ namespace Realms.Tests.Database
         public void AccessingRemovedObjectShouldThrow()
         {
             // Arrange
-            Person p1 = null;
-            _realm.Write(() =>
+            var person = _realm.Write(() =>
             {
-                p1 = _realm.Add(new Person());
+                var result = _realm.Add(new Person());
 
                 // Create another object to ensure there is a row in the db after deleting p1.
                 _realm.Add(new Person());
 
-                _realm.Remove(p1);
+                _realm.Remove(result);
+
+                return result;
             });
 
             // Act and assert
-            Assert.Throws<RealmInvalidObjectException>(() =>
-            {
-                var illegalAccess = p1.FirstName;
-            });
+            Assert.Throws<RealmInvalidObjectException>(() => _ = person.FirstName);
         }
 
         [Test]

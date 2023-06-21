@@ -39,27 +39,29 @@ namespace Realms
 
             var ptr = SnapshotCore(out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
-        public ResultsHandle GetFilteredResults(string query, RealmValue[] arguments)
+        public ResultsHandle GetFilteredResults(string query, QueryArgument[] arguments)
         {
             EnsureIsOpen();
 
-            var (primitiveValues, handles) = arguments.ToPrimitiveValues();
-            var ptr = GetFilteredResultsCore(query, primitiveValues, out var ex);
+            var (nativeArgs, handles) = arguments.ToNativeValues();
+            var ptr = GetFilteredResultsCore(query, nativeArgs, out var ex);
             handles.Dispose();
 
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, ptr);
+            return new ResultsHandle(Root!, ptr);
         }
 
         public abstract CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle);
 
         public abstract void Clear();
 
-        protected abstract IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex);
+        protected abstract IntPtr GetFilteredResultsCore(string query, NativeQueryArgument[] arguments, out NativeException ex);
 
         protected virtual IntPtr SnapshotCore(out NativeException ex) => throw new NotSupportedException("Snapshotting this collection is not supported.");
+
+        public abstract NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow);
     }
 }

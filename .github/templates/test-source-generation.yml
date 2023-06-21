@@ -1,0 +1,20 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "dotnetPublish", "setupWorkloads")
+#@ load("test.lib.yml", "publishTestsResults")
+
+---
+name: test-source-generation
+"on":
+  workflow_call:
+jobs:
+  run-tests:
+    runs-on: windows-latest
+    name: Source Generation
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(checkoutCode())
+      - #@ setupWorkloads('tvos ios maccatalyst android')
+      - #@ template.replace(dotnetPublish("Tests/SourceGenerators/Realm.SourceGenerator.Tests", "net6.0", "win-x64"))
+      - name: Run the tests
+        run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.SourceGenerator.Tests --result=TestResults.SourceGeneration.xml"
+      - #@ publishTestsResults("TestResults.SourceGeneration.xml", "Source Generation")

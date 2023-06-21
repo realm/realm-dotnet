@@ -13,6 +13,8 @@
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +24,7 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <EnableCodeSigning>False</EnableCodeSigning>
     <CodeSigningKey>Mac Developer</CodeSigningKey>
     <CreatePackage>false</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
@@ -44,7 +46,7 @@
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <EnableCodeSigning>False</EnableCodeSigning>
     <CreatePackage>false</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
@@ -62,8 +64,8 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="Xamarin.Mac" />
     <Reference Include="System.IO.Compression" />
+    <Reference Include="Xamarin.Mac" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -92,6 +94,10 @@
     <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == ''">
+    <ProjectReference Include="..\..\Realm\Realm.PlatformHelpers\Realm.PlatformHelpers.csproj">
+      <Project>{D08C71CE-0F5B-4855-A77C-58062A5ECB78}</Project>
+      <Name>Realm.PlatformHelpers</Name>
+    </ProjectReference>
     <NativeReference Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib">
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>

@@ -22,7 +22,7 @@ namespace UnityUtils
 {
     public static class FileHelper
     {
-        internal static string GetStorageFolder()
+        internal static string? GetStorageFolder()
         {
             try
             {
@@ -33,12 +33,10 @@ namespace UnityUtils
 
                 // On Android persistentDataPath returns the external folder, where the app may not have permissions to write.
                 // we use reflection to call File.getAbsolutePath(currentActivity.getFilesDir())
-                using (var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-                using (var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity"))
-                {
-                    var filesDir = currentActivity.Call<AndroidJavaObject>("getFilesDir");
-                    return filesDir.Call<string>("getAbsolutePath");
-                }
+                using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                using var currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                var filesDir = currentActivity.Call<AndroidJavaObject>("getFilesDir");
+                return filesDir.Call<string>("getAbsolutePath");
             }
             catch
             {

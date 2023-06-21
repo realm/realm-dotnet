@@ -44,7 +44,7 @@ namespace Realms.Tests.Database
 
             var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
             Assert.That(success, Is.False);
-            Assert.That(pk, Is.Null);
+            Assert.That(pk.AsAny(), Is.Null);
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace Realms.Tests.Database
             var success = GetHelper(obj.GetType()).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.False);
-            Assert.That(pk, Is.Null);
+            Assert.That(pk.AsAny(), Is.Null);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -69,7 +69,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(objectType);
+            var obj = (IRealmObject)Activator.CreateInstance(objectType)!;
             var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
@@ -81,7 +81,7 @@ namespace Realms.Tests.Database
             var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
-            Assert.That(pk, Is.EqualTo(pkValue));
+            Assert.That(pk.AsAny(), Is.EqualTo(pkValue));
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -92,19 +92,19 @@ namespace Realms.Tests.Database
         [TestCase(typeof(PrimaryKeyStringObject), "lorem ipsum")]
         public void GetPrimaryKey_WhenClassNotManagedAndHasPK_ShouldReturnPK(Type objectType, object pkValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(objectType);
+            var obj = (IRealmObject)Activator.CreateInstance(objectType)!;
             var pkProperty = objectType.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, pkValue);
 
             var success = GetHelper(objectType).TryGetPrimaryKeyValue(obj, out var pk);
 
             Assert.That(success, Is.True);
-            Assert.That(pk, Is.EqualTo(pkValue));
+            Assert.That(pk.AsAny(), Is.EqualTo(pkValue));
         }
 
-        private static IRealmObjectHelper GetHelper(RealmObjectBase obj)
+        private static IRealmObjectHelper GetHelper(IRealmObjectBase obj)
         {
-            return obj.GetObjectMetadata().Helper;
+            return obj.GetObjectMetadata()!.Helper;
         }
 
         private IRealmObjectHelper GetHelper(Type type)

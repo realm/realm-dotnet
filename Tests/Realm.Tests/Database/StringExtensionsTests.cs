@@ -18,7 +18,6 @@
 
 using System;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -54,66 +53,66 @@ namespace Realms.Tests.Database
 #endif
         };
 
-        [TestCaseSource(nameof(ContainsTestValues))]
+        [TestCaseSource(nameof(ContainsTestValues)), Obsolete("Tests obsolete extension methods")]
         public void ContainsTests(string str, string value, StringComparison comparisonType, bool expected)
         {
             var result = StringExtensions.Contains(str, value, comparisonType);
             Assert.That(result, Is.EqualTo(expected));
         }
 
-        public static object[] InvalidContainsTestCases =
+        public static object?[] InvalidContainsTestCases =
         {
-            new object[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
-            new object[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
+            new object?[] { "text", null, StringComparison.Ordinal, typeof(ArgumentNullException) },
+            new object?[] { "teXt", "X", (StringComparison)123, typeof(ArgumentException) }
         };
 
-        [TestCaseSource(nameof(InvalidContainsTestCases))]
+        [TestCaseSource(nameof(InvalidContainsTestCases)), Obsolete("Tests obsolete extension methods")]
         public void Contains_TestInvalidArgumentCases(string original, string value, StringComparison comparisonType, Type exceptionType)
         {
             Assert.That(() => StringExtensions.Contains(original, value, comparisonType), Throws.TypeOf(exceptionType));
         }
 #endif
 
-        [TestCaseSource(nameof(LikeTestValues))]
+        [TestCaseSource(nameof(LikeTestValues)), Obsolete("Tests obsolete extension methods")]
         public void LikeTests(string str, string value, bool caseSensitive, bool expected)
         {
             var result = StringExtensions.Like(str, value, caseSensitive);
             Assert.That(result, Is.EqualTo(expected));
         }
 
-        public static object[] LikeTestValues =
+        public static object?[] LikeTestValues =
         {
-            new object[] { string.Empty, string.Empty, true, true },
-            new object[] { string.Empty, string.Empty, false, true },
-            new object[] { null, null, true, true },
-            new object[] { null, null, false, true },
-            new object[] { "abc", string.Empty, true, false },
-            new object[] { string.Empty, "abc", true, false },
-            new object[] { "abcd", "abc", true, false },
+            new object?[] { string.Empty, string.Empty, true, true },
+            new object?[] { string.Empty, string.Empty, false, true },
+            new object?[] { null, null, true, true },
+            new object?[] { null, null, false, true },
+            new object?[] { "abc", string.Empty, true, false },
+            new object?[] { string.Empty, "abc", true, false },
+            new object?[] { "abcd", "abc", true, false },
 
-            new object[] { "abc", "*a*", true, true },
-            new object[] { "abc", "*b*", true, true },
-            new object[] { "abc", "*c", true, true },
-            new object[] { "abc", "ab*", true, true },
-            new object[] { "abc", "*bc", true, true },
-            new object[] { "abc", "a*bc", true, true },
-            new object[] { "abc", "*abc*", true, true },
-            new object[] { "abc", "*d*", true, false },
-            new object[] { "abc", "aabc", true, false },
-            new object[] { "abc", "b*bc", true, false },
+            new object?[] { "abc", "*a*", true, true },
+            new object?[] { "abc", "*b*", true, true },
+            new object?[] { "abc", "*c", true, true },
+            new object?[] { "abc", "ab*", true, true },
+            new object?[] { "abc", "*bc", true, true },
+            new object?[] { "abc", "a*bc", true, true },
+            new object?[] { "abc", "*abc*", true, true },
+            new object?[] { "abc", "*d*", true, false },
+            new object?[] { "abc", "aabc", true, false },
+            new object?[] { "abc", "b*bc", true, false },
 
-            new object[] { "abc", "a??", true, true },
-            new object[] { "abc", "?b?", true, true },
-            new object[] { "abc", "*?c", true, true },
-            new object[] { "abc", "ab?", true, true },
-            new object[] { "abc", "?bc", true, true },
-            new object[] { "abc", "?d?", true, false },
-            new object[] { "abc", "?abc", true, false },
-            new object[] { "abc", "b?bc", true, false },
+            new object?[] { "abc", "a??", true, true },
+            new object?[] { "abc", "?b?", true, true },
+            new object?[] { "abc", "*?c", true, true },
+            new object?[] { "abc", "ab?", true, true },
+            new object?[] { "abc", "?bc", true, true },
+            new object?[] { "abc", "?d?", true, false },
+            new object?[] { "abc", "?abc", true, false },
+            new object?[] { "abc", "b?bc", true, false },
 
-            new object[] { "abc", "*C*", true, false },
-            new object[] { "abc", "*c*", false, true },
-            new object[] { "abc", "*C*", false, true },
+            new object?[] { "abc", "*C*", true, false },
+            new object?[] { "abc", "*c*", false, true },
+            new object?[] { "abc", "*C*", false, true },
         };
     }
 }

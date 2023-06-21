@@ -18,6 +18,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
 using MongoDB.Bson;
@@ -68,12 +69,12 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         public RealmValueType Type;
 
-        public static PrimitiveValue Null() => new PrimitiveValue
+        public static PrimitiveValue Null() => new()
         {
             Type = RealmValueType.Null,
         };
 
-        public static PrimitiveValue Bool(bool value) => new PrimitiveValue
+        public static PrimitiveValue Bool(bool value) => new()
         {
             Type = RealmValueType.Bool,
             int_value = value ? 1 : 0,
@@ -81,7 +82,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableBool(bool? value) => value.HasValue ? Bool(value.Value) : Null();
 
-        public static PrimitiveValue Int(long value) => new PrimitiveValue
+        public static PrimitiveValue Int(long value) => new()
         {
             Type = RealmValueType.Int,
             int_value = value
@@ -89,7 +90,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableInt(long? value) => value.HasValue ? Int(value.Value) : Null();
 
-        public static PrimitiveValue Float(float value) => new PrimitiveValue
+        public static PrimitiveValue Float(float value) => new()
         {
             Type = RealmValueType.Float,
             float_value = value
@@ -97,7 +98,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableFloat(float? value) => value.HasValue ? Float(value.Value) : Null();
 
-        public static PrimitiveValue Double(double value) => new PrimitiveValue
+        public static PrimitiveValue Double(double value) => new()
         {
             Type = RealmValueType.Double,
             double_value = value
@@ -105,7 +106,7 @@ namespace Realms.Native
 
         public static PrimitiveValue NullableDouble(double? value) => value.HasValue ? Double(value.Value) : Null();
 
-        public static PrimitiveValue Date(DateTimeOffset value) => new PrimitiveValue
+        public static PrimitiveValue Date(DateTimeOffset value) => new()
         {
             Type = RealmValueType.Date,
             timestamp_value = new TimestampValue(value.ToUniversalTime().Ticks)
@@ -212,7 +213,7 @@ namespace Realms.Native
 
         public double AsDouble() => double_value;
 
-        public DateTimeOffset AsDate() => new DateTimeOffset(timestamp_value.ToTicks(), TimeSpan.Zero);
+        public DateTimeOffset AsDate() => new(timestamp_value.ToTicks(), TimeSpan.Zero);
 
         public Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
@@ -240,23 +241,10 @@ namespace Realms.Native
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        public string AsString()
-        {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
-            return Encoding.UTF8.GetString(string_value.data, (int)string_value.size);
-        }
+        public string AsString() => string_value!;
 
         public byte[] AsBinary()
         {
-            if (Type == RealmValueType.Null)
-            {
-                return null;
-            }
-
             var bytes = new byte[(int)data_value.size];
             for (var i = 0; i < bytes.Length; i++)
             {
@@ -282,11 +270,16 @@ namespace Realms.Native
             return realm.MakeObject(objectMetadata, handle);
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct StringValue
+        public bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
         {
-            public byte* data;
-            public IntPtr size;
+            if (Type == RealmValueType.Object)
+            {
+                handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
+                return true;
+            }
+
+            handle = null;
+            return false;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -322,5 +315,14 @@ namespace Realms.Native
 
             public long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct StringValue
+    {
+        public byte* data;
+        public IntPtr size;
+
+        public static implicit operator string?(StringValue value) => value.data == null ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

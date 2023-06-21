@@ -40,64 +40,64 @@ namespace Realms.Tests.Database
             Guid
         }
 
-        public static object[] PKTestCases =
+        public static object?[] PKTestCases =
         {
-            new object[] { typeof(PrimaryKeyCharObject), 'x', PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableCharObject), 'x', PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableCharObject), null, PKType.Int },
-            new object[] { typeof(PrimaryKeyByteObject), (byte)42, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableByteObject), (byte)42, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableByteObject), null, PKType.Int },
-            new object[] { typeof(PrimaryKeyInt16Object), (short)4242, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt16Object), (short)4242, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt16Object), null, PKType.Int },
-            new object[] { typeof(PrimaryKeyInt32Object), 42000042, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt32Object), 42000042, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt32Object), null, PKType.Int },
-            new object[] { typeof(PrimaryKeyInt64Object), 42000042L, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt64Object), 42000042L, PKType.Int },
-            new object[] { typeof(PrimaryKeyNullableInt64Object), null, PKType.Int },
-            new object[] { typeof(PrimaryKeyStringObject), "key", PKType.String },
-            new object[] { typeof(PrimaryKeyStringObject), null, PKType.String },
-            new object[] { typeof(PrimaryKeyStringObject), string.Empty, PKType.String },
-            new object[] { typeof(RequiredPrimaryKeyStringObject), "key", PKType.String },
-            new object[] { typeof(RequiredPrimaryKeyStringObject), string.Empty, PKType.String },
-            new object[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
-            new object[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
-            new object[] { typeof(PrimaryKeyNullableObjectIdObject), null, PKType.ObjectId },
-            new object[] { typeof(PrimaryKeyGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
-            new object[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
-            new object[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
+            new object?[] { typeof(PrimaryKeyCharObject), 'x', PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableCharObject), 'x', PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableCharObject), null, PKType.Int },
+            new object?[] { typeof(PrimaryKeyByteObject), (byte)42, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableByteObject), (byte)42, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableByteObject), null, PKType.Int },
+            new object?[] { typeof(PrimaryKeyInt16Object), (short)4242, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt16Object), (short)4242, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt16Object), null, PKType.Int },
+            new object?[] { typeof(PrimaryKeyInt32Object), 42000042, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt32Object), 42000042, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt32Object), null, PKType.Int },
+            new object?[] { typeof(PrimaryKeyInt64Object), 42000042L, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt64Object), 42000042L, PKType.Int },
+            new object?[] { typeof(PrimaryKeyNullableInt64Object), null, PKType.Int },
+            new object?[] { typeof(PrimaryKeyStringObject), "key", PKType.String },
+            new object?[] { typeof(PrimaryKeyStringObject), null, PKType.String },
+            new object?[] { typeof(PrimaryKeyStringObject), string.Empty, PKType.String },
+            new object?[] { typeof(RequiredPrimaryKeyStringObject), "key", PKType.String },
+            new object?[] { typeof(RequiredPrimaryKeyStringObject), string.Empty, PKType.String },
+            new object?[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
+            new object?[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), PKType.ObjectId },
+            new object?[] { typeof(PrimaryKeyNullableObjectIdObject), null, PKType.ObjectId },
+            new object?[] { typeof(PrimaryKeyGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
+            new object?[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), PKType.Guid },
+            new object?[] { typeof(PrimaryKeyNullableGuidObject), null, PKType.Guid },
         };
 
-        public static object[] UpdatePKTestCases =
+        public static object?[] UpdatePKTestCases =
         {
-            new object[] { typeof(PrimaryKeyCharObject), 'x', 'y' },
-            new object[] { typeof(PrimaryKeyNullableCharObject), 'x', 'y' },
-            new object[] { typeof(PrimaryKeyNullableCharObject), null, 'x' },
-            new object[] { typeof(PrimaryKeyByteObject), (byte)42, (byte)98 },
-            new object[] { typeof(PrimaryKeyNullableByteObject), (byte)42, (byte)98 },
-            new object[] { typeof(PrimaryKeyNullableByteObject), null, (byte)36 },
-            new object[] { typeof(PrimaryKeyInt16Object), (short)4242, (short)4343 },
-            new object[] { typeof(PrimaryKeyNullableInt16Object), (short)4242, (short)1 },
-            new object[] { typeof(PrimaryKeyNullableInt16Object), null, (short)0 },
-            new object[] { typeof(PrimaryKeyInt32Object), 42000042, 123 },
-            new object[] { typeof(PrimaryKeyNullableInt32Object), 42000042, 456 },
-            new object[] { typeof(PrimaryKeyNullableInt32Object), null, 999 },
-            new object[] { typeof(PrimaryKeyInt64Object), 42000042L, 123L },
-            new object[] { typeof(PrimaryKeyNullableInt64Object), 42000042L, 999999999999L },
-            new object[] { typeof(PrimaryKeyNullableInt64Object), null, -1L },
-            new object[] { typeof(PrimaryKeyStringObject), "key", "not a key" },
-            new object[] { typeof(PrimaryKeyStringObject), null, "null" },
-            new object[] { typeof(PrimaryKeyStringObject), string.Empty, "not empty" },
-            new object[] { typeof(RequiredPrimaryKeyStringObject), "key", "1" },
-            new object[] { typeof(RequiredPrimaryKeyStringObject), string.Empty, "null" },
-            new object[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5f651b2930643efeef987e5d") },
-            new object[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5f651b2930643efeef987e5d") },
-            new object[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), null },
-            new object[] { typeof(PrimaryKeyGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), Guid.Parse("{A41DEFF8-E307-4CDE-A57C-66B0DB3475BE}") },
-            new object[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), Guid.Parse("{A41DEFF8-E307-4CDE-A57C-66B0DB3475BE}") },
-            new object[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), null },
+            new object?[] { typeof(PrimaryKeyCharObject), 'x', 'y' },
+            new object?[] { typeof(PrimaryKeyNullableCharObject), 'x', 'y' },
+            new object?[] { typeof(PrimaryKeyNullableCharObject), null, 'x' },
+            new object?[] { typeof(PrimaryKeyByteObject), (byte)42, (byte)98 },
+            new object?[] { typeof(PrimaryKeyNullableByteObject), (byte)42, (byte)98 },
+            new object?[] { typeof(PrimaryKeyNullableByteObject), null, (byte)36 },
+            new object?[] { typeof(PrimaryKeyInt16Object), (short)4242, (short)4343 },
+            new object?[] { typeof(PrimaryKeyNullableInt16Object), (short)4242, (short)1 },
+            new object?[] { typeof(PrimaryKeyNullableInt16Object), null, (short)0 },
+            new object?[] { typeof(PrimaryKeyInt32Object), 42000042, 123 },
+            new object?[] { typeof(PrimaryKeyNullableInt32Object), 42000042, 456 },
+            new object?[] { typeof(PrimaryKeyNullableInt32Object), null, 999 },
+            new object?[] { typeof(PrimaryKeyInt64Object), 42000042L, 123L },
+            new object?[] { typeof(PrimaryKeyNullableInt64Object), 42000042L, 999999999999L },
+            new object?[] { typeof(PrimaryKeyNullableInt64Object), null, -1L },
+            new object?[] { typeof(PrimaryKeyStringObject), "key", "not a key" },
+            new object?[] { typeof(PrimaryKeyStringObject), null, "null" },
+            new object?[] { typeof(PrimaryKeyStringObject), string.Empty, "not empty" },
+            new object?[] { typeof(RequiredPrimaryKeyStringObject), "key", "1" },
+            new object?[] { typeof(RequiredPrimaryKeyStringObject), string.Empty, "null" },
+            new object?[] { typeof(PrimaryKeyObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5f651b2930643efeef987e5d") },
+            new object?[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), new ObjectId("5f651b2930643efeef987e5d") },
+            new object?[] { typeof(PrimaryKeyNullableObjectIdObject), new ObjectId("5f64cd9f1691c361b2451d96"), null },
+            new object?[] { typeof(PrimaryKeyGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), Guid.Parse("{A41DEFF8-E307-4CDE-A57C-66B0DB3475BE}") },
+            new object?[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), Guid.Parse("{A41DEFF8-E307-4CDE-A57C-66B0DB3475BE}") },
+            new object?[] { typeof(PrimaryKeyNullableGuidObject), Guid.Parse("{C4EC8CEF-D62A-405E-83BB-B0A3D8DABB36}"), null },
         };
 
         private readonly IEnumerable<object> _primaryKeyValues = new object[] { "42", 123L, ObjectId.GenerateNewId(), Guid.NewGuid() };
@@ -105,7 +105,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(PKTestCases))]
         public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, PKType pkType)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type)!;
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
@@ -127,7 +127,7 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(UpdatePKTestCases))]
         public void UpdatePrimaryKey_DynamicTests(Type type, object firstValue, object secondValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type)!;
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, firstValue);
 
@@ -138,7 +138,7 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    obj.DynamicApi.Set(obj.ObjectSchema.PrimaryKeyProperty.Value.Name, Operator.Convert<RealmValue>(firstValue));
+                    obj.DynamicApi.Set(obj.ObjectSchema!.PrimaryKeyProperty!.Value.Name, Operator.Convert<RealmValue>(firstValue));
                 });
             });
 
@@ -146,9 +146,9 @@ namespace Realms.Tests.Database
             {
                 _realm.Write(() =>
                 {
-                    obj.DynamicApi.Set(obj.ObjectSchema.PrimaryKeyProperty.Value.Name, Operator.Convert<RealmValue>(secondValue));
+                    obj.DynamicApi.Set(obj.ObjectSchema!.PrimaryKeyProperty!.Value.Name, Operator.Convert<RealmValue>(secondValue));
                 });
-            });
+            })!;
 
             Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
@@ -159,7 +159,7 @@ namespace Realms.Tests.Database
 
             Assert.DoesNotThrow(() => SetDynamicValue(firstValue));
 
-            ex = Assert.Throws<InvalidOperationException>(() => SetDynamicValue(secondValue));
+            ex = Assert.Throws<InvalidOperationException>(() => SetDynamicValue(secondValue))!;
 
             Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
@@ -207,13 +207,13 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(PKTestCases))]
-        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
+        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType pkType)
         {
-            _realm.Write(() => (object)_realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
+            _realm.Write(() => CreateObjectWithPK(type, primaryKeyValue, pkType));
 
             Assert.That(() =>
             {
-                _realm.Write(() => _realm.DynamicApi.CreateObject(type.Name, primaryKeyValue));
+                _realm.Write(() => CreateObjectWithPK(type, primaryKeyValue, pkType));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
@@ -221,46 +221,57 @@ namespace Realms.Tests.Database
         public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue, PKType _)
         {
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
-            var first = (RealmObject)Activator.CreateInstance(type);
+            var first = (IRealmObject)Activator.CreateInstance(type)!;
             pkProperty.SetValue(first, primaryKeyValue);
 
             _realm.Write(() => _realm.Add(first));
 
             Assert.That(() =>
             {
-                var second = (RealmObject)Activator.CreateInstance(type);
+                var second = (IRealmObject)Activator.CreateInstance(type)!;
                 pkProperty.SetValue(second, primaryKeyValue);
                 _realm.Write(() => _realm.Add(second));
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
-        private RealmObjectBase FindByPKDynamic(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObject? FindByPKDynamic(Type type, object? primaryKeyValue, PKType pkType)
         {
             switch (pkType)
             {
                 case PKType.Int:
-                    long? castPKValue;
-                    if (primaryKeyValue == null)
-                    {
-                        castPKValue = null;
-                    }
-                    else
-                    {
-                        castPKValue = Convert.ToInt64(primaryKeyValue);
-                    }
-
-                    // The double cast is necessary to avoid creating a callsite.
-                    // TODO: remove the casts when https://github.com/realm/realm-dotnet/issues/2373 is done
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, castPKValue);
+                    long? castPKValue = primaryKeyValue == null ? null : Convert.ToInt64(primaryKeyValue);
+                    return _realm.DynamicApi.Find(type.Name, castPKValue);
 
                 case PKType.String:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (string)primaryKeyValue);
+                    return _realm.DynamicApi.Find(type.Name, (string?)primaryKeyValue);
 
                 case PKType.ObjectId:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
+                    return _realm.DynamicApi.Find(type.Name, (ObjectId?)primaryKeyValue);
 
                 case PKType.Guid:
-                    return (RealmObjectBase)(object)_realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+                    return _realm.DynamicApi.Find(type.Name, (Guid?)primaryKeyValue);
+
+                default:
+                    throw new NotSupportedException($"Unsupported pk type: {pkType}");
+            }
+        }
+
+        private IRealmObjectBase CreateObjectWithPK(Type type, object? primaryKeyValue, PKType pkType)
+        {
+            switch (pkType)
+            {
+                case PKType.Int:
+                    long? castPKValue = primaryKeyValue == null ? null : Convert.ToInt64(primaryKeyValue);
+                    return _realm.DynamicApi.CreateObject(type.Name, castPKValue);
+
+                case PKType.String:
+                    return _realm.DynamicApi.CreateObject(type.Name, (string?)primaryKeyValue);
+
+                case PKType.ObjectId:
+                    return _realm.DynamicApi.CreateObject(type.Name, (ObjectId?)primaryKeyValue);
+
+                case PKType.Guid:
+                    return _realm.DynamicApi.CreateObject(type.Name, (Guid?)primaryKeyValue);
 
                 default:
                     throw new NotSupportedException($"Unsupported pk type: {pkType}");
@@ -268,9 +279,9 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(PKTestCases))]
-        public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, PKType pkType)
+        public void FindByPrimaryKeyGenericTests(Type type, object? primaryKeyValue, PKType pkType)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type)!;
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
@@ -283,16 +294,16 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(PKTestCases))]
-        public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, PKType pkType)
+        public void FailToFindByPrimaryKeyGenericTests(Type type, object? primaryKeyValue, PKType pkType)
         {
             var foundObj = FindByPKGeneric(type, primaryKeyValue, pkType);
             Assert.That(foundObj, Is.Null);
         }
 
         [TestCaseSource(nameof(UpdatePKTestCases))]
-        public void UpdatePrimaryKey_ReflectionTests(Type type, object firstValue, object secondValue)
+        public void UpdatePrimaryKey_ReflectionTests(Type type, object? firstValue, object? secondValue)
         {
-            var obj = (RealmObject)Activator.CreateInstance(type);
+            var obj = (IRealmObject)Activator.CreateInstance(type)!;
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, firstValue);
 
@@ -319,17 +330,17 @@ namespace Realms.Tests.Database
                     {
                         // This is only necessary because we invoke the method by reflection. Users will get the normal
                         // InvalidOperationException
-                        throw tie.InnerException;
+                        throw tie.InnerException!;
                     }
                 });
-            });
+            })!;
 
             Assert.That(ex.Message, Does.Contain("Once set, primary key properties may not be modified."));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(firstValue).ToString()));
             Assert.That(ex.Message, Does.Contain(Operator.Convert<RealmValue>(secondValue).ToString()));
         }
 
-        private RealmObjectBase FindByPKGeneric(Type type, object primaryKeyValue, PKType pkType)
+        private IRealmObjectBase FindByPKGeneric(Type type, object? primaryKeyValue, PKType pkType)
         {
             try
             {
@@ -352,11 +363,11 @@ namespace Realms.Tests.Database
                     primaryKeyValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return (RealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue });
+                return (IRealmObjectBase)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { primaryKeyValue })!;
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                throw ex.InnerException!;
             }
         }
 
@@ -399,7 +410,7 @@ namespace Realms.Tests.Database
         }
 
         private void RealmFind_IncorrectPKArgument_Throws<T>()
-            where T : RealmObject
+            where T : IRealmObject
         {
             var pkInClass = typeof(T).GetProperties().Single(prop => Attribute.IsDefined(prop, typeof(PrimaryKeyAttribute)));
             var pkType = GetDatabaseType(pkInClass.PropertyType);
@@ -448,7 +459,7 @@ namespace Realms.Tests.Database
                 await Task.Run(() =>
                 {
                     using var realm2 = GetRealm(_configuration);
-                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
+                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042)!;
                     foundValue = foundObj.Id;
                 });
 

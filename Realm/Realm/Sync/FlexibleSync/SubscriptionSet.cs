@@ -19,10 +19,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Realms.Exceptions.Sync;
 using Realms.Helpers;
+using Realms.Sync.Exceptions;
 
 namespace Realms.Sync
 {
@@ -72,7 +73,7 @@ namespace Realms.Sync
         /// The <see cref="Exception"/> that provides more details for why the subscription set
         /// was rejected by the server.
         /// </value>
-        public Exception Error
+        public Exception? Error
         {
             get
             {
@@ -199,7 +200,7 @@ namespace Realms.Sync
         /// Adding a query that already exists is a no-op and the existing subscription will be returned.
         /// </remarks>
         /// <returns>The subscription that represents the specified query.</returns>
-        public Subscription Add<T>(IQueryable<T> query, SubscriptionOptions options = null)
+        public Subscription Add<T>(IQueryable<T> query, SubscriptionOptions? options = null)
             where T : IRealmObject
         {
             EnsureWritable();
@@ -244,7 +245,7 @@ namespace Realms.Sync
         /// <summary>
         /// Removes the provided <paramref name="subscription"/> from this subscription set.
         /// </summary>
-        /// <param name="subscription">The subcription to remove.</param>
+        /// <param name="subscription">The subscription to remove.</param>
         /// <returns>
         /// <c>true</c> if the subscription existed in this subscription set and was removed; <c>false</c> otherwise.
         /// </returns>
@@ -334,7 +335,7 @@ namespace Realms.Sync
 
         private class Enumerator : IEnumerator<Subscription>
         {
-            private SubscriptionSet _enumerating;
+            private SubscriptionSet? _enumerating;
             private int _index;
 
             internal Enumerator(SubscriptionSet parent)
@@ -343,12 +344,22 @@ namespace Realms.Sync
                 _enumerating = parent;
             }
 
-            public Subscription Current => _enumerating[_index];
+            public Subscription Current
+            {
+                get
+                {
+                    ThrowIfDisposed();
+
+                    return _enumerating[_index];
+                }
+            }
 
             object IEnumerator.Current => Current;
 
             public bool MoveNext()
             {
+                ThrowIfDisposed();
+
                 var index = _index + 1;
                 if (index >= _enumerating.Count)
                 {
@@ -366,12 +377,18 @@ namespace Realms.Sync
 
             public void Dispose()
             {
+                ThrowIfDisposed();
+
+                _enumerating = null;
+            }
+
+            [MemberNotNull(nameof(_enumerating))]
+            private void ThrowIfDisposed()
+            {
                 if (_enumerating == null)
                 {
                     throw new ObjectDisposedException(nameof(Enumerator));
                 }
-
-                _enumerating = null;
             }
         }
     }

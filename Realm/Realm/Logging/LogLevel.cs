@@ -28,49 +28,49 @@ namespace Realms.Logging
         /// Log everything. This will seriously harm the performance of the
         /// sync client and should never be used in production scenarios.
         /// </summary>
-        All,
+        All = 0,
 
         /// <summary>
         /// A version of 'debug' that allows for very high volume output.
         /// This may seriously affect the performance of the sync client.
         /// </summary>
-        Trace,
+        Trace = 1,
 
         /// <summary>
         /// Reveal information that can aid debugging, no longer paying
         /// attention to efficiency.
         /// </summary>
-        Debug,
+        Debug = 2,
 
         /// <summary>
         /// Same as 'Info', but prioritize completeness over minimalism.
         /// </summary>
-        Detail,
+        Detail = 3,
 
         /// <summary>
         /// Log operational sync client messages, but in a minimalistic fashion to
         /// avoid general overhead from logging and to keep volume down.
         /// </summary>
-        Info,
+        Info = 4,
 
         /// <summary>
         /// Log errors and warnings.
         /// </summary>
-        Warn,
+        Warn = 5,
 
         /// <summary>
         /// Log errors only.
         /// </summary>
-        Error,
+        Error = 6,
 
         /// <summary>
         /// Log only fatal errors.
         /// </summary>
-        Fatal,
+        Fatal = 7,
 
         /// <summary>
         /// Log nothing.
         /// </summary>
-        Off
+        Off = 8,
     }
 }

@@ -44,27 +44,27 @@ namespace RealmWeaver
     {
         #region helpers
 
-        private static dynamic GetAutoPropertyBackingFieldValue(object o, string propertyName)
+        private static dynamic? GetAutoPropertyBackingFieldValue(object o, string propertyName)
         {
-            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!;
             var fieldValue = propertyField.GetValue(o);
             return fieldValue;
         }
 
-        private static void SetAutoPropertyBackingFieldValue(object o, string propertyName, object propertyValue)
+        private static void SetAutoPropertyBackingFieldValue(object o, string propertyName, object? propertyValue)
         {
-            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var propertyField = o.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)!;
             propertyField.SetValue(o, propertyValue);
         }
 
-        public static object GetPropertyValue(object o, string propName)
+        public static object? GetPropertyValue(object o, string propName)
         {
-            return o.GetType().GetProperty(propName).GetValue(o, null);
+            return o.GetType().GetProperty(propName)!.GetValue(o, null);
         }
 
-        public static void SetPropertyValue(object o, string propName, object propertyValue)
+        public static void SetPropertyValue(object o, string propName, object? propertyValue)
         {
-            o.GetType().GetProperty(propName).SetValue(o, propertyValue);
+            o.GetType().GetProperty(propName)!.SetValue(o, propertyValue);
         }
 
         private TestResult WeavePropertyChanged(string assemblyPath)
@@ -98,7 +98,7 @@ namespace RealmWeaver
         private readonly PropertyChangedWeaver _propertyChangedWeaver;
         private readonly bool _weaveTwice;
 
-        private Assembly _assembly;
+        private Assembly _assembly = null!;
 
         public Tests(PropertyChangedWeaver propertyChangedWeaver, bool weaveTwice)
         {
@@ -139,53 +139,53 @@ namespace RealmWeaver
             }
             catch (ReflectionTypeLoadException e)
             {
-                foreach (var item in e.LoaderExceptions)
+                foreach (var item in e.LoaderExceptions!)
                 {
-                    Debug.WriteLine("Loader exception: " + item.Message.ToString());
+                    Debug.WriteLine("Loader exception: " + item!.Message.ToString());
                 }
 
                 Assert.Fail("Load failure");
             }
         }
 
-        private static readonly object[][] RandomAndDefaultValues =
+        private static readonly object?[][] RandomAndDefaultValues =
         {
-            new object[] { "Char", '0', char.MinValue },
-            new object[] { "Byte", (byte)100, (byte)0 },
-            new object[] { "Int16", (short)100, (short)0 },
-            new object[] { "Int32", 100, 0 },
-            new object[] { "Int64", 100L, 0L },
-            new object[] { "Single", 123.123f, 0.0f },
-            new object[] { "Double", 123.123, 0.0 },
-            new object[] { "Boolean", true, false },
-            new object[] { "String", "str", null },
-            new object[] { "Decimal", 123.456M, 0M },
-            new object[] { "Decimal128", new Decimal128(123.456), new Decimal128() },
-            new object[] { "ObjectId", ObjectId.GenerateNewId(), default(ObjectId) },
-            new object[] { "Guid", Guid.NewGuid(), default(Guid) },
-            new object[] { "NullableChar", '0', null },
-            new object[] { "NullableByte", (byte)100, null },
-            new object[] { "NullableInt16", (short)100, null },
-            new object[] { "NullableInt32", 100, null },
-            new object[] { "NullableInt64", 100L, null },
-            new object[] { "NullableSingle", 123.123f, null },
-            new object[] { "NullableDouble", 123.123, null },
-            new object[] { "NullableBoolean", true, null },
-            new object[] { "NullableDecimal", 123.456M, null },
-            new object[] { "NullableDecimal128", new Decimal128(123.456), null },
-            new object[] { "NullableObjectId", ObjectId.GenerateNewId(), null },
-            new object[] { "NullableGuid", Guid.NewGuid(), null },
-            new object[] { "ByteCounter", (RealmInteger<byte>)100, (byte)0 },
-            new object[] { "Int16Counter", (RealmInteger<short>)100, (short)0 },
-            new object[] { "Int32Counter", (RealmInteger<int>)100, 0 },
-            new object[] { "Int64Counter", (RealmInteger<long>)100L, 0L },
-            new object[] { "NullableByteCounter", (RealmInteger<byte>)100, null },
-            new object[] { "NullableInt16Counter", (RealmInteger<short>)100, null },
-            new object[] { "NullableInt32Counter", (RealmInteger<int>)100, null },
-            new object[] { "NullableInt64Counter", (RealmInteger<long>)100L, null },
+            new object?[] { "Char", '0', char.MinValue },
+            new object?[] { "Byte", (byte)100, (byte)0 },
+            new object?[] { "Int16", (short)100, (short)0 },
+            new object?[] { "Int32", 100, 0 },
+            new object?[] { "Int64", 100L, 0L },
+            new object?[] { "Single", 123.123f, 0.0f },
+            new object?[] { "Double", 123.123, 0.0 },
+            new object?[] { "Boolean", true, false },
+            new object?[] { "String", "str", null },
+            new object?[] { "Decimal", 123.456M, 0M },
+            new object?[] { "Decimal128", new Decimal128(123.456), new Decimal128() },
+            new object?[] { "ObjectId", ObjectId.GenerateNewId(), default(ObjectId) },
+            new object?[] { "Guid", Guid.NewGuid(), default(Guid) },
+            new object?[] { "NullableChar", '0', null },
+            new object?[] { "NullableByte", (byte)100, null },
+            new object?[] { "NullableInt16", (short)100, null },
+            new object?[] { "NullableInt32", 100, null },
+            new object?[] { "NullableInt64", 100L, null },
+            new object?[] { "NullableSingle", 123.123f, null },
+            new object?[] { "NullableDouble", 123.123, null },
+            new object?[] { "NullableBoolean", true, null },
+            new object?[] { "NullableDecimal", 123.456M, null },
+            new object?[] { "NullableDecimal128", new Decimal128(123.456), null },
+            new object?[] { "NullableObjectId", ObjectId.GenerateNewId(), null },
+            new object?[] { "NullableGuid", Guid.NewGuid(), null },
+            new object?[] { "ByteCounter", (RealmInteger<byte>)100, (byte)0 },
+            new object?[] { "Int16Counter", (RealmInteger<short>)100, (short)0 },
+            new object?[] { "Int32Counter", (RealmInteger<int>)100, 0 },
+            new object?[] { "Int64Counter", (RealmInteger<long>)100L, 0L },
+            new object?[] { "NullableByteCounter", (RealmInteger<byte>)100, null },
+            new object?[] { "NullableInt16Counter", (RealmInteger<short>)100, null },
+            new object?[] { "NullableInt32Counter", (RealmInteger<int>)100, null },
+            new object?[] { "NullableInt64Counter", (RealmInteger<long>)100L, null },
         };
 
-        private static IEnumerable<object[]> RandomValues()
+        private static IEnumerable<object?[]> RandomValues()
         {
             return RandomAndDefaultValues.Select(a => new[] { a[0], a[1] });
         }
@@ -195,7 +195,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
             SetAutoPropertyBackingFieldValue(o, propertyName, propertyValue);
 
             // Act
@@ -211,7 +211,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
 
             // Act
             SetPropertyValue(o, propertyName, propertyValue);
@@ -226,7 +226,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
             o.IsManaged = true;
 
             // Act
@@ -245,7 +245,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
             o.IsManaged = true;
 
             // Act
@@ -268,7 +268,7 @@ namespace RealmWeaver
 
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
             o.IsManaged = true;
 
             var eventRaised = false;
@@ -295,7 +295,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            var o = CreateInstance("AllTypesObject");
 
             var eventRaised = false;
             o.PropertyChanged += new PropertyChangedEventHandler((s, e) =>
@@ -321,7 +321,7 @@ namespace RealmWeaver
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PrimaryKey" + typeName + "Object"));
+            var o = CreateInstance($"PrimaryKey{typeName}Object");
             o.IsManaged = true;
 
             // Act
@@ -340,8 +340,8 @@ namespace RealmWeaver
         public void SetRelationship()
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
-            var pn = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
+            var o = CreateInstance("Person");
+            var pn = CreateInstance("PhoneNumber");
             o.IsManaged = true;
 
             // Act
@@ -360,7 +360,7 @@ namespace RealmWeaver
         public void GetRelationship()
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var o = CreateInstance("Person");
             o.IsManaged = true;
 
             // Act
@@ -378,7 +378,7 @@ namespace RealmWeaver
         public void ShouldNotWeaveIgnoredProperties()
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var o = CreateInstance("Person");
 
             // Act
             o.IsOnline = true;
@@ -391,7 +391,7 @@ namespace RealmWeaver
         public void ShouldFollowMapToAttribute()
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var o = CreateInstance("Person");
             o.IsManaged = true;
 
             // Act
@@ -409,7 +409,7 @@ namespace RealmWeaver
         public void ShouldAddWovenAttribute()
         {
             // Arrange and act
-            var personType = _assembly.GetType("AssemblyToProcess.Person");
+            var personType = _assembly.GetType("AssemblyToProcess.Person")!;
 
             // Assert
             Assert.That(personType.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"));
@@ -419,8 +419,8 @@ namespace RealmWeaver
         public void ShouldAddPreserveAttributeToConstructor()
         {
             // Arrange and act
-            var personType = _assembly.GetType("AssemblyToProcess.Person");
-            var ctor = personType.GetConstructor(Type.EmptyTypes);
+            var personType = _assembly.GetType("AssemblyToProcess.Person")!;
+            var ctor = personType.GetConstructor(Type.EmptyTypes)!;
 
             // Assert
             Assert.That(ctor.CustomAttributes.Any(a => a.AttributeType.Name == "PreserveAttribute"));
@@ -430,10 +430,10 @@ namespace RealmWeaver
         public void ShouldAddPreserveAttributeToHelperConstructor()
         {
             // Arrange and act
-            var personType = _assembly.GetType("AssemblyToProcess.Person");
+            var personType = _assembly.GetType("AssemblyToProcess.Person")!;
             var wovenAttribute = personType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
-            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
-            var helperConstructor = helperType.GetConstructor(Type.EmptyTypes);
+            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value!;
+            var helperConstructor = helperType.GetConstructor(Type.EmptyTypes)!;
 
             // Assert
             Assert.That(helperConstructor.CustomAttributes.Any(a => a.AttributeType.Name == "PreserveAttribute"));
@@ -442,13 +442,12 @@ namespace RealmWeaver
         [Test]
         public void ShouldWeaveBacklinksGetters()
         {
-            var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var instance = CreateInstance("PhoneNumber");
 
-            Assert.That(instance.Persons, Is.TypeOf(typeof(EnumerableQuery<>).MakeGenericType(_assembly.GetType("AssemblyToProcess.Person"))));
+            Assert.That(instance.Persons, Is.TypeOf(typeof(EnumerableQuery<>).MakeGenericType(_assembly.GetType("AssemblyToProcess.Person")!)));
             Assert.That(instance.Persons, Is.SameAs(instance.Persons)); // should cache instances
 
-            instance = (dynamic)Activator.CreateInstance(objectType);
+            instance = CreateInstance("PhoneNumber");
             instance.IsManaged = true;
 
             _ = instance.Persons;
@@ -461,8 +460,8 @@ namespace RealmWeaver
         [Test]
         public void ShouldNotWeaveIQueryablePropertiesWithoutBacklinkAttribute()
         {
-            var objectType = _assembly.GetType("AssemblyToProcess.Person");
-            var property = objectType.GetProperty("SomeQueryableProperty");
+            var objectType = _assembly.GetType("AssemblyToProcess.Person")!;
+            var property = objectType.GetProperty("SomeQueryableProperty")!;
 
             Assert.That(property.GetCustomAttribute<WovenPropertyAttribute>(), Is.Null);
         }
@@ -476,10 +475,11 @@ namespace RealmWeaver
             var expectedWarnings = new[]
             {
                 "LambdaPropertyObject.FirstPropertyObject is not an automatic property but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
-                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "Sensor.FirstMeasurement is not an automatic property but its type is a AsymmetricObject. This usually indicates a relationship but AsymmetricObjects are not allowed to be the receiving end of any relationships.",
+                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so these attributes will be ignored. Skip reason: Property has no setter",
                 "AccessorTestObject.SetterLessObject does not have a setter but its type is a RealmObject/EmbeddedObject which normally indicates a relationship.",
             };
 
@@ -490,16 +490,18 @@ namespace RealmWeaver
                 "RealmCollectionsWithCounter.CounterDict is an IDictionary<RealmInteger> which is not supported.",
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
                 "Class EmbeddedWithPrimaryKey is an EmbeddedObject but has a primary key NotAllowed defined.",
-                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
-                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean.",
-                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset.",
-                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single.",
+                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool, DateTimeOffset, ObjectId, and Guid not on System.Single.",
+                "IndexedProperties.FullTextIntProperty is marked as [Indexed(IndexType.FullText)] which is only allowed on string properties, not on System.Int32.",
+                "IndexedProperties.NoneIntProperty is marked as [Indexed(IndexType.None)] which is not allowed. If you don't wish to index the property, remove the IndexedAttribute.",
+                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on System.Boolean.",
+                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on System.DateTimeOffset.",
+                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on System.Single.",
                 "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported.",
                 "Class DefaultConstructorMissing must have a public constructor that takes no parameters.",
                 "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
                 "NotSupportedProperties.DateTimeProperty is a DateTime which is not supported - use DateTimeOffset instead.",
                 "NotSupportedProperties.NullableDateTimeProperty is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
+                "NotSupportedProperties.EnumProperty is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported. If that is supposed to be a model class, make sure it inherits from RealmObject/EmbeddedObject/AsymmetricObject.",
                 "NotSupportedProperties.People is declared as List<Person> which is not the correct way to declare to-many relationships in Realm. If you want to persist the collection, use the interface IList<Person>, otherwise annotate the property with the [Ignored] attribute.",
                 "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
                 "InvalidBacklinkRelationships.ParentRelationship has [Backlink] applied, but is not IQueryable.",
@@ -507,21 +509,30 @@ namespace RealmWeaver
                 "InvalidBacklinkRelationships.WritableBacklinksProperty has a setter but also has [Backlink] applied, which only supports getters.",
                 "InvalidBacklinkRelationships.BacklinkNotAppliedProperty is IQueryable, but doesn't have [Backlink] applied.",
                 "The property 'Person.PhoneNumbers' does not constitute a link to 'InvalidBacklinkRelationships' as described by 'InvalidBacklinkRelationships.NoSuchRelationshipProperty'.",
-                "RequiredProperties.CharProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Char.",
-                "RequiredProperties.ByteProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Byte.",
-                "RequiredProperties.Int16Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int16.",
-                "RequiredProperties.Int32Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int32.",
-                "RequiredProperties.Int64Property is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Int64.",
-                "RequiredProperties.SingleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Single.",
-                "RequiredProperties.DoubleProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Double.",
-                "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Boolean.",
-                "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.DateTimeOffset.",
-                "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on AssemblyToProcess.Person.",
-                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on strings or nullable scalar types, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
+                "RequiredProperties.CharProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Char.",
+                "RequiredProperties.ByteProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Byte.",
+                "RequiredProperties.Int16Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int16.",
+                "RequiredProperties.Int32Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int32.",
+                "RequiredProperties.Int64Property is marked as [Required] which is only allowed on string or byte[] properties, not on System.Int64.",
+                "RequiredProperties.SingleProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Single.",
+                "RequiredProperties.DoubleProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Double.",
+                "RequiredProperties.BooleanProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Boolean.",
+                "RequiredProperties.DateTimeOffsetProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.DateTimeOffset.",
+                "RequiredProperties.ObjectProperty is marked as [Required] which is only allowed on string or byte[] properties, not on AssemblyToProcess.Person.",
+                "RequiredProperties.ListProperty is marked as [Required] which is only allowed on string or byte[] properties, not on System.Collections.Generic.IList`1<AssemblyToProcess.Person>.",
                 "RealmSetWithSetter.People has a setter but its type is a ISet which only supports getters.",
                 "RealmDictionaryWithSetter.People has a setter but its type is a IDictionary which only supports getters.",
                 "RealmDictionaryWithNonStringKey.People is a Dictionary<Int32, Person> but only string keys are currently supported by Realm.",
-                "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics."
+                "MixOfCollectionsObject.EmbeddedSet is a Set<EmbeddedObject> which is not supported. Embedded objects are always unique which is why List<EmbeddedObject> already has Set semantics.",
+                "Measurement.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
+                "Coordinates.Sensor is of type AsymmetricObject, but AsymmetricObjects aren't allowed to be the receiving end of any relationship.",
+                "Measurement.ListOfAsymmetrics is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Measurement.SetOfAsymmetrics is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsList is an IList<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "ResearchFacility.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Department.SensorsSet is an ISet<AsymmetricObject>, but AsymmetricObjects aren't allowed to be contained in any RealmObject inheritor.",
+                "Sensor.Measurements has [Backlink] applied which is not allowed on AsymmetricObject."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
@@ -539,8 +550,8 @@ namespace RealmWeaver
         [TestCase("Boolean", true)]
         public void WovenCopyToRealm_ShouldSetNonDefaultProperties(string propertyName, object propertyValue, string typeName = "NonNullableProperties")
         {
-            var objectType = _assembly.GetType($"AssemblyToProcess.{typeName}");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var objectType = _assembly.GetType($"AssemblyToProcess.{typeName}")!;
+            var instance = (dynamic)Activator.CreateInstance(objectType)!;
             SetPropertyValue(instance, propertyName, propertyValue);
 
             CopyToRealm(objectType, instance);
@@ -579,8 +590,8 @@ namespace RealmWeaver
         [Test]
         public void WovenCopyToRealm_ShouldAlwaysSetNullableProperties()
         {
-            var objectType = _assembly.GetType("AssemblyToProcess.NullableProperties");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var objectType = _assembly.GetType("AssemblyToProcess.NullableProperties")!;
+            var instance = (dynamic)Activator.CreateInstance(objectType)!;
 
             CopyToRealm(objectType, instance);
 
@@ -606,13 +617,13 @@ namespace RealmWeaver
         [TestCase("String")]
         public void WovenCopyToRealm_ShouldNeverSetPrimaryKeyProperties(string type)
         {
-            var objectType = _assembly.GetType($"AssemblyToProcess.PrimaryKey{type}Object");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var objectType = _assembly.GetType($"AssemblyToProcess.PrimaryKey{type}Object")!;
+            var instance = (dynamic)Activator.CreateInstance(objectType)!;
 
             CopyToRealm(objectType, instance);
 
-            var propertyType = objectType.GetProperty(type + "Property").PropertyType;
-            _ = propertyType.IsValueType ? Activator.CreateInstance(propertyType).ToString() : string.Empty;
+            var propertyType = objectType.GetProperty(type + "Property")!.PropertyType;
+            _ = propertyType.IsValueType ? Activator.CreateInstance(propertyType)!.ToString() : string.Empty;
             Assert.That(instance.LogList, Does.Not.Contain($"RealmObject.SetValueUnique(propertyName = \"{type}Property\", value = Realms.RealmValue)"));
         }
 
@@ -620,8 +631,8 @@ namespace RealmWeaver
         [TestCase("NonRequiredObject", false)]
         public void WovenCopyToRealm_ShouldAlwaysSetRequiredProperties(string type, bool required)
         {
-            var objectType = _assembly.GetType($"AssemblyToProcess.{type}");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var objectType = _assembly.GetType($"AssemblyToProcess.{type}")!;
+            var instance = (dynamic)Activator.CreateInstance(objectType)!;
 
             CopyToRealm(objectType, instance);
 
@@ -651,8 +662,8 @@ namespace RealmWeaver
         [Test]
         public void WovenCopyToRealm_ShouldResetBacklinks()
         {
-            var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber");
-            var instance = (dynamic)Activator.CreateInstance(objectType);
+            var objectType = _assembly.GetType("AssemblyToProcess.PhoneNumber")!;
+            var instance = (dynamic)Activator.CreateInstance(objectType)!;
 
             CopyToRealm(objectType, instance);
             _ = instance.Persons;
@@ -660,13 +671,56 @@ namespace RealmWeaver
             Assert.That(instance.LogList, Is.EqualTo(new[] { "IsManaged", "RealmObject.GetBacklinks(propertyName = \"Persons\")" }));
         }
 
+        #region Source Generator Weaver tests
+
+        [Test]
+        public void SourceGeneratorWeaverShouldWeavePropertiesInInterface()
+        {
+            // Arrange
+            var o = CreateInstance("SourceGeneratedPerson");
+
+            // Act
+            o.Name = "Maria";
+            _ = o.Name;
+
+            o.Id = 20;
+            _ = o.Id;
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "Set Name",
+                "Get Name",
+                "Set Id",
+                "Get Id"
+            }));
+        }
+
+        [Test]
+        public void SourceGeneratorWeaverShouldIgnorePropertiesNotInInterface()
+        {
+            // Arrange
+            var o = CreateInstance("SourceGeneratedPerson");
+
+            // Act
+            o.Nickname = "Julius";
+            _ = o.Nickname;
+
+            // Assert
+            Assert.That(o.LogList, Is.Empty);
+        }
+
+        #endregion
+
         private static void CopyToRealm(Type objectType, dynamic instance)
         {
             var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
-            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
-            var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType);
+            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value!;
+            var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType)!;
             instance.IsManaged = true;
             helper.CopyToRealm(instance, update: false, skipDefaults: true);
         }
+
+        private dynamic CreateInstance(string type) => Activator.CreateInstance(_assembly.GetType($"AssemblyToProcess.{type}")!)!;
     }
 }

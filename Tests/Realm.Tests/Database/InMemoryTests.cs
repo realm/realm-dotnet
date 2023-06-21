@@ -21,14 +21,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms.Exceptions;
 
 namespace Realms.Tests.Database
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class InMemoryTests : RealmTest
     {
-        private InMemoryConfiguration _config;
+        private InMemoryConfiguration _config = null!;
 
         protected override void CustomSetUp()
         {
@@ -70,15 +69,11 @@ namespace Realms.Tests.Database
                 using var realm = GetRealm(_config);
 
                 var query = realm.All<IntPropertyObject>();
-                using var token = query.SubscribeForNotifications((sender, changes, error) =>
+                using var token = query.SubscribeForNotifications((sender, changes) =>
                 {
                     if (changes != null)
                     {
                         tcs.TrySetResult(changes);
-                    }
-                    else if (error != null)
-                    {
-                        tcs.TrySetException(error);
                     }
                 });
 
@@ -153,13 +148,23 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        [Obsolete("Tests obsolete functionality")]
-        public void InMemoryRealm_WhenEncrypted_Throws()
+        public void InMemoryRealmWithFrozenObjects_WhenDeleted_DoesNotThrow()
         {
-            Assert.Throws<NotSupportedException>(() => _ = new InMemoryConfiguration(_config.Identifier)
+            var realm = GetRealm(_config);
+            var frozenObj = realm.Write(() =>
             {
-                EncryptionKey = TestHelpers.GetEncryptionKey(23)
+                return realm.Add(new IntPropertyObject
+                {
+                    Int = 1
+                }).Freeze();
             });
+
+            frozenObj.Realm!.Dispose();
+            realm.Dispose();
+
+            Assert.That(frozenObj.Realm.IsClosed, Is.True);
+            Assert.That(realm.IsClosed, Is.True);
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(_config));
         }
     }
 }

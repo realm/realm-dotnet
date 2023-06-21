@@ -26,10 +26,10 @@ namespace Realms.DataBinding
     internal class WovenPropertyInfo : PropertyInfo
     {
         private readonly PropertyInfo _pi;
-        private readonly Lazy<MethodInfo> _publicGetter;
-        private readonly Lazy<MethodInfo> _nonPublicGetter;
-        private readonly Lazy<MethodInfo> _publicSetter;
-        private readonly Lazy<MethodInfo> _nonPublicSetter;
+        private readonly Lazy<MethodInfo?> _publicGetter;
+        private readonly Lazy<MethodInfo?> _nonPublicGetter;
+        private readonly Lazy<MethodInfo?> _publicSetter;
+        private readonly Lazy<MethodInfo?> _nonPublicSetter;
 
         public override PropertyAttributes Attributes => _pi.Attributes;
 
@@ -37,13 +37,13 @@ namespace Realms.DataBinding
 
         public override bool CanWrite => _pi.CanWrite;
 
-        public override Type DeclaringType => _pi.DeclaringType;
+        public override Type? DeclaringType => _pi.DeclaringType;
 
         public override string Name => _pi.Name;
 
         public override Type PropertyType => _pi.PropertyType;
 
-        public override Type ReflectedType => _pi.ReflectedType;
+        public override Type? ReflectedType => _pi.ReflectedType;
 
         public WovenPropertyInfo(PropertyInfo pi)
         {
@@ -65,20 +65,20 @@ namespace Realms.DataBinding
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit) => _pi.GetCustomAttributes(attributeType, inherit);
 
-        public override MethodInfo GetGetMethod(bool nonPublic)
+        public override MethodInfo? GetGetMethod(bool nonPublic)
         {
             return nonPublic ? _nonPublicGetter.Value : _publicGetter.Value;
         }
 
         public override ParameterInfo[] GetIndexParameters() => _pi.GetIndexParameters();
 
-        public override MethodInfo GetSetMethod(bool nonPublic)
+        public override MethodInfo? GetSetMethod(bool nonPublic)
         {
             return nonPublic ? _nonPublicSetter.Value : _publicSetter.Value;
         }
 
         // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L408
-        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
+        public override object? GetValue(object? obj, BindingFlags invokeAttr, Binder? binder, object?[]? index, CultureInfo? culture)
         {
             var method = GetGetMethod(true);
             if (method == null)
@@ -104,7 +104,7 @@ namespace Realms.DataBinding
         public override bool IsDefined(Type attributeType, bool inherit) => _pi.IsDefined(attributeType, inherit);
 
         // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L429
-        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
+        public override void SetValue(object? obj, object? value, BindingFlags invokeAttr, Binder? binder, object?[]? index, CultureInfo? culture)
         {
             var method = GetSetMethod(true);
             if (method == null)
@@ -112,37 +112,37 @@ namespace Realms.DataBinding
                 throw new ArgumentException("Set Method not found for '" + Name + "'");
             }
 
-            object[] parms;
+            object?[] parms;
             var ilen = index?.Length ?? 0;
             if (ilen == 0)
             {
-                parms = new object[] { value };
+                parms = new object?[] { value };
             }
             else
             {
-                parms = new object[ilen + 1];
-                index.CopyTo(parms, 0);
+                parms = new object?[ilen + 1];
+                index!.CopyTo(parms, 0);
                 parms[ilen] = value;
             }
 
             method.Invoke(obj, invokeAttr, binder, parms, culture);
         }
 
-        private Lazy<MethodInfo> GetGetterLazy(bool nonPublic)
+        private Lazy<MethodInfo?> GetGetterLazy(bool nonPublic)
         {
-            return new Lazy<MethodInfo>(() =>
+            return new Lazy<MethodInfo?>(() =>
             {
                 var mi = _pi.GetGetMethod(nonPublic);
-                return new WovenGetterMethodInfo(mi);
+                return mi == null ? null : new WovenGetterMethodInfo(mi);
             });
         }
 
-        private Lazy<MethodInfo> GetSetterLazy(bool nonPublic)
+        private Lazy<MethodInfo?> GetSetterLazy(bool nonPublic)
         {
-            return new Lazy<MethodInfo>(() =>
+            return new Lazy<MethodInfo?>(() =>
             {
                 var mi = _pi.GetSetMethod(nonPublic);
-                return new WovenSetterMethodInfo(mi);
+                return mi == null ? null : new WovenSetterMethodInfo(mi, _pi.GetMethod!);
             });
         }
     }

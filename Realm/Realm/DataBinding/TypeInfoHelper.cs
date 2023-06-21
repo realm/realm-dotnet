@@ -26,12 +26,12 @@ namespace Realms.DataBinding
     internal static class TypeInfoHelper
     {
         // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
-        private static readonly ConcurrentDictionary<Type, RealmObjectTypeDelegator> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeDelegator>();
+        private static readonly ConcurrentDictionary<Type, RealmObjectTypeDelegator> TypeCache = new();
 
         public static TypeInfo GetInfo(IRealmObjectBase obj)
         {
             Argument.NotNull(obj, nameof(obj));
-            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t));
+            return TypeCache.GetOrAdd(obj.GetType(), t => new RealmObjectTypeDelegator(t, obj.ObjectSchema));
         }
     }
 }

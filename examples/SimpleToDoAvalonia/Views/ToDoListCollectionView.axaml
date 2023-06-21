@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SimpleToDo.ViewModels"
+             xmlns:local="clr-namespace:SimpleToDo"
+             mc:Ignorable="d" d:DesignWidth="160" d:DesignHeight="350"
+             x:Class="SimpleToDo.Views.ToDoListCollectionView"
+             Background="LightGray">
+    <Design.DataContext>
+        <vm:ToDoListCollectionViewModel />
+    </Design.DataContext>
+    <DockPanel>
+        <Button DockPanel.Dock="Bottom"
+                HorizontalAlignment="Center"
+                Content="Add a ToDo list"
+                Margin="0,10"
+                Command="{Binding AddList}" />
+        <ListBox Items="{Binding List}" Background="Transparent"
+                 SelectedItem="{Binding SelectedList}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel Margin="8">
+                        <Button DockPanel.Dock="Right" Content="X"
+                                Command="{Binding DataContext.DeleteList, 
+                                    RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"
+                                CommandParameter="{Binding .}" />
+                        <TextBlock DockPanel.Dock="Bottom"
+                                   FontSize="10"
+                                   Foreground="Gray"
+                                   Text="{Binding CreatedAt, Converter={x:Static local:DataConverter.ToShortTimeString}}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Margin="0,0,0,4" Text="{Binding Name}"
+                                   VerticalAlignment="Center" />
+
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

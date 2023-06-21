@@ -17,7 +17,7 @@ it either in the Editor or as a standalone player.
 
 ## Local development
 
-To facilitate local development setups, the following files are ignored, but it might be a good idea to create them manually and add them to your local clone (both should be in the `Tests` folder, adjacent to this Readme):
+To facilitate local development setups, the following file is ignored, but it might be a good idea to create it manually and add it to your local clone in the `Tests` folder, adjacent to this Readme:
 - `App.Local.config`: this is a file that holds the config for your local Baas instance. Update `*your-local-ip*` with the local IP address of your docker image (note that `localhost` will not work):
   ```xml
   <?xml version="1.0" encoding="utf-8" ?>
@@ -25,8 +25,6 @@ To facilitate local development setups, the following files are ignored, but it 
     <add key="BaasUrl" value="http://*your-local-ip*:9090" />
   </appSettings>
   ```
-
-After adding them, restart VS (if running) to have it pick up the changes.
 
 ## Sync Tests
 
@@ -78,3 +76,15 @@ When you run the tests, it's usually valuable to explicitly provide a log file f
 location. To specify custom log file location, invoke the executable with `-logFile ./myrun.log`. The test player will only output the "run started"
 and "run finished" messages at the `Error` level, so individual test runs will not show up in the in-game console, but they'll show up in the log file.
 Currently only completed tests are logged, but you can change that if necessary by implementing `TestManager.TestStarted`.
+
+## UWP certificate renewal
+
+UWP certficates are generated for 1 year at a time. This means that they need to be recreated every year and uploaded to CI.
+
+1. In Visual Studio for Windows, open `Tests.UWP/Package.appxmanifest`.
+2. Go to Packaging and click on `Choose Cetificate`.
+3. Click on `Create` and fill in the publisher name (e.g. `RealmTests`) and generate a new password.
+4. Call `[System.Convert]::ToBase64String([IO.File]::ReadAllBytes("$pwd\Tests\Tests.UWP\Tests.UWP_TemporaryKey.pfx")) | Set-Clipboard` from the repo root. This will base64 encode the certificate and copy it to clipboard.
+5. Go to `https://github.com/realm/realm-dotnet/settings/secrets/actions` and update the following secrets
+  * `BASE64_ENCODED_PFX` with the content of the certificate we copied in 4.
+  * `PFX_PASSWORD` with the password generated in 3.

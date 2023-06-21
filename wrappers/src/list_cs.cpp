@@ -20,12 +20,12 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/parser/query_parser.hpp>
+#include <realm/exceptions.hpp>
 
 #include "error_handling.hpp"
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 #include "schema_cs.hpp"
 
@@ -35,7 +35,7 @@ using namespace realm::binding;
 namespace {
     inline static void ensure_types(List& list, realm_value_t value) {
         if (value.is_null() && !is_nullable(list.get_type())) {
-            throw NotNullableException();
+            throw NotNullable("Attempted to add null to a list of required values");
         }
 
         if (!value.is_null() && list.get_type() != PropertyType::Mixed && to_capi(list.get_type()) != value.type) {
@@ -212,12 +212,12 @@ REALM_EXPORT void list_destroy(List* list)
     delete list;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* list_add_notification_callback(List* list, void* managed_list, bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_list, [list](CollectionChangeCallback callback) {
-            return list->add_notification_callback(callback);
-        });
+        return subscribe_for_notifications(managed_list, [list, shallow](CollectionChangeCallback callback) {
+            return list->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+        }, shallow);
     });
 }
 
@@ -274,7 +274,7 @@ REALM_EXPORT Results* list_to_results(const List& list, NativeException::Marshal
     });
 }
 
-REALM_EXPORT Results* list_get_filtered_results(const List& list, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+REALM_EXPORT Results* list_get_filtered_results(const List& list, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(list.get_realm(), list.get_table(), list.get_query(), query_buf, query_len, arguments, args_count, DescriptorOrdering());

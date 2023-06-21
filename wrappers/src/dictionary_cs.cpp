@@ -21,19 +21,33 @@
 #include <realm/object-store/thread_safe_reference.hpp>
 
 #include "error_handling.hpp"
+#include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
+
+namespace {
+inline static void ensure_types(object_store::Dictionary& dict, realm_value_t value) {
+    if (value.is_null() && !is_nullable(dict.get_type())) {
+        throw NotNullable("Attempted to add null to a dictionary of required values");
+    }
+
+    if (!value.is_null() && dict.get_type() != PropertyType::Mixed && to_capi(dict.get_type()) != value.type) {
+        throw PropertyTypeMismatchException(to_string(dict.get_type()), to_string(value.type));
+    }
+}
+}
 
 extern "C" {
 
     REALM_EXPORT void realm_dictionary_add(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
+            ensure_types(dictionary, value);
+
             auto dict_key = from_capi(key.string);
             if (dictionary.contains(dict_key))
             {
@@ -60,6 +74,8 @@ extern "C" {
     REALM_EXPORT void realm_dictionary_set(object_store::Dictionary& dictionary, realm_value_t key, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
+            ensure_types(dictionary, value);
+
             dictionary.insert(from_capi(key.string), from_capi(value));
         });
     }
@@ -154,12 +170,13 @@ extern "C" {
         delete dictionary;
     }
 
-    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, NativeException::Marshallable& ex)
+    REALM_EXPORT ManagedNotificationTokenContext* realm_dictionary_add_notification_callback(object_store::Dictionary* dictionary, void* managed_dict, bool shallow, NativeException::Marshallable& ex)
+    
     {
         return handle_errors(ex, [=]() {
-            return subscribe_for_notifications(managed_dict, [dictionary](CollectionChangeCallback callback) {
-                return dictionary->add_notification_callback(callback);
-            });
+            return subscribe_for_notifications(managed_dict, [dictionary, shallow](CollectionChangeCallback callback) {
+                return dictionary->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+            }, shallow);
         });
     }
 
@@ -170,7 +187,7 @@ extern "C" {
             context->managed_object = managed_dict;
             context->token = dictionary->add_key_based_notification_callback([context](DictionaryChangeSet changes) {
                 if (changes.deletions.empty() && changes.insertions.empty() && changes.modifications.empty()) {
-                    s_dictionary_notification_callback(context->managed_object, nullptr);
+                    s_dictionary_notification_callback(context->managed_object, nullptr, false);
                 }
                 else {
                     auto deletions = get_keys_vector(changes.deletions);
@@ -183,9 +200,9 @@ extern "C" {
                         { modifications.data(), modifications.size() },
                     };
 
-                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes);
+                    s_dictionary_notification_callback(context->managed_object, &marshallable_changes, false);
                 }
-            });
+            }, KeyPathArray());
 
             return context;
         });
@@ -226,4 +243,11 @@ extern "C" {
         });
     }
 
+    REALM_EXPORT Results* realm_dictionary_get_filtered_results(const object_store::Dictionary& dictionary, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            realm::Results values = dictionary.get_values();
+            return get_filtered_results(values.get_realm(), values.get_table(), values.get_query(), query_buf, query_len, arguments, args_count, values.get_descriptor_ordering());
+        });
+    }
 }   // extern "C"

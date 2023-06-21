@@ -31,7 +31,7 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The identity's Id.</value>
         [Preserve]
-        public string Id { get; private set; }
+        public string Id { get; private set; } = null!;
 
         /// <summary>
         /// Gets the auth provider defining this identity.
@@ -42,7 +42,7 @@ namespace Realms.Sync
 
         /// <inheritdoc/>
         [Preserve]
-        public override bool Equals(object obj) => (obj is UserIdentity id) && id.Id == Id && id.Provider == Provider;
+        public override bool Equals(object? obj) => (obj is UserIdentity id) && id.Id == Id && id.Provider == Provider;
 
         /// <summary>
         /// Gets the hash code.

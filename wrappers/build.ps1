@@ -19,12 +19,14 @@ param(
     [string[]]$Platforms = ('Win32'),
 
     [ValidateSet('Windows', 'WindowsStore')]
-    [Parameter(Position=0)]
+    [Parameter(Position = 0)]
     [string]$Target = 'Windows',
 
     [Switch]$Incremental,
 
-    [Switch]$EnableLTO
+    [Switch]$EnableLTO,
+
+    [string]$ExtraCMakeArgs = ''
 )
 
 Push-Location $PSScriptRoot
@@ -42,14 +44,10 @@ $vs = Get-VSSetupInstance | Select-VSSetupInstance -Product * -Latest -Require M
 $Env:path += ";$($vs.InstallationPath)\MSBuild\Current\Bin"
 
 $cmake = Join-Path $vs.InstallationPath -ChildPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"
-$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)", 
-             "-DCMAKE_BUILD_TYPE=$Configuration", 
-             "-DCMAKE_SYSTEM_NAME=$Target", 
-             "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build", 
-             "-DCMAKE_TOOLCHAIN_FILE=$PSScriptRoot\realm-core\tools\vcpkg\ports\scripts\buildsystems\vcpkg.cmake",
-             "-DVCPKG_MANIFEST_DIR=$PSScriptRoot\realm-core\tools\vcpkg",
-             "-DVCPKG_OVERLAY_TRIPLETS=$PSScriptRoot\realm-core\tools\vcpkg\triplets",
-             "-DVCPKG_INSTALL_OPTIONS=--x-buildtrees-root=$PSScriptRoot\cmake\vcpkg",
+$cmakeArgs = "-DCMAKE_GENERATOR_INSTANCE=$($vs.InstallationPath)",
+             "-DCMAKE_BUILD_TYPE=$Configuration",
+             "-DCMAKE_SYSTEM_NAME=$Target",
+             "-DCMAKE_INSTALL_PREFIX=$PSScriptRoot\build",
              "-DCMAKE_SYSTEM_VERSION=10.0"
 
 if ($EnableLTO) {
@@ -76,8 +74,9 @@ foreach ($platform in $Platforms) {
     }
     New-Item .\cmake\$Target\$Configuration-$platform -ItemType "Directory" | Out-Null
     Push-Location .\cmake\$Target\$Configuration-$platform
+
     if (-Not $Incremental) {
-        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" -DVCPKG_TARGET_TRIPLET="$(triplet -target $Target -platform $platform)"
+        & $cmake $PSScriptRoot $cmakeArgs -DCMAKE_GENERATOR_PLATFORM="$platform" $ExtraCMakeArgs
     }
 
     & $cmake --build . --target install --config $Configuration

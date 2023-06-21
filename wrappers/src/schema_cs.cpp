@@ -30,7 +30,7 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
         
         ObjectSchema o;
         o.name = object.name;
-        o.table_type = object.is_embedded ? ObjectSchema::ObjectType::Embedded : ObjectSchema::ObjectType::TopLevel;
+        o.table_type = object.table_type;
         
         for (int n = object.properties_start; n < object.properties_end; n++) {
             SchemaProperty& property = properties[n];
@@ -40,8 +40,9 @@ util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, 
             p.type = property.type;
             p.object_type = property.object_type ? property.object_type : "";
             p.link_origin_property_name = property.link_origin_property_name ? property.link_origin_property_name : "";
-            p.is_indexed = property.is_indexed;
-            
+            p.is_indexed = property.index == IndexType::General;
+            p.is_fulltext_indexed = property.index == IndexType::Fulltext;
+
             if ((p.is_primary = property.is_primary)) {
                 o.primary_key = p.name;
             }

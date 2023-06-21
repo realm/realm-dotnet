@@ -34,7 +34,7 @@ namespace Realms
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes);
+        public delegate void KeyNotificationCallback(IntPtr managedHandle, IntPtr changes, [MarshalAs(UnmanagedType.U1)] bool shallow);
 
         private static class NativeMethods
         {
@@ -48,7 +48,7 @@ namespace Realms
             public static extern void destroy(IntPtr listInternalHandle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
+            public static extern IntPtr add_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_add_key_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_key_notification_callback(DictionaryHandle handle, IntPtr managedDictionaryHandle, out NativeException ex);
@@ -99,6 +99,12 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_keys", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_keys(DictionaryHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_dictionary_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_filtered_results(DictionaryHandle handle,
+                [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
+                [MarshalAs(UnmanagedType.LPArray), In] NativeQueryArgument[] arguments, IntPtr args_count,
+                out NativeException ex);
         }
 
         public override bool IsValid
@@ -130,13 +136,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public NotificationTokenHandle AddKeyNotificationCallback(IntPtr managedObjectHandle)
@@ -145,7 +151,7 @@ namespace Realms
 
             var result = NativeMethods.add_key_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public override int Count()
@@ -167,10 +173,8 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
-        {
-            throw new NotImplementedException("Dictionaries can't be filtered yet.");
-        }
+        protected override IntPtr GetFilteredResultsCore(string query, NativeQueryArgument[] arguments, out NativeException ex)
+            => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
         {
@@ -252,7 +256,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public ObjectHandle SetEmbedded(string key)
@@ -266,7 +270,7 @@ namespace Realms
             keyHandles?.Dispose();
             nativeException.ThrowIfNecessary();
 
-            return new ObjectHandle(Root, result);
+            return new ObjectHandle(Root!, result);
         }
 
         public bool ContainsKey(string key)
@@ -321,7 +325,7 @@ namespace Realms
 
             var resultsPtr = NativeMethods.get_values(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         public ResultsHandle GetKeys()
@@ -330,15 +334,15 @@ namespace Realms
 
             var resultsPtr = NativeMethods.get_keys(this, out var ex);
             ex.ThrowIfNecessary();
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         [MonoPInvokeCallback(typeof(KeyNotificationCallback))]
-        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes)
+        public static void NotifyDictionaryChanged(IntPtr managedHandle, IntPtr changes, bool shallow)
         {
             if (GCHandle.FromIntPtr(managedHandle).Target is INotifiable<DictionaryChangeSet> notifiable)
             {
-                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value);
+                notifiable.NotifyCallbacks(new PtrTo<DictionaryChangeSet>(changes).Value, shallow);
             }
         }
     }

@@ -23,6 +23,10 @@ using System.Runtime.CompilerServices;
 
 namespace Realms
 {
+    public abstract class ManagedAccessor
+    {
+    }
+
     public class RealmObject : RealmObjectBase
     {
     }
@@ -31,7 +35,19 @@ namespace Realms
     {
     }
 
+    public class AsymmetricObject : RealmObjectBase
+    {
+    }
+
     public interface IRealmObjectBase
+    {
+    }
+
+    public interface IRealmObject : IRealmObjectBase
+    {
+    }
+
+    public interface IEmbeddedObject : IRealmObjectBase
     {
     }
 
@@ -39,7 +55,7 @@ namespace Realms
     {
         public List<string> LogList = new List<string>();
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private void LogString(string s)
         {
@@ -114,7 +130,7 @@ namespace Realms
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return default(T);
+            return default!;
         }
 
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
@@ -128,7 +144,7 @@ namespace Realms
             return Enumerable.Empty<T>().AsQueryable();
         }
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

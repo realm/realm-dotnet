@@ -31,13 +31,13 @@ using Realms.Exceptions;
 // -read up on notes reg. CriticalHandle, and SafeHandle and potential problems with concurrency that are mitigated by the C# library by
 // refcounting the SafeHandle on interop calls
 // I think we can save the performance penalty induced by SafeHandle because we know for sure that we will in fact never (for the same handle) call other than constructors
-// concurrenlty - because when we are in a finalizer, the user thread for this handle is definetly dead. (except if several wrappers have been
+// concurrently - because when we are in a finalizer, the user thread for this handle is definitely dead. (except if several wrappers have been
 // taken out for this particular handle - in that case we do in fact risk having several finalizing objects, and several live ones -and seen from the
-// user perspective, the live ones are acessed in a serialized way)
+// user perspective, the live ones are accessed in a serialized way)
 // however, in that case (say same table taken out of a shared group 10 times) the last 9 tables are refcounted in core, so them being refcounted down
-// should not affect the tenth table being accessed concurrenlty at the same time
+// should not affect the tenth table being accessed concurrently at the same time
 
-// according to .net sourcecode we have a guarentee that a CriticalHandle will not get finalized while it is used in an interop call
+// according to .net sourcecode we have a guarantee that a CriticalHandle will not get finalized while it is used in an interop call
 
 /*
  * 3) GC.KeepAlive behavior - P/Invoke vs. finalizer thread ---- (HandleRef)
@@ -68,17 +68,17 @@ namespace Realms
         // if NoMoreUserThread is true, then we know that no more calls into this class will come from user threads.
         // The boolean is set to true when the root object's dispose or finalizer is called.
         // The C# binding will block access to core (via IsValid) in case of dispose having been called
-        // this again menas that instaed of putting handles into the unbindlist we can unbind the handles right away
+        // this again means that instead of putting handles into the unbindlist we can unbind the handles right away
         // even though we are called from a finalizer thread
         // we also use the boolean as the lock object for serializing access to the list
 
-        // Unbind is called by criticalhandle to unbind unmanaged/native resuorces
+        // Unbind is called by criticalhandle to unbind unmanaged/native resources
         // As we don't want to call core concurrently from a finalizer thread
         // releasehandle will in fact just move ownership to the root
         // object of this object. The root object might then call unbind on this object which
         // will do the actual resource deallocation.
         // however, as far as this particular object is concerned, it has
-        // removed its ownership in a controlled, unleaking way by calling root.ReqestUnbind();
+        // removed its ownership in a controlled, unleaking way by calling root.RequestUnbind();
         // (If criticalhandle and jitter manages to pre-jit the entire call graph correctly,
         // we are calling an overridden virtual method after all (but so is private Criticalhandle cleanup ))
         // criticalhandle source here :  http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
@@ -97,14 +97,14 @@ namespace Realms
         /// The Realm instance that owns this handle. Ownership means that this handle will be closed whenever the parent
         /// Realm is disposed.
         /// </summary>
-        public readonly SharedRealmHandle Root;
+        public readonly SharedRealmHandle? Root;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RealmHandle"/> class by providing a
         /// SharedRealm parent. We should always try to pass in a parent here to ensure that the
         /// child handle gets closed as soon as the parent gets closed.
         /// </summary>
-        protected RealmHandle(SharedRealmHandle root, IntPtr handle) : base(IntPtr.Zero, true)
+        protected RealmHandle(SharedRealmHandle? root, IntPtr handle) : base(IntPtr.Zero, true)
         {
             SetHandle(handle);
 
@@ -139,7 +139,7 @@ namespace Realms
                 {
                     // as a child object we wil ask our root to unbind us (testing nomoreuserthread to determine if it can be done at once or we will just have to be put in an unbindlist)
                     // ask our root to unbind us (if it is itself finalizing) or put us into the unbind list (if it is still running)
-                    // note that the this instance cannot and will never be aroot itself bc root != null
+                    // note that the this instance cannot and will never be a root itself bc root != null
                     Root.RequestUnbind(this);
                 }
 

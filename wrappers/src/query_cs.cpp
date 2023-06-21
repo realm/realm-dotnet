@@ -196,6 +196,18 @@ REALM_EXPORT void query_string_like(Query& query, SharedRealm& realm, size_t pro
     });
 }
 
+REALM_EXPORT void query_string_fts(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+
+        REALM_ASSERT(primitive.type == realm_value_type::RLM_TYPE_STRING);
+        query.fulltext(get_key_for_prop(query, realm, property_index), from_capi(primitive.string));
+    });
+}
+
 REALM_EXPORT void query_primitive_equal(Query& query, SharedRealm& realm, size_t property_index, realm_value_t primitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
@@ -502,6 +514,32 @@ REALM_EXPORT void query_realm_value_type_not_equal(Query& query, SharedRealm& re
 
         auto col_key = get_key_for_prop(query, realm, property_index);
         query.and_query(query.get_table()->column<Mixed>(col_key).type_of_value() != TypeOfValue(attribute_from(realm_value_type)));  //Need to check if correct
+    });
+}
+
+REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t property_index, query_argument geo_value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        if (!query.get_table()) {
+            return;
+        }
+        
+        Geospatial geo_store;
+        switch (geo_value.type) {
+        case query_argument_type::PRIMITIVE: 
+            REALM_UNREACHABLE();
+        case query_argument_type::BOX:
+            geo_store = from_capi(geo_value.box);
+            break;
+        case query_argument_type::CIRCLE:
+            geo_store = from_capi(geo_value.circle);
+            break;
+        case query_argument_type::POLYGON:
+            geo_store = from_capi(geo_value.polygon);
+            break;
+        }
+
+        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(geo_store));
     });
 }
 }   // extern "C"

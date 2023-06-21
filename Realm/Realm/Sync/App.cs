@@ -23,14 +23,12 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Helpers;
-using Realms.Logging;
 
 namespace Realms.Sync
 {
     /// <summary>
     /// An <see cref="App"/> is the main client-side entry point for interacting with a Atlas App Services application.
-    /// </summary>
-    /// <remarks>
+    /// <br/><br/>
     /// The App can be used to:
     /// <br/>
     /// <list type="bullet">
@@ -89,8 +87,7 @@ namespace Realms.Sync
     /// var collection = db.GetCollection("foos");
     /// var foosCount = await collection.CountAsync();
     /// </code>
-    /// </remarks>
-    /// <seealso cref="AppConfiguration"/>
+    /// </summary>
     public class App
     {
         internal readonly AppHandle Handle;
@@ -99,21 +96,20 @@ namespace Realms.Sync
         /// Gets a <see cref="SyncClient"/> instance that exposes API for interacting with the synchronization client for this <see cref="App"/>.
         /// </summary>
         /// <value>A <see cref="SyncClient"/> instance scoped to this <see cref="App"/>.</value>
-        public SyncClient Sync { get; }
+        public SyncClient Sync => new(this);
 
         /// <summary>
         /// Gets a <see cref="EmailPasswordClient"/> instance that exposes functionality related to users either being created or logged in using
         /// the <see cref="Credentials.AuthProvider.EmailPassword"/> provider.
         /// </summary>
         /// <value>An <see cref="EmailPasswordClient"/> instance scoped to this <see cref="App"/>.</value>
-        public EmailPasswordClient EmailPasswordAuth { get; }
+        public EmailPasswordClient EmailPasswordAuth => new(this);
 
         /// <summary>
         /// Gets the currently user. If none exists, null is returned.
         /// </summary>
         /// <value>Valid user or <c>null</c> to indicate nobody logged in.</value>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The User instance will own its handle.")]
-        public User CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
+        public User? CurrentUser => Handle.TryGetCurrentUser(out var userHandle) ? new User(userHandle, this) : null;
 
         /// <summary>
         /// Gets all currently logged in users.
@@ -126,8 +122,6 @@ namespace Realms.Sync
         internal App(AppHandle handle)
         {
             Handle = handle;
-            Sync = new SyncClient(this);
-            EmailPasswordAuth = new EmailPasswordClient(this);
         }
 
         /// <summary>
@@ -139,6 +133,7 @@ namespace Realms.Sync
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));
+            var syncTimeouts = config.SyncTimeoutOptions ?? new();
 
             if (config.MetadataPersistenceMode.HasValue)
             {
@@ -158,28 +153,19 @@ namespace Realms.Sync
             var nativeConfig = new Native.AppConfiguration
             {
                 AppId = config.AppId,
-                BaseFilePath = config.BaseFilePath ?? InteropConfig.DefaultStorageFolder,
-                BaseUrl = config.BaseUri?.ToString().TrimEnd('/'),
+                BaseFilePath = config.BaseFilePath,
+                BaseUrl = config.BaseUri.ToString().TrimEnd('/'),
                 LocalAppName = config.LocalAppName,
                 LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
-                default_request_timeout_ms = (ulong?)config.DefaultRequestTimeout?.TotalMilliseconds ?? 0,
+                default_request_timeout_ms = (ulong)config.DefaultRequestTimeout.TotalMilliseconds,
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),
-#pragma warning disable CS0618 // Type or member is obsolete - We still want to support people using it
-                log_level = config.LogLevel != LogLevel.Info ? config.LogLevel : Logger.LogLevel,
+                sync_connection_linger_time_ms = (ulong)syncTimeouts.ConnectionLingerTime.TotalMilliseconds,
+                sync_connect_timeout_ms = (ulong)syncTimeouts.ConnectTimeout.TotalMilliseconds,
+                sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
+                sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
+                sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
             };
-
-            if (config.CustomLogger != null)
-            {
-                var logger = Logger.Function((level, message) => config.CustomLogger(message, level));
-                logger._logLevel = nativeConfig.log_level;
-                nativeConfig.managed_logger = GCHandle.ToIntPtr(logger.GCHandle);
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-            else if (Logger.Default != null)
-            {
-                nativeConfig.managed_logger = GCHandle.ToIntPtr(Logger.Default.GCHandle);
-            }
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
             return new App(handle);
@@ -264,7 +250,7 @@ namespace Realms.Sync
         /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a
         /// particular app and can only be accessed via <see cref="Sync"/>.
         /// </summary>
-        public class SyncClient
+        public readonly struct SyncClient
         {
             private readonly App _app;
 
@@ -293,7 +279,7 @@ namespace Realms.Sync
         /// A class, encapsulating functionality for users, logged in with the <see cref="Credentials.AuthProvider.EmailPassword"/> provider.
         /// It is always scoped to a particular app and can only be accessed via <see cref="EmailPasswordAuth"/>.
         /// </summary>
-        public class EmailPasswordClient
+        public readonly struct EmailPasswordClient
         {
             private readonly App _app;
 
@@ -319,9 +305,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.RegisterUser(email, password, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.RegisterUserAsync(email, password);
             }
 
             /// <summary>
@@ -343,9 +327,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(token, nameof(token));
                 Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ConfirmUser(token, tokenId, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ConfirmUserAsync(token, tokenId);
             }
 
             /// <summary>
@@ -361,9 +343,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ResendConfirmationEmail(email, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ResendConfirmationEmailAsync(email);
             }
 
             /// <summary>
@@ -379,9 +359,7 @@ namespace Realms.Sync
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.SendResetPasswordEmail(email, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.SendResetPasswordEmailAsync(email);
             }
 
             /// <summary>
@@ -404,9 +382,7 @@ namespace Realms.Sync
                 Argument.NotNullOrEmpty(tokenId, nameof(tokenId));
                 Argument.NotNullOrEmpty(password, nameof(password));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.ResetPassword(password, token, tokenId, tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.ResetPasswordAsync(password, token, tokenId);
             }
 
             /// <summary>
@@ -423,14 +399,13 @@ namespace Realms.Sync
             /// that the user's password has been change and they can now use the new password to create <see cref="Credentials.EmailPassword"/>
             /// credentials and call <see cref="LogInAsync"/> to login.
             /// </returns>
-            public Task CallResetPasswordFunctionAsync(string email, string password, params object[] functionArgs)
+            public Task CallResetPasswordFunctionAsync(string email, string password, params object?[] functionArgs)
             {
                 Argument.NotNullOrEmpty(email, nameof(email));
                 Argument.NotNullOrEmpty(password, nameof(password));
+                Argument.NotNull(functionArgs, nameof(functionArgs));
 
-                var tcs = new TaskCompletionSource<object>();
-                _app.Handle.EmailPassword.CallResetPasswordFunction(email, password, functionArgs.ToNativeJson(), tcs);
-                return tcs.Task;
+                return _app.Handle.EmailPassword.CallResetPasswordFunctionAsync(email, password, functionArgs.ToNativeJson());
             }
         }
     }

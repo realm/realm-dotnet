@@ -27,8 +27,16 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
+using UnityEditor.PackageManager;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
+using static RealmWeaver.Analytics;
+using CpuArchitecture = RealmWeaver.Metric.CpuArchitecture;
+using OperatingSystem = RealmWeaver.Metric.OperatingSystem;
 
+using BindingFlags = System.Reflection.BindingFlags;
+
+// ReSharper disable once CheckNamespace
 namespace RealmWeaver
 {
     // Heavily influenced by https://github.com/ExtendRealityLtd/Malimbe and https://github.com/fody/fody
@@ -39,6 +47,9 @@ namespace RealmWeaver
 
         private const string WeaveEditorAssembliesPref = "realm_weave_editor_assemblies";
         private const string WeaveEditorAssembliesMenuItemPath = "Tools/Realm/Process editor assemblies";
+        private const string UnityPackageName = "io.realm.unity";
+
+        private static readonly int UnityMajorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
 
         private static bool _analyticsEnabled;
 
@@ -54,6 +65,8 @@ namespace RealmWeaver
         }
 
         private static bool _weaveEditorAssemblies;
+        private static ListRequest? _listRequest;
+        private static TaskCompletionSource<string>? _installMethodTask;
 
         private static bool WeaveEditorAssemblies
         {
@@ -74,13 +87,28 @@ namespace RealmWeaver
             // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
             EditorApplication.delayCall += () =>
             {
+                _listRequest = Client.List();
+
+                _installMethodTask = new TaskCompletionSource<string>();
+
+                if (Application.isBatchMode)
+                {
+                    // In batch mode, `update` won't get called until compilation is complete,
+                    // which means we'll deadlock when we block compilation on the tcs completing
+                    _installMethodTask.TrySetResult(Metric.Unknown());
+                }
+                else
+                {
+                    EditorApplication.update += OnEditorApplicationUpdate;
+                }
+
                 AnalyticsEnabled = EditorPrefs.GetBool(EnableAnalyticsPref, defaultValue: true);
                 WeaveEditorAssemblies = EditorPrefs.GetBool(WeaveEditorAssembliesPref, defaultValue: false);
                 WeaverAssemblyResolver.ApplicationDataPath = Application.dataPath;
                 WeaveAssembliesOnEditorLaunch();
             };
 
-            CompilationPipeline.assemblyCompilationFinished += (string assemblyPath, CompilerMessage[] _) =>
+            CompilationPipeline.assemblyCompilationFinished += (assemblyPath, _) =>
             {
                 if (string.IsNullOrEmpty(assemblyPath))
                 {
@@ -94,8 +122,34 @@ namespace RealmWeaver
                     return;
                 }
 
-                WeaveAssemblyCore(assemblyPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform));
+                var config = GetAnalyticsConfig();
+                WeaveAssemblyCore(assemblyPath, assembly.allReferences, config);
             };
+        }
+
+        private static void OnEditorApplicationUpdate()
+        {
+            if (_listRequest?.IsCompleted != true)
+            {
+                return;
+            }
+
+            EditorApplication.update -= OnEditorApplicationUpdate;
+
+            var installMethod = Metric.Unknown();
+
+            if (_listRequest.Status == StatusCode.Success)
+            {
+                var realmPackage = _listRequest.Result.FirstOrDefault(p => p.name == UnityPackageName);
+                installMethod = realmPackage?.source switch
+                {
+                    PackageSource.LocalTarball => "Manual",
+                    PackageSource.Registry => "NPM",
+                    _ => Metric.Unknown(realmPackage?.source.ToString()),
+                };
+            }
+
+            _installMethodTask!.SetResult(installMethod);
         }
 
         [MenuItem("Tools/Realm/Weave Assemblies")]
@@ -127,14 +181,14 @@ namespace RealmWeaver
         private static void WeaveAssembliesOnEditorLaunch()
         {
             // This code is susceptible to the year 2038 problem. Refactor before 2037!
-            const string AutomaticWeavePrefKey = "realm_last_automatic_weave";
-            var lastAutomaticWeave = EditorPrefs.GetInt(AutomaticWeavePrefKey, 0);
+            const string automaticWeavePrefKey = "realm_last_automatic_weave";
+            var lastAutomaticWeave = EditorPrefs.GetInt(automaticWeavePrefKey, 0);
             var timeSinceLastWeave = (DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeSeconds(lastAutomaticWeave)).TotalSeconds;
             if (timeSinceLastWeave > EditorApplication.timeSinceStartup)
             {
                 // We haven't executed the automatic weaver in this editor session
                 _ = WeaveAllAssemblies();
-                EditorPrefs.SetInt(AutomaticWeavePrefKey, (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+                EditorPrefs.SetInt(automaticWeavePrefKey, (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
             }
         }
 
@@ -147,16 +201,19 @@ namespace RealmWeaver
                 EditorApplication.LockReloadAssemblies();
                 var assembliesToWeave = GetAssemblies();
                 var weaveResults = new List<string>();
+
+                var config = GetAnalyticsConfig();
+
                 await Task.Run(() =>
                 {
                     foreach (var assembly in assembliesToWeave)
                     {
-                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, "Unity Editor", GetTargetOSName(Application.platform)))
+                        if (!WeaveAssemblyCore(assembly.outputPath, assembly.allReferences, config))
                         {
                             continue;
                         }
 
-                        string sourceFilePath = assembly.sourceFiles.FirstOrDefault();
+                        var sourceFilePath = assembly.sourceFiles.FirstOrDefault();
                         if (sourceFilePath == null)
                         {
                             continue;
@@ -188,7 +245,7 @@ namespace RealmWeaver
             return assembliesWoven;
         }
 
-        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, string framework, string targetOSName)
+        private static bool WeaveAssemblyCore(string assemblyPath, IEnumerable<string> references, Config analyticsConfig)
         {
             var name = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -208,14 +265,6 @@ namespace RealmWeaver
                     // Unity doesn't add the [TargetFramework] attribute when compiling the assembly. However, it's
                     // using Mono, so we just hardcode Unity which is treated as Mono/.NET Framework by the weaver.
                     var weaver = new Weaver(resolutionResult.Module, UnityLogger.Instance, "Unity");
-
-                    var analyticsConfig = new Analytics.Config
-                    {
-                        TargetOSName = targetOSName,
-                        FrameworkVersion = Application.unityVersion,
-                        Framework = framework,
-                        RunAnalytics = AnalyticsEnabled
-                    };
 
                     var results = weaver.Execute(analyticsConfig);
 
@@ -249,93 +298,113 @@ namespace RealmWeaver
                 return;
             }
 
+            var files = GetFiles(report);
+
             // This is a bit hacky - we need actual references, not directories, containing references, so we pass folder/dummy.dll
             // knowing that dummy.dll will be stripped.
             var systemAssemblies = CompilationPipeline.GetSystemAssemblyDirectories(ApiCompatibilityLevel.NET_Standard_2_0).Select(d => Path.Combine(d, "dummy.dll"));
             var referencePaths = systemAssemblies
-                .Concat(report.files.Select(f => f.path))
+                .Concat(files.Select(f => f.path))
                 .ToArray();
 
-            var assembliesToWeave = report.files.Where(f => f.role == "ManagedLibrary");
-            var targetOS = GetTargetOSName(report.summary.platform);
+            var assembliesToWeave = files.Where(f => f.role == "ManagedLibrary");
+            var config = GetAnalyticsConfig(report.summary.platform);
+
             foreach (var file in assembliesToWeave)
             {
-                WeaveAssemblyCore(file.path, referencePaths, "Unity", targetOS);
+                WeaveAssemblyCore(file.path, referencePaths, config);
             }
 
-            if (report.summary.platform == BuildTarget.iOS)
+            if (report.summary.platform != BuildTarget.iOS && report.summary.platform != BuildTarget.tvOS)
             {
-                var realmAssemblyPath = report.files
-                    .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
-                    .path;
+                return;
+            }
 
-                var realmResolutionResult = WeaverAssemblyResolver.Resolve(realmAssemblyPath, referencePaths);
-                using (realmResolutionResult)
+            var realmAssemblyPath = files
+                .SingleOrDefault(r => "Realm.dll".Equals(Path.GetFileName(r.path), StringComparison.OrdinalIgnoreCase))
+                .path;
+
+            var realmResolutionResult = WeaverAssemblyResolver.Resolve(realmAssemblyPath, referencePaths);
+            if (realmResolutionResult == null)
+            {
+                return;
+            }
+
+            using (realmResolutionResult)
+            {
+                var wrappersReference = realmResolutionResult.Module.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
+                if (wrappersReference == null)
                 {
-                    var wrappersReference = realmResolutionResult.Module.ModuleReferences.SingleOrDefault(r => r.Name == "realm-wrappers");
-                    if (wrappersReference != null)
-                    {
-                        wrappersReference.Name = "__Internal";
-                        realmResolutionResult.SaveModuleUpdates();
-                    }
+                    return;
                 }
+
+                wrappersReference.Name = "__Internal";
+                realmResolutionResult.SaveModuleUpdates();
             }
         }
 
-        public void OnPostprocessBuild(BuildReport report)
+        public void OnPostprocessBuild(BuildReport? report)
         {
-            if (report == null || report.summary.platform != BuildTarget.iOS)
+            switch (report?.summary.platform)
             {
-                return;
+                case BuildTarget.iOS:
+                case BuildTarget.tvOS:
+                    UpdateiOSFrameworks(false, false, report.summary.platform);
+                    break;
             }
-
-            UpdateiOSFrameworks(
-                enableForDevice: false,
-                enableForSimulator: false);
         }
 
-        public void OnPreprocessBuild(BuildReport report)
+        public void OnPreprocessBuild(BuildReport? report)
         {
-            if (report == null || report.summary.platform != BuildTarget.iOS)
+            bool enableForDevice;
+            bool enableForSimulator;
+            switch (report?.summary.platform)
             {
-                return;
+                case BuildTarget.iOS:
+                    enableForDevice = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK;
+                    enableForSimulator = PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK;
+                    break;
+                case BuildTarget.tvOS:
+                    enableForDevice = PlayerSettings.tvOS.sdkVersion == tvOSSdkVersion.Device;
+                    enableForSimulator = PlayerSettings.tvOS.sdkVersion == tvOSSdkVersion.Simulator;
+                    break;
+                default:
+                    return;
             }
 
-            UpdateiOSFrameworks(
-                enableForDevice: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.DeviceSDK,
-                enableForSimulator: PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK);
+            UpdateiOSFrameworks(enableForDevice, enableForSimulator, report.summary.platform);
         }
 
         /// <summary>
         /// Updates the native module import config for the wrappers framework. Unity doesn't support
         /// xcframework, which means that it won't correctly include it when building for iOS. This is
-        /// a somewhat hacky solution that will manually update the compatibilify flag and the AddToEmbeddedBinaries
+        /// a somewhat hacky solution that will manually update the compatibility flag and the AddToEmbeddedBinaries
         /// flag just for the slice that is compatible with the current build target (simulator or device).
         /// </summary>
-        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator)
+        private static void UpdateiOSFrameworks(bool enableForDevice, bool enableForSimulator, BuildTarget buildTarget)
         {
-            const string ErrorMessage = "Failed to find the native Realm framework at '{0}'. " +
+            const string errorMessage = "Failed to find the native Realm framework at '{0}'. " +
                 "Please double check that you have imported Realm correctly and that the file exists. " +
-                "Typically, it should be located at Packages/io.realm.unity/Runtime/iOS";
-            const string SimulatorPath = "Simulator";
-            const string DevicePath = "Device";
+                "Typically, it should be located at Packages/io.realm.unity/Runtime/{1}";
+            const string simulatorPath = "Simulator";
+            const string devicePath = "Device";
 
             var importers = PluginImporter.GetAllImporters();
 
-            UpdateiOSFramework(SimulatorPath, enableForSimulator);
-            UpdateiOSFramework(DevicePath, enableForDevice);
+            UpdateiOSFramework(simulatorPath, enableForSimulator);
+            UpdateiOSFramework(devicePath, enableForDevice);
 
             void UpdateiOSFramework(string path, bool enabled)
             {
-                path = $"iOS/{path}/realm-wrappers.framework";
+                path = $"{buildTarget}/{path}/realm-wrappers.framework";
                 var frameworkImporter = importers.SingleOrDefault(i => i.assetPath.Contains(path));
                 if (frameworkImporter == null)
                 {
-                    throw new Exception(string.Format(ErrorMessage, path));
+                    throw new Exception(string.Format(errorMessage, path, buildTarget));
                 }
 
-                frameworkImporter.SetCompatibleWithPlatform(BuildTarget.iOS, enabled);
-                frameworkImporter.SetPlatformData(BuildTarget.iOS, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
+                frameworkImporter.SetCompatibleWithPlatform(buildTarget, enabled);
+                frameworkImporter.SetPlatformData(buildTarget, "AddToEmbeddedBinaries", enabled.ToString().ToLower());
             }
         }
 
@@ -349,42 +418,198 @@ namespace RealmWeaver
             return CompilationPipeline.GetAssemblies(AssembliesType.Player);
         }
 
-        private static string GetTargetOSName(BuildTarget target)
+        private static string GetTargetOSName(BuildTarget? target)
         {
-            // These have to match Analytics.GetConfig(FrameworkName)
-            switch (target)
+            // target is null for editor builds - in that case, we return the current OS
+            // as target.
+            if (target == null)
             {
-                case BuildTarget.StandaloneOSX:
-                    return "osx";
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64:
-                    return "windows";
-                case BuildTarget.iOS:
-                    return "ios";
-                case BuildTarget.Android:
-                    return "android";
-                case BuildTarget.StandaloneLinux64:
-                    return "linux";
-                case BuildTarget.tvOS:
-                    return "tvos";
-                default:
-                    return "UNKNOWN";
+                return Application.platform switch
+                {
+                    RuntimePlatform.WindowsEditor => OperatingSystem.Windows,
+                    RuntimePlatform.OSXEditor => OperatingSystem.MacOS,
+                    RuntimePlatform.LinuxEditor => OperatingSystem.Linux,
+                    _ => Metric.Unknown(Application.platform.ToString()),
+                };
+            }
+
+            // These have to match Analytics.GetConfig(FrameworkName)
+            return target switch
+            {
+                BuildTarget.StandaloneOSX => OperatingSystem.MacOS,
+                BuildTarget.StandaloneWindows or BuildTarget.StandaloneWindows64 or BuildTarget.WSAPlayer => OperatingSystem.Windows,
+                BuildTarget.iOS => OperatingSystem.Ios,
+                BuildTarget.Android => OperatingSystem.Android,
+                BuildTarget.StandaloneLinux64 => OperatingSystem.Linux,
+                BuildTarget.tvOS => OperatingSystem.TvOs,
+                BuildTarget.XboxOne => OperatingSystem.XboxOne,
+                _ => Metric.Unknown(target.ToString()),
+            };
+        }
+
+        private static string GetTargetOsVersion(BuildTarget? target)
+        {
+            // target is null for editor builds - in that case, we return the host OS
+            // version.
+            if (target == null)
+            {
+                return Environment.OSVersion.Version.ToString();
+            }
+
+            return target switch
+            {
+                BuildTarget.Android => ((int)PlayerSettings.Android.targetSdkVersion).ToString(),
+                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
+                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
+                _ => Metric.Unknown(),
+            };
+        }
+
+        private static BuildFile[] GetFiles(BuildReport report)
+        {
+            try
+            {
+                if (UnityMajorVersion < 2022)
+                {
+                    var getFilesPI = typeof(BuildReport).GetProperty("files", BindingFlags.Public | BindingFlags.Instance)!;
+                    return (BuildFile[])getFilesPI.GetValue(report);
+                }
+
+                // Starting with 2022, BuildReport.files is replaced with BuildReport.GetFiles. This is a
+                // bit hacky, but allows us to target both versions with the same assembly.
+                var getFilesMI = typeof(BuildReport).GetMethod("GetFiles", BindingFlags.Public | BindingFlags.Instance)!;
+                return (BuildFile[])getFilesMI.Invoke(report, null);
+            }
+            catch (Exception e)
+            {
+                UnityLogger.Instance.Error($"Failed to obtain list of files from report. Please report this error on https://github.com/realm/realm-dotnet/issues. Unity version: {Application.unityVersion}, error message: {e.Message}.");
+                throw;
             }
         }
 
-        private static string GetTargetOSName(RuntimePlatform target)
+        private static string GetMinimumOsVersion(BuildTarget? target)
         {
-            switch (target)
+            // target is null for editor builds - in that case, we return the host OS
+            // version.
+            if (target == null)
             {
-                case RuntimePlatform.WindowsEditor:
-                    return "windows";
-                case RuntimePlatform.OSXEditor:
-                    return "osx";
-                case RuntimePlatform.LinuxEditor:
-                    return "linux";
-                default:
-                    return "UNKOWN";
+                return Environment.OSVersion.Version.ToString();
             }
+
+            return target switch
+            {
+                BuildTarget.Android => ((int)PlayerSettings.Android.minSdkVersion).ToString(),
+                BuildTarget.iOS => PlayerSettings.iOS.targetOSVersionString,
+                BuildTarget.tvOS => PlayerSettings.tvOS.targetOSVersionString,
+                _ => Metric.Unknown(),
+            };
+        }
+
+        private static Config GetAnalyticsConfig(BuildTarget? target = null)
+        {
+            var netFrameworkInfo = GetNetFrameworkInfo(target);
+            var compiler = PlayerSettings.GetScriptingBackend(BuildPipeline.GetBuildTargetGroup(target ?? EditorUserBuildSettings.activeBuildTarget)).ToString();
+
+            var analyticsEnabled = AnalyticsEnabled &&
+                        Environment.GetEnvironmentVariable("REALM_DISABLE_ANALYTICS") == null &&
+                        Environment.GetEnvironmentVariable("CI") == null;
+
+            return new Config
+            {
+                TargetOSName = GetTargetOSName(target),
+                Compiler = compiler,
+                NetFrameworkTarget = netFrameworkInfo.Name,
+                NetFrameworkTargetVersion = netFrameworkInfo.Version,
+                AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
+                InstallationMethod = _installMethodTask!.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                FrameworkName = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
+                FrameworkVersion = Application.unityVersion,
+                TargetArchitecture = GetCpuArchitecture(target),
+                TargetOsVersion = GetTargetOsVersion(target),
+                TargetOsMinimumVersion = GetMinimumOsVersion(target),
+                ProjectId = PlayerSettings.productName,
+            };
+        }
+
+        private static (string Name, string Version) GetNetFrameworkInfo(BuildTarget? buildTarget)
+        {
+            var targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget ?? EditorUserBuildSettings.activeBuildTarget);
+            var apiTarget = PlayerSettings.GetApiCompatibilityLevel(targetGroup);
+
+            // these consts are exactly mapped to what .NET reports in any .NET application
+            const string netStandardApi = ".NETStandard";
+            const string netFrameworkApi = ".NETFramework";
+
+            var unityVersion = new Version(Application.unityVersion.Substring(0, 6));
+
+            // conversion necessary as after unity version 2021.1, entry NET_4_6 and NET_Standard_2_0
+            // are actually representing .NET 4.8 and .NET Standard 2.1
+            // https://github.com/Unity-Technologies/UnityCsReference/blob/664dfe30cee8ee2ef7dd8c5e9db6235915245ecb/Editor/Mono/PlayerSettings.bindings.cs#L158
+            if (unityVersion >= new Version("2021.2"))
+            {
+                if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+                {
+                    return (netStandardApi, "2.1");
+                }
+
+                if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+                {
+                    return (netFrameworkApi, "4.8");
+                }
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_Standard_2_0)
+            {
+                return (netStandardApi, "2.0");
+            }
+
+            if (apiTarget == ApiCompatibilityLevel.NET_4_6)
+            {
+                return (netFrameworkApi, "4.6");
+            }
+
+            // this should really never be the case
+            return (apiTarget.ToString(), "");
+        }
+
+        private static string GetCpuArchitecture(BuildTarget? buildTarget)
+        {
+            // buildTarget is null when we're building for the editor
+            if (buildTarget == null)
+            {
+                if (SystemInfo.processorType.IndexOf("ARM", StringComparison.OrdinalIgnoreCase) > -1)
+                {
+                    return Environment.Is64BitProcess ? CpuArchitecture.Arm64 : CpuArchitecture.Arm;
+                }
+
+                // Must be in the x86 family.
+                return Environment.Is64BitProcess ? CpuArchitecture.X64 : CpuArchitecture.X86;
+            }
+
+            return buildTarget switch
+            {
+                BuildTarget.iOS or BuildTarget.tvOS => CpuArchitecture.Arm64,
+                BuildTarget.StandaloneOSX => EditorUserBuildSettings.GetPlatformSettings(BuildPipeline.GetBuildTargetName(buildTarget.Value), "Architecture") switch
+                {
+                    "ARM64" => CpuArchitecture.Arm64,
+                    "x64" => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows => CpuArchitecture.X86,
+                BuildTarget.Android => PlayerSettings.Android.targetArchitectures switch
+                {
+                    AndroidArchitecture.ARMv7 => CpuArchitecture.Arm,
+                    AndroidArchitecture.ARM64 => CpuArchitecture.Arm64,
+
+                    // These two don't have enum values in our Unity reference dll, but exist in newer versions
+                    // See https://github.com/Unity-Technologies/UnityCsReference/blob/70abf502c521c169ee8a302aa48c5600fc7c39fc/Editor/Mono/PlayerSettingsAndroid.bindings.cs#L14
+                    (AndroidArchitecture)(1 << 2) => CpuArchitecture.X86,
+                    (AndroidArchitecture)(1 << 3) => CpuArchitecture.X64,
+                    _ => CpuArchitecture.Universal,
+                },
+                BuildTarget.StandaloneWindows64 or BuildTarget.StandaloneLinux64 or BuildTarget.XboxOne => CpuArchitecture.X64,
+                _ => Metric.Unknown(),
+            };
         }
 
         private class UnityLogger : ILogger
@@ -396,7 +621,7 @@ namespace RealmWeaver
                 System.Diagnostics.Debug.WriteLine(message);
             }
 
-            public void Error(string message, SequencePoint sequencePoint = null)
+            public void Error(string message, SequencePoint? sequencePoint = null)
             {
                 UnityEngine.Debug.LogError(GetMessage(message, sequencePoint));
             }
@@ -406,19 +631,14 @@ namespace RealmWeaver
                 UnityEngine.Debug.Log(message);
             }
 
-            public void Warning(string message, SequencePoint sequencePoint = null)
+            public void Warning(string message, SequencePoint? sequencePoint = null)
             {
                 UnityEngine.Debug.LogWarning(GetMessage(message, sequencePoint));
             }
 
-            private static string GetMessage(string message, SequencePoint sp)
+            private static string GetMessage(string message, SequencePoint? sp)
             {
-                if (sp == null)
-                {
-                    return message;
-                }
-
-                return $"{sp.Document.Url}({sp.StartLine}, {sp.StartColumn}): {message}";
+                return sp == null ? message : $"{sp.Document.Url}({sp.StartLine}, {sp.StartColumn}): {message}";
             }
         }
     }

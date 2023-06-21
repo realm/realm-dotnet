@@ -8,13 +8,17 @@ name: test-net-core
       clusterName:
         required: false
         type: string
+      realmUrl:
+        required: false
+        type: string
+      atlasUrl:
+        required: false
+        type: string
       framework:
         required: true
         type: string
     secrets:
       AtlasProjectId:
-        required: false
-      BaseUrl:
         required: false
       AtlasPublicKey:
         required: false
@@ -26,7 +30,7 @@ env:
 jobs:
   run-tests:
     runs-on: ${{ matrix.os.runner }}
-    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
+    name: ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -38,17 +42,19 @@ jobs:
           runtime: linux-x64
         - runner: macos-latest
           runtime: osx-x64
-        - runner: win81
-          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net6.0
+        - framework: net7.0
           os:
             runner: macos-arm
             runtime: osx-arm64
+        - framework: net7.0
+          os:
+            runner: win81
+            runtime: win-x64
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
@@ -58,30 +64,35 @@ jobs:
       run: echo "::add-matcher::.github/problem-matchers/msvc.json"
     - name: Cleanup Workspace
       run: git clean -fdx
-    - name: Configure .NET
-      uses: actions/setup-dotnet@v1
-      if: matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'
+    - name: Fetch Realm.PlatformHelpers
+      uses: actions/download-artifact@v3
       with:
-        dotnet-version: 6.0.x
+        name: Realm.PlatformHelpers.${{ inputs.version }}
+        path: ${{ github.workspace }}/Realm/packages/
     - name: Fetch Realm
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: Realm.${{ inputs.version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - name: Fetch Realm.Fody
-      uses: actions/download-artifact@v2
+    - uses: realm/ci-actions/mdb-realm/deploy@729a80d203351eab7df4eca564daa275e76ec52f
+      if: ${{ inputs.realmUrl }}
       with:
-        name: Realm.Fody.${{ inputs.version }}
-        path: ${{ github.workspace }}/Realm/packages/
+        projectId: ${{ secrets.AtlasProjectId}}
+        realmUrl: ${{ inputs.realmUrl }}
+        atlasUrl: ${{ inputs.atlasUrl}}
+        apiKey: ${{ secrets.AtlasPublicKey}}
+        privateApiKey: ${{ secrets.AtlasPrivateKey }}
+        clusterSize: M10
     - name: Publish Tests/Realm.Tests
-      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RealmTestsStandaloneExe=true -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
+      run: dotnet publish Tests/Realm.Tests -c Release -f ${{ matrix.framework }} -r ${{ matrix.os.runtime }} -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }} --no-self-contained
     - name: Output executable path
       id: dotnet-publish
-      run: echo '::set-output name=executable-path::./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}'
+      run: echo 'executable-path=./Tests/Realm.Tests/bin/Release/${{ matrix.framework }}/${{ matrix.os.runtime }}' >> $GITHUB_OUTPUT
+      shell: bash
     - name: Run the tests
-      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ secrets.BaseUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
+      run: ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After --baasurl=${{ inputs.realmUrl }} --baascluster=${{ inputs.clusterName }} --baasapikey=${{ secrets.AtlasPublicKey}} --baasprivateapikey=${{ secrets.AtlasPrivateKey}} --baasprojectid=${{ secrets.AtlasProjectId }} --baasdifferentiator=net-core-${{ matrix.runner }}-${{ matrix.runtime }}
     - name: Publish Unit Test Results
-      uses: LaPeste/test-reporter@b8a650f4490e7472b930f56bbb92c7b42dc5db15
+      uses: LaPeste/test-reporter@510caf50a955b1003bec48a6494be4d6537f3a0b
       if: always()
       with:
         name: Results .NET (${{ matrix.os.runner }}, ${{ matrix.framework }})

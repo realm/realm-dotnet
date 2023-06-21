@@ -31,7 +31,7 @@ namespace Realms.Tests.Database
         public void RemoveSucceedsTest()
         {
             // Arrange
-            Person p1 = null, p2 = null, p3 = null;
+            Person p1 = null!, p2 = null!, p3 = null!;
             _realm.Write(() =>
             {
                 p1 = _realm.Add(new Person { FirstName = "A" });
@@ -51,8 +51,7 @@ namespace Realms.Tests.Database
         public void RemoveOutsideTransactionShouldFail()
         {
             // Arrange
-            Person p = null;
-            _realm.Write(() => p = _realm.Add(new Person()));
+            var p = _realm.Write(() => _realm.Add(new Person()));
 
             // Act and assert
             Assert.That(() => _realm.Remove(p), Throws.TypeOf<RealmInvalidTransactionException>());
@@ -154,15 +153,42 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void RemoveAllObjectsShouldClearEntireDatabaseWithPartialSchema()
+        {
+            var c1 = new RealmConfiguration
+            {
+                Schema = new[] { typeof(Person), typeof(IntPrimaryKeyWithValueObject) }
+            };
+            var r1 = GetRealm(c1);
+            r1.Write(() =>
+            {
+                r1.Add(new Person());
+            });
+            r1.Dispose();
+
+            // Open with a subset of the schema
+            var c2 = new RealmConfiguration
+            {
+                Schema = new[] { typeof(IntPrimaryKeyWithValueObject) }
+            };
+            var r2 = GetRealm(c2);
+            r2.Write(() =>
+            {
+                r2.RemoveAll();
+            });
+            r2.Dispose();
+
+            // Reopen with the complete schema
+            r1 = GetRealm(c1);
+            Assert.That(r1.All<Person>(), Is.Empty);
+        }
+
+        [Test]
         public void RemoveObject_FromAnotherRealm_ShouldThrow()
         {
             PerformWithOtherRealm(null, other =>
             {
-                Person otherPerson = null;
-                other.Write(() =>
-                {
-                    otherPerson = other.Add(new Person());
-                });
+                var otherPerson = other.Write(() => other.Add(new Person()));
 
                 Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)),
                             Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
@@ -196,11 +222,7 @@ namespace Realms.Tests.Database
         {
             PerformWithOtherRealm(_realm.Config.DatabasePath, other =>
             {
-                Person otherPerson = null;
-                other.Write(() =>
-                {
-                    otherPerson = other.Add(new Person());
-                });
+                var otherPerson = other.Write(() => other.Add(new Person()));
 
                 Assert.That(() => _realm.Write(() => _realm.Remove(otherPerson)), Throws.Nothing);
             });
@@ -219,7 +241,7 @@ namespace Realms.Tests.Database
             });
         }
 
-        private void PerformWithOtherRealm(string path, Action<Realm> action)
+        private void PerformWithOtherRealm(string? path, Action<Realm> action)
         {
             Realm otherRealm;
             using (otherRealm = GetRealm(path ?? Guid.NewGuid().ToString()))

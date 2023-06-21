@@ -44,15 +44,14 @@ namespace binding {
         {
         }
 
-        MarshaledAppError(const std::string& message_str, const std::string& error_category_str, const std::string& logs_link_str, util::Optional<int> http_code)
+        MarshaledAppError(AppError& err)
         {
             is_null = false;
 
-            message = to_capi_value(message_str);
-            error_category = to_capi_value(error_category_str);
-            logs_link = to_capi_value(logs_link_str);
-
-            http_status_code = http_code.value_or(0);
+            message = to_capi_value(err.reason());
+            error_category = to_capi_value(err.code_string());
+            logs_link = to_capi_value(err.link_to_server_logs);
+            http_status_code = err.additional_status_code.value_or(0);
         }
     };
 
@@ -101,11 +100,8 @@ namespace binding {
             case AuthProvider::FUNCTION:
                 return AppCredentials::function(Utf16StringAccessor(token, token_len));
 
-            case AuthProvider::USER_API_KEY:
-                return AppCredentials::user_api_key(Utf16StringAccessor(token, token_len));
-
-            case AuthProvider::SERVER_API_KEY:
-                return AppCredentials::server_api_key(Utf16StringAccessor(token, token_len));
+            case AuthProvider::API_KEY:
+                return AppCredentials::api_key(Utf16StringAccessor(token, token_len));
 
             default:
                 REALM_UNREACHABLE();
@@ -125,19 +121,35 @@ namespace binding {
 
     using UserCallbackT = void(void* tcs_ptr, SharedSyncUser* user, MarshaledAppError err);
     using VoidCallbackT = void(void* tcs_ptr, MarshaledAppError err);
-    using BsonCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
+    using StringCallbackT = void(void* tcs_ptr, realm_value_t response, MarshaledAppError err);
     using ApiKeysCallbackT = void(void* tcs_ptr, UserApiKey* api_keys, size_t api_keys_len, MarshaledAppError err);
 
     extern std::function<VoidCallbackT> s_void_callback;
     extern std::function<UserCallbackT> s_user_callback;
-    extern std::function<BsonCallbackT> s_bson_callback;
+    extern std::function<StringCallbackT> s_string_callback;
     extern std::function<ApiKeysCallbackT> s_api_keys_callback;
+
+    inline auto get_string_callback_handler(void* tcs_ptr) {
+        return [tcs_ptr](const std::string* response, util::Optional<AppError> err) {
+            if (err) {
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
+
+                s_string_callback(tcs_ptr, realm_value_t{}, app_error);
+            } else if (response) {
+                s_string_callback(tcs_ptr, to_capi_value(*response), MarshaledAppError());
+            }
+            else {
+                s_string_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
+            }
+        };
+    }
 
     inline auto get_user_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](std::shared_ptr<SyncUser> user, util::Optional<AppError> err) {
             if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
 
                 s_user_callback(tcs_ptr, nullptr, app_error);
             }
@@ -150,8 +162,9 @@ namespace binding {
     inline auto get_callback_handler(void* tcs_ptr) {
         return [tcs_ptr](util::Optional<AppError> err) {
             if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+                auto& err_copy = *err;
+                MarshaledAppError app_error(err_copy);
+
                 s_void_callback(tcs_ptr, app_error);
             }
             else {
@@ -160,28 +173,10 @@ namespace binding {
         };
     }
 
-    inline auto get_bson_callback_handler(void* tcs_ptr) {
-        return [tcs_ptr](util::Optional<bson::Bson> response, util::Optional<AppError> err) {
-            if (err) {
-                std::string error_category = err->error_code.message();
-                MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
-
-                s_bson_callback(tcs_ptr, realm_value_t{}, app_error);
-            }
-            else if (response) {
-                std::string serialized = response->to_string();
-                s_bson_callback(tcs_ptr, to_capi_value(serialized), MarshaledAppError());
-            }
-            else {
-                s_bson_callback(tcs_ptr, realm_value_t{}, MarshaledAppError());
-            }
-        };
-    }
-
     inline void invoke_api_key_callback(void* tcs_ptr, std::vector<App::UserAPIKey> keys, util::Optional<AppError> err) {
         if (err) {
-            std::string error_category = err->error_code.message();
-            MarshaledAppError app_error(err->message, error_category, err->link_to_server_logs, err->http_status_code);
+            auto& err_copy = *err;
+            MarshaledAppError app_error(err_copy);
 
             s_api_keys_callback(tcs_ptr, nullptr, 0, app_error);
         }
@@ -225,11 +220,6 @@ namespace binding {
 
         Utf16StringAccessor json(buf, len);
         return static_cast<bson::BsonDocument>(bson::parse(json.to_string()));
-    }
-
-    inline bson::BsonArray to_array(uint16_t* buf, size_t len) {
-        Utf16StringAccessor json(buf, len);
-        return static_cast<bson::BsonArray>(bson::parse(json.to_string()));
     }
 }
 }

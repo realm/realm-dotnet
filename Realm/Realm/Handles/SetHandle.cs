@@ -36,7 +36,7 @@ namespace Realms
             public static extern void destroy(IntPtr handle);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, out NativeException ex);
+            public static extern IntPtr add_notification_callback(SetHandle handle, IntPtr managedSetHandle, [MarshalAs(UnmanagedType.U1)] bool shallow, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_set_get_is_valid", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
@@ -100,7 +100,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_get_filtered_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_filtered_results(SetHandle results,
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
-                [MarshalAs(UnmanagedType.LPArray), In] PrimitiveValue[] arguments, IntPtr args_count,
+                [MarshalAs(UnmanagedType.LPArray), In] NativeQueryArgument[] arguments, IntPtr args_count,
                 out NativeException ex);
         }
 
@@ -133,13 +133,13 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle, bool shallow)
         {
             EnsureIsOpen();
 
-            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
+            var result = NativeMethods.add_notification_callback(this, managedObjectHandle, shallow, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+            return new(Root!, result);
         }
 
         public override int Count()
@@ -158,7 +158,7 @@ namespace Realms
             var result = NativeMethods.get_thread_safe_reference(this, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ThreadSafeReferenceHandle(result);
+            return new(result);
         }
 
         public ResultsHandle ToResults()
@@ -168,10 +168,10 @@ namespace Realms
             var ptr = NativeMethods.to_results(this, out var ex);
             ex.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, ptr);
+            return new(Root!, ptr);
         }
 
-        protected override IntPtr GetFilteredResultsCore(string query, PrimitiveValue[] arguments, out NativeException ex)
+        protected override IntPtr GetFilteredResultsCore(string query, NativeQueryArgument[] arguments, out NativeException ex)
             => NativeMethods.get_filtered_results(this, query, query.IntPtrLength(), arguments, (IntPtr)arguments.Length, out ex);
 
         public override CollectionHandleBase Freeze(SharedRealmHandle frozenRealmHandle)
@@ -189,7 +189,7 @@ namespace Realms
 
             NativeMethods.get_value(this, (IntPtr)index, out var result, out var ex);
             ex.ThrowIfNecessary();
-            return new RealmValue(result, realm);
+            return new(result, realm);
         }
 
         public bool Add(in RealmValue value)

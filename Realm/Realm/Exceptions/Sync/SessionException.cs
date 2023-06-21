@@ -34,7 +34,7 @@ namespace Realms.Sync.Exceptions
         /// <value>An enum value, providing more detailed information for the cause of the error.</value>
         public ErrorCode ErrorCode { get; }
 
-        internal SessionException(string message, ErrorCode errorCode, Exception innerException = null) : base(message, innerException)
+        internal SessionException(string message, ErrorCode errorCode, Exception? innerException = null) : base(message, innerException)
         {
             ErrorCode = errorCode;
         }

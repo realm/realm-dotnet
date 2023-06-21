@@ -22,25 +22,31 @@ using System.Threading.Tasks;
 
 internal static class TaskExtensions
 {
-    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout)
+    public static Task<T> Timeout<T>(this Task<T> task, int millisecondTimeout, string? detail = null)
     {
         return Task.WhenAny(task, Task.Delay(millisecondTimeout)).ContinueWith(t =>
         {
-            if (t.Result == task)
+            if (t.Result != task)
             {
-                if (task.IsFaulted)
+                var errorMessage = $"The operation has timed out after {millisecondTimeout} ms.";
+                if (detail != null)
                 {
-                    throw task.Exception.InnerException;
+                    errorMessage += $" {detail}";
                 }
 
-                return task.Result;
+                throw new TimeoutException(errorMessage);
             }
 
-            throw new TimeoutException($"The operation has timed out after {millisecondTimeout} ms.");
+            if (task.IsFaulted)
+            {
+                throw task.Exception!.InnerException ?? task.Exception;
+            }
+
+            return task.Result;
         });
     }
 
-    public static async Task Timeout(this Task task, int millisecondTimeout, Task errorTask = null)
+    public static async Task Timeout(this Task task, int millisecondTimeout, Task? errorTask = null, string? detail = null)
     {
         var tasks = new List<Task> { task, Task.Delay(millisecondTimeout) };
         if (errorTask != null)
@@ -51,7 +57,13 @@ internal static class TaskExtensions
         var completed = await Task.WhenAny(tasks);
         if (completed != task && completed != errorTask)
         {
-            throw new TimeoutException($"The operation has timed out after {millisecondTimeout} ms.");
+            var errorMessage = $"The operation has timed out after {millisecondTimeout} ms.";
+            if (detail != null)
+            {
+                errorMessage += $" {detail}";
+            }
+
+            throw new TimeoutException(errorMessage);
         }
 
         await completed;

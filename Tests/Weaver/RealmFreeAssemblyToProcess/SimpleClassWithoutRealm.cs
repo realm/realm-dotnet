@@ -36,7 +36,6 @@ subclasses.
 It should always build without any errors and only a minor compilation warning from Fody.
 
 */
-using System;
 
 namespace RealmFreeAssemblyToProcess
 {

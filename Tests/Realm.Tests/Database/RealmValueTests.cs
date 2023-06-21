@@ -22,6 +22,11 @@ using System.ComponentModel;
 using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -47,7 +52,7 @@ namespace Realms.Tests.Database
         public static ObjectId[] ObjectIdValues = new[] { new ObjectId("5f63e882536de46d71877979"), ObjectId.Empty };
         public static string[] StringValues = new[] { "a", "abc", string.Empty };
         public static byte[][] DataValues = new[] { new byte[] { 0, 1, 2 }, Array.Empty<byte>() };
-        public static RealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
+        public static IRealmObject[] ObjectValues = new[] { new InternalObject { IntProperty = 10, StringProperty = "brown" } };
 
         [Test]
         public void CharTests(
@@ -360,9 +365,11 @@ namespace Realms.Tests.Database
             Assert.That(rv == value);
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.String));
 
-            Assert.That((string)rv == value);
+            Assert.That((string)rv! == value);
+            Assert.That((string?)rv == value);
             Assert.That(rv.As<string>() == value);
             Assert.That(rv.AsString() == value);
+            Assert.That(rv.AsNullableString() == value);
             Assert.That(rv != RealmValue.Null);
         }
 
@@ -381,18 +388,20 @@ namespace Realms.Tests.Database
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Data));
 
-            Assert.That((byte[])rv, Is.EqualTo(value));
+            Assert.That((byte[])rv!, Is.EqualTo(value));
+            Assert.That((byte[]?)rv, Is.EqualTo(value));
             Assert.That(rv.As<byte[]>(), Is.EqualTo(value));
             Assert.That(rv.AsData(), Is.EqualTo(value));
+            Assert.That(rv.AsNullableData(), Is.EqualTo(value));
             Assert.That(rv != RealmValue.Null);
         }
 
         [Test]
         public void ObjectTests(
-            [ValueSource(nameof(ObjectValues))] RealmObjectBase value,
+            [ValueSource(nameof(ObjectValues))] IRealmObjectBase value,
             [Values(true, false)] bool isManaged)
         {
-            RealmValue rv = value;
+            var rv = RealmValue.Object(value);
 
             if (isManaged)
             {
@@ -402,16 +411,123 @@ namespace Realms.Tests.Database
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
 
-            Assert.That((RealmObjectBase)rv, Is.EqualTo(value));
-            Assert.That(rv.As<RealmObjectBase>(), Is.EqualTo(value));
-            Assert.That(rv.AsRealmObject(), Is.EqualTo(value));
+            Assert.That(rv.As<IRealmObject>(), Is.EqualTo(value));
+            Assert.That(rv.As<IRealmObjectBase>(), Is.EqualTo(value));
+            Assert.That(rv.AsIRealmObject(), Is.EqualTo(value));
             Assert.That(rv != RealmValue.Null);
+        }
+
+        [Test]
+        public void RealmValuePropertyWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueProperty = new EmbeddedIntPropertyObject()
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueList = { new EmbeddedIntPropertyObject() }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueSet = { new EmbeddedIntPropertyObject() }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithEmbeddedObject_WhenAddedToRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject
+                {
+                    RealmValueDictionary = { { "embedded", new EmbeddedIntPropertyObject() } }
+                };
+
+                Assert.Throws<NotSupportedException>(() => _realm.Add(rvo));
+            });
+        }
+
+        [Test]
+        public void RealmValuePropertyWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueProperty = new EmbeddedIntPropertyObject());
+            });
+        }
+
+        [Test]
+        public void RealmValueListWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Add(new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList.Insert(0, new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueList[0] = new EmbeddedIntPropertyObject());
+            });
+        }
+
+        [Test]
+        public void RealmValueSetWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueSet.Add(new EmbeddedIntPropertyObject()));
+            });
+        }
+
+        [Test]
+        public void RealmValueDictionaryWithEmbeddedObject_WhenModifiedInRealm_Throws()
+        {
+            _realm.Write(() =>
+            {
+                var rvo = new RealmValueObject();
+                _realm.Add(rvo);
+
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary.Add("embedded", new EmbeddedIntPropertyObject()));
+                Assert.Throws<NotSupportedException>(() => rvo.RealmValueDictionary["embedded"] = new EmbeddedIntPropertyObject());
+            });
         }
 
         [Test]
         public void NullTests([Values(true, false)] bool isManaged)
         {
-            RealmValue rv = RealmValue.Null;
+            var rv = RealmValue.Null;
 
             if (isManaged)
             {
@@ -439,6 +555,10 @@ namespace Realms.Tests.Database
             Assert.That(rv.AsNullableInt32RealmInteger() == null);
             Assert.That(rv.AsNullableInt64() == null);
             Assert.That(rv.AsNullableInt64RealmInteger() == null);
+            Assert.That(rv.AsNullableString() == null);
+            Assert.That(rv.AsNullableData() == null);
+            Assert.That(rv.AsNullableRealmObject() == null);
+            Assert.That(rv.AsNullableIRealmObject() == null);
 
             Assert.That((bool?)rv == null);
             Assert.That((DateTimeOffset?)rv == null);
@@ -456,6 +576,9 @@ namespace Realms.Tests.Database
             Assert.That((RealmInteger<int>?)rv == null);
             Assert.That((long?)rv == null);
             Assert.That((RealmInteger<long>?)rv == null);
+            Assert.That((string?)rv == null);
+            Assert.That((byte[]?)rv == null);
+            Assert.That((RealmObject?)rv == null);
         }
 
         [Test]
@@ -592,7 +715,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WhenManaged_NotificationTests()
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
             {
@@ -634,7 +757,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmValue_WhenManaged_BoolNotificationTests([Values(0, 1)] int intValue, [Values(true, false)] bool boolValue)
         {
-            var notifiedPropertyNames = new List<string>();
+            var notifiedPropertyNames = new List<string?>();
 
             var handler = new PropertyChangedEventHandler((sender, e) =>
             {
@@ -723,7 +846,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueProperty;
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -749,7 +872,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueList.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -775,7 +898,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueSet.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -801,7 +924,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary["foo"];
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -830,7 +953,7 @@ namespace Realms.Tests.Database
             var rv = rvo.RealmValueDictionary.Values.Single();
 
             Assert.That(rv.Type, Is.EqualTo(RealmValueType.Object));
-            var d = rv.AsRealmObject();
+            var d = rv.AsIRealmObject();
 
             Assert.That(d.DynamicApi.Get<int>(nameof(InternalObject.IntProperty)), Is.EqualTo(10));
             Assert.That(d.DynamicApi.Get<string>(nameof(InternalObject.StringProperty)), Is.EqualTo("brown"));
@@ -887,7 +1010,7 @@ namespace Realms.Tests.Database
                 Assert.That(f, Is.EquivalentTo(referenceResult));
             }
 
-            foreach (RealmValueType type in Enum.GetValues(typeof(RealmValueType)))
+            foreach (var type in (RealmValueType[])Enum.GetValues(typeof(RealmValueType)))
             {
                 // Equality on RealmValueType
                 var referenceResult = rvObjects.Where(r => r.RealmValueProperty.Type == type).OrderBy(r => r.Id).ToList();
@@ -1043,35 +1166,20 @@ namespace Realms.Tests.Database
                 _ => throw new NotImplementedException(),
             };
         }
+    }
 
-        private class RealmValueObject : RealmObject
-        {
-            public int Id { get; set; }
+    public partial class InternalObject : TestRealmObject, IEquatable<InternalObject>
+    {
+        public int IntProperty { get; set; }
 
-            public RealmValue RealmValueProperty { get; set; }
+        public string? StringProperty { get; set; }
 
-            public IList<RealmValue> RealmValueList { get; }
+        public override bool Equals(object? obj) => Equals(obj as InternalObject);
 
-            public ISet<RealmValue> RealmValueSet { get; }
+        public bool Equals(InternalObject? other) => other != null &&
+                   IntProperty == other.IntProperty &&
+                   StringProperty == other.StringProperty;
 
-            public IDictionary<string, RealmValue> RealmValueDictionary { get; }
-
-            public IDictionary<string, int> TestDict { get; }
-        }
-
-        private class InternalObject : RealmObject, IEquatable<InternalObject>
-        {
-            public int IntProperty { get; set; }
-
-            public string StringProperty { get; set; }
-
-            public override bool Equals(object obj) => Equals(obj as InternalObject);
-
-            public bool Equals(InternalObject other) => other != null &&
-                       IntProperty == other.IntProperty &&
-                       StringProperty == other.StringProperty;
-
-            public override string ToString() => $"{IntProperty} - {StringProperty}";
-        }
+        public override string? ToString() => $"{IntProperty} - {StringProperty}";
     }
 }

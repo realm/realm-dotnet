@@ -18,7 +18,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Baas;
 
 namespace Baas
 {
@@ -27,7 +26,7 @@ namespace Baas
         public static async Task Main(string[] args)
         {
             var (client, _, _) = await BaasClient.CreateClientFromArgs(args, Console.Out);
-            await client.GetOrCreateApps();
+            await client!.GetOrCreateApps();
         }
     }
 }

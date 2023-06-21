@@ -10,6 +10,7 @@ This repository holds the source code for the .NET / C# versions of Realm. Curre
 * **Simple:** Data is directly [exposed as objects](https://docs.mongodb.com/realm/dotnet/objects/) and [queryable by code](https://docs.mongodb.com/realm/dotnet/query-engine/), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just a few common classes](https://docs.mongodb.com/realm-sdks/dotnet/latest/): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
 * **Fast:** Realm is faster than even raw SQLite on common operations while maintaining an extremely rich feature set.
+* **[Device Sync](https://www.mongodb.com/atlas/app-services/device-sync)**: Makes it simple to keep data in sync across users, devices, and your backend in real-time. Get started for free with [a template application](https://github.com/mongodb/template-app-maui-todo) and [create the cloud backend](http://mongodb.com/realm/register?utm_medium=github_atlas_CTA&utm_source=realm_dotnet_github).
 
 ## Getting Started
 
@@ -34,18 +35,18 @@ Refer to [this guide](https://www.visualstudio.com/en-us/docs/package/nuget/cons
 
 ## Building Realm
 
-We highly recommend [using our pre-built binaries via NuGet](https://docs.mongodb.com/realm/dotnet/install/#open-the-nuget-package-manager) but you can also build from [source](https://github.com/realm/realm-dotnet).
+We highly recommend [using our pre-built binaries via NuGet](https://docs.mongodb.com/realm/dotnet/install/#open-the-nuget-package-manager) but you can also build from source.
 
 Prerequisites:
 
 * Visual Studio 2019 Community or above.
 * Building iOS/macOS apps also requires Xcode 8.1 or above.
 
-**Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
+Instructions:
 
 1. Download and build the native libraries using the instructions in [`wrappers/README.md`](wrappers/README.md)
 1. Open the `Realm.sln` in `Visual Studio`
-1. Build `Realm.Fody` and `Realm`
+1. Build `Realm`, `Realm.Fody` and `Realm.SourceGenerator`
 1. Build and run the tests for the relevant platforms.
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
@@ -54,7 +55,8 @@ If you are actively testing code against the Realm source, see also the unit tes
 
 Some minimal examples of Realm use can be found in the `examples` folder:
 
-* [QuickJournal](examples/QuickJournal): a simple Xamarin.Forms application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+* [QuickJournal](examples/QuickJournal): a quick journaling [MAUI](https://github.com/dotnet/maui) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
+* [SimpleToDo](examples/SimpleToDoAvalonia): a simple to-do list [Avalonia](https://github.com/AvaloniaUI/Avalonia) application that shows how Realm can be used effectively in conjunction with MVVM and data binding.
 
 ## Contributing
 
@@ -69,10 +71,6 @@ unacceptable behavior to [community-conduct@mongodb.com](mailto:community-conduc
 ## License
 
 Realm .NET and [Realm Core](https://github.com/realm/realm-core) are published under the Apache License 2.0.
-
-**This product is not being made available to any person located in Cuba, Iran,
-North Korea, Sudan, Syria or the Crimea region, or to any other person that is
-not eligible to receive the product under U.S. law.**
 
 ## Feedback
 

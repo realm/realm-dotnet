@@ -34,7 +34,7 @@ struct SchemaProperty
     const char* object_type;
     const char* link_origin_property_name;
     bool is_primary;
-    bool is_indexed;
+    IndexType index;
     
     static SchemaProperty for_marshalling(const Property&);
 };
@@ -44,9 +44,9 @@ struct SchemaObject
     const char* name;
     int properties_start;
     int properties_end;
-    bool is_embedded;
+    ObjectSchema::ObjectType table_type;
     
-    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&, bool);
+    static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
 };
 
 struct SchemaForMarshaling
@@ -58,6 +58,17 @@ struct SchemaForMarshaling
     
 };
 
+REALM_FORCEINLINE IndexType get_index_type(const Property& property)
+{
+    if (property.is_fulltext_indexed)
+        return IndexType::Fulltext;
+
+    if (property.is_indexed)
+        return IndexType::General;
+
+    return IndexType::None;
+}
+
 REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property& property)
 {
     return {
@@ -66,15 +77,15 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
         property.object_type.c_str(),
         property.link_origin_property_name.c_str(),
         property.is_primary,
-        property.is_indexed
+        get_index_type(property),
     };
 }
 
-REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties, bool is_embedded)
+REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties)
 {
     SchemaObject ret;
     ret.name = object.name.c_str();
-    ret.is_embedded = is_embedded;
+    ret.table_type = object.table_type;
     
     ret.properties_start = static_cast<int>(properties.size());
     for (const auto& property : object.persisted_properties) {

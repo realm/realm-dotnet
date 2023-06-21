@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "configuration", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "fetchPackageArtifacts", "setupWorkloads")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
 
 ---
 name: test-macos
@@ -11,8 +11,7 @@ jobs:
     name: Xamarin.macOS
     timeout-minutes: 45
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ template.replace(buildTests("Tests/Tests.XamarinMac"))
       - name: Run the tests
         run: #@ "Tests/Tests.XamarinMac/bin/" + configuration + "/Tests.XamarinMac.app/Contents/MacOS/Tests.XamarinMac --headless --result=${{ github.workspace }}/TestResults.XamarinMac.xml --labels=All" + baasTestArgs("xamarinmacos")
@@ -24,10 +23,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode())
       - #@ template.replace(fetchPackageArtifacts())
-      - #@ setupDotnet()
-      - name: Setup workloads
-        run: |
-          dotnet workload install maui
+      - #@ setupWorkloads()
       - name: Build the tests
         run: #@ "dotnet build Tests/Tests.Maui -c " + configuration + " -f net6.0-maccatalyst -p:RestoreConfigFile=Tests/Test.NuGet.Config -p:UseRealmNupkgsWithVersion=${{ inputs.version }}"
       - name: Run the tests

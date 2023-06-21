@@ -26,14 +26,12 @@ using Realms.Tests.Sync;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-using Environment = Android.OS.Environment;
-
 namespace Realms.Tests.Android
 {
     [Activity(Label = "Realm Tests", MainLauncher = true)]
     public class MainActivity : FormsApplicationActivity
     {
-        public Action<Result> OnFinished { get; set; }
+        public Action<Result>? OnFinished { get; set; }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -50,7 +48,7 @@ namespace Realms.Tests.Android
                 LogToOutput = true,
             };
 
-            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent.GetStringArrayExtra("args") ?? Array.Empty<string>());
+            var arguments = SyncTestHelpers.ExtractBaasSettings(Intent?.GetStringArrayExtra("args") ?? Array.Empty<string>());
 
             if (TestHelpers.IsHeadlessRun(arguments))
             {
@@ -61,7 +59,7 @@ namespace Realms.Tests.Android
                 {
                     TestHelpers.TransformTestResults(options.ResultFilePath);
                     Console.WriteLine("Activity finished...");
-                    OnFinished(Result.Ok);
+                    OnFinished?.Invoke(Result.Ok);
                     Finish();
                     return Task.CompletedTask;
                 };

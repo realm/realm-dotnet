@@ -27,6 +27,11 @@ using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
 using Realms.Schema;
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -91,7 +96,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(second.OnManagedCalled, Is.EqualTo(1));
-            Assert.That(first.RelatedObject.OnManagedCalled, Is.EqualTo(1));
+            Assert.That(first.RelatedObject!.OnManagedCalled, Is.EqualTo(1));
         }
 
         [Test]
@@ -124,12 +129,15 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void RealmObject_ObjectSchema_ReturnsValueWhenManaged()
+        public void RealmObject_ObjectSchema_ReturnsValueWhenManagedAndUnmanaged()
         {
             var person = new Person();
 
+#if TEST_WEAVER
             Assert.That(person.ObjectSchema, Is.Null);
-
+#else
+            Assert.That(person.ObjectSchema, Is.Not.Null);
+#endif
             _realm.Write(() =>
             {
                 _realm.Add(person);
@@ -137,7 +145,7 @@ namespace Realms.Tests.Database
 
             Assert.That(person.ObjectSchema, Is.Not.Null);
 
-            Assert.That(person.ObjectSchema.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
+            Assert.That(person.ObjectSchema!.TryFindProperty(nameof(Person.FirstName), out var property), Is.True);
             Assert.That(property.Type, Is.EqualTo(PropertyType.NullableString));
         }
 
@@ -152,7 +160,7 @@ namespace Realms.Tests.Database
                 });
             });
 
-            var obj = _realm.Find<OnManagedTestClass>(1);
+            var obj = _realm.Find<OnManagedTestClass>(1)!;
             Assert.That(obj.OnManagedCalled, Is.EqualTo(1));
         }
 
@@ -250,7 +258,7 @@ namespace Realms.Tests.Database
                 return _realm.Add(new RequiredPrimaryKeyStringObject { Id = "a" });
             });
 
-            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
+            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a")!;
 
             Assert.That(objAgain.GetHashCode(), Is.EqualTo(obj.GetHashCode()), "The hash code of multiple managed objects pointing to the same row should be the same");
             Assert.That(objAgain, Is.EqualTo(obj));
@@ -266,7 +274,7 @@ namespace Realms.Tests.Database
 
             var managedHash = obj.GetHashCode();
 
-            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a");
+            var objAgain = _realm.Find<RequiredPrimaryKeyStringObject>("a")!;
 
             _realm.Write(() =>
             {
@@ -324,7 +332,7 @@ namespace Realms.Tests.Database
 
             var text = serializationFunction(obj);
 
-            var realmTypes = new[] { typeof(RealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
+            var realmTypes = new[] { typeof(IRealmObjectBase), typeof(RealmList<string>), typeof(RealmSet<string>), typeof(RealmDictionary<int>) };
 
             foreach (var field in realmTypes.SelectMany(t => t.GetFields(BindingFlags.Instance | BindingFlags.NonPublic)))
             {
@@ -368,7 +376,7 @@ namespace Realms.Tests.Database
                     });
 
                     var frozenOwner = owner.Freeze();
-                    var frozenRealm = frozenOwner.Realm;
+                    var frozenRealm = frozenOwner.Realm!;
 
                     return new object[] { frozenOwner, frozenRealm };
                 });
@@ -459,7 +467,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(frozenPeter.Name, Is.EqualTo("Peter"));
-            Assert.That(frozenPeter.TopDog.Name, Is.EqualTo("Doggo"));
+            Assert.That(frozenPeter.TopDog!.Name, Is.EqualTo("Doggo"));
 
             var frozenPeter2 = Freeze(livePeter);
 
@@ -473,7 +481,7 @@ namespace Realms.Tests.Database
             Assert.That(frozenPeter.TopDog.Name, Is.EqualTo("Doggo"));
 
             Assert.That(frozenPeter2.Name, Is.EqualTo("Peter II"));
-            Assert.That(frozenPeter2.TopDog.Name, Is.EqualTo("Dogsimus"));
+            Assert.That(frozenPeter2.TopDog!.Name, Is.EqualTo("Dogsimus"));
         }
 
         [Test]
@@ -505,10 +513,31 @@ namespace Realms.Tests.Database
 
             _realm.Write(() =>
             {
-                _realm.Add(obj);
+                _realm.Add(obj!);
             });
 
-            Assert.That(obj.Equals(null), Is.False);
+            Assert.That(obj!.Equals(null), Is.False);
+        }
+
+        [Test]
+        public void RealmObject_InitializedFields_GetCorrectValues()
+        {
+            // This test ensures we only run the initialization instructions of Realm Object fields once.
+            // i.e. where we have a class that has an ID field that gets incremented every time a new class
+            // instance is created by incrementing an external variable and assigning it to the Id field.
+            //
+            // class FieldObject { Id: Generator.Id() } where Generator.Id = () => _currentId++;
+            //
+            // It could be that because of i.e. copying over initialization commands to the accessor
+            // but not removing from the original constructor, the initialization of the field
+            // would get repeated, thus leading to the _currentId being incremented twice.
+            var obj0 = new InitializedFieldObject();
+            var obj1 = new InitializedFieldObject();
+            var obj2 = new InitializedFieldObject();
+
+            Assert.That(obj0.Id, Is.EqualTo(0));
+            Assert.That(obj1.Id, Is.EqualTo(1));
+            Assert.That(obj2.Id, Is.EqualTo(2));
         }
 
         [Test]
@@ -626,7 +655,7 @@ namespace Realms.Tests.Database
             Assert.That(firstWithPK.Equals(secondWithPK), Is.True);
 
             var firstTsr = ThreadSafeReference.Create(firstWithPK);
-            var objResolved = _realm.ResolveReference(firstTsr);
+            var objResolved = _realm.ResolveReference(firstTsr)!;
 
             Assert.That(ReferenceEquals(firstWithPK, objResolved), Is.False);
             Assert.That(ReferenceEquals(objResolved, secondWithPK), Is.False);
@@ -638,7 +667,7 @@ namespace Realms.Tests.Database
             Assert.That(ReferenceEquals(firstWithPK, objFromResults), Is.False);
             Assert.That(firstWithPK.Equals(objFromResults), Is.True);
 
-            var objFromFind = _realm.Find<PrimaryKeyStringObject>("abc");
+            var objFromFind = _realm.Find<PrimaryKeyStringObject>("abc")!;
             Assert.That(ReferenceEquals(secondWithPK, objFromFind), Is.False);
             Assert.That(objFromFind.Equals(secondWithPK), Is.True);
         }
@@ -716,35 +745,76 @@ namespace Realms.Tests.Database
             Assert.That(obj.ToString(), Is.EqualTo($"PrimaryKeyStringObject (removed)"));
         }
 
-        [Serializable]
-        public class SerializedObject : RealmObject
+        [Test]
+        public void RealmObject_WhenThrowsBeforeInitializer_DoesNotCrash()
         {
-            public int IntValue { get; set; }
-
-            public string Name { get; set; }
-
-            public IDictionary<string, int> Dict { get; }
-
-            public IList<string> List { get; }
-
-            public ISet<string> Set { get; }
-        }
-
-        private class OnManagedTestClass : RealmObject
-        {
-            [PrimaryKey]
-            public int Id { get; set; }
-
-            public OnManagedTestClass RelatedObject { get; set; }
-
-            public IList<OnManagedTestClass> RelatedCollection { get; }
-
-            [Ignored]
-            public int OnManagedCalled { get; private set; }
-
-            protected internal override void OnManaged()
+            // This tests that a RealmObject without an accessor (due to an exception thrown
+            // before being initialized) does not cause a crash (NullReferenceException) once
+            // the object gets GCed. (Simulate a crash by adding a destructor in RealmObject
+            // that tries to access a member on "_accessor".)
+            for (var i = 0; i < 1000; i++)
             {
-                OnManagedCalled++;
+                try
+                {
+                    _ = new ThrowsBeforeInitializer();
+                }
+                catch
+                {
+                }
+
+                GC.Collect();
+            }
+        }
+    }
+
+    [Serializable]
+    public partial class SerializedObject : TestRealmObject
+    {
+        public int IntValue { get; set; }
+
+        public string? Name { get; set; }
+
+        public IDictionary<string, int> Dict { get; } = null!;
+
+        public IList<string> List { get; } = null!;
+
+        public ISet<string> Set { get; } = null!;
+    }
+
+    public partial class OnManagedTestClass : TestRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public OnManagedTestClass? RelatedObject { get; set; }
+
+        public IList<OnManagedTestClass> RelatedCollection { get; } = null!;
+
+        [Ignored]
+        public int OnManagedCalled { get; private set; }
+
+#if TEST_WEAVER
+        protected internal override void OnManaged()
+#else
+        partial void OnManaged()
+#endif
+        {
+            OnManagedCalled++;
+        }
+    }
+
+    public partial class ThrowsBeforeInitializer : IRealmObject
+    {
+        [PrimaryKey]
+        public int Id { get; set; }
+
+        public object WillThrow = new Thrower();
+
+        internal class Thrower
+        {
+            public Thrower()
+            {
+                throw new Exception("Exception thrown before initializer.");
             }
         }
     }

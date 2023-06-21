@@ -34,12 +34,12 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
-            var getter = topDogProperty.GetMethod;
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog))!;
+            var getter = topDogProperty.GetMethod!;
 
             var topDog = getter.Invoke(owner, null) as Dog;
             Assert.That(topDog, Is.Not.Null);
-            Assert.That(topDog.Name, Is.EqualTo(DogName));
+            Assert.That(topDog!.Name, Is.EqualTo(DogName));
         }
 
         [Test]
@@ -48,11 +48,11 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog))!;
 
             var topDog = topDogProperty.GetValue(owner, null) as Dog;
             Assert.That(topDog, Is.Not.Null);
-            Assert.That(topDog.Name, Is.EqualTo(DogName));
+            Assert.That(topDog!.Name, Is.EqualTo(DogName));
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
             var topDog = owner.TopDog;
             Assert.That(topDog, Is.Not.Null);
-            Assert.That(topDog.Name, Is.EqualTo(DogName));
+            Assert.That(topDog!.Name, Is.EqualTo(DogName));
         }
 
         [Test]
@@ -75,8 +75,8 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
-            var getter = topDogProperty.GetMethod;
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog))!;
+            var getter = topDogProperty.GetMethod!;
 
             var topDog = getter.Invoke(owner, null);
             Assert.That(topDog, Is.Null);
@@ -93,7 +93,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog));
+            var topDogProperty = typeInfo.GetProperty(nameof(Owner.TopDog))!;
 
             var topDog = topDogProperty.GetValue(owner, null);
             Assert.That(topDog, Is.Null);
@@ -120,7 +120,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner();
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name)).GetMethod;
+            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name))!.GetMethod!;
 
             var name = nameGetter.Invoke(owner, null);
             Assert.That(name, Is.EqualTo(OwnerName));
@@ -143,7 +143,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name)).GetMethod;
+            var nameGetter = typeInfo.GetProperty(nameof(Owner.Name))!.GetMethod!;
 
             var name = nameGetter.Invoke(owner, null);
             Assert.That(name, Is.EqualTo(default(string)));
@@ -169,7 +169,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name))!.SetMethod!;
 
             _realm.Write(() =>
             {
@@ -184,7 +184,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name))!.SetMethod!;
 
             nameSetter.Invoke(owner, new[] { "John" });
 
@@ -196,7 +196,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name))!;
 
             _realm.Write(() =>
             {
@@ -211,7 +211,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name))!;
 
             pi.SetValue(owner, "John");
 
@@ -219,10 +219,69 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void ReflectableSetValue_IfSameValue_ShouldDoNothing()
+        {
+            var owner = AddDogAndOwner();
+            var dog = owner.TopDog;
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+
+            string? propertyChanged = null;
+
+            owner.PropertyChanged += (sender, e) =>
+            {
+                propertyChanged = e.PropertyName;
+            };
+
+            var namePi = typeInfo.GetProperty(nameof(Owner.Name))!;
+            namePi.SetValue(owner, OwnerName);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+
+            var dogPi = typeInfo.GetProperty(nameof(Owner.TopDog))!;
+            dogPi.SetValue(owner, dog);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+        }
+
+        [Test]
+        public void ReflectableSetValue_IfSameNullValue_ShouldDoNothing()
+        {
+            var owner = new Owner();
+
+            _realm.Write(() =>
+            {
+                _realm.Add(owner);
+            });
+
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+
+            string? propertyChanged = null;
+
+            owner.PropertyChanged += (sender, e) =>
+            {
+                propertyChanged = e.PropertyName;
+            };
+
+            var namePi = typeInfo.GetProperty(nameof(Owner.Name))!;
+            namePi.SetValue(owner, null);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+
+            var dogPi = typeInfo.GetProperty(nameof(Owner.TopDog))!;
+            dogPi.SetValue(owner, null);
+            _realm.Refresh();
+
+            Assert.That(propertyChanged, Is.Null);
+        }
+
+        [Test]
         public void Setter_WhenNotInTransaction_ShouldThrow()
         {
             var owner = AddDogAndOwner();
-            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name))!.SetMethod!;
 
             Assert.That(() =>
             {
@@ -234,7 +293,7 @@ namespace Realms.Tests.Database
         public void Setter_WhenInTransaction_ShouldSetValue()
         {
             var owner = AddDogAndOwner();
-            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name))!.SetMethod!;
 
             _realm.Write(() =>
             {
@@ -248,7 +307,7 @@ namespace Realms.Tests.Database
         public void SetValue_WhenNotInTransaction_ShouldThrow()
         {
             var owner = AddDogAndOwner();
-            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name))!;
 
             Assert.That(() =>
             {
@@ -260,7 +319,7 @@ namespace Realms.Tests.Database
         public void SetValue_WhenInTransaction_ShouldSetValue()
         {
             var owner = AddDogAndOwner();
-            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name))!;
 
             _realm.Write(() =>
             {
@@ -280,7 +339,7 @@ namespace Realms.Tests.Database
             });
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name)).SetMethod;
+            var nameSetter = typeInfo.GetProperty(nameof(Owner.Name))!.SetMethod!;
 
             Assert.That(() =>
             {
@@ -297,7 +356,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name))!;
 
             pi.SetValue(owner, "John");
 
@@ -310,7 +369,7 @@ namespace Realms.Tests.Database
             var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var pi = typeInfo.GetProperty(nameof(Owner.Name));
+            var pi = typeInfo.GetProperty(nameof(Owner.Name))!;
 
             var name = pi.GetValue(owner);
 
@@ -322,7 +381,7 @@ namespace Realms.Tests.Database
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
-            var propName = typeInfo.GetProperty(nameof(Owner.Name));
+            var propName = typeInfo.GetProperty(nameof(Owner.Name))!;
             var declaredPropName = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
             Assert.That(propName, Is.EqualTo(declaredPropName));
         }

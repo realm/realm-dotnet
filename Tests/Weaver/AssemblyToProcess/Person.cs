@@ -18,33 +18,30 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Realms;
 
 namespace AssemblyToProcess
 {
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PhoneNumber : RealmObject
     {
-        public string Kind { get; set; }
+        public string? Kind { get; set; }
 
-        public string Number { get; set; }
+        public string? Number { get; set; }
 
         [Backlink(nameof(Person.PrimaryNumber))]
-        public IQueryable<Person> PrimaryPersons { get; }
+        public IQueryable<Person> PrimaryPersons { get; } = null!;
 
         [Backlink(nameof(Person.PhoneNumbers))]
-        public IQueryable<Person> Persons { get; }
+        public IQueryable<Person> Persons { get; } = null!;
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Person : RealmObject
     {
         // Automatically implemented (overridden) properties
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         public float Score { get; set; }
 
@@ -80,11 +77,11 @@ namespace AssemblyToProcess
 
         // Re-mapped property
         [MapTo("Email")]
-        private string Email_ { get; set; }
+        private string? Email_ { get; set; }
 
         // Wrapped version of previous property
         [Ignored]
-        public string Email
+        public string? Email
         {
             get
             {
@@ -93,7 +90,7 @@ namespace AssemblyToProcess
 
             set
             {
-                if (!value.Contains("@"))
+                if (value?.Contains("@") != true)
                 {
                     throw new Exception("Invalid email address");
                 }
@@ -103,11 +100,11 @@ namespace AssemblyToProcess
         }
 
         // Manually implemented property
-        public string Address
+        public string? Address
         {
             get
             {
-                return (string)GetValue("Address");
+                return (string?)GetValue("Address");
             }
 
             set
@@ -117,13 +114,13 @@ namespace AssemblyToProcess
         }
 
         // One-to-one relationship
-        public PhoneNumber PrimaryNumber { get; set; }
+        public PhoneNumber? PrimaryNumber { get; set; }
 
         // One-to-many relationship
-        public IList<PhoneNumber> PhoneNumbers { get; }
+        public IList<PhoneNumber> PhoneNumbers { get; } = null!;
 
         // Expression property
-        public string LowerCaseEmail => Email_.ToLower();
+        public string? LowerCaseEmail => Email_?.ToLower();
 
         public IQueryable<object> SomeQueryableProperty
         {

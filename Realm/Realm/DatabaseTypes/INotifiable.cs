@@ -33,13 +33,14 @@ namespace Realms
         /// Method called when there are changes to report for that object.
         /// </summary>
         /// <param name="changes">The changes that occurred.</param>
-        void NotifyCallbacks(TChangeset? changes);
+        /// <param name="shallow">Whether the changes are coming from a shallow notifier or not.</param>
+        void NotifyCallbacks(TChangeset? changes, bool shallow);
     }
 
     internal class NotificationToken<TCallback> : IDisposable
     {
-        private TCallback _callback;
-        private Action<TCallback> _unsubscribe;
+        private TCallback? _callback;
+        private Action<TCallback>? _unsubscribe;
 
         internal NotificationToken(TCallback callback, Action<TCallback> unsubscribe)
         {
@@ -67,6 +68,6 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is just a helper for the generic token")]
     internal static class NotificationToken
     {
-        public static NotificationToken<T> Create<T>(T callback, Action<T> unsubscribe) => new NotificationToken<T>(callback, unsubscribe);
+        public static NotificationToken<T> Create<T>(T callback, Action<T> unsubscribe) => new(callback, unsubscribe);
     }
 }

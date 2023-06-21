@@ -18,13 +18,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
+using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Logging;
+using Realms.PlatformHelpers;
 using Realms.Sync;
 using Realms.Sync.Exceptions;
 
@@ -34,25 +37,107 @@ namespace Realms.Tests.Sync
     public class AppTests : SyncTestBase
     {
         [Test]
+        public void DeviceInfo_OutputsMeaningfulInfo()
+        {
+            void AssertBundleId(params string[] expectedValues)
+            {
+                var values = expectedValues.Concat(new[] { "ReSharperTestRunner" }).Select(Platform.Sha256).ToArray();
+                Assert.That(values, Does.Contain(Platform.BundleId));
+            }
+
+            if (TestHelpers.IsUnity)
+            {
+                Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown));
+                Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown));
+                Assert.That(Platform.BundleId, Is.EqualTo(Platform.Sha256("Tests.Unity")));
+                return;
+            }
+
+            var framework = Assembly.GetEntryAssembly()?.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName;
+
+            var os = SharedRealmHandle.GetNativeLibraryOS();
+            switch (os)
+            {
+                case "Windows":
+                case "Linux":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    AssertBundleId("Realm.Tests");
+                    break;
+                case "macOS":
+                    // We don't detect the device on .NET Core apps, only Xamarin or net6.0-maccatalyst.
+                    if (framework?.Contains(".NETCoreApp") == true)
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                        AssertBundleId("Realm.Tests");
+                    }
+                    else
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple"), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                        AssertBundleId("Tests.XamarinMac");
+                    }
+
+                    break;
+                case "iOS":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPhone"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPhone").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.iOS", "Tests.Maui");
+                    break;
+                case "Android":
+                    Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+                    AssertBundleId("Tests.Android", "Tests.Maui");
+                    break;
+                case "UWP":
+                    if (TestHelpers.IsUWP)
+                    {
+#if DEBUG
+                        // Extracting device info only works for local builds - in many cases we don't have registry access on CI
+                        // so we can't make assumptions about what value we'll get for Name/Version.
+                        Assert.That(Platform.DeviceInfo.Name, Is.Not.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.Not.EqualTo(Platform.Unknown), "Version");
+#endif
+                    }
+                    else
+                    {
+                        Assert.That(Platform.DeviceInfo.Name, Is.EqualTo(Platform.Unknown), "Name");
+                        Assert.That(Platform.DeviceInfo.Version, Is.EqualTo(Platform.Unknown), "Version");
+                    }
+
+                    AssertBundleId("Tests.UWP");
+                    break;
+                case "tvOS":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("Apple TV"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("AppleTV").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.XamarinTVOS");
+                    break;
+                case "Mac Catalyst":
+                    Assert.That(Platform.DeviceInfo.Name, Is.EqualTo("iPad"), "Name");
+                    Assert.That(Platform.DeviceInfo.Version, Does.Contain("iPad").Or.EqualTo("x86_64"), "Version");
+                    AssertBundleId("Tests.Maui");
+                    break;
+                default:
+                    Assert.Fail($"Unknown OS: {os}");
+                    break;
+            }
+        }
+
+        [Test]
         public void AppCreate_CreatesApp()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
                 BaseUri = new Uri("http://foo.bar"),
                 LocalAppName = "My app",
                 LocalAppVersion = "1.2.3",
-                LogLevel = LogLevel.All,
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.DefaultStorageFolder,
-                CustomLogger = (message, level) => { },
+                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
@@ -66,48 +151,6 @@ namespace Realms.Tests.Sync
                 var user = await DefaultApp.LogInAsync(Credentials.Anonymous());
                 Assert.That(user, Is.Not.Null);
                 Assert.That(user.Id, Is.Not.Null);
-            });
-        }
-
-        [TestCase(LogLevel.Debug)]
-        [TestCase(LogLevel.Info)]
-        public void App_WithCustomLogger_LogsSyncOperations(LogLevel logLevel)
-        {
-            SyncTestHelpers.RunBaasTestAsync(async () =>
-            {
-                var logBuilder = new StringBuilder();
-
-                var appConfig = SyncTestHelpers.GetAppConfig();
-#pragma warning disable CS0618 // Type or member is obsolete
-                appConfig.LogLevel = logLevel;
-                appConfig.CustomLogger = (message, level) =>
-                {
-                    lock (logBuilder)
-                    {
-                        logBuilder.AppendLine($"[{level}] {message}");
-                    }
-                };
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                var app = CreateApp(appConfig);
-
-                var config = await GetIntegrationConfigAsync(Guid.NewGuid().ToString());
-                using var realm = await GetRealmAsync(config);
-                realm.Write(() =>
-                {
-                    realm.Add(new PrimaryKeyStringObject { Id = Guid.NewGuid().ToString() });
-                });
-
-                await WaitForUploadAsync(realm);
-
-                string log;
-                lock (logBuilder)
-                {
-                    log = logBuilder.ToString();
-                }
-
-                Assert.That(log, Does.Contain($"[{logLevel}]"));
-                Assert.That(log, Does.Not.Contain($"[{logLevel - 1}]"));
             });
         }
 
@@ -142,7 +185,7 @@ namespace Realms.Tests.Sync
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                App app = null;
+                App app = null!;
                 var gcTask = TestHelpers.EnsureObjectsAreCollected(() =>
                 {
                     var handler = new HttpClientHandler();
@@ -174,7 +217,7 @@ namespace Realms.Tests.Sync
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                Requests.Add((request.Method, request.RequestUri.AbsoluteUri));
+                Requests.Add((request.Method, request.RequestUri!.AbsoluteUri));
                 return base.SendAsync(request, cancellationToken);
             }
         }

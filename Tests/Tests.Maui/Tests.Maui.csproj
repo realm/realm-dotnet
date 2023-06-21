@@ -9,6 +9,7 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <DisableFody>true</DisableFody>
+    <Nullable>enable</Nullable>
 
     <!-- Display name -->
     <ApplicationTitle>Tests.Maui</ApplicationTitle>
@@ -64,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0-ios' AND '$(UseRealmNupkgsWithVersion)' == ''">
-	  <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
+    <NativeReference Include="..\..\wrappers\build\iphoneos\$(Configuration)\realm-wrappers.framework" Condition="$(RuntimeIdentifier.StartsWith('ios-'))">
       <Kind>Framework</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>

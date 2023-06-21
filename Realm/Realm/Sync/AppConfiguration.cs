@@ -19,17 +19,17 @@
 using System;
 using System.Net.Http;
 using Realms.Helpers;
-using Realms.Logging;
 
 namespace Realms.Sync
 {
     /// <summary>
     /// A class exposing configuration options for a <see cref="App"/>.
     /// </summary>
-    /// <seealso cref="App.Create(AppConfiguration)"/>.
     public class AppConfiguration
     {
-        private byte[] _metadataEncryptionKey;
+        private string? _baseFilePath;
+
+        private byte[]? _metadataEncryptionKey;
 
         /// <summary>
         /// Gets the unique app id that identifies the Realm application.
@@ -42,7 +42,15 @@ namespace Realms.Sync
         /// metadata for users and synchronized Realms.
         /// </summary>
         /// <value>The app's base path.</value>
-        public string BaseFilePath { get; set; }
+        public string BaseFilePath
+        {
+            get => _baseFilePath ?? InteropConfig.GetDefaultStorageFolder("Could not determine a writable folder to store app files (such as metadata and Realm files). When constructing the app, set AppConfiguration.BaseFilePath to an absolute path where the app is allowed to write.");
+            set
+            {
+                Argument.NotNull(value, nameof(value));
+                _baseFilePath = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the base url for this Realm application.
@@ -52,7 +60,7 @@ namespace Realms.Sync
         /// testing locally or are using a preproduction environment.
         /// </remarks>
         /// <value>The app's base url.</value>
-        public Uri BaseUri { get; set; }
+        public Uri BaseUri { get; set; } = new Uri("https://realm.mongodb.com");
 
         /// <summary>
         /// Gets or sets the local app's name.
@@ -65,7 +73,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <value>The friendly name identifying the current client application.</value>
         /// <seealso cref="LocalAppVersion"/>
-        public string LocalAppName { get; set; }
+        public string? LocalAppName { get; set; }
 
         /// <summary>
         /// Gets or sets the local app's version.
@@ -75,7 +83,7 @@ namespace Realms.Sync
         /// </remarks>
         /// <value>The client application's version.</value>
         /// <seealso cref="LocalAppName"/>
-        public string LocalAppVersion { get; set; }
+        public string? LocalAppVersion { get; set; }
 
         /// <summary>
         /// Gets or sets the persistence mode for user metadata on this device.
@@ -97,7 +105,7 @@ namespace Realms.Sync
         /// when opening the <see cref="Realm"/>.
         /// </remarks>
         /// <value>The user metadata encryption key.</value>
-        public byte[] MetadataEncryptionKey
+        public byte[]? MetadataEncryptionKey
         {
             get => _metadataEncryptionKey;
             set
@@ -112,30 +120,10 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Gets or sets a custom log function that will be invoked for each log message emitted by sync.
-        /// </summary>
-        /// <remarks>
-        /// The first argument of the action is the log message itself, while the second one is the <see cref="LogLevel"/>
-        /// at which the log message was emitted.
-        /// </remarks>
-        /// <value>The custom logger.</value>
-        /// <seealso cref="Logger.Default"/>
-        [Obsolete("Configure the global Realms.Logging.Logger.Default instead")]
-        public Action<string, LogLevel> CustomLogger { get; set; }
-
-        /// <summary>
-        /// Gets or sets the log level for sync operations.
-        /// </summary>
-        /// <value>The sync log level.</value>
-        /// <seealso cref="Logger.LogLevel"/>
-        [Obsolete("Configure the global Realms.Logging.Logger.LogLevel instead")]
-        public LogLevel LogLevel { get; set; } = LogLevel.Info;
-
-        /// <summary>
-        /// Gets or sets the default request timeout for HTTP requests to MongoDB Atlas.
+        /// Gets or sets the default request timeout for HTTP requests to MongoDB Atlas. Default is 1 minute.
         /// </summary>
         /// <value>The default HTTP request timeout.</value>
-        public TimeSpan? DefaultRequestTimeout { get; set; }
+        public TimeSpan DefaultRequestTimeout { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Gets or sets the <see cref="HttpMessageHandler"/> that will be used
@@ -148,7 +136,14 @@ namespace Realms.Sync
         /// normal circumstances, they can be useful if client devices are behind corporate firewall or use
         /// a more complex networking setup.
         /// </remarks>
-        public HttpMessageHandler HttpClientHandler { get; set; }
+        public HttpMessageHandler? HttpClientHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the options for the assorted types of connection timeouts for sync connections
+        /// opened for this app.
+        /// </summary>
+        /// <value>The sync timeout options applied to synchronized Realms.</value>
+        public SyncTimeoutOptions SyncTimeoutOptions { get; set; } = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.

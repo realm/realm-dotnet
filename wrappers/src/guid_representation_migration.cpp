@@ -96,7 +96,7 @@ static bool byteswap_guids(TableRef table, bool& found_non_v4_uuid)
                 primitive_columns.push_back(col);
             }
         }
-        return false; // keep iterating
+        return IteratorControl::AdvanceToNext; // keep iterating
     });
 
     if (!has_uuid_column)
@@ -163,21 +163,37 @@ void apply_guid_representation_fix(SharedRealm& realm, bool& found_non_v4_uuid, 
 {
     realm->begin_transaction();
     auto* group = &realm->read_group();
+
+    // Check if someone has added the marker table before us - if that's the case, we should return
+    // rather than do the work to swap guids.
+    if (group->has_table(c_guid_fix_table)) {
+        realm->cancel_transaction();
+        return;
+    }
+
     for (TableKey key : group->get_table_keys()) {
         if (group->table_is_public(key)) {
             found_guid_columns |= byteswap_guids(group->get_table(key), found_non_v4_uuid);
         }
     }
 
-     if (!found_non_v4_uuid) {
-         // we didn't find any Microsoft GUID (see comment in flip_guid())
-         // so this is likely a realm file that wasn't created with the .NET SDK
-         // or doesn't have big-endian GUID values anyway
-         // let's cancel the current transaction and start a new one just to record the marker table
-         realm->cancel_transaction();
-         realm->begin_transaction();
-         group = &realm->read_group();
-     }
+    if (!found_non_v4_uuid) {
+        // we didn't find any Microsoft GUID (see comment in flip_guid())
+        // so this is likely a realm file that wasn't created with the .NET SDK
+        // or doesn't have big-endian GUID values anyway
+        // let's cancel the current transaction and start a new one just to record the marker table
+        realm->cancel_transaction();
+        realm->begin_transaction();
+        group = &realm->read_group();
+
+        // Re-check for the marker table as we exited a write transaction, so another thread
+        // might have added the table before re-acquiring the write lock.
+        if (group->has_table(c_guid_fix_table)) {
+            realm->cancel_transaction();
+            return;
+        }
+    }
+
 
     group->add_table(c_guid_fix_table);
     realm->commit_transaction();

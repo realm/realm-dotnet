@@ -35,11 +35,11 @@ namespace Tests.Maui.Platforms.Android
         {
         }
 
-        public override void OnCreate(Bundle arguments)
+        public override void OnCreate(Bundle? arguments)
         {
             base.OnCreate(arguments);
 
-            var args = arguments.GetString("args");
+            var args = arguments?.GetString("args");
             if (args != null)
             {
                 _args.AddRange(Realms.Tests.TestHelpers.SplitArguments(args));
@@ -48,17 +48,17 @@ namespace Tests.Maui.Platforms.Android
             Start();
         }
 
-        public override void CallApplicationOnCreate(global::Android.App.Application app)
+        public override void CallApplicationOnCreate(global::Android.App.Application? app)
         {
-            ((MainApplication)app).Args = _args.ToArray();
+            ((MainApplication)app!).Args = _args.ToArray();
             base.CallApplicationOnCreate(app);
         }
 
         public override void OnStart()
         {
-            var intent = new Intent(Context, typeof(MainActivity));
+            var intent = new Intent(Context!, typeof(MainActivity));
             intent.SetFlags(ActivityFlags.NewTask);
-            var activity = (MainActivity)StartActivitySync(intent);
+            StartActivitySync(intent);
         }
     }
 }

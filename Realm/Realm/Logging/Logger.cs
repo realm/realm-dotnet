@@ -17,24 +17,26 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Text;
-using Realms.Sync;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Realms.Logging
 {
     /// <summary>
     /// A logger that logs messages originating from Realm. The default logger can be replaced by setting <see cref="Default"/>.
+    /// <br/>
+    /// A few built-in implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>,
+    /// but you can implement your own.
     /// </summary>
-    /// <remarks>
-    /// A few default implementations are provided by <see cref="Console"/>, <see cref="Null"/>, and <see cref="Function(Action{string})"/>, but you
-    /// can implement your own.
-    /// </remarks>
     public abstract class Logger
     {
         private readonly Lazy<GCHandle> _gcHandle;
 
-        private static Logger _defaultLogger;
+        private static Logger? _defaultLogger;
+        private static LogLevel _logLevel = LogLevel.Info;
 
         /// <summary>
         /// Gets a <see cref="ConsoleLogger"/> that outputs messages to the default console. For most project types, that will be
@@ -54,7 +56,7 @@ namespace Realms.Logging
         /// <returns>
         /// A <see cref="Logger"/> instance that will save log messages to a file.
         /// </returns>
-        public static Logger File(string filePath, Encoding encoding = null) => new FileLogger(filePath, encoding);
+        public static Logger File(string filePath, Encoding? encoding = null) => new FileLogger(filePath, encoding);
 
         /// <summary>
         /// Gets a <see cref="NullLogger"/> that ignores all messages.
@@ -84,20 +86,21 @@ namespace Realms.Logging
         /// <summary>
         /// Gets or sets the verbosity of log messages.
         /// </summary>
-        /// <remarks>
-        /// This replaces the deprecated <see cref="AppConfiguration.LogLevel"/>.
-        /// </remarks>
         /// <value>The log level for Realm-originating messages.</value>
-        public static LogLevel LogLevel { get; set; } = LogLevel.Info;
+        public static LogLevel LogLevel
+        {
+            get => _logLevel;
+            set
+            {
+                _logLevel = value;
+                SharedRealmHandle.SetLogLevel(value);
+            }
+        }
 
         /// <summary>
         /// Gets or sets a custom <see cref="Logger"/> implementation that will be used by
         /// Realm whenever information must be logged.
         /// </summary>
-        /// <remarks>
-        /// This is the logger that will be used to log diagnostic messages from Sync. It
-        /// replaces the deprecated <see cref="AppConfiguration.CustomLogger"/>.
-        /// </remarks>
         /// <value>The logger to be used for Realm-originating messages.</value>
         public static Logger Default
         {
@@ -106,11 +109,6 @@ namespace Realms.Logging
         }
 
         internal GCHandle GCHandle => _gcHandle.Value;
-
-        // This is only needed for backward compatibility - the App logger sets its own level separately
-        // Once that is removed, we should use Logger.LogLevel across the board.
-        [Obsolete("Remove when we remove the AppConfiguration.CustomLogger")]
-        internal LogLevel? _logLevel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logger"/> class.
@@ -129,9 +127,7 @@ namespace Realms.Logging
         /// <param name="message">The message to log.</param>
         public void Log(LogLevel level, string message)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (level < (_logLevel ?? LogLevel))
-#pragma warning restore CS0618 // Type or member is obsolete
+            if (level < LogLevel)
             {
                 return;
             }
@@ -165,11 +161,11 @@ namespace Realms.Logging
 
         private class FileLogger : Logger
         {
-            private readonly object locker = new object();
+            private readonly object locker = new();
             private readonly string _filePath;
             private readonly Encoding _encoding;
 
-            public FileLogger(string filePath, Encoding encoding = null)
+            public FileLogger(string filePath, Encoding? encoding = null)
             {
                 _filePath = filePath;
                 _encoding = encoding ?? Encoding.UTF8;
@@ -205,7 +201,7 @@ namespace Realms.Logging
 
         internal class InMemoryLogger : Logger
         {
-            private readonly StringBuilder _builder = new StringBuilder();
+            private readonly StringBuilder _builder = new();
 
             protected override void LogImpl(LogLevel level, string message)
             {
@@ -224,6 +220,64 @@ namespace Realms.Logging
             }
 
             public void Clear() => _builder.Clear();
+        }
+
+        internal class AsyncFileLogger : Logger, IDisposable
+        {
+            private readonly ConcurrentQueue<string> _queue = new();
+            private readonly string _filePath;
+            private readonly Encoding _encoding;
+            private readonly AutoResetEvent _hasNewItems = new(false);
+            private readonly AutoResetEvent _flush = new(false);
+            private readonly Task _runner;
+            private volatile bool _isFlushing;
+
+            public AsyncFileLogger(string filePath, Encoding? encoding = null)
+            {
+                _filePath = filePath;
+                _encoding = encoding ?? Encoding.UTF8;
+                _runner = Task.Run(Run);
+            }
+
+            public void Dispose()
+            {
+                _isFlushing = true;
+                _flush.Set();
+                _runner.Wait();
+
+                _hasNewItems.Dispose();
+                _flush.Dispose();
+            }
+
+            protected override void LogImpl(LogLevel level, string message)
+            {
+                if (!_isFlushing)
+                {
+                    _queue.Enqueue(FormatLog(level, message));
+                    _hasNewItems.Set();
+                }
+            }
+
+            private void Run()
+            {
+                var sb = new StringBuilder();
+                while (true)
+                {
+                    sb.Clear();
+                    WaitHandle.WaitAny(new[] { _hasNewItems, _flush });
+                    while (_queue.TryDequeue(out var item))
+                    {
+                        sb.AppendLine(item);
+                    }
+
+                    System.IO.File.AppendAllText(_filePath, sb.ToString(), _encoding);
+
+                    if (_isFlushing)
+                    {
+                        return;
+                    }
+                }
+            }
         }
     }
 }

@@ -1,0 +1,24 @@
+#@ load("@ytt:template", "template")
+#@ load("common.lib.yml", "checkoutCode", "configuration", "actionRuniOSSimulator")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "prepareTest")
+
+---
+name: test-tvos
+_: #@ template.replace(testDefinition())
+jobs:
+  test-xamarin:
+    runs-on: macos-latest
+    name: Xamarin.tvOS
+    timeout-minutes: 45
+    steps:
+      - #@ template.replace(prepareTest())
+      - #@ template.replace(buildTests("Tests/Tests.XamarinTVOS", Platform="iPhoneSimulator"))
+      - name: Run the tests
+        uses: #@ actionRuniOSSimulator
+        with:
+          appPath: #@ "Tests/Tests.XamarinTVOS/bin/iPhoneSimulator/" + configuration + "/Tests.XamarinTVOS.app"
+          bundleId: 'io.realm.Tests-XamarinTVOS'
+          iphoneToSimulate: 'Apple-TV-1080p'
+          arguments: #@ "--headless --result=${{ github.workspace }}/TestResults.tvOS.xml --labels=All" + baasTestArgs("tvos")
+          os: 'tvOS'
+      - #@ publishTestsResults("TestResults.tvOS.xml", "Xamarin.tvOS")

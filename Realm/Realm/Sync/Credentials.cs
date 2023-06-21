@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using Realms.Helpers;
 
 namespace Realms.Sync
@@ -76,6 +77,7 @@ namespace Realms.Sync
             /// <summary>
             /// Mechanism for logging in with API keys generated in the server UI.
             /// </summary>
+            [Obsolete("Use ApiKey instead.")]
             ServerApiKey = 9,
 
             /// <summary>
@@ -173,7 +175,7 @@ namespace Realms.Sync
         }
 
         /// <summary>
-        /// Creates credentials represetning a login with Realm function.
+        /// Creates credentials representing a login with Realm function.
         /// </summary>
         /// <param name="payload">The payload that will be passed as an argument to the server function.</param>
         /// <returns>A Credentials that can be used to authenticate a user by invoking a server function.</returns>
@@ -208,6 +210,7 @@ namespace Realms.Sync
         /// <param name="serverApiKey">The server API key to use for login.</param>
         /// <returns>A Credentials that can be used to authenticate user with an API key.</returns>
         /// <seealso href="https://docs.mongodb.com/realm/authentication/api-key/">API Key Authentication Docs</seealso>
+        [Obsolete("Use Credentials.ApiKey instead.")]
         public static Credentials ServerApiKey(string serverApiKey)
         {
             Argument.NotNull(serverApiKey, nameof(serverApiKey));
@@ -223,12 +226,12 @@ namespace Realms.Sync
         public AuthProvider Provider { get; }
 
         [Preserve]
-        internal string Token { get; }
+        internal string? Token { get; }
 
         [Preserve]
-        internal string AdditionalInfo { get; }
+        internal string? AdditionalInfo { get; }
 
-        private Credentials(AuthProvider provider, string token = null, string additionalInfo = null)
+        private Credentials(AuthProvider provider, string? token = null, string? additionalInfo = null)
         {
             Provider = provider;
             Token = token;

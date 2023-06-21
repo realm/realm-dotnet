@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
+#@ load("common.lib.yml", "checkoutCode", "setupDotnet", "setupWorkloads")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 #@ def importPfx(id):
 name: Import test certificate
@@ -21,8 +21,7 @@ jobs:
     name: UWP
     timeout-minutes: 45
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ importPfx("import-pfx")
       - #@ template.replace(buildTests("Tests/Tests.UWP", AppxBundle="Always", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", UseDotNetNativeToolchain="false", AppxBundlePlatforms="x64"))
       - name: Run the tests
@@ -34,10 +33,9 @@ jobs:
     name: Maui.Windows
     timeout-minutes: 45
     steps:
-      - #@ template.replace(checkoutCode())
-      - #@ template.replace(fetchPackageArtifacts())
+      - #@ template.replace(prepareTest())
       - #@ setupDotnet()
-      - run: dotnet workload install maui
+      - #@ setupWorkloads()
       - #@ importPfx("import-pfx")
       - #@ template.replace(dotnetBuildTests("Tests/Tests.Maui", "net6.0-windows10.0.19041", "win10-x64", GenerateAppxPackageOnBuild="true", PackageCertificateThumbprint="${{ steps.import-pfx.outputs.thumbprint }}", AppxPackageTestDir="Output/"))
       - name: Run the tests

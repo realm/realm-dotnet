@@ -27,7 +27,6 @@
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "notifications_cs.hpp"
-#include "wrapper_exceptions.hpp"
 #include "schema_cs.hpp"
 #include "realm_export_decls.hpp"
 
@@ -101,12 +100,12 @@ REALM_EXPORT size_t results_count(Results& results, NativeException::Marshallabl
     });
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results, void* managed_results, bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_results, [results](CollectionChangeCallback callback) {
-            return results->add_notification_callback(callback);
-        });
+        return subscribe_for_notifications(managed_results, [results, shallow](CollectionChangeCallback callback) {
+            return results->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+        }, shallow);
     });
 }
 
@@ -124,7 +123,7 @@ REALM_EXPORT DescriptorOrdering* results_get_descriptor_ordering(Results& result
     });
 }
 
-REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+REALM_EXPORT Results* results_get_filtered_results(const Results& results, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(results.get_realm(), results.get_table(), results.get_query(), query_buf, query_len, arguments, args_count, results.get_descriptor_ordering());

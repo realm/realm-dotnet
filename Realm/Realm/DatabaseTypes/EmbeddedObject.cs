@@ -23,10 +23,7 @@ namespace Realms
     /// </summary>
     public class EmbeddedObject : RealmObjectBase, IEmbeddedObject
     {
-        /// <summary>
-        /// Gets the parent of this <see cref="EmbeddedObject"/>. It can be either another
-        /// <see cref="EmbeddedObject"/> or a standalone <see cref="RealmObject"/>.
-        /// </summary>
-        public RealmObjectBase Parent { get; }
+        /// <inheritdoc/>
+        public IRealmObjectBase? Parent => ((IRealmObjectBase)this).Accessor.GetParent();
     }
 }

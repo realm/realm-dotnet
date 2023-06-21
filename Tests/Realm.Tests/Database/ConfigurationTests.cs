@@ -21,8 +21,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using Realms;
 using Realms.Exceptions;
+#if TEST_WEAVER
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 namespace Realms.Tests.Database
 {
@@ -122,7 +126,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey = null;
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]
@@ -136,7 +140,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey = TestHelpers.GetEncryptionKey();
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]
@@ -152,7 +156,7 @@ namespace Realms.Tests.Database
             _configuration.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmFileAccessErrorException>());
+            Assert.That(() => GetRealm(_configuration), Throws.TypeOf<RealmInvalidDatabaseException>());
         }
 
         [Test]
@@ -236,7 +240,7 @@ namespace Realms.Tests.Database
                     typeof(Foo.DuplicateClass),
                     typeof(Bar.DuplicateClass)
                 }
-            });
+            })!;
 
             Assert.That(ex.Message, Does.Contain("Foo.DuplicateClass"));
             Assert.That(ex.Message, Does.Contain("Bar.DuplicateClass"));
@@ -264,7 +268,7 @@ namespace Realms.Tests.Database
 namespace Foo
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : TestRealmObject
     {
         public int IntValue { get; set; }
     }
@@ -273,8 +277,8 @@ namespace Foo
 namespace Bar
 {
     [Realms.Explicit]
-    public class DuplicateClass : RealmObject
+    public partial class DuplicateClass : TestRealmObject
     {
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
     }
 }

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -863,18 +864,18 @@ namespace Realms.Tests.Database
 
         public static readonly object[] NullableStringTestValues = new[]
         {
-            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c" }, new string[] { "d", "e", "f" }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "b", "c", null }, new string[] { "a", "b", "c", null }) },
-            new object[] { new TestCaseData<string>(new string[] { "bla bla bla" }, new string[] { " " }) },
-            new object[] { new TestCaseData<string>(new string[] { " ", "a", "bla bla bla" }, Array.Empty<string>()) },
-            new object[] { new TestCaseData<string>(Array.Empty<string>(), new string[] { " " }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "b" }, new string[] { "bla bla bla", "a", "b", "c", "b" }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "a" }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "a", "a", "a" }, new string[] { "a", "b" }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "a", "a", "a", "b", "b" }, new string[] { "a", "a" }) },
-            new object[] { new TestCaseData<string>(new string[] { "a", "b", "a", "b", null, null, null }, new string[] { "a", "a", null }) },
-            new object[] { new TestCaseData<string>(new string[] { null }, new string[] { null, null }) },
-            new object[] { new TestCaseData<string>(new string[] { null, null }, new string[] { null, "f" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "b", "c" }, new string?[] { "d", "e", "f" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "b", "c", null }, new string?[] { "a", "b", "c", null }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "bla bla bla" }, new string?[] { " " }) },
+            new object[] { new TestCaseData<string?>(new string?[] { " ", "a", "bla bla bla" }, Array.Empty<string>()) },
+            new object[] { new TestCaseData<string?>(Array.Empty<string>(), new string?[] { " " }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "b" }, new string?[] { "bla bla bla", "a", "b", "c", "b" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "a", "a", "a", "a", "a", "a" }, new string?[] { "a", "a" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "a", "a", "a", "a", "a", "a" }, new string?[] { "a", "b" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "a", "a", "a", "b", "b" }, new string?[] { "a", "a" }) },
+            new object[] { new TestCaseData<string?>(new string?[] { "a", "b", "a", "b", null, null, null }, new string?[] { "a", "a", null }) },
+            new object[] { new TestCaseData<string?>(new string?[] { null }, new string?[] { null, null }) },
+            new object[] { new TestCaseData<string?>(new string?[] { null, null }, new string?[] { null, "f" }) },
         };
 
         [TestCaseSource(nameof(StringTestValues))]
@@ -884,7 +885,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void RealmSet_WhenUnmanaged_NullableString(TestCaseData<string> testData)
+        public void RealmSet_WhenUnmanaged_NullableString(TestCaseData<string?> testData)
         {
             RunUnmanagedTests(o => o.NullableStringSet, testData);
         }
@@ -896,7 +897,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableStringTestValues))]
-        public void RealmSet_WhenManaged_NullableString(TestCaseData<string> testData)
+        public void RealmSet_WhenManaged_NullableString(TestCaseData<string?> testData)
         {
             RunManagedTests(o => o.NullableStringSet, o => o.NullableStringList, o => o.NullableStringDict, testData);
         }
@@ -911,7 +912,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSet_WhenManaged_NullableString_Notifications()
         {
-            var testData = new TestCaseData<string>("fge", null, "zzzz");
+            var testData = new TestCaseData<string?>("fge", null, "zzzz");
             RunManagedNotificationsTests(o => o.NullableStringSet, testData, newValue: "new string");
         }
 
@@ -950,18 +951,18 @@ namespace Realms.Tests.Database
 
         public static readonly object[] NullableBinaryTestValues = new[]
         {
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3 }, new byte[][] { Binary4, Binary5, Binary6 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary3, null }, new byte[][] { Binary1, Binary2, Binary3, null }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { BinaryMax }, new byte[][] { Binary0 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>()) },
-            new object[] { new TestCaseData<byte[]>(Array.Empty<byte[]>(), new byte[][] { Binary0 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2 }, new byte[][] { BinaryMax, Binary1, Binary2, Binary3, Binary2 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary1 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[][] { Binary1, Binary2 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[][] { Binary1, Binary1 }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { Binary1, Binary2, Binary1, Binary2, null, null, null }, new byte[][] { Binary1, Binary1, null }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { null }, new byte[][] { null, null }) },
-            new object[] { new TestCaseData<byte[]>(new byte[][] { null, null }, new byte[][] { null, Binary6 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary2, Binary3 }, new byte[]?[] { Binary4, Binary5, Binary6 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary2, Binary3, null }, new byte[]?[] { Binary1, Binary2, Binary3, null }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { BinaryMax }, new byte[]?[] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary0, Binary1, BinaryMax }, Array.Empty<byte[]>()) },
+            new object[] { new TestCaseData<byte[]?>(Array.Empty<byte[]>(), new byte[]?[] { Binary0 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary2 }, new byte[]?[] { BinaryMax, Binary1, Binary2, Binary3, Binary2 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[]?[] { Binary1, Binary1 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary1, Binary1, Binary1, Binary1, Binary1, Binary1 }, new byte[]?[] { Binary1, Binary2 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary1, Binary1, Binary1, Binary2, Binary2 }, new byte[]?[] { Binary1, Binary1 }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { Binary1, Binary2, Binary1, Binary2, null, null, null }, new byte[]?[] { Binary1, Binary1, null }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { null }, new byte[]?[] { null, null }) },
+            new object[] { new TestCaseData<byte[]?>(new byte[]?[] { null, null }, new byte[]?[] { null, Binary6 }) },
         };
 
         [TestCaseSource(nameof(BinaryTestValues))]
@@ -971,7 +972,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void RealmSet_WhenUnmanaged_NullableBinary(TestCaseData<byte[]> testData)
+        public void RealmSet_WhenUnmanaged_NullableBinary(TestCaseData<byte[]?> testData)
         {
             RunUnmanagedTests(o => o.NullableByteArraySet, testData);
         }
@@ -983,7 +984,7 @@ namespace Realms.Tests.Database
         }
 
         [TestCaseSource(nameof(NullableBinaryTestValues))]
-        public void RealmSet_WhenManaged_NullableBinary(TestCaseData<byte[]> testData)
+        public void RealmSet_WhenManaged_NullableBinary(TestCaseData<byte[]?> testData)
         {
             RunManagedTests(o => o.NullableByteArraySet, o => o.NullableByteArrayList, o => o.NullableByteArrayDict, testData);
         }
@@ -998,7 +999,7 @@ namespace Realms.Tests.Database
         [Test]
         public void RealmSet_WhenManaged_NullableBinary_Notifications()
         {
-            var testData = new TestCaseData<byte[]>(Binary1, null, Binary5);
+            var testData = new TestCaseData<byte[]?>(Binary1, null, Binary5);
             RunManagedNotificationsTests(o => o.NullableByteArraySet, testData, newValue: Binary2);
         }
 
@@ -1056,7 +1057,13 @@ namespace Realms.Tests.Database
         [TestCaseSource(nameof(ObjectTestValues))]
         public void RealmSet_WhenManaged_Object(TestCaseData<IntPropertyObject> testData)
         {
+            // Dictionaries of objects are nullable - this is the only type where the nullability of
+            // the generic argument for sets/lists differs from that for dictionaries. While we can
+            // special-case the object type, this will lead to a fair amount of code duplication, so we
+            // suppress the warning.
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
             RunManagedTests(o => o.ObjectSet, o => o.ObjectList, o => o.ObjectDict, testData);
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
         }
 
         [Test]
@@ -1201,7 +1208,11 @@ namespace Realms.Tests.Database
             testData.AssertUnionWith(set);
         }
 
-        private void RunManagedTests<T>(Func<CollectionsObject, ISet<T>> accessor, Func<CollectionsObject, IList<T>> listAccessor, Func<CollectionsObject, IDictionary<string, T>> dictAccessor, TestCaseData<T> testData)
+        private void RunManagedTests<T>(
+            Func<CollectionsObject, ISet<T>> accessor,
+            Func<CollectionsObject, IList<T>> listAccessor,
+            Func<CollectionsObject, IDictionary<string, T>> dictAccessor,
+            TestCaseData<T> testData)
         {
             var testObject = new CollectionsObject();
             var set = accessor(testObject);
@@ -1359,7 +1370,7 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.EquivalentTo(reference));
             }
 
-            public void AssertUnionWith(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertUnionWith(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1373,7 +1384,7 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.EquivalentTo(GetExpected(set => set.UnionWith)));
             }
 
-            public void AssertExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertExceptWith(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1387,7 +1398,7 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.EquivalentTo(GetExpected(set => set.ExceptWith)));
             }
 
-            public void AssertIntersectWith(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertIntersectWith(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1401,7 +1412,7 @@ namespace Realms.Tests.Database
                 Assert.That(target, Is.EquivalentTo(GetExpected(set => set.IntersectWith)));
             }
 
-            public void AssertIsProperSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertIsProperSubsetOf(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1410,7 +1421,7 @@ namespace Realms.Tests.Database
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSubsetOf)));
             }
 
-            public void AssertIsProperSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertIsProperSupersetOf(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1419,7 +1430,7 @@ namespace Realms.Tests.Database
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsProperSupersetOf)));
             }
 
-            public void AssertIsSubsetOf(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertIsSubsetOf(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1428,7 +1439,7 @@ namespace Realms.Tests.Database
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSubsetOf)));
             }
 
-            public void AssertIsSupersetOf(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertIsSupersetOf(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1437,7 +1448,7 @@ namespace Realms.Tests.Database
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.IsSupersetOf)));
             }
 
-            public void AssertOverlaps(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertOverlaps(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1446,7 +1457,7 @@ namespace Realms.Tests.Database
                 Assert.That(result, Is.EqualTo(GetExpected(set => set.Overlaps)));
             }
 
-            public void AssertSymmetricExceptWith(ISet<T> target, ICollection<T> otherCollection = null)
+            public void AssertSymmetricExceptWith(ISet<T> target, ICollection<T>? otherCollection = null)
             {
                 Seed(target);
 
@@ -1468,10 +1479,8 @@ namespace Realms.Tests.Database
                 target.AsRealmCollection().Realm.Refresh();
 
                 var callbacks = new List<ChangeSet>();
-                using var token = target.SubscribeForNotifications((collection, changes, error) =>
+                using var token = target.SubscribeForNotifications((collection, changes) =>
                 {
-                    Assert.That(error, Is.Null);
-
                     if (changes != null)
                     {
                         callbacks.Add(changes);
@@ -1513,24 +1522,46 @@ namespace Realms.Tests.Database
                 await AssertNotificationsCore(target, newValue, callbacks, changes =>
                 {
                     Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
-                    Assert.That(changes.NewItems.Count, Is.EqualTo(1));
+                    Assert.That(changes.NewItems!.Count, Is.EqualTo(1));
 
                     return changes.NewStartingIndex;
                 }, changes =>
                 {
                     Assert.That(changes.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
-                    Assert.That(changes.OldItems.Count, Is.EqualTo(1));
+                    Assert.That(changes.OldItems!.Count, Is.EqualTo(1));
 
                     return changes.OldStartingIndex;
                 });
 
                 target.AsRealmCollection().CollectionChanged -= HandleCollectionChanged;
 
-                void HandleCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+                var propertyChangedCallbacks = new List<string>();
+                target.AsRealmCollection().PropertyChanged += HandlePropertyChanged;
+
+                WriteIfNecessary(target, () => target.Add(newValue));
+
+                await TestHelpers.WaitForConditionAsync(() => propertyChangedCallbacks.Count == 2);
+                Assert.That(propertyChangedCallbacks, Is.EquivalentTo(new[] { "Count", "Item[]" }));
+
+                WriteIfNecessary(target, () => target.Remove(newValue));
+
+                await TestHelpers.WaitForConditionAsync(() => propertyChangedCallbacks.Count == 4);
+                Assert.That(propertyChangedCallbacks, Is.EquivalentTo(new[] { "Count", "Item[]", "Count", "Item[]" }));
+
+                target.AsRealmCollection().PropertyChanged -= HandlePropertyChanged;
+
+                void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs? e)
                 {
                     Assert.That(sender, Is.EqualTo(target));
 
-                    callbacks.Add(e);
+                    callbacks.Add(e!);
+                }
+
+                void HandlePropertyChanged(object? sender, PropertyChangedEventArgs? e)
+                {
+                    Assert.That(sender, Is.EqualTo(target));
+
+                    propertyChangedCallbacks.Add(e!.PropertyName!);
                 }
             }
 
@@ -1573,7 +1604,7 @@ namespace Realms.Tests.Database
                 }
             }
 
-            public void Seed(ICollection<T> target, IEnumerable<T> values = null)
+            public void Seed(ICollection<T> target, IEnumerable<T>? values = null)
             {
                 WriteIfNecessary(target, () =>
                 {
@@ -1599,11 +1630,11 @@ namespace Realms.Tests.Database
                 return reference;
             }
 
-            private ICollection<T> GetOtherCollection(ICollection<T> target) => target ?? OtherCollection;
+            private ICollection<T> GetOtherCollection(ICollection<T>? target) => target ?? OtherCollection;
 
             private static void WriteIfNecessary(IEnumerable<T> collection, Action writeAction)
             {
-                Transaction transaction = null;
+                Transaction? transaction = null;
                 if (collection is RealmSet<T> realmSet)
                 {
                     transaction = realmSet.Realm.BeginWrite();

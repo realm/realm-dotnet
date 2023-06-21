@@ -29,7 +29,7 @@ namespace Realms.Sync
     /// <summary>
     /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// There are two synchronization modes with their respective configurations - "partition" sync with <see cref="PartitionSyncConfiguration"/> allows you
-    /// to split your data in separarate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
+    /// to split your data in separate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
     /// <see cref="FlexibleSyncConfiguration"/> allows you to start with an empty Realm and send the server a set of queries which it will run and
     /// populate the Realm with all documents matching them.
     /// </summary>
@@ -79,17 +79,35 @@ namespace Realms.Sync
         /// <remarks>
         /// Client reset errors will not be reported through this callback as they are handled by the set <see cref="ClientResetHandler"/>.
         /// </remarks>
-        public SessionErrorCallback OnSessionError { get; set; }
+        public SessionErrorCallback? OnSessionError { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether async operations, such as <see cref="Realm.GetInstanceAsync"/>,
+        /// <see cref="Session.WaitForUploadAsync"/>, or <see cref="Session.WaitForDownloadAsync"/> should throw an
+        /// error whenever a non-fatal error, such as timeout occurs.
+        /// </summary>
+        /// <remarks>
+        /// If set to <c>false</c>, non-fatal session errors will be ignored and sync will continue retrying the
+        /// connection under in the background. This means that in cases where the device is offline, these operations
+        /// may take an indeterminate time to complete.
+        /// </remarks>
+        /// <value><c>true</c> to throw an error if a non-fatal session error occurs, <c>false</c> otherwise.</value>
+        public bool CancelAsyncOperationsOnNonFatalErrors { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time the file is used.
+        /// </summary>
+        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
+        public new byte[]? EncryptionKey
+        {
+            get => base.EncryptionKey;
+            set => base.EncryptionKey = value;
+        }
 
         internal SessionStopPolicy SessionStopPolicy { get; set; } = SessionStopPolicy.AfterChangesUploaded;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SyncConfigurationBase"/> class.
-        /// </summary>
-        /// <param name="user">
-        /// A valid <see cref="User"/>.
-        /// </param>
-        protected SyncConfigurationBase(User user)
+        private protected SyncConfigurationBase(User user, string databasePath)
+            : base(databasePath)
         {
             Argument.NotNull(user, nameof(user));
 
@@ -131,7 +149,7 @@ namespace Realms.Sync
             }
         }
 
-        internal virtual IDisposable OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
+        internal virtual IDisposable? OnBeforeRealmOpen(AsyncOpenTaskHandle handle) => null;
 
         internal virtual Native.SyncConfiguration CreateNativeSyncConfiguration()
         {
@@ -139,8 +157,9 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
-                schema_mode = Schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                schema_mode = _schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
+                cancel_waits_on_nonfatal_error = CancelAsyncOperationsOnNonFatalErrors,
             };
         }
     }

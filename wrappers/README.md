@@ -1,17 +1,12 @@
-About Wrappers
-==============
+# About Wrappers
 
 Wrappers contains all our native code and its interfaces to C#.
 
-It usually involves a download phase which pulls prebuilt [Core](https://github.com/realm/realm-core) libraries from a server.
+It has a reference to the [Realm Core](https://github.com/realm/realm-core) repository as a **git submodule**.
 
-We have a second C++ layer called [ObjectStore](https://github.com/realm/realm-object-store/)
-which contains many of our cross-platform abstractions and is pulled into Wrappers as a **git submodule**.
+Wrappers also contains a small amount of C++ code which provides the mapping from C# to the Core logic.
 
-Wrappers also contains a small amount of C++ code which provides the mapping from C# to the ObjectStore and Core logic.
-
-Downloading ObjectStore
------------------------
+## Downloading Realm Core
 
 ### Cloning
 
@@ -30,32 +25,32 @@ If you downloaded a zip of the source, you need to go back to github to identify
 1. Download a zip using the GitHub download button in that tree, eg `realm-core-fb2ed6aa0073be4cb0cd059cae407744ee883b77.zip`
 1. Unpack its contents into `wrappers/src/realm-core`
 
-Building iOS wrappers on macOS
-------------------------------------------
+## Building iOS, tvOS, and macCatalyst wrappers on macOS
 
-Prerequisites:
-1. Install cmake and zlib: `brew install cmake zlib`.
+Building for iOS required cmake and zlib installed. In case you do not have them installed, you can do it with `brew install cmake zlib`.
 
-These instructions assume you have either downloaded a zip from gitub of the realm-dotnet source, or checked out a clone, and then downloaded ObjectStore as above.
+You can use `build-apple-platform.ps1` to build for iOS, tvOS, and macCatalyst, specifying one or more of the available platforms, `Device`, `Simulator` or `Catalayst`, and either `Debug` or `Release` configuration.
 
-1. `cd wrappers`
-1. `build-ios.sh` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for both device and simulator.
-
-Building Android wrappers
--------------
+## Building Android wrappers
 
 Building for Android uses CMake with a toolchain file. You can either configure CMake with an Android toolchain file manually, or build with `build-android.sh`. By default it will build for armeabi-v7a, arm64-v8a, x86, and x86_64. You can specify a single ABI to build by passing `--arch=$ABI`. You can also choose a build configuration by passing `--configuration=$CONFIG`. The script also accepts CMake arguments like `-GNinja`.
 
 You need to have the Android NDK installed, version r10e, and set an environment variable called `ANDROID_NDK_HOME` pointing to its location.
 
-Building Windows wrappers
--------------
+### Building in Docker
+
+If you don't have NDK setup or don't want to set up paths, you can build the wrappers in docker. You can use the [CircleCI android docker image](https://hub.docker.com/r/cimg/android) and build in it:
+
+```ps1
+docker pull cimg/android:2023.05.1-ndk
+docker run --rm -it -v ${pwd}:/source cimg/android:2023.05.1-ndk /bin/bash
+/source/build-android.sh -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake
+```
+
+## Building Windows wrappers
 
 You need Visual Studio 2017 (or later) with the `C++ Universal Windows Platform tools` and `Visual C++ tools for CMake` components as well as a version of the Windows SDK installed.
-You also need [Vcpkg](https://github.com/Microsoft/vcpkg) installed in `C:\src\vcpkg`, with the OpenSSL and Zlib ports built:
-```
-c:\src\vcpkg\vcpkg.exe install zlib:x64-windows-static openssl:x64-windows-static
-```
+
 Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can specify all or a subset to save time when building.
 
 * To build for regular Windows run `.\build.ps1 Windows -Configuration Debug/Release -Platforms Win32, x64`
@@ -64,19 +59,25 @@ Valid Windows platforms (architectures) are `Win32`, `x64`, and `ARM`. You can s
 
 You can find the CMake-generated Visual Studio project files in `cmake\$Target\$Configuration-$Platform` and use them for debugging.
 
-Building .NET Core wrappers for macOS and Linux
--------------
+## Building macOS wrappers
 
-`build.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
+You need Xcode 13 (or later) installed.
 
-For Linux builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
+* To build a universal (x64 and Arm64) binary, run `./build-macos.sh -c=Debug/Release`.
 
-1. `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
-1. `docker run -v path/to/wrappers:/source realm-dotnet/wrappers`
+## Building Linux wrappers
 
-General Notes
--------------
+`build-linux.sh` automates configuring and building wrappers with CMake. It accepts CMake arguments like `-GNinja`.
+
+  1. For Linux x64 builds you can just build and run `centos.Dockerfile` if you don't have access to a Linux environment:
+     * `docker build . -f centos.Dockerfile -t realm-dotnet/wrappers`
+     * `docker run --rm -v $(pwd):/source realm-dotnet/wrappers`
+  1. For Linux Arm/Arm64 builds you can build and run `debian-multiarch-arm.Dockerfile`:
+     * `docker build . -f debian-multiarch-arm.Dockerfile -t realm-dotnet/wrappers-arm`
+     * `docker run --rm -v $(pwd):/source realm-dotnet/wrappers-arm -a=arm64/arm`
+
+## General Notes
+
 All builds steps download the required realm components (core and sync) automatically.
 
 **Note** if you have changed the wrappers source and added, deleted or renamed files, you need to update `src/CMakeLists.txt` for builds to work.
-

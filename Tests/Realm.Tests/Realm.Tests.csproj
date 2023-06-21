@@ -6,8 +6,7 @@
     in the project file, but the NUnit test adapter doesn't support .NET Standard 2.0, so it should never be
     first in the list.
     -->
-    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0</TargetFrameworks>
-    <TargetFrameworks Condition="'$(RuntimeIdentifier)' != 'osx-arm64'">$(TargetFrameworks);netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MSBuildVersion)' &gt;= '17.0'">$(TargetFrameworks);net6.0;net7.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">$(TargetFrameworks);net461</TargetFrameworks>
     <TargetFrameworks>$(TargetFrameworks);netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
@@ -19,22 +18,28 @@
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
     <NoWarn>MSB4011</NoWarn>
     <OutputType Condition="'$(RealmTestsStandaloneExe)' == 'true'">Exe</OutputType>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
-   <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
+  <PropertyGroup Condition="'$(UnityBuild)' == 'true'">
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <PackageId>Realm.Tests</PackageId>
     <IsPackable>true</IsPackable>
     <DefineConstants>$(DefineConstants);UNITY</DefineConstants>
-    <RealmDllPath Condition="'$(RealmDllPath)' == ''">..\..\Realm\Realm.Unity\Runtime\Realm.dll</RealmDllPath>
+    <RealmDllsPath Condition="'$(RealmDllsPath)' == ''">..\..\Realm\Realm.Unity\Runtime</RealmDllsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TestWeavedClasses)' == 'true'">
+    <DefineConstants>$(DefineConstants);TEST_WEAVER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UnityBuild)' != 'true'">
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnitLite" Version="3.13.2" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1"
-      Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' OR '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
   </ItemGroup>
 
@@ -48,7 +53,11 @@
     the same dll here, otherwise when we try to ilrepack the test dependencies, we won't find MongoDB.Bson and friends.
     -->
     <Reference Include="Realm">
-      <HintPath>$(RealmDllPath)</HintPath>
+      <HintPath>$(RealmDllsPath)\Realm.dll</HintPath>
+    </Reference>
+
+    <Reference Include="Realm.PlatformHelpers">
+      <HintPath>$(RealmDllsPath)\Realm.PlatformHelpers.dll</HintPath>
     </Reference>
 
     <!--
@@ -57,12 +66,13 @@
     -->
     <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
     <ProjectReference Include="..\..\Realm\Realm.Fody\Realm.Fody.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 
     <Compile Remove="Program.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -72,11 +82,14 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+    <!-- Removing the generated files from compilation, adding them back as non-content files. -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
+    <None Include="$(CompilerGeneratedFilesOutputPath)/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' == '' AND '$(UnityBuild)' != 'true'">
     <ProjectReference Include="..\..\Realm\Realm\Realm.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Realm\Realm.SourceGenerator\Realm.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <Import Project="..\..\Realm\Realm.Fody\InSolutionWeaver.props" Condition="'$(UseRealmNupkgsWithVersion)' == ''" />
   <ItemGroup Condition="'$(UseRealmNupkgsWithVersion)' != ''">
@@ -99,20 +112,19 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(UseRealmNupkgsWithVersion)' == ''">
-    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib"
-      Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="..\..\wrappers\build\Linux\$(Configuration)\librealm-wrappers.so"
-      Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+    <None Include="..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib" Condition="$([MSBuild]::IsOsPlatform('OSX')) AND Exists('..\..\wrappers\build\Darwin\$(Configuration)\librealm-wrappers.dylib')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll"
-      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-x86_64\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll"
-      Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+    <None Include="..\..\wrappers\build\Linux\$(Configuration)-aarch64\librealm-wrappers.so" Condition="$([MSBuild]::IsOsPlatform('Linux')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-x64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\wrappers\build\Windows\$(Configuration)-arm64\realm-wrappers.dll" Condition="$([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64' ">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -130,9 +142,9 @@
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" />
     <None Include="..\App.config" Link="App.config" />
-    <None Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
+    <Content Include="..\App.Local.config" Link="App.Local.config" Condition="Exists('..\App.Local.config')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\v6db.realm">
@@ -144,5 +156,8 @@
       <Link>Sync\BaasClient.cs</Link>
       <SubType></SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Generated\Realm.SourceGenerator\Realms.SourceGenerator.RealmGenerator\" />
   </ItemGroup>
 </Project>

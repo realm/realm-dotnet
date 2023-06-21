@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' == 'true'">netstandard2.1</TargetFramework>
+    <TargetFramework Condition="'$(LocalUnityReference)' != 'true'">netstandard2.0</TargetFramework>
     <PackageId>Realm.UnityUtils</PackageId>
     <Title>Realm.UnityUtils</Title>
     <ReleaseNotes>https://docs.mongodb.com/realm-sdks/dotnet/latest/CHANGELOG.html</ReleaseNotes>
@@ -9,6 +9,9 @@
     <AssemblyName>Realm.UnityUtils</AssemblyName>
     <DisableFody>true</DisableFody>
     <NoWarn>1701;1702;NU1701</NoWarn>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>UnityUtils</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,10 +19,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.1">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' == 'true'">
+    <PackageReference Include="Unity3D" Version="2.1.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(LocalUnityReference)' != 'true'">
     <PackageReference Include="Unity3D.SDK" Version="2021.1.14.1" />
   </ItemGroup>
 

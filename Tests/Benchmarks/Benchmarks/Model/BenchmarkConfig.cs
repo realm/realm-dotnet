@@ -3,10 +3,10 @@
 namespace Benchmarks.Model
 {
     [Explicit]
-    public class BenchmarkConfig : RealmObject
+    public partial class BenchmarkConfig : IRealmObject
     {
-        public string SelectedJob { get; set; }
+        public string SelectedJob { get; set; } = null!;
 
-        public string Filters { get; set; }
+        public string? Filters { get; set; }
     }
 }

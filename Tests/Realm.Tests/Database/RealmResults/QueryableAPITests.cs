@@ -20,7 +20,6 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using NUnit.Framework;
-using Realms;
 
 namespace Realms.Tests.Database
 {
@@ -54,9 +53,9 @@ namespace Realms.Tests.Database
             var result = query.Provider.CreateQuery(filterExpression);
 
             var count = 0;
-            foreach (Person person in result)
+            foreach (Person? person in result)
             {
-                Assert.That(person.IsInteresting, "Person is interesting");
+                Assert.That(person!.IsInteresting, "Person is interesting");
                 count++;
             }
 
@@ -91,7 +90,7 @@ namespace Realms.Tests.Database
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result, Is.TypeOf<Person>());
-            Assert.That(((Person)result).IsInteresting);
+            Assert.That(((Person)result!).IsInteresting);
         }
 
         [Test]

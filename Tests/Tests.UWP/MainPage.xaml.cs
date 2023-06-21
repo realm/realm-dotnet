@@ -28,7 +28,7 @@ namespace Realms.Tests.UWP
 {
     public sealed partial class MainPage
     {
-        private NUnit.Runner.App _nunit;
+        private NUnit.Runner.App? _nunit;
 
         public MainPage()
         {
@@ -38,6 +38,8 @@ namespace Realms.Tests.UWP
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
+
+            TestHelpers.IsUWP = true;
 
             var outputWriter = new StreamWriter(Path.Combine(ApplicationData.Current.LocalFolder.Path, "TestRunOutput.txt"));
             TestHelpers.Output = outputWriter;

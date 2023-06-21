@@ -1,8 +1,47 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
+
 <xs:complexType xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:attribute name="DisableAnalytics" type="xs:boolean">
     <xs:annotation>
-      <xs:documentation>Disables anonymized usage information from being sent on build. Read more about what data is being collected and why here: https://github.com/realm/realm-dotnet/blob/main/Realm/Realm.Weaver/Analytics.cs</xs:documentation>
+      <xs:documentation>THIS IS DEPRECATED - USE `AnalyticsCollection` INSTEAD. Disables anonymized
+        usage information from being sent on build. Read more about what data is being collected and
+        why here: https://github.com/realm/realm-dotnet/blob/main/Realm/Realm.Weaver/Analytics.cs</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="AnalyticsCollection">
+    <xs:annotation>
+      <xs:documentation>Controls what anonymized usage information is being sent on build. Read more
+        about what data is being collected and why here:
+        https://github.com/realm/realm-dotnet/blob/main/Realm/Realm.Weaver/Analytics/Analytics.cs</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="Full">
+          <xs:annotation>
+            <xs:documentation>Analytics collection will run normally. This is the default behavior
+              and we hope you don't change it as the anonymized data collected is critical for
+              making the right decisions about the future of the Realm SDK.</xs:documentation>
+          </xs:annotation>
+        </xs:enumeration>
+        <xs:enumeration value="DryRun">
+          <xs:annotation>
+            <xs:documentation>Analytics collection will run but will not send it to the server. This
+              is useful in combination with `AnalyticsLogPath` if you want to review the data being
+              sent.</xs:documentation>
+          </xs:annotation>
+        </xs:enumeration>
+        <xs:enumeration value="Disabled">
+          <xs:annotation>
+            <xs:documentation>Analytics collection is disabled. No data will be sent on build.</xs:documentation>
+          </xs:annotation>
+        </xs:enumeration>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+  <xs:attribute name="AnalyticsLogPath" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Controls where the payload for the anonymized metrics collection will be
+        stored. This can be useful if you want to review the data being collected by Realm. </xs:documentation>
     </xs:annotation>
   </xs:attribute>
 </xs:complexType>

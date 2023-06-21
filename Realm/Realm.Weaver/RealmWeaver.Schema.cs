@@ -31,7 +31,7 @@ namespace RealmWeaver
 
         private void WeaveSchema(TypeDefinition[] types)
         {
-            if (_references.RealmSchema_AddDefaultTypes == null)
+            if (_references.Realm == null)
             {
                 // Realm is added, but not used, so we don't need to weave schema
                 return;
@@ -74,20 +74,24 @@ namespace RealmWeaver
             }
         }
 
-        private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition module = null, HashSet<string> processedAssemblies = null)
+        private IEnumerable<TypeDefinition> GetReferencedTypes(ModuleDefinition? module = null, HashSet<string>? processedAssemblies = null)
         {
-            module = module ?? _moduleDefinition;
+            module ??= _moduleDefinition;
+
+            // Here we cannot use yield return iterator because of an issue with Mono which is used by the Unity weaver.
+            // See issue https://github.com/realm/realm-dotnet/issues/3199 for context.
+            var result = new List<TypeDefinition>();
 
             // If module has been marked [Explicit], ignore all types
             if (ShouldInclude(module.Assembly))
             {
-                processedAssemblies = processedAssemblies ?? new HashSet<string>();
+                processedAssemblies ??= new HashSet<string>();
 
                 if (module.AssemblyReferences.Any(a => a.Name == "Realm"))
                 {
                     foreach (var type in module.GetTypes())
                     {
-                        yield return type;
+                        result.Add(type);
                     }
                 }
 
@@ -101,10 +105,12 @@ namespace RealmWeaver
                 {
                     foreach (var type in GetReferencedTypes(referencedModule, processedAssemblies))
                     {
-                        yield return type;
+                        result.Add(type);
                     }
                 }
             }
+
+            return result;
         }
 
         private MethodDefinition GetModuleInitializer()

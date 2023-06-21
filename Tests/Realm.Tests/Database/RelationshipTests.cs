@@ -20,6 +20,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+#if TEST_WEAVER
+using TestAsymmetricObject = Realms.AsymmetricObject;
+using TestEmbeddedObject = Realms.EmbeddedObject;
+using TestRealmObject = Realms.RealmObject;
+#else
+using TestRealmObject = Realms.IRealmObject;
+#endif
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
@@ -70,14 +77,14 @@ namespace Realms.Tests.Database
         public void TimHasATopDog()
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
-            Assert.That(tim.TopDog.Name, Is.EqualTo("Bilbo Fleabaggins"));
+            Assert.That(tim.TopDog!.Name, Is.EqualTo("Bilbo Fleabaggins"));
         }
 
         [Test]
         public void TimHasTwoIterableDogs()
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
-            var dogNames = new List<string>();
+            var dogNames = new List<string?>();
 
             // using foreach here is deliberately testing that syntax
             foreach (var dog in tim.ListOfDogs)
@@ -85,7 +92,7 @@ namespace Realms.Tests.Database
                 dogNames.Add(dog.Name);
             }
 
-            Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
         /// <summary>
@@ -95,21 +102,21 @@ namespace Realms.Tests.Database
         public void TimHasTwoIterableDogsListed()
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
-            var dogNames = new List<string>();
+            var dogNames = new List<string?>();
             var dogList = tim.ListOfDogs.ToList();  // this used to crash - issue 299
             foreach (var dog in dogList)
             {
                 dogNames.Add(dog.Name);
             }
 
-            Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
         [Test]
         public void TimsIterableDogsThrowExceptions()
         {
             var tim = _realm.All<Owner>().First(p => p.Name == "Tim");
-            Assert.That(() => tim.ListOfDogs.CopyTo(null, 0), Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => tim.ListOfDogs.CopyTo(null!, 0), Throws.TypeOf<ArgumentNullException>());
             var copiedDogs = new Dog[2];
             Assert.That(() => tim.ListOfDogs.CopyTo(copiedDogs, -1), Throws.TypeOf<ArgumentOutOfRangeException>());
             Assert.That(() => tim.ListOfDogs.CopyTo(copiedDogs, 1), Throws.TypeOf<ArgumentException>()); // insuffiient room
@@ -716,28 +723,6 @@ namespace Realms.Tests.Database
 
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
         // shows a workaround for our lack of cascading delete
-        public class Product : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string Date { get; set; }
-
-            public IList<Report> Reports { get; } // child objects
-        }
-
-        public class Report : RealmObject
-        {
-            public int Id { get; set; }
-
-            public string Ref { get; set; }
-
-            public string Date { get; set; }
-
-            public Product Parent { get; set; } // Parent object reference
-        }
-
         [Test]
         public void TestDeleteChildren()
         {
@@ -783,5 +768,27 @@ namespace Realms.Tests.Database
         }
 
         #endregion
+    }
+
+    public partial class Product : TestRealmObject
+    {
+        public int Id { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Date { get; set; }
+
+        public IList<Report> Reports { get; } = null!; // child objects
+    }
+
+    public partial class Report : TestRealmObject
+    {
+        public int Id { get; set; }
+
+        public string? Ref { get; set; }
+
+        public string? Date { get; set; }
+
+        public Product? Parent { get; set; } // Parent object reference
     }
 }

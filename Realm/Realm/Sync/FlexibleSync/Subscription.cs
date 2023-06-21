@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.CompilerServices;
 using MongoDB.Bson;
 
 namespace Realms.Sync
@@ -28,14 +29,14 @@ namespace Realms.Sync
     /// </summary>
     public class Subscription
     {
-        internal ObjectId Id { get; set; }
+        internal ObjectId Id { get; }
 
         /// <summary>
         /// Gets the name of the subscription if one was provided at creation time.
         /// If no name was provided, then this will return <c>null</c>.
         /// </summary>
         /// <value>The subscription's name.</value>
-        public string Name { get; internal set; }
+        public string? Name { get; }
 
         /// <summary>
         /// Gets the type of objects this subscription refers to.
@@ -46,29 +47,35 @@ namespace Realms.Sync
         /// rather than the name of the C# class.
         /// </remarks>
         /// <value>The object type for the subscription.</value>
-        public string ObjectType { get; internal set; }
+        public string ObjectType { get; }
 
         /// <summary>
         /// Gets the query that describes the subscription. Objects matched by the query
         /// will be sent to the device by the server.
         /// </summary>
         /// <value>The subscription query.</value>
-        public string Query { get; internal set; }
+        public string Query { get; }
 
         /// <summary>
         /// Gets a value indicating when this subscription was created.
         /// </summary>
         /// <value>The creation date/time of the subscription.</value>
-        public DateTimeOffset CreatedAt { get; internal set; }
+        public DateTimeOffset CreatedAt { get; }
 
         /// <summary>
         /// Gets a value indicating when this subscription was last updated.
         /// </summary>
         /// <value>The date/time of the last update to the subscription.</value>
-        public DateTimeOffset UpdatedAt { get; internal set; }
+        public DateTimeOffset UpdatedAt { get; }
 
-        internal Subscription()
+        internal Subscription(ObjectId id, string? name, string objectType, string query, DateTimeOffset createdAt, DateTimeOffset updatedAt)
         {
+            Id = id;
+            Name = name;
+            ObjectType = objectType;
+            Query = query;
+            CreatedAt = createdAt;
+            UpdatedAt = updatedAt;
         }
     }
 }

@@ -37,13 +37,13 @@ namespace SetupUnityPackage
             }
         }
 
-        public static string BuildFolder { get; } = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+        public static string BuildFolder { get; } = Path.GetDirectoryName(typeof(Program).Assembly.Location)!;
 
-        public static string SolutionFolder { get; } = BuildFolder.Substring(0, BuildFolder.IndexOf(Path.Combine("Tools", "SetupUnityPackage"), StringComparison.InvariantCulture));
+        public static string SolutionFolder { get; } = BuildFolder[..BuildFolder.IndexOf(Path.Combine("Tools", "SetupUnityPackage"), StringComparison.InvariantCulture)];
 
         public static string PackagesFolder { get; } = Path.Combine(SolutionFolder, "Realm", "packages");
 
-        public static void CopyFiles(string from, string to, Func<string, bool> shouldIncludeFile = null)
+        public static void CopyFiles(string from, string to, Func<string, bool>? shouldIncludeFile = null)
         {
             Directory.CreateDirectory(to);
 
@@ -58,7 +58,7 @@ namespace SetupUnityPackage
 
                 var targetPath = Path.Combine(to, relativePath);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                 File.Copy(file, targetPath, overwrite: true);
             }
         }

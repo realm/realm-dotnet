@@ -20,12 +20,12 @@
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/parser/query_parser.hpp>
+#include <realm/exceptions.hpp>
 
 #include "error_handling.hpp"
 #include "filter.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
-#include "wrapper_exceptions.hpp"
 #include "notifications_cs.hpp"
 #include "schema_cs.hpp"
 
@@ -35,7 +35,7 @@ using namespace realm::binding;
 namespace {
     inline static void ensure_types(object_store::Set& set, realm_value_t value) {
         if (value.is_null() && !is_nullable(set.get_type())) {
-            throw NotNullableException();
+            throw NotNullable("Attempted to add null to a set of required values");
         }
 
         if (!value.is_null() && set.get_type() != PropertyType::Mixed && to_capi(set.get_type()) != value.type) {
@@ -156,12 +156,12 @@ REALM_EXPORT void realm_set_destroy(object_store::Set* set)
     delete set;
 }
 
-REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, NativeException::Marshallable& ex)
+REALM_EXPORT ManagedNotificationTokenContext* realm_set_add_notification_callback(object_store::Set* set, void* managed_set, bool shallow, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [=]() {
-        return subscribe_for_notifications(managed_set, [set](CollectionChangeCallback callback) {
-            return set->add_notification_callback(callback);
-        });
+        return subscribe_for_notifications(managed_set, [set, shallow](CollectionChangeCallback callback) {
+            return set->add_notification_callback(callback, shallow ? std::make_optional(KeyPathArray()) : std::nullopt);
+        }, shallow);
     });
 }
 
@@ -264,7 +264,7 @@ REALM_EXPORT Results* set_to_results(const object_store::Set& set, NativeExcepti
     });
 }
 
-REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uint16_t* query_buf, size_t query_len, realm_value_t* arguments, size_t args_count, NativeException::Marshallable& ex)
+REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uint16_t* query_buf, size_t query_len, query_argument* arguments, size_t args_count, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(set.get_realm(), set.get_table(), set.get_query(), query_buf, query_len, arguments, args_count, DescriptorOrdering());

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 
@@ -30,21 +31,17 @@ namespace Realms
         /// </summary>
         public const string DLL_NAME = "realm-wrappers";
 
-        public const string UnityPlatform = "Realm Unity";
+        public static readonly string FrameworkName;
 
-        public const string DotNetPlatform = "Realm .NET";
+        public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version!;
 
-        public static readonly string Platform;
-
-        public static readonly Version SDKVersion = typeof(InteropConfig).Assembly.GetName().Version;
-
-        private static readonly List<string> _potentialStorageFolders = new List<string>
+        private static readonly List<string> _potentialStorageFolders = new()
         {
             Environment.GetFolderPath(Environment.SpecialFolder.Personal),
             Path.Combine(Directory.GetCurrentDirectory(), "Documents")
         };
 
-        private static readonly Lazy<string> _defaultStorageFolder = new Lazy<string>(() =>
+        private static readonly Lazy<string?> _defaultStorageFolder = new(() =>
         {
             if (TryGetUWPFolder(out var folder))
             {
@@ -59,19 +56,28 @@ namespace Realms
                 }
             }
 
-            throw new InvalidOperationException("Couldn't determine a writable folder where to store realm file. Specify absolute path manually.");
+            return null;
         });
 
-        private static string _customStorageFolder;
+        private static string? _customStorageFolder;
 
-        public static string DefaultStorageFolder
+        public static string GetDefaultStorageFolder(string errorMessage) =>
+            _customStorageFolder ??
+            _defaultStorageFolder.Value ??
+            throw new InvalidOperationException(errorMessage);
+
+        public static void SetDefaultStorageFolder(string value)
         {
-            get => _customStorageFolder ?? _defaultStorageFolder.Value;
-            set => _customStorageFolder = value;
+            _customStorageFolder = value;
         }
 
-        public static void AddPotentialStorageFolder(string folder)
+        public static void AddPotentialStorageFolder(string? folder)
         {
+            if (folder == null)
+            {
+                return;
+            }
+
 #if DEBUG
             if (_defaultStorageFolder.IsValueCreated)
             {
@@ -84,7 +90,7 @@ namespace Realms
 
         static InteropConfig()
         {
-            Platform = TryInitializeUnity() ? "Realm Unity" : "Realm .NET";
+            FrameworkName = TryInitializeUnity() ? "Unity" : ".NET";
 
             AppDomain.CurrentDomain.DomainUnload += (_, __) =>
             {
@@ -103,7 +109,7 @@ namespace Realms
                 }
 
                 var initialize = fileHelper.GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static);
-                initialize.Invoke(null, null);
+                initialize!.Invoke(null, null);
 
                 return true;
             }
@@ -114,7 +120,7 @@ namespace Realms
             return false;
         }
 
-        private static bool TryGetUWPFolder(out string folder) => TryGetDatabaseFolder(() =>
+        private static bool TryGetUWPFolder([MaybeNullWhen(false)] out string folder) => TryGetDatabaseFolder(() =>
         {
             // On UWP, the sandbox folder is obtained by:
             // ApplicationData.Current.LocalFolder.Path
@@ -124,16 +130,16 @@ namespace Realms
                 return null;
             }
 
-            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public);
-            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance);
-            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance);
+            var currentProperty = applicationData.GetProperty("Current", BindingFlags.Static | BindingFlags.Public)!;
+            var localFolderProperty = applicationData.GetProperty("LocalFolder", BindingFlags.Public | BindingFlags.Instance)!;
+            var pathProperty = localFolderProperty.PropertyType.GetProperty("Path", BindingFlags.Public | BindingFlags.Instance)!;
 
             var currentApplicationData = currentProperty.GetValue(null);
             var localFolder = localFolderProperty.GetValue(currentApplicationData);
-            return (string)pathProperty.GetValue(localFolder);
+            return (string)pathProperty.GetValue(localFolder)!;
         }, out folder);
 
-        private static bool TryGetDatabaseFolder(Func<string> getter, out string folder)
+        private static bool TryGetDatabaseFolder(Func<string?> getter, [MaybeNullWhen(false)] out string folder)
         {
             try
             {

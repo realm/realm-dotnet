@@ -30,7 +30,7 @@ namespace Realms
         public static explicit operator Decimal128(RealmValue val) => default;
 
         public static explicit operator ObjectId(RealmValue val) => default;
-        
+
         public static explicit operator Guid(RealmValue val) => default;
 
         public static explicit operator char?(RealmValue val) => default;
@@ -56,7 +56,7 @@ namespace Realms
         public static explicit operator Decimal128?(RealmValue val) => default;
 
         public static explicit operator ObjectId?(RealmValue val) => default;
-        
+
         public static explicit operator Guid?(RealmValue val) => default;
 
         public static explicit operator RealmInteger<byte>(RealmValue val) => default;
@@ -75,11 +75,11 @@ namespace Realms
 
         public static explicit operator RealmInteger<long>?(RealmValue val) => default;
 
-        public static explicit operator byte[](RealmValue val) => default;
+        public static explicit operator byte[]?(RealmValue val) => default;
 
-        public static explicit operator string(RealmValue val) => default;
+        public static explicit operator string?(RealmValue val) => default;
 
-        public static explicit operator RealmObjectBase(RealmValue val) => default;
+        public static explicit operator RealmObjectBase?(RealmValue val) => default;
 
         public static implicit operator RealmValue(char val) => default;
 
@@ -149,9 +149,9 @@ namespace Realms
 
         public static implicit operator RealmValue(RealmInteger<long>? val) => default;
 
-        public static implicit operator RealmValue(byte[] val) => default;
+        public static implicit operator RealmValue(byte[]? val) => default;
 
-        public static implicit operator RealmValue(string val) => default;
+        public static implicit operator RealmValue(string? val) => default;
 
         public static implicit operator RealmValue(RealmObjectBase val) => default;
     }

@@ -18,24 +18,35 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Reflection;
+using Realms.Schema;
 
 namespace Realms.DataBinding
 {
     internal class RealmObjectTypeDelegator : TypeDelegator
     {
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
-        private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
+        private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new();
 
-        internal RealmObjectTypeDelegator(Type type) : base(type)
+        private readonly ObjectSchema? _schema;
+
+        internal RealmObjectTypeDelegator(Type type, ObjectSchema? schema) : base(type)
         {
+            _schema = schema;
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        protected override PropertyInfo? GetPropertyImpl(string name, BindingFlags bindingAttr, Binder? binder, Type? returnType, Type[]? types, ParameterModifier[]? modifiers)
         {
             var result = base.GetPropertyImpl(name, bindingAttr, binder, returnType, types, modifiers);
-            var wovenAttribute = result?.GetCustomAttribute<WovenPropertyAttribute>();
-            if (wovenAttribute != null)
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            // Schema is null only for woven unmanaged objects
+            if (_schema?.Any(p => p.ManagedName == name) ?? result.GetCustomAttribute<WovenPropertyAttribute>() != null)
             {
                 return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
             }

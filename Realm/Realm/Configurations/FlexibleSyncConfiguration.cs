@@ -20,8 +20,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Helpers;
-using Realms.Sync.ErrorHandling;
 
 namespace Realms.Sync
 {
@@ -49,11 +47,9 @@ namespace Realms.Sync
         /// <param name="optionalPath">
         /// Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.
         /// </param>
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Arguments are validated in the base ctor.")]
-        public FlexibleSyncConfiguration(User user, string optionalPath = null)
-            : base(user)
+        public FlexibleSyncConfiguration(User user, string? optionalPath = null)
+            : base(user, GetPathToRealm(optionalPath ?? user?.Handle.GetRealmPath()))
         {
-            DatabasePath = GetPathToRealm(optionalPath ?? user.App.Handle.GetRealmPath(User));
         }
 
         /// <summary>
@@ -86,7 +82,7 @@ namespace Realms.Sync
         /// The <see cref="InitialSubscriptionsDelegate"/> that will be invoked the first time
         /// a Realm is opened.
         /// </value>
-        public InitialSubscriptionsDelegate PopulateInitialSubscriptions { get; set; }
+        public InitialSubscriptionsDelegate? PopulateInitialSubscriptions { get; set; }
 
         internal override async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
@@ -174,34 +170,7 @@ namespace Realms.Sync
         {
             var config = base.CreateNativeSyncConfiguration();
             config.is_flexible_sync = true;
-            config.client_resync_mode = ClientResyncMode.Manual;
             return config;
-        }
-
-        /// <summary>
-        /// Gets or sets a handler that will be invoked if a client reset error occurs for this Realm.
-        /// </summary>
-        /// <value>The <see cref="ClientResetHandlerBase"/> that will be used to handle a client reset.</value>
-        /// <remarks>
-        /// Currently, Flexible sync only supports the <see cref="ManualRecoveryHandler"/>. Support for the newer modes will come in the future.
-        /// </remarks>
-        /// <exception cref="NotSupportedException">
-        /// Flexible sync is still in beta, so only <see cref="ManualRecoveryHandler"/> is supported.
-        /// </exception>
-        /// <seealso href="https://docs.mongodb.com/realm/sdk/dotnet/advanced-guides/client-reset/">Client reset docs</seealso>
-        public override ClientResetHandlerBase ClientResetHandler
-        {
-            get => base.ClientResetHandler;
-            set
-            {
-                Argument.NotNull(value, nameof(value));
-                if (value is not ManualRecoveryHandler)
-                {
-                    throw new NotSupportedException($"Flexible sync does not yet support {value.GetType().Name}");
-                }
-
-                base.ClientResetHandler = value;
-            }
         }
 
         // This is a holder class to workaround the fact that we can't use ref booleans
@@ -209,9 +178,10 @@ namespace Realms.Sync
         // was invoked, which means we need to then update subscriptions.
         private class InitialDataTracker
         {
-            public bool PopulateInitialDataInvoked;
+            [MemberNotNullWhen(returnValue: true, nameof(Callback))]
+            public bool PopulateInitialDataInvoked { get; set; }
 
-            public InitialSubscriptionsDelegate Callback;
+            public InitialSubscriptionsDelegate? Callback { get; set; }
         }
     }
 }

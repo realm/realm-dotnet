@@ -41,7 +41,7 @@ namespace Realms
         /// <seealso cref="IRealmCollection{T}.SubscribeForNotifications"/>
         /// <returns>The collection, implementing <see cref="INotifyCollectionChanged"/>.</returns>
         public static IRealmCollection<T> AsRealmCollection<T>(this IQueryable<T> query)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             Argument.NotNull(query, nameof(query));
 
@@ -60,7 +60,7 @@ namespace Realms
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose"/>.
         /// </returns>
         public static IDisposable SubscribeForNotifications<T>(this IQueryable<T> results, NotificationCallbackDelegate<T> callback)
-            where T : IRealmObjectBase
+            where T : IRealmObjectBase?
         {
             return results.AsRealmCollection().SubscribeForNotifications(callback);
         }
@@ -268,6 +268,41 @@ namespace Realms
         }
 
         /// <summary>
+        /// Converts a Realm-backed <see cref="IDictionary{String, T}"/> to a Realm-backed <see cref="IQueryable{T}"/> of dictionary's values.
+        /// </summary>
+        /// <typeparam name="T">The type of the values contained in the dictionary.</typeparam>
+        /// <param name="dictionary">The dictionary of objects as obtained from a to-many relationship property.</param>
+        /// <returns>A queryable collection that represents the values contained in the dictionary.</returns>
+        /// <remarks>
+        /// This method works differently from <see cref="Queryable.AsQueryable"/> in that it only returns a collection of values,
+        /// not a collection of <see cref="KeyValuePair{String, T}"/> and it actually creates an underlying Realm query that represents the dictionary's values.
+        /// This means that all LINQ methods will be executed by the database and also that you can subscribe for
+        /// notifications even after applying LINQ filters or ordering.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var query = owner.DictOfDogs.AsRealmQueryable()
+        ///                 .Where(d => d.Age > 3)
+        ///                 .OrderBy(d => d.Name);
+        ///
+        /// var token = query.SubscribeForNotifications((sender, changes, error) =>
+        /// {
+        ///     // You'll be notified only when dogs older than 3 have been added/removed/updated
+        ///     // and the sender collection will be ordered by Name
+        /// });
+        /// </code>
+        /// </example>
+        /// <exception cref="ArgumentException">Thrown if the dictionary is not managed by Realm.</exception>
+        public static IQueryable<T> AsRealmQueryable<T>(this IDictionary<string, T?> dictionary)
+            where T : IRealmObjectBase
+        {
+            Argument.NotNull(dictionary, nameof(dictionary));
+
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of RealmDictionary<{typeof(T).Name}>.", nameof(dictionary));
+            return realmDictionary.ToResults();
+        }
+
+        /// <summary>
         /// A convenience method that casts <see cref="IQueryable{T}"/> to <see cref="IRealmCollection{T}"/> and subscribes for change notifications.
         /// </summary>
         /// <param name="dictionary">The <see cref="IDictionary{String, T}"/> to observe for changes.</param>
@@ -333,7 +368,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IQueryable<T> query, string predicate, params QueryArgument[] arguments)
         {
             Argument.NotNull(predicate, nameof(predicate));
             Argument.NotNull(arguments, nameof(arguments));
@@ -369,7 +404,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this IList<T> list, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -406,7 +441,7 @@ namespace Realms
         /// Examples of the NSPredicate syntax
         /// </seealso>
         /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
-        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params RealmValue[] arguments)
+        public static IQueryable<T> Filter<T>(this ISet<T> set, string predicate, params QueryArgument[] arguments)
             where T : IRealmObjectBase
         {
             Argument.NotNull(predicate, nameof(predicate));
@@ -416,19 +451,53 @@ namespace Realms
             return realmSet.GetFilteredResults(predicate, arguments);
         }
 
+        /// <summary>
+        /// Apply an NSPredicate-based filter over dictionary's values. It can be used to create
+        /// more complex queries, that are currently unsupported by the LINQ provider and
+        /// supports SORT and DISTINCT clauses in addition to filtering.
+        /// </summary>
+        /// <typeparam name="T">The type of the dictionary's values that will be filtered.</typeparam>
+        /// <param name="dictionary">A Realm Dictionary.</param>
+        /// <param name="predicate">The predicate that will be applied.</param>
+        /// <param name="arguments">
+        /// Values used for substitution in the predicate.
+        /// Note that all primitive types are accepted as they are implicitly converted to RealmValue.
+        /// </param>
+        /// <returns>A queryable observable collection of dictionary values that match the predicate.</returns>
+        /// <remarks>
+        /// If you're not going to apply additional filters, it's recommended to use <see cref="AsRealmCollection{T}(IQueryable{T})"/>
+        /// after applying the predicate.
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// joe.DictOfDogs.Filter("Name BEGINSWITH $0", "R");
+        /// </code>
+        /// </example>
+        /// <seealso href="https://docs.mongodb.com/realm/reference/realm-query-language/">
+        /// Examples of the NSPredicate syntax
+        /// </seealso>
+        /// <seealso href="https://academy.realm.io/posts/nspredicate-cheatsheet/">NSPredicate Cheatsheet</seealso>
+        public static IQueryable<T> Filter<T>(this IDictionary<string, T?> dictionary, string predicate, params QueryArgument[] arguments)
+            where T : IRealmObjectBase
+        {
+            Argument.NotNull(predicate, nameof(predicate));
+            Argument.NotNull(arguments, nameof(arguments));
+
+            var realmDictionary = Argument.EnsureType<RealmDictionary<T>>(dictionary, $"{nameof(dictionary)} must be an instance of RealmDictionary<{typeof(T).Name}>.", nameof(dictionary));
+            return realmDictionary.GetFilteredValueResults(predicate, arguments);
+        }
+
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, value => value);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Validation happens in the core method.")]
         [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This is only used by the weaver and should not be exposed to users.")]
         public static void PopulateCollection<T>(IDictionary<string, T> source, IDictionary<string, T> target, bool update, bool skipDefaults)
             => PopulateCollectionCore(source, target, update, skipDefaults, kvp => kvp.Value);
 
-        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object> valueGetter)
+        private static void PopulateCollectionCore<T>(ICollection<T> source, ICollection<T> target, bool update, bool skipDefaults, Func<T, object?> valueGetter)
         {
             Argument.NotNull(target, nameof(target));
 
@@ -450,7 +519,7 @@ namespace Realms
                     }
                     else if (value is RealmValue val && val.Type == RealmValueType.Object)
                     {
-                        var wrappedObj = val.AsRealmObject();
+                        var wrappedObj = val.AsIRealmObject();
                         if (wrappedObj is IRealmObject robj)
                         {
                             realm.Add(robj, update);

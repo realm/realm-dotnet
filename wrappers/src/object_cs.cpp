@@ -23,9 +23,11 @@
 #include "realm_export_decls.hpp"
 #include "timestamp_helpers.hpp"
 
+#include <cstddef>
 #include <realm.hpp>
 #include <realm/object-store/object_accessor.hpp>
 #include <realm/object-store/thread_safe_reference.hpp>
+#include <realm/exceptions.hpp>
 
 using namespace realm;
 using namespace realm::binding;
@@ -35,6 +37,22 @@ using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback
 namespace realm {
 namespace binding {
     extern std::function<GetNativeSchemaT> s_get_native_schema;
+
+    REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object)
+    {
+        KeyPathArray keyPathArray;
+        for (auto& prop : object.persisted_properties) {
+            // We want to filter out all collection properties. By providing keypaths with just the top-level properties
+            // means we won't get deep change notifications either.
+            bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
+            if (is_scalar) {
+                KeyPath keyPath;
+                keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
+                keyPathArray.push_back(keyPath);
+            }
+        }
+        return keyPathArray;
+    }
 }
 }
 
@@ -112,7 +130,7 @@ extern "C" {
             std::vector<SchemaProperty> schema_properties;
 
             auto& object_schema = object.get_object_schema();
-            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties, object_schema.table_type == ObjectSchema::ObjectType::Embedded));
+            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties));
 
             s_get_native_schema(SchemaForMarshaling{
                 schema_objects.data(),
@@ -131,7 +149,7 @@ extern "C" {
 
             if (value.is_null() && !is_nullable(prop.type)) {
                 auto& schema = object.get_object_schema();
-                throw NotNullableException(schema.name, prop.name);
+                throw NotNullable(schema.name, prop.name);
             }
 
             if (!value.is_null() && (prop.type & ~PropertyType::Flags) != PropertyType::Mixed &&
@@ -188,7 +206,7 @@ extern "C" {
             const Property& source_property = source_object_schema.persisted_properties[source_property_ndx];
 
             if (source_property.object_type != object.get_object_schema().name) {
-                throw std::logic_error(util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
+                throw InvalidArgument(ErrorCodes::InvalidProperty, util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
 
             TableView backlink_view = object.obj().get_backlink_view(source_table, source_property.column_key);
@@ -202,6 +220,16 @@ extern "C" {
             verify_can_set(parent);
 
             return new Object(parent.realm(), parent.obj().create_and_set_linked_object(get_column_key(parent, property_ndx)));
+        });
+    }
+
+    REALM_EXPORT Object* object_get_parent(Object& child, TableKey& table_key, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            Obj parent = child.obj().get_parent_object();
+            table_key = parent.get_table()->get_key();
+
+            return new Object(child.realm(), std::move(parent));
         });
     }
 
@@ -273,9 +301,10 @@ extern "C" {
     REALM_EXPORT ManagedNotificationTokenContext* object_add_notification_callback(Object* object, void* managed_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return subscribe_for_notifications(managed_object, [object](CollectionChangeCallback callback) {
-                return object->add_notification_callback(callback);
-            }, new ObjectSchema(object->get_object_schema()));
+            return subscribe_for_notifications(managed_object, [&](CollectionChangeCallback callback) {
+                auto keyPaths = construct_key_path_array(object->get_object_schema());
+                return object->add_notification_callback(callback, keyPaths);
+            }, true, new ObjectSchema(object->get_object_schema()));
         });
     }
 

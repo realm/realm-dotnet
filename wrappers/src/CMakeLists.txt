@@ -14,7 +14,6 @@ set(SOURCES
     shared_realm_cs.cpp
     app_cs.cpp
     async_open_task_cs.cpp
-    mongo_collection_cs.cpp
     subscription_set_cs.cpp
     sync_session_cs.cpp
     sync_user_cs.cpp
@@ -28,7 +27,6 @@ set(HEADERS
     filter.hpp
     marshalling.hpp
     object_cs.hpp
-    realm_error_type.hpp
     realm_export_decls.hpp
     schema_cs.hpp
     shared_realm_cs.hpp
@@ -60,7 +58,7 @@ if(BUILD_APPLE_FRAMEWORK)
     )
 endif()
 
-if (ANDROID)
+if(ANDROID)
     target_link_options(realm-wrappers PRIVATE LINKER:-gc-sections)
 endif()
 
@@ -70,6 +68,8 @@ if(CMAKE_GENERATOR_PLATFORM)
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${CMAKE_GENERATOR_PLATFORM})
 elseif(ANDROID_ABI)
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>-${ANDROID_ABI})
+elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    set(runtime_target Linux/$<CONFIG>-${CMAKE_SYSTEM_PROCESSOR})
 else()
     set(runtime_target ${CMAKE_SYSTEM_NAME}/$<CONFIG>)
 endif()
@@ -79,6 +79,7 @@ install(TARGETS realm-wrappers
     LIBRARY DESTINATION ${runtime_target}
     FRAMEWORK DESTINATION ${runtime_target}
 )
+
 if(MSVC)
     install(FILES $<TARGET_PDB_FILE:realm-wrappers> DESTINATION ${runtime_target} OPTIONAL)
 endif()

@@ -11,72 +11,46 @@ name: CodeQL
     - '**.cpp'
     - '**.hpp'
     - '**.csproj'
+    - .github/workflows/codeql.yml
 env:
   REALM_DISABLE_ANALYTICS: true
+concurrency:
+  group: codeql-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
-  analyze-cpp:
-    name: Analyze C++
-    runs-on: windows-2019
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
-        ref: ${{ github.event.pull_request.head.sha }}
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: cpp
-        queries: security-and-quality
-    - name: Get vcpkg submodule commit sha
-      id: vcpkg_cache_key
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-      shell: bash
-      run: echo "::set-output name=commit::$(git rev-parse HEAD)"
-    - name: Setup Vcpkg
-      id: setup-vcpkg
-      uses: friendlyanon/setup-vcpkg@v1
-      with:
-        path: wrappers/realm-core/tools/vcpkg/ports
-        cache-key: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}-${{ hashFiles('./wrappers/realm-core/tools/vcpkg/vcpkg.json') }}
-        cache-restore-keys: vcpkg3-windows-x64-${{ steps.vcpkg_cache_key.outputs.commit }}
-    - name: Refetch vcpkg
-      run: git fetch --unshallow
-      working-directory: wrappers/realm-core/tools/vcpkg/ports
-    - name: Build wrappers
-      run: powershell ./wrappers/build.ps1 Windows -Platforms x64 -Configuration Release
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
   analyze-csharp:
     name: Analyze C#
-    runs-on: windows-2019
+    runs-on: windows-latest
     permissions:
       actions: read
       contents: read
       security-events: write
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: false
         ref: ${{ github.event.pull_request.head.sha }}
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@40542d38bc4936c2ca7da883aeb050a6081b4b31
       with:
         languages: csharp
-        queries: security-and-quality
+        config: |
+          queries:
+            - uses: security-and-quality
+          query-filters:
+            - exclude: cs/call-to-unmanaged-code
+            - exclude: cs/unmanaged-code
+    - name: Setup Android
+      uses: android-actions/setup-android@7c5672355aaa8fde5f97a91aa9a99616d1ace6bc
+    - name: Install SDK platform 21
+      run: sdkmanager --install "platforms;android-21"
+    - name: Setup workloads
+      run: dotnet workload install tvos ios maccatalyst android
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-    - name: Configure .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.202
-    - name: Build Realm.Fody
-      run: msbuild Realm/Realm.Fody -p:UseSharedCompilation=false -restore -p:Configuration=Release
+      uses: microsoft/setup-msbuild@0b44c6745b7e81956596964100aadb92d667c497
+    - name: Build Realm.PlatformHelpers
+      run: msbuild Realm/Realm.PlatformHelpers -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm
       run: msbuild Realm/Realm -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Build Realm.UnityUtils
@@ -84,4 +58,4 @@ jobs:
     - name: Build Realm.UnityWeaver
       run: msbuild Realm/Realm.UnityWeaver -p:UseSharedCompilation=false -restore -p:Configuration=Release
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@40542d38bc4936c2ca7da883aeb050a6081b4b31

@@ -1,6 +1,6 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts", "setupDotnet")
-#@ load("test.lib.yml", "fetchPackageArtifacts", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests")
+#@ load("common.lib.yml", "checkoutCode", "uploadArtifacts")
+#@ load("test.lib.yml", "baasTestArgs", "publishTestsResults", "testDefinition", "buildTests", "dotnetBuildTests", "prepareTest")
 
 ---
 name: test-net-core
@@ -8,7 +8,7 @@ _: #@ template.replace(testDefinition(additionalInputs = [ "framework"]))
 jobs:
   run-tests:
     runs-on: ${{ matrix.os.runner }}
-    name: ${{ matrix.framework }}, ${{ matrix.os.runtime }}
+    name: ${{ matrix.framework }}, ${{ (matrix.os.runner == 'win81' && 'win81') || matrix.os.runtime }}
     timeout-minutes: 45
     strategy:
       fail-fast: false
@@ -20,21 +20,20 @@ jobs:
           runtime: linux-x64
         - runner: macos-latest
           runtime: osx-x64
-        - runner: win81
-          runtime: win-x64
         framework: ${{ fromJson(inputs.framework) }}
         include:
-        - framework: net6.0
+        - framework: net7.0
           os:
             runner: macos-arm
             runtime: osx-arm64
+        - framework: net7.0
+          os:
+            runner: win81
+            runtime: win-x64
+
     steps:
-      - #@ template.replace(checkoutCode())
-      - name: Cleanup Workspace
-        run: git clean -fdx
-      - #@ setupDotnet(ifCondition = "matrix.framework == 'net6.0' && matrix.os.runner != 'macos-arm'")
-      - #@ template.replace(fetchPackageArtifacts())
-      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}", RealmTestsStandaloneExe="true"))
+      - #@ template.replace(prepareTest(cleanupWorkspace = True))
+      - #@ template.replace(dotnetBuildTests("Tests/Realm.Tests", "${{ matrix.framework }}", "${{ matrix.os.runtime }}"))
       - name: Run the tests
         run: #@ "${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests --result=TestResults.xml --labels=After" + baasTestArgs("net-core-${{ matrix.runner }}-${{ matrix.runtime }}")
       - #@ publishTestsResults("TestResults.xml", ".NET (${{ matrix.os.runner }}, ${{ matrix.framework }})")

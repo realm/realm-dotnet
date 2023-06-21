@@ -17,18 +17,22 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using Realms;
+using Realms.Exceptions;
 using Xunit;
 
 namespace Tests.XUnit
 {
-    public class SmokeTests : IDisposable
+    public partial class SmokeTests : IDisposable
     {
         private Realm? _realm;
 
         public void Dispose()
         {
             _realm?.Dispose();
-            Realm.DeleteRealm(_realm?.Config);
+            if (_realm != null)
+            {
+                Realm.DeleteRealm(_realm.Config);
+            }
         }
 
         [Fact]
@@ -55,15 +59,11 @@ namespace Tests.XUnit
 
             var tcs = new TaskCompletionSource();
             var initialNotification = false;
-            using var token = _realm.All<DummyObject>().SubscribeForNotifications((sender, changes, error) =>
+            using var token = _realm.All<DummyObject>().SubscribeForNotifications((sender, changes) =>
             {
                 try
                 {
-                    if (error != null)
-                    {
-                        tcs.TrySetException(error);
-                    }
-                    else if (changes == null)
+                    if (changes == null)
                     {
                         initialNotification = true;
                     }
@@ -83,9 +83,9 @@ namespace Tests.XUnit
                 }
             });
 
-            await _realm.WriteAsync(bgRealm =>
+            await _realm.WriteAsync(() =>
             {
-                bgRealm.Add(new DummyObject
+                _realm.Add(new DummyObject
                 {
                     StringProp = "foo"
                 });
@@ -103,12 +103,12 @@ namespace Tests.XUnit
 
             await Task.Run(() =>
             {
-                var ex = Assert.Throws<Exception>(() => _realm.All<DummyObject>());
+                var ex = Assert.Throws<RealmException>(() => _realm.All<DummyObject>());
                 Assert.Contains("incorrect thread", ex.Message);
             });
         }
 
-        public class DummyObject : RealmObject
+        public partial class DummyObject : IRealmObject
         {
             public string? StringProp { get; set; }
         }

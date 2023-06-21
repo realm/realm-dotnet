@@ -71,7 +71,7 @@ namespace SetupUnityPackage
             }
 
             var extractedPackagePath = CreateTempDirectory("realm-package");
-            var realmDllPath = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime", "Realm.dll");
+            var realmDllsPath = Path.Combine(Helpers.SolutionFolder, "Realm", "Realm.Unity", "Runtime");
             if (opts.RealmPackage == null)
             {
                 // If the user didn't provide a .tgz package, we should assume a local install
@@ -84,17 +84,17 @@ namespace SetupUnityPackage
                 using var gzipStream = new GZipInputStream(fileStream);
                 using var archive = TarArchive.CreateInputTarArchive(gzipStream, Encoding.UTF8);
                 archive.ExtractContents(extractedPackagePath);
-                realmDllPath = Path.Combine(extractedPackagePath, "package", "Runtime", "Realm.dll");
+                realmDllsPath = Path.Combine(extractedPackagePath, "package", "Runtime");
             }
 
             var testsProjectFolder = Path.Combine(Helpers.SolutionFolder, "Tests", "Realm.Tests");
-            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllPath={realmDllPath} -c Release --include-symbols", Helpers.SolutionFolder);
+            RunTool("dotnet", $"pack {testsProjectFolder} -p:UnityBuild=true -p:PackageOutputPath={Helpers.PackagesFolder} -p:RealmDllsPath={realmDllsPath} -c Release --include-symbols", Helpers.SolutionFolder);
 
             var testsSearchDirectory = Path.Combine(testsProjectFolder, "bin", "Release", "netstandard2.0");
             await CopyPackages(Helpers.PackagesFolder, opts, testsSearchDirectory);
 
             var manifestPath = Path.Combine(Helpers.SolutionFolder, "Tests", "Tests.Unity", "Packages", "manifest.json");
-            var relativePackagePath = Path.GetRelativePath(Path.GetDirectoryName(manifestPath), opts.RealmPackage);
+            var relativePackagePath = Path.GetRelativePath(Path.GetDirectoryName(manifestPath)!, opts.RealmPackage);
 
             UpdateManifestJson(manifestPath, "io.realm.unity", relativePackagePath);
 
@@ -130,7 +130,7 @@ namespace SetupUnityPackage
 
         private static async Task<string> CopyPackages(string packagesPath, OptionsBase opts, params string[] searchDirectories)
         {
-            string unityPackageVersion = null;
+            string? unityPackageVersion = null;
 
             foreach (var info in opts.Files)
             {
@@ -154,7 +154,7 @@ namespace SetupUnityPackage
                 await CopyDependencies(opts, info, dependencies, searchDirectories);
             }
 
-            return unityPackageVersion;
+            return unityPackageVersion!;
         }
 
         private static async Task CopyDependencies(OptionsBase opts, PackageInfo info, Queue<PackageDependency> dependencies, params string[] searchDirectories)
@@ -167,7 +167,7 @@ namespace SetupUnityPackage
             while (dependencies.TryDequeue(out var package))
             {
                 var packageVersion = package.VersionRange.MinVersion.ToNormalizedString();
-                var depInfo = info.Dependencies.SingleOrDefault(i => i.Id == package.Id);
+                var depInfo = info.Dependencies?.SingleOrDefault(i => i.Id == package.Id);
                 if (opts.IgnoredDependencies.Contains(package.Id))
                 {
                     Console.WriteLine($"Skipping {package.Id}@{packageVersion} because it is ignored.");
@@ -208,7 +208,7 @@ namespace SetupUnityPackage
             var mainPackagePath = Path.Combine(opts.PackageBasePath, info.MainPackagePath);
             if (opts.NoRepack)
             {
-                var targetFolder = Path.Combine(Path.GetDirectoryName(mainPackagePath), "Dependencies");
+                var targetFolder = Path.Combine(Path.GetDirectoryName(mainPackagePath)!, "Dependencies");
 
                 Helpers.CopyFiles(tempPath, targetFolder);
             }
@@ -252,7 +252,7 @@ namespace SetupUnityPackage
             }
 
             var tempPath = Path.Combine(Helpers.BuildFolder, "Downloaded Packages", $"{packageId}-{version}.nupkg");
-            Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(tempPath)!);
 
             if (File.Exists(tempPath))
             {
@@ -307,7 +307,7 @@ namespace SetupUnityPackage
 
             var dependencies = await packageReader.GetPackageDependenciesAsync(CancellationToken.None);
             var version = packageReader.NuspecReader.GetVersion().ToNormalizedString();
-            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages;
+            var packages = dependencies.FirstOrDefault(d => d.TargetFramework.DotNetFrameworkName == ".NETStandard,Version=v2.0")?.Packages ?? Enumerable.Empty<PackageDependency>();
             return (version, packages, extractedFiles);
         }
 
@@ -354,7 +354,7 @@ namespace SetupUnityPackage
             });
 #pragma warning restore CA1416
 
-            runner.WaitForExit();
+            runner?.WaitForExit();
         }
 
         private static string CreateTempDirectory(string name)

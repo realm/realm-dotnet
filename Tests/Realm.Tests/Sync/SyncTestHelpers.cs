@@ -18,11 +18,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Baas;
 using Nito.AsyncEx;
 using NUnit.Framework;
+using Realms.Logging;
 using Realms.Sync;
 
 namespace Realms.Tests.Sync
@@ -37,15 +39,19 @@ namespace Realms.Tests.Sync
             [AppConfigType.Default] = new(string.Empty, DummyAppId, AppConfigType.Default),
         };
 
-        private static Uri _baseUri;
-        private static BaasClient _baasClient;
+        private static Uri? _baseUri;
+        private static BaasClient? _baasClient;
 
         static SyncTestHelpers()
         {
 #if !UNITY
             try
             {
-                _baseUri = new Uri(System.Configuration.ConfigurationManager.AppSettings["BaasUrl"]);
+                var uri = ConfigHelpers.GetSetting("BaasUrl");
+                if (uri != null)
+                {
+                    _baseUri = new Uri(uri);
+                }
             }
             catch
             {
@@ -64,9 +70,9 @@ namespace Realms.Tests.Sync
 #pragma warning restore CA1837 // Use Environment.ProcessId instead of Process.GetCurrentProcess().Id
         };
 
-        public static string RemoteMongoDBName => $"Schema_{_baasClient?.Differentiator}";
+        public static string RemoteMongoDBName(string prefix = "Schema") => $"{prefix}_{_baasClient?.Differentiator}";
 
-        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000, bool ensureNoSessionErrors = false)
+        public static void RunBaasTestAsync(Func<Task> testFunc, int timeout = 30000)
         {
             if (_baseUri == null)
             {
@@ -78,33 +84,34 @@ namespace Realms.Tests.Sync
                 await CreateBaasAppsAsync();
             });
 
-            if (ensureNoSessionErrors)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                var tcs = new TaskCompletionSource<object>();
-                Session.Error += HandleSessionError;
-                try
-                {
-                    TestHelpers.RunAsyncTest(testFunc, timeout, tcs.Task);
-                }
-                finally
-                {
-                    Session.Error -= HandleSessionError;
-                }
-#pragma warning restore CS0618 // Type or member is obsolete
+            TestHelpers.RunAsyncTest(testFunc, timeout);
 
-                void HandleSessionError(object _, ErrorEventArgs errorArgs)
-                {
-                    tcs.TrySetException(errorArgs.Exception);
-                }
-            }
-            else
-            {
-                TestHelpers.RunAsyncTest(testFunc, timeout);
-            }
+            // TODO: remove when https://github.com/realm/realm-core/issues/6052 is fixed
+            Task.Delay(1000).Wait();
         }
 
         public static string GetVerifiedUsername() => $"realm_tests_do_autoverify-{Guid.NewGuid()}";
+
+        public static async Task TriggerClientResetOnServer(SyncConfigurationBase config)
+        {
+            var userId = config.User.Id;
+            var appId = string.Empty;
+
+            if (config is FlexibleSyncConfiguration)
+            {
+                appId = _apps[AppConfigType.FlexibleSync].AppId;
+            }
+
+            var result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
+            if (result.Deleted > 0)
+            {
+                // This is kind of a hack, but it appears like there's a race condition on the server, where the deletion might not be
+                // registered and the server will not respond with a client reset. Doing the request again gives the server some extra time
+                // to process the deletion.
+                result = await config.User.Functions.CallAsync<BaasClient.FunctionReturn>("triggerClientResetOnSyncServer", userId, appId);
+                Assert.That(result.Deleted, Is.EqualTo(0));
+            }
+        }
 
         public static async Task<string[]> ExtractBaasSettingsAsync(string[] args)
         {
@@ -117,6 +124,39 @@ namespace Realms.Tests.Sync
             }
 
             return remainingArgs;
+        }
+
+        public static (string[] RemainingArgs, IDisposable? Logger) SetLoggerFromArgs(string[] args)
+        {
+            var (extracted, remaining) = ArgumentHelper.ExtractArguments(args, "realmloglevel", "realmlogfile");
+
+            if (extracted.TryGetValue("realmloglevel", out var logLevelStr) && Enum.TryParse<LogLevel>(logLevelStr, out var logLevel))
+            {
+                TestHelpers.Output.WriteLine($"Setting log level to {logLevel}");
+
+                Logger.LogLevel = logLevel;
+            }
+
+            Logger.AsyncFileLogger? logger = null;
+            if (extracted.TryGetValue("realmlogfile", out var logFile))
+            {
+                if (!Process.GetCurrentProcess().ProcessName.ToLower().Contains("testhost"))
+                {
+                    TestHelpers.Output.WriteLine($"Setting sync logger to file: {logFile}");
+
+                    // We're running in a test runner, so we need to use the sync logger
+                    Logger.Default = Logger.File(logFile);
+                }
+                else
+                {
+                    TestHelpers.Output.WriteLine($"Setting async logger to file: {logFile}");
+
+                    // We're running standalone (likely on CI), so we use the async logger
+                    Logger.Default = logger = new Logger.AsyncFileLogger(logFile);
+                }
+            }
+
+            return (remaining, logger);
         }
 
         public static string[] ExtractBaasSettings(string[] args)
@@ -137,12 +177,13 @@ namespace Realms.Tests.Sync
 #if !UNITY
             try
             {
-                var cluster = System.Configuration.ConfigurationManager.AppSettings["Cluster"];
-                var apiKey = System.Configuration.ConfigurationManager.AppSettings["ApiKey"];
-                var privateApiKey = System.Configuration.ConfigurationManager.AppSettings["PrivateApiKey"];
-                var groupId = System.Configuration.ConfigurationManager.AppSettings["GroupId"];
+                var cluster = ConfigHelpers.GetSetting("Cluster")!;
+                var apiKey = ConfigHelpers.GetSetting("ApiKey")!;
+                var privateApiKey = ConfigHelpers.GetSetting("PrivateApiKey")!;
+                var groupId = ConfigHelpers.GetSetting("GroupId")!;
+                var differentiator = ConfigHelpers.GetSetting("Differentiator") ?? "local";
 
-                _baasClient = await BaasClient.Atlas(_baseUri, "local", TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
+                _baasClient ??= await BaasClient.Atlas(_baseUri, differentiator, TestHelpers.Output, cluster, apiKey, privateApiKey, groupId);
             }
             catch
             {
@@ -157,7 +198,7 @@ namespace Realms.Tests.Sync
         public static Task SetRecoveryModeOnServer(string appConfigType, bool enabled)
         {
             var app = _apps[appConfigType];
-            return _baasClient.SetAutomaticRecoveryEnabled(app, enabled);
+            return _baasClient!.SetAutomaticRecoveryEnabled(app, enabled);
         }
     }
 }

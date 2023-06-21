@@ -35,33 +35,31 @@ namespace Realms
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:Elements should be documented", Justification = "This should not be directly accessed by users.")]
+    [SuppressMessage("Design", "CA1010:Generic interface should also be implemented", Justification = "IList conformance is needed for UWP databinding. IList<T> is not necessary.")]
     public abstract class RealmCollectionBase<T>
         : INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>,
           IRealmCollection<T>,
+          IList,
           IThreadConfined,
           IMetadataObject
     {
-        private readonly List<NotificationCallbackDelegate<T>> _callbacks = new();
-
-        private NotificationTokenHandle _notificationToken;
-
-        private bool _deliveredInitialNotification;
+        private readonly Lazy<NotificationCallbacks<T>> _notificationCallbacks;
 
         internal readonly bool _isEmbedded;
 
         internal readonly Lazy<CollectionHandleBase> Handle;
 
-        internal readonly Metadata Metadata;
+        internal readonly Metadata? Metadata;
 
         internal bool IsDynamic;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event NotifyCollectionChangedEventHandler _collectionChanged;
+        private event NotifyCollectionChangedEventHandler? _collectionChanged;
 
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "This is the private event - the public is uppercased.")]
-        private event PropertyChangedEventHandler _propertyChanged;
+        private event PropertyChangedEventHandler? _propertyChanged;
 
-        public event NotifyCollectionChangedEventHandler CollectionChanged
+        public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
             add
             {
@@ -78,7 +76,7 @@ namespace Realms
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged
         {
             add
             {
@@ -110,9 +108,9 @@ namespace Realms
         }
 
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
-        public ObjectSchema ObjectSchema => Metadata?.Schema;
+        public ObjectSchema? ObjectSchema => Metadata?.Schema;
 
-        Metadata IMetadataObject.Metadata => Metadata;
+        Metadata? IMetadataObject.Metadata => Metadata;
 
         [IgnoreDataMember]
         public bool IsManaged => Realm != null;
@@ -141,24 +139,28 @@ namespace Realms
             }
         }
 
-        internal RealmCollectionBase(Realm realm, Metadata metadata)
+        internal RealmCollectionBase(Realm realm, Metadata? metadata)
         {
             Realm = realm;
             Handle = new Lazy<CollectionHandleBase>(GetOrCreateHandle);
             Metadata = metadata;
-            _isEmbedded = metadata?.Schema.IsEmbedded ?? false;
+            _isEmbedded = metadata?.Schema.BaseType == ObjectSchema.ObjectType.EmbeddedObject;
+            _notificationCallbacks = new(() => new(this));
         }
 
         ~RealmCollectionBase()
         {
-            UnsubscribeFromNotifications();
+            if (_notificationCallbacks.IsValueCreated)
+            {
+                _notificationCallbacks.Value.RemoveAll();
+            }
         }
 
         internal abstract CollectionHandleBase GetOrCreateHandle();
 
         internal abstract RealmCollectionBase<T> CreateCollection(Realm realm, CollectionHandleBase handle);
 
-        internal RealmResults<T> GetFilteredResults(string query, RealmValue[] arguments)
+        internal RealmResults<T> GetFilteredResults(string query, QueryArgument[] arguments)
         {
             var resultsHandle = Handle.Value.GetFilteredResults(query, arguments);
             return new RealmResults<T>(Realm, resultsHandle, Metadata);
@@ -178,21 +180,14 @@ namespace Realms
         }
 
         public IDisposable SubscribeForNotifications(NotificationCallbackDelegate<T> callback)
+            => SubscribeForNotificationsImpl(callback, shallow: false);
+
+        internal IDisposable SubscribeForNotificationsImpl(NotificationCallbackDelegate<T> callback, bool shallow)
         {
             Argument.NotNull(callback, nameof(callback));
+            _notificationCallbacks.Value.Add(callback, shallow);
 
-            if (_callbacks.Count == 0)
-            {
-                SubscribeForNotifications();
-            }
-            else if (_deliveredInitialNotification)
-            {
-                callback(this, null, null);
-            }
-
-            _callbacks.Add(callback);
-
-            return NotificationToken.Create(callback, UnsubscribeFromNotifications);
+            return NotificationToken.Create(callback, c => UnsubscribeFromNotifications(c, shallow));
         }
 
         protected abstract T GetValueAtIndex(int index);
@@ -204,23 +199,47 @@ namespace Realms
                 return;
             }
 
-            var robj = value.AsRealmObject<IRealmObject>();
+            var robj = value.AsIRealmObject();
 
             if (robj.IsManaged && !robj.Realm.IsSameInstance(Realm))
             {
                 throw new RealmException("Can't add to the collection an object that is already in another realm.");
             }
 
-            if (!robj.IsManaged)
+            switch (robj)
             {
-                Realm.Add(robj);
+                case IRealmObject topLevel:
+                    if (!robj.IsManaged)
+                    {
+                        Realm.Add(topLevel);
+                    }
+
+                    break;
+
+                // Embedded and asymmetric objects can't reach this path unless the user explicitly adds
+                // them to the collection as RealmValues (e.g. IList<RealmValue>).
+                // This is because:
+                // * Plain embedded objects (not contained within a RealmValue), beside RealmSet, are
+                //   added by each collection handle (e.g. _listHandle.AddEmbedded()) in the respective
+                //   method (e.g. in RealmList.Add(), RealmList.Insert(), RealmDictionary.Add(), etc.)
+                //   rather than reaching RealmCollectionBase.AddToRealmIfNecessary().
+                // * For plain asymmetric objects, the weaver raises a compilation error since asymmetric
+                //   objects can't be linked to.
+                case IEmbeddedObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IEmbeddedObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an embedded object.");
+                case IAsymmetricObject:
+                    Debug.Assert(typeof(T) == typeof(RealmValue) || typeof(T) == typeof(KeyValuePair<string, RealmValue>), $"Expected a RealmValue to contain the IAsymmetricObject, but was a {typeof(T).Name}");
+                    throw new NotSupportedException("A RealmValue cannot contain an asymmetric object.");
+                default:
+                    throw new NotSupportedException($"{robj.GetType().Name} is not a valid Realm object type.");
             }
         }
 
         protected static IEmbeddedObject EnsureUnmanagedEmbedded(in RealmValue value)
         {
             var result = value.AsRealmObject<IEmbeddedObject>();
-            if (result?.IsManaged == true)
+            if (result.IsManaged)
             {
                 throw new RealmException("Can't add to the collection an embedded object that is already managed.");
             }
@@ -228,42 +247,16 @@ namespace Realms
             return result;
         }
 
-        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback)
+        private void UnsubscribeFromNotifications(NotificationCallbackDelegate<T> callback, bool shallow)
         {
-            if (_callbacks.Remove(callback) &&
-                _callbacks.Count == 0)
-            {
-                UnsubscribeFromNotifications();
-            }
-        }
-
-        private void SubscribeForNotifications()
-        {
-            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
-
-            Realm.ExecuteOutsideTransaction(() =>
-            {
-                var managedResultsHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                _notificationToken = Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle));
-            });
-        }
-
-        private void UnsubscribeFromNotifications()
-        {
-            _notificationToken?.Dispose();
-            _notificationToken = null;
-            _deliveredInitialNotification = false;
+            _notificationCallbacks.Value.Remove(callback, shallow);
         }
 
         #region INotifyCollectionChanged
 
-        private void OnChange(IRealmCollection<T> sender, ChangeSet change, Exception error)
+        private void OnChange(IRealmCollection<T> sender, ChangeSet? change)
         {
-            if (error != null)
-            {
-                Realm.NotifyError(error);
-            }
-            else if (!sender.IsValid)
+            if (!sender.IsValid)
             {
                 RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
@@ -319,28 +312,37 @@ namespace Realms
 
                 var raiseAdded = TryGetConsecutive(change.InsertedIndices, i => this[i], out var addedItems, out var addedStartIndex);
 
-                if (raiseAdded || raiseRemoved)
-                {
-                    if ((raiseAdded && raiseRemoved) ||
-                        (raiseAdded && addedItems == null) ||
-                        (raiseRemoved && removedItems == null))
-                    {
-                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                        RaisePropertyChanged();
-                        return;
-                    }
+                var raiseReplaced = TryGetConsecutive(change.NewModifiedIndices, i => this[i], out var replacedItems, out var replacedStartIndex);
 
+                // Only raise specialized notifications if we have exactly one change type to report
+                if (raiseAdded + raiseReplaced + raiseRemoved == 1)
+                {
                     if (removedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, removedStartIndex));
                         RaisePropertyChanged();
                     }
-
-                    if (addedItems != null)
+                    else if (addedItems != null)
                     {
                         RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, addedItems, addedStartIndex));
                         RaisePropertyChanged();
                     }
+                    else if (replacedItems != null)
+                    {
+                        // Until we get a snapshot of the old collection, we won't be able to provide meaningful value for old items.
+                        var oldItems = Enumerable.Range(0, replacedItems.Count).Select(_ => InvalidObject.Instance).ToList();
+                        RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, replacedItems, oldItems, replacedStartIndex));
+                        RaisePropertyChanged();
+                    }
+                    else
+                    {
+                        Debug.Assert(false, "This should never happen");
+                    }
+                }
+                else
+                {
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    RaisePropertyChanged();
                 }
             }
         }
@@ -356,7 +358,7 @@ namespace Realms
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
 
-        private static bool TryGetConsecutive(int[] indices, Func<int, object> getter, out IList items, out int startIndex)
+        private static int TryGetConsecutive(int[] indices, Func<int, object?> getter, out IList? items, out int startIndex)
         {
             items = null;
 
@@ -368,13 +370,13 @@ namespace Realms
                     items = Enumerable.Range(startIndex, indices.Length)
                                       .Select(getter)
                                       .ToList();
-                }
 
-                return true;
+                    return 1;
+                }
             }
 
             startIndex = -1;
-            return false;
+            return 0;
         }
 
         [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "This is called when subscribing to events and the dispose token is retained by the collection.")]
@@ -384,20 +386,20 @@ namespace Realms
             {
                 if (isSubscribed)
                 {
-                    SubscribeForNotifications(OnChange);
+                    SubscribeForNotificationsImpl(OnChange, shallow: true);
                 }
                 else
                 {
-                    UnsubscribeFromNotifications(OnChange);
+                    UnsubscribeFromNotifications(OnChange, shallow: true);
                 }
             }
         }
 
         #endregion INotifyCollectionChanged
 
-        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes)
+        void INotifiable<NotifiableObjectHandleBase.CollectionChangeSet>.NotifyCallbacks(NotifiableObjectHandleBase.CollectionChangeSet? changes, bool shallow)
         {
-            ChangeSet changeset = null;
+            ChangeSet? changeset = null;
             if (changes != null)
             {
                 var actualChanges = changes.Value;
@@ -409,15 +411,8 @@ namespace Realms
                     moves: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move((int)m.From, (int)m.To)).ToArray(),
                     cleared: actualChanges.Cleared);
             }
-            else
-            {
-                _deliveredInitialNotification = true;
-            }
 
-            foreach (var callback in _callbacks.ToArray())
-            {
-                callback(this, changeset, null);
-            }
+            _notificationCallbacks.Value.Notify(changeset, shallow);
         }
 
         public IEnumerator<T> GetEnumerator() => new Enumerator(this);
@@ -428,31 +423,43 @@ namespace Realms
 
         public virtual bool IsReadOnly => (Realm?.Config as RealmConfiguration)?.IsReadOnly == true;
 
+        public bool IsFixedSize => false;
+
+        public bool IsSynchronized => false;
+
+        public object SyncRoot => this;
+
+        object? IList.this[int index]
+        {
+            get => this[index];
+            set => throw new NotSupportedException();
+        }
+
         public void Clear() => Handle.Value.Clear();
 
-        public int IndexOf(object value)
+        public int IndexOf(object? value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return IndexOf((T)value);
+            return IndexOf((T?)value);
         }
 
-        public bool Contains(object value)
+        public bool Contains(object? value)
         {
-            if (value != null && !(value is T))
+            if (value != null && value is not T)
             {
                 throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
             }
 
-            return Contains((T)value);
+            return Contains((T?)value);
         }
 
-        public virtual bool Contains(T value) => IndexOf(value) > -1;
+        public virtual bool Contains([AllowNull] T value) => IndexOf(value) > -1;
 
-        public abstract int IndexOf(T value);
+        public abstract int IndexOf([AllowNull] T value);
 
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -474,6 +481,57 @@ namespace Realms
             }
         }
 
+        public virtual int Add(object? value)
+        {
+            if (value is not T tValue)
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+
+            Add(tValue);
+            return Count - 1;
+        }
+
+        public virtual void Insert(int index, object? value)
+        {
+            if (value is not T tValue)
+            {
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+            }
+
+            Insert(index, tValue);
+        }
+
+        public void Remove(object? value)
+        {
+            if (value is T tValue)
+            {
+                Remove(tValue);
+            }
+        }
+
+        public virtual void RemoveAt(int index) => throw new NotSupportedException();
+
+        public void CopyTo(Array array, int index)
+        {
+            Argument.NotNull(array, nameof(array));
+
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            if (index + Count > array.Length)
+            {
+                throw new ArgumentException($"Specified array doesn't have enough capacity to perform the copy. Needed: {index + Count}, available: {array.Length}", nameof(array));
+            }
+
+            foreach (var obj in this)
+            {
+                array.SetValue(obj, index++);
+            }
+        }
+
         #endregion IList
 
         public class Enumerator : IEnumerator<T>
@@ -487,14 +545,15 @@ namespace Realms
                 _index = -1;
 
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
-                // parent collection after iterating it. Only collections of objects support snapshotting.
-                _shouldDisposeHandle = parent.IsValid && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
-                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata) : parent;
+                // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
+                // snapshot if the collection is frozen.
+                _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata!) : parent;
             }
 
             public T Current => _enumerating[_index];
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public bool MoveNext()
             {
@@ -536,22 +595,120 @@ namespace Realms
         THandle NativeHandle { get; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "NotificationCallbacks are tightly coupled with the collection and it's easier to reason about when they're in the same file.")]
+    internal class NotificationCallbacks<T>
+    {
+        private readonly RealmCollectionBase<T> _parent;
+
+        private readonly Dictionary<KeyPath, (NotificationTokenHandle? Token, bool DeliveredInitialNotification, List<NotificationCallbackDelegate<T>> Callbacks)> _subscriptions = new();
+
+        public NotificationCallbacks(RealmCollectionBase<T> parent)
+        {
+            _parent = parent;
+        }
+
+        // Shallow here and everywhere else is a bit of a shortcut we're taking until we have proper keypath filtering.
+        // Once we do, we probably want this to be some keypath identifier that we can pass between managed and native.
+        public void Add(NotificationCallbackDelegate<T> callback, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                if (subscription.DeliveredInitialNotification)
+                {
+                    // If Core already delivered the initial notification, we need to manually invoke the callback as it won't be invoked by Core.
+                    // It's part of the SubscribeForNotifications API contract that an initial callback with `null` changes is always delivered.
+                    callback(_parent, null);
+                }
+
+                // If we have a subscription already, we just add the callback to the list we're managing
+                subscription.Callbacks.Add(callback);
+            }
+            else
+            {
+                // If this is a new subscription, we store it in the backing dictionary, then we subscribe outside of transaction
+                _subscriptions[keyPath] = (null, false, new() { callback });
+                _parent.Realm.ExecuteOutsideTransaction(() =>
+                {
+                    // It's possible that we unsubscribed in the meantime, so only add a notification callback if we still have callbacks
+                    if (_subscriptions.TryGetValue(keyPath, out var subscription) && subscription.Callbacks.Count > 0)
+                    {
+                        var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
+                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), subscription.DeliveredInitialNotification, subscription.Callbacks);
+                    }
+                });
+            }
+        }
+
+        public bool Remove(NotificationCallbackDelegate<T> callback, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                subscription.Callbacks.Remove(callback);
+                if (subscription.Callbacks.Count == 0)
+                {
+                    subscription.Token?.Dispose();
+                    _subscriptions.Remove(keyPath);
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Notify(ChangeSet? changes, bool shallow)
+        {
+            var keyPath = shallow ? KeyPath.Empty : KeyPath.Full;
+            if (_subscriptions.TryGetValue(keyPath, out var subscription))
+            {
+                if (changes == null)
+                {
+                    _subscriptions[keyPath] = (subscription.Token, true, subscription.Callbacks);
+                }
+
+                foreach (var callback in subscription.Callbacks.ToArray())
+                {
+                    callback(_parent, changes);
+                }
+            }
+        }
+
+        public void RemoveAll()
+        {
+            foreach (var token in _subscriptions.Values.Select(c => c.Token))
+            {
+                token?.Dispose();
+            }
+        }
+    }
+
+    // Eventually this should be a proper class holding the keypaths
+    internal enum KeyPath
+    {
+        Full,
+        Empty
+    }
+
     /// <summary>
     /// Special invalid object that is used to avoid an exception in WPF
     /// when deleting an element from a collection bound to UI (<see href="https://github.com/realm/realm-dotnet/issues/1903">#1903</see>).
     /// </summary>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is a special object that has a very limited meaning in the project.")]
-    internal sealed class InvalidObject
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InvalidObject
     {
         private InvalidObject()
         {
         }
 
-        public static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new InvalidObject();
 
-        // The method is overriden to avoid the bug in WPF
-        public override bool Equals(object obj)
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
         {
+            // This is to resolve the WPF bug
             return true;
         }
     }

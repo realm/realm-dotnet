@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
@@ -30,16 +31,24 @@ namespace Realms.Helpers
 {
     internal static class SerializationHelper
     {
-        private static readonly JsonWriterSettings _jsonSettings = new JsonWriterSettings
+        private static readonly JsonWriterSettings _jsonSettings = new()
         {
             OutputMode = JsonOutputMode.CanonicalExtendedJson,
         };
 
+        private static int _isInitialized;
+
         static SerializationHelper()
         {
-            BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)));
-            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
+            Initialize();
+        }
+
+        public static void Initialize()
+        {
+            if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
+            {
+                BsonSerializer.RegisterSerializationProvider(new RealmSerializationProvider());
+            }
         }
 
         [Preserve]
@@ -105,14 +114,14 @@ namespace Realms.Helpers
             _ = new ExpandoObjectSerializer();
         }
 
-        public static string ToNativeJson(this object value)
+        public static string ToNativeJson(this object? value)
         {
             if (value is RealmValue rv)
             {
                 return rv.AsAny().ToNativeJson();
             }
 
-            if (value is object[] arr)
+            if (value is object?[] arr)
             {
                 var elements = arr.Select(ToNativeJson);
                 return $"[{string.Join(",", elements)}]";
@@ -124,6 +133,17 @@ namespace Realms.Helpers
             }
 
             return value.ToJson(value.GetType(), _jsonSettings);
+        }
+
+        private class RealmSerializationProvider : IBsonSerializationProvider
+        {
+            public IBsonSerializer? GetSerializer(Type type) => type switch
+            {
+                _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
+                _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),
+                _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.String),
+                _ => null
+            };
         }
     }
 }

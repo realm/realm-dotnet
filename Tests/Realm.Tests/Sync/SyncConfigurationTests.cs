@@ -19,10 +19,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms.Sync;
-using Realms.Sync.ErrorHandling;
 
 namespace Realms.Tests.Sync
 {
@@ -65,7 +65,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void SyncConfiguration_WithAbsolutePath()
         {
-            var path = Path.Combine(InteropConfig.DefaultStorageFolder, Guid.NewGuid().ToString());
+            var path = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), Guid.NewGuid().ToString());
             var config = GetFakeConfig(optionalPath: path);
 
             Realm.DeleteRealm(config);
@@ -78,20 +78,30 @@ namespace Realms.Tests.Sync
 
             file = new FileInfo(config.DatabasePath);
             Assert.That(file.Exists);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && TestHelpers.IsUnity)
+            {
+                // Unity on Windows has a peculiar behavior where Path.Combine will generate paths with
+                // forward slashes rather than backslashes.
+                path = path.Replace('/', '\\');
+            }
+
             Assert.That(config.DatabasePath, Is.EqualTo(path));
         }
 
         [Test]
         public void Test_SyncConfigRelease()
         {
-            WeakReference weakConfigRef = null;
+            WeakReference weakConfigRef = null!;
             SyncTestHelpers.RunBaasTestAsync(async () =>
             {
-                weakConfigRef = new WeakReference(await GetIntegrationConfigAsync());
-                using var realm = await GetRealmAsync((PartitionSyncConfiguration)weakConfigRef.Target);
-                var session = GetSession(realm);
+                var config = await GetIntegrationConfigAsync();
+                weakConfigRef = new WeakReference(config);
+                using var realm = await Realm.GetInstanceAsync(config);
+                var session = realm.SyncSession;
                 Assert.That(weakConfigRef.Target, Is.Not.Null);
             });
+
             TearDown();
 
             for (var i = 0; i < 50; i++)
@@ -106,22 +116,6 @@ namespace Realms.Tests.Sync
             }
 
             Assert.That(weakConfigRef.Target, Is.Null);
-        }
-
-        [Test]
-        public void FlexibleSyncConfiguration_WhenAssignedNewRecoveryHandlers_Throws()
-        {
-            var conf = GetFakeFLXConfig();
-            Assert.That(() => conf.ClientResetHandler = new DiscardUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
-
-#pragma warning disable CS0618 // Type or member is obsolete
-
-            Assert.That(() => conf.ClientResetHandler = new DiscardLocalResetHandler(), Throws.TypeOf<NotSupportedException>());
-
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
-            Assert.That(() => conf.ClientResetHandler = new RecoverUnsyncedChangesHandler(), Throws.TypeOf<NotSupportedException>());
         }
 
         [Test]
@@ -147,22 +141,6 @@ namespace Realms.Tests.Sync
             var syncConfig = (PartitionSyncConfiguration)realm.Config;
             Assert.That(syncConfig.User.Id, Is.EqualTo(config.User.Id));
             Assert.That(syncConfig.Partition, Is.EqualTo(config.Partition));
-        }
-
-        [Test]
-        [Obsolete("Tests obsolete functionality")]
-        public void ObsoleteSyncConfiguration_ProxiesToNewOne()
-        {
-            var user = GetFakeUser();
-            var config = new SyncConfiguration("foo", user);
-
-            Assert.That(config is PartitionSyncConfiguration);
-            Assert.That(config.Partition, Is.TypeOf<string>());
-
-            var partitionConfig = (PartitionSyncConfiguration)config;
-            Assert.That(partitionConfig.Partition, Is.TypeOf<RealmValue>());
-            Assert.That(partitionConfig.Partition.AsString(), Is.EqualTo("foo"));
-            Assert.That(partitionConfig.User, Is.EqualTo(user));
         }
     }
 }

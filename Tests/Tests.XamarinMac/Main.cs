@@ -23,7 +23,7 @@ namespace Realms.Tests.XamarinMac
 {
     internal static class MainClass
     {
-        public static string[] Args { get; private set; }
+        public static string[] Args { get; private set; } = null!;
 
         public static void Main(string[] args)
         {

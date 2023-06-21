@@ -26,8 +26,8 @@ namespace RealmWeaver
 
         void Info(string message);
 
-        void Warning(string message, SequencePoint sequencePoint = null);
+        void Warning(string message, SequencePoint? sequencePoint = null);
 
-        void Error(string message, SequencePoint sequencePoint = null);
+        void Error(string message, SequencePoint? sequencePoint = null);
     }
 }

@@ -18,6 +18,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
@@ -32,7 +33,7 @@ namespace Realms.Tests.Database
         [TestCase(typeof(RealmSet<Person>))]
         public void RealmCollectionContravariance(Type type)
         {
-            Assert.That(typeof(IRealmCollection<RealmObjectBase>).IsAssignableFrom(type));
+            Assert.That(typeof(IRealmCollection<IRealmObjectBase>).IsAssignableFrom(type));
         }
 
         [Test]
@@ -100,6 +101,18 @@ namespace Realms.Tests.Database
                     Assert.That(ex, Is.TypeOf<TimeoutException>());
                 }
             });
+        }
+
+        [Test]
+        public void TestQueryMethods()
+        {
+            Assert.Throws<NotSupportedException>(() => QueryMethods.Contains("foo", "bar", StringComparison.Ordinal));
+            Assert.Throws<NotSupportedException>(() => QueryMethods.Like("foo", "bar"));
+            Assert.Throws<NotSupportedException>(() => QueryMethods.FullTextSearch("foo", "bar"));
+            Assert.Throws<NotSupportedException>(() => QueryMethods.GeoWithin(null, new GeoCircle((0, 0), 10)));
+
+            // Sanity check that we've covered all methods above.
+            Assert.That(typeof(QueryMethods).GetMethods(BindingFlags.Public | BindingFlags.Static).Length, Is.EqualTo(4));
         }
     }
 }

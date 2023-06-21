@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Sync;
@@ -43,7 +44,7 @@ namespace Realms
             if (Interlocked.CompareExchange(ref _isInitialized, 1, 0) == 0)
             {
 #if NET5_0_OR_GREATER
-                if (OperatingSystem.IsIOS())
+                if (OperatingSystem.IsIOS() || OperatingSystem.IsTvOS())
                 {
                     NativeLibrary.SetDllImportResolver(typeof(NativeCommon).Assembly, (libraryName, assembly, searchPath) =>
                     {
@@ -75,6 +76,8 @@ namespace Realms
                 HttpClientTransport.Initialize();
                 AppHandle.Initialize();
                 SubscriptionSetHandle.Initialize();
+
+                SerializationHelper.Initialize();
             }
         }
 
@@ -82,22 +85,25 @@ namespace Realms
         /// **WARNING**: This will close all native Realm instances and AppHandles. This method is extremely unsafe
         /// to call in any circumstance where the user might be accessing anything Realm-related. The only places
         /// where we do call it is in DomainUnload and Application.quitting on Unity. We expect that at this point
-        /// the Application/Domain is being torn down and the user should not be interracting with Realm.
+        /// the Application/Domain is being torn down and the user should not be interacting with Realm.
         /// </summary>
         public static void CleanupNativeResources(string reason)
         {
             try
             {
-                Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
+                if (Interlocked.CompareExchange(ref _isInitialized, 0, 1) == 1)
+                {
+                    Logger.LogDefault(LogLevel.Info, $"Realm: Force closing all native instances: {reason}");
 
-                var sw = new Stopwatch();
-                sw.Start();
+                    var sw = new Stopwatch();
+                    sw.Start();
 
-                AppHandle.ForceCloseHandles();
-                SharedRealmHandle.ForceCloseNativeRealms();
+                    AppHandle.ForceCloseHandles();
+                    SharedRealmHandle.ForceCloseNativeRealms();
 
-                sw.Stop();
-                Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                    sw.Stop();
+                    Logger.LogDefault(LogLevel.Info, $"Realm: Closed all native instances in {sw.ElapsedMilliseconds} ms.");
+                }
             }
             catch (Exception ex)
             {
@@ -105,11 +111,13 @@ namespace Realms
             }
         }
 
+#if !NET5_0_OR_GREATER
+
         private static void AddWindowsWrappersToPath(string relativePath, bool isUnityTarget = false)
         {
             try
             {
-                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location);
+                var assemblyLocation = Path.GetDirectoryName(typeof(NativeCommon).Assembly.Location)!;
 
                 // Unity doesn't support arm/arm64 builds for windows - only through UWP, so we're not
                 // special-casing the naming there.
@@ -129,5 +137,6 @@ namespace Realms
             {
             }
         }
+#endif
     }
 }

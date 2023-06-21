@@ -1,3 +1,5 @@
 {
-    "omnisharp.defaultLaunchSolution": "Realm.sln"
+    "omnisharp.defaultLaunchSolution": "Realm.sln",
+    "dotnet-test-explorer.testProjectPath": "Tests/Realm.Tests/Realm.Tests.csproj",
+    "cmake.sourceDirectory": "${workspaceFolder}/wrappers"
 }

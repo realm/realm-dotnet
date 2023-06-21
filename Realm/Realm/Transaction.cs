@@ -17,12 +17,34 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
 
 namespace Realms
 {
+    /// <summary>
+    /// Represents the state of a <see cref="Transaction"/>.
+    /// </summary>
+    public enum TransactionState
+    {
+        /// <summary>
+        /// The transaction is running.
+        /// </summary>
+        Running,
+
+        /// <summary>
+        /// The transaction is successfully committed.
+        /// </summary>
+        Committed,
+
+        /// <summary>
+        /// The transaction rolled back its changes.
+        /// </summary>
+        RolledBack,
+    }
+
     /// <summary>
     /// Provides a scope to safely read and write to a <see cref="Realm"/>. Must use explicitly via <see cref="Realm.BeginWrite"/>.
     /// </summary>
@@ -31,11 +53,18 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private Realm _realm;
+        private Realm? _realm;
+
+        /// <summary>
+        /// Gets the state of this transaction.
+        /// </summary>
+        /// <value>The state of the transaction.</value>
+        public TransactionState State { get; private set; }
 
         internal Transaction(Realm realm)
         {
             _realm = realm;
+            State = TransactionState.Running;
         }
 
         /// <summary>
@@ -59,7 +88,7 @@ namespace Realms
         {
             EnsureActionFeasibility("roll back");
             _realm.SharedRealmHandle.CancelTransaction();
-            FinishTransaction();
+            FinishTransaction(TransactionState.RolledBack);
         }
 
         /// <summary>
@@ -70,7 +99,7 @@ namespace Realms
         {
             EnsureActionFeasibility("commit");
             _realm.SharedRealmHandle.CommitTransaction();
-            FinishTransaction();
+            FinishTransaction(TransactionState.Committed);
         }
 
         /// <summary>
@@ -103,9 +132,10 @@ namespace Realms
             }
 
             await _realm.SharedRealmHandle.CommitTransactionAsync(synchronizationContext, cancellationToken);
-            FinishTransaction();
+            FinishTransaction(TransactionState.Committed);
         }
 
+        [MemberNotNull(nameof(_realm))]
         private void EnsureActionFeasibility(string executingAction)
         {
             if (_realm == null)
@@ -114,10 +144,11 @@ namespace Realms
             }
         }
 
-        private void FinishTransaction()
+        private void FinishTransaction(TransactionState state)
         {
-            _realm.DrainTransactionQueue();
-            _realm = null;
+            State = state;
+            _realm!.DrainTransactionQueue();
+            _realm = null!;
         }
     }
 }

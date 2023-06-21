@@ -9,10 +9,19 @@ apiRules:
     uidRegex: ^Realms\.RealmObjectBase\.GetBacklinks.*$
     type: Method
 - exclude:
+    uidRegex: ^Realms\.RealmValue\.Object
+    type: Method
+- exclude:
     uidRegex: ^Realms\.Weaving$
     type: Namespace
 - exclude:
+    uidRegex: ^Realms\.InvalidObject$
+    type: Type
+- exclude:
     uidRegex: ^Realms\.PreserveAttribute$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.GeneratedAttribute$
     type: Type
 - exclude:
     uidRegex: ^Realms\.WovenAttribute$
@@ -65,6 +74,36 @@ apiRules:
 - exclude:
     uidRegex: ^Realms\..*GetEnumerator$
     type: Method
+- exclude:
+    uidRegex: ^Realms\.IRealmAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.IRealmObjectBase\.Accessor$
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.ManagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.UnmanagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.ISettableManagedAccessor$
+    type: Type
+- exclude:
+    uidRegex: ^Realms\.Schema\.SchemaBuilderBase`1\.Add
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.SchemaBuilderBase`1\.GetKey
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.ObjectSchema\.Builder\.GetKey
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Schema\.RealmSchema\.Builder\.GetKey
+    type: Method
+- exclude:
+    uidRegex: ^Realms\.Sync\.Testing\.TestingExtensions
+    type: Type
 - include:
     hasAttribute:
       uid: System.ComponentModel.EditorBrowsableAttribute

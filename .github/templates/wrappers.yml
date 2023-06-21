@@ -1,5 +1,5 @@
 #@ load("@ytt:template", "template")
-#@ load("common.lib.yml", "configuration", "checkoutCode", "setupVcpkg", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "iOSArchs", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts")
+#@ load("common.lib.yml", "configuration", "checkoutCode", "actionCache", "actionDownloadArtifact", "getWrapperBinaryNames", "androidABIs", "windowsArchs", "windowsUWPArchs", "applePlatforms", "actionDockerLayerCaching", "actionDockerBuild", "actionDockerRun", "uploadArtifacts", "setupXcode", "linuxArchs")
 
 #@ wrappersTimeout = 90
 #@ wrappersCacheCondition = "steps.check-cache.outputs.cache-hit != 'true'"
@@ -27,7 +27,15 @@ with:
   path: #@ "./" + path
   key: #@ key
 #@ end
-
+---
+#@ def setupMSVC():
+  - name: Setup MSVC
+    run: |
+      Start-Process "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" -ArgumentList 'modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --quiet --add Microsoft.VisualStudio.Component.VC.14.35.17.5.${{ startswith(matrix.arch, 'ARM') && matrix.arch || 'x86.x64' }}' -Wait -PassThru
+    shell: pwsh
+    if: #@ wrappersCacheCondition
+#@ end
+---
 #@ def buildWrappers(cmd, outputVar, intermediateSteps = [], enableLto = True, artifactsPath = "wrappers/build/**", cacheVariable = ""):
 #@ if cacheVariable == "":
 #@   cacheVariable = outputVar
@@ -83,47 +91,43 @@ jobs:
           if: #@ condition
       #@ end
   macos:
-    runs-on: macos-latest
+    runs-on: macos-12
     name: macOS
     _: #@ template.replace(buildWrappers("./wrappers/build-macos.sh", "wrappers-macos"))
-  ios:
-    runs-on: macos-latest
-    name: iOS
+  catalyst:
+    runs-on: macos-12
+    name: Catalyst
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 Catalyst", "wrappers-catalyst"))
+  apple-platforms:
+    runs-on: macos-12
+    name: Apple Platform
     strategy:
       matrix:
-        arch: #@ iOSArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-ios.ps1 ${{ matrix.arch }}", "wrappers-ios-${{ matrix.arch }}", enableLto = False))
+        platform: #@ applePlatforms
+        target: [ 'Device', 'Simulator' ]
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build-apple-platform.ps1 ${{ matrix.platform }} -Targets ${{ matrix.target }}", "wrappers-${{ matrix.platform }}-${{ matrix.target }}", enableLto = False, intermediateSteps = [setupXcode()]))
     #@yaml/map-key-override
-    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-ios-" + x + " != 'true'" for x in iOSArchs ])
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-" + x + "-Device != 'true'" for x in applePlatforms ] + [ "needs.check-cache.outputs.wrappers-" + x + "-Simulator != 'true'" for x in applePlatforms ])
   linux:
     runs-on: ubuntu-latest
     name: Linux
+    strategy:
+      matrix:
+        arch: #@ linuxArchs
     timeout-minutes: #@ wrappersTimeout
     needs:
       - check-cache
-    if: needs.check-cache.outputs.wrappers-linux != 'true'
+    if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-linux-" + x + " != 'true'" for x in linuxArchs ])
     steps:
       - #@ template.replace(checkoutCode("recursive"))
-      - #@ checkCache("wrappers-linux")
-      - uses: #@ actionDockerLayerCaching
-        continue-on-error: true
-        if: #@ wrappersCacheCondition
-      - name: Build CentOS image
-        uses: #@ actionDockerBuild
-        with:
-          tags: wrappers-centos:latest
-          file: ./wrappers/centos.Dockerfile
-          push: false
+      - #@ checkCache("wrappers-linux-${{ matrix.arch }}")
+      - name: Install Ninja
+        run: sudo apt install ninja-build
         if: #@ wrappersCacheCondition
       - name: Build wrappers
-        uses: #@ actionDockerRun
-        with:
-          image: wrappers-centos:latest
-          shell: bash
-          options: -v ${{ github.workspace }}:/work
-          run: #@ getWrapperBuildCommand("/work/wrappers/build.sh")
+        run: #@ getWrapperBuildCommand("./wrappers/build-linux.sh -a=${{ matrix.arch }}")
         if: #@ wrappersCacheCondition
-      - #@ uploadArtifacts("wrappers-linux", "wrappers/build/**", 1)
+      - #@ uploadArtifacts("wrappers-linux-${{ matrix.arch }}", "wrappers/build/**", 1)
   android:
     runs-on: ubuntu-20.04
     name: Android
@@ -139,7 +143,7 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }}", "wrappers-windows-${{ matrix.arch }}", [ setupVcpkg("windows-${{ matrix.arch }}") ], cacheVariable = "wrappers-windows"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 Windows -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\"", "wrappers-windows-${{ matrix.arch }}", cacheVariable = "wrappers-windows", intermediateSteps = [setupMSVC()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-" + x + " != 'true'" for x in windowsArchs ])
   uwp:
@@ -148,6 +152,6 @@ jobs:
     strategy:
       matrix:
         arch: #@ windowsUWPArchs
-    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }}", "wrappers-windows-uwp-${{ matrix.arch }}", [ setupVcpkg("uwp-${{ matrix.arch }}") ], cacheVariable = "wrappers-uwp"))
+    _: #@ template.replace(buildWrappers("pwsh ./wrappers/build.ps1 WindowsStore -Platforms ${{ matrix.arch }} -ExtraCMakeArgs \"-T v143,version=14.35\"", "wrappers-windows-uwp-${{ matrix.arch }}", cacheVariable = "wrappers-uwp", intermediateSteps = [setupMSVC()]))
     #@yaml/map-key-override
     if: #@ " || ".join([ "needs.check-cache.outputs.wrappers-windows-uwp-" + x + " != 'true'" for x in windowsUWPArchs ])

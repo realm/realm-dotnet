@@ -19,6 +19,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Realms.Exceptions;
+using Realms.Extensions;
 using Realms.Native;
 using Realms.Schema;
 
@@ -46,6 +47,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_create_embedded", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_embedded_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_parent", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_parent(ObjectHandle handle, out TableKey tableKey, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_get_list", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_list(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
@@ -140,7 +144,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
 
@@ -151,7 +155,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            RealmSchema result = null;
+            RealmSchema? result = null;
             Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
             var callbackHandle = GCHandle.Alloc(callback);
 
@@ -165,14 +169,14 @@ namespace Realms
                 callbackHandle.Free();
             }
 
-            return result;
+            return result!;
         }
 
         public void SetValue(string propertyName, Metadata metadata, in RealmValue value, Realm realm)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
 
             // We need to special-handle objects because they need to be managed before we can set them.
             if (value.Type == RealmValueType.Object)
@@ -185,12 +189,34 @@ namespace Realms
                     case IEmbeddedObject embeddedObj:
                         if (embeddedObj.IsManaged)
                         {
-                            throw new RealmException("Can't link to an embedded object that is already managed.");
+                            NativeMethods.get_value(this, propertyIndex, out var existingValue, out var ex);
+                            ex.ThrowIfNecessary();
+                            if (existingValue.TryGetObjectHandle(realm, out var existingObjectHandle) &&
+                                embeddedObj.GetObjectHandle()!.ObjEquals(existingObjectHandle))
+                            {
+                                // We're trying to set an object to the same value - treat it as a no-op.
+                                return;
+                            }
+
+                            throw new RealmException($"Can't link to an embedded object that is already managed. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
+                        }
+
+                        if (GetProperty(propertyName, metadata).Type.IsRealmValue())
+                        {
+                            throw new NotSupportedException($"A RealmValue cannot contain an embedded object. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                         }
 
                         var embeddedHandle = CreateEmbeddedObjectForProperty(propertyName, metadata);
                         realm.ManageEmbedded(embeddedObj, embeddedHandle);
                         return;
+
+                    // Asymmetric objects can't reach this path unless the user explicitly sets them as
+                    // a RealmValue property on the object.
+                    // This is because:
+                    // * For plain asymmetric objects (not contained within a RealmValue), the weaver
+                    //   raises a compilation error since asymmetric objects can't be linked to.
+                    case IAsymmetricObject:
+                        throw new NotSupportedException($"Asymmetric objects cannot be linked to and cannot be contained in a RealmValue. Attempted to set {value} to {metadata.Schema.Name}.{propertyName}");
                 }
             }
 
@@ -213,7 +239,7 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
 
             NativeMethods.get_value(this, propertyIndex, out var result, out var nativeException);
             nativeException.ThrowIfNecessary();
@@ -235,41 +261,41 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public RealmList<T> GetList<T>(Realm realm, string propertyName, Metadata metadata, string objectType)
+        public RealmList<T> GetList<T>(Realm realm, string propertyName, Metadata metadata, string? objectType)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var listPtr = NativeMethods.get_list(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var listHandle = new ListHandle(Root, listPtr);
+            var listHandle = new ListHandle(Root!, listPtr);
             var objectMetadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmList<T>(realm, listHandle, objectMetadata);
         }
 
-        public RealmSet<T> GetSet<T>(Realm realm, string propertyName, Metadata metadata, string objectType)
+        public RealmSet<T> GetSet<T>(Realm realm, string propertyName, Metadata metadata, string? objectType)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var setPtr = NativeMethods.get_set(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var setHandle = new SetHandle(Root, setPtr);
+            var setHandle = new SetHandle(Root!, setPtr);
             var objectMetadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmSet<T>(realm, setHandle, objectMetadata);
         }
 
-        public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, Metadata metadata, string objectType)
+        public RealmDictionary<TValue> GetDictionary<TValue>(Realm realm, string propertyName, Metadata metadata, string? objectType)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var dictionaryPtr = NativeMethods.get_dictionary(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            var dictionaryHandle = new DictionaryHandle(Root, dictionaryPtr);
+            var dictionaryHandle = new DictionaryHandle(Root!, dictionaryPtr);
             var objectMetadata = objectType == null ? null : realm.Metadata[objectType];
             return new RealmDictionary<TValue>(realm, dictionaryHandle, objectMetadata);
         }
@@ -278,32 +304,42 @@ namespace Realms
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var objPtr = NativeMethods.create_embedded_link(this, propertyIndex, out var ex);
             ex.ThrowIfNecessary();
-            return new ObjectHandle(Root, objPtr);
+            return new ObjectHandle(Root!, objPtr);
+        }
+
+        public ObjectHandle GetParent(out TableKey tableKey)
+        {
+            EnsureIsOpen();
+
+            var parentObjPtr = NativeMethods.get_parent(this, out tableKey, out var nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return new ObjectHandle(Root!, parentObjPtr);
         }
 
         public ResultsHandle GetBacklinks(string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var resultsPtr = NativeMethods.get_backlinks(this, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         public ResultsHandle GetBacklinksForType(TableKey tableKey, string propertyName, Metadata metadata)
         {
             EnsureIsOpen();
 
-            var propertyIndex = GetPropertyIndex(propertyName, metadata);
+            var propertyIndex = metadata.GetPropertyIndex(propertyName);
             var resultsPtr = NativeMethods.get_backlinks_for_type(this, tableKey, propertyIndex, out var nativeException);
             nativeException.ThrowIfNecessary();
 
-            return new ResultsHandle(Root, resultsPtr);
+            return new ResultsHandle(Root!, resultsPtr);
         }
 
         public int GetBacklinkCount()
@@ -325,13 +361,13 @@ namespace Realms
             return new ThreadSafeReferenceHandle(result);
         }
 
-        public override NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
+        public NotificationTokenHandle AddNotificationCallback(IntPtr managedObjectHandle)
         {
             EnsureIsOpen();
-
             var result = NativeMethods.add_notification_callback(this, managedObjectHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
-            return new NotificationTokenHandle(Root, result);
+
+            return new NotificationTokenHandle(Root!, result);
         }
 
         public ObjectHandle Freeze(SharedRealmHandle frozenRealmHandle)
@@ -343,9 +379,9 @@ namespace Realms
             return new ObjectHandle(frozenRealmHandle, result);
         }
 
-        private static IntPtr GetPropertyIndex(string propertyName, Metadata metadata)
+        private static Property GetProperty(string propertyName, Metadata metadata)
         {
-            if (metadata.PropertyIndices.TryGetValue(propertyName, out var result))
+            if (metadata.Schema.TryFindProperty(propertyName, out var result))
             {
                 return result;
             }
