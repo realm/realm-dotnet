@@ -78,9 +78,7 @@ jobs:
     - build-packages
     with:
       version: ${{ needs.build-packages.outputs.package_version }}
-    secrets:
-      Pfx_Password: ${{ secrets.Pfx_Password }}
-      Base64_Encoded_Pfx: ${{ secrets.Base64_Encoded_Pfx }}
+    secrets: {}
   test-net-core:
     if: always() && !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Test
