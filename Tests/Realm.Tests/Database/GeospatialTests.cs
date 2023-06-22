@@ -161,16 +161,7 @@ namespace Realms.Tests.Database
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2) } }) },
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) } }) },
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) }, new GeoPoint[] { (0, 0) } }) },
-        };
 
-        [TestCaseSource(nameof(GeoPolygonTests))]
-        public void GeoPolygon_ArgumentValidation(GeoPolygonValidationData testData)
-        {
-            Assert.Throws<ArgumentException>(() => testData.CreatePolygon());
-        }
-
-        public static object[] GeoPolygonQueryTests =
-        {
             // Square (0, 0), (1, 1) and a square (2, 2), (3, 3) - outer ring doesn't contain hole
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (2, 2), (2, 3), (3, 3), (3, 2), (2, 2) } }) },
 
@@ -181,13 +172,10 @@ namespace Realms.Tests.Database
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (0.25, 0.5), (0.75, 0.5), (0.75, 1.5), (0.25, 1.5), (0.25, 0.5) } }) },
         };
 
-        [TestCaseSource(nameof(GeoPolygonQueryTests))]
-        public void GeoPolygon_QueryArgumentValidation(GeoPolygonValidationData testData)
+        [TestCaseSource(nameof(GeoPolygonTests))]
+        public void GeoPolygon_ArgumentValidation(GeoPolygonValidationData testData)
         {
-            // These polygons are invalid, but not validated by the SDK. They'll only show
-            // up as errors when we use them in a query
-            var polygon = testData.CreatePolygon();
-            Assert.Throws<ArgumentException>(() => _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, polygon)).ToArray());
+            Assert.Throws<ArgumentException>(() => testData.CreatePolygon());
         }
 
         public static object[] GeospatialCollectionTestCases =
@@ -497,7 +485,7 @@ namespace Realms.Tests.Database
                 Holes = holes ?? Array.Empty<GeoPoint[]>();
             }
 
-            public GeoPolygon CreatePolygon() => new GeoPolygon(OuterRing, Holes);
+            public GeoPolygon CreatePolygon() => new(OuterRing, Holes);
 
             public override string ToString()
             {

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Linq;
+using Realms.Native;
 
 namespace Realms
 {
@@ -33,5 +34,6 @@ namespace Realms
     /// <seealso cref="QueryMethods.GeoWithin"/>
     public abstract class GeoShapeBase
     {
+        internal abstract (NativeQueryArgument Arg, RealmValue.HandlesToCleanup? Handles) ToNative();
     }
 }

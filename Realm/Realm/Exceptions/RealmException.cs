@@ -95,6 +95,9 @@ namespace Realms.Exceptions
                 case RealmExceptionCodes.DuplicateSubscription:
                     return new ArgumentException(message);
 
+                case RealmExceptionCodes.InvalidGeospatialShape:
+                    return new ArgumentException(message);
+
                 case RealmExceptionCodes.RLM_ERR_DELETE_OPENED_REALM:
                     return new RealmInUseException(message);
 

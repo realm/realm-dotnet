@@ -49,6 +49,8 @@ namespace Realms
 
             Center = center;
             Radius = radiusInRadians;
+
+            QueryHandle.Validate(this);
         }
 
         /// <summary>
@@ -57,12 +59,12 @@ namespace Realms
         /// <param name="center">The center of the circle.</param>
         /// <param name="radius">The radius of the circle.</param>
         public GeoCircle(GeoPoint center, Distance radius)
+            : this(center, radius.Radians)
         {
-            Center = center;
-            Radius = radius.Radians;
         }
 
-        internal NativeGeoCircle ToNative() => new(Center.ToNative(), Radius);
+        internal override (NativeQueryArgument Arg, RealmValue.HandlesToCleanup? Handles) ToNative()
+            => (NativeQueryArgument.GeoCircle(new(Center.ToNative(), Radius)), null);
 
         /// <summary>
         /// Returns a string representation of the value.

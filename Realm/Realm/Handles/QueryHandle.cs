@@ -119,6 +119,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_geowithin", CallingConvention = CallingConvention.Cdecl)]
             public static extern void query_geowithin(QueryHandle queryPtr, SharedRealmHandle realm, IntPtr property_ndx, NativeQueryArgument geo_value, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "validate_query_argument", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void validate_query_argument(NativeQueryArgument arg, out NativeException ex);
+
 #pragma warning restore IDE1006 // Naming Styles
         }
 
@@ -376,6 +379,14 @@ namespace Realms
             var result = NativeMethods.create_results(this, sharedRealm, sortDescriptor, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new ResultsHandle(sharedRealm, result);
+        }
+
+        public static void Validate(GeoShapeBase geoShape)
+        {
+            var (queryArg, handles) = geoShape.ToNative();
+            NativeMethods.validate_query_argument(queryArg, out var ex);
+            handles?.Dispose();
+            ex.ThrowIfNecessary();
         }
     }
 }
