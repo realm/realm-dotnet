@@ -315,37 +315,45 @@ namespace Realms.Tests.Database
         public void NativeGeoBox_ToString()
         {
             var box = new GeoBox((1, 2), (3, 4));
-            Assert.That(box.ToNative().ToString(), Does.Contain("Box").And.Contains("{ 2, 3, 4, 1 }"));
+            var (nativeBox, handles) = box.ToNative();
+            Assert.That(nativeBox.ToString(), Does.Contain("Box").And.Contains("{ 2, 3, 4, 1 }"));
+            handles?.Dispose();
 
             QueryArgument arg = box;
-            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("{ 2, 3, 4, 1 }"));
+            var (nativeArg, argHandles) = arg.ToNative();
+            Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("{ 2, 3, 4, 1 }"));
+            argHandles?.Dispose();
         }
 
         [Test]
         public void NativeGeoCircle_ToString()
         {
             var circle = new GeoCircle((1, 2), 5);
-            Assert.That(circle.ToNative().ToString(), Does.Contain("Circle").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            var (nativeCircle, handles) = circle.ToNative();
+            Assert.That(nativeCircle.ToString(), Does.Contain("Circle").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            handles?.Dispose();
 
             QueryArgument arg = circle;
-            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            var (nativeArg, argHandles) = arg.ToNative();
+            Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            argHandles?.Dispose();
         }
 
         [Test]
         public void NativeGeoPolygon_ToString()
         {
-            var outerRing = new GeoPoint[] { (0, 0), (10, 10), (0, 20), (0, 0) };
-            var hole1 = new GeoPoint[] { (1, 1), (2, 2), (1, 3), (1, 1) };
+            var outerRing = new GeoPoint[] { (0, 0), (5, 10), (20, 0), (0, 0) };
+            var hole1 = new GeoPoint[] { (1, 1), (2, 2), (3, 1), (1, 1) };
             var hole2 = new GeoPoint[] { (3, 3), (3.5, 4), (4, 4), (5, 4), (3, 3) };
             var polygon = new GeoPolygon(outerRing, hole1, hole2);
             var (nativePolygon, handles) = polygon.ToNative();
             Assert.That(nativePolygon.ToString(), Does.Contain("Polygon").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
-            handles!.Value.Dispose();
+            handles?.Dispose();
 
             QueryArgument arg = polygon;
             var (nativeArg, argHandles) = arg.ToNative();
             Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
-            argHandles!.Value.Dispose();
+            argHandles?.Dispose();
         }
 
         private void PopulateCompanies()
