@@ -168,7 +168,7 @@ namespace Realms.Schema
             foreach (var objectSchema in nativeSchema)
             {
                 var osBuilder = new ObjectSchema.Builder(objectSchema.name!, objectSchema.table_type);
-                foreach (var property in objectSchema.properties)
+                foreach (var property in (MarshaledVector<SchemaProperty>)objectSchema.properties)
                 {
                     osBuilder.Add(new Property(property));
                 }

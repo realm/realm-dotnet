@@ -56,7 +56,7 @@ namespace Realms
             public delegate void NotifyRealmCallback(IntPtr stateHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate void GetNativeSchemaCallback(MarshaledVector<SchemaObject> schema, IntPtr managed_callback);
+            public delegate void GetNativeSchemaCallback(Configuration.SchemaArray schema, IntPtr managed_callback);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate void OpenRealmCallback(IntPtr task_completion_source, IntPtr shared_realm, NativeException ex);
@@ -73,7 +73,7 @@ namespace Realms
             // migrationSchema is a special schema that is used only in the context of a migration block.
             // It is a pointer because we need to be able to modify this schema in some migration methods directly in core.
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            internal delegate IntPtr MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, MarshaledVector<SchemaObject> oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+            internal delegate IntPtr MigrationCallback(IntPtr oldRealm, IntPtr newRealm, IntPtr migrationSchema, Configuration.SchemaArray oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             internal delegate IntPtr ShouldCompactCallback(IntPtr managedDelegate, ulong totalSize, ulong dataSize, [MarshalAs(UnmanagedType.U1)] ref bool should_compact);
@@ -763,7 +763,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.GetNativeSchemaCallback))]
-        private static void GetNativeSchema(MarshaledVector<SchemaObject> schema, IntPtr managedCallbackPtr)
+        private static void GetNativeSchema(Configuration.SchemaArray schema, IntPtr managedCallbackPtr)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
             var callback = (Action<MarshaledVector<SchemaObject>>)handle.Target!;
@@ -811,7 +811,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.MigrationCallback))]
-        private static IntPtr OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, MarshaledVector<SchemaObject> oldSchema, ulong schemaVersion, IntPtr managedConfigHandle)
+        private static IntPtr OnMigration(IntPtr oldRealmPtr, IntPtr newRealmPtr, IntPtr migrationSchema, Configuration.SchemaArray oldSchema, ulong schemaVersion, IntPtr managedConfigHandle)
         {
             Migration? migration = null;
             try

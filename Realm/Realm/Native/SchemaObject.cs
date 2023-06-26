@@ -24,9 +24,25 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct SchemaObject
     {
+        public unsafe struct PropertyArray
+        {
+            private readonly SchemaProperty* first;
+            private readonly nint count;
+
+            public PropertyArray(in MarshaledVector<SchemaProperty> vec)
+            {
+                first = vec.Pointer;
+                count = vec.Count;
+            }
+
+            public static implicit operator PropertyArray(in MarshaledVector<SchemaProperty> vec) => new(vec);
+
+            public static implicit operator MarshaledVector<SchemaProperty>(in PropertyArray arr) => new(arr.first, arr.count);
+        }
+
         public StringValue name;
 
-        public MarshaledVector<SchemaProperty> properties;
+        public PropertyArray properties;
 
         public StringValue primary_key;
 

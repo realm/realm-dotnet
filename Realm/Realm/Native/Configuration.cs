@@ -24,6 +24,22 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct Configuration
     {
+        public unsafe struct SchemaArray
+        {
+            private readonly SchemaObject* first;
+            private readonly nint count;
+
+            public SchemaArray(in MarshaledVector<SchemaObject> vec)
+            {
+                first = vec.Pointer;
+                count = vec.Count;
+            }
+
+            public static implicit operator SchemaArray(in MarshaledVector<SchemaObject> vec) => new(vec);
+
+            public static implicit operator MarshaledVector<SchemaObject>(in SchemaArray arr) => new(arr.first, arr.count);
+        }
+
         [MarshalAs(UnmanagedType.LPWStr)]
         private string path;
         private IntPtr path_len;
@@ -58,7 +74,7 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.U1)]
         internal bool delete_if_migration_needed;
 
-        public MarshaledVector<SchemaObject> schema;
+        public SchemaArray schema;
 
         internal ulong schema_version;
 

@@ -29,13 +29,13 @@ namespace Realms
     internal unsafe readonly struct MarshaledVector<T>
         where T : unmanaged
     {
-        private readonly T* items;
+        public readonly T* Pointer;
 
         public readonly nint Count;
 
-        private MarshaledVector(T* items, nint count)
+        public MarshaledVector(T* items, nint count)
         {
-            this.items = items;
+            Pointer = items;
             Count = count;
         }
 
@@ -48,7 +48,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 
-                return ref Unsafe.Add(ref *items, index);
+                return ref Unsafe.Add(ref *Pointer, index);
             }
         }
 
@@ -97,7 +97,7 @@ namespace Realms
             fixed(T* destination = ret)
             {
                 var byteSize = sizeof(T) * Count;
-                Buffer.MemoryCopy(items, destination, byteSize, byteSize);
+                Buffer.MemoryCopy(Pointer, destination, byteSize, byteSize);
             }
 
             return ret;
