@@ -125,6 +125,11 @@ namespace Realms
 #pragma warning restore IDE1006 // Naming Styles
         }
 
+        static QueryHandle()
+        {
+            NativeCommon.Initialize();
+        }
+
         public QueryHandle(SharedRealmHandle root, IntPtr handle) : base(root, handle)
         {
         }
