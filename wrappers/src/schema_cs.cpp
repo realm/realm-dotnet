@@ -66,6 +66,6 @@ void send_schema_to_managed(const Schema& schema, void* managed_callback)
         schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties.emplace_back()));
     }
 
-    s_get_native_schema(schema_objects, managed_callback);
+    s_get_native_schema({schema_objects}, managed_callback);
 }
 } // namespace realm::binding

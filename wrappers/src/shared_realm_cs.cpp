@@ -109,8 +109,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
     Realm::Config config;
     config.schema_mode = sync_configuration.schema_mode;
 
-    if (configuration.schema.size() > 0) {
-        config.schema = create_schema(configuration.schema);
+    if (configuration.schema.objects.size() > 0) {
+        config.schema = create_schema(configuration.schema.objects);
     }
 
     config.schema_version = configuration.schema_version;
@@ -285,8 +285,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, uint8_t
             config.schema_mode = SchemaMode::SoftResetFile;
         }
 
-        if (configuration.schema.size() > 0) {
-            config.schema = create_schema(configuration.schema);
+        if (configuration.schema.objects.size() > 0) {
+            config.schema = create_schema(configuration.schema.objects);
         }
 
         config.schema_version = configuration.schema_version;

@@ -50,7 +50,12 @@ struct SchemaObject
     static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
 };
 
-using GetNativeSchemaT = void(MarshaledVector<SchemaObject> schema, void* managed_callback);
+struct NativeSchema
+{
+    MarshaledVector<SchemaObject> objects;
+};
+
+using GetNativeSchemaT = void(NativeSchema schema, void* managed_callback);
 extern std::function<GetNativeSchemaT> s_get_native_schema;
 
 REALM_FORCEINLINE IndexType get_index_type(const Property& property)

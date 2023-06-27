@@ -45,7 +45,7 @@ struct Configuration
     
     bool delete_if_migration_needed;
     
-    MarshaledVector<SchemaObject> schema;
+    NativeSchema schema;
     uint64_t schema_version;
     
     bool enable_cache;
