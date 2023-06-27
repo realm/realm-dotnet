@@ -435,12 +435,12 @@ namespace RealmWeaver
         {
             var payload = "Analytics disabled";
 
+            // this is necessary since when not in the assembly that has the models
+            // AnalyzeRealmClassProperties won't be called
+            _analyzeUserAssemblyTask.Wait();
+
             if (_config.AnalyticsCollection != AnalyticsCollection.Disabled)
             {
-                // this is necessary since when not in the assembly that has the models
-                // AnalyzeRealmClassProperties won't be called
-                _analyzeUserAssemblyTask.Wait();
-
                 try
                 {
                     const string sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/v2/metric?data=";
