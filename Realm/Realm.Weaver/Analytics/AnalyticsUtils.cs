@@ -84,7 +84,25 @@ namespace RealmWeaver
             }
         });
 
+        private static readonly Lazy<string> _legacyAnonymizedUserId = new(() =>
+        {
+            try
+            {
+                var id = NetworkInterface.GetAllNetworkInterfaces()
+                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
+                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
+                                   .First();
+                return SHA256Hash(id, useLegacyEncoding: true);
+            }
+            catch
+            {
+                return Unknown();
+            }
+        });
+
         public static string AnonymizedUserId => _anonymizedUserId.Value;
+        
+        public static string LegacyAnonymizedUserId => _legacyAnonymizedUserId.Value;
 
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
@@ -233,22 +251,6 @@ namespace RealmWeaver
             }
 
             return Unknown();
-        }
-
-        public static string GetLegacyAnonymizedUserId()
-        {
-            try
-            {
-                var id = NetworkInterface.GetAllNetworkInterfaces()
-                                   .Where(n => n.Name == "en0" || (n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback))
-                                   .Select(n => n.GetPhysicalAddress().GetAddressBytes())
-                                   .First();
-                return SHA256Hash(id, useLegacyEncoding: true);
-            }
-            catch
-            {
-                return Unknown();
-            }
         }
 
         private static bool ContainsIgnoreCase(this string @this, string strCompare) =>
