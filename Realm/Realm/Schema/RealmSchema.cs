@@ -162,13 +162,13 @@ namespace Realms.Schema
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        internal static RealmSchema CreateFromObjectStoreSchema(in MarshaledVector<SchemaObject> nativeSchema)
+        internal static RealmSchema CreateFromObjectStoreSchema(in Native.Schema schema)
         {
             var builder = new Builder();
-            foreach (var objectSchema in nativeSchema)
+            foreach (var objectSchema in schema.objects)
             {
                 var osBuilder = new ObjectSchema.Builder(objectSchema.name!, objectSchema.table_type);
-                foreach (var property in (MarshaledVector<SchemaProperty>)objectSchema.properties)
+                foreach (var property in objectSchema.properties)
                 {
                     osBuilder.Add(new Property(property));
                 }

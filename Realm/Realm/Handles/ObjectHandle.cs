@@ -156,7 +156,7 @@ namespace Realms
             EnsureIsOpen();
 
             RealmSchema? result = null;
-            Action<MarshaledVector<SchemaObject>> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
+            Action<Native.Schema> callback = (nativeSmallSchema) => result = RealmSchema.CreateFromObjectStoreSchema(nativeSmallSchema);
             var callbackHandle = GCHandle.Alloc(callback);
 
             try

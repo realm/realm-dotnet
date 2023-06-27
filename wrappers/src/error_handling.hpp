@@ -84,7 +84,7 @@ public:
         return {
             (ErrorCodes::Error)code,
             ErrorCodes::error_categories(m_code).value(),
-            messageBytes, // to be freed with realm_free() on the native side
+            messageBytes, // to be freed with realm_free() on the managed side
             m_message.size(),
             m_managed_error,
         };

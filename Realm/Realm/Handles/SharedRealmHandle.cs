@@ -609,7 +609,7 @@ namespace Realms
         public RealmSchema GetSchema()
         {
             RealmSchema? result = null;
-            Action<MarshaledVector<SchemaObject>> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
+            Action<Native.Schema> callback = schema => result = RealmSchema.CreateFromObjectStoreSchema(schema);
             var callbackHandle = GCHandle.Alloc(callback);
             try
             {
@@ -766,8 +766,8 @@ namespace Realms
         private static void GetNativeSchema(Native.Schema schema, IntPtr managedCallbackPtr)
         {
             var handle = GCHandle.FromIntPtr(managedCallbackPtr);
-            var callback = (Action<MarshaledVector<SchemaObject>>)handle.Target!;
-            callback(schema.objects);
+            var callback = (Action<Native.Schema>)handle.Target!;
+            callback(schema);
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyRealmCallback))]
@@ -826,7 +826,7 @@ namespace Realms
                     IsReadOnly = true,
                     EnableCache = false
                 };
-                using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema.objects));
+                using var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
                 var newRealmHandle = new UnownedRealmHandle(newRealmPtr);
                 using var newRealm = new Realm(newRealmHandle, config, config.Schema, isInMigration: true);

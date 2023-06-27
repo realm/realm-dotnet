@@ -107,7 +107,7 @@ namespace Realms.Schema
         {
             Name = native.name!;
             BaseType = native.table_type;
-            _properties = new(((MarshaledVector<SchemaProperty>)native.properties).ToEnumerable().ToDictionary(p => (string)p.name!, p => new Property(p)));
+            _properties = new(native.properties.ToEnumerable().ToDictionary(p => (string)p.name!, p => new Property(p)));
             if (native.primary_key)
             {
                 PrimaryKeyProperty = _properties[native.primary_key!];

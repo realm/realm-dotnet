@@ -100,8 +100,6 @@ namespace Realms.Native
 
         private class Slab : IDisposable
         {
-            public static readonly int Size = Environment.SystemPageSize;
-
             public IntPtr Buffer { get; }
 
             public int ElementSize { get; }
