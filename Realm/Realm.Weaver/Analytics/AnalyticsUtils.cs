@@ -35,6 +35,57 @@ namespace RealmWeaver
 {
     internal static class AnalyticsUtils
     {
+        private static readonly Lazy<string> _anonymizedUserId = new(() =>
+        {
+            var id = string.Empty;
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
+                    var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
+                    var match = regex.Match(machineIdToParse);
+
+                    if (match.Groups.Count > 1)
+                    {
+                        id = match.Groups[1].Value;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
+                    var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
+                    var match = regex.Match(machineIdToParse);
+
+                    if (match.Groups.Count > 1)
+                    {
+                        id = match.Groups[1].Value;
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    id = File.ReadAllText("/etc/machine-id");
+                }
+
+                if (id.Length == 0)
+                {
+                    return Unknown();
+                }
+
+                // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
+                // unrelated projects that use the same mechanics to obtain a machine's ID
+                const string salt = "Realm is great";
+                var saltedId = Encoding.UTF8.GetBytes(id + salt);
+                return SHA256Hash(saltedId);
+            }
+            catch
+            {
+                return Unknown();
+            }
+        });
+
+        public static string AnonymizedUserId => _anonymizedUserId.Value;
+
         public static string GetTargetOsName(FrameworkName frameworkName)
         {
             var targetOs = frameworkName.Identifier;
@@ -184,56 +235,6 @@ namespace RealmWeaver
             return Unknown();
         }
 
-        // Knowledge on unique machine Ids for different OSes obtained from https://github.com/denisbrodbeck/machineid
-        public static string GetAnonymizedUserId()
-        {
-            var id = string.Empty;
-            try
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var machineIdToParse = RunProcess("reg", "QUERY HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography -v MachineGuid");
-                    var regex = new Regex("\\s+MachineGuid\\s+\\w+\\s+((\\w+-?)+)", RegexOptions.Multiline);
-                    var match = regex.Match(machineIdToParse);
-
-                    if (match.Groups.Count > 1)
-                    {
-                        id = match.Groups[1].Value;
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    var machineIdToParse = RunProcess("ioreg", "-rd1 -c IOPlatformExpertDevice");
-                    var regex = new Regex(".*\\\"IOPlatformUUID\\\"\\s=\\s\\\"(.+)\\\"", RegexOptions.Multiline);
-                    var match = regex.Match(machineIdToParse);
-
-                    if (match.Groups.Count > 1)
-                    {
-                        id = match.Groups[1].Value;
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    id = File.ReadAllText("/etc/machine-id");
-                }
-
-                if (id.Length == 0)
-                {
-                    return Unknown();
-                }
-
-                // We're salting the id with an hardcoded byte array just to avoid that a machine is recognizable across
-                // unrelated projects that use the same mechanics to obtain a machine's ID
-                const string salt = "Realm is great";
-                var saltedId = Encoding.UTF8.GetBytes(id + salt);
-                return SHA256Hash(saltedId);
-            }
-            catch
-            {
-                return Unknown();
-            }
-        }
-
         public static string GetLegacyAnonymizedUserId()
         {
             try
@@ -263,6 +264,8 @@ namespace RealmWeaver
                     Arguments = arguments,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
 #if DEBUG
                     RedirectStandardError = true,
 #endif

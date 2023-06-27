@@ -249,7 +249,7 @@ namespace RealmWeaver
             try
             {
                 // collect environment details
-                _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
+                _realmEnvMetrics[UserEnvironment.UserId] = AnonymizedUserId;
                 _realmEnvMetrics[UserEnvironment.LegacyUserId] = GetLegacyAnonymizedUserId();
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(_config.ProjectId ?? module.Assembly.Name.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = "dotnet";
