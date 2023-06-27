@@ -127,6 +127,8 @@ namespace Realms
 
         static QueryHandle()
         {
+            // GeoPolygon/Circle/Box call QueryHandle.Validate in their ctor. This means we need
+            // to ensure the native library is configured correctly before we call into the wrappers.
             NativeCommon.Initialize();
         }
 
