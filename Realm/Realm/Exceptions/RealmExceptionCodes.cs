@@ -197,5 +197,6 @@ namespace Realms.Exceptions
         KeyAlreadyExists = 1000004007,
         DuplicateSubscription = 1000004008,
         IndexOutOfRange = 1000004009,
+        InvalidGeospatialShape = 1000004010,
     }
 }

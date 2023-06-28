@@ -35,6 +35,7 @@ enum CustomError : std::int32_t {
     KeyAlreadyExists = 1000004007,
     DuplicateSubscription = 1000004008,
     IndexOutOfRange = 1000004009,
+    InvalidGeospatialShape = 1000004010,
 };
 
 class CustomException : public RuntimeError {
@@ -158,6 +159,12 @@ public:
           m_managed_error(managed_error) {}
 
     void* m_managed_error;
+};
+
+class GeoSpatialShapeValidationException : public CustomException {
+public:
+    GeoSpatialShapeValidationException(std::string reason)
+        : CustomException(CustomError::InvalidGeospatialShape, util::format("Validation failed for a geospatial shape: %1", reason)) {}
 };
 
 REALM_EXPORT NativeException convert_exception(std::exception_ptr err = nullptr);

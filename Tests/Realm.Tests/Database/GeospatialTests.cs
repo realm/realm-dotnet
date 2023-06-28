@@ -161,16 +161,7 @@ namespace Realms.Tests.Database
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2) } }) },
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) } }) },
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (1, 1), (2, 2), (0, 0) }, new[] { new GeoPoint[] { (0, 0), (1, 1), (2, 2), (3, 3) }, new GeoPoint[] { (0, 0) } }) },
-        };
 
-        [TestCaseSource(nameof(GeoPolygonTests))]
-        public void GeoPolygon_ArgumentValidation(GeoPolygonValidationData testData)
-        {
-            Assert.Throws<ArgumentException>(() => testData.CreatePolygon());
-        }
-
-        public static object[] GeoPolygonQueryTests =
-        {
             // Square (0, 0), (1, 1) and a square (2, 2), (3, 3) - outer ring doesn't contain hole
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (2, 2), (2, 3), (3, 3), (3, 2), (2, 2) } }) },
 
@@ -181,13 +172,10 @@ namespace Realms.Tests.Database
             new object?[] { new GeoPolygonValidationData(new GeoPoint[] { (0, 0), (0, 1), (1, 1), (1, 0), (0, 0) }, new[] { new GeoPoint[] { (0.25, 0.5), (0.75, 0.5), (0.75, 1.5), (0.25, 1.5), (0.25, 0.5) } }) },
         };
 
-        [TestCaseSource(nameof(GeoPolygonQueryTests))]
-        public void GeoPolygon_QueryArgumentValidation(GeoPolygonValidationData testData)
+        [TestCaseSource(nameof(GeoPolygonTests))]
+        public void GeoPolygon_ArgumentValidation(GeoPolygonValidationData testData)
         {
-            // These polygons are invalid, but not validated by the SDK. They'll only show
-            // up as errors when we use them in a query
-            var polygon = testData.CreatePolygon();
-            Assert.Throws<ArgumentException>(() => _realm.All<Company>().Where(c => QueryMethods.GeoWithin(c.Location, polygon)).ToArray());
+            Assert.Throws<ArgumentException>(() => testData.CreatePolygon());
         }
 
         public static object[] GeospatialCollectionTestCases =
@@ -327,37 +315,45 @@ namespace Realms.Tests.Database
         public void NativeGeoBox_ToString()
         {
             var box = new GeoBox((1, 2), (3, 4));
-            Assert.That(box.ToNative().ToString(), Does.Contain("Box").And.Contains("{ 2, 3, 4, 1 }"));
+            var (nativeBox, handles) = box.ToNative();
+            Assert.That(nativeBox.ToString(), Does.Contain("Box").And.Contains("{ 2, 3, 4, 1 }"));
+            handles?.Dispose();
 
             QueryArgument arg = box;
-            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("{ 2, 3, 4, 1 }"));
+            var (nativeArg, argHandles) = arg.ToNative();
+            Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("{ 2, 3, 4, 1 }"));
+            argHandles?.Dispose();
         }
 
         [Test]
         public void NativeGeoCircle_ToString()
         {
             var circle = new GeoCircle((1, 2), 5);
-            Assert.That(circle.ToNative().ToString(), Does.Contain("Circle").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            var (nativeCircle, handles) = circle.ToNative();
+            Assert.That(nativeCircle.ToString(), Does.Contain("Circle").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            handles?.Dispose();
 
             QueryArgument arg = circle;
-            Assert.That(arg.ToNative().ToString(), Does.Contain("QueryArgument").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            var (nativeArg, argHandles) = arg.ToNative();
+            Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("center: [1, 2]").And.Contains("radius: 5"));
+            argHandles?.Dispose();
         }
 
         [Test]
         public void NativeGeoPolygon_ToString()
         {
-            var outerRing = new GeoPoint[] { (0, 0), (10, 10), (0, 20), (0, 0) };
-            var hole1 = new GeoPoint[] { (1, 1), (2, 2), (1, 3), (1, 1) };
+            var outerRing = new GeoPoint[] { (0, 0), (5, 10), (20, 0), (0, 0) };
+            var hole1 = new GeoPoint[] { (1, 1), (2, 2), (3, 1), (1, 1) };
             var hole2 = new GeoPoint[] { (3, 3), (3.5, 4), (4, 4), (5, 4), (3, 3) };
             var polygon = new GeoPolygon(outerRing, hole1, hole2);
             var (nativePolygon, handles) = polygon.ToNative();
             Assert.That(nativePolygon.ToString(), Does.Contain("Polygon").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
-            handles!.Value.Dispose();
+            handles?.Dispose();
 
             QueryArgument arg = polygon;
             var (nativeArg, argHandles) = arg.ToNative();
             Assert.That(nativeArg.ToString(), Does.Contain("QueryArgument").And.Contains("{ size: 4 }").And.Contains("{ size: 5 }"));
-            argHandles!.Value.Dispose();
+            argHandles?.Dispose();
         }
 
         private void PopulateCompanies()
@@ -497,7 +493,7 @@ namespace Realms.Tests.Database
                 Holes = holes ?? Array.Empty<GeoPoint[]>();
             }
 
-            public GeoPolygon CreatePolygon() => new GeoPolygon(OuterRing, Holes);
+            public GeoPolygon CreatePolygon() => new(OuterRing, Holes);
 
             public override string ToString()
             {

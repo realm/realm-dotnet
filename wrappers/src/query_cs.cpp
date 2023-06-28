@@ -34,6 +34,20 @@ inline ColKey get_key_for_prop(Query& query, SharedRealm& realm, size_t property
     return realm->schema().find(ObjectStore::object_type_for_table_name(query.get_table()->get_name()))->persisted_properties[property_index].column_key;
 }
 
+inline util::Optional<Geospatial> to_geospatial(query_argument geo_value) {
+    Geospatial geo_store;
+    switch (geo_value.type) {
+    case query_argument_type::BOX:
+        return from_capi(geo_value.box);
+    case query_argument_type::CIRCLE:
+        return from_capi(geo_value.circle);
+    case query_argument_type::POLYGON:
+        return from_capi(geo_value.polygon);
+    default:
+        return util::none;
+    }
+}
+
 inline TypeOfValue::Attribute attribute_from(realm_value_type type)
 {
     switch (type) {
@@ -523,23 +537,26 @@ REALM_EXPORT void query_geowithin(Query& query, SharedRealm& realm, size_t prope
         if (!query.get_table()) {
             return;
         }
-        
-        Geospatial geo_store;
-        switch (geo_value.type) {
-        case query_argument_type::PRIMITIVE: 
+
+        auto geo_store = to_geospatial(geo_value);
+        if (!geo_store) {
             REALM_UNREACHABLE();
-        case query_argument_type::BOX:
-            geo_store = from_capi(geo_value.box);
-            break;
-        case query_argument_type::CIRCLE:
-            geo_store = from_capi(geo_value.circle);
-            break;
-        case query_argument_type::POLYGON:
-            geo_store = from_capi(geo_value.polygon);
-            break;
         }
 
-        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(geo_store));
+        query.and_query(query.get_table()->column<Link>(get_key_for_prop(query, realm, property_index)).geo_within(geo_store.value()));
+    });
+}
+
+REALM_EXPORT void validate_query_argument(query_argument geo_value, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        auto geo_store = to_geospatial(geo_value);
+        if (geo_store) {
+            auto status = geo_store.value().is_valid();
+            if (!status.is_ok()) {
+                throw GeoSpatialShapeValidationException(status.reason());
+            }
+        }
     });
 }
 }   // extern "C"

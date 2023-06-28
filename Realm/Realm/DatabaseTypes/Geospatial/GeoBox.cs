@@ -55,11 +55,8 @@ namespace Realms
         /// <param name="bottomLeftCorner">The bottom left corner of the rectangle.</param>
         /// <param name="topRightCorner">The top right corner of the rectangle.</param>
         public GeoBox(GeoPoint bottomLeftCorner, GeoPoint topRightCorner)
+            : this(bottomLeftCorner.Longitude, topRightCorner.Latitude, topRightCorner.Longitude, bottomLeftCorner.Latitude)
         {
-            Left = bottomLeftCorner.Longitude;
-            Bottom = bottomLeftCorner.Latitude;
-            Right = topRightCorner.Longitude;
-            Top = topRightCorner.Latitude;
         }
 
         /// <summary>
@@ -75,9 +72,12 @@ namespace Realms
             Top = top;
             Right = right;
             Bottom = bottom;
+
+            QueryHandle.Validate(this);
         }
 
-        internal NativeGeoBox ToNative() => new(Left, Top, Right, Bottom);
+        internal override (NativeQueryArgument Arg, RealmValue.HandlesToCleanup? Handles) ToNative()
+            => (NativeQueryArgument.GeoBox(new(Left, Top, Right, Bottom)), null);
 
         /// <summary>
         /// Returns a string representation of the value.

@@ -114,9 +114,11 @@ namespace Realms
 
             OuterRing = _linearRings[0];
             Holes = new ArraySegment<IReadOnlyList<GeoPoint>>(_linearRings, 1, _linearRings.Length - 1);
+
+            QueryHandle.Validate(this);
         }
 
-        internal unsafe (NativeGeoPolygon NativePolygon, RealmValue.HandlesToCleanup? Handles) ToNative()
+        internal unsafe override (NativeQueryArgument Arg, RealmValue.HandlesToCleanup? Handles) ToNative()
         {
             var points = new NativeGeoPoint[_linearRings.Sum(p => p.Count)];
             var pointsLengths = new nint[_linearRings.Length];
@@ -136,18 +138,12 @@ namespace Realms
             var pointsHandle = GCHandle.Alloc(points, GCHandleType.Pinned);
             var pointsLengthsHandle = GCHandle.Alloc(pointsLengths, GCHandleType.Pinned);
 
-            return (new()
+            return (NativeQueryArgument.GeoPolygon(new()
             {
                 Points = (NativeGeoPoint*)pointsHandle.AddrOfPinnedObject(),
                 PointsLengths = (nint*)pointsLengthsHandle.AddrOfPinnedObject(),
                 PointsLengthsLength = pointsLengths.Length,
-            }, new(pointsHandle, handle2: pointsLengthsHandle));
-        }
-
-        internal (NativeQueryArgument QueryArgument, RealmValue.HandlesToCleanup? Handles) ToNativeQueryArgument()
-        {
-            var (polygon, handles) = ToNative();
-            return (NativeQueryArgument.GeoPolygon(polygon), handles);
+            }), new(pointsHandle, handle2: pointsLengthsHandle));
         }
 
         /// <summary>
