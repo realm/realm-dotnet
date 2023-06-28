@@ -31,7 +31,7 @@ jobs:
           include: Realm/Realm.Weaver/Analytics/Analytics.cs
       - name: Update Changelog
         id: update-changelog
-        uses: realm/ci-actions/update-changelog@729a80d203351eab7df4eca564daa275e76ec52f
+        uses: realm/ci-actions/update-changelog@fa20eb972b9f018654fdb4e2c7afb52b0532f907
         with:
           changelog: ${{ github.workspace }}/CHANGELOG.md
           version: ${{ inputs.version }}
