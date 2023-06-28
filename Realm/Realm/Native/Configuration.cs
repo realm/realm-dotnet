@@ -24,64 +24,34 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct Configuration
     {
-        [MarshalAs(UnmanagedType.LPWStr)]
-        private string path;
-        private IntPtr path_len;
+        internal StringValue path;
 
-        internal string Path
-        {
-            set
-            {
-                path = value;
-                path_len = (IntPtr)value.Length;
-            }
-        }
-
-        [MarshalAs(UnmanagedType.LPWStr)]
-        private string? fallback_path;
-        private IntPtr fallback_path_len;
-
-        internal string? FallbackPipePath
-        {
-            set
-            {
-                fallback_path = value;
-                fallback_path_len = value.IntPtrLength();
-            }
-        }
-
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool read_only;
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool in_memory;
-
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool delete_if_migration_needed;
+        internal StringValue fallbackPipePath;
 
         public Native.Schema schema;
 
         internal ulong schema_version;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool enable_cache;
-
         internal ulong max_number_of_active_versions;
-
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool use_legacy_guid_representation;
 
         internal IntPtr managed_config;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool invoke_should_compact_callback;
+        internal NativeBool read_only;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool invoke_initial_data_callback;
+        internal NativeBool in_memory;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool invoke_migration_callback;
+        internal NativeBool delete_if_migration_needed;
 
-        [MarshalAs(UnmanagedType.U1)]
-        internal bool automatically_migrate_embedded;
+        internal NativeBool enable_cache;
+
+        internal NativeBool use_legacy_guid_representation;
+
+        internal NativeBool invoke_should_compact_callback;
+
+        internal NativeBool invoke_initial_data_callback;
+
+        internal NativeBool invoke_migration_callback;
+
+        internal NativeBool automatically_migrate_embedded;
     }
 }

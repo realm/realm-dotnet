@@ -126,5 +126,19 @@ namespace Realms
 
             return new MarshaledVector<T>(buffer.Data, buffer.Length);
         }
+
+        public static implicit operator AnyMarshaledVector(MarshaledVector<T> vector) => new()
+        {
+            Buffer = (IntPtr)vector.items,
+            Length = vector.Count
+        };
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct AnyMarshaledVector
+    {
+        public IntPtr Buffer;
+
+        public nint Length;
     }
 }

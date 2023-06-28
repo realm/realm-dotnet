@@ -219,8 +219,8 @@ namespace Realms
 
             var config = new Configuration
             {
-                Path = DatabasePath,
-                FallbackPipePath = FallbackPipePath,
+                path = StringValue.AllocateFrom(DatabasePath, pool),
+                fallbackPipePath = StringValue.AllocateFrom(FallbackPipePath, pool),
                 schema = Schema.ToNative(pool),
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,

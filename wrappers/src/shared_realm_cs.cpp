@@ -178,7 +178,7 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
             }
         };
     }
-    config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+    config.path = capi_to_std(configuration.path);
     
     if (configuration.invoke_initial_data_callback) {
         config.initialization_function = [configuration_handle](SharedRealm realm) {
@@ -189,8 +189,8 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         };
     }
 
-    if (configuration.fallback_path) {
-        config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
+    if (configuration.fallback_path.data) {
+        config.fifo_files_fallback_path = capi_to_std(configuration.fallback_path);
     }
 
     // by definition the key is only allowed to be 64 bytes long, enforced by C# code
@@ -266,13 +266,13 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, uint8_t
 {
     return handle_errors(ex, [&]() {
         Realm::Config config;
-        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        config.path = capi_to_std(configuration.path);
         config.in_memory = configuration.in_memory;
         config.max_number_of_active_versions = configuration.max_number_of_active_versions;
         config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
-        if (configuration.fallback_path) {
-            config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
+        if (configuration.fallback_path.data) {
+            config.fifo_files_fallback_path = capi_to_std(configuration.fallback_path);
         }
 
         // by definition the key is only allowed to be 64 bytes long, enforced by C# code
@@ -598,7 +598,7 @@ REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuratio
         // force_sync_history tells Core to synthesize/copy the sync history from the source.
         config.force_sync_history = use_sync;
 
-        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        config.path = capi_to_std(configuration.path);
         if (encryption_key) {
             auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
             config.encryption_key = std::vector<char>(key.begin(), key.end());

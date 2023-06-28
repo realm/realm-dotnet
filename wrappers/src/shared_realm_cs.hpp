@@ -33,11 +33,16 @@ using SharedSyncUser = std::shared_ptr<SyncUser>;
 
 struct Configuration
 {
-    uint16_t* path;
-    size_t path_len;
+    realm_string_t path;
     
-    uint16_t* fallback_path;
-    size_t fallback_path_len;
+    realm_string_t fallback_path;
+
+    NativeSchema schema;
+    uint64_t schema_version;
+
+    uint64_t max_number_of_active_versions;
+
+    void* managed_config;
 
     bool read_only;
     
@@ -45,15 +50,9 @@ struct Configuration
     
     bool delete_if_migration_needed;
     
-    NativeSchema schema;
-    uint64_t schema_version;
-    
     bool enable_cache;
-    uint64_t max_number_of_active_versions;
 
     bool use_legacy_guid_representation;
-
-    void* managed_config;
 
     bool invoke_should_compact_callback;
 
