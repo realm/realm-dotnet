@@ -85,7 +85,7 @@ namespace Realms
         /// **WARNING**: This will close all native Realm instances and AppHandles. This method is extremely unsafe
         /// to call in any circumstance where the user might be accessing anything Realm-related. The only places
         /// where we do call it is in DomainUnload and Application.quitting on Unity. We expect that at this point
-        /// the Application/Domain is being torn down and the user should not be interracting with Realm.
+        /// the Application/Domain is being torn down and the user should not be interacting with Realm.
         /// </summary>
         public static void CleanupNativeResources(string reason)
         {

@@ -64,7 +64,7 @@ namespace Realms
         /// <summary>
         /// Initializes a new instance of the <see cref="UnmanagedAccessor"/> class.
         /// </summary>
-        /// <param name="objectType">The runtype type of the realm object.</param>
+        /// <param name="objectType">The runtime type of the realm object.</param>
         public UnmanagedAccessor(Type objectType)
         {
             _objectType = objectType;

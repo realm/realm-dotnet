@@ -30,7 +30,7 @@ namespace Realms.Sync
     /// <summary>
     /// A <see cref="SyncConfigurationBase"/> is used to setup a <see cref="Realm"/> that can be synchronized between devices using Atlas Device Sync.
     /// There are two synchronization modes with their respective configurations - "partition" sync with <see cref="PartitionSyncConfiguration"/> allows you
-    /// to split your data in separarate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
+    /// to split your data in separate partitions and synchronize an entire partition with an entire Realm; "flexible" sync with
     /// <see cref="FlexibleSyncConfiguration"/> allows you to start with an empty Realm and send the server a set of queries which it will run and
     /// populate the Realm with all documents matching them.
     /// </summary>
@@ -89,7 +89,7 @@ namespace Realms.Sync
         /// </summary>
         /// <remarks>
         /// If set to <c>false</c>, non-fatal session errors will be ignored and sync will continue retrying the
-        /// connection under in the background. This means that in cases where the devie is offline, these operations
+        /// connection under in the background. This means that in cases where the device is offline, these operations
         /// may take an indeterminate time to complete.
         /// </remarks>
         /// <value><c>true</c> to throw an error if a non-fatal session error occurs, <c>false</c> otherwise.</value>

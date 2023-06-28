@@ -37,7 +37,7 @@ namespace Realms
         /// <summary>
         /// Gets the latitude of the point.
         /// </summary>
-        /// <value>The point's latutide.</value>
+        /// <value>The point's latitude.</value>
         public double Latitude { get; }
 
         /// <summary>
@@ -62,7 +62,10 @@ namespace Realms
 
         internal NativeGeoPoint ToNative() => new(Latitude, Longitude);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => $"[{Latitude}, {Longitude}]";
 
         /// <inheritdoc/>
@@ -76,7 +79,15 @@ namespace Realms
             return false;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Indicates whether the current <see cref="GeoPoint"/> is equal to another
+        /// <see cref="GeoPoint"/>.</summary>
+        /// <param name="other">An object to compare with this <see cref="GeoPoint"/>.</param>
+        /// <returns>
+        /// <see langword="true" />if the current point's latitude and longitude are
+        /// equal to the <paramref name="other" /> point's latitude and longitude;
+        /// otherwise, <see langword="false" />.
+        /// </returns>
         public bool Equals(GeoPoint other)
         {
             return Latitude == other.Latitude && Longitude == other.Longitude;
@@ -91,10 +102,34 @@ namespace Realms
             return hashCode;
         }
 
+        /// <summary>
+        /// Compares two <see cref="GeoPoint"/> instances for equality.
+        /// </summary>
+        /// <param name="left">The first <see cref="GeoPoint"/>.</param>
+        /// <param name="right">The second <see cref="GeoPoint"/>.</param>
+        /// <returns>
+        /// <c>true</c> if both points contain the same latitude and longitude; <c>false</c> otherwise.
+        /// </returns>
         public static bool operator ==(GeoPoint left, GeoPoint right) => left.Equals(right);
 
+        /// <summary>
+        /// Compares two <see cref="GeoPoint"/> instances for inequality.
+        /// </summary>
+        /// <param name="left">The first <see cref="GeoPoint"/>.</param>
+        /// <param name="right">The second <see cref="GeoPoint"/>.</param>
+        /// <returns>
+        /// <c>true</c> if the points contain different latitude and longitude; <c>false</c> otherwise.
+        /// </returns>
         public static bool operator !=(GeoPoint left, GeoPoint right) => !(left == right);
 
+        /// <summary>
+        /// Converts a tuple containing latitude and longitude to <see cref="GeoPoint"/>.
+        /// </summary>
+        /// <param name="tuple">The tuple consisting of two coordinates.</param>
+        /// <returns>
+        /// A <see cref="GeoPoint"/> with latitude equal to the first element of the tuple and longitude equal
+        /// to the second element.
+        /// </returns>
         public static implicit operator GeoPoint((double Latitude, double Longitude) tuple) => new(tuple.Latitude, tuple.Longitude);
     }
 }

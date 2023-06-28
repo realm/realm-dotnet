@@ -13,6 +13,7 @@
     <DisableFody>true</DisableFody>
     <Nullable>enable</Nullable>
     <NoWarn>NU5100</NoWarn>
+    <PackageReadmeFile>NuGet.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.*" PrivateAssets="None" />
@@ -44,6 +45,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup Label="Package">
+    <None Include="$(ProjectDir)..\..\NuGet.md" Pack="true" PackagePath="\" />
     <EmbeddedResource Include="Properties\Realm.rd.xml" />
     <None Include="..\Realm.SourceGenerator\bin\$(Configuration)\netstandard2.0\Realm.SourceGenerator.dll" PackagePath="analyzers\dotnet\cs" Pack="true" Visible="false" />
     <None Include="wrappers-props\Realm.props" PackagePath="build\Realm.props" Pack="true" Visible="false" />

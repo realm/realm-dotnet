@@ -327,17 +327,18 @@ namespace Realms
                 return (NativeQueryArgument.Primitive(primitiveValue), handles);
             }
 
-            // We're dealing with a geo value
-            return GeoValue switch
+            if (GeoValue != null)
             {
-                GeoBox box => (NativeQueryArgument.GeoBox(box.ToNative()), null),
-                GeoCircle circle => (NativeQueryArgument.GeoCircle(circle.ToNative()), null),
-                GeoPolygon polygon => polygon.ToNativeQueryArgument(),
-                _ => throw new NotSupportedException($"Unsupported GeoShapeBase type: {GeoValue?.GetType().FullName}")
-            };
+                return GeoValue.ToNative();
+            }
+
+            throw new NotSupportedException($"Invalid QueryArgument - expected a RealmValue or GeoValue to be not null.");
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns a string representation of the value.
+        /// </summary>
+        /// <returns>A string representation of the value.</returns>
         public override string ToString() => RealmValue?.ToString() ?? GeoValue?.ToString() ?? "Invalid QueryArgument";
     }
 }

@@ -333,7 +333,7 @@ namespace Realms
         public static implicit operator T(RealmInteger<T> i) => i._value;
 
         /// <summary>
-        /// Construts a <see cref="RealmInteger{T}"/> from its underlying value.
+        /// Constructs a <see cref="RealmInteger{T}"/> from its underlying value.
         /// </summary>
         /// <param name="i">The value.</param>
         public static implicit operator RealmInteger<T>(T i) => new(i);

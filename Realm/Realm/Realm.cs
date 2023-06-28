@@ -55,9 +55,9 @@ namespace Realms
         /// (little-endian for most modern CPUs) while the database query engine and Sync would always treat them as big-endian. This manifests
         /// as different string representations between the SDK and the database - e.g. "f2952191-a847-41c3-8362-497f92cb7d24" instead of
         /// "912195f2-47a8-c341-8362-497f92cb7d24" (notice the swapped bytes in the first 3 components). Starting with 10.10.0, big-endian
-        /// representation is the default one and a seamless one-time migraiton is provided for local (non-sync) Realms. The first time a
+        /// representation is the default one and a seamless one-time migration is provided for local (non-sync) Realms. The first time a
         /// Realm is opened, all properties holding a Guid value will be updated from little-endian to big-endian format and the .NET SDK
-        /// will treat them as such. There should be no noticable change when reading/writing data from the SDK, but you should see consistent
+        /// will treat them as such. There should be no noticeable change when reading/writing data from the SDK, but you should see consistent
         /// values when accessing the Realm file from Realm Studio or other SDKs.
         /// <br/>
         /// For synchronized Realms, such a migration is impossible due to the distributed nature of the data. Therefore, the assumption
@@ -656,8 +656,8 @@ namespace Realms
         /// If the collection contains items that are already managed by this <see cref="Realm"/>, they will be ignored.
         /// This method modifies the objects in-place, meaning that after it has run, all items in the collection will be managed.
         /// Once an <see cref="IAsymmetricObject"/> becomes managed and the transaction is committed,
-        /// dereferencing any property of the original <see cref="IAsymmetricObject"/> reference throw an exeception.
-        /// Hence, none of the properties of the elements in the collection can be deferenced anymore after the transaction.
+        /// dereferencing any property of the original <see cref="IAsymmetricObject"/> reference throw an exception.
+        /// Hence, none of the properties of the elements in the collection can be dereferenced anymore after the transaction.
         /// </remarks>
         public void Add<T>(IEnumerable<T> objs)
             where T : IAsymmetricObject
@@ -903,7 +903,7 @@ namespace Realms
         /// <param name="cancellationToken">
         /// Optional cancellation token to stop waiting to start a write transaction.
         /// </param>
-        /// <returns>An awaitable <see cref="Task"/> that indicates that the transaction has been committed succesffully.</returns>
+        /// <returns>An awaitable <see cref="Task"/> that indicates that the transaction has been committed successfully.</returns>
         public Task WriteAsync(Action action, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
@@ -940,7 +940,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">The type returned by the input delegate.</typeparam>
         /// <returns>
-        /// An awaitable <see cref="Task"/> that indicates that the transaction has been committed succesffully. The result of
+        /// An awaitable <see cref="Task"/> that indicates that the transaction has been committed successfully. The result of
         /// the task is the result returned by invoking <paramref name="function"/>.
         /// </returns>
         public async Task<T> WriteAsync<T>(Func<T> function, CancellationToken cancellationToken = default)
@@ -1695,7 +1695,7 @@ namespace Realms
             /// <see cref="AddEmbeddedObjectToList"/>, <see cref="InsertEmbeddedObjectInList"/>, and <see cref="SetEmbeddedObjectInList"/> have to be used instead of
             /// <see cref="ICollection{T}.Add"/>, <see cref="IList{T}.Insert"/>, and <see cref="IList{T}.this[int]"/>.
             /// <para/>
-            /// Setting an object at an index will remove the existing object from the list and unown it. Since unowned embedded objects are automatically deleted,
+            /// Setting an object at an index will remove the existing object from the list and un-own it. Since unowned embedded objects are automatically deleted,
             /// the old object that the list contained at <paramref name="index"/> will get deleted when the transaction is committed.
             /// </remarks>
             /// <seealso cref="InsertEmbeddedObjectInList"/>

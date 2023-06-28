@@ -595,7 +595,7 @@ namespace Realms
         THandle NativeHandle { get; }
     }
 
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "NotificationCallbacks are tighly coupled with the collection and it's easier to reason about when they're in the same file.")]
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "NotificationCallbacks are tightly coupled with the collection and it's easier to reason about when they're in the same file.")]
     internal class NotificationCallbacks<T>
     {
         private readonly RealmCollectionBase<T> _parent;
