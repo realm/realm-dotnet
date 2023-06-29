@@ -17,7 +17,7 @@
     <TargetFrameworks Condition="($([MSBuild]::IsOsPlatform('Windows')) AND '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64') OR (!$([MSBuild]::IsOsPlatform('Linux')) AND '$(MSBuildVersion)' &lt; '17.0')">
       $(TargetFrameworks);MonoAndroid5;Xamarin.iOS10;Xamarin.TVOS10;Xamarin.Mac20
     </TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.19041;</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOsPlatform('Windows'))">$(TargetFrameworks);uap10.0.16299;</TargetFrameworks>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <LangVersion>9.0</LangVersion>
     <nullable>enable</nullable>
@@ -33,10 +33,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.StartsWith('uap10.0'))">
-    <SDKReference Include="WindowsDesktop, Version=10.0.19041.0">
+    <SDKReference Include="WindowsDesktop, Version=10.0.16299.0">
       <Name>Windows Desktop Extensions for the UWP</Name>
     </SDKReference>
-    <SDKReference Include="WindowsMobile, Version=10.0.19041.0">
+    <SDKReference Include="WindowsMobile, Version=10.0.16299.0">
       <Name>Windows Mobile Extensions for the UWP</Name>
     </SDKReference>
     <Compile Include="**\*.uwp.cs" />
