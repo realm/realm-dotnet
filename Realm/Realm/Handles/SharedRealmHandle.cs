@@ -82,18 +82,14 @@ namespace Realms
             internal delegate IntPtr InitializationCallback(IntPtr managedInitializationDelegate, IntPtr realm);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open(Configuration configuration,
-                byte[]? encryptionKey,
-                out NativeException ex);
+            public static extern IntPtr open(Configuration configuration, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
-                byte[]? encryptionKey,
                 out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync_async", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr open_with_sync_async(Configuration configuration, Sync.Native.SyncConfiguration sync_configuration,
-                byte[]? encryptionKey,
                 IntPtr task_completion_source,
                 out NativeException ex);
 
@@ -162,7 +158,7 @@ namespace Realms
             public static extern IntPtr resolve_realm_reference(ThreadSafeReferenceHandle referenceHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_write_copy", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, [MarshalAs(UnmanagedType.U1)] bool useSync, byte[]? encryptionKey, out NativeException ex);
+            public static extern void write_copy(SharedRealmHandle sharedRealm, Configuration configuration, NativeBool useSync, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_create_object", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_object(SharedRealmHandle sharedRealm, UInt32 table_key, out NativeException ex);
@@ -391,24 +387,24 @@ namespace Realms
             }
         }
 
-        public static SharedRealmHandle Open(Configuration configuration, byte[]? encryptionKey)
+        public static SharedRealmHandle Open(Configuration configuration)
         {
-            var result = NativeMethods.open(configuration, encryptionKey, out var nativeException);
+            var result = NativeMethods.open(configuration, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new SharedRealmHandle(result);
         }
 
-        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, byte[]? encryptionKey)
+        public static SharedRealmHandle OpenWithSync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration)
         {
-            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, encryptionKey, out var nativeException);
+            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, out var nativeException);
             nativeException.ThrowIfNecessary();
 
             return new SharedRealmHandle(result);
         }
 
-        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, byte[]? encryptionKey, IntPtr tcsHandle)
+        public static AsyncOpenTaskHandle OpenWithSyncAsync(Configuration configuration, Sync.Native.SyncConfiguration syncConfiguration, IntPtr tcsHandle)
         {
-            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, encryptionKey, tcsHandle, out var nativeException);
+            var asyncTaskPtr = NativeMethods.open_with_sync_async(configuration, syncConfiguration, tcsHandle, out var nativeException);
             nativeException.ThrowIfNecessary();
             return new AsyncOpenTaskHandle(asyncTaskPtr);
         }
@@ -599,10 +595,10 @@ namespace Realms
         {
             var useSync = config is SyncConfigurationBase;
 
-            using var pool = new BufferPool();
-            var nativeConfig = config.CreateNativeConfiguration(pool);
+            using var arena = new Arena();
+            var nativeConfig = config.CreateNativeConfiguration(arena);
 
-            NativeMethods.write_copy(this, nativeConfig, useSync, config.EncryptionKey, out var nativeException);
+            NativeMethods.write_copy(this, nativeConfig, useSync, out var nativeException);
             nativeException.ThrowIfNecessary();
         }
 

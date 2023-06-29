@@ -54,14 +54,7 @@ namespace Realms.Native
 
         public Realms.Schema.PropertyType type;
 
-        private byte is_primary_byte;
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Native struct field")]
-        public bool is_primary
-        {
-            get => is_primary_byte == 1;
-            set => is_primary_byte = (byte)(value ? 1 : 0);
-        }
+        public NativeBool is_primary;
 
         public IndexType index;
     }

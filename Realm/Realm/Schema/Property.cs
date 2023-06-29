@@ -177,12 +177,12 @@ namespace Realms.Schema
             IndexType = nativeProperty.index;
         }
 
-        internal SchemaProperty ToNative(BufferPool pool) => new()
+        internal SchemaProperty ToNative(Arena arena) => new()
         {
-            name = StringValue.AllocateFrom(Name, pool),
+            name = StringValue.AllocateFrom(Name, arena),
             type = Type,
-            object_type = StringValue.AllocateFrom(ObjectType, pool),
-            link_origin_property_name = StringValue.AllocateFrom(LinkOriginPropertyName, pool),
+            object_type = StringValue.AllocateFrom(ObjectType, arena),
+            link_origin_property_name = StringValue.AllocateFrom(LinkOriginPropertyName, arena),
             is_primary = IsPrimaryKey,
             index = IndexType,
         };

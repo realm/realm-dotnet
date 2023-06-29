@@ -103,21 +103,21 @@ namespace Realms
             return ret;
         }
 
-        public static MarshaledVector<T> AllocateEmpty(int capacity, BufferPool pool)
+        public static MarshaledVector<T> AllocateEmpty(int capacity, Arena arena)
         {
-            var buffer = pool.Rent<T>(capacity);
+            var buffer = arena.Allocate<T>(capacity);
             Unsafe.InitBlock(buffer.Data, 0, (uint)(sizeof(T) * capacity));
             return new MarshaledVector<T>(buffer.Data, capacity);
         }
 
-        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T> collection, BufferPool pool)
+        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T>? collection, Arena arena)
         {
-            if (collection.Count == 0)
+            if (collection == null || collection.Count == 0)
             {
                 return new MarshaledVector<T>(null, 0);
             }
 
-            var buffer = pool.Rent<T>(collection.Count);
+            var buffer = arena.Allocate<T>(collection.Count);
             var i = 0;
             foreach (var item in collection)
             {
@@ -126,19 +126,5 @@ namespace Realms
 
             return new MarshaledVector<T>(buffer.Data, buffer.Length);
         }
-
-        public static implicit operator AnyMarshaledVector(MarshaledVector<T> vector) => new()
-        {
-            Buffer = (IntPtr)vector.items,
-            Length = vector.Count
-        };
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct AnyMarshaledVector
-    {
-        public IntPtr Buffer;
-
-        public nint Length;
     }
 }

@@ -323,7 +323,7 @@ namespace Realms.Native
         public byte* data;
         public nint size;
 
-        public static StringValue AllocateFrom(string? value, BufferPool pool)
+        public static StringValue AllocateFrom(string? value, Arena arena)
         {
             if (value is null)
             {
@@ -331,7 +331,7 @@ namespace Realms.Native
             }
 
             var byteCount = Encoding.UTF8.GetMaxByteCount(value.Length);
-            var buffer = pool.Rent<byte>(byteCount + 1);
+            var buffer = arena.Allocate<byte>(byteCount + 1);
             fixed (char* stringBytes = value)
             {
                 byteCount = Encoding.UTF8.GetBytes(stringBytes, value.Length, buffer.Data, buffer.Length);

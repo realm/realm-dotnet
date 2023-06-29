@@ -36,6 +36,8 @@ namespace Realms.Native
 
         internal IntPtr managed_config;
 
+        internal MarshaledVector<byte> encryption_key;
+
         internal NativeBool read_only;
 
         internal NativeBool in_memory;

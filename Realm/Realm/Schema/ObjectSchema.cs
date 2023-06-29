@@ -162,12 +162,12 @@ namespace Realms.Schema
             return _cache.GetOrAdd(type, t => new Builder(t).Build());
         }
 
-        internal SchemaObject ToNative(BufferPool pool) => new()
+        internal SchemaObject ToNative(Arena arena) => new()
         {
-            name = StringValue.AllocateFrom(Name, pool),
+            name = StringValue.AllocateFrom(Name, arena),
             table_type = BaseType,
-            properties = MarshaledVector<SchemaProperty>.AllocateFrom(this.Select(p => p.ToNative(pool)).ToArray(), pool),
-            primary_key = StringValue.AllocateFrom(PrimaryKeyProperty?.Name, pool)
+            properties = MarshaledVector<SchemaProperty>.AllocateFrom(this.Select(p => p.ToNative(arena)).ToArray(), arena),
+            primary_key = StringValue.AllocateFrom(PrimaryKeyProperty?.Name, arena)
         };
 
         /// <summary>

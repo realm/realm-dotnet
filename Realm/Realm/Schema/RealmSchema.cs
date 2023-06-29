@@ -179,7 +179,7 @@ namespace Realms.Schema
             return builder.Build();
         }
 
-        internal Native.Schema ToNative(BufferPool pool) => new(MarshaledVector<SchemaObject>.AllocateFrom(this.Select(o => o.ToNative(pool)).ToArray(), pool));
+        internal Native.Schema ToNative(Arena arena) => new(MarshaledVector<SchemaObject>.AllocateFrom(this.Select(o => o.ToNative(arena)).ToArray(), arena));
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="ObjectSchema"/> instances.

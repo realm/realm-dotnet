@@ -138,7 +138,7 @@ namespace Realms.Native
         {
             try
             {
-                using var pool = new BufferPool();
+                using var arena = new Arena();
                 try
                 {
                     var httpClient = request.HttpClient;
@@ -149,14 +149,14 @@ namespace Realms.Native
                     var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
 
                     var headers = response.Headers.Concat(response.Content.Headers)
-                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, pool), StringValue.AllocateFrom(h.Value.FirstOrDefault(), pool)))
+                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, arena), StringValue.AllocateFrom(h.Value.FirstOrDefault(), arena)))
                         .ToArray();
 
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,
-                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers, pool),
-                        body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false), pool),
+                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers, arena),
+                        body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false), arena),
                     };
 
                     respond(nativeResponse, callback);
@@ -177,7 +177,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.UnknownHttp,
-                        body = StringValue.AllocateFrom(sb.ToString(), pool),
+                        body = StringValue.AllocateFrom(sb.ToString(), arena),
                     };
 
                     respond(nativeResponse, callback);
@@ -187,7 +187,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Timeout,
-                        body = StringValue.AllocateFrom($"Operation failed to complete within {request.timeout_ms} ms.", pool),
+                        body = StringValue.AllocateFrom($"Operation failed to complete within {request.timeout_ms} ms.", arena),
                     };
 
                     respond(nativeResponse, callback);
@@ -197,7 +197,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.HttpClientDisposed,
-                        body = StringValue.AllocateFrom(ode.Message, pool),
+                        body = StringValue.AllocateFrom(ode.Message, arena),
                     };
 
                     respond(nativeResponse, callback);
@@ -207,7 +207,7 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Unknown,
-                        body = StringValue.AllocateFrom(ex.Message, pool),
+                        body = StringValue.AllocateFrom(ex.Message, arena),
                     };
 
                     respond(nativeResponse, callback);

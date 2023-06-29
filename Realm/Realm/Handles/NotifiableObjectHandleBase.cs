@@ -41,9 +41,7 @@ namespace Realms
 
             public MarshaledVector<Move> Moves;
 
-            private byte cleared;
-
-            public readonly bool Cleared => cleared == 1;
+            public NativeBool Cleared;
 
             public MarshaledVector<int> Properties;
         }

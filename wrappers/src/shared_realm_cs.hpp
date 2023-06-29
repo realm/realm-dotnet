@@ -44,6 +44,8 @@ struct Configuration
 
     void* managed_config;
 
+    MarshaledVector<uint8_t> encryption_key;
+
     bool read_only;
     
     bool in_memory;
