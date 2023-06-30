@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -161,10 +162,16 @@ namespace Realms
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (AsyncHelper.TryGetScheduler(out var scheduler))
             {
+                // make a local copy because we can't capture in/ref/out parameters in lambdas
                 var config = configuration;
                 return Task.Run(() =>
                 {
-                    using (CreateHandle(config))
+                    // make another copy so we can open a temporary realm on this worker thread
+                    // to execute any migrations on the background
+                    // without clobbering the original config's managed handle
+                    var configCopy = config;
+                    configCopy.managed_config = GCHandle.ToIntPtr(GCHandle.Alloc(this));
+                    using (CreateHandle(configCopy))
                     {
                     }
                 }, cancellationToken).ContinueWith(_ => CreateHandle(config), scheduler);
