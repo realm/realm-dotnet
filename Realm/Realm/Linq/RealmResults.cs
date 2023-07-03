@@ -80,13 +80,16 @@ namespace Realms
 
         public override int IndexOf(T? value)
         {
-            Argument.NotNull(value, nameof(value));
+            if (value == null)
+            {
+                return -1;
+            }
 
             var realmValue = Operator.Convert<T, RealmValue>(value!);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return -1;
             }
 
             return ResultsHandle.Find(realmValue);

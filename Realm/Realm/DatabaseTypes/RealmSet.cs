@@ -89,7 +89,7 @@ namespace Realms
             return _setHandle.Remove(realmValue);
         }
 
-        public override int IndexOf([AllowNull] T value) => throw new NotSupportedException();
+        public override int IndexOf([AllowNull] T value) => -1;
 
         public override bool Contains([AllowNull] T value)
         {
