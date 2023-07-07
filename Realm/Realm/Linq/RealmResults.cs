@@ -80,12 +80,7 @@ namespace Realms
 
         public override int IndexOf(T? value)
         {
-            if (value == null)
-            {
-                return -1;
-            }
-
-            var realmValue = Operator.Convert<T, RealmValue>(value!);
+            var realmValue = Operator.Convert<T?, RealmValue>(value!);
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {

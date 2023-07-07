@@ -1312,7 +1312,7 @@ namespace Realms.Tests.Database
         {
             var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
             var nonManagedItem = new IntPrimaryKeyWithValueObject();
-            Assert.That(() => query.IndexOf(nonManagedItem), Throws.InstanceOf<ArgumentException>());
+            Assert.That(query.IndexOf(nonManagedItem), Is.EqualTo(-1));
         }
 
         [Test]
@@ -1331,10 +1331,10 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void Queryable_IndexOf_WhenNull_ShouldThrow()
+        public void Queryable_IndexOf_WhenNull_ShouldNotThrow()
         {
             var query = _realm.All<IntPrimaryKeyWithValueObject>().AsRealmCollection();
-            Assert.That(() => query.IndexOf(null), Throws.InstanceOf<ArgumentNullException>());
+            Assert.That(query.IndexOf(null), Is.EqualTo(-1));
         }
 
         [Test]
