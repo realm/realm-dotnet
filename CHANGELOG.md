@@ -2,6 +2,8 @@
 
 ### Enhancements
 * Added validation checks to the geospatial type constructors. This means that an exception will now be thrown when constructing an invalid geospatial shape rather than when using it in a query. (PR [#3362](https://github.com/realm/realm-dotnet/pull/3362)) 
+* Relaxed some validations when invoking `IndexOf(null)` on a collection of non-nullable types. Previously, this would throw an `ArgumentNullException` whereas now it will return `-1`. This is particularly useful for data-binding scenarios where the binding engine might invoke it as `IndexOf(SelectedItem)` which would throw an exception when `SelectedItem` is `null`. (PR [#3369](https://github.com/realm/realm-dotnet/pull/3369))
+* Changed `RealmSet.IndexOf` implementation to return the actual result rather than throw a `NotSupportedException`. The order of persisted sets is still non-deterministic, but is stable between write transactions. Again, this is mostly useful for data-binding scenarios where the set is passed as a binding context to a collection control. (PR [#3369](https://github.com/realm/realm-dotnet/pull/3369))
 
 ### Fixed
 * Fixed an issue on Unity on Windows when the weaver would trigger excessive terminal windows to open. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
