@@ -101,7 +101,7 @@ namespace RealmWeaver
         });
 
         public static string AnonymizedUserId => _anonymizedUserId.Value;
-        
+
         public static string LegacyAnonymizedUserId => _legacyAnonymizedUserId.Value;
 
         public static string GetTargetOsName(FrameworkName frameworkName)
