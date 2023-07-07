@@ -6,6 +6,7 @@
 ### Fixed
 * Fixed an issue on Unity on Windows when the weaver would trigger excessive terminal windows to open. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
 * Fixed an issue on Unity on CI where weaving would fail with the following error: `Could not analyze the user's assembly. Cannot access a closed Stream.`. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
+* Fixed a `NullReferenceException` when weaving classes on Unity in batch mode. (Issue [#3363](https://github.com/realm/realm-dotnet/issues/3363))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
