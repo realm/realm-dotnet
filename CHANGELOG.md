@@ -6,6 +6,10 @@
 ### Fixed
 * Fixed an issue on Unity on Windows when the weaver would trigger excessive terminal windows to open. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
 * Fixed an issue on Unity on CI where weaving would fail with the following error: `Could not analyze the user's assembly. Cannot access a closed Stream.`. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
+* A GeoBox is now just a shortcut for the equivilent GeoPolygon. This provides consistent query results and error checking. (Core 13.15.2)
+* Fixed several corner cases (eg. around the poles) where invalid points matched a geoWithin query. (Core 13.15.2)
+* Fixed an error during async open and client reset if properties have been added to the schema. This fix applies to PBS to FLX migration if async open is used. (Core 13.16.1)
+
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
