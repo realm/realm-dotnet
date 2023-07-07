@@ -180,29 +180,39 @@ namespace RealmWeaver
 
         public WeaveModuleResult Execute(Analytics.Config analyticsConfig)
         {
-            _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
-
             var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
+
+            var result = ExecuteInternal(analyticsConfig, out var weaveResults);
+            analytics.AnalyzeRealmClassProperties(weaveResults);
+
+            // Don't wait for submission
+            _ = analytics.SubmitAnalytics();
+
+            return result;
+        }
+
+        private WeaveModuleResult ExecuteInternal(Analytics.Config analyticsConfig, out WeaveTypeResult[] weaveResults)
+        {
+            _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
             // This is necessary because some frameworks, e.g. xamarin, have the models in one assembly and the platform
             // specific code in another assembly, but we still want to report what target the user is building for
             if (_references.Realm == null)
             {
-                // Don't wait for submission
-                _ = analytics.SubmitAnalytics();
-
+                weaveResults = Array.Empty<WeaveTypeResult>();
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it doesn't reference Realm.");
             }
 
             var isWoven = _moduleDefinition.Assembly.CustomAttributes.Any(a => a.AttributeType.IsSameAs(_references.WovenAssemblyAttribute));
             if (isWoven)
             {
+                weaveResults = Array.Empty<WeaveTypeResult>();
                 return WeaveModuleResult.Skipped($"Not weaving assembly '{_moduleDefinition.Assembly.Name}' because it has already been processed.");
             }
 
             var matchingTypes = GetMatchingTypes().ToArray();
 
-            var weaveResults = matchingTypes.Select(matchingType =>
+            weaveResults = matchingTypes.Select(matchingType =>
             {
                 var type = matchingType.Type;
                 var isGenerated = matchingType.IsGenerated;
@@ -222,11 +232,6 @@ namespace RealmWeaver
 
             var wovenAssemblyAttribute = new CustomAttribute(_references.WovenAssemblyAttribute_Constructor);
             _moduleDefinition.Assembly.CustomAttributes.Add(wovenAssemblyAttribute);
-
-            analytics.AnalyzeRealmClassProperties(weaveResults);
-
-            // Don't wait for submission
-            _ = analytics.SubmitAnalytics();
 
             var failedResults = weaveResults.Where(r => !r.IsSuccessful).ToArray();
             if (failedResults.Any())

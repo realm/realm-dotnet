@@ -4,7 +4,8 @@
 * Added validation checks to the geospatial type constructors. This means that an exception will now be thrown when constructing an invalid geospatial shape rather than when using it in a query. (PR [#3362](https://github.com/realm/realm-dotnet/pull/3362)) 
 
 ### Fixed
-* None
+* Fixed an issue on Unity on Windows when the weaver would trigger excessive terminal windows to open. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
+* Fixed an issue on Unity on CI where weaving would fail with the following error: `Could not analyze the user's assembly. Cannot access a closed Stream.`. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

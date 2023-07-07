@@ -249,8 +249,8 @@ namespace RealmWeaver
             try
             {
                 // collect environment details
-                _realmEnvMetrics[UserEnvironment.UserId] = GetAnonymizedUserId();
-                _realmEnvMetrics[UserEnvironment.LegacyUserId] = GetLegacyAnonymizedUserId();
+                _realmEnvMetrics[UserEnvironment.UserId] = AnonymizedUserId;
+                _realmEnvMetrics[UserEnvironment.LegacyUserId] = LegacyAnonymizedUserId;
                 _realmEnvMetrics[UserEnvironment.ProjectId] = SHA256Hash(Encoding.UTF8.GetBytes(_config.ProjectId ?? module.Assembly.Name.Name));
                 _realmEnvMetrics[UserEnvironment.RealmSdk] = "dotnet";
                 _realmEnvMetrics[UserEnvironment.RealmSdkVersion] = Assembly.GetExecutingAssembly().GetName().Version.ToString();
@@ -435,12 +435,12 @@ namespace RealmWeaver
         {
             var payload = "Analytics disabled";
 
+            // this is necessary since when not in the assembly that has the models
+            // AnalyzeRealmClassProperties won't be called
+            _analyzeUserAssemblyTask.Wait();
+
             if (_config.AnalyticsCollection != AnalyticsCollection.Disabled)
             {
-                // this is necessary since when not in the assembly that has the models
-                // AnalyzeRealmClassProperties won't be called
-                _analyzeUserAssemblyTask.Wait();
-
                 try
                 {
                     const string sendAddr = "https://data.mongodb-api.com/app/realmsdkmetrics-zmhtm/endpoint/v2/metric?data=";
