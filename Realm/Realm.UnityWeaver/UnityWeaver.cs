@@ -50,6 +50,7 @@ namespace RealmWeaver
         private const string UnityPackageName = "io.realm.unity";
 
         private static readonly int UnityMajorVersion = int.Parse(Application.unityVersion.Split('.')[0]);
+        private static readonly TaskCompletionSource<string> _installMethodTask = new();
 
         private static bool _analyticsEnabled;
 
@@ -66,7 +67,6 @@ namespace RealmWeaver
 
         private static bool _weaveEditorAssemblies;
         private static ListRequest? _listRequest;
-        private static TaskCompletionSource<string>? _installMethodTask;
 
         private static bool WeaveEditorAssemblies
         {
@@ -84,20 +84,19 @@ namespace RealmWeaver
         [InitializeOnLoadMethod]
         public static void Initialize()
         {
+            if (Application.isBatchMode)
+            {
+                // In batch mode, `update` won't get called until compilation is complete,
+                // which means we'll deadlock when we block compilation on the tcs completing
+                _installMethodTask.TrySetResult(Metric.Unknown());
+            }
+
             // We need to call that again after the editor is initialized to ensure that we populate the checkmark correctly.
             EditorApplication.delayCall += () =>
             {
                 _listRequest = Client.List();
 
-                _installMethodTask = new TaskCompletionSource<string>();
-
-                if (Application.isBatchMode)
-                {
-                    // In batch mode, `update` won't get called until compilation is complete,
-                    // which means we'll deadlock when we block compilation on the tcs completing
-                    _installMethodTask.TrySetResult(Metric.Unknown());
-                }
-                else
+                if (!Application.isBatchMode)
                 {
                     EditorApplication.update += OnEditorApplicationUpdate;
                 }
@@ -149,7 +148,7 @@ namespace RealmWeaver
                 };
             }
 
-            _installMethodTask!.SetResult(installMethod);
+            _installMethodTask.TrySetResult(installMethod);
         }
 
         [MenuItem("Tools/Realm/Weave Assemblies")]
@@ -521,7 +520,7 @@ namespace RealmWeaver
                 NetFrameworkTarget = netFrameworkInfo.Name,
                 NetFrameworkTargetVersion = netFrameworkInfo.Version,
                 AnalyticsCollection = analyticsEnabled ? AnalyticsCollection.Full : AnalyticsCollection.Disabled,
-                InstallationMethod = _installMethodTask!.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
+                InstallationMethod = _installMethodTask.Task.Wait(1000) ? _installMethodTask.Task.Result : Metric.Unknown(),
                 FrameworkName = target == null ? Metric.Framework.UnityEditor : Metric.Framework.Unity,
                 FrameworkVersion = Application.unityVersion,
                 TargetArchitecture = GetCpuArchitecture(target),
