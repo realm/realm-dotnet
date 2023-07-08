@@ -1,4 +1,4 @@
-## vNext (TBD)
+## 11.2.0 (2023-07-07)
 
 ### Enhancements
 * Added validation checks to the geospatial type constructors. This means that an exception will now be thrown when constructing an invalid geospatial shape rather than when using it in a query. (PR [#3362](https://github.com/realm/realm-dotnet/pull/3362)) 
