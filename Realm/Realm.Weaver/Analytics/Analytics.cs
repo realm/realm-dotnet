@@ -283,7 +283,7 @@ namespace RealmWeaver
             }
             catch (Exception e)
             {
-                _logger.Error($"Could not analyze the user's assembly.{Environment.NewLine}{e.Message}");
+                _logger.Warning($"Could not analyze the user's assembly. Please file an issue at https://github.com/realm/realm-dotnet/issues. {Environment.NewLine}{e}");
             }
         }
 
