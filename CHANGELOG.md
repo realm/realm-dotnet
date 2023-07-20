@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed a Unity Editor crash when the domain is reloaded while a `Realm.GetInstanceAsync` operation is in progress. (Issue [#3344](https://github.com/realm/realm-dotnet/issues/3344))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
