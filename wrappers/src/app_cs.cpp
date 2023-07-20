@@ -70,12 +70,6 @@ namespace realm {
             uint16_t* base_url;
             size_t base_url_len;
 
-            uint16_t* local_app_name;
-            size_t local_app_name_len;
-
-            uint16_t* local_app_version;
-            size_t local_app_version_len;
-
             uint64_t request_timeout_ms;
 
             realm::SyncClientConfig::MetadataMode metadata_mode;
@@ -143,14 +137,6 @@ extern "C" {
 
             config.transport = std::make_shared<HttpClientTransport>(app_config.managed_http_client);
             config.base_url = Utf16StringAccessor(app_config.base_url, app_config.base_url_len).to_string();
-
-            if (app_config.local_app_name != nullptr) {
-                config.local_app_name = Utf16StringAccessor(app_config.local_app_name, app_config.local_app_name_len).to_string();
-            }
-
-            if (app_config.local_app_version != nullptr) {
-                config.local_app_version = Utf16StringAccessor(app_config.local_app_version, app_config.local_app_version_len).to_string();
-            }
 
             if (app_config.request_timeout_ms > 0) {
                 config.default_request_timeout_ms = app_config.request_timeout_ms;

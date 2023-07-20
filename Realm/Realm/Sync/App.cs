@@ -48,12 +48,7 @@ namespace Realms.Sync
     /// <br/>
     /// To create an app that is linked with a remote Realm App initialize Realm and configure the App as shown below:
     /// <code>
-    /// var appConfig = new AppConfiguration("my-realm-app-id")
-    /// {
-    ///     LocalAppName = "My amazing iOS app",
-    ///     LocalAppVersion = "1.2.3"
-    /// };
-    ///
+    /// var appConfig = new AppConfiguration("my-realm-app-id");
     /// var app = new App(appConfig);
     /// </code>
     /// After configuring the App you can start managing users, configure Synchronized Realms, call remote Realm Functions, and access remote data through Mongo Collections.
@@ -155,8 +150,6 @@ namespace Realms.Sync
                 AppId = config.AppId,
                 BaseFilePath = config.BaseFilePath,
                 BaseUrl = config.BaseUri.ToString().TrimEnd('/'),
-                LocalAppName = config.LocalAppName,
-                LocalAppVersion = config.LocalAppVersion,
                 MetadataPersistence = config.MetadataPersistenceMode,
                 default_request_timeout_ms = (ulong)config.DefaultRequestTimeout.TotalMilliseconds,
                 managed_http_client = GCHandle.ToIntPtr(clientHandle),

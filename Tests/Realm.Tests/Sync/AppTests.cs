@@ -131,8 +131,6 @@ namespace Realms.Tests.Sync
             var config = new AppConfiguration("abc-123")
             {
                 BaseUri = new Uri("http://foo.bar"),
-                LocalAppName = "My app",
-                LocalAppVersion = "1.2.3",
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
                 BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
