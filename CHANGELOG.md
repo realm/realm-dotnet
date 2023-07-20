@@ -1,5 +1,8 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* `AppConfiguration.LocalAppName` and `AppConfiguration.LocalAppVersion` have been deprecated and will be removed in a future version. They have never had an effect as the values supplied by the SDK was never sent to the server. (PR [#3387](https://github.com/realm/realm-dotnet/pull/3387))
+
 ### Enhancements
 * None
 
