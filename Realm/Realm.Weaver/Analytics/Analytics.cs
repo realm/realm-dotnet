@@ -122,18 +122,18 @@ namespace RealmWeaver
                 // check if it's the right signature, that is 2 params in total of which
                 // the second a bool and that it's set to true.
                 [Feature.Add] = instruction =>
-                    IsInRealmNamespace(instruction.Operand) &&
-                    instruction.Operand is MethodSpecification methodSpecification &&
+                    IsInRealmNamespace(instruction?.Operand) &&
+                    instruction?.Operand is MethodSpecification methodSpecification &&
                     methodSpecification.Parameters.Count == 2 &&
                     methodSpecification.Parameters[1].ParameterType.MetadataType == MetadataType.Boolean &&
-                    instruction.Previous.OpCode == OpCodes.Ldc_I4_1 ?
-                    new(true, Feature.Add) : default,
+                    instruction.Previous?.OpCode == OpCodes.Ldc_I4_1
+                        ? new(true, Feature.Add) : default,
                 [Feature.ShouldCompactOnLaunch] = _ => new(true, Feature.ShouldCompactOnLaunch),
                 [Feature.MigrationCallback] = _ => new(true, Feature.MigrationCallback),
                 [Feature.RealmChanged] = _ => new(true, Feature.RealmChanged),
                 ["SubscribeForNotifications"] = instruction =>
                 {
-                    if (instruction.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction.Operand))
+                    if (instruction?.Operand is not MethodSpecification methodSpecification || !IsInRealmNamespace(instruction?.Operand))
                     {
                         return default;
                     }
@@ -222,7 +222,7 @@ namespace RealmWeaver
 
             FeatureAnalysisResult AnalyzeRealmApi(Instruction instruction, string key)
             {
-                if (IsInRealmNamespace(instruction.Operand))
+                if (IsInRealmNamespace(instruction?.Operand))
                 {
                     return new(true, key);
                 }
@@ -506,14 +506,14 @@ namespace RealmWeaver
             await httpClient.GetAsync(new Uri(prefixAddr + payload + suffixAddr));
         }
 
-        private static bool IsInRealmNamespace(object operand)
+        private static bool IsInRealmNamespace(object? operand)
         {
             if (operand is not MemberReference memberReference)
             {
                 return false;
             }
 
-            return memberReference.DeclaringType.FullName.StartsWith("Realms", StringComparison.Ordinal);
+            return memberReference?.DeclaringType?.FullName?.StartsWith("Realms", StringComparison.Ordinal) == true;
         }
 
         public class Config

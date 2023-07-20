@@ -4,7 +4,7 @@
 * None
 
 ### Fixed
-* None
+* Fixed an issue where building for Android on Unity would fail with "Could not analyze the user's assembly. Object reference not set to an instance of an object". (Issue [#3380](https://github.com/realm/realm-dotnet/issues/3380))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
