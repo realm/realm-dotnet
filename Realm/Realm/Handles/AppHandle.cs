@@ -109,6 +109,13 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_base_uri", CallingConvention = CallingConvention.Cdecl)]
             public static extern StringValue get_base_uri(AppHandle app, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_id", CallingConvention = CallingConvention.Cdecl)]
+            public static extern StringValue get_id(AppHandle app, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static extern bool is_same_instance(AppHandle lhs, AppHandle rhs, out NativeException ex);
+
             public static class EmailPassword
             {
                 [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
@@ -369,6 +376,20 @@ namespace Realms.Sync
             var value = NativeMethods.get_base_uri(this, out var ex);
             ex.ThrowIfNecessary();
             return new Uri(value!);
+        }
+
+        public string GetId()
+        {
+            var value = NativeMethods.get_id(this, out var ex);
+            ex.ThrowIfNecessary();
+            return value!;
+        }
+
+        public bool IsSameInstance(AppHandle other)
+        {
+            var result = NativeMethods.is_same_instance(this, other, out var ex);
+            ex.ThrowIfNecessary();
+            return result;
         }
 
         protected override void Unbind() => NativeMethods.destroy(handle);

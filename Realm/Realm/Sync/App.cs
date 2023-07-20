@@ -134,6 +134,12 @@ namespace Realms.Sync
         /// <seealso cref="AppConfiguration.BaseUri"/>
         public Uri BaseUri => Handle.GetBaseUri();
 
+        /// <summary>
+        /// Gets the unique app id that identifies the Realm application.
+        /// </summary>
+        /// <value>The Atlas App Services App's id.</value>
+        public string Id => Handle.GetId();
+
         internal App(AppHandle handle)
         {
             Handle = handle;
@@ -179,6 +185,7 @@ namespace Realms.Sync
                 sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
                 sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
                 sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
+                use_cache = config.UseAppCache,
             };
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
@@ -259,6 +266,20 @@ namespace Realms.Sync
 
             return Handle.DeleteUserAsync(user.Handle);
         }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+        {
+            if (obj is not App app)
+            {
+                return false;
+            }
+
+            return Handle.IsSameInstance(app.Handle);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode() => Id.GetHashCode();
 
         /// <summary>
         /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a

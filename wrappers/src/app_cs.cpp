@@ -93,6 +93,8 @@ namespace realm {
             uint64_t sync_pong_keep_alive_timeout_ms;
 
             uint64_t sync_fast_reconnect_limit;
+
+            bool use_cache;
         };
     }
 }
@@ -180,7 +182,11 @@ extern "C" {
                 sync_client_config.custom_encryption_key = std::vector<char>(key.begin(), key.end());
             }
 
-            return new SharedApp(App::get_shared_app(std::move(config), std::move(sync_client_config)));
+            SharedApp app = app_config.use_cache
+                ? App::get_shared_app(std::move(config), std::move(sync_client_config))
+                : App::get_uncached_app(std::move(config), std::move(sync_client_config));
+
+            return new SharedApp(app);
         });
     }
 
@@ -320,10 +326,24 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             return to_capi(app->base_url());
+        });
+    }
+
+    REALM_EXPORT realm_string_t shared_app_get_id(SharedApp& app, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return to_capi(app->config().app_id);
+        });
+    }
+
+    REALM_EXPORT bool shared_app_is_same_instance(SharedApp& lhs, SharedApp& rhs, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return lhs == rhs;  // just compare raw pointers inside the smart pointers
         });
     }
 
