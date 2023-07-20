@@ -102,7 +102,7 @@ namespace Realms.Tests.Sync
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return (await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message))!;
+            return (await WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message))!;
         }
 
         protected async Task<User> GetUserAsync(App? app = null, string? username = null, string? password = null)

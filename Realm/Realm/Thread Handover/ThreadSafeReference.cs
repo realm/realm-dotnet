@@ -51,7 +51,7 @@ namespace Realms
 
         internal ThreadSafeReference(IThreadConfined value, Type type)
         {
-            if (value == null)
+            if (value is null)
             {
                 throw new ArgumentNullException(nameof(value));
             }

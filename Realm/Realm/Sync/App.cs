@@ -168,7 +168,7 @@ namespace Realms.Sync
                 }
             }
 
-            var httpClient = config.HttpClientHandler == null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
+            var httpClient = config.HttpClientHandler is null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
             var clientHandle = GCHandle.Alloc(httpClient);
             var nativeConfig = new Native.AppConfiguration
             {
@@ -291,7 +291,7 @@ namespace Realms.Sync
         {
             if (app1 is null || app2 is null)
             {
-                return false;
+                return app1 is null && app2 is null;
             }
 
             return app1.Equals(app2);

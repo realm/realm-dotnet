@@ -324,6 +324,13 @@ namespace Realms.Tests.Sync
 
             Assert.That(app1.Equals(app1.Id), Is.False);
             Assert.That(app1.Equals(null), Is.False);
+            Assert.That(app1 == null, Is.False);
+            Assert.That(app1 != null, Is.True);
+
+            App? app5 = null;
+
+            Assert.That(app5 == null, Is.True);
+            Assert.That(app5 != null, Is.False);
         }
 
         private class TestHttpClientHandler : DelegatingHandler
