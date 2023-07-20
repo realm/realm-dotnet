@@ -271,6 +271,8 @@ namespace Realms.Tests.Sync
             Assert.That(app1.GetHashCode(), Is.EqualTo(app2.GetHashCode()));
 
             Assert.That(app1.Equals(app2), Is.False);
+            Assert.That(app1 == app2, Is.False);
+            Assert.That(app1 != app2, Is.True);
             Assert.That(app1.BaseUri, Is.Not.EqualTo(app2.BaseUri));
             Assert.That(app1.BaseFilePath, Is.Not.EqualTo(app2.BaseFilePath));
 
@@ -311,6 +313,14 @@ namespace Realms.Tests.Sync
             Assert.That(app1.Equals(app2), Is.False);
             Assert.That(app1.Equals(app3), Is.True);
             Assert.That(app1.Equals(app4), Is.False); // app4 is uncached, so a different instance is returned
+
+            Assert.That(app1 == app2, Is.False);
+            Assert.That(app1 == app3, Is.True);
+            Assert.That(app1 == app4, Is.False); // app4 is uncached, so a different instance is returned
+
+            Assert.That(app1 != app2, Is.True);
+            Assert.That(app1 != app3, Is.False);
+            Assert.That(app1 != app4, Is.True); // app4 is uncached, so a different instance is returned
 
             Assert.That(app1.Equals(app1.Id), Is.False);
             Assert.That(app1.Equals(null), Is.False);

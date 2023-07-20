@@ -53,7 +53,13 @@ namespace Realms.Tests.Sync
 
             base.CustomTearDown();
 
-            _apps.DrainQueue(app => app.Handle.ResetForTesting());
+            _apps.DrainQueue(app =>
+            {
+                if (!app.Handle.IsClosed)
+                {
+                    app.Handle.ResetForTesting();
+                }
+            });
 
             _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }

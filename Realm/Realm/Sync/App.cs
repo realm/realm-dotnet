@@ -282,6 +282,30 @@ namespace Realms.Sync
         public override int GetHashCode() => Id.GetHashCode();
 
         /// <summary>
+        /// Determines whether two <see cref="App"/> instances are equal.
+        /// </summary>
+        /// <param name="app1">The first app to compare.</param>
+        /// <param name="app2">The second app to compare.</param>
+        /// <returns><c>true</c> if the two instances are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==(App? app1, App? app2)
+        {
+            if (app1 is null || app2 is null)
+            {
+                return false;
+            }
+
+            return app1.Equals(app2);
+        }
+
+        /// <summary>
+        /// Determines whether two <see cref="App"/> instances are different.
+        /// </summary>
+        /// <param name="app1">The first app to compare.</param>
+        /// <param name="app2">The second app to compare.</param>
+        /// <returns><c>true</c> if the two instances are different; <c>false</c> otherwise.</returns>
+        public static bool operator !=(App? app1, App? app2) => !(app1 == app2);
+
+        /// <summary>
         /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a
         /// particular app and can only be accessed via <see cref="Sync"/>.
         /// </summary>
