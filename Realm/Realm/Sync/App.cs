@@ -119,6 +119,21 @@ namespace Realms.Sync
                                             .Select(handle => new User(handle, this))
                                             .ToArray();
 
+        /// <summary>
+        /// Gets the root folder relative to which all local data for this application will be stored. This data includes
+        /// metadata for users and synchronized Realms.
+        /// </summary>
+        /// <value>The app's base path.</value>
+        /// <seealso cref="AppConfiguration.BaseFilePath"/>
+        public string BaseFilePath => Handle.GetBaseFilePath();
+
+        /// <summary>
+        /// Gets the base url for this Realm application.
+        /// </summary>
+        /// <value>The app's base url.</value>
+        /// <seealso cref="AppConfiguration.BaseUri"/>
+        public Uri BaseUri => Handle.GetBaseUri();
+
         internal App(AppHandle handle)
         {
             Handle = handle;
@@ -129,7 +144,6 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="config">The <see cref="AppConfiguration"/>, specifying key parameters for the app behavior.</param>
         /// <returns>An <see cref="App"/> instance can now be used to login users, call functions, or open synchronized Realms.</returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The http client is owned by the app and must be kept alive.")]
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));

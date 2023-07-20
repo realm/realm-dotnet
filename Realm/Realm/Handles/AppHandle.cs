@@ -103,6 +103,12 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_clear_cached_apps", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear_cached_apps(out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_base_file_path", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_base_file_path(AppHandle app, IntPtr buffer, IntPtr buffer_length, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_get_base_uri", CallingConvention = CallingConvention.Cdecl)]
+            public static extern StringValue get_base_uri(AppHandle app, out NativeException ex);
+
             public static class EmailPassword
             {
                 [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
@@ -347,6 +353,22 @@ namespace Realms.Sync
                 out var ex);
             ex.ThrowIfNecessary();
             return new SyncUserHandle(result);
+        }
+
+        public string GetBaseFilePath()
+        {
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) =>
+            {
+                isNull = false;
+                return NativeMethods.get_base_file_path(this, buffer, length, out ex);
+            })!;
+        }
+
+        public Uri GetBaseUri()
+        {
+            var value = NativeMethods.get_base_uri(this, out var ex);
+            ex.ThrowIfNecessary();
+            return new Uri(value!);
         }
 
         protected override void Unbind() => NativeMethods.destroy(handle);

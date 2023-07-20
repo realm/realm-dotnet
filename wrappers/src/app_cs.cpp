@@ -312,6 +312,21 @@ extern "C" {
         App::clear_cached_apps();
     }
 
+    REALM_EXPORT size_t shared_app_get_base_file_path(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            std::string base_file_path(app->sync_manager()->config().base_file_path);
+            return stringdata_to_csharpstringbuffer(base_file_path, buffer, buffer_length);
+        });
+    }
+
+    REALM_EXPORT realm_string_t shared_app_get_base_uri(SharedApp& app, uint16_t* buffer, size_t buffer_length, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return to_capi(app->base_url());
+        });
+    }
+
 #pragma region EmailPassword
 
     REALM_EXPORT void shared_app_email_register_user(SharedApp& app, uint16_t* username_buf, size_t username_len, uint16_t* password_buf, size_t password_len, void* tcs_ptr, NativeException::Marshallable& ex)

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -127,6 +128,9 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCreate_CreatesApp()
         {
+            var basePath = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), "foo-bar");
+            Directory.CreateDirectory(basePath);
+
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
@@ -135,12 +139,14 @@ namespace Realms.Tests.Sync
                 LocalAppVersion = "1.2.3",
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
+                BaseFilePath = basePath,
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
 
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
+            Assert.That(app.BaseUri, Is.EqualTo(config.BaseUri));
+            Assert.That(app.BaseFilePath, Is.EqualTo(config.BaseFilePath));
         }
 
         [Test]
