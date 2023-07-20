@@ -27,7 +27,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: ./report.lcov
           git-commit: ${{ github.event.pull_request.head.sha }}
-          compare-ref: ${{ github.event.pull_request.base.ref }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
       - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")
