@@ -114,6 +114,27 @@ namespace Realms.Sync
                                             .Select(handle => new User(handle, this))
                                             .ToArray();
 
+        /// <summary>
+        /// Gets the root folder relative to which all local data for this application will be stored. This data includes
+        /// metadata for users and synchronized Realms.
+        /// </summary>
+        /// <value>The app's base path.</value>
+        /// <seealso cref="AppConfiguration.BaseFilePath"/>
+        public string BaseFilePath => Handle.GetBaseFilePath();
+
+        /// <summary>
+        /// Gets the base url for this Realm application.
+        /// </summary>
+        /// <value>The app's base url.</value>
+        /// <seealso cref="AppConfiguration.BaseUri"/>
+        public Uri BaseUri => Handle.GetBaseUri();
+
+        /// <summary>
+        /// Gets the unique app id that identifies the Realm application.
+        /// </summary>
+        /// <value>The Atlas App Services App's id.</value>
+        public string Id => Handle.GetId();
+
         internal App(AppHandle handle)
         {
             Handle = handle;
@@ -124,7 +145,6 @@ namespace Realms.Sync
         /// </summary>
         /// <param name="config">The <see cref="AppConfiguration"/>, specifying key parameters for the app behavior.</param>
         /// <returns>An <see cref="App"/> instance can now be used to login users, call functions, or open synchronized Realms.</returns>
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The http client is owned by the app and must be kept alive.")]
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));
@@ -143,7 +163,7 @@ namespace Realms.Sync
                 }
             }
 
-            var httpClient = config.HttpClientHandler == null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
+            var httpClient = config.HttpClientHandler is null ? new HttpClient() : new HttpClient(config.HttpClientHandler);
             var clientHandle = GCHandle.Alloc(httpClient);
             var nativeConfig = new Native.AppConfiguration
             {
@@ -158,6 +178,7 @@ namespace Realms.Sync
                 sync_fast_reconnect_limit = (ulong)syncTimeouts.FastReconnectLimit.TotalMilliseconds,
                 sync_ping_keep_alive_period_ms = (ulong)syncTimeouts.PingKeepAlivePeriod.TotalMilliseconds,
                 sync_pong_keep_alive_timeout_ms = (ulong)syncTimeouts.PongKeepAliveTimeout.TotalMilliseconds,
+                use_cache = config.UseAppCache,
             };
 
             var handle = AppHandle.CreateApp(nativeConfig, config.MetadataEncryptionKey);
@@ -238,6 +259,44 @@ namespace Realms.Sync
 
             return Handle.DeleteUserAsync(user.Handle);
         }
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+        {
+            if (obj is not App app)
+            {
+                return false;
+            }
+
+            return Handle.IsSameInstance(app.Handle);
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode() => Id.GetHashCode();
+
+        /// <summary>
+        /// Determines whether two <see cref="App"/> instances are equal.
+        /// </summary>
+        /// <param name="app1">The first app to compare.</param>
+        /// <param name="app2">The second app to compare.</param>
+        /// <returns><c>true</c> if the two instances are equal; <c>false</c> otherwise.</returns>
+        public static bool operator ==(App? app1, App? app2)
+        {
+            if (app1 is null || app2 is null)
+            {
+                return app1 is null && app2 is null;
+            }
+
+            return app1.Equals(app2);
+        }
+
+        /// <summary>
+        /// Determines whether two <see cref="App"/> instances are different.
+        /// </summary>
+        /// <param name="app1">The first app to compare.</param>
+        /// <param name="app2">The second app to compare.</param>
+        /// <returns><c>true</c> if the two instances are different; <c>false</c> otherwise.</returns>
+        public static bool operator !=(App? app1, App? app2) => !(app1 == app2);
 
         /// <summary>
         /// A sync manager, handling synchronization of local Realm with MongoDB Atlas. It is always scoped to a

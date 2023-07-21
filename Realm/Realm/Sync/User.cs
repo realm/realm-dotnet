@@ -124,7 +124,7 @@ namespace Realms.Sync
             where T : class
         {
             var customData = GetCustomData();
-            if (customData == null)
+            if (customData is null)
             {
                 return null;
             }
@@ -161,10 +161,9 @@ namespace Realms.Sync
 
         internal readonly SyncUserHandle Handle;
 
-        [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "The App instance will own its handle.")]
         internal User(SyncUserHandle handle, App? app = null)
         {
-            if (app == null && handle.TryGetApp(out var appHandle))
+            if (app is null && handle.TryGetApp(out var appHandle))
             {
                 app = new App(appHandle);
             }
@@ -208,7 +207,7 @@ namespace Realms.Sync
             where T : class
         {
             var result = await RefreshCustomDataAsync();
-            if (result == null)
+            if (result is null)
             {
                 return null;
             }

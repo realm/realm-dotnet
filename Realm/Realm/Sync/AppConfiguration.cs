@@ -138,6 +138,17 @@ namespace Realms.Sync
         public SyncTimeoutOptions SyncTimeoutOptions { get; set; } = new();
 
         /// <summary>
+        /// Gets or sets a value indicating whether to cache app instances created with this configuration.
+        /// </summary>
+        /// <remarks>
+        /// When an app is created using <see cref="App.Create(AppConfiguration)"/>, the default behavior is
+        /// to get or add the <see cref="App"/> instance from a cache keyed on the app id. This has certain
+        /// performance benefits when calling <see cref="App.Create(AppConfiguration)"/> multiple times.
+        /// </remarks>
+        /// <value><c>true</c> if the app should be cached; <c>false</c> otherwise. Default value is <c>true</c>.</value>
+        public bool UseAppCache { get; set; } = true;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.
         /// </summary>
         /// <param name="appId">The Atlas App Services App id.</param>

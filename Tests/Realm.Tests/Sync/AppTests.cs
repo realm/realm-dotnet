@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -39,7 +40,7 @@ namespace Realms.Tests.Sync
         [Test]
         public void DeviceInfo_OutputsMeaningfulInfo()
         {
-            void AssertBundleId(params string[] expectedValues)
+            static void AssertBundleId(params string[] expectedValues)
             {
                 var values = expectedValues.Concat(new[] { "ReSharperTestRunner" }).Select(Platform.Sha256).ToArray();
                 Assert.That(values, Does.Contain(Platform.BundleId));
@@ -127,18 +128,24 @@ namespace Realms.Tests.Sync
         [Test]
         public void AppCreate_CreatesApp()
         {
+            var basePath = Path.Combine(InteropConfig.GetDefaultStorageFolder("No error expected here"), "foo-bar");
+            Directory.CreateDirectory(basePath);
+
             // This is mostly a smoke test to ensure that nothing blows up when setting all properties.
             var config = new AppConfiguration("abc-123")
             {
                 BaseUri = new Uri("http://foo.bar"),
                 MetadataEncryptionKey = new byte[64],
                 MetadataPersistenceMode = MetadataPersistenceMode.Encrypted,
-                BaseFilePath = InteropConfig.GetDefaultStorageFolder("No error expected here"),
+                BaseFilePath = basePath,
                 DefaultRequestTimeout = TimeSpan.FromSeconds(123)
             };
 
             var app = CreateApp(config);
             Assert.That(app.Sync, Is.Not.Null);
+            Assert.That(app.BaseUri, Is.EqualTo(config.BaseUri));
+            Assert.That(app.BaseFilePath, Is.EqualTo(config.BaseFilePath));
+            Assert.That(app.Id, Is.EqualTo(config.AppId));
         }
 
         [Test]
@@ -188,7 +195,7 @@ namespace Realms.Tests.Sync
                 {
                     var handler = new HttpClientHandler();
 
-                    app = App.Create(new AppConfiguration("abc")
+                    app = CreateApp(new AppConfiguration("abc")
                     {
                         HttpClientHandler = handler
                     });
@@ -203,6 +210,125 @@ namespace Realms.Tests.Sync
 
                 await gcTask;
             });
+        }
+
+        [Test]
+        public void AppCreate_CacheTests([Values(true, false, null)] bool? useCache)
+        {
+            var config1 = GetConfig();
+            var app1 = CreateApp(config1);
+
+            var config2 = GetConfig();
+            var app2 = CreateApp(config2);
+
+            Assert.That(config1.BaseFilePath, Is.Not.EqualTo(config2.BaseFilePath));
+            Assert.That(app1.Id, Is.EqualTo(app2.Id));
+            Assert.That(app1.GetHashCode(), Is.EqualTo(app2.GetHashCode()));
+
+            // null or true mean cache should be used
+            if (useCache != false)
+            {
+                // If we cached the app, the second base file path should have been ignored
+                Assert.That(app1.BaseFilePath, Is.EqualTo(app2.BaseFilePath));
+                Assert.That(app1.Equals(app2), Is.True);
+            }
+            else
+            {
+                Assert.That(app1.BaseFilePath, Is.Not.EqualTo(app2.BaseFilePath));
+                Assert.That(app1.Equals(app2), Is.False);
+            }
+
+            AppConfiguration GetConfig()
+            {
+                var baseFilePath = Path.Combine(InteropConfig.GetDefaultStorageFolder("no error expected"), Guid.NewGuid().ToString());
+                var config = new AppConfiguration("abc")
+                {
+                    BaseFilePath = baseFilePath,
+                };
+
+                if (useCache.HasValue)
+                {
+                    config.UseAppCache = useCache.Value;
+                }
+
+                Directory.CreateDirectory(config.BaseFilePath);
+                return config;
+            }
+        }
+
+        [Test]
+        public void App_Create_SameId_DifferentBaseUri_ReturnsDifferentApps()
+        {
+            var config1 = GetConfig("https://localhost:443");
+            var config2 = GetConfig("http://localhost:80");
+
+            var app1 = CreateApp(config1);
+            var app2 = CreateApp(config2);
+
+            Assert.That(app1.Id, Is.EqualTo(app2.Id));
+            Assert.That(app1.GetHashCode(), Is.EqualTo(app2.GetHashCode()));
+
+            Assert.That(app1.Equals(app2), Is.False);
+            Assert.That(app1 == app2, Is.False);
+            Assert.That(app1 != app2, Is.True);
+            Assert.That(app1.BaseUri, Is.Not.EqualTo(app2.BaseUri));
+            Assert.That(app1.BaseFilePath, Is.Not.EqualTo(app2.BaseFilePath));
+
+            static AppConfiguration GetConfig(string uri)
+            {
+                var baseFilePath = Path.Combine(InteropConfig.GetDefaultStorageFolder("no error expected"), Guid.NewGuid().ToString());
+                var config = new AppConfiguration("abc")
+                {
+                    BaseFilePath = baseFilePath,
+                    BaseUri = new Uri(uri)
+                };
+
+                Directory.CreateDirectory(config.BaseFilePath);
+                return config;
+            }
+        }
+
+        [Test]
+        public void App_EqualsGetHashCodeTests()
+        {
+            var config1 = new AppConfiguration("abc");
+            var config2 = new AppConfiguration("cde");
+            var config3 = new AppConfiguration("abc");
+            var config4 = new AppConfiguration("abc")
+            {
+                UseAppCache = false
+            };
+
+            var app1 = CreateApp(config1);
+            var app2 = CreateApp(config2);
+            var app3 = CreateApp(config3);
+            var app4 = CreateApp(config4);
+
+            Assert.That(app1.GetHashCode(), Is.Not.EqualTo(app2.GetHashCode()));
+            Assert.That(app1.GetHashCode(), Is.EqualTo(app3.GetHashCode()));
+            Assert.That(app1.GetHashCode(), Is.EqualTo(app4.GetHashCode()));
+
+            Assert.That(app1.Equals(app2), Is.False);
+            Assert.That(app1.Equals(app3), Is.True);
+            Assert.That(app1.Equals(app4), Is.False); // app4 is uncached, so a different instance is returned
+
+            Assert.That(app1 == app2, Is.False);
+            Assert.That(app1 == app3, Is.True);
+            Assert.That(app1 == app4, Is.False); // app4 is uncached, so a different instance is returned
+
+            Assert.That(app1 != app2, Is.True);
+            Assert.That(app1 != app3, Is.False);
+            Assert.That(app1 != app4, Is.True); // app4 is uncached, so a different instance is returned
+
+            Assert.That(app1.Equals(app1.Id), Is.False);
+            Assert.That(app1.Equals(null), Is.False);
+            Assert.That(app1 == null, Is.False);
+            Assert.That(app1 != null, Is.True);
+
+            App? app5 = null;
+
+            Assert.That(app5 == null, Is.True);
+            Assert.That(app5 != null, Is.False);
         }
 
         private class TestHttpClientHandler : DelegatingHandler

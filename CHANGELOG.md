@@ -4,10 +4,11 @@
 * `AppConfiguration.LocalAppName` and `AppConfiguration.LocalAppVersion` have been deprecated and will be removed in a future version. They have never had an effect as the values supplied by the SDK was never sent to the server. (PR [#3387](https://github.com/realm/realm-dotnet/pull/3387))
 
 ### Enhancements
-* None
+* Added `App.BaseFilePath`, `App.BaseUri`, and `App.Id` properties that return the values supplied in `AppConfiguration`. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
+* Added `AppConfiguration.UseAppCache` property that controls whether the `App` instance returned from `App.Create` should be cached or not. The general recommendation is to not set it (i.e. leave the default value of `true`), but it can be useful when writing unit tests. (Issue [#3382](https://github.com/realm/realm-dotnet/issues/3382)).
 
 ### Fixed
-* None
+* Fixed the implementation `App.Equals` and `App.GetHashCode` to return correct results, particularly when the `App` instance is cached. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

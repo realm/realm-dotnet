@@ -132,7 +132,7 @@ namespace Realms
         private static IntPtr GetCurrentSynchronizationContext()
         {
             var context = SynchronizationContext.Current;
-            if (context == null)
+            if (context is null)
             {
                 return IntPtr.Zero;
             }
