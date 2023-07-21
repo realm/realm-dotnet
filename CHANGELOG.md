@@ -8,6 +8,7 @@
 * Added `AppConfiguration.UseAppCache` property that controls whether the `App` instance returned from `App.Create` should be cached or not. The general recommendation is to not set it (i.e. leave the default value of `true`), but it can be useful when writing unit tests. (Issue [#3382](https://github.com/realm/realm-dotnet/issues/3382)).
 
 ### Fixed
+* Fixed a Unity Editor crash when the domain is reloaded while a `Realm.GetInstanceAsync` operation is in progress. (Issue [#3344](https://github.com/realm/realm-dotnet/issues/3344))
 * Fixed the implementation `App.Equals` and `App.GetHashCode` to return correct results, particularly when the `App` instance is cached. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
 
 ### Compatibility
