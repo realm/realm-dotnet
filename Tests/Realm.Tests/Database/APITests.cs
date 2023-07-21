@@ -106,6 +106,9 @@ namespace Realms.Tests.Database
                 var ex3 = await TestHelpers.AssertThrows<TimeoutException>(() => GetIntTask().Timeout(10, detail: "another detail"));
                 Assert.That(ex3.Message, Does.Contain("another detail"));
 
+                var ex4 = await TestHelpers.AssertThrows<ArgumentException>(() => GetFaultedIntTask().Timeout(1000));
+                Assert.That(ex4.Message, Does.Contain("super invalid"));
+
                 static async Task<int> GetIntTask()
                 {
                     await Task.Delay(100);
@@ -113,6 +116,12 @@ namespace Realms.Tests.Database
                 }
 
                 static Task GetVoidTask() => Task.Delay(100);
+
+                static async Task<int> GetFaultedIntTask()
+                {
+                    await Task.Delay(1);
+                    throw new ArgumentException("super invalid");
+                }
             });
         }
 
