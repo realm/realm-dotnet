@@ -246,12 +246,12 @@ namespace Realms
                     throw new NotSupportedException("Realm.SyncSession is only valid for synchronized Realms (i.e. ones that are opened with FlexibleSyncConfiguration or PartitionSyncConfiguration).");
                 }
 
-                if (_sessionRef == null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
+                if (_sessionRef is null || !_sessionRef.TryGetTarget(out var session) || session.IsClosed)
                 {
                     var sessionHandle = SharedRealmHandle.GetSession();
                     session = new Session(sessionHandle);
 
-                    if (_sessionRef == null)
+                    if (_sessionRef is null)
                     {
                         _sessionRef = new WeakReference<Session>(session);
                     }
@@ -318,7 +318,7 @@ namespace Realms
                 }
             }
 
-            if (state == null)
+            if (state is null)
             {
                 state = new State();
                 sharedRealmHandle.SetManagedStateHandle(state);
@@ -341,7 +341,7 @@ namespace Realms
             if (schema.Type != null && !Config.IsDynamic)
             {
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
-                if (wovenAtt == null)
+                if (wovenAtt is null)
                 {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObjectBase but has not been woven.");
                 }
@@ -408,7 +408,7 @@ namespace Realms
 
         internal void NotifyError(Exception ex)
         {
-            if (Error == null)
+            if (Error is null)
             {
                 Logger.LogDefault(LogLevel.Error, "A realm-level exception has occurred. To handle and react to those, subscribe to the Realm.Error event.");
             }
@@ -486,7 +486,7 @@ namespace Realms
 
         private bool Equals(Realm? other)
         {
-            if (other == null)
+            if (other is null)
             {
                 return false;
             }
@@ -758,7 +758,7 @@ namespace Realms
 
             SharedRealmHandle.BeginTransaction();
 
-            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            Debug.Assert(_activeTransaction is null, "There should be no active transaction");
             return _activeTransaction = new Transaction(this);
         }
 
@@ -878,7 +878,7 @@ namespace Realms
 
             await SharedRealmHandle.BeginTransactionAsync(synchronizationContext, cancellationToken);
 
-            Debug.Assert(_activeTransaction == null, "There should be no active transaction");
+            Debug.Assert(_activeTransaction is null, "There should be no active transaction");
             return _activeTransaction = new Transaction(this);
         }
 
@@ -1344,11 +1344,6 @@ namespace Realms
 
         internal void ExecuteOutsideTransaction(Action action)
         {
-            if (action == null)
-            {
-                return;
-            }
-
             if (IsInTransaction)
             {
                 _state.AfterTransactionQueue.Enqueue(action);

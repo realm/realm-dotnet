@@ -63,32 +63,6 @@ namespace Realms.Sync.Native
             }
         }
 
-        [MarshalAs(UnmanagedType.LPWStr)]
-        private string? local_app_name;
-        private IntPtr local_app_name_len;
-
-        internal string? LocalAppName
-        {
-            set
-            {
-                local_app_name = value;
-                local_app_name_len = value.IntPtrLength();
-            }
-        }
-
-        [MarshalAs(UnmanagedType.LPWStr)]
-        private string? local_app_version;
-        private IntPtr local_app_version_len;
-
-        internal string? LocalAppVersion
-        {
-            set
-            {
-                local_app_version = value;
-                local_app_version_len = value.IntPtrLength();
-            }
-        }
-
         internal UInt64 default_request_timeout_ms;
 
         private MetadataPersistenceMode metadata_persistence;
@@ -116,5 +90,8 @@ namespace Realms.Sync.Native
         internal UInt64 sync_pong_keep_alive_timeout_ms;
 
         internal UInt64 sync_fast_reconnect_limit;
+
+        [MarshalAs(UnmanagedType.U1)]
+        internal bool use_cache;
     }
 }

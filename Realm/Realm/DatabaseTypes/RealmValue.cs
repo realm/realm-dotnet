@@ -394,7 +394,7 @@ namespace Realms
         private RealmInteger<T> AsRealmInteger<T>(T value)
             where T : struct, IComparable<T>, IFormattable, IConvertible, IEquatable<T>
         {
-            if (_objectHandle == null)
+            if (_objectHandle is null)
             {
                 return new(value);
             }
