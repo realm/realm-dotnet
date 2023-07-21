@@ -72,7 +72,7 @@ namespace Realms
         /// </summary>
         public void Dispose()
         {
-            if (_realm == null)
+            if (_realm is null)
             {
                 return;
             }
@@ -138,7 +138,7 @@ namespace Realms
         [MemberNotNull(nameof(_realm))]
         private void EnsureActionFeasibility(string executingAction)
         {
-            if (_realm == null)
+            if (_realm is null)
             {
                 throw new Exception($"Transaction was already closed. Cannot {executingAction}");
             }

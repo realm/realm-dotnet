@@ -65,24 +65,16 @@ namespace Realms.Sync
         /// <summary>
         /// Gets or sets the local app's name.
         /// </summary>
-        /// <remarks>
-        /// The local app name is typically used to differentiate between client applications that use the same
-        /// Atlas App Services app. These can be the same conceptual app developed for different platforms, or
-        /// significantly different client side applications that operate on the same data - e.g. an event managing
-        /// service that has different clients apps for organizers and attendees.
-        /// </remarks>
         /// <value>The friendly name identifying the current client application.</value>
-        /// <seealso cref="LocalAppVersion"/>
+        [Obsolete("This property has no effect and will be removed in a future version.")]
         public string? LocalAppName { get; set; }
 
         /// <summary>
         /// Gets or sets the local app's version.
         /// </summary>
-        /// <remarks>
-        /// The local app version is typically used to differentiate between versions of the same client application.
-        /// </remarks>
         /// <value>The client application's version.</value>
         /// <seealso cref="LocalAppName"/>
+        [Obsolete("This property has no effect and will be removed in a future version.")]
         public string? LocalAppVersion { get; set; }
 
         /// <summary>
@@ -144,6 +136,17 @@ namespace Realms.Sync
         /// </summary>
         /// <value>The sync timeout options applied to synchronized Realms.</value>
         public SyncTimeoutOptions SyncTimeoutOptions { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to cache app instances created with this configuration.
+        /// </summary>
+        /// <remarks>
+        /// When an app is created using <see cref="App.Create(AppConfiguration)"/>, the default behavior is
+        /// to get or add the <see cref="App"/> instance from a cache keyed on the app id. This has certain
+        /// performance benefits when calling <see cref="App.Create(AppConfiguration)"/> multiple times.
+        /// </remarks>
+        /// <value><c>true</c> if the app should be cached; <c>false</c> otherwise. Default value is <c>true</c>.</value>
+        public bool UseAppCache { get; set; } = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppConfiguration"/> class with the specified <paramref name="appId"/>.

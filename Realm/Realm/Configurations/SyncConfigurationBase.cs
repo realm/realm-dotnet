@@ -157,7 +157,7 @@ namespace Realms.Sync
             {
                 SyncUserHandle = User.Handle,
                 session_stop_policy = SessionStopPolicy,
-                schema_mode = _schema == null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
+                schema_mode = _schema is null ? SchemaMode.AdditiveDiscovered : SchemaMode.AdditiveExplicit,
                 client_resync_mode = ClientResetHandler.ClientResetMode,
                 cancel_waits_on_nonfatal_error = CancelAsyncOperationsOnNonFatalErrors,
             };

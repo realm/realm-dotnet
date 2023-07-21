@@ -17,12 +17,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
     internal class AsyncOpenTaskHandle : StandaloneHandle
     {
+        private static ConcurrentDictionary<AsyncOpenTaskHandle, bool> _handles = new();
+
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_asyncopentask_destroy", CallingConvention = CallingConvention.Cdecl)]
@@ -40,6 +43,7 @@ namespace Realms
 
         public AsyncOpenTaskHandle(IntPtr handle) : base(handle)
         {
+            _handles.TryAdd(this, true);
         }
 
         public void Cancel()
@@ -48,7 +52,30 @@ namespace Realms
             ex.ThrowIfNecessary();
         }
 
-        protected override void Unbind() => NativeMethods.destroy(handle);
+        protected override void Unbind()
+        {
+            _handles.TryRemove(this, out _);
+
+            NativeMethods.destroy(handle);
+        }
+
+        /// <summary>
+        /// Cancels all in-flight async open tasks. This should only be used when the domain is being torn down.
+        /// The case this handles is:
+        /// 1. GetInstanceAsync.
+        /// 2. Domain Reload wipes all coordinator caches.
+        /// 3. AsyncOpen completes, calls back into managed (because s_can_call_managed is true again).
+        /// 4. Undefined behavior as the state from before the domain reload is no longer valid.
+        /// </summary>
+        /// <remarks>This fixes the issue reported in https://github.com/realm/realm-dotnet/issues/3344.</remarks>
+        public static void CancelInFlightTasks()
+        {
+            var keys = _handles.Keys;
+            foreach (var value in keys)
+            {
+                value.Cancel();
+            }
+        }
 
         public ulong RegisterProgressNotifier(GCHandle managedHandle)
         {

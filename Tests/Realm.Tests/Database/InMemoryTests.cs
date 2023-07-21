@@ -166,5 +166,31 @@ namespace Realms.Tests.Database
             Assert.That(realm.IsClosed, Is.True);
             Assert.DoesNotThrow(() => Realm.DeleteRealm(_config));
         }
+
+        [Test]
+        public void InMemoryConfiguration_Identifier_ReturnsSuppliedValue()
+        {
+            var config = new InMemoryConfiguration("foo-bar");
+            Assert.That(config.Identifier, Is.EqualTo("foo-bar"));
+        }
+
+        [Test]
+        public void InMemoryConfiguration_GetInstanceAsync()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var asyncRealm = await GetRealmAsync(_config);
+
+                asyncRealm.Write(() => asyncRealm.Add(new IntPropertyObject
+                {
+                    Int = 42
+                }));
+
+                Assert.That(File.Exists(_config.DatabasePath));
+
+                var syncRealm = GetRealm(_config);
+                Assert.That(syncRealm.All<IntPropertyObject>().Single().Int, Is.EqualTo(42));
+            });
+        }
     }
 }

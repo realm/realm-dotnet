@@ -1222,6 +1222,28 @@ namespace Realms.Tests.Sync
             }, timeout: 1000000);
         }
 
+        [Test]
+        public void Session_GetUser_GetApp_ReturnsMeaningfulValue()
+        {
+            // Session.User.App doesn't have a reference to the managed app, which means we need to
+            // recreate it from the native one. This test verifies that the properties on the native
+            // app match the ones on the managed one.
+            var fakeConfig = new Realms.Sync.AppConfiguration("foo-bar")
+            {
+                BaseUri = new Uri("http://localhost:12345"),
+                BaseFilePath = Path.Combine(InteropConfig.GetDefaultStorageFolder("no error expected"), Guid.NewGuid().ToString())
+            };
+            Directory.CreateDirectory(fakeConfig.BaseFilePath);
+
+            var fakeApp = CreateApp(fakeConfig);
+
+            var realm = GetRealm(GetFakeConfig(fakeApp));
+            var session = GetSession(realm);
+
+            Assert.That(session.User.App.BaseFilePath, Is.EqualTo(fakeConfig.BaseFilePath));
+            Assert.That(session.User.App.BaseUri, Is.EqualTo(fakeConfig.BaseUri));
+        }
+
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
             BeforeResetCallback? beforeCb = null,
