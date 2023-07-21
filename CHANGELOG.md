@@ -10,6 +10,7 @@
 ### Fixed
 * Fixed a Unity Editor crash when the domain is reloaded while a `Realm.GetInstanceAsync` operation is in progress. (Issue [#3344](https://github.com/realm/realm-dotnet/issues/3344))
 * Fixed the implementation `App.Equals` and `App.GetHashCode` to return correct results, particularly when the `App` instance is cached. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
+* Fixed an issue where building for Android on Unity would fail with "Could not analyze the user's assembly. Object reference not set to an instance of an object". (Issue [#3380](https://github.com/realm/realm-dotnet/issues/3380))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
