@@ -66,10 +66,10 @@ REALM_EXPORT void list_set_value(List& list, size_t list_ndx, realm_value_t valu
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                list.set_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+                list.set_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key()));
             }
             else {
-                list.set(list_ndx, value.link.object->obj());
+                list.set(list_ndx, value.link.object->get_obj());
             }
         }
         else {
@@ -102,10 +102,10 @@ REALM_EXPORT void list_insert_value(List& list, size_t list_ndx, realm_value_t v
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((list.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                list.insert_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+                list.insert_any(list_ndx, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key()));
             }
             else {
-                list.insert(list_ndx, value.link.object->obj());
+                list.insert(list_ndx, value.link.object->get_obj());
             }
         }
         else {
@@ -172,10 +172,10 @@ REALM_EXPORT size_t list_find_value(List& list, realm_value_t value, NativeExcep
             }
 
             if ((list_type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return list.find_any(value.link.object->obj());
+                return list.find_any(value.link.object->get_obj());
             }
 
-            return list.find(value.link.object->obj());
+            return list.find(value.link.object->get_obj());
         }
 
         return list.find_any(from_capi(value));

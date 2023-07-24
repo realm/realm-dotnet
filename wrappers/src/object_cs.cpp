@@ -165,10 +165,10 @@ extern "C" {
             if (value.type == realm_value_type::RLM_TYPE_LINK) {
                 // For Mixed, we need ObjLink, otherwise, ObjKey
                 if ((prop.type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                    object.get_obj().set_any(prop.column_key, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+                    object.get_obj().set_any(prop.column_key, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key()));
                 }
                 else {
-                    object.get_obj().set(prop.column_key, value.link.object->obj().get_key());
+                    object.get_obj().set(prop.column_key, value.link.object->get_obj().get_key());
                 }
             }
             else {

@@ -163,7 +163,7 @@ REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, Na
             if (results.get_realm() != value.link.object->realm()) {
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
-            return results.index_of(value.link.object->obj());
+            return results.index_of(value.link.object->get_obj());
         }
 
         return results.index_of(from_capi(value));
