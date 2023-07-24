@@ -385,7 +385,7 @@ namespace Realms.Sync
             [MemberNotNull(nameof(_enumerating))]
             private void ThrowIfDisposed()
             {
-                if (_enumerating == null)
+                if (_enumerating is null)
                 {
                     throw new ObjectDisposedException(nameof(Enumerator));
                 }

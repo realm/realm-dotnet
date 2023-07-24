@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -28,7 +30,6 @@ using Realms.Schema;
 using Realms.Sync;
 using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
-
 using NUnitExplicit = NUnit.Framework.ExplicitAttribute;
 
 namespace Realms.Tests.Sync
@@ -725,6 +726,54 @@ namespace Realms.Tests.Sync
                 // timeout the GetRealmAsync operation
                 var ex = await TestHelpers.AssertThrows<TimeoutException>(() => GetRealmAsync(config), timeout: 1000);
                 Assert.That(ex.Message, Does.Contain("The operation has timed out after 1000 ms"));
+            });
+        }
+
+        [Test]
+        public void SyncLogger_WhenLevelChanges_LogsAtNewLevel()
+        {
+            var logs = new Dictionary<LogLevel, List<string>>();
+            foreach (LogLevel level in Enum.GetValues(typeof(LogLevel)))
+            {
+                logs[level] = new();
+            }
+
+            var regex = new Regex("Connection\\[\\d+]: Session\\[\\d+]");
+            var logger = Logger.Function((level, msg) =>
+            {
+                if (regex.IsMatch(msg))
+                {
+                    logs[level].Add(msg);
+                }
+            });
+
+            Logger.LogLevel = LogLevel.Info;
+            Logger.Default = logger;
+
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var config = await GetIntegrationConfigAsync();
+
+                using var realm = await GetRealmAsync(config);
+
+                var initialInfoLogs = logs[LogLevel.Info].Count;
+                Assert.That(initialInfoLogs, Is.GreaterThan(0));
+                Assert.That(logs[LogLevel.Debug].Count, Is.EqualTo(0));
+
+                Logger.LogLevel = LogLevel.Debug;
+
+                realm.Write(() =>
+                {
+                    realm.Add(new PrimaryKeyStringObject
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                    });
+                });
+
+                await WaitForUploadAsync(realm);
+
+                Assert.That(logs[LogLevel.Info].Count, Is.GreaterThan(0));
+                Assert.That(logs[LogLevel.Debug].Count, Is.GreaterThan(0));
             });
         }
 

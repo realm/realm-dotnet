@@ -342,7 +342,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
+                var handlerType = syncConfig is null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
                 Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnBeforeReset during a client reset: {ex}");
 
                 var exHandle = GCHandle.Alloc(ex);
@@ -380,7 +380,7 @@ namespace Realms.Sync
             }
             catch (Exception ex)
             {
-                var handlerType = syncConfig == null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
+                var handlerType = syncConfig is null ? "ClientResetHandler" : syncConfig.ClientResetHandler.GetType().Name;
                 Logger.Default.Log(LogLevel.Error, $"An error has occurred while executing {handlerType}.OnAfterReset during a client reset: {ex}");
 
                 var exHandle = GCHandle.Alloc(ex);
@@ -429,7 +429,7 @@ namespace Realms.Sync
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
                 var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target!;
-                if (session == null)
+                if (session is null)
                 {
                     // We're taking a weak handle to the session, so it's possible that it's been collected
                     return;

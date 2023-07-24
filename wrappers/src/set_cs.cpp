@@ -271,4 +271,27 @@ REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uin
     });
 }
 
+REALM_EXPORT size_t set_find_value(const object_store::Set& set, realm_value_t value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto set_type = set.get_type();
+        // This doesn't use ensure_types to allow List<string>.Find(null) to return false
+        if (value.is_null() && !is_nullable(set_type)) {
+            return (size_t)-1;
+        }
+
+        if (!value.is_null() && set_type != PropertyType::Mixed && to_capi(set_type) != value.type) {
+            throw PropertyTypeMismatchException(to_string(set_type), to_string(value.type));
+        }
+
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
+            if (set.get_realm() != value.link.object->realm()) {
+                throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+            }
+        }
+
+        return set.find_any(from_capi(value));
+    });
+}
+
 }   // extern "C"

@@ -120,7 +120,7 @@ namespace Realms.Sync
         internal override IDisposable? OnBeforeRealmOpen(AsyncOpenTaskHandle handle)
         {
             var onProgress = OnProgress;
-            if (onProgress == null)
+            if (onProgress is null)
             {
                 return null;
             }

@@ -53,7 +53,13 @@ namespace Realms.Tests.Sync
 
             base.CustomTearDown();
 
-            _apps.DrainQueue(app => app.Handle.ResetForTesting());
+            _apps.DrainQueue(app =>
+            {
+                if (!app.Handle.IsClosed)
+                {
+                    app.Handle.ResetForTesting();
+                }
+            });
 
             _clientResetAppsToRestore.DrainQueueAsync(appConfigType => SyncTestHelpers.SetRecoveryModeOnServer(appConfigType, enabled: true));
         }
@@ -96,7 +102,7 @@ namespace Realms.Tests.Sync
         {
             var id = obj.DynamicApi.Get<RealmValue>("_id");
 
-            return (await TestHelpers.WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message))!;
+            return (await WaitForConditionAsync(() => realm2.FindCore<T>(id), o => o != null, errorMessage: message))!;
         }
 
         protected async Task<User> GetUserAsync(App? app = null, string? username = null, string? password = null)

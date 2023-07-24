@@ -92,13 +92,35 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                try
+                await TestHelpers.AssertThrows<TimeoutException>(() => GetVoidTask().Timeout(10));
+
+                var ex = await TestHelpers.AssertThrows<TimeoutException>(() => GetVoidTask().Timeout(10, detail: "some detail"));
+                Assert.That(ex.Message, Does.Contain("some detail"));
+
+                var errorTask = Task.FromException(new ArgumentException("invalid argument"));
+                var ex2 = await TestHelpers.AssertThrows<ArgumentException>(() => GetVoidTask().Timeout(10, errorTask));
+                Assert.That(ex2.Message, Does.Contain("invalid argument"));
+
+                await TestHelpers.AssertThrows<TimeoutException>(() => GetIntTask().Timeout(10));
+
+                var ex3 = await TestHelpers.AssertThrows<TimeoutException>(() => GetIntTask().Timeout(10, detail: "another detail"));
+                Assert.That(ex3.Message, Does.Contain("another detail"));
+
+                var ex4 = await TestHelpers.AssertThrows<ArgumentException>(() => GetFaultedIntTask().Timeout(1000));
+                Assert.That(ex4.Message, Does.Contain("super invalid"));
+
+                static async Task<int> GetIntTask()
                 {
-                    await Task.Delay(100).Timeout(10);
+                    await Task.Delay(100);
+                    return 5;
                 }
-                catch (Exception ex)
+
+                static Task GetVoidTask() => Task.Delay(100);
+
+                static async Task<int> GetFaultedIntTask()
                 {
-                    Assert.That(ex, Is.TypeOf<TimeoutException>());
+                    await Task.Delay(1);
+                    throw new ArgumentException("super invalid");
                 }
             });
         }

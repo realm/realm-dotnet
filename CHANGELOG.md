@@ -1,15 +1,37 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* `AppConfiguration.LocalAppName` and `AppConfiguration.LocalAppVersion` have been deprecated and will be removed in a future version. They have never had an effect as the values supplied by the SDK was never sent to the server. (PR [#3387](https://github.com/realm/realm-dotnet/pull/3387))
+
+### Enhancements
+* Added `App.BaseFilePath`, `App.BaseUri`, and `App.Id` properties that return the values supplied in `AppConfiguration`. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
+* Added `AppConfiguration.UseAppCache` property that controls whether the `App` instance returned from `App.Create` should be cached or not. The general recommendation is to not set it (i.e. leave the default value of `true`), but it can be useful when writing unit tests. (Issue [#3382](https://github.com/realm/realm-dotnet/issues/3382)).
+
+### Fixed
+* Fixed a Unity Editor crash when the domain is reloaded while a `Realm.GetInstanceAsync` operation is in progress. (Issue [#3344](https://github.com/realm/realm-dotnet/issues/3344))
+* Fixed the implementation `App.Equals` and `App.GetHashCode` to return correct results, particularly when the `App` instance is cached. (PR [#3385](https://github.com/realm/realm-dotnet/pull/3385))
+* Fixed an issue where building for Android on Unity would fail with "Could not analyze the user's assembly. Object reference not set to an instance of an object". (Issue [#3380](https://github.com/realm/realm-dotnet/issues/3380))
+
+### Compatibility
+* Realm Studio: 13.0.0 or later.
+
+### Internal
+* Using Core x.y.z.
+
+## 11.2.0 (2023-07-07)
+
 ### Enhancements
 * Added validation checks to the geospatial type constructors. This means that an exception will now be thrown when constructing an invalid geospatial shape rather than when using it in a query. (PR [#3362](https://github.com/realm/realm-dotnet/pull/3362)) 
+* Relaxed some validations when invoking `IndexOf(null)` on a collection of non-nullable types. Previously, this would throw an `ArgumentNullException` whereas now it will return `-1`. This is particularly useful for data-binding scenarios where the binding engine might invoke it as `IndexOf(SelectedItem)` which would throw an exception when `SelectedItem` is `null`. (PR [#3369](https://github.com/realm/realm-dotnet/pull/3369))
+* Changed `RealmSet.IndexOf` implementation to return the actual result rather than throw a `NotSupportedException`. The order of persisted sets is still non-deterministic, but is stable between write transactions. Again, this is mostly useful for data-binding scenarios where the set is passed as a binding context to a collection control. (PR [#3369](https://github.com/realm/realm-dotnet/pull/3369))
 
 ### Fixed
 * Fixed an issue on Unity on Windows when the weaver would trigger excessive terminal windows to open. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
 * Fixed an issue on Unity on CI where weaving would fail with the following error: `Could not analyze the user's assembly. Cannot access a closed Stream.`. (Issue [3364]https://github.com/realm/realm-dotnet/issues/3364)
+* Fixed a `NullReferenceException` when weaving classes on Unity in batch mode. (Issue [#3363](https://github.com/realm/realm-dotnet/issues/3363))
 * A GeoBox is now just a shortcut for the equivilent GeoPolygon. This provides consistent query results and error checking. (Core 13.15.2)
 * Fixed several corner cases (eg. around the poles) where invalid points matched a geoWithin query. (Core 13.15.2)
 * Fixed an error during async open and client reset if properties have been added to the schema. This fix applies to PBS to FLX migration if async open is used. (Core 13.16.1)
-
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

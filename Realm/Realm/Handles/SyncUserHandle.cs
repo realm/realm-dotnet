@@ -301,9 +301,9 @@ namespace Realms.Sync
 
                 var result = await tcs.Task;
 
-                Debug.Assert(result == null || result.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
+                Debug.Assert(result is null || result.Length <= 1, "The result of the fetch operation should be either null, or an array of 0 or 1 elements.");
 
-                return result == null || result.Length == 0 ? null : result.Single();
+                return result is null || result.Length == 0 ? null : result.Single();
             }
             finally
             {

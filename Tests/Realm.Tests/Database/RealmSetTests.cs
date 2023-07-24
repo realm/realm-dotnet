@@ -1227,6 +1227,14 @@ namespace Realms.Tests.Database
             var managedSet = accessor(testObject);
             Assert.That(set, Is.Not.SameAs(managedSet));
 
+            // Assert RealmCollection.IndexOf
+            var managedCollection = managedSet.AsRealmCollection();
+            for (var i = 0; i < managedCollection.Count; i++)
+            {
+                var element = managedCollection[i];
+                Assert.That(managedCollection.IndexOf(element), Is.EqualTo(i));
+            }
+
             // Now we're testing set operations on RealmSet/HashSet
             testData.AssertCount(managedSet);
             testData.AssertExceptWith(managedSet);
