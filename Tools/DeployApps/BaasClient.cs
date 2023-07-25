@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,6 +29,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace Baas
 {
@@ -158,6 +158,11 @@ namespace Baas
         private string _appSuffix => $"-{_shortDifferentiator}-{_clusterName}";
 
         public string Differentiator { get; }
+
+        static BaasClient()
+        {
+            BsonSerializer.RegisterSerializer(new ObjectSerializer(type => true));
+        }
 
         private BaasClient(Uri baseUri, string differentiator, TextWriter output, string? clusterName = null)
         {
@@ -815,7 +820,7 @@ namespace Baas
 #if !NETCOREAPP2_1_OR_GREATER
     internal static class DictionaryExtensions
     {
-        [return: NotNullIfNotNull("defaultValue")]
+        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("defaultValue")]
         public static T? GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T? defaultValue = default)
         {
             if (dictionary.TryGetValue(key, out var value))
