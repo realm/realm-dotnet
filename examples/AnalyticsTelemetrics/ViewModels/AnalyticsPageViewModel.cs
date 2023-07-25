@@ -155,11 +155,11 @@ namespace AnalyticsTelemetrics.ViewModels
 
             public AnalyticsData GetRandomAnalyticsEvent()
             {
-                return new AnalyticsData()
+                return new()
                 {
                     Timestamp = DateTimeOffset.Now,
                     EventType = _events[_random.Next(_events.Length)],
-                    Metadata = new Metadata
+                    Metadata = new()
                     {
                         DeviceId = DeviceId,
                         Platform = Platform,

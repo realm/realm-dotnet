@@ -138,11 +138,11 @@ namespace AnalyticsTelemetrics.ViewModels
 
             public TemperatureReading GetTemperatureReading()
             {
-                return new TemperatureReading()
+                return new()
                 {
                     Timestamp = DateTimeOffset.Now,
                     Temperature = _random.Next(22, 26),
-                    Sensor = new SensorInfo { Id = _id, Location = _location },
+                    Sensor = new() { Id = _id, Location = _location },
                 };
             }
         }
