@@ -4,11 +4,11 @@ With MongoDB Realm offline-first capabilities, it is always possible to read and
 
 There are two methods in the .NET Realm SDK that can be used to open a Realm: `Realm.GetInstance` (synchronously) and `Realm.GetInstanceAsync` (asynchronously). The two methods not only differ in asynchronicity, but have a different behavior when used to open a synced realm. We will first take a look at those two methods on their own, then show a recommended flow for opening a realm. 
 
-#### GetInstance
+## GetInstance
 
 This method will return as soon as the realm has been opened. For this reason, this method can be safely used in the the majority of the application, as it works independently from the connection status. Once the realm has been opened, it will continue to synchronize in the background. 
 
-#### GetInstanceAsync
+## GetInstanceAsync
 
 This method will complete after the realm has been opened and is fully synchronized. For this reason, this method is recommended to use only when it is essential to work with a fully synchronized realm, for example just after the first login of the user on a freshly installed application. 
 
@@ -50,20 +50,19 @@ The caveat with this method, though, is that it will continue to retry connectin
     ```
     In most cases this approach could be an overkill, as the exception would be raised for any kind of non-fatal errors, even for just a brief connection issue. For this reason it is recommended to use the previous approach, as it allows to retry in the specified time frame.
 
-### Recommended flow
+## Recommended flow
 
 Given the differences between `GetInstance` and `GetInstanceAsync` that we have presented, here is an example of a recommended flow that uses both methods to open a realm, and that can be used in most applications:
 
 ```csharp
-var user = app.CurrentUser;
-var realmConfig = GetRealmConfig();
-
 Realm realm;
 
-if (user == null)
+if (app.CurrentUser == null)
 {
     // There is no current user, so show the login screen and wait for the user to login.
     await PresentLoginScreen();
+
+    var realmConfig = GetRealmConfig(app.CurrentUser);
 
     // Creates a CancellationTokenSource that will be cancelled after 4 seconds.
     var cts = new CancellationTokenSource(4000);
@@ -82,6 +81,8 @@ if (user == null)
 }
 else
 {
+    var realmConfig = GetRealmConfig(app.CurrentUser);
+
     // The user is already logged in, so open the realm straight away
     // with the available data. If the application needs the latest
     // available data, then use GetInstanceAsync here instead.
