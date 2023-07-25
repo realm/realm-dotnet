@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AnalyticsTelemetrics.ViewModels
 {
-    public partial class MainPageViewModel
+    public partial class MainViewModel
     {
         [RelayCommand]
         public static async Task OnAppearing()

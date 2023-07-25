@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:AnalyticsTelemetrics.ViewModels"
              Title="Home">
     <ContentPage.BindingContext>
-        <vm:MainPageViewModel/>
+        <vm:MainViewModel/>
     </ContentPage.BindingContext>
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior

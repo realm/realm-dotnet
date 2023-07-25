@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AnalyticsTelemetrics.ViewModels
 {
-    public partial class AnalyticsPageViewModel : ObservableObject
+    public partial class AnalyticsViewModel : ObservableObject
     {
         // Configuration values for the analytics generation
         private const int _numberOfUsers = 100;
@@ -30,7 +30,7 @@ namespace AnalyticsTelemetrics.ViewModels
         [NotifyCanExecuteChangedFor(nameof(StartAnalyticsGenerationCommand))]
         private bool _isGenerationRunning = false;
 
-        public AnalyticsPageViewModel()
+        public AnalyticsViewModel()
         {
             // Generate fake users
             _fakeUsers = new Faker<FakeUser>()

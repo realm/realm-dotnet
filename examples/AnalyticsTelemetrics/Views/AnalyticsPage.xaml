@@ -11,7 +11,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.BindingContext>
-        <vm:AnalyticsPageViewModel/>
+        <vm:AnalyticsViewModel/>
     </ContentPage.BindingContext>
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior

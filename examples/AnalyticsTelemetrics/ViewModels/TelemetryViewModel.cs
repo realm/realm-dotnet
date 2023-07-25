@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AnalyticsTelemetrics.ViewModels
 {
-    public partial class TelemetryPageViewModel : ObservableObject
+    public partial class TelemetryViewModel : ObservableObject
     {
         // Configuration values for the sensor collection
         private const int _numberOfSensors = 5;
@@ -24,7 +24,7 @@ namespace AnalyticsTelemetrics.ViewModels
         [NotifyCanExecuteChangedFor(nameof(StartSensorCollectionCommand))]
         private bool _isCollectionRunning = false;
 
-        public TelemetryPageViewModel()
+        public TelemetryViewModel()
         {
             _sensors = new List<Sensor>();
             for (int i = 1; i <= _numberOfSensors; i++)
