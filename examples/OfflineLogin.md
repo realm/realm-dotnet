@@ -8,7 +8,6 @@ There are two methods in the .NET Realm SDK that can be used to open a Realm: `R
 
 This method will return as soon as the realm has been opened. For this reason, this method can be safely used in the the majority of the application, as it works independently from the connection status. Once the realm has been opened, it will continue to synchronize in the background. 
 
-
 #### GetInstanceAsync
 
 This method will complete after the realm has been opened and is fully synchronized. For this reason, this method is recommended to use only when it is essential to work with a fully synchronized realm, for example just after the first login of the user on a freshly installed application. 
