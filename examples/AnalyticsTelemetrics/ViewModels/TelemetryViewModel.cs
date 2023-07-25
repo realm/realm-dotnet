@@ -13,8 +13,8 @@ namespace AnalyticsTelemetrics.ViewModels
 
         private readonly List<Sensor> _sensors;
 
-        private CancellationTokenSource _cancellationTokenSource;
-        private Task _sensorCollectionTask;
+        private CancellationTokenSource? _cancellationTokenSource;
+        private Task? _sensorCollectionTask;
 
         [ObservableProperty]
         private string _logText = string.Empty;
@@ -56,12 +56,12 @@ namespace AnalyticsTelemetrics.ViewModels
         [RelayCommand(CanExecute = nameof(CanStopCollection))]
         public async Task StopSensorCollection()
         {
-            if (!IsCollectionRunning)
+            if (!IsCollectionRunning || _sensorCollectionTask is null)
             {
                 return;
             }
 
-            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource?.Cancel();
             await _sensorCollectionTask;
 
             _cancellationTokenSource = null;
@@ -87,7 +87,7 @@ namespace AnalyticsTelemetrics.ViewModels
 
                         var tempReading = sensor.GetTemperatureReading();
 
-                        AddToLog($"Sensor_{tempReading.Sensor.Id} - {tempReading.Temperature}");
+                        AddToLog($"Sensor_{tempReading.Sensor?.Id} - {tempReading.Temperature}");
 
                         realm.Write(() =>
                         {
@@ -102,7 +102,7 @@ namespace AnalyticsTelemetrics.ViewModels
             }
             catch (TaskCanceledException)
             {
-                // This exception is raised if the taks gets canceled during Task.Delay
+                // This exception is raised if the task gets canceled during Task.Delay
             }
 
             AddToLog(Environment.NewLine + "Collection stopped");
@@ -138,12 +138,9 @@ namespace AnalyticsTelemetrics.ViewModels
 
             public TemperatureReading GetTemperatureReading()
             {
-                return new()
-                {
-                    Timestamp = DateTimeOffset.Now,
-                    Temperature = _random.Next(22, 26),
-                    Sensor = new() { Id = _id, Location = _location },
-                };
+                return new TemperatureReading(timestamp: DateTimeOffset.Now,
+                    temperature: _random.Next(22, 26),
+                    sensor: new SensorInfo(_id, _location));
             }
         }
     }

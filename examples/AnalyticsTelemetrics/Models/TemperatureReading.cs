@@ -7,19 +7,32 @@ namespace AnalyticsTelemetrics.Models
     {
         [MapTo("_id")]
         [PrimaryKey]
-        public ObjectId Id { get; set; } = ObjectId.GenerateNewId();
+        public ObjectId Id { get; private set; } = ObjectId.GenerateNewId();
 
-        public float Temperature { get; set; }
+        public DateTimeOffset Timestamp { get; private set; }
 
-        public DateTimeOffset Timestamp { get; set; }
+        public float Temperature { get; private set; }
 
-        public SensorInfo Sensor { get; set; }
+        public SensorInfo? Sensor { get; private set; }
+
+        public TemperatureReading(DateTimeOffset timestamp, float temperature, SensorInfo? sensor)
+        {
+            Temperature = temperature;
+            Timestamp = timestamp;
+            Sensor = sensor;
+        }
     }
 
     public partial class SensorInfo : IEmbeddedObject
     {
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
-        public string Location { get; set; }
+        public string Location { get; private set; }
+
+        public SensorInfo(int id, string location)
+        {
+            Id = id;
+            Location = location;
+        }
     }
 }

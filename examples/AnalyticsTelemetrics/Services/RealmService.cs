@@ -10,7 +10,7 @@ namespace AnalyticsTelemetrics.Services
 
         private static bool _serviceInitialised;
 
-        private static Realms.Sync.App _app;
+        private static Realms.Sync.App? _app;
 
         public static async Task Init()
         {
@@ -29,6 +29,11 @@ namespace AnalyticsTelemetrics.Services
 
         public static Realm GetRealm()
         {
+            if (_app?.CurrentUser == null)
+            {
+                throw new Exception("Need to call RealmService.Init before calling this method!");
+            }
+
             var config = new FlexibleSyncConfiguration(_app.CurrentUser);
 
             return Realm.GetInstance(config);

@@ -9,6 +9,7 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
+		<Nullable>enable</Nullable>
 
 		<!-- Display name -->
 		<ApplicationTitle>AnalyticsTelemetrics</ApplicationTitle>
@@ -63,6 +64,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
 	  <None Remove="ViewModels\" />
 	  <None Remove="Views\" />
 	  <None Remove="Models\" />

@@ -19,8 +19,8 @@ namespace AnalyticsTelemetrics.ViewModels
 
         private readonly List<FakeUser> _fakeUsers;
 
-        private CancellationTokenSource _cancellationTokenSource;
-        private Task _analyticsGenerationTask;
+        private CancellationTokenSource? _cancellationTokenSource;
+        private Task? _analyticsGenerationTask;
 
         [ObservableProperty]
         private string _logText = string.Empty;
@@ -66,12 +66,12 @@ namespace AnalyticsTelemetrics.ViewModels
         [RelayCommand(CanExecute = nameof(CanStopGeneration))]
         public async Task StopAnalyticsGeneration()
         {
-            if (!IsGenerationRunning)
+            if (!IsGenerationRunning || _analyticsGenerationTask is null)
             {
                 return;
             }
 
-            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource?.Cancel();
             await _analyticsGenerationTask;
 
             _cancellationTokenSource = null;
@@ -113,7 +113,7 @@ namespace AnalyticsTelemetrics.ViewModels
             }
             catch (TaskCanceledException)
             {
-                // This exception is raised if the taks gets canceled during Task.Delay
+                // This exception is raised if the task gets canceled during Task.Delay
             }
 
             AddToLog(Environment.NewLine + "Generation stopped");
@@ -140,11 +140,11 @@ namespace AnalyticsTelemetrics.ViewModels
 
             public Guid DeviceId { get; set; }
 
-            public string Platform { get; set; }
+            public string Platform { get; set; } = null!;
 
             public int AppVersion { get; set; }
 
-            public string Country { get; set; }
+            public string Country { get; set; } = null!;
 
             public int Age { get; set; }
 
@@ -155,19 +155,9 @@ namespace AnalyticsTelemetrics.ViewModels
 
             public AnalyticsData GetRandomAnalyticsEvent()
             {
-                return new()
-                {
-                    Timestamp = DateTimeOffset.Now,
-                    EventType = _events[_random.Next(_events.Length)],
-                    Metadata = new()
-                    {
-                        DeviceId = DeviceId,
-                        Platform = Platform,
-                        AppVersion = AppVersion,
-                        Country = Country,
-                        Age = Age,
-                    }
-                };
+                return new AnalyticsData(timestamp: DateTimeOffset.Now,
+                     eventType: _events[_random.Next(_events.Length)],
+                     metadata: new Metadata(DeviceId, Platform, AppVersion, Country, Age));
             }
         }
     }

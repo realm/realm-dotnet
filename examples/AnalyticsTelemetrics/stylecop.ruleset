@@ -32,14 +32,11 @@
     <Rule Id="SA1204" Action="None" />
     <Rule Id="SA1309" Action="None" />
     <Rule Id="SA1310" Action="None" />
-    <Rule Id="SA1200" Action="None" />
-    <Rule Id="SA1400" Action="None" />
     <Rule Id="SA1401" Action="None" />
     <Rule Id="SA1402" Action="None" />
     <Rule Id="SA1413" Action="None" />
     <Rule Id="SA1600" Action="None" />
     <Rule Id="SA1601" Action="None" />
-    <Rule Id="SA1602" Action="None" />
     <Rule Id="SA1633" Action="None" />
     <Rule Id="SA1636" Action="None" />
     <Rule Id="SA1637" Action="None" />
