@@ -4,13 +4,14 @@
 * None
 
 ### Fixed
-* None
+* Fixed a race condition between canceling an async write transaction and closing the Realm file, which could result in an `ObjectDisposedException : Safe handle has been closed` being thrown. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
+* Fixed an issue where in the extremely rare case that an exception is thrown by `Realm.RefreshAsync`, that exception would have been ignored and `false` would have been returned. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 13.17.0
 
 ## 11.3.0 (2023-07-26)
 
