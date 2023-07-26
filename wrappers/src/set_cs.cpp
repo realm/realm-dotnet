@@ -58,10 +58,10 @@ REALM_EXPORT bool realm_set_add_value(object_store::Set& set, realm_value_t valu
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.insert_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())).second;
+                return set.insert_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())).second;
             }
 
-            return set.insert(value.link.object->get_obj()).second;
+            return set.insert(value.link.object->obj()).second;
         }
 
         return set.insert_any(from_capi(value)).second;
@@ -98,10 +98,10 @@ REALM_EXPORT bool realm_set_remove_value(object_store::Set& set, realm_value_t v
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.remove_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())).second;
+                return set.remove_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())).second;
             }
 
-            return set.remove(value.link.object->get_obj()).second;
+            return set.remove(value.link.object->obj()).second;
         }
 
         return set.remove_any(from_capi(value)).second;
@@ -127,10 +127,10 @@ REALM_EXPORT bool realm_set_contains_value(object_store::Set& set, realm_value_t
             }
 
             if ((set_type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())) != not_found;
+                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())) != not_found;
             }
 
-            return set.find(value.link.object->get_obj()) != realm::not_found;
+            return set.find(value.link.object->obj()) != realm::not_found;
         }
 
         return set.find_any(from_capi(value)) != realm::not_found;

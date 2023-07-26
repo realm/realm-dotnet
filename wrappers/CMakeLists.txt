@@ -36,8 +36,6 @@ if(APPLE)
 
   if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(BUILD_APPLE_FRAMEWORK TRUE)
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_XCODE_ATTRIBUTE_SDKROOT macosx)
   endif()
 elseif(CMAKE_SYSTEM_NAME MATCHES "^Windows")
   add_definitions(/DWIN32_LEAN_AND_MEAN)

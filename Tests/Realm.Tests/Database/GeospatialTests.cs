@@ -22,6 +22,7 @@ using System.Linq;
 using MongoDB.Bson;
 using NUnit.Framework;
 using Realms.Exceptions;
+using Realms.Native;
 
 #if TEST_WEAVER
 using TestEmbeddedObject = Realms.EmbeddedObject;
@@ -42,8 +43,8 @@ namespace Realms.Tests.Database
             new object[] { new GeoCircle((55.67, 12.56), Distance.FromKilometers(10)), new[] { "Realm" } },
             new object[] { new GeoCircle((55.67, 12.56), Distance.FromKilometers(100)), new[] { "Realm", "Ragnarock" } },
             new object[] { new GeoCircle((45, -20), Distance.FromKilometers(5000)), new[] { "Realm", "Ragnarock", "MongoDB" } },
-            new object[] { new GeoBox((55.6281, 12.0826), (55.6762, 12.5684)), new[] { "Realm" } },
-            new object[] { new GeoBox((55.6279, 12.0825), (55.6762, 12.5684)), new[] { "Realm", "Ragnarock" } },
+            new object[] { new GeoBox((55.6281, 12.0826), (55.6761, 12.5683)), new[] { "Realm" } },
+            new object[] { new GeoBox((55.6280, 12.0826), (55.6761, 12.5683)), new[] { "Realm", "Ragnarock" } },
             new object[] { new GeoBox((0, -75), (60, 15)), new[] { "Realm", "Ragnarock", "MongoDB" } },
             new object[] { new GeoPolygon(new GeoPoint(55.6281, 12.0826), (55.6761, 12.0826), (55.6761, 12.5684), (55.6281, 12.5684), (55.6281, 12.0826)), new[] { "Realm" } },
             new object[] { new GeoPolygon(new GeoPoint(55, 12), (55.67, 12.5), (55.67, 11.5), (55, 12)), new[] { "Ragnarock" } },
