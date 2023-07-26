@@ -2,6 +2,7 @@
 using AnalyticsTelemetrics.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nito.AsyncEx;
 
 namespace AnalyticsTelemetrics.ViewModels
 {
@@ -73,45 +74,48 @@ namespace AnalyticsTelemetrics.ViewModels
 
         private bool CanStartCollection() => !IsCollectionRunning;
 
-        private async Task SensorCollection(CancellationToken cancellationToken)
+        private void SensorCollection(CancellationToken cancellationToken)
         {
-            AddToLog("Collection started");
-
-            try
+            // AsyncContext.Run runs the code on a single-threaded synchronization context.
+            // Without it, it is not possible to guarantee that the continuation of async methods,
+            // such as Task.Delay, will be executed on the same thread. As realm instances are thread confined,
+            // an exception will be raised if a realm is used on a different thread than the one it was opened on.
+            // The use of AsyncContext.Run is not mandatory, but simplifies the use of realm for this example.
+            // Without it, you need to ensure that the realm is always accessed on the thread it was created,
+            // for example waiting synchronously with Task.Delay(...).Wait().
+            AsyncContext.Run(async () =>
             {
-                while (!cancellationToken.IsCancellationRequested)
+                AddToLog("Collection started");
+
+                using var realm = RealmService.GetRealm();
+
+                try
                 {
-                    // A new realm instance is obtained on each iteration, because after Task.Delay the execution
-                    // could continue on a different thread. As realm instances are thread-confined,
-                    // this will raise an exception if the realm is opened outside of the loop.
-                    // If you prefer to keep a realm open for the lifetime of the task, then
-                    // you need to ensure that the realm is always accessed on the thread it was created,
-                    // for example waiting synchronously with Task.Delay(...).Wait().
-                    using var realm = RealmService.GetRealm();
-
-                    foreach (var sensor in _sensors)
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        var tempReading = sensor.GetTemperatureReading();
-
-                        AddToLog($"Sensor_{tempReading.Sensor?.Id} - {tempReading.Temperature}");
-
-                        realm.Write(() =>
+                        foreach (var sensor in _sensors)
                         {
-                            realm.Add(tempReading);
-                        });
+                            var tempReading = sensor.GetTemperatureReading();
+
+                            AddToLog($"Sensor_{tempReading.Sensor?.Id} - {tempReading.Temperature}");
+
+                            realm.Write(() =>
+                            {
+                                realm.Add(tempReading);
+                            });
+                        }
+
+                        AddToLog("- - - - - -");
+                        await Task.Delay(_collectionDelayMilliseconds, cancellationToken);
                     }
-
-                    AddToLog("- - - - - -");
-                    Console.WriteLine(Environment.CurrentManagedThreadId);
-                    await Task.Delay(_collectionDelayMilliseconds, cancellationToken);
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // This exception is raised if the task gets canceled during Task.Delay
-            }
+                catch (TaskCanceledException)
+                {
+                    // This exception is raised if the task gets canceled during Task.Delay
+                }
 
-            AddToLog(Environment.NewLine + "Collection stopped");
+                AddToLog(Environment.NewLine + "Collection stopped");
+            });
         }
 
         private void AddToLog(string text)

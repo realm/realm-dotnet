@@ -3,6 +3,7 @@ using AnalyticsTelemetrics.Services;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Nito.AsyncEx;
 
 namespace AnalyticsTelemetrics.ViewModels
 {
@@ -83,46 +84,50 @@ namespace AnalyticsTelemetrics.ViewModels
 
         private bool CanStartGeneration() => !IsGenerationRunning;
 
-        private async Task AnalyticsGeneration(CancellationToken cancellationToken)
+        private void AnalyticsGeneration(CancellationToken cancellationToken)
         {
-            AddToLog("Generation started");
-
-            var random = new Random();
-            try
+            // AsyncContext.Run runs the code on a single-threaded synchronization context.
+            // Without it, it is not possible to guarantee that the continuation of async methods,
+            // such as Task.Delay, will be executed on the same thread. As realm instances are thread confined,
+            // an exception will be raised if a realm is used on a different thread than the one it was opened on.
+            // The use of AsyncContext.Run is not mandatory, but simplifies the use of realm for this example.
+            // Without it, you need to ensure that the realm is always accessed on the thread it was created,
+            // for example waiting synchronously with Task.Delay(...).Wait().
+            AsyncContext.Run(async () =>
             {
-                while (!cancellationToken.IsCancellationRequested)
+                AddToLog("Generation started");
+
+                using var realm = RealmService.GetRealm();
+
+                var random = new Random();
+                try
                 {
-                    // A new realm instance is obtained on each iteration, because after Task.Delay the execution
-                    // could continue on a different thread. As realm instances are thread-confined,
-                    // this will raise an exception if the realm is opened outside of the loop.
-                    // If you prefer to keep a realm open for the lifetime of the task, then
-                    // you need to ensure that the realm is always accessed on the thread it was created,
-                    // for example waiting synchronously with Task.Delay(...).Wait().
-                    using var realm = RealmService.GetRealm();
-
-                    // Selecting only a subset of the fake users at each step to generate more realistic data
-                    foreach (var fakeUser in _fakeUsers.OrderBy(t => random.Next()).Take(_numberOfUsersToTake))
+                    while (!cancellationToken.IsCancellationRequested)
                     {
-                        var analyticEvent = fakeUser.GetRandomAnalyticsEvent();
-
-                        AddToLog($"{fakeUser.DeviceId.ToString()[..5]} - {analyticEvent.EventType}");
-
-                        realm.Write(() =>
+                        // Selecting only a subset of the fake users at each step to generate more realistic data
+                        foreach (var fakeUser in _fakeUsers.OrderBy(t => random.Next()).Take(_numberOfUsersToTake))
                         {
-                            realm.Add(analyticEvent);
-                        });
+                            var analyticEvent = fakeUser.GetRandomAnalyticsEvent();
+
+                            AddToLog($"{fakeUser.DeviceId.ToString()[..5]} - {analyticEvent.EventType}");
+
+                            realm.Write(() =>
+                            {
+                                realm.Add(analyticEvent);
+                            });
+                        }
+
+                        AddToLog("- - - - - -");
+                        await Task.Delay(_collectionDelayMilliseconds, cancellationToken);
                     }
-
-                    AddToLog("- - - - - -");
-                    await Task.Delay(_collectionDelayMilliseconds, cancellationToken);
                 }
-            }
-            catch (TaskCanceledException)
-            {
-                // This exception is raised if the task gets canceled during Task.Delay
-            }
+                catch (TaskCanceledException)
+                {
+                    // This exception is raised if the task gets canceled during Task.Delay
+                }
 
-            AddToLog(Environment.NewLine + "Generation stopped");
+                AddToLog(Environment.NewLine + "Generation stopped");
+            });
         }
 
         private void AddToLog(string text)
