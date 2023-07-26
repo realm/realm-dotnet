@@ -69,6 +69,7 @@
 	  <None Remove="Views\" />
 	  <None Remove="Models\" />
 	  <None Remove="Services\" />
+	  <None Remove="Charts\**" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="ViewModels\" />
