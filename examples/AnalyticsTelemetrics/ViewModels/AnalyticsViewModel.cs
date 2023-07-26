@@ -92,11 +92,17 @@ namespace AnalyticsTelemetrics.ViewModels
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
+                    // A new realm instance is obtained on each iteration, because after Task.Delay the execution
+                    // could continue on a different thread. As realm instances are thread-confined,
+                    // this will raise an exception if the realm is opened outside of the loop.
+                    // If you prefer to keep a realm open for the lifetime of the task, then
+                    // you need to ensure that the realm is always accessed on the thread it was created,
+                    // for example waiting synchronously with Task.Delay(...).Wait().
+                    using var realm = RealmService.GetRealm();
+
                     // Selecting only a subset of the fake users at each step to generate more realistic data
                     foreach (var fakeUser in _fakeUsers.OrderBy(t => random.Next()).Take(_numberOfUsersToTake))
                     {
-                        var realm = RealmService.GetRealm();
-
                         var analyticEvent = fakeUser.GetRandomAnalyticsEvent();
 
                         AddToLog($"{fakeUser.DeviceId.ToString()[..5]} - {analyticEvent.EventType}");
