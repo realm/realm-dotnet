@@ -8,7 +8,7 @@ namespace AnalyticsTelemetrics.ViewModels
         [RelayCommand]
         public static async Task OnAppearing()
         {
-             await RealmService.Init();
+            await RealmService.Init();
         }
 
         [RelayCommand]
