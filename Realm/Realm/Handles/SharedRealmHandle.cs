@@ -281,7 +281,7 @@ namespace Realms
         public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);
 
         [Preserve]
-        private SharedRealmHandle(IntPtr handle) : base(handle)
+        protected SharedRealmHandle(IntPtr handle) : base(handle)
         {
         }
 
@@ -923,13 +923,20 @@ namespace Realms
             synchronizationContext.Post(_ =>
             {
                 // Since we're async posting, we need to be careful about two things:
-                // 1. The SharedRealmHandle might no longer be valid (e.g. if the Realm was closed before we get to execute the callback)
+                // 1. The SharedRealmHandle might no longer be valid (e.g. if the Realm was closed before we get to execute the callback).
+                //    In this case, we need cancel the tcs since Core would not ever execute the callback and if we don't, the task will
+                //    never complete and we'll leak the GCHandle.
+                if (IsClosed)
+                {
+                    tcs.TrySetCanceled();
+                    return;
+                }
+
                 // 2. Core may have already dequeued the cb in order to execute it. In this case, cancel_async_transaction will
                 //    return false and we must ignore the cancel request (and let Core proceed with the transaction). This is because
                 //    if we canceled the transaction here, the caller would free the tcs GCHandle while at the same time an async transaction
                 //    would be ongoing which will eventually attempt to use the tcs through the GCHandle, resulting in a hard crash on Mono.
-                if (!IsClosed &&
-                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
+                if (NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
                 {
                     if (innerNativeException.code != RealmExceptionCodes.RLM_ERR_NONE)
                     {
