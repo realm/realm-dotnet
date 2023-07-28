@@ -9,6 +9,6 @@ namespace QuickJournal.Models
 
         public string Body { get; set; }
 
-        public EntryMetadata Metadata { get; set; }
+        public EntryMetadata? Metadata { get; set; }
     }
 }
