@@ -254,13 +254,13 @@ namespace Realms
             NativeMethods.NotifyRealmCallback notifyRealm = NotifyRealmChanged;
             NativeMethods.GetNativeSchemaCallback getNativeSchema = GetNativeSchema;
             NativeMethods.OpenRealmCallback openRealm = HandleOpenRealmCallback;
-            NativeMethods.DisposeGCHandleCallback disposeGCHandle = DisposeGCHandleCallback;
+            NativeMethods.DisposeGCHandleCallback disposeGCHandle = OnDisposeGCHandle;
             NativeMethods.LogMessageCallback logMessage = LogMessage;
             NotifiableObjectHandleBase.NotificationCallback notifyObject = NotifiableObjectHandleBase.NotifyObjectChanged;
             DictionaryHandle.KeyNotificationCallback notifyDictionary = DictionaryHandle.NotifyDictionaryChanged;
             NativeMethods.MigrationCallback onMigration = OnMigration;
             NativeMethods.ShouldCompactCallback shouldCompact = ShouldCompactOnLaunchCallback;
-            NativeMethods.HandleTaskCompletionCallback handleTaskCompletion = HandleTaskCompletionCallback;
+            NativeMethods.HandleTaskCompletionCallback handleTaskCompletion = OnTaskCompleted;
             NativeMethods.InitializationCallback onInitialization = OnDataInitialization;
 
             GCHandle.Alloc(notifyRealm);
@@ -281,7 +281,7 @@ namespace Realms
         public static void SetLogLevel(LogLevel level) => NativeMethods.set_log_level(level);
 
         [Preserve]
-        public SharedRealmHandle(IntPtr handle) : base(handle)
+        protected SharedRealmHandle(IntPtr handle) : base(handle)
         {
         }
 
@@ -358,11 +358,11 @@ namespace Realms
             }
         }
 
-        public virtual void AddChild(RealmHandle handle)
+        public virtual void AddChild(RealmHandle childHandle)
         {
-            if (handle.ForceRootOwnership)
+            if (childHandle.ForceRootOwnership)
             {
-                _weakChildren.Add(new(handle));
+                _weakChildren.Add(new(childHandle));
             }
 
             if (_unbindList.Count == 0)
@@ -486,7 +486,7 @@ namespace Realms
             var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
-            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
+            ct.Register(() => CancelAsyncTransaction(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
                 asyncTransactionHandle = NativeMethods.begin_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
@@ -498,7 +498,7 @@ namespace Realms
                 // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
                 if (ct.IsCancellationRequested)
                 {
-                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                    CancelAsyncTransaction(asyncTransactionHandle, tcs, synchronizationContext);
                 }
 
                 await tcs.Task;
@@ -520,7 +520,7 @@ namespace Realms
             var tcs = new TaskCompletionSource();
             var tcsHandle = GCHandle.Alloc(tcs);
             uint? asyncTransactionHandle = null;
-            ct.Register(() => OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext));
+            ct.Register(() => CancelAsyncTransaction(asyncTransactionHandle, tcs, synchronizationContext));
             try
             {
                 asyncTransactionHandle = NativeMethods.commit_transaction_async(this, GCHandle.ToIntPtr(tcsHandle), out var nativeException);
@@ -532,7 +532,7 @@ namespace Realms
                 // If not done, under Mono referencing a null GCHandle results in a hard crash of the runtime.
                 if (ct.IsCancellationRequested)
                 {
-                    OnTaskCancellation(asyncTransactionHandle, tcs, synchronizationContext);
+                    CancelAsyncTransaction(asyncTransactionHandle, tcs, synchronizationContext);
                 }
 
                 await tcs.Task;
@@ -748,6 +748,8 @@ namespace Realms
             try
             {
                 var didRegister = NativeMethods.refresh_async(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
+                ex.ThrowIfNecessary();
+
                 if (!didRegister)
                 {
                     return false;
@@ -781,7 +783,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.NotifyRealmCallback))]
-        public static void NotifyRealmChanged(IntPtr stateHandle)
+        private static void NotifyRealmChanged(IntPtr stateHandle)
         {
             var gch = GCHandle.FromIntPtr(stateHandle);
             ((Realm.State)gch.Target!).NotifyChanged(EventArgs.Empty);
@@ -806,7 +808,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.DisposeGCHandleCallback))]
-        public static void DisposeGCHandleCallback(IntPtr handle)
+        private static void OnDisposeGCHandle(IntPtr handle)
         {
             if (handle != IntPtr.Zero)
             {
@@ -875,7 +877,7 @@ namespace Realms
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.HandleTaskCompletionCallback))]
-        private static void HandleTaskCompletionCallback(IntPtr tcs_ptr, bool invoke_async, NativeException ex)
+        private static void OnTaskCompleted(IntPtr tcs_ptr, bool invoke_async, NativeException ex)
         {
             if (invoke_async)
             {
@@ -909,17 +911,32 @@ namespace Realms
             }
         }
 
-        private void OnTaskCancellation(uint? asyncTransactionHandle, TaskCompletionSource tcs, SynchronizationContext synchronizationContext)
+        private void CancelAsyncTransaction(uint? asyncTransactionHandle, TaskCompletionSource tcs, SynchronizationContext synchronizationContext)
         {
+            if (!asyncTransactionHandle.HasValue)
+            {
+                return;
+            }
+
             // We need to post on the original SynchronizationContext where the lock was acquired because
             // cancel_async_transaction needs to be on that thread in order to be able to perform the cancellation
             synchronizationContext.Post(_ =>
             {
-                // Since we're posting, execution can happen after core has dequeued the cb in order to execute it.
-                // We can't cancel to avoid that the caller frees the handle to the tcs that the cb relies on.
-                // Referencing a null GCHandle when in Mono results in a hard crash of the runtime.
-                if (asyncTransactionHandle.HasValue &&
-                    NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
+                // Since we're async posting, we need to be careful about two things:
+                // 1. The SharedRealmHandle might no longer be valid (e.g. if the Realm was closed before we get to execute the callback).
+                //    In this case, we need cancel the tcs since Core would not ever execute the callback and if we don't, the task will
+                //    never complete and we'll leak the GCHandle.
+                if (IsClosed)
+                {
+                    tcs.TrySetCanceled();
+                    return;
+                }
+
+                // 2. Core may have already dequeued the cb in order to execute it. In this case, cancel_async_transaction will
+                //    return false and we must ignore the cancel request (and let Core proceed with the transaction). This is because
+                //    if we canceled the transaction here, the caller would free the tcs GCHandle while at the same time an async transaction
+                //    would be ongoing which will eventually attempt to use the tcs through the GCHandle, resulting in a hard crash on Mono.
+                if (NativeMethods.cancel_async_transaction(this, asyncTransactionHandle.Value, out var innerNativeException))
                 {
                     if (innerNativeException.code != RealmExceptionCodes.RLM_ERR_NONE)
                     {
@@ -951,7 +968,7 @@ namespace Realms
             }
         }
 
-        public class SchemaMarshaler
+        private class SchemaMarshaler
         {
             public readonly SchemaObject[] Objects;
             public readonly SchemaProperty[] Properties;
@@ -977,7 +994,7 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            public static SchemaProperty ForMarshalling(Property property)
+            private static SchemaProperty ForMarshalling(Property property)
             {
                 return new SchemaProperty
                 {
