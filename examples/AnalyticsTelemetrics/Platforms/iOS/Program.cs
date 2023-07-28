@@ -1,6 +1,6 @@
 ﻿using UIKit;
 
-namespace AnalyticsTelemetrics;
+namespace AnalyticsTelemetry;
 
 public class Program
 {

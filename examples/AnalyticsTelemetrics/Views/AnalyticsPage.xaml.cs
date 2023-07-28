@@ -1,4 +1,4 @@
-﻿namespace AnalyticsTelemetrics.Views;
+﻿namespace AnalyticsTelemetry.Views;
 
 public partial class AnalyticsPage : ContentPage
 {

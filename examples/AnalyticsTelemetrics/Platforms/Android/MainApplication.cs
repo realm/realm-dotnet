@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace AnalyticsTelemetrics;
+namespace AnalyticsTelemetry;
 
 [Application]
 public class MainApplication : MauiApplication

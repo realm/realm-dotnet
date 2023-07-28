@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using Realms;
 
-namespace AnalyticsTelemetrics.Models
+namespace AnalyticsTelemetry.Models
 {
     public partial class AnalyticsData : IAsymmetricObject
     {

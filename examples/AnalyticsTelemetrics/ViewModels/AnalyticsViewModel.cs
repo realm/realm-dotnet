@@ -1,11 +1,11 @@
-﻿using AnalyticsTelemetrics.Models;
-using AnalyticsTelemetrics.Services;
+﻿using AnalyticsTelemetry.Models;
+using AnalyticsTelemetry.Services;
 using Bogus;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Nito.AsyncEx;
 
-namespace AnalyticsTelemetrics.ViewModels
+namespace AnalyticsTelemetry.ViewModels
 {
     public partial class AnalyticsViewModel : ObservableObject
     {

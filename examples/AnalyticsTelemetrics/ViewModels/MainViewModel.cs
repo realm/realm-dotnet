@@ -1,7 +1,7 @@
-﻿using AnalyticsTelemetrics.Services;
+﻿using AnalyticsTelemetry.Services;
 using CommunityToolkit.Mvvm.Input;
 
-namespace AnalyticsTelemetrics.ViewModels
+namespace AnalyticsTelemetry.ViewModels
 {
     public partial class MainViewModel
     {

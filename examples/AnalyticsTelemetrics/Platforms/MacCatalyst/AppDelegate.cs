@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace AnalyticsTelemetrics;
+namespace AnalyticsTelemetry;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
-namespace AnalyticsTelemetrics;
+namespace AnalyticsTelemetry;
 
 public static class MauiProgram
 {

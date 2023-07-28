@@ -1,6 +1,6 @@
-﻿using AnalyticsTelemetrics.Views;
+﻿using AnalyticsTelemetry.Views;
 
-namespace AnalyticsTelemetrics;
+namespace AnalyticsTelemetry;
 
 public partial class AppShell : Shell
 {

@@ -1,7 +1,7 @@
 ﻿using Realms;
 using Realms.Sync;
 
-namespace AnalyticsTelemetrics.Services
+namespace AnalyticsTelemetry.Services
 {
     public static class RealmService
     {
@@ -17,6 +17,11 @@ namespace AnalyticsTelemetrics.Services
             if (_serviceInitialised)
             {
                 return;
+            }
+
+            if (string.IsNullOrEmpty(_appId))
+            {
+                throw new Exception("Remember to add your appId!");
             }
 
             var appConfiguration = new AppConfiguration(_appId);
