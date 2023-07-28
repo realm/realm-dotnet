@@ -40,16 +40,7 @@
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.png" Color="#00684A" />
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\mongosplash.png" Color="#00684A" />
-
-		<!-- Images -->
-		<MauiImage Include="Resources\Images\*svg" />
-
-		<!-- Custom Fonts -->
-		<MauiFont Include="Resources\Fonts\*" />
-
-		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
-		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<MauiSplashScreen Include="Resources\Splash\mongodb.png" Color="#00684A" />
 	</ItemGroup>
 
 	<ItemGroup>
