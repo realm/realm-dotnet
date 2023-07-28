@@ -11,4 +11,3 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("entryDetail", typeof(JournalEntryDetailPage));
     }
 }
-

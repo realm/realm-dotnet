@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using QuickJournal.Messages;
 using QuickJournal.Models;
 
@@ -20,4 +19,3 @@ namespace QuickJournal.ViewModels
         }
     }
 }
-

@@ -7,4 +7,3 @@ public partial class JournalEntryDetailPage : ContentPage
         InitializeComponent();
     }
 }
-
