@@ -51,7 +51,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AdditionalFiles Include="stylecop.json"/>
+	  <AdditionalFiles Include="stylecop.json" />
 	  <None Remove="Realm" />
 	  <None Remove="CommunityToolkit.Maui" />
 	  <None Remove="CommunityToolkit.Mvvm" />

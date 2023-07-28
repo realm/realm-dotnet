@@ -8,14 +8,14 @@ using Realms;
 
 namespace QuickJournal.ViewModels
 {
-    public partial class JournalEntriesViewModel : ObservableObject
+    public partial class EntriesViewModel : ObservableObject
     {
         private readonly Realm realm;
 
         [ObservableProperty]
         private IQueryable<JournalEntry>? entries;
 
-        public JournalEntriesViewModel()
+        public EntriesViewModel()
         {
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();

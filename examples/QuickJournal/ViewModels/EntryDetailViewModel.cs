@@ -7,15 +7,15 @@ using QuickJournal.Models;
 namespace QuickJournal.ViewModels
 {
     [QueryProperty("Entry", nameof(Entry))]
-    public partial class JournalEntryDetailViewModel : ObservableObject
+    public partial class EntryDetailViewModel : ObservableObject
     {
         [ObservableProperty]
-        private JournalEntry entry;
+        private JournalEntry entry = null!;
 
         [RelayCommand]
         public void OnPageClosed()
         {
-            WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(entry));
+            WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(Entry));
         }
     }
 }
