@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="QuickJournalSync.Views.EntriesPage"
+             xmlns:vm="clr-namespace:QuickJournalSync.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="QuickJournalSync"
+             x:Name="entriesPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" Command="{Binding AddEntryCommand}" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.BindingContext>
+        <vm:EntriesViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:ItemTappedEventArgsConverter x:Key="ItemTappedEventArgsConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <ListView ItemsSource="{Binding Entries}"
+                  SelectionMode="None">
+            <ListView.Behaviors>
+            <toolkit:EventToCommandBehavior
+                EventName="ItemTapped"
+                EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" 
+                Command="{Binding EditEntryCommand}"/>
+            </ListView.Behaviors>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Title}"
+                              Detail="{Binding Metadata.CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
+                        <TextCell.ContextActions>
+                            <MenuItem Text="Delete" IsDestructive="true" 
+                                       Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference entriesPage}}" 
+                                       CommandParameter="{Binding .}" />
+                        </TextCell.ContextActions>
+                    </TextCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentPage.Content>
+</ContentPage>
