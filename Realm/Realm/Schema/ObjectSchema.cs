@@ -25,6 +25,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Realms.Helpers;
+using Realms.Native;
 
 namespace Realms.Schema
 {
@@ -102,6 +103,17 @@ namespace Realms.Schema
             }
         }
 
+        internal ObjectSchema(in Native.SchemaObject native)
+        {
+            Name = native.name!;
+            BaseType = native.table_type;
+            _properties = new(native.properties.ToEnumerable().ToDictionary(p => (string)p.name!, p => new Property(p)));
+            if (native.primary_key)
+            {
+                PrimaryKeyProperty = _properties[native.primary_key!];
+            }
+        }
+
         /// <summary>
         /// Looks for a <see cref="Property"/> by <see cref="Property.Name"/>.
         /// Failure to find means it is not regarded as a property to persist in a <see cref="Realm"/>.
@@ -149,6 +161,14 @@ namespace Realms.Schema
 
             return _cache.GetOrAdd(type, t => new Builder(t).Build());
         }
+
+        internal SchemaObject ToNative(Arena arena) => new()
+        {
+            name = StringValue.AllocateFrom(Name, arena),
+            table_type = BaseType,
+            properties = MarshaledVector<SchemaProperty>.AllocateFrom(this.Select(p => p.ToNative(arena)).ToArray(), arena),
+            primary_key = StringValue.AllocateFrom(PrimaryKeyProperty?.Name, arena)
+        };
 
         /// <summary>
         /// A mutable builder that allows you to construct an <see cref="ObjectSchema"/> instance.

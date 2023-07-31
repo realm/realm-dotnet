@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
@@ -139,12 +140,12 @@ namespace Realms
             return ret;
         }
 
-        internal override SharedRealmHandle CreateHandle(RealmSchema schema)
-            => SharedRealmHandle.Open(CreateNativeConfiguration(), schema, EncryptionKey);
+        internal override SharedRealmHandle CreateHandle(in Configuration configuration)
+            => SharedRealmHandle.Open(configuration);
 
-        internal override Configuration CreateNativeConfiguration()
+        internal override Configuration CreateNativeConfiguration(Arena arena)
         {
-            var result = base.CreateNativeConfiguration();
+            var result = base.CreateNativeConfiguration(arena);
 
             result.delete_if_migration_needed = ShouldDeleteIfMigrationNeeded;
             result.read_only = IsReadOnly;
@@ -155,21 +156,28 @@ namespace Realms
             return result;
         }
 
-        internal override Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken)
+        internal override Task<SharedRealmHandle> CreateHandleAsync(in Configuration configuration, CancellationToken cancellationToken)
         {
             // Can't use async/await due to mono inliner bugs
             // If we are on UI thread will be set but often also set on long-lived workers to use Post back to UI thread.
             if (AsyncHelper.TryGetScheduler(out var scheduler))
             {
+                // make a local copy because we can't capture in/ref/out parameters in lambdas
+                var config = configuration;
                 return Task.Run(() =>
                 {
-                    using (CreateHandle(schema))
+                    // make another copy so we can open a temporary realm on this worker thread
+                    // to execute any migrations on the background
+                    // without clobbering the original config's managed handle
+                    var configCopy = config;
+                    configCopy.managed_config = GCHandle.ToIntPtr(GCHandle.Alloc(this));
+                    using (CreateHandle(configCopy))
                     {
                     }
-                }, cancellationToken).ContinueWith(_ => CreateHandle(schema), scheduler);
+                }, cancellationToken).ContinueWith(_ => CreateHandle(config), scheduler);
             }
 
-            return Task.FromResult(CreateHandle(schema));
+            return Task.FromResult(CreateHandle(configuration));
         }
     }
 }

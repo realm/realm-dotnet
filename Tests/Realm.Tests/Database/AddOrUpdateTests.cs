@@ -770,7 +770,7 @@ namespace Realms.Tests.Database
             });
 
             Assert.That(person.IsManaged);
-            Assert.That(person.FirstName == "Peter");
+            Assert.That(person.FirstName, Is.EqualTo("Peter"));
         }
 
         [Test]

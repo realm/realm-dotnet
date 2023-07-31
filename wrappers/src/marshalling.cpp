@@ -24,17 +24,7 @@
 #include "error_handling.hpp"
 #include "shared_realm_cs.hpp"
 
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
-
-namespace realm {
-namespace binding {
-    std::function<ErrorCallbackT> s_session_error_callback;
-}
-}
-
-using namespace realm;
-using namespace realm::util;
+namespace realm::binding {
 
 //stringdata is utf8
 //cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
@@ -48,7 +38,7 @@ using namespace realm::util;
 //-1            :The utf8 data pointed to by str cannot be translated to utf16. it is invalid
 //>=0;<=bufsize :The data in str has been converted to data in csharpbuffer - return value is number of 16 bit characters in cshapbuffer that contains the converted data
 //>bufsize      :The buffer size is too small for the translated string. Please call again with a buffer of at least the size of the return value
-size_t realm::binding::stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize) //note bufsize is _in_16bit_words 
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize) //note bufsize is _in_16bit_words 
 {
     //fast check. If the buffer is very likely too small, just return immediatly with a request for a larger buffer
     if (str.size() > bufsize) {
@@ -70,7 +60,7 @@ size_t realm::binding::stringdata_to_csharpstringbuffer(StringData str, uint16_t
     size_t size = Xcode::find_utf16_buf_size(in_begin, in_end);//Figure how much space is actually needed
 
     if (in_begin != in_end) {
-        Logger::get_default_logger()->log(Logger::Level::warn, "BAD UTF8 DATA IN stringdata_tocsharpbuffer: %1", str.data());
+        util::Logger::get_default_logger()->log(util::Logger::Level::warn, "BAD UTF8 DATA IN stringdata_tocsharpbuffer: %1", str.data());
         return -1;//bad uft8 data    
     }
     if (size > bufsize)
@@ -89,7 +79,7 @@ size_t realm::binding::stringdata_to_csharpstringbuffer(StringData str, uint16_t
     return -1;//bad utf8 data. this cannot happen
 }
 
-realm::binding::Utf16StringAccessor::Utf16StringAccessor(const uint16_t* csbuffer, size_t csbufsize)
+Utf16StringAccessor::Utf16StringAccessor(const uint16_t* csbuffer, size_t csbufsize)
 {
     // For efficiency, if the incoming UTF-16 string is sufficiently
     // small, we will choose an UTF-8 output buffer whose size (in
@@ -128,3 +118,30 @@ realm::binding::Utf16StringAccessor::Utf16StringAccessor(const uint16_t* csbuffe
         m_size = out_begin - m_data.get();
     }
 }
+
+realm_value_t to_capi(Obj obj, SharedRealm realm)
+{
+    auto table_key = obj.get_table()->get_key();
+    auto schema = realm->schema().find(table_key);
+    if (schema == realm->schema().end())
+    {
+        // These shenanigans are only necessary because realm->schema() doesn't automatically update.
+        // TODO: remove this code when https://github.com/realm/realm-core/issues/4584 is resolved
+        CSharpBindingContext* cs_binding_context = dynamic_cast<CSharpBindingContext*>(realm->m_binding_context.get());
+        schema = cs_binding_context->m_realm_schema.find(table_key);
+        if (schema == cs_binding_context->m_realm_schema.end())
+        {
+            cs_binding_context->m_realm_schema = ObjectStore::schema_from_group(realm->read_group());
+            schema = cs_binding_context->m_realm_schema.find(table_key);
+        }
+    }
+
+    auto object = new Object(realm, *schema, std::move(obj));
+
+    realm_value_t val{};
+    val.type = realm_value_type::RLM_TYPE_LINK;
+    val.link.object = object;
+    val.link.table_key = table_key;
+    return val;
+}
+} // namespace realm::binding

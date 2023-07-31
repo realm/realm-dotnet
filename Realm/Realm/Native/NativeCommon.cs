@@ -31,8 +31,8 @@ namespace Realms
 {
     internal static class NativeCommon
     {
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe void delete_pointer(void* pointer);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_free", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void realm_free(void* pointer);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "_realm_flip_guid_for_testing", CallingConvention = CallingConvention.Cdecl)]
         public static extern void flip_guid_for_testing([In, Out] byte[] guid_bytes);

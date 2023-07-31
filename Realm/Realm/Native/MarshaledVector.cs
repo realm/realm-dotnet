@@ -18,29 +18,113 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct MarshaledVector<T>
-        where T : struct
+    internal unsafe readonly struct MarshaledVector<T>
+        where T : unmanaged
     {
-        public IntPtr Items;
-        public IntPtr Count;
+        private readonly T* items;
 
-        internal IEnumerable<T> AsEnumerable()
+        public readonly nint Count;
+
+        public MarshaledVector(T* items, nint count)
         {
-            return Enumerable.Range(0, (int)Count).Select(MarshalElement);
+            this.items = items;
+            Count = count;
         }
 
-        private unsafe T MarshalElement(int elementIndex)
+        public ref readonly T this[nint index]
         {
-            var @struct = default(T);
-            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(Items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
-            return @struct;
+            get
+            {
+                if (index >= Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                }
+
+                return ref Unsafe.Add(ref *items, index);
+            }
+        }
+
+        public ref struct Enumerator
+        {
+            private readonly MarshaledVector<T> _vector;
+            private nint _index;
+
+            public Enumerator(MarshaledVector<T> vector)
+            {
+                _vector = vector;
+                _index = -1;
+            }
+
+            public ref readonly T Current => ref _vector[_index];
+
+            public bool MoveNext()
+            {
+                var index = _index + 1;
+                if (index < _vector.Count)
+                {
+                    _index = index;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        public Enumerator GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
+        public IEnumerable<T> ToEnumerable()
+        {
+            for (nint index = 0; index < Count; index++)
+            {
+                yield return this[index];
+            }
+        }
+
+        public T[] ToArray()
+        {
+            var ret = new T[Count];
+            fixed(T* destination = ret)
+            {
+                var byteSize = sizeof(T) * Count;
+                Buffer.MemoryCopy(items, destination, byteSize, byteSize);
+            }
+
+            return ret;
+        }
+
+        public static MarshaledVector<T> AllocateEmpty(int capacity, Arena arena)
+        {
+            var buffer = arena.Allocate<T>(capacity);
+            Unsafe.InitBlock(buffer.Data, 0, (uint)(sizeof(T) * capacity));
+            return new MarshaledVector<T>(buffer.Data, capacity);
+        }
+
+        public static unsafe MarshaledVector<T> AllocateFrom(IReadOnlyCollection<T>? collection, Arena arena)
+        {
+            if (collection == null || collection.Count == 0)
+            {
+                return new MarshaledVector<T>(null, 0);
+            }
+
+            var buffer = arena.Allocate<T>(collection.Count);
+            var i = 0;
+            foreach (var item in collection)
+            {
+                buffer.Data[i++] = item;
+            }
+
+            return new MarshaledVector<T>(buffer.Data, buffer.Length);
         }
     }
 }

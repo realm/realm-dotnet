@@ -283,7 +283,7 @@ namespace Realms.Sync
 
                 if (error.is_client_reset)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
+                    var userInfo = error.user_info_pairs.ToEnumerable().ToDictionary(kvp => (string)kvp.Key!, kvp => (string?)kvp.Value);
                     var clientResetEx = new ClientResetException(session.User.App, messageString, error.error_code, userInfo);
 
                     syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
@@ -294,7 +294,7 @@ namespace Realms.Sync
                 if (error.error_code == ErrorCode.CompensatingWrite)
                 {
                     var compensatingWrites = error.compensating_writes
-                        .AsEnumerable()
+                        .ToEnumerable()
                         .Select(c => new CompensatingWriteInfo(c.object_name!, c.reason!, new RealmValue(c.primary_key)))
                         .ToArray();
                     exception = new CompensatingWriteException(messageString, compensatingWrites);
