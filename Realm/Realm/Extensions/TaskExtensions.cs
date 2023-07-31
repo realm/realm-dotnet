@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 internal static class TaskExtensions
@@ -67,5 +68,45 @@ internal static class TaskExtensions
         }
 
         await completed;
+    }
+
+    public static async Task AddCancellation(this Task task, CancellationToken? token)
+    {
+        if (token == null)
+        {
+            await task;
+        }
+        else
+        {
+            using var cancelTask = new CancellationTask(token.Value);
+            await Task.WhenAny(task, cancelTask.Task);
+        }
+    }
+
+    private class CancellationTask : IDisposable
+    {
+        private readonly IDisposable? _registration;
+
+        public CancellationTask(CancellationToken token)
+        {
+            var tcs = new TaskCompletionSource();
+            if (token.IsCancellationRequested)
+            {
+                tcs.TrySetCanceled();
+            }
+            else
+            {
+                _registration = token.Register(() => tcs.TrySetCanceled());
+            }
+
+            Task = tcs.Task;
+        }
+
+        public Task Task { get; }
+
+        public void Dispose()
+        {
+            _registration?.Dispose();
+        }
     }
 }

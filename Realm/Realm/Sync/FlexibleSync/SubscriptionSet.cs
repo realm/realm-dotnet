@@ -114,7 +114,7 @@ namespace Realms.Sync
         /// <paramref name="name"/> if the subscription set contains a subscription with the provided name;
         /// <c>null</c> otherwise.
         /// </returns>
-        public Subscription Find(string name) => _handle.Find(name);
+        public Subscription? Find(string name) => _handle.Find(name);
 
         /// <summary>
         /// Finds a subscription by query.
@@ -126,7 +126,7 @@ namespace Realms.Sync
         /// the provided <paramref name="query"/>; <c>null</c> if the subscription set doesn't contain
         /// a match.
         /// </returns>
-        public Subscription Find<T>(IQueryable<T> query)
+        public Subscription? Find<T>(IQueryable<T> query)
             where T : IRealmObject
         {
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));

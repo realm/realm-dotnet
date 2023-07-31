@@ -1,11 +1,20 @@
 ## vNext (TBD)
 
 ### Enhancements
-* None
+* Added `IQueryable.SubscribeAsync` API as a shorthand for using `SubscriptionSet.Add`. It is a syntax sugar that roughly translates to:
+  ```csharp
+  realm.Subscriptions.Update(() =>
+  {
+    realm.Subscriptions.Add(query);
+  });
+
+  await realm.Subscriptions.WaitForSynchronization();
+  ```
 
 ### Fixed
 * Fixed a race condition between canceling an async write transaction and closing the Realm file, which could result in an `ObjectDisposedException : Safe handle has been closed` being thrown. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
 * Fixed an issue where in the extremely rare case that an exception is thrown by `Realm.RefreshAsync`, that exception would have been ignored and `false` would have been returned. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
+* Fixed the nullability annotation of `SubscriptionSet.Find` to correctly indicate that `null` is returned if the subscription doesn't exist in the subscription set.
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.

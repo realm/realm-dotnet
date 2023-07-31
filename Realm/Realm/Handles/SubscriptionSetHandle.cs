@@ -185,17 +185,17 @@ namespace Realms.Sync
         {
             EnsureIsOpen();
 
-            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex))!;
         }
 
-        public Subscription Find(string name)
+        public Subscription? Find(string name)
         {
             EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
         }
 
-        public Subscription Find(ResultsHandle results)
+        public Subscription? Find(ResultsHandle results)
         {
             EnsureIsOpen();
 
@@ -206,7 +206,7 @@ namespace Realms.Sync
         {
             EnsureIsOpen();
 
-            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex))!;
         }
 
         public bool Remove(string name)
@@ -279,7 +279,7 @@ namespace Realms.Sync
             }
         }
 
-        private static Subscription GetSubscriptionCore(GetSubscriptionBase getter)
+        private static Subscription? GetSubscriptionCore(GetSubscriptionBase getter)
         {
             Subscription? result = null;
             Action<Native.Subscription> callback = sub => result = sub.ManagedSubscription;
@@ -294,7 +294,7 @@ namespace Realms.Sync
                 callbackHandle.Free();
             }
 
-            return result!;
+            return result;
         }
 
         public override void Unbind()
