@@ -60,6 +60,8 @@
 	  <None Remove="Models\" />
 	  <None Remove="Messages\" />
 	  <None Remove="Services\" />
+	  <None Remove="Resources\Images\logout.svg" />
+	  <None Remove="Resources\Images\add.svg" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Views\" />
@@ -75,5 +77,9 @@
 	  <MauiXaml Update="Views\JournalEntryDetailPage.xaml">
 	    <SubType></SubType>
 	  </MauiXaml>
+	</ItemGroup>
+	<ItemGroup>
+	  <MauiImage Include="Resources\Images\add.svg" />
+	  <MauiImage Include="Resources\Images\logout.svg" />
 	</ItemGroup>
 </Project>
