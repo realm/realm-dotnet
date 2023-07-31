@@ -19,7 +19,7 @@ jobs:
           echo "${{ github.workspace }}/tools" >> $GITHUB_PATH
       - #@ template.replace(dotnetPublish("Tests/Realm.Tests", "net7.0", "linux-x64", { "RealmTestsStandaloneExe": "true" }))
       - name: Run the tests
-        run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs("code-coverage") + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*'"
+        run: #@ "./tools/coverlet ${{ steps.dotnet-publish.outputs.executable-path }} -t ${{ steps.dotnet-publish.outputs.executable-path }}/Realm.Tests -a '--result=TestResults.Linux.xml --labels=After" + baasTestArgs("code-coverage") + "' -f lcov -o ./report.lcov --exclude '[Realm.Tests]*' --exclude '[Realm.Fody]*' --exclude '[Realm.PlatformHelpers]*'"
       - name: Publish Coverage
         id: publish-coveralls
         uses: #@ actionCoveralls
@@ -27,6 +27,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: ./report.lcov
           git-commit: ${{ github.event.pull_request.head.sha }}
+          compare-sha: ${{ github.event.pull_request.base.sha }}
       - name: Output Coveralls response
         run: echo ${{ steps.publish-coveralls.outputs.coveralls-api-result }}
       - #@ publishTestsResults("TestResults.Linux.xml", "Code Coverage")

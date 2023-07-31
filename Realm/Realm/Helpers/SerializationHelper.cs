@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using MongoDB.Bson;
 using MongoDB.Bson.IO;
@@ -142,8 +143,20 @@ namespace Realms.Helpers
                 _ when type == typeof(decimal) => new DecimalSerializer(BsonType.Decimal128, new RepresentationConverter(allowOverflow: false, allowTruncation: false)),
                 _ when type == typeof(Guid) => new GuidSerializer(GuidRepresentation.Standard),
                 _ when type == typeof(DateTimeOffset) => new DateTimeOffsetSerializer(BsonType.String),
+                _ when type == typeof(object) => new ObjectSerializer(
+                    BsonSerializer.LookupDiscriminatorConvention(typeof(object)),
+                    GuidRepresentation.Standard,
+                    allowedSerializationTypes: _ => true,
+                    allowedDeserializationTypes: type => ObjectSerializer.DefaultAllowedTypes(type) || IsAnonymousType(type)),
                 _ => null
             };
+
+            // TODO: remove this when https://github.com/mongodb/mongo-csharp-driver/commit/e0c14c80e6c31f337439d2915b5dd90fe38f9562
+            // is released
+            private static bool IsAnonymousType(Type type) =>
+                type.GetCustomAttributes(false).Any(x => x is CompilerGeneratedAttribute) &&
+                type.IsGenericType &&
+                type.Name.Contains("Anon");
         }
     }
 }

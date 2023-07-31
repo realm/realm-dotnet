@@ -192,7 +192,7 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         [return: NotNullIfNotNull("objects")]
-        public static implicit operator RealmSchema?(ObjectSchema[]? objects) => objects == null ? null : new Builder(objects).Build();
+        public static implicit operator RealmSchema?(ObjectSchema[]? objects) => objects is null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a list of <see cref="ObjectSchema"/> instances.
@@ -205,7 +205,7 @@ namespace Realms.Schema
         /// <c>null</c> if <paramref name="objects"/> is <c>null</c>; a <see cref="RealmSchema"/> containing the supplied <see cref="ObjectSchema"/>s otherwise.
         /// </returns>
         [return: NotNullIfNotNull("objects")]
-        public static implicit operator RealmSchema?(List<ObjectSchema>? objects) => objects == null ? null : new Builder(objects).Build();
+        public static implicit operator RealmSchema?(List<ObjectSchema>? objects) => objects is null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from an array of <see cref="Type"/> instances.
@@ -216,7 +216,7 @@ namespace Realms.Schema
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
         [return: NotNullIfNotNull("objects")]
-        public static implicit operator RealmSchema?(Type[]? objects) => objects == null ? null : new Builder(objects).Build();
+        public static implicit operator RealmSchema?(Type[]? objects) => objects is null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a List of <see cref="Type"/> instances.
@@ -227,7 +227,7 @@ namespace Realms.Schema
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
         [return: NotNullIfNotNull("objects")]
-        public static implicit operator RealmSchema?(List<Type>? objects) => objects == null ? null : new Builder(objects).Build();
+        public static implicit operator RealmSchema?(List<Type>? objects) => objects is null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// Constructs a <see cref="RealmSchema"/> from a HashSet of <see cref="Type"/> instances.
@@ -238,7 +238,7 @@ namespace Realms.Schema
         /// </returns>
         /// <seealso cref="Builder.Add(Type)"/>
         [return: NotNullIfNotNull("objects")]
-        public static implicit operator RealmSchema?(HashSet<Type>? objects) => objects == null ? null : new Builder(objects).Build();
+        public static implicit operator RealmSchema?(HashSet<Type>? objects) => objects is null ? null : new Builder(objects).Build();
 
         /// <summary>
         /// A convenience operator to construct a <see cref="RealmSchema"/> from a <see cref="Builder"/> by calling the

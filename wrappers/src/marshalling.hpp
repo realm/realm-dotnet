@@ -456,10 +456,10 @@ static inline Mixed from_capi(Object* obj, bool isMixedColumn)
 {
     if (!isMixedColumn)
     {
-        return Mixed{ obj->obj().get_key() };
+        return Mixed{ obj->get_obj().get_key() };
     }
 
-    return Mixed{ ObjLink{obj->obj().get_table()->get_key(), obj->obj().get_key()} };
+    return Mixed{ ObjLink{obj->get_obj().get_table()->get_key(), obj->get_obj().get_key()} };
 }
 
 static inline Mixed from_capi(const realm_value_t& val)

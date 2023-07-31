@@ -109,7 +109,7 @@ namespace Realms
 
             if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
             {
-                throw new ArgumentException("Value does not belong to a realm", nameof(value));
+                return -1;
             }
 
             return _listHandle.Find(realmValue);

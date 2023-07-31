@@ -133,19 +133,20 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
+                Transaction transaction = null!;
                 using (var realm = GetRealm(_realm.Config))
                 {
                     var peopleQuery = realm.All<Person>();
                     Assert.That(peopleQuery.Count(), Is.EqualTo(0));
-                    var transaction = await realm.BeginWriteAsync();
+                    transaction = await realm.BeginWriteAsync();
                     var person = new Person { FullName = "Jonh Wickie" };
                     realm.Add(person);
                     Assert.That(peopleQuery.Count(), Is.EqualTo(1));
                 }
 
                 _realm.Refresh();
-                var count = _realm.All<Person>().Count();
                 Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+                Assert.That(transaction.State, Is.EqualTo(TransactionState.RolledBack));
             });
         }
 
@@ -183,13 +184,13 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var person = await _realm.WriteAsync(() =>
+                Person person = null!;
+                await _realm.WriteAsync(() =>
                 {
-                    return _realm.Add(
-                        new Person
-                        {
-                            FirstName = "Marco"
-                        });
+                    person = _realm.Add(new Person
+                    {
+                        FirstName = "Marco"
+                    });
                 });
 
                 // assert that this thread can access a managed object that was created
@@ -269,10 +270,10 @@ namespace Realms.Tests.Database
             {
                 var people = new Person[]
                 {
-                    new Person { FirstName = "Anderson" },
-                    new Person { FirstName = "Banderson" },
-                    new Person { FirstName = "Canderson" },
-                    new Person { FirstName = "Danderson" }
+                    new() { FirstName = "Anderson" },
+                    new() { FirstName = "Banderson" },
+                    new() { FirstName = "Canderson" },
+                    new() { FirstName = "Danderson" }
                 };
 
                 var tasks = new Task[people.Length];
@@ -350,7 +351,6 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
                 var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
@@ -388,7 +388,6 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                var asyncThreadFactory = new AsyncContextThread().Factory;
                 using var cts = new CancellationTokenSource();
                 var tcs = new TaskCompletionSource();
                 var taskCancelled = false;
@@ -420,6 +419,21 @@ namespace Realms.Tests.Database
 
                 await Task.WhenAll(syncTask, asyncTask);
                 Assert.That(taskCancelled, Is.EqualTo(true));
+            });
+        }
+
+        [Test]
+        public void AsyncCommitCancel_WhenRealmIsDisposed_IsNoOp()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                using var cts = new CancellationTokenSource();
+                var writeTask = _realm.BeginWriteAsync(cts.Token);
+
+                cts.Cancel();
+                _realm.Dispose();
+
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => writeTask);
             });
         }
     }

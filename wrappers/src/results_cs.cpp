@@ -154,11 +154,16 @@ REALM_EXPORT Results* results_snapshot(const Results& results, NativeException::
 REALM_EXPORT size_t results_find_value(Results& results, realm_value_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        auto results_type = results.get_type();
+        if (value.is_null() && !is_nullable(results_type)) {
+            return (size_t)-1;
+        }
+
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             if (results.get_realm() != value.link.object->realm()) {
                 throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
             }
-            return results.index_of(value.link.object->obj());
+            return results.index_of(value.link.object->get_obj());
         }
 
         return results.index_of(from_capi(value));

@@ -102,6 +102,9 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPWStr)] string query_buf, IntPtr query_len,
                 [MarshalAs(UnmanagedType.LPArray), In] NativeQueryArgument[] arguments, IntPtr args_count,
                 out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_find_value", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr find_value(SetHandle setHandle, PrimitiveValue value, out NativeException ex);
         }
 
         public override bool IsValid
@@ -224,6 +227,17 @@ namespace Realms
         }
 
         public override void Unbind() => NativeMethods.destroy(handle);
+
+        public int Find(in RealmValue value)
+        {
+            EnsureIsOpen();
+
+            var (primitive, handles) = value.ToNative();
+            var result = NativeMethods.find_value(this, primitive, out var nativeException);
+            handles?.Dispose();
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
 
         protected override IntPtr SnapshotCore(out NativeException ex) => NativeMethods.snapshot(this, out ex);
 

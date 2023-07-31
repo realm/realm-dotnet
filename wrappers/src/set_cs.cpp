@@ -58,10 +58,10 @@ REALM_EXPORT bool realm_set_add_value(object_store::Set& set, realm_value_t valu
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.insert_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())).second;
+                return set.insert_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())).second;
             }
 
-            return set.insert(value.link.object->obj()).second;
+            return set.insert(value.link.object->get_obj()).second;
         }
 
         return set.insert_any(from_capi(value)).second;
@@ -98,10 +98,10 @@ REALM_EXPORT bool realm_set_remove_value(object_store::Set& set, realm_value_t v
         if (value.type == realm_value_type::RLM_TYPE_LINK) {
             // For Mixed, we need ObjLink, otherwise, ObjKey
             if ((set.get_type() & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.remove_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())).second;
+                return set.remove_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())).second;
             }
 
-            return set.remove(value.link.object->obj()).second;
+            return set.remove(value.link.object->get_obj()).second;
         }
 
         return set.remove_any(from_capi(value)).second;
@@ -127,10 +127,10 @@ REALM_EXPORT bool realm_set_contains_value(object_store::Set& set, realm_value_t
             }
 
             if ((set_type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key())) != not_found;
+                return set.find_any(ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key())) != not_found;
             }
 
-            return set.find(value.link.object->obj()) != realm::not_found;
+            return set.find(value.link.object->get_obj()) != realm::not_found;
         }
 
         return set.find_any(from_capi(value)) != realm::not_found;
@@ -268,6 +268,29 @@ REALM_EXPORT Results* set_get_filtered_results(const object_store::Set& set, uin
 {
     return handle_errors(ex, [&]() {
         return get_filtered_results(set.get_realm(), set.get_table(), set.get_query(), query_buf, query_len, arguments, args_count, DescriptorOrdering());
+    });
+}
+
+REALM_EXPORT size_t set_find_value(const object_store::Set& set, realm_value_t value, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        auto set_type = set.get_type();
+        // This doesn't use ensure_types to allow List<string>.Find(null) to return false
+        if (value.is_null() && !is_nullable(set_type)) {
+            return (size_t)-1;
+        }
+
+        if (!value.is_null() && set_type != PropertyType::Mixed && to_capi(set_type) != value.type) {
+            throw PropertyTypeMismatchException(to_string(set_type), to_string(value.type));
+        }
+
+        if (value.type == realm_value_type::RLM_TYPE_LINK) {
+            if (set.get_realm() != value.link.object->realm()) {
+                throw ObjectManagedByAnotherRealmException("Can't look up index of an object that belongs to a different Realm.");
+            }
+        }
+
+        return set.find_any(from_capi(value));
     });
 }
 

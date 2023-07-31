@@ -197,7 +197,7 @@ namespace Realms.Native
         {
             return new PrimitiveValue
             {
-                Type = handle == null ? RealmValueType.Null : RealmValueType.Object,
+                Type = handle is null ? RealmValueType.Null : RealmValueType.Object,
                 link_value = new LinkValue
                 {
                     object_ptr = handle?.DangerousGetHandle() ?? IntPtr.Zero

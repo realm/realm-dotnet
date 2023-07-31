@@ -99,6 +99,7 @@ namespace Realms
                     sw.Start();
 
                     AppHandle.ForceCloseHandles();
+                    AsyncOpenTaskHandle.CancelInFlightTasks();
                     SharedRealmHandle.ForceCloseNativeRealms();
 
                     sw.Stop();

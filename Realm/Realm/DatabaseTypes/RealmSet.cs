@@ -89,7 +89,21 @@ namespace Realms
             return _setHandle.Remove(realmValue);
         }
 
-        public override int IndexOf([AllowNull] T value) => throw new NotSupportedException();
+        // IndexOf is not available on ISet<T>, but is available on IList and IRealmCollection.
+        // We provide an implementation here because in data-binding scenarios, the binding engine
+        // may cast the collection to IList and attempt to invoke IndexOf on it - most notably when
+        // binding to a ListView and changing the SelectedItem.
+        public override int IndexOf([AllowNull] T value)
+        {
+            var realmValue = Operator.Convert<T?, RealmValue>(value);
+
+            if (realmValue.Type == RealmValueType.Object && !realmValue.AsIRealmObject().IsManaged)
+            {
+                return -1;
+            }
+
+            return _setHandle.Find(realmValue);
+        }
 
         public override bool Contains([AllowNull] T value)
         {

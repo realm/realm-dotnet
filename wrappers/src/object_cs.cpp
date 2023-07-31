@@ -64,7 +64,7 @@ extern "C" {
         return handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            return new List(object.realm(), object.obj(), get_column_key(object, property_ndx));
+            return new List(object.realm(), object.get_obj(), get_column_key(object, property_ndx));
         });
     }
 
@@ -73,7 +73,7 @@ extern "C" {
         return handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            return new object_store::Set(object.realm(), object.obj(), get_column_key(object, property_ndx));
+            return new object_store::Set(object.realm(), object.get_obj(), get_column_key(object, property_ndx));
         });
     }
 
@@ -82,7 +82,7 @@ extern "C" {
         return handle_errors(ex, [&]() {
             verify_can_get(object);
 
-            return new object_store::Dictionary(object.realm(), object.obj(), get_column_key(object, property_ndx));
+            return new object_store::Dictionary(object.realm(), object.get_obj(), get_column_key(object, property_ndx));
         });
     }
 
@@ -93,7 +93,7 @@ extern "C" {
 
             auto prop = get_property(object, property_ndx);
             if ((prop.type & ~PropertyType::Flags) == PropertyType::Object) {
-                const Obj link_obj = object.obj().get_linked_object(prop.column_key);
+                const Obj link_obj = object.get_obj().get_linked_object(prop.column_key);
                 if (link_obj) {
                     *value = to_capi(link_obj, object.realm());
                 }
@@ -102,7 +102,7 @@ extern "C" {
                 }
             }
             else {
-                auto val = object.obj().get_any(prop.column_key);
+                auto val = object.get_obj().get_any(prop.column_key);
                 if (!val.is_null() && val.get_type() == type_TypedLink) {
                     *value = to_capi(val.get<ObjLink>(), object.realm());
                 }
@@ -122,7 +122,7 @@ extern "C" {
         });
     }
 
-    REALM_EXPORT void object_set_value(const Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_value(Object& object, size_t property_ndx, realm_value_t value, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -147,14 +147,14 @@ extern "C" {
             if (value.type == realm_value_type::RLM_TYPE_LINK) {
                 // For Mixed, we need ObjLink, otherwise, ObjKey
                 if ((prop.type & ~PropertyType::Flags) == PropertyType::Mixed) {
-                    object.obj().set_any(prop.column_key, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->obj().get_key()));
+                    object.get_obj().set_any(prop.column_key, ObjLink(value.link.object->get_object_schema().table_key, value.link.object->get_obj().get_key()));
                 }
                 else {
-                    object.obj().set(prop.column_key, value.link.object->obj().get_key());
+                    object.get_obj().set(prop.column_key, value.link.object->get_obj().get_key());
                 }
             }
             else {
-                object.obj().set_any(prop.column_key, from_capi(value));
+                object.get_obj().set_any(prop.column_key, from_capi(value));
             }
         });
     }
@@ -172,7 +172,7 @@ extern "C" {
             TableRef table = object.realm()->read_group().get_table(relationship.table_key);
             const ColKey column = link.column_key;
 
-            TableView backlink_view = object.obj().get_backlink_view(table, column);
+            TableView backlink_view = object.get_obj().get_backlink_view(table, column);
             return new Results(object.realm(), std::move(backlink_view));
         });
     }
@@ -191,7 +191,7 @@ extern "C" {
                 throw InvalidArgument(ErrorCodes::InvalidProperty, util::format("'%1.%2' is not a relationship to '%3'", source_object_schema.name, source_property.name, object.get_object_schema().name));
             }
 
-            TableView backlink_view = object.obj().get_backlink_view(source_table, source_property.column_key);
+            TableView backlink_view = object.get_obj().get_backlink_view(source_table, source_property.column_key);
             return new Results(object.realm(), std::move(backlink_view));
         });
     }
@@ -201,14 +201,14 @@ extern "C" {
         return handle_errors(ex, [&]() {
             verify_can_set(parent);
 
-            return new Object(parent.realm(), parent.obj().create_and_set_linked_object(get_column_key(parent, property_ndx)));
+            return new Object(parent.realm(), parent.get_obj().create_and_set_linked_object(get_column_key(parent, property_ndx)));
         });
     }
 
     REALM_EXPORT Object* object_get_parent(Object& child, TableKey& table_key, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            Obj parent = child.obj().get_parent_object();
+            Obj parent = child.get_obj().get_parent_object();
             table_key = parent.get_table()->get_key();
 
             return new Object(child.realm(), std::move(parent));
@@ -221,10 +221,10 @@ extern "C" {
             verify_can_set(object);
 
             auto column_key = get_column_key(object, property_ndx);
-            if (!object.obj().get_table()->is_nullable(column_key))
+            if (!object.get_obj().get_table()->is_nullable(column_key))
                 throw std::invalid_argument("Column is not nullable");
 
-            object.obj().set_null(column_key);
+            object.get_obj().set_null(column_key);
         });
     }
 
@@ -237,7 +237,7 @@ extern "C" {
 
             verify_can_set(object);
 
-            object.obj().get_table()->remove_object(object.obj().get_key());
+            object.get_obj().get_table()->remove_object(object.get_obj().get_key());
         });
     }
 
@@ -246,16 +246,16 @@ extern "C" {
         return handle_errors(ex, [&]() {
             return object.is_valid() &&
                 other_object.is_valid() &&
-                (*object.obj().get_table()).get_key() == (*other_object.obj().get_table()).get_key() &&
-                object.obj().get_key() == other_object.obj().get_key();
+                (*object.get_obj().get_table()).get_key() == (*other_object.get_obj().get_table()).get_key() &&
+                object.get_obj().get_key() == other_object.get_obj().get_key();
         });
     }
 
     REALM_EXPORT int32_t object_get_hashcode(const Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            int32_t table_key_value = static_cast<int32_t>(object.obj().get_table()->get_key().value);
-            int32_t object_key_value = static_cast<int32_t>(object.obj().get_key().value);
+            int32_t table_key_value = static_cast<int32_t>(object.get_obj().get_table()->get_key().value);
+            int32_t object_key_value = static_cast<int32_t>(object.get_obj().get_key().value);
 
             int32_t hashCode = -986587137;
             hashCode = (hashCode * -1521134295) + table_key_value;
@@ -296,14 +296,14 @@ extern "C" {
             verify_can_set(object);
 
             auto col_key = get_column_key(object, property_ndx);
-            return object.obj().add_int(col_key, value).get_any(col_key).get_int();
+            return object.get_obj().add_int(col_key, value).get_any(col_key).get_int();
         });
     }
 
     REALM_EXPORT size_t object_get_backlink_count(Object& object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
-            return object.obj().get_backlink_count();
+            return object.get_obj().get_backlink_count();
         });
     }
 
