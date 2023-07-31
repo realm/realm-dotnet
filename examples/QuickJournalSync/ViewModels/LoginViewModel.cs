@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.Input;
 using QuickJournalSync.Services;
 
 namespace QuickJournalSync.ViewModels
@@ -28,26 +29,10 @@ namespace QuickJournalSync.ViewModels
                 return;
             }
 
-            await DoLogin();
-        }
-
-        [RelayCommand]
-        public async Task SignUp()
-        {
-            if (!await VeryifyEmailAndPassword())
-            {
-                return;
-            }
-
-            await DoSignup();
-        }
-
-        private async Task DoLogin()
-        {
             try
             {
                 IsBusy = true;
-                await RealmService.LoginAsync(Email, Password);
+                await RealmService.LoginAsync(Email!, Password!);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -60,12 +45,18 @@ namespace QuickJournalSync.ViewModels
             await GoToMainPage();
         }
 
-        private async Task DoSignup()
+        [RelayCommand]
+        public async Task SignUp()
         {
+            if (!await VeryifyEmailAndPassword())
+            {
+                return;
+            }
+
             try
             {
                 IsBusy = true;
-                await RealmService.RegisterAsync(Email, Password);
+                await RealmService.RegisterAsync(Email!, Password!);
                 IsBusy = false;
             }
             catch (Exception ex)
@@ -75,7 +66,7 @@ namespace QuickJournalSync.ViewModels
                 return;
             }
 
-            await DoLogin();
+            await Login();
         }
 
         private async Task<bool> VeryifyEmailAndPassword()

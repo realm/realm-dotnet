@@ -60,6 +60,16 @@ namespace QuickJournalSync.ViewModels
             });
         }
 
+        [RelayCommand]
+        public async Task Logout()
+        {
+            IsBusy = true;
+            await RealmService.LogoutAsync();
+            IsBusy = false;
+
+            await Shell.Current.GoToAsync($"//login");
+        }
+
         private async Task GoToEntry(JournalEntry entry)
         {
             var navigationParameter = new Dictionary<string, object>
