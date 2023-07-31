@@ -7,7 +7,7 @@ using QuickJournalSync.Models;
 namespace QuickJournalSync.ViewModels
 {
     [QueryProperty("Entry", nameof(Entry))]
-    public partial class EntryDetailViewModel : ObservableObject
+    public partial class EntryDetailViewModel : BaseViewModel
     {
         [ObservableProperty]
         private JournalEntry entry = null!;

@@ -4,11 +4,12 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using QuickJournalSync.Messages;
 using QuickJournalSync.Models;
+using QuickJournalSync.Services;
 using Realms;
 
 namespace QuickJournalSync.ViewModels
 {
-    public partial class EntriesViewModel : ObservableObject
+    public partial class EntriesViewModel : BaseViewModel
     {
         private readonly Realm realm;
 
@@ -17,7 +18,7 @@ namespace QuickJournalSync.ViewModels
 
         public EntriesViewModel()
         {
-            realm = Realm.GetInstance();
+            realm = RealmService.GetMainThreadRealm();
             Entries = realm.All<JournalEntry>();
 
             // We are using a WeakReferenceManager here to get notified when JournalEntriesDetailPage is closed.

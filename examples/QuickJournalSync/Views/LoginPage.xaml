@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:QuickJournalSync.ViewModels"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="QuickJournalSync.Views.LoginPage"
+             Title="Login">
+    <ContentPage.BindingContext>
+        <vm:LoginViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+            EventName="Appearing"
+            Command="{Binding AppearingCommand}" />
+        <toolkit:StatusBarBehavior StatusBarColor="#023430" StatusBarStyle="LightContent" />
+    </ContentPage.Behaviors>
+    <VerticalStackLayout
+        Padding="30"
+        Spacing="15"
+        VerticalOptions="StartAndExpand">
+        <Label 
+            Text="Login"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center"
+            FontSize="Title"
+            Margin="0,100,0,100"/>
+        <Entry Keyboard="Email" Placeholder="Email" Text="{Binding Email}"/>
+        <Entry Keyboard="Plain" IsPassword="True" Placeholder="Password" Text="{Binding Password}"/>
+        <Button Text="Create account" Command="{Binding SignUpCommand}"/>
+        <Label Margin="5"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                TextColor="{DynamicResource Primary}"
+                Text="Already have an account? Log in">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding LoginCommand}" />
+            </Label.GestureRecognizers>
+        </Label>
+        <Label
+            Text="Please log in or register with a Device Sync user account. This is separate from your Atlas Cloud login"
+            FontSize="Caption"
+            HorizontalTextAlignment="Center"
+            Margin="0, 20"/>
+    </VerticalStackLayout>
+</ContentPage>

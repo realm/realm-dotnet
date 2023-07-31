@@ -7,9 +7,13 @@
     Shell.FlyoutBehavior="Disabled">
 
     <ShellContent
+        Title="Login"
+        ContentTemplate="{DataTemplate local:LoginPage}"
+        Route="login" />
+
+    <ShellContent
         Title="QuickJournalSync"
         ContentTemplate="{DataTemplate local:EntriesPage}"
         Route="main" />
-
 </Shell>
 

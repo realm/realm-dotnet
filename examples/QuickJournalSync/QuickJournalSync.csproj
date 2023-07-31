@@ -59,12 +59,14 @@
 	  <None Remove="ViewModels\" />
 	  <None Remove="Models\" />
 	  <None Remove="Messages\" />
+	  <None Remove="Services\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Views\" />
 	  <Folder Include="ViewModels\" />
 	  <Folder Include="Models\" />
 	  <Folder Include="Messages\" />
+	  <Folder Include="Services\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <MauiXaml Update="Views\JournalEntriesPage.xaml">

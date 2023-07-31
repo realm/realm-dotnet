@@ -1,0 +1,11 @@
+﻿<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="QuickJournalSync.Views.BusyPopup"
+             CanBeDismissedByTappingOutsideOfPopup="false"
+             Size="100,100">
+    <StackLayout Padding="10">
+        <ActivityIndicator IsRunning="True" Scale="2"
+                           HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
+    </StackLayout>
+</toolkit:Popup>
