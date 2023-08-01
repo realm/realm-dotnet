@@ -127,29 +127,6 @@ namespace Realms.Tests.Database
         }
 
         [Test]
-        public void TestTaskCancellation()
-        {
-            TestHelpers.RunAsyncTest(async () =>
-            {
-                var cts = new CancellationTokenSource(10);
-
-                await TestHelpers.AssertThrows<TaskCanceledException>(() => Task.Delay(2000).AddCancellation(cts.Token));
-
-                // Null token should just await the original task
-                await Task.Delay(10).AddCancellation(token: null);
-
-                // Cancelling after the task has completed should be a no-op
-                var cts2 = new CancellationTokenSource(50);
-                await Task.Delay(10).AddCancellation(cts2.Token);
-
-                var cts3 = new CancellationTokenSource();
-                cts3.Cancel();
-
-                await TestHelpers.AssertThrows<TaskCanceledException>(() => Task.Delay(10).AddCancellation(cts3.Token));
-            });
-        }
-
-        [Test]
         public void TestQueryMethods()
         {
             Assert.Throws<NotSupportedException>(() => QueryMethods.Contains("foo", "bar", StringComparison.Ordinal));

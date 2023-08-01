@@ -1658,6 +1658,63 @@ namespace Realms.Tests.Sync
         }
 
         [Test]
+        public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCancelled()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+                await AddSomeData(testGuid);
+
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending), "State should be 'Pending' after change");
+                var cts = new CancellationTokenSource(1);
+
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => realm.Subscriptions.WaitForSynchronizationAsync(cts.Token));
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending), "State should still be 'Pending' after cancellation");
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete), "State should be 'Complete' after synchronization");
+            });
+        }
+
+        [Test]
+        public void Integration_SubscriptionSet_WaitForSynchronization_CanBeCalledWithCancelledToken()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+                await AddSomeData(testGuid);
+
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Add(realm.All<SyncAllTypesObject>().Where(o => o.GuidProperty == testGuid));
+                });
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending), "State should be 'Pending' after change");
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => realm.Subscriptions.WaitForSynchronizationAsync(cts.Token));
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Pending), "State should still be 'Pending' after cancellation");
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(realm.Subscriptions.State, Is.EqualTo(SubscriptionSetState.Complete), "State should be 'Complete' after synchronization");
+            });
+        }
+
+        [Test]
         public void Integration_CreateObjectNotMatchingSubscriptions_ShouldError()
         {
             SyncTestHelpers.RunBaasTestAsync(async () =>

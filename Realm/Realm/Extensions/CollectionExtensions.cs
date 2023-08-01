@@ -543,8 +543,8 @@ public static class CollectionExtensions
 
         if (ShouldWaitForSync(waitForSync, existingSub, newSub))
         {
-            await subscriptions.WaitForSynchronizationAsync().AddCancellation(cancellationToken);
-            await realmResults.Realm.SyncSession.WaitForDownloadAsync().AddCancellation(cancellationToken);
+            await subscriptions.WaitForSynchronizationAsync(cancellationToken);
+            await realmResults.Realm.SyncSession.WaitForDownloadAsync(cancellationToken);
         }
 
         return query;

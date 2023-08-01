@@ -10,11 +10,14 @@
 
   await realm.Subscriptions.WaitForSynchronization();
   ```
+  It offers a parameter to control whether to wait every time for synchronization or just the first time a subscription is added, as well as cancellation token support. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
+* Added an optional `cancellationToken` argument to `Session.WaitForDownloadAsync/WaitForUploadAsync`. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
+* Added an optional `cancellationToken` argument to `SubscriptionSet.WaitForSynchronization`. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
 
 ### Fixed
 * Fixed a race condition between canceling an async write transaction and closing the Realm file, which could result in an `ObjectDisposedException : Safe handle has been closed` being thrown. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
 * Fixed an issue where in the extremely rare case that an exception is thrown by `Realm.RefreshAsync`, that exception would have been ignored and `false` would have been returned. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
-* Fixed the nullability annotation of `SubscriptionSet.Find` to correctly indicate that `null` is returned if the subscription doesn't exist in the subscription set.
+* Fixed the nullability annotation of `SubscriptionSet.Find` to correctly indicate that `null` is returned if the subscription doesn't exist in the subscription set. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
