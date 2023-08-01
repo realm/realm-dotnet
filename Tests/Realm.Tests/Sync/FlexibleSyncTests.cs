@@ -21,6 +21,7 @@ using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using NUnit.Framework;
@@ -2268,6 +2269,31 @@ namespace Realms.Tests.Sync
 
                 await query.SubscribeAsync(new() { Name = name }, WaitForSyncMode.Always);
                 Assert.That(query.Count(), Is.EqualTo(2));
+            });
+        }
+
+        [Test]
+        public void Results_Subscribe_WithCancellation_CancelsTheWait()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var testGuid = Guid.NewGuid();
+
+                await AddSomeData(testGuid);
+
+                var realm = await GetFLXIntegrationRealmAsync();
+
+                var cts = new CancellationTokenSource(1);
+                var query = realm.All<SyncAllTypesObject>()
+                    .Where(o => o.GuidProperty == testGuid && o.DoubleProperty > 2);
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => query.SubscribeAsync(cancellationToken: cts.Token));
+
+                Assert.That(query.Count(), Is.EqualTo(0));
+                Assert.That(realm.Subscriptions.Count, Is.EqualTo(1));
+
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+
+                Assert.That(query.Count(), Is.EqualTo(1));
             });
         }
 

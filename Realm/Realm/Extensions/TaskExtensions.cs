@@ -79,7 +79,7 @@ internal static class TaskExtensions
         else
         {
             using var cancelTask = new CancellationTask(token.Value);
-            await Task.WhenAny(task, cancelTask.Task);
+            await (await Task.WhenAny(task, cancelTask.Task));
         }
     }
 
@@ -96,7 +96,8 @@ internal static class TaskExtensions
             }
             else
             {
-                _registration = token.Register(() => tcs.TrySetCanceled());
+                _registration = token.Register(() => 
+                    tcs.TrySetCanceled());
             }
 
             Task = tcs.Task;
