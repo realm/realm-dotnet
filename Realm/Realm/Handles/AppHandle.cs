@@ -115,44 +115,6 @@ namespace Realms.Sync
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_is_same_instance", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool is_same_instance(AppHandle lhs, AppHandle rhs, out NativeException ex);
-
-            public static class EmailPassword
-            {
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_register_user", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void register_user(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
-                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_confirm_user", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void confirm_user(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
-                    [MarshalAs(UnmanagedType.LPWStr)] string token_id, IntPtr token_id_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_resend_confirmation_email", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void resent_confirmation_email(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_send_reset_password_email", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void send_reset_password_email(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string email, IntPtr email_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_reset_password", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void reset_password(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
-                    [MarshalAs(UnmanagedType.LPWStr)] string token, IntPtr token_len,
-                    [MarshalAs(UnmanagedType.LPWStr)] string token_id, IntPtr token_id_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-
-                [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_app_email_call_reset_password_function", CallingConvention = CallingConvention.Cdecl)]
-                public static extern void call_reset_password_function(AppHandle app,
-                    [MarshalAs(UnmanagedType.LPWStr)] string username, IntPtr username_len,
-                    [MarshalAs(UnmanagedType.LPWStr)] string password, IntPtr password_len,
-                    IntPtr tcs_ptr, out NativeException ex);
-            }
         }
 
         static AppHandle()
@@ -241,7 +203,7 @@ namespace Realms.Sync
             {
                 foreach (var weakHandle in _appHandles)
                 {
-                    var appHandle = (AppHandle)weakHandle.Target!;
+                    var appHandle = (AppHandle?)weakHandle.Target;
                     appHandle?.Close();
                 }
 

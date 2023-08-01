@@ -28,7 +28,7 @@ namespace Realms.Native
 
         internal StringValue fallbackPipePath;
 
-        public Native.Schema schema;
+        public Schema schema;
 
         internal ulong schema_version;
 

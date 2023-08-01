@@ -59,18 +59,12 @@ namespace Realms.DataBinding
 
         public override object? Invoke(object? obj, BindingFlags invokeAttr, Binder? binder, object?[]? parameters, CultureInfo? culture)
         {
-            var ro = obj as IRealmObjectBase;
-            if (ro == null || ro.IsValid)
+            if (obj is not IRealmObjectBase ro || ro.IsValid)
             {
                 return _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
             }
 
-            if (ReturnType.IsValueType)
-            {
-                return Activator.CreateInstance(ReturnType);
-            }
-
-            return null;
+            return ReturnType.IsValueType ? Activator.CreateInstance(ReturnType) : null;
         }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);

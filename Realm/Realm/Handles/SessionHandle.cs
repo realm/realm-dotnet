@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
@@ -428,14 +429,14 @@ namespace Realms.Sync
                     NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
-                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target!;
+                var session = (Session?)GCHandle.FromIntPtr(managedSessionHandle).Target;
                 if (session is null)
                 {
                     // We're taking a weak handle to the session, so it's possible that it's been collected
                     return;
                 }
 
-                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
                     session.RaisePropertyChanged(propertyName);
                 });

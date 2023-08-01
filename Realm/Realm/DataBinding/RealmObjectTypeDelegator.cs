@@ -48,7 +48,7 @@ namespace Realms.DataBinding
             // Schema is null only for woven unmanaged objects
             if (_schema?.Any(p => p.ManagedName == name) ?? result.GetCustomAttribute<WovenPropertyAttribute>() != null)
             {
-                return _propertyCache.GetOrAdd(name, n => new WovenPropertyInfo(result));
+                return _propertyCache.GetOrAdd(name, _ => new WovenPropertyInfo(result));
             }
 
             return result;

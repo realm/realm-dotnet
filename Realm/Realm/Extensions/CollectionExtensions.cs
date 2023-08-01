@@ -513,7 +513,7 @@ namespace Realms
                 foreach (var item in source)
                 {
                     var value = valueGetter(item);
-                    if (value is IRealmObject obj && obj != null)
+                    if (value is IRealmObject obj)
                     {
                         realm.Add(obj, update);
                     }

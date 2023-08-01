@@ -19,13 +19,15 @@
 // file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Realms.Helpers;
 using Realms.Logging;
 using Realms.Native;
 using Realms.Sync;
+#if !NET5_0_OR_GREATER
+using System.IO;
+#endif
 
 namespace Realms
 {

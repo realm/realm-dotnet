@@ -30,6 +30,9 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Serializers;
+#if !NETCOREAPP2_1_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Baas
 {
@@ -161,7 +164,7 @@ namespace Baas
 
         static BaasClient()
         {
-            BsonSerializer.RegisterSerializer(new ObjectSerializer(type => true));
+            BsonSerializer.RegisterSerializer(new ObjectSerializer(_ => true));
         }
 
         private BaasClient(Uri baseUri, string differentiator, TextWriter output, string? clusterName = null)
@@ -219,7 +222,7 @@ namespace Baas
 
             var baseUri = new Uri(baseUrl);
             var baasCluster = extracted.GetValueOrDefault("baascluster");
-            var differentiator = extracted.GetValueOrDefault("baasdifferentiator", "local")!;
+            var differentiator = extracted.GetValueOrDefault("baasdifferentiator", "local");
 
             var client = string.IsNullOrEmpty(baasCluster)
                 ? await Docker(baseUri, differentiator, output)
@@ -368,9 +371,9 @@ namespace Baas
 
             if (setupCollections)
             {
-                (var salesSchema, var salesRules) = Schemas.Sales(partitionKeyType, Differentiator);
-                (var usersSchema, var usersRules) = Schemas.Users(partitionKeyType, Differentiator);
-                (var foosSchema, var foosRules) = Schemas.Foos(partitionKeyType, Differentiator);
+                var (salesSchema, salesRules) = Schemas.Sales(partitionKeyType, Differentiator);
+                var (usersSchema, usersRules) = Schemas.Users(partitionKeyType, Differentiator);
+                var (foosSchema, foosRules) = Schemas.Foos(partitionKeyType, Differentiator);
 
                 await CreateSchema(app, mongoServiceId, salesSchema, salesRules);
                 await CreateSchema(app, mongoServiceId, usersSchema, usersRules);
@@ -389,7 +392,7 @@ namespace Baas
             return app;
         }
 
-        public async Task<BaasApp> CreateFlxApp(string name)
+        private async Task<BaasApp> CreateFlxApp(string name)
         {
             _output.WriteLine($"Creating FLX app {name}...");
 
@@ -434,8 +437,10 @@ namespace Baas
             // An empty fragment with just the sync configuration is necessary,
             // as the "conf" document that we retrieve has a bunch of extra fields that we are supposed
             // to be use/return to the server when PATCH-ing
-            var fragment = new BsonDocument();
-            fragment[syncType] = config[syncType];
+            var fragment = new BsonDocument
+            {
+                [syncType] = config[syncType]
+            };
 
             await PatchAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/config", fragment);
         }
@@ -496,9 +501,9 @@ namespace Baas
                 await PostAsync<BsonDocument>(url, new
                 {
                     name = type,
-                    type = type,
+                    type,
                     disabled = false,
-                    config = config,
+                    config,
                     metadata_fields = metadataFields,
                 });
             }
@@ -510,11 +515,11 @@ namespace Baas
 
             var response = await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/functions", new
             {
-                name = name,
+                name,
                 run_as_system = runAsSystem,
                 can_evaluate = new { },
                 @private = false,
-                source = source
+                source
             });
 
             return response!["_id"].AsString;
@@ -610,8 +615,6 @@ namespace Baas
 
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/schemas", schema);
             await PostAsync<BsonDocument>($"groups/{_groupId}/apps/{app}/services/{mongoServiceId}/rules", rule);
-
-            return;
         }
 
         private async Task RefreshAccessTokenAsync()
@@ -690,7 +693,7 @@ namespace Baas
             public override string ToString() => AppId;
         }
 
-        public class AuthMetadataField
+        private class AuthMetadataField
         {
             [BsonElement("name")]
             public string Name { get; }
@@ -721,18 +724,6 @@ namespace Baas
                 additional_fields = new { }
             };
 
-            private static object _flxDefaultRoles => new
-            {
-                name = "default",
-                apply_when = new { },
-                read = true,
-                write = false,
-                insert = true,
-                delete = true,
-                search = true,
-                additional_fields = new { }
-            };
-
             private static object Metadata(string differentiator, string collectionName) => new
             {
                 database = $"Schema_{differentiator}",
@@ -745,13 +736,6 @@ namespace Baas
                 collection = collectionName,
                 database = $"Schema_{differentiator}",
                 roles = new[] { _defaultRoles }
-            };
-
-            public static object GenericFlxBaasRule(string differentiator, string collectionName) => new
-            {
-                collection = collectionName,
-                database = $"FLX_{differentiator}",
-                roles = new[] { _flxDefaultRoles }
             };
 
             public static (object Schema, object Rules) Sales(string partitionKeyType, string differentiator) =>
@@ -820,7 +804,7 @@ namespace Baas
 #if !NETCOREAPP2_1_OR_GREATER
     internal static class DictionaryExtensions
     {
-        [return: System.Diagnostics.CodeAnalysis.NotNullIfNotNull("defaultValue")]
+        [return: NotNullIfNotNull("defaultValue")]
         public static T? GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T? defaultValue = default)
         {
             if (dictionary.TryGetValue(key, out var value))

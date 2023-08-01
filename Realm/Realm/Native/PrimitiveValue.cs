@@ -51,7 +51,8 @@ namespace Realms.Native
         // Without this padding, .NET fails to marshal the decimal_bits array correctly and the second element is always 0.
         [FieldOffset(8)]
         [Obsolete("Don't use, please!")]
-        private long dontuse;
+        [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1214:Readonly fields should appear before non-readonly fields", Justification = "The order of the struct matters.")]
+        private readonly long dontuse;
 
         [FieldOffset(0)]
         private StringValue string_value;
@@ -197,27 +198,27 @@ namespace Realms.Native
         {
             return new PrimitiveValue
             {
-                Type = handle is null ? RealmValueType.Null : RealmValueType.Object,
+                Type = RealmValueType.Object,
                 link_value = new LinkValue
                 {
-                    object_ptr = handle?.DangerousGetHandle() ?? IntPtr.Zero
+                    object_ptr = handle.DangerousGetHandle()
                 }
             };
         }
 
-        public bool AsBool() => int_value == 1;
+        public readonly bool AsBool() => int_value == 1;
 
-        public long AsInt() => int_value;
+        public readonly long AsInt() => int_value;
 
-        public float AsFloat() => float_value;
+        public readonly float AsFloat() => float_value;
 
-        public double AsDouble() => double_value;
+        public readonly double AsDouble() => double_value;
 
-        public DateTimeOffset AsDate() => new(timestamp_value.ToTicks(), TimeSpan.Zero);
+        public readonly DateTimeOffset AsDate() => new(timestamp_value.ToTicks(), TimeSpan.Zero);
 
-        public Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
+        public readonly Decimal128 AsDecimal() => Decimal128.FromIEEEBits(decimal_bits[1], decimal_bits[0]);
 
-        public ObjectId AsObjectId()
+        public readonly ObjectId AsObjectId()
         {
             var bytes = new byte[12];
             for (var i = 0; i < 12; i++)
@@ -228,7 +229,7 @@ namespace Realms.Native
             return new ObjectId(bytes);
         }
 
-        public Guid AsGuid()
+        public readonly Guid AsGuid()
         {
             var bytes = new byte[16];
             for (var i = 0; i < 16; i++)
@@ -283,7 +284,7 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private unsafe struct BinaryValue
+        private struct BinaryValue
         {
             public byte* data;
             public IntPtr size;
@@ -293,7 +294,9 @@ namespace Realms.Native
         private struct LinkValue
         {
             public IntPtr object_ptr;
-            public TableKey table_key;
+
+            [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1214:Readonly fields should appear before non-readonly fields", Justification = "The order of the struct matters.")]
+            public readonly TableKey table_key;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -303,8 +306,8 @@ namespace Realms.Native
             private const long TicksPerSecond = 10000000;
             private const long NanosecondsPerTick = 100;
 
-            private long seconds;
-            private int nanoseconds;
+            private readonly long seconds;
+            private readonly int nanoseconds;
 
             public TimestampValue(long ticks)
             {
@@ -313,7 +316,7 @@ namespace Realms.Native
                 nanoseconds = (int)((unix_ticks % TicksPerSecond) * NanosecondsPerTick);
             }
 
-            public long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
+            public readonly long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
         }
     }
 

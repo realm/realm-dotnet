@@ -225,7 +225,7 @@ namespace Realms
             _deliveredInitialKeyNotification = false;
         }
 
-        private static string ValidateKey(string key)
+        private static void ValidateKey(string key)
         {
             if (key == null)
             {
@@ -241,8 +241,6 @@ namespace Realms
             {
                 throw new NotSupportedException($"A persisted dictionary cannot have a key that contains '.': {key}");
             }
-
-            return key;
         }
 
         internal override RealmCollectionBase<KeyValuePair<string, TValue>> CreateCollection(Realm realm, CollectionHandleBase handle) => new RealmDictionary<TValue>(realm, (DictionaryHandle)handle, Metadata);

@@ -572,7 +572,7 @@ namespace Realms
         /// Thrown if the underlying value is not of type <see cref="RealmValueType.Double"/> or <see cref="RealmValueType.Null"/>.
         /// </exception>
         /// <returns>A nullable 64-bit floating point number representing the value stored in the database.</returns>
-        public double? AsNullableDouble() => Type == RealmValueType.Null ? null : (double?)AsDouble();
+        public double? AsNullableDouble() => Type == RealmValueType.Null ? null : AsDouble();
 
         /// <summary>
         /// Returns the stored value as a nullable <see cref="bool"/>.

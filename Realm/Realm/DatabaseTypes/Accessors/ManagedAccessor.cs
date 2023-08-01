@@ -50,10 +50,10 @@ namespace Realms
 
         internal Metadata Metadata { get; private set; }
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IRealmAccessor.IsManaged" />
         public bool IsManaged => true;
 
-        /// <inheritdoc/>
+        /// <inheritdoc cref="IRealmAccessor.IsValid" />
         public bool IsValid => ObjectHandle?.IsValid != false;
 
         /// <inheritdoc/>
@@ -213,7 +213,7 @@ namespace Realms
         {
             if (changes.HasValue)
             {
-                foreach (int propertyIndex in changes.Value.Properties)
+                foreach (var propertyIndex in changes.Value.Properties)
                 {
                     // Due to a yet another Mono compiler bug, using LINQ fails here :/
                     var i = 0;
@@ -277,7 +277,7 @@ namespace Realms
                 return $"{typeName} (removed)";
             }
 
-            if (ObjectSchema.PrimaryKeyProperty is Property pkProperty)
+            if (ObjectSchema.PrimaryKeyProperty is { } pkProperty)
             {
                 var pkName = pkProperty.Name;
                 var pkValue = GetValue(pkName);

@@ -96,15 +96,7 @@ namespace Realms
         [IgnoreDataMember]
         public int Count
         {
-            get
-            {
-                if (!IsValid)
-                {
-                    return 0;
-                }
-
-                return Handle.Value.Count();
-            }
+            get => IsValid ? Handle.Value.Count() : 0;
         }
 
         [IgnoreDataMember, XmlIgnore] // XmlIgnore seems to be needed here as IgnoreDataMember is not sufficient for XmlSerializer.
@@ -347,12 +339,12 @@ namespace Realms
             }
         }
 
-        protected void RaiseCollectionChanged(NotifyCollectionChangedEventArgs args)
+        private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs args)
         {
             _collectionChanged?.Invoke(this, args);
         }
 
-        protected void RaisePropertyChanged()
+        private void RaisePropertyChanged()
         {
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
             _propertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
@@ -439,9 +431,9 @@ namespace Realms
 
         public int IndexOf(object? value)
         {
-            if (value != null && value is not T)
+            if (value is not null && value is not T)
             {
-                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
+                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value.GetType().FullName}", nameof(value));
             }
 
             return IndexOf((T?)value);
@@ -449,9 +441,9 @@ namespace Realms
 
         public bool Contains(object? value)
         {
-            if (value != null && value is not T)
+            if (value is not null && value is not T)
             {
-                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value?.GetType().FullName}", nameof(value));
+                throw new ArgumentException($"value must be of type {typeof(T).FullName}, but got {value.GetType().FullName}", nameof(value));
             }
 
             return Contains((T?)value);
@@ -485,7 +477,7 @@ namespace Realms
         {
             if (value is not T tValue)
             {
-                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType().Name ?? "null"} to a list of {typeof(T).Name}");
             }
 
             Add(tValue);
@@ -496,7 +488,7 @@ namespace Realms
         {
             if (value is not T tValue)
             {
-                throw new NotSupportedException($"Can't add an item of type {value?.GetType()?.Name ?? "null"} to a list of {typeof(T).Name}");
+                throw new NotSupportedException($"Can't add an item of type {value?.GetType().Name ?? "null"} to a list of {typeof(T).Name}");
             }
 
             Insert(index, tValue);
@@ -534,7 +526,7 @@ namespace Realms
 
         #endregion IList
 
-        public class Enumerator : IEnumerator<T>
+        private class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
             private readonly bool _shouldDisposeHandle;
@@ -547,7 +539,7 @@ namespace Realms
                 // If we didn't snapshot the parent, we should not dispose the results handle, otherwise we'll invalidate the
                 // parent collection after iterating it. Only collections of objects support snapshotting and we do not need to
                 // snapshot if the collection is frozen.
-                _shouldDisposeHandle = parent.IsValid && !parent.IsFrozen && parent.Handle.Value.CanSnapshot && parent.Metadata != null;
+                _shouldDisposeHandle = parent is { IsValid: true, IsFrozen: false, Handle.Value.CanSnapshot: true, Metadata: not null };
                 _enumerating = _shouldDisposeHandle ? new RealmResults<T>(parent.Realm, parent.Handle.Value.Snapshot(), parent.Metadata!) : parent;
             }
 
@@ -586,7 +578,7 @@ namespace Realms
     /// IRealmList is only implemented by RealmList and serves to expose the ListHandle without knowing the generic param.
     /// </summary>
     /// <typeparam name="THandle">The type of the handle for the collection.</typeparam>
-    internal interface IRealmCollectionBase<THandle> : IMetadataObject
+    internal interface IRealmCollectionBase<out THandle> : IMetadataObject
         where THandle : CollectionHandleBase
     {
         /// <summary>
@@ -631,10 +623,10 @@ namespace Realms
                 _parent.Realm.ExecuteOutsideTransaction(() =>
                 {
                     // It's possible that we unsubscribed in the meantime, so only add a notification callback if we still have callbacks
-                    if (_subscriptions.TryGetValue(keyPath, out var subscription) && subscription.Callbacks.Count > 0)
+                    if (_subscriptions.TryGetValue(keyPath, out var sub) && sub.Callbacks.Count > 0)
                     {
                         var managedResultsHandle = GCHandle.Alloc(_parent, GCHandleType.Weak);
-                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), subscription.DeliveredInitialNotification, subscription.Callbacks);
+                        _subscriptions[keyPath] = (_parent.Handle.Value.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), shallow), sub.DeliveredInitialNotification, sub.Callbacks);
                     }
                 });
             }
@@ -703,7 +695,7 @@ namespace Realms
         {
         }
 
-        internal static InvalidObject Instance { get; } = new InvalidObject();
+        internal static InvalidObject Instance { get; } = new();
 
         /// <inheritdoc/>
         public override bool Equals(object? obj)

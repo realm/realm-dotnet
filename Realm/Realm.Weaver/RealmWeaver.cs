@@ -182,7 +182,7 @@ namespace RealmWeaver
         {
             var analytics = new Analytics(analyticsConfig, _references, _logger, _moduleDefinition);
 
-            var result = ExecuteInternal(analyticsConfig, out var weaveResults);
+            var result = ExecuteInternal(out var weaveResults);
             analytics.AnalyzeRealmClassProperties(weaveResults);
 
             // Don't wait for submission
@@ -191,7 +191,7 @@ namespace RealmWeaver
             return result;
         }
 
-        private WeaveModuleResult ExecuteInternal(Analytics.Config analyticsConfig, out WeaveTypeResult[] weaveResults)
+        private WeaveModuleResult ExecuteInternal(out WeaveTypeResult[] weaveResults)
         {
             _logger.Debug("Weaving file: " + _moduleDefinition.FileName);
 
@@ -330,7 +330,7 @@ namespace RealmWeaver
 
         private WeavePropertyResult WeaveGeneratedClassProperty(TypeDefinition type, PropertyDefinition prop, TypeDefinition interfaceType)
         {
-            var accessorGetter = new MethodReference($"get_Accessor", interfaceType, type) { HasThis = true };
+            var accessorGetter = new MethodReference("get_Accessor", interfaceType, type) { HasThis = true };
 
             ReplaceGeneratedClassGetter(prop, interfaceType, accessorGetter);
 
@@ -547,7 +547,7 @@ namespace RealmWeaver
             }
 
             var isPrimaryKey = prop.IsPrimaryKey(_references);
-            if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
+            if (isPrimaryKey && !_primaryKeyTypes.Contains(prop.PropertyType.FullName))
             {
                 return WeavePropertyResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on byte, char, short, int, long, string, ObjectId, and Guid, not on {prop.PropertyType.FullName}.");
             }

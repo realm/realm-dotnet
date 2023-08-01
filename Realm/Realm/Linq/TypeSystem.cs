@@ -35,9 +35,9 @@ namespace Realms
             return ienum.GetGenericArguments()[0];
         }
 
-        private static Type? FindIEnumerable(Type seqType)
+        private static Type? FindIEnumerable(Type? seqType)
         {
-            if (seqType == null || seqType == typeof(string))
+            if (seqType is null || seqType == typeof(string))
             {
                 return null;
             }

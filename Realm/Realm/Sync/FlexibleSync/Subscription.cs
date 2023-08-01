@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.CompilerServices;
 using MongoDB.Bson;
 
 namespace Realms.Sync

@@ -40,15 +40,6 @@ REALM_EXPORT void results_destroy(Results* results)
     delete results;
 }
 
-// TODO issue https://github.com/realm/realm-dotnet-private/issues/40 added as needs
-// TODO https://github.com/realm/realm-object-store/issues/56 adding Results::operator==
-REALM_EXPORT bool results_is_same_internal_results(Results* lhs, Results* rhs, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        return (lhs == rhs || false /* *lhs == *rhs */);
-    });
-}
-
 REALM_EXPORT void results_get_value(Results& results, size_t ndx, realm_value_t* value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {

@@ -73,7 +73,7 @@ namespace Realms.Dynamic
 
             var self = GetLimitedSelf();
             var arguments = new List<Expression>();
-            MethodInfo? getter = null;
+            MethodInfo? getter;
             if (property.Type.UnderlyingType() == PropertyType.LinkingObjects)
             {
                 arguments.Add(Expression.Constant(property.Name));
@@ -273,16 +273,6 @@ namespace Realms.Dynamic
                 ObjectSchema.ObjectType.AsymmetricObject => typeof(DynamicAsymmetricObject),
                 _ => throw new NotSupportedException($"{schema.BaseType} not supported yet."),
             };
-
-        private Type GetDynamicObjectType(Property property)
-        {
-            if (property.ObjectType == null || !_realm.Metadata.TryGetValue(property.ObjectType, out var metadata))
-            {
-                throw new RealmException($"Couldn't find metadata for type {property.ObjectType}.");
-            }
-
-            return GetDynamicObjectType(metadata.Schema);
-        }
 
         private MethodInfo GetObjectGetCollectionMethod(Property property, CollectionType collectionType)
         {

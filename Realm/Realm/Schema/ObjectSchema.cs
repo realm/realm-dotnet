@@ -103,7 +103,7 @@ namespace Realms.Schema
             }
         }
 
-        internal ObjectSchema(in Native.SchemaObject native)
+        internal ObjectSchema(in SchemaObject native)
         {
             Name = native.name!;
             BaseType = native.table_type;

@@ -116,7 +116,7 @@ namespace Realms.DataBinding
             var ilen = index?.Length ?? 0;
             if (ilen == 0)
             {
-                parms = new object?[] { value };
+                parms = new[] { value };
             }
             else
             {

@@ -25,7 +25,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Realms.Sync.Native;
 
 namespace Realms.Native
 {
@@ -54,17 +53,17 @@ namespace Realms.Native
         [StructLayout(LayoutKind.Sequential)]
         private struct HttpClientRequest
         {
-            public NativeHttpMethod method;
+            public readonly NativeHttpMethod method;
 
-            private StringValue url;
+            private readonly StringValue url;
 
-            public UInt64 timeout_ms;
+            public readonly UInt64 timeout_ms;
 
-            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
+            public readonly MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
 
-            private StringValue body;
+            private readonly StringValue body;
 
-            private IntPtr managed_http_client;
+            private readonly IntPtr managed_http_client;
 
             public string Url => url!;
 
