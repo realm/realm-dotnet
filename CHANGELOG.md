@@ -9,6 +9,9 @@
   });
 
   await realm.Subscriptions.WaitForSynchronization();
+
+  // This can now be expressed as
+  await query.SubscribeAsync();
   ```
   It offers a parameter to control whether to wait every time for synchronization or just the first time a subscription is added, as well as cancellation token support. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
 * Added an optional `cancellationToken` argument to `Session.WaitForDownloadAsync/WaitForUploadAsync`. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))

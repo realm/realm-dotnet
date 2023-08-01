@@ -210,14 +210,13 @@ namespace Realms.Sync
             }
         }
 
-        public async Task WaitAsync(ProgressDirection direction, CancellationToken? cancellationToken)
+        public Task WaitAsync(ProgressDirection direction, CancellationToken? cancellationToken)
         {
             var tcs = new TaskCompletionSource();
             if (cancellationToken?.IsCancellationRequested == true)
             {
                 tcs.TrySetCanceled(cancellationToken.Value);
-                await tcs.Task;
-                return;
+                return tcs.Task;
             }
 
             // The tcsHandles is freed in HandleSessionWaitCallback. It's important that we don't free it on cancellation
@@ -239,7 +238,7 @@ namespace Realms.Sync
                 throw;
             }
 
-            await tcs.Task;
+            return tcs.Task;
         }
 
         public IntPtr GetRawPointer()
@@ -445,7 +444,7 @@ namespace Realms.Sync
                     NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
-                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target;
+                var session = (Session?)GCHandle.FromIntPtr(managedSessionHandle).Target;
                 if (session is null)
                 {
                     // We're taking a weak handle to the session, so it's possible that it's been collected
@@ -465,7 +464,7 @@ namespace Realms.Sync
 
         private enum NotifiableProperty : byte
         {
-            ConnectionState = 0,
+            ConnectionState = 0
         }
     }
 }

@@ -16,6 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 
 namespace Realms.Sync;
@@ -58,8 +60,10 @@ public enum WaitForSyncMode
     /// <summary>
     /// With this mode enabled, Realm will always return as soon as the the subscription is created
     /// while any server data is being downloaded in the background. This update is not atomic, which
-    /// means that if you subscribe to <see cref="IRealmCollection{T}.CollectionChanged"/>, you might
-    /// see multiple events being fired as the server sends objects matching the subscription.
+    /// means that if you subscribe to notifications using
+    /// <see cref="CollectionExtensions.SubscribeForNotifications{T}(IQueryable{T}, NotificationCallbackDelegate{T})"/>
+    /// or <see cref="INotifyCollectionChanged.CollectionChanged"/>
+    /// you might see multiple events being fired as the server sends objects matching the subscription.
     /// </summary>
-    Never,
+    Never
 }
