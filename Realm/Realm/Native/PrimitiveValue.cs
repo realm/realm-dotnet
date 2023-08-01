@@ -242,9 +242,9 @@ namespace Realms.Native
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        public string AsString() => string_value!;
+        public readonly string AsString() => string_value!;
 
-        public byte[] AsBinary()
+        public readonly byte[] AsBinary()
         {
             var bytes = new byte[(int)data_value.size];
             for (var i = 0; i < bytes.Length; i++)
@@ -255,7 +255,7 @@ namespace Realms.Native
             return bytes;
         }
 
-        public IRealmObjectBase AsObject(Realm realm)
+        public readonly IRealmObjectBase AsObject(Realm realm)
         {
             var handle = new ObjectHandle(realm.SharedRealmHandle, link_value.object_ptr);
 
@@ -271,7 +271,7 @@ namespace Realms.Native
             return realm.MakeObject(objectMetadata, handle);
         }
 
-        public bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
+        public readonly bool TryGetObjectHandle(Realm realm, [NotNullWhen(true)] out ObjectHandle? handle)
         {
             if (Type == RealmValueType.Object)
             {
@@ -300,7 +300,7 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct TimestampValue
+        private readonly struct TimestampValue
         {
             private const long UnixEpochTicks = 621355968000000000;
             private const long TicksPerSecond = 10000000;
@@ -316,7 +316,7 @@ namespace Realms.Native
                 nanoseconds = (int)((unix_ticks % TicksPerSecond) * NanosecondsPerTick);
             }
 
-            public readonly long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
+            public long ToTicks() => (seconds * TicksPerSecond) + (nanoseconds / NanosecondsPerTick) + UnixEpochTicks;
         }
     }
 
@@ -344,8 +344,8 @@ namespace Realms.Native
             return new StringValue { data = buffer.Data, size = byteCount };
         }
 
-        public static implicit operator bool(StringValue value) => value.data != null;
+        public static implicit operator bool(in StringValue value) => value.data != null;
 
-        public static implicit operator string?(StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+        public static implicit operator string?(in StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

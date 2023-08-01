@@ -51,7 +51,7 @@ namespace Realms.Native
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct HttpClientRequest
+        private readonly struct HttpClientRequest
         {
             public readonly NativeHttpMethod method;
 
