@@ -436,5 +436,48 @@ namespace Realms.Tests.Database
                 await TestHelpers.AssertThrows<TaskCanceledException>(() => writeTask);
             });
         }
+
+        [Test]
+        public void WriteAsync_OnBackgroundThread_RunsSynchronously()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                Assert.That(_realm.All<Person>(), Is.Empty);
+
+                await Task.Run(async () =>
+                {
+                    Assert.That(SynchronizationContext.Current, Is.Null);
+
+                    using var realm = GetRealm(_realm.Config);
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(new Person { FirstName = "Peter" });
+                    });
+                });
+
+                _realm.Refresh();
+
+                var people = _realm.All<Person>().ToArray();
+                Assert.That(people.Length, Is.EqualTo(1));
+                Assert.That(people.Single().FirstName, Is.EqualTo("Peter"));
+            });
+        }
+
+        [Test]
+        public void WriteAsync_CanceledInsideCallback()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var cts = new CancellationTokenSource();
+
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => _realm.WriteAsync(() =>
+                {
+                    _realm.Add(new Person());
+                    cts.Cancel();
+                }, cts.Token));
+
+                Assert.That(_realm.All<Person>(), Is.Empty);
+            });
+        }
     }
 }
