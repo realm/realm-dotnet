@@ -7,8 +7,8 @@
              Title="QuickJournalSync"
              x:Name="entriesPage">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add" IconImageSource="add.png" Order="Primary" Command="{Binding AddEntryCommand}" />
-        <ToolbarItem Text="Logout" IconImageSource="logout.png" Command="{Binding LogoutCommand}"/>
+        <ToolbarItem Text="Logout" IconImageSource="logout.png" Order="Primary" Command="{Binding LogoutCommand}"/>
+        <ToolbarItem Text="Add" IconImageSource="add.png" Order="Secondary" Command="{Binding AddEntryCommand}" />
     </ContentPage.ToolbarItems>
     <ContentPage.BindingContext>
         <vm:EntriesViewModel/>
@@ -18,6 +18,14 @@
             <toolkit:ItemTappedEventArgsConverter x:Key="ItemTappedEventArgsConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+            EventName="Disappearing"
+            Command="{Binding DisappearingCommand}" />
+        <toolkit:EventToCommandBehavior
+            EventName="Appearing"
+            Command="{Binding AppearingCommand}" />
+    </ContentPage.Behaviors>
     <ContentPage.Content>
         <ListView ItemsSource="{Binding Entries}"
                   SelectionMode="None">

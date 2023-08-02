@@ -26,6 +26,12 @@ namespace QuickJournalSync.Services
             return () => popup.Close();
         }
 
+        public static Task ShowToast(string text)
+        {
+            var toast = Toast.Make(text, ToastDuration.Short, textSize: 20);
+            return toast.Show();
+        }
+
         [MemberNotNull(nameof(MainPage))]
         private static void CheckIfMainPageAvailable()
         {

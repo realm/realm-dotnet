@@ -1,7 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using QuickJournalSync.Models;
 using Realms;
 using Realms.Sync;
+using Realms.Sync.Exceptions;
 
 namespace QuickJournalSync.Services
 {
@@ -15,9 +17,11 @@ namespace QuickJournalSync.Services
 
         private static Realm? _mainThreadRealm;
 
-        private static FlexibleSyncConfiguration? _realmConfig;
+        private static Session? _session;
 
         public static User? CurrentUser => _app?.CurrentUser;
+
+        public static event EventHandler<ConnectionState>? SyncConnectionStateChanged;
 
         public static void Init()
         {
@@ -40,17 +44,15 @@ namespace QuickJournalSync.Services
 
         public static Realm GetMainThreadRealm()
         {
-            return _mainThreadRealm ??= GetRealm();
-        }
+            //TODO Maybe put a lock around this?
+            if (_mainThreadRealm is null)
+            {
+                _mainThreadRealm = Realm.GetInstance(GetRealmConfig());
+                _session = _mainThreadRealm.SyncSession;
+                _session.PropertyChanged += HandleSyncSessionPropertyChanged;
+            }
 
-        public static Realm GetRealm()
-        {
-            return Realm.GetInstance(GetRealmConfig());
-        }
-
-        public static async Task<Realm> GetRealmAsync()
-        {
-            return await Realm.GetInstanceAsync(GetRealmConfig());
+            return _mainThreadRealm;
         }
 
         public static async Task RegisterAsync(string email, string password)
@@ -66,7 +68,7 @@ namespace QuickJournalSync.Services
 
             await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-            using var realm = await GetRealmAsync();  //TODO Should we do this like in the code example? (put a try catch around this to catch TaskCanceledException)...?
+            using var realm = await Realm.GetInstanceAsync(GetRealmConfig());  //TODO Should we do this like in the code example? (put a try catch around this to catch TaskCanceledException)...?
         }
 
         public static async Task LogoutAsync()
@@ -81,6 +83,12 @@ namespace QuickJournalSync.Services
             await CurrentUser.LogOutAsync();
             _mainThreadRealm?.Dispose();
             _mainThreadRealm = null;
+
+            if (_session is not null)
+            {
+                _session.PropertyChanged -= HandleSyncSessionPropertyChanged;
+                _session = null;
+            }
         }
 
         [MemberNotNull(nameof(_app))]
@@ -94,24 +102,39 @@ namespace QuickJournalSync.Services
 
         private static FlexibleSyncConfiguration GetRealmConfig()
         {
-            if (_realmConfig == null)
+            if (CurrentUser == null)
             {
-                if (CurrentUser == null)
-                {
-                    throw new Exception("Cannot get Realm config before login!");
-                }
-
-                _realmConfig = new FlexibleSyncConfiguration(CurrentUser)
-                {
-                    PopulateInitialSubscriptions = (realm) =>
-                    {
-                        var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
-                        realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
-                    }
-                };
+                throw new InvalidOperationException("Cannot get Realm config before login!");
             }
 
-            return _realmConfig;
+            return new FlexibleSyncConfiguration(CurrentUser)
+            {
+                PopulateInitialSubscriptions = (realm) =>
+                {
+                    var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
+                    realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
+                },
+                OnSessionError = HandleSessionErrorCallback  //TODO Is this good here? 
+            };
+        }
+
+        private static void HandleSessionErrorCallback(Session session, SessionException error)
+        {
+            Console.WriteLine($"Session error! {error}");
+        }
+
+        private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            // Why it does not get called?
+            var session = (Session)sender!;
+
+            Console.WriteLine("SYNC-SESSION CHANGE:" + e.PropertyName);
+
+            if (e.PropertyName == nameof(Session.ConnectionState))
+            {
+                Console.WriteLine($"New connection state: {session.ConnectionState}");
+                SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
+            }
         }
     }
 }
