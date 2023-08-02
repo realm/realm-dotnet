@@ -148,7 +148,7 @@ namespace Realms
         {
             State = state;
             _realm!.DrainTransactionQueue();
-            _realm = null!;
+            _realm = null;
         }
     }
 }
