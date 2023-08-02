@@ -181,7 +181,7 @@ namespace Realms.Schema
         internal SchemaProperty ToNative(Arena arena) => new()
         {
             name = StringValue.AllocateFrom(Name, arena),
-            managed_name = StringValue.AllocateFrom(ManagedName != Name ? ManagedName : string.Empty, arena),
+            managed_name = StringValue.AllocateFrom(ManagedName != Name ? ManagedName : null, arena),
             type = Type,
             object_type = StringValue.AllocateFrom(ObjectType, arena),
             link_origin_property_name = StringValue.AllocateFrom(LinkOriginPropertyName, arena),

@@ -1830,7 +1830,7 @@ namespace Realms.Tests.Database
             });
 
             // Id is mapped to _id - we validate that the query works both with Id and _id
-            foreach (var columnName in new[] { "Id", "_id"})
+            foreach (var columnName in new[] { "Id", "_id" })
             {
                 var objects = _realm.All<RemappedTypeObject>().Filter($"{columnName} > 0");
 
