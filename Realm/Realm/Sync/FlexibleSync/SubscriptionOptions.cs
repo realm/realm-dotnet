@@ -18,39 +18,38 @@
 
 using System.Linq;
 
-namespace Realms.Sync
+namespace Realms.Sync;
+
+/// <summary>
+/// A class providing various options to <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>.
+/// All the properties in this class are optional.
+/// </summary>
+public class SubscriptionOptions
 {
     /// <summary>
-    /// A class providing various options to <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>.
-    /// All the properties in this class are optional.
+    /// Gets or sets name of the subscription that is being added. This will
+    /// be reflected in <see cref="Subscription.Name"/>. If not specified,
+    /// an automatic name will be generated from the query.
     /// </summary>
-    public class SubscriptionOptions
-    {
-        /// <summary>
-        /// Gets or sets name of the subscription that is being added. This will
-        /// be reflected in <see cref="Subscription.Name"/>. If not specified,
-        /// an automatic name will be generated from the query.
-        /// </summary>
-        /// <value>The subscription's name.</value>
-        public string? Name { get; set; }
+    /// <value>The subscription's name.</value>
+    public string? Name { get; set; }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether the operation should update
-        /// an existing subscription with the same name. The default is <c>true</c>.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>
-        /// should have UPSERT semantics, <c>false</c> if you need it to be strictly an INSERT.
-        /// </value>
-        /// <remarks>
-        /// Adding a subscription with the same name and query string is a no-op, regardless
-        /// of the value of <see cref="UpdateExisting"/>. This means that if <see cref="Name"/>
-        /// is not specified, <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>
-        /// will always succeed since the name is derived from the query string. If <see cref="Name"/>
-        /// is set to a non-null value and <see cref="UpdateExisting"/> is set to <c>false</c>,
-        /// <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/> may throw an exception
-        /// if the subscription set contains a subscription with the same name, but a different query string.
-        /// </remarks>
-        public bool UpdateExisting { get; set; } = true;
-    }
+    /// <summary>
+    /// Gets or sets a value indicating whether the operation should update
+    /// an existing subscription with the same name. The default is <c>true</c>.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> if <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>
+    /// should have UPSERT semantics, <c>false</c> if you need it to be strictly an INSERT.
+    /// </value>
+    /// <remarks>
+    /// Adding a subscription with the same name and query string is a no-op, regardless
+    /// of the value of <see cref="UpdateExisting"/>. This means that if <see cref="Name"/>
+    /// is not specified, <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/>
+    /// will always succeed since the name is derived from the query string. If <see cref="Name"/>
+    /// is set to a non-null value and <see cref="UpdateExisting"/> is set to <c>false</c>,
+    /// <see cref="SubscriptionSet.Add{T}(IQueryable{T}, SubscriptionOptions)"/> may throw an exception
+    /// if the subscription set contains a subscription with the same name, but a different query string.
+    /// </remarks>
+    public bool UpdateExisting { get; set; } = true;
 }

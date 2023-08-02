@@ -19,6 +19,7 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions.Sync;
 
@@ -151,16 +152,18 @@ namespace Realms.Sync
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending uploads.
         /// </summary>
+        /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the wait operation.</param>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending uploads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForUploadAsync() => Handle.WaitAsync(ProgressDirection.Upload);
+        public Task WaitForUploadAsync(CancellationToken? cancellationToken = null) => Handle.WaitAsync(ProgressDirection.Upload, cancellationToken);
 
         /// <summary>
         /// Waits for the <see cref="Session"/> to finish all pending downloads.
         /// </summary>
+        /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the wait operation.</param>
         /// <returns>An awaitable <see cref="Task"/> that will be completed when all pending downloads for this <see cref="Session"/> are completed.</returns>
         /// <exception cref="InvalidOperationException">Thrown when a faulted session is waited on.</exception>
-        public Task WaitForDownloadAsync() => Handle.WaitAsync(ProgressDirection.Download);
+        public Task WaitForDownloadAsync(CancellationToken? cancellationToken = null) => Handle.WaitAsync(ProgressDirection.Download, cancellationToken);
 
         /// <summary>
         /// Stops any synchronization with the server until the Realm is re-opened again
