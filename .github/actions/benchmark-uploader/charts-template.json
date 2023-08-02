@@ -1,355 +1,336 @@
 {
-    "exportVersion":4,
-    "dashboards":{
-      "dashboard":{
-        "description":"Benchmark results for the Realm.NET SDK: https://github.com/realm/realm-dotnet/tree/main/Tests/Benchmarks/PerformanceTests",
-        "filters":[
-          {
-            "type":"String",
-            "disabled":false,
-            "name":"Branch",
-            "settings":{
-              "allOthers":false,
-              "values":[
-                "main"
-              ]
-            },
-            "linkedFields":[
-              {
-                "dataSourceId":"data-source",
-                "fieldPath":"Branch"
-              }
+  "exportVersion": 4,
+  "dashboards": {
+    "dashboard": {
+      "description": "Benchmark results for the Realm.NET SDK: https://github.com/realm/realm-dotnet/tree/main/Tests/Benchmarks/PerformanceTests",
+      "filters": [
+        {
+          "type": "String",
+          "disabled": false,
+          "name": "Branch",
+          "settings": {
+            "allOthers": false,
+            "values": [
+              "main"
             ]
-          }
-        ],
-        "layout":[
-          {
-            "w":8,
-            "h":2,
-            "x":0,
-            "y":0,
-            "i":"benchmarkTemplate",
-            "minW":1,
-            "maxW":10,
-            "minH":1,
-            "maxH":10,
-            "moved":false,
-            "static":false,
-            "isDraggable":true,
-            "isResizable":true
           },
-          {
-            "w":8,
-            "h":2,
-            "x":0,
-            "y":2,
-            "i":"fileSizeChart",
-            "minW":1,
-            "maxW":10,
-            "minH":1,
-            "maxH":10,
-            "moved":false,
-            "static":false,
-            "isDraggable":true,
-            "isResizable":true
-          }
-        ],
-        "title":"Realm .NET Benchmark Results"
-      }
-    },
-    "items":{
-      "benchmarkTemplate":{
-        "allowInteractiveFilters":true,
-        "calculatedFields":[ ],
-        "channels":{
-          "y":{
-            "channelType":"aggregation",
-            "field":"Benchmarks.Statistics.Mean",
-            "inferredType":"Number",
-            "type":"quantitative",
-            "transformedType":"Number",
-            "aggregate":"sum"
-          },
-          "x":{
-            "channelType":"category",
-            "field":"RunId",
-            "inferredType":"Number",
-            "type":"nominal",
-            "isBinning":false,
-            "quantitativeBinning":{
-              "binSize":10
-            }
-          },
-          "color":{
-            "channelType":"category",
-            "field":"Benchmarks.Parameters",
-            "inferredType":"String",
-            "type":"nominal",
-            "transformedType":"String",
-            "isBinning":false
-          }
-        },
-        "chartType":"Line",
-        "convertedFields":[
-
-        ],
-        "customisations":{
-          "options":{
-            "dataMarkers":{
-              "enabled":true,
-              "value":null
-            },
-            "legendPosition":{
-              "enabled":true,
-              "value":"top"
-            }
-          },
-          "axes":{
-            "x":{
-              "categoryLabelAngle":{
-                "enabled":true,
-                "value":"diagonal"
-              }
-            },
-            "y":{
-
-            }
-          },
-          "channels":{
-            "y":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"nsec"
-              },
-              "numberFormatting":{
-                "enabled":true,
-                "value":"Default"
-              }
-            },
-            "x":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"Run"
-              },
-              "numberFormatting":{
-                "enabled":true,
-                "value":"Custom"
-              },
-              "numberGrouping":{
-                "enabled":false,
-                "value":null
-              }
-            },
-            "color":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"Parameters"
-              }
-            }
-          },
-          "conditionalFormatting":[
-
-          ]
-        },
-        "dashboardId":"dashboard",
-        "dataSourceId":"data-source",
-        "description":"",
-        "filters":[
-
-        ],
-        "iconValue":"line-discrete",
-        "itemType":"chart",
-        "lookupFields":[
-
-        ],
-        "meta":{
-
-        },
-        "missedFields":[
-
-        ],
-        "queryCache":{
-          "filter":"[{$addFields: { Benchmarks: { $filter: { input: \"$Benchmarks\", as: \"benchmark\", cond: { $and: [ { $eq: [ \"$$benchmark.Method\", \"%METHOD%\" ] }, { $eq: [ \"$$benchmark.Type\", \"%TYPE%\" ] } ] } } }}}]",
-          "sample":false
-        },
-        "reductions":{
-          "y":[
+          "linkedFields": [
             {
-              "dimensionality":1,
-              "field":"Benchmarks",
-              "type":"Unwind array",
-              "arguments":[
-
-              ]
-            }
-          ],
-          "color":[
-            {
-              "dimensionality":1,
-              "field":"Benchmarks",
-              "type":"Unwind array",
-              "arguments":[
-
-              ]
+              "dataSourceId": "data-source",
+              "fieldPath": "Branch"
             }
           ]
         },
-        "title":"%TYPE%.%METHOD%",
-        "embedding":{
-
+        {
+          "type": "Number",
+          "disabled": false,
+          "name": "RunId",
+          "settings": {
+            "min": {
+              "enabled": true,
+              "value": "2149",
+              "inclusive": true
+            },
+            "max": {
+              "enabled": false,
+              "value": "",
+              "inclusive": true
+            }
+          },
+          "linkedFields": [
+            {
+              "dataSourceId": "data-source",
+              "fieldPath": "RunId"
+            }
+          ]
+        }
+      ],
+      "layout": [
+        {
+          "w": 8,
+          "h": 2,
+          "x": 0,
+          "y": 0,
+          "i": "benchmarkTemplate",
+          "minW": 1,
+          "maxW": 10,
+          "minH": 1,
+          "maxH": 10,
+          "moved": false,
+          "static": false,
+          "isDraggable": true,
+          "isResizable": true
+        },
+        {
+          "w": 8,
+          "h": 2,
+          "x": 0,
+          "y": 2,
+          "i": "fileSizeChart",
+          "minW": 1,
+          "maxW": 10,
+          "minH": 1,
+          "maxH": 10,
+          "moved": false,
+          "static": false,
+          "isDraggable": true,
+          "isResizable": true
+        }
+      ],
+      "title": "Realm .NET Benchmark Results"
+    }
+  },
+  "items": {
+    "benchmarkTemplate": {
+      "allowInteractiveFilters": true,
+      "calculatedFields": [],
+      "channels": {
+        "y": {
+          "channelType": "aggregation",
+          "field": "Benchmarks.Statistics.Mean",
+          "inferredType": "Number",
+          "type": "quantitative",
+          "transformedType": "Number",
+          "aggregate": "sum"
+        },
+        "x": {
+          "channelType": "category",
+          "field": "RunId",
+          "inferredType": "Number",
+          "type": "nominal",
+          "isBinning": false,
+          "quantitativeBinning": {
+            "binSize": 10
+          }
+        },
+        "color": {
+          "channelType": "category",
+          "field": "Benchmarks.Parameters",
+          "inferredType": "String",
+          "type": "nominal",
+          "transformedType": "String",
+          "isBinning": false
         }
       },
-      "fileSizeChart": {
-        "allowInteractiveFilters":true,
-        "calculatedFields":[
-
-        ],
-        "channels":{
-          "x":{
-            "channelType":"category",
-            "field":"RunId",
-            "inferredType":"Number",
-            "type":"nominal",
-            "isBinning":false,
-            "quantitativeBinning":{
-              "binSize":10
-            }
+      "chartType": "Line",
+      "convertedFields": [],
+      "customisations": {
+        "options": {
+          "dataMarkers": {
+            "enabled": true,
+            "value": null
           },
-          "color":{
-            "channelType":"category",
-            "field":"FileSizes.File",
-            "inferredType":"String",
-            "type":"nominal",
-            "transformedType":"String",
-            "isBinning":false
-          },
-          "y":{
-            "channelType":"aggregation",
-            "field":"FileSizes.Size",
-            "inferredType":"Number",
-            "type":"quantitative",
-            "transformedType":"Number",
-            "aggregate":"mean"
+          "legendPosition": {
+            "enabled": true,
+            "value": "top"
           }
         },
-        "chartType":"Line",
-        "convertedFields":[
-
-        ],
-        "customisations":{
-          "options":{
-            "dataMarkers":{
-              "enabled":true,
-              "value":null
+        "axes": {
+          "x": {
+            "categoryLabelAngle": {
+              "enabled": true,
+              "value": "vertical"
             }
           },
-          "axes":{
-            "x":{
-              "categoryLabelAngle":{
-                "enabled":true,
-                "value":"diagonal"
-              }
+          "y": {}
+        },
+        "channels": {
+          "y": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "nsec"
             },
-            "y":{
-
+            "numberFormatting": {
+              "enabled": true,
+              "value": "Default"
             }
           },
-          "channels":{
-            "x":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"Run"
-              },
-              "numberFormatting":{
-                "enabled":true,
-                "value":"Custom"
-              },
-              "numberGrouping":{
-                "enabled":false,
-                "value":null
-              }
+          "x": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "Run"
             },
-            "color":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"Platform"
-              }
+            "numberFormatting": {
+              "enabled": true,
+              "value": "Custom"
             },
-            "y":{
-              "labelOverride":{
-                "enabled":true,
-                "value":"Size (MB)"
-              },
-              "numberFormatting":{
-                "enabled":true,
-                "value":"Custom"
-              },
-              "numberGrouping":{
-                "enabled":false,
-                "value":null
-              }
+            "numberGrouping": {
+              "enabled": false,
+              "value": null
             }
           },
-          "conditionalFormatting":[
-
-          ]
-        },
-        "dashboardId":"dashboard",
-        "dataSourceId":"data-source",
-        "description":"Chart tracking the platform binary sizes as well as the overall Realm package size",
-        "filters":[
-
-        ],
-        "iconValue":"line-discrete",
-        "itemType":"chart",
-        "lookupFields":[
-
-        ],
-        "meta":{
-
-        },
-        "missedFields":[
-
-        ],
-        "queryCache":{
-          "filter":"",
-          "sample":false
-        },
-        "reductions":{
-          "color":[
-            {
-              "dimensionality":1,
-              "field":"FileSizes",
-              "type":"Unwind array",
-              "arguments":[
-
-              ]
+          "color": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "Parameters"
             }
-          ],
-          "y":[
-            {
-              "dimensionality":1,
-              "field":"FileSizes",
-              "type":"Unwind array",
-              "arguments":[
-
-              ]
-            }
-          ]
+          }
         },
-        "title":"Package and binary sizes",
-        "embedding":{
-
-        }
-      }
+        "conditionalFormatting": []
+      },
+      "dashboardId": "dashboard",
+      "dataSourceId": "data-source",
+      "description": "",
+      "filters": [],
+      "iconValue": "line-discrete",
+      "itemType": "chart",
+      "lookupFields": [],
+      "meta": {},
+      "missedFields": [],
+      "queryCache": {
+        "filter": "[{$addFields: { Benchmarks: { $filter: { input: \"$Benchmarks\", as: \"benchmark\", cond: { $and: [ { $eq: [ \"$$benchmark.Method\", \"%METHOD%\" ] }, { $eq: [ \"$$benchmark.Type\", \"%TYPE%\" ] } ] } } }}} ]",
+        "sample": false
+      },
+      "reductions": {
+        "y": [
+          {
+            "dimensionality": 1,
+            "field": "Benchmarks",
+            "type": "Unwind array",
+            "arguments": []
+          }
+        ],
+        "color": [
+          {
+            "dimensionality": 1,
+            "field": "Benchmarks",
+            "type": "Unwind array",
+            "arguments": []
+          }
+        ]
+      },
+      "title": "%TYPE%.%METHOD%",
+      "embedding": {}
     },
-    "dataSources":{
-      "data-source":{
-        "alias":"benchmarks.results",
-        "collection":"results",
-        "database":"benchmarks",
-        "deployment":"Cluster1",
-        "sourceType":"cluster"
-      }
+    "fileSizeChart": {
+      "allowInteractiveFilters": true,
+      "calculatedFields": [],
+      "channels": {
+        "x": {
+          "channelType": "category",
+          "field": "RunId",
+          "inferredType": "Number",
+          "type": "nominal",
+          "isBinning": false,
+          "quantitativeBinning": {
+            "binSize": 10
+          }
+        },
+        "color": {
+          "channelType": "category",
+          "field": "FileSizes.File",
+          "inferredType": "String",
+          "type": "nominal",
+          "transformedType": "String",
+          "isBinning": false
+        },
+        "y": {
+          "channelType": "aggregation",
+          "field": "FileSizes.Size",
+          "inferredType": "Number",
+          "type": "quantitative",
+          "transformedType": "Number",
+          "aggregate": "mean"
+        }
+      },
+      "chartType": "Line",
+      "convertedFields": [],
+      "customisations": {
+        "options": {
+          "dataMarkers": {
+            "enabled": true,
+            "value": null
+          }
+        },
+        "axes": {
+          "x": {
+            "categoryLabelAngle": {
+              "enabled": true,
+              "value": "vertical"
+            }
+          },
+          "y": {}
+        },
+        "channels": {
+          "x": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "Run"
+            },
+            "numberFormatting": {
+              "enabled": true,
+              "value": "Custom"
+            },
+            "numberGrouping": {
+              "enabled": false,
+              "value": null
+            }
+          },
+          "color": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "Platform"
+            }
+          },
+          "y": {
+            "labelOverride": {
+              "enabled": true,
+              "value": "Size (MB)"
+            },
+            "numberFormatting": {
+              "enabled": true,
+              "value": "Custom"
+            },
+            "numberGrouping": {
+              "enabled": false,
+              "value": null
+            }
+          }
+        },
+        "conditionalFormatting": []
+      },
+      "dashboardId": "dashboard",
+      "dataSourceId": "data-source",
+      "description": "Chart tracking the platform binary sizes as well as the overall Realm package size",
+      "filters": [],
+      "iconValue": "line-discrete",
+      "itemType": "chart",
+      "lookupFields": [],
+      "meta": {},
+      "missedFields": [],
+      "queryCache": {
+        "filter": "",
+        "sample": false
+      },
+      "reductions": {
+        "color": [
+          {
+            "dimensionality": 1,
+            "field": "FileSizes",
+            "type": "Unwind array",
+            "arguments": []
+          }
+        ],
+        "y": [
+          {
+            "dimensionality": 1,
+            "field": "FileSizes",
+            "type": "Unwind array",
+            "arguments": []
+          }
+        ]
+      },
+      "title": "Package and binary sizes",
+      "embedding": {}
     }
+  },
+  "dataSources": {
+    "data-source": {
+      "alias": "benchmarks.results",
+      "collection": "results",
+      "database": "benchmarks",
+      "deployment": "Cluster1",
+      "sourceType": "cluster"
+    }
+  }
 }
