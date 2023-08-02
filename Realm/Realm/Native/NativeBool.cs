@@ -16,34 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using Realms.Sync.Exceptions;
-
 namespace Realms.Native
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SyncError
+    /// <summary>
+    /// .NET booleans have a troubled history when it comes to P/Invoke.
+    /// Mono and the CoreCLR treat them as equivalent to the C bool type,
+    /// but .NET Framework defaults to the Win32 BOOL type, which is int-sized.
+    /// Normally we get around this with [MarshalAs(UnmanagedType.U1)], but that requires runtime marshaling.
+    /// This is just a helper type that allows us to use the byte type which matches C bool, but preserve boolean semantics.
+    /// </summary>
+    internal struct NativeBool
     {
-        public ErrorCode error_code;
+        private byte _value;
 
-        public StringValue message;
+        public static implicit operator bool(NativeBool value) => value._value == 1;
 
-        public StringValue log_url;
-
-        [MarshalAs(UnmanagedType.U1)]
-        public bool is_client_reset;
-
-        public MarshaledVector<KeyValuePair<StringValue, StringValue>> user_info_pairs;
-
-        public MarshaledVector<CompensatingWriteInfo> compensating_writes;
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct CompensatingWriteInfo
-        {
-            public StringValue reason;
-            public StringValue object_name;
-            public PrimitiveValue primary_key;
-        }
+        public static implicit operator NativeBool(bool value) => new() { _value = (byte)(value ? 1 : 0) };
     }
 }

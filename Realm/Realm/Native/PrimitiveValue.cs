@@ -321,8 +321,28 @@ namespace Realms.Native
     internal unsafe struct StringValue
     {
         public byte* data;
-        public IntPtr size;
+        public nint size;
 
-        public static implicit operator string?(StringValue value) => value.data == null ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
+        public static StringValue AllocateFrom(string? value, Arena arena)
+        {
+            if (value is null)
+            {
+                return new StringValue { data = null, size = 0 };
+            }
+
+            var byteCount = Encoding.UTF8.GetMaxByteCount(value.Length);
+            var buffer = arena.Allocate<byte>(byteCount + 1);
+            fixed (char* stringBytes = value)
+            {
+                byteCount = Encoding.UTF8.GetBytes(stringBytes, value.Length, buffer.Data, buffer.Length);
+                buffer.Data[byteCount] = 0;
+            }
+
+            return new StringValue { data = buffer.Data, size = byteCount };
+        }
+
+        public static implicit operator bool(StringValue value) => value.data != null;
+
+        public static implicit operator string?(StringValue value) => !value ? null : Encoding.UTF8.GetString(value.data, (int)value.size);
     }
 }

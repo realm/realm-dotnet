@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using Realms.Native;
@@ -185,17 +186,17 @@ namespace Realms.Sync
         {
             EnsureIsOpen();
 
-            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.get_at_index(this, (IntPtr)index, callback, out ex))!;
         }
 
-        public Subscription Find(string name)
+        public Subscription? Find(string name)
         {
             EnsureIsOpen();
 
             return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.find_by_name(this, name, name.IntPtrLength(), callback, out ex));
         }
 
-        public Subscription Find(ResultsHandle results)
+        public Subscription? Find(ResultsHandle results)
         {
             EnsureIsOpen();
 
@@ -206,7 +207,7 @@ namespace Realms.Sync
         {
             EnsureIsOpen();
 
-            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex));
+            return GetSubscriptionCore((IntPtr callback, out NativeException ex) => NativeMethods.add(this, results, options.Name, options.Name.IntPtrLength(), options.UpdateExisting, callback, out ex))!;
         }
 
         public bool Remove(string name)
@@ -255,31 +256,39 @@ namespace Realms.Sync
             return (int)result;
         }
 
-        public async Task<SubscriptionSetState> WaitForStateChangeAsync()
+        public async Task<SubscriptionSetState> WaitForStateChangeAsync(CancellationToken? cancellationToken)
         {
             EnsureIsOpen();
 
             var tcs = new TaskCompletionSource<SubscriptionSetState>();
+            if (cancellationToken?.IsCancellationRequested == true)
+            {
+                tcs.TrySetCanceled(cancellationToken.Value);
+                return await tcs.Task;
+            }
+
+            // The tcsHandles is freed in HandleStateWaitCallback. It's important that we don't free it on cancellation
+            // as the cancellation doesn't really cancel the native wait operation. That will eventually complete and it needs
+            // to have the GCHandle at this point, otherwise we'll get a hard crash on Mono.
             var tcsHandle = GCHandle.Alloc(tcs);
+            cancellationToken?.Register(() => tcs.TrySetCanceled(cancellationToken.Value));
 
             try
             {
                 NativeMethods.wait_for_state(this, GCHandle.ToIntPtr(tcsHandle), out var ex);
                 ex.ThrowIfNecessary();
-
-                return await tcs.Task;
             }
-            catch (Exception ex) when (ex.Message == "Active SubscriptionSet without a SubscriptionStore")
+            catch
             {
-                throw new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed.");
-            }
-            finally
-            {
+                // If we failed to register a waiter, we can free the handle as we won't get a native callback here anyway
                 tcsHandle.Free();
+                throw;
             }
+
+            return await tcs.Task;
         }
 
-        private static Subscription GetSubscriptionCore(GetSubscriptionBase getter)
+        private static Subscription? GetSubscriptionCore(GetSubscriptionBase getter)
         {
             Subscription? result = null;
             Action<Native.Subscription> callback = sub => result = sub.ManagedSubscription;
@@ -294,7 +303,7 @@ namespace Realms.Sync
                 callbackHandle.Free();
             }
 
-            return result!;
+            return result;
         }
 
         public override void Unbind()
@@ -333,10 +342,24 @@ namespace Realms.Sync
                 case RealmValueType.Int when message.AsInt() == -1:
                     tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
                     break;
+                case RealmValueType.String:
+                    var messageString = message.AsString();
+                    if (messageString == "Active SubscriptionSet without a SubscriptionStore")
+                    {
+                        tcs.TrySetException(new TaskCanceledException("The SubscriptionSet was closed before the wait could complete. This is likely because the Realm it belongs to was disposed."));
+                    }
+                    else
+                    {
+                        tcs.TrySetException(new SubscriptionException(messageString));
+                    }
+
+                    break;
                 default:
-                    tcs.TrySetException(new SubscriptionException(message.AsString()));
+                    tcs.TrySetException(new SubscriptionException($"An unexpected error occurred and the wrong error type was supplied: {message.Type}. Please file a new issue at https://github.com/realm/realm-dotnet/issues"));
                     break;
             }
+
+            handle.Free();
         }
     }
 }

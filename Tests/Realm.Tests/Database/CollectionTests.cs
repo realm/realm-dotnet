@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using MongoDB.Bson;
@@ -1896,20 +1897,20 @@ namespace Realms.Tests.Database
             Assert.That(longArg.ToString(), Is.EqualTo("9999999999999999"));
 
             QueryArgument floatArg = 1.234f;
-            Assert.That(floatArg.ToString(), Is.EqualTo("1.234"));
+            Assert.That(floatArg.ToString(), Is.EqualTo(1.234f.ToString()));
 
             QueryArgument doubleArg = 4.5;
-            Assert.That(doubleArg.ToString(), Is.EqualTo("4.5"));
+            Assert.That(doubleArg.ToString(), Is.EqualTo(4.5.ToString()));
 
             var date = new DateTimeOffset(2023, 10, 5, 2, 3, 4, TimeSpan.Zero);
             QueryArgument dateArg = date;
             Assert.That(dateArg.ToString(), Is.EqualTo(date.ToString()));
 
             QueryArgument decimalArg = 1.23456789123456789M;
-            Assert.That(decimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+            Assert.That(decimalArg.ToString(), Is.EqualTo(1.23456789123456789M.ToString(CultureInfo.InvariantCulture)));
 
             QueryArgument decimal128Arg = (Decimal128)10.20M;
-            Assert.That(decimal128Arg.ToString(), Is.EqualTo("10.20"));
+            Assert.That(decimal128Arg.ToString(), Is.EqualTo(10.20M.ToString(CultureInfo.InvariantCulture)));
 
             QueryArgument objectIdArg = new ObjectId("507f1f77bcf86cd799439011");
             Assert.That(objectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));
@@ -1936,19 +1937,19 @@ namespace Realms.Tests.Database
             Assert.That(nullableLongArg.ToString(), Is.EqualTo("9999999999999999"));
 
             QueryArgument nullableFloatArg = (float?)1.234f;
-            Assert.That(nullableFloatArg.ToString(), Is.EqualTo("1.234"));
+            Assert.That(nullableFloatArg.ToString(), Is.EqualTo(1.234f.ToString()));
 
             QueryArgument nullableDoubleArg = (double?)4.5;
-            Assert.That(nullableDoubleArg.ToString(), Is.EqualTo("4.5"));
+            Assert.That(nullableDoubleArg.ToString(), Is.EqualTo(4.5.ToString()));
 
             QueryArgument nullableDateArg = (DateTimeOffset?)date;
             Assert.That(nullableDateArg.ToString(), Is.EqualTo(date.ToString()));
 
             QueryArgument nullableDecimalArg = (decimal?)1.23456789123456789M;
-            Assert.That(nullableDecimalArg.ToString(), Is.EqualTo("1.23456789123456789"));
+            Assert.That(nullableDecimalArg.ToString(), Is.EqualTo(1.23456789123456789M.ToString(CultureInfo.InvariantCulture)));
 
             QueryArgument nullableDecimal128Arg = (Decimal128?)10.20M;
-            Assert.That(nullableDecimal128Arg.ToString(), Is.EqualTo("10.20"));
+            Assert.That(nullableDecimal128Arg.ToString(), Is.EqualTo(10.20M.ToString(CultureInfo.InvariantCulture)));
 
             QueryArgument nullableObjectIdArg = (ObjectId?)new ObjectId("507f1f77bcf86cd799439011");
             Assert.That(nullableObjectIdArg.ToString(), Is.EqualTo("507f1f77bcf86cd799439011"));

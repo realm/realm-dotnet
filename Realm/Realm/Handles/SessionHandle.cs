@@ -20,6 +20,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Exceptions;
 using Realms.Exceptions.Sync;
@@ -209,22 +210,35 @@ namespace Realms.Sync
             }
         }
 
-        public async Task WaitAsync(ProgressDirection direction)
+        public Task WaitAsync(ProgressDirection direction, CancellationToken? cancellationToken)
         {
             var tcs = new TaskCompletionSource();
+            if (cancellationToken?.IsCancellationRequested == true)
+            {
+                tcs.TrySetCanceled(cancellationToken.Value);
+                return tcs.Task;
+            }
+
+            // The tcsHandles is freed in HandleSessionWaitCallback. It's important that we don't free it on cancellation
+            // as the cancellation doesn't really cancel the native wait operation. That will eventually complete and it needs
+            // to have the GCHandle at this point, otherwise we'll get a hard crash on Mono.
             var tcsHandle = GCHandle.Alloc(tcs);
+
+            cancellationToken?.Register(() => tcs.TrySetCanceled(cancellationToken.Value));
 
             try
             {
                 NativeMethods.wait(this, GCHandle.ToIntPtr(tcsHandle), direction, out var ex);
                 ex.ThrowIfNecessary();
-
-                await tcs.Task;
             }
-            finally
+            catch
             {
+                // If we failed to register a waiter, we can free the handle as we won't get a native callback here anyway
                 tcsHandle.Free();
+                throw;
             }
+
+            return tcs.Task;
         }
 
         public IntPtr GetRawPointer()
@@ -283,7 +297,7 @@ namespace Realms.Sync
 
                 if (error.is_client_reset)
                 {
-                    var userInfo = StringStringPair.UnmarshalDictionary(error.user_info_pairs.Items, (int)error.user_info_pairs.Count);
+                    var userInfo = error.user_info_pairs.ToEnumerable().ToDictionary(kvp => (string)kvp.Key!, kvp => (string?)kvp.Value);
                     var clientResetEx = new ClientResetException(session.User.App, messageString, error.error_code, userInfo);
 
                     syncConfig.ClientResetHandler.ManualClientReset?.Invoke(clientResetEx);
@@ -294,7 +308,7 @@ namespace Realms.Sync
                 if (error.error_code == ErrorCode.CompensatingWrite)
                 {
                     var compensatingWrites = error.compensating_writes
-                        .AsEnumerable()
+                        .ToEnumerable()
                         .Select(c => new CompensatingWriteInfo(c.object_name!, c.reason!, new RealmValue(c.primary_key)))
                         .ToArray();
                     exception = new CompensatingWriteException(messageString, compensatingWrites);
@@ -411,6 +425,8 @@ namespace Realms.Sync
                 const string OuterMessage = "A system error occurred while waiting for completion. See InnerException for more details";
                 tcs.TrySetException(new RealmException(OuterMessage, inner));
             }
+
+            handle.Free();
         }
 
         [MonoPInvokeCallback(typeof(NativeMethods.SessionPropertyChangedCallback))]
@@ -428,14 +444,14 @@ namespace Realms.Sync
                     NotifiableProperty.ConnectionState => nameof(Session.ConnectionState),
                     _ => throw new NotSupportedException($"Unexpected notifiable property value: {property}")
                 };
-                var session = (Session)GCHandle.FromIntPtr(managedSessionHandle).Target!;
+                var session = (Session?)GCHandle.FromIntPtr(managedSessionHandle).Target;
                 if (session is null)
                 {
                     // We're taking a weak handle to the session, so it's possible that it's been collected
                     return;
                 }
 
-                System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
                     session.RaisePropertyChanged(propertyName);
                 });
@@ -448,7 +464,7 @@ namespace Realms.Sync
 
         private enum NotifiableProperty : byte
         {
-            ConnectionState = 0,
+            ConnectionState = 0
         }
     }
 }

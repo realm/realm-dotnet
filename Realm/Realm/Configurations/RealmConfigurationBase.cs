@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Realms.Native;
 using Realms.Schema;
 
 namespace Realms
@@ -199,25 +200,29 @@ namespace Realms
         internal virtual Realm CreateRealm()
         {
             var schema = Schema;
-            var sharedRealmHandle = CreateHandle(schema);
+            using var arena = new Arena();
+            var sharedRealmHandle = CreateHandle(CreateNativeConfiguration(arena));
             return GetRealm(sharedRealmHandle, schema);
         }
 
         internal virtual async Task<Realm> CreateRealmAsync(CancellationToken cancellationToken)
         {
             var schema = Schema;
-            var sharedRealmHandle = await CreateHandleAsync(schema, cancellationToken);
+            using var arena = new Arena();
+            var configuration = CreateNativeConfiguration(arena);
+            var sharedRealmHandle = await CreateHandleAsync(configuration, cancellationToken);
             return GetRealm(sharedRealmHandle, schema);
         }
 
-        internal virtual Native.Configuration CreateNativeConfiguration()
+        internal virtual Configuration CreateNativeConfiguration(Arena arena)
         {
             var managedConfig = GCHandle.Alloc(this);
 
-            var config = new Native.Configuration
+            var config = new Configuration
             {
-                Path = DatabasePath,
-                FallbackPipePath = FallbackPipePath,
+                path = StringValue.AllocateFrom(DatabasePath, arena),
+                fallbackPipePath = StringValue.AllocateFrom(FallbackPipePath, arena),
+                schema = Schema.ToNative(arena),
                 schema_version = SchemaVersion,
                 enable_cache = EnableCache,
                 max_number_of_active_versions = MaxNumberOfActiveVersions,
@@ -226,6 +231,7 @@ namespace Realms
 #pragma warning restore CS0618 // Type or member is obsolete
                 invoke_initial_data_callback = PopulateInitialData != null,
                 managed_config = GCHandle.ToIntPtr(managedConfig),
+                encryption_key = MarshaledVector<byte>.AllocateFrom(EncryptionKey, arena),
             };
 
             return config;
@@ -251,8 +257,8 @@ namespace Realms
             return new Realm(sharedRealmHandle, this, schema);
         }
 
-        internal abstract SharedRealmHandle CreateHandle(RealmSchema schema);
+        internal abstract SharedRealmHandle CreateHandle(in Configuration configuration);
 
-        internal abstract Task<SharedRealmHandle> CreateHandleAsync(RealmSchema schema, CancellationToken cancellationToken);
+        internal abstract Task<SharedRealmHandle> CreateHandleAsync(in Configuration configuration, CancellationToken cancellationToken);
     }
 }

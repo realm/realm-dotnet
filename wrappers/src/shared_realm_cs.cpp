@@ -47,10 +47,9 @@ using namespace realm::util;
 
 using OpenRealmCallbackT = void(void* task_completion_source, ThreadSafeReference* ref, NativeException::Marshallable ex);
 using RealmChangedT = void(void* managed_state_handle);
-using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
 using ReleaseGCHandleT = void(void* managed_handle);
 using LogMessageT = void(realm_string_t message, util::Logger::Level level);
-using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+using MigrationCallbackT = void*(realm::SharedRealm* old_realm, realm::SharedRealm* new_realm, Schema* migration_schema, MarshaledVector<SchemaObject>, uint64_t schema_version, void* managed_migration_handle);
 using HandleTaskCompletionCallbackT = void(void* tcs_ptr, bool invoke_async, NativeException::Marshallable ex);
 using SharedSyncSession = std::shared_ptr<SyncSession>;
 using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
@@ -68,15 +67,12 @@ namespace realm {
 namespace binding {
     std::function<OpenRealmCallbackT> s_open_realm_callback;
     std::function<RealmChangedT> s_realm_changed;
-    std::function<GetNativeSchemaT> s_get_native_schema;
     std::function<ReleaseGCHandleT> s_release_gchandle;
     std::function<LogMessageT> s_log_message;
     std::function<MigrationCallbackT> s_on_migration;
     std::function<ShouldCompactCallbackT> s_should_compact;
     std::function<HandleTaskCompletionCallbackT> s_handle_task_completion;
     std::function<DataInitializationCallbackT> s_initialize_data;
-
-    extern std::function<ErrorCallbackT> s_session_error_callback;
 
     std::atomic<bool> s_can_call_managed;
 
@@ -108,81 +104,20 @@ namespace binding {
     };
 }
 
-Realm::Config get_shared_realm_config(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key)
+Realm::Config get_shared_realm_config(Configuration configuration, std::optional<SyncConfiguration> sync_configuration = {})
 {
     Realm::Config config;
-    config.schema_mode = sync_configuration.schema_mode;
+    config.path = capi_to_std(configuration.path);
 
-    if (objects_length > 0) {
-        config.schema = create_schema(objects, objects_length, properties);
+    if (configuration.schema.objects.size() > 0) {
+        config.schema = create_schema(configuration.schema.objects);
     }
 
     config.schema_version = configuration.schema_version;
     config.max_number_of_active_versions = configuration.max_number_of_active_versions;
     config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
 
-    if (sync_configuration.is_flexible_sync) {
-        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm::SyncConfig::FLXSyncEnabled{});
-    }
-    else {
-        std::string partition(Utf16StringAccessor(sync_configuration.partition, sync_configuration.partition_len));
-        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, partition);
-    }
-
     auto configuration_handle = std::make_shared<GCHandleHolder>(configuration.managed_config);
-
-    config.sync_config->error_handler = [configuration_handle](SharedSyncSession session, SyncError error) {
-        std::vector<std::pair<char*, char*>> user_info_pairs;
-        std::vector<realm_sync_error_compensating_write_info_t> compensating_writes;
-
-        for (const auto& p : error.user_info) {
-            user_info_pairs.push_back(std::make_pair(const_cast<char*>(p.first.c_str()), const_cast<char*>(p.second.c_str())));
-        }
-
-        for (const auto& cw : error.compensating_writes_info) {
-            compensating_writes.push_back(realm_sync_error_compensating_write_info_t{
-                to_capi(cw.reason),
-                to_capi(cw.object_name),
-                to_capi(cw.primary_key)
-            });
-        }
-
-        realm_sync_error marshaled_error{
-            error.get_system_error().value(),
-            to_capi(error.simple_message),
-            to_capi(error.logURL),
-            error.is_client_reset_requested(),
-            { user_info_pairs.data(), user_info_pairs.size() },
-            { compensating_writes.data(), compensating_writes.size() },
-        };
-
-        s_session_error_callback(new SharedSyncSession(session), marshaled_error, configuration_handle->handle());
-    };
-
-    config.sync_config->stop_policy = sync_configuration.session_stop_policy;
-    config.sync_config->client_resync_mode = sync_configuration.client_resync_mode;
-    config.sync_config->cancel_waits_on_nonfatal_error = sync_configuration.cancel_waits_on_nonfatal_error;
-
-    if (sync_configuration.client_resync_mode == ClientResyncMode::DiscardLocal ||
-        sync_configuration.client_resync_mode == ClientResyncMode::Recover ||
-        sync_configuration.client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
-
-        config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
-            auto error = s_notify_before_callback(before_frozen, configuration_handle->handle());
-            if (error) {
-                throw ManagedExceptionDuringCallback("Managed exception happened in a BeforeReset callback.", error);
-            }
-        };
-
-        config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
-            auto after = Realm::get_shared_realm(std::move(after_reference));
-            auto error = s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover);
-            if (error) {
-                throw ManagedExceptionDuringCallback("Managed exception happened in an AfterReset callback.", error);
-            }
-        };
-    }
-    config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
     
     if (configuration.invoke_initial_data_callback) {
         config.initialization_function = [configuration_handle](SharedRealm realm) {
@@ -193,18 +128,116 @@ Realm::Config get_shared_realm_config(Configuration configuration, SyncConfigura
         };
     }
 
-    if (configuration.fallback_path) {
-        config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
+    if (configuration.invoke_migration_callback) {
+        config.migration_function = [configuration_handle](SharedRealm oldRealm, SharedRealm newRealm, Schema& migrationSchema) {
+
+            std::vector<SchemaObject> schema_objects;
+            std::vector<std::vector<SchemaProperty>> schema_properties;
+            const auto& schema = oldRealm->schema();
+            schema_objects.reserve(schema.size());
+            schema_properties.reserve(schema.size());
+
+            for (auto& object : schema) {
+                schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties.emplace_back()));
+            }
+
+            auto error = s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_objects, oldRealm->schema_version(), configuration_handle->handle());
+            if (error) {
+                throw ManagedExceptionDuringCallback("Exception occurred in a Realm.MigrationCallback callback.", error);
+            }
+        };
+    }
+
+    if (configuration.invoke_should_compact_callback) {
+        config.should_compact_on_launch_function = [configuration_handle](uint64_t total_bytes, uint64_t used_bytes) {
+            bool result;
+            auto error = s_should_compact(configuration_handle->handle(), total_bytes, used_bytes, &result);
+            if (error) {
+                throw ManagedExceptionDuringCallback("Exception occurred in a Realm.ShouldCompactOnLaunch callback.", error);
+            }
+
+            return result;
+        };
+    }
+
+    if (configuration.fallback_path.data) {
+        config.fifo_files_fallback_path = capi_to_std(configuration.fallback_path);
     }
 
     // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-    if (encryption_key) {
-        auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+    if (configuration.encryption_key.items) {
+        REALM_ASSERT(configuration.encryption_key.count == 64);
+        auto& key = *reinterpret_cast<const std::array<char, 64>*>(configuration.encryption_key.items);
 
         config.encryption_key = std::vector<char>(key.begin(), key.end());
     }
 
     config.cache = configuration.enable_cache;
+
+    if (sync_configuration) {
+        config.schema_mode = sync_configuration->schema_mode;
+
+        if (sync_configuration->is_flexible_sync) {
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, realm::SyncConfig::FLXSyncEnabled{});
+        }
+        else {
+            std::string partition(Utf16StringAccessor(sync_configuration->partition, sync_configuration->partition_len));
+            config.sync_config = std::make_shared<SyncConfig>(*sync_configuration->user, partition);
+        }
+
+        config.sync_config->error_handler = [configuration_handle](SharedSyncSession session, SyncError error) {
+            std::vector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
+            std::vector<realm_sync_error_compensating_write_info_t> compensating_writes;
+
+            for (const auto& p : error.user_info) {
+                user_info_pairs.push_back(std::make_pair(to_capi(p.first), to_capi(p.second)));
+            }
+
+            for (const auto& cw : error.compensating_writes_info) {
+                compensating_writes.push_back(realm_sync_error_compensating_write_info_t{
+                    to_capi(cw.reason),
+                    to_capi(cw.object_name),
+                    to_capi(cw.primary_key)
+                });
+            }
+
+            realm_sync_error marshaled_error{
+                error.get_system_error().value(),
+                to_capi(error.simple_message),
+                to_capi(error.logURL),
+                error.is_client_reset_requested(),
+                user_info_pairs,
+                compensating_writes,
+            };
+
+            s_session_error_callback(new SharedSyncSession(session), marshaled_error, configuration_handle->handle());
+        };
+
+        config.sync_config->stop_policy = sync_configuration->session_stop_policy;
+        config.sync_config->client_resync_mode = sync_configuration->client_resync_mode;
+        config.sync_config->cancel_waits_on_nonfatal_error = sync_configuration->cancel_waits_on_nonfatal_error;
+
+        if (sync_configuration->client_resync_mode == ClientResyncMode::DiscardLocal ||
+            sync_configuration->client_resync_mode == ClientResyncMode::Recover ||
+            sync_configuration->client_resync_mode == ClientResyncMode::RecoverOrDiscard) {
+
+            config.sync_config->notify_before_client_reset = [configuration_handle](SharedRealm before_frozen) {
+                auto error = s_notify_before_callback(before_frozen, configuration_handle->handle());
+                if (error) {
+                    throw ManagedExceptionDuringCallback("Managed exception happened in a BeforeReset callback.", error);
+                }
+            };
+
+            config.sync_config->notify_after_client_reset = [configuration_handle](SharedRealm before_frozen, ThreadSafeReference after_reference, bool did_recover) {
+                auto after = Realm::get_shared_realm(std::move(after_reference));
+                auto error = s_notify_after_callback(before_frozen, after, configuration_handle->handle(), did_recover);
+                if (error) {
+                    throw ManagedExceptionDuringCallback("Managed exception happened in an AfterReset callback.", error);
+                }
+            };
+        }
+
+    }
 
     return config;
 }
@@ -266,22 +299,12 @@ REALM_EXPORT void shared_realm_set_log_level(Logger::Level level) {
     Logger::set_default_level_threshold(level);
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Realm::Config config;
-        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
+        Realm::Config config = get_shared_realm_config(configuration);
         config.in_memory = configuration.in_memory;
-        config.max_number_of_active_versions = configuration.max_number_of_active_versions;
         config.automatically_handle_backlinks_in_migrations = configuration.automatically_migrate_embedded;
-
-        if (configuration.fallback_path) {
-            config.fifo_files_fallback_path = Utf16StringAccessor(configuration.fallback_path, configuration.fallback_path_len);
-        }
-
-        // by definition the key is only allowed to be 64 bytes long, enforced by C# code
-        if (encryption_key )
-          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::Immutable;
@@ -289,59 +312,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
             config.schema_mode = SchemaMode::SoftResetFile;
         }
 
-        if (objects_length > 0) {
-            config.schema = create_schema(objects, objects_length, properties);
-        }
-
-        config.schema_version = configuration.schema_version;
-        auto configuration_handle = std::make_shared<GCHandleHolder>(configuration.managed_config);
-
-        if (configuration.invoke_migration_callback) {
-            config.migration_function = [configuration_handle](SharedRealm oldRealm, SharedRealm newRealm, Schema& migrationSchema) {
-
-                std::vector<SchemaObject> schema_objects;
-                std::vector<SchemaProperty> schema_properties;
-
-                for (auto& object : oldRealm->schema()) {
-                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
-                }
-
-                SchemaForMarshaling schema_for_marshaling {
-                    schema_objects.data(),
-                    static_cast<int>(schema_objects.size()),
-
-                    schema_properties.data()
-                };
-
-                auto error = s_on_migration(&oldRealm, &newRealm, &migrationSchema, schema_for_marshaling, oldRealm->schema_version(), configuration_handle->handle());
-                if (error) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.MigrationCallback callback.", error);
-                }
-            };
-        }
-
-        if (configuration.invoke_initial_data_callback) {
-            config.initialization_function = [configuration_handle](SharedRealm realm) {
-                auto error = s_initialize_data(configuration_handle->handle(), realm);
-                if (error) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.PopulateInitialDatacallback.", error);
-                }
-            };
-        }
-
-        if (configuration.invoke_should_compact_callback) {
-            config.should_compact_on_launch_function = [configuration_handle](uint64_t total_bytes, uint64_t used_bytes) {
-                bool result;
-                auto error = s_should_compact(configuration_handle->handle(), total_bytes, used_bytes, &result);
-                if (error) {
-                    throw ManagedExceptionDuringCallback("Exception occurred in a Realm.ShouldCompactOnLaunch callback.", error);
-                }
-
-                return result;
-            };
-        }
-
-        config.cache = configuration.enable_cache;
         auto realm = Realm::get_shared_realm(std::move(config));
         if (!configuration.use_legacy_guid_representation && requires_guid_representation_fix(realm)) {
             if (configuration.read_only) {
@@ -366,10 +336,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
     });
 }
 
-REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, void* task_completion_source, NativeException::Marshallable& ex)
+REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuration configuration, SyncConfiguration sync_configuration, void* task_completion_source, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+        auto config = get_shared_realm_config(configuration, sync_configuration);
 
         auto task = Realm::get_synchronized_realm(config);
         task->start([task_completion_source](ThreadSafeReference ref, std::exception_ptr error) {
@@ -386,10 +356,10 @@ REALM_EXPORT SharedAsyncOpenTask* shared_realm_open_with_sync_async(Configuratio
     });
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto config = get_shared_realm_config(configuration, sync_configuration, objects, objects_length, properties, encryption_key);
+        auto config = get_shared_realm_config(configuration, sync_configuration);
         return new_realm(Realm::get_shared_realm(std::move(config)));
     });
 }
@@ -598,7 +568,7 @@ REALM_EXPORT void thread_safe_reference_destroy(ThreadSafeReference* reference)
     delete reference;
 }
 
-REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, bool use_sync, uint8_t* encryption_key, NativeException::Marshallable& ex)
+REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuration configuration, bool use_sync, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Realm::Config config;
@@ -606,9 +576,9 @@ REALM_EXPORT void shared_realm_write_copy(const SharedRealm& realm, Configuratio
         // force_sync_history tells Core to synthesize/copy the sync history from the source.
         config.force_sync_history = use_sync;
 
-        config.path = Utf16StringAccessor(configuration.path, configuration.path_len);
-        if (encryption_key) {
-            auto& key = *reinterpret_cast<std::array<char, 64>*>(encryption_key);
+        config.path = capi_to_std(configuration.path);
+        if (configuration.encryption_key.items) {
+            auto& key = *reinterpret_cast<const std::array<char, 64>*>(configuration.encryption_key.items);
             config.encryption_key = std::vector<char>(key.begin(), key.end());
         }
 
@@ -669,18 +639,7 @@ REALM_EXPORT Object* shared_realm_create_object_unique(const SharedRealm& realm,
 REALM_EXPORT void shared_realm_get_schema(const SharedRealm& realm, void* managed_callback, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        std::vector<SchemaObject> schema_objects;
-        std::vector<SchemaProperty> schema_properties;
-
-        for (auto& object : realm->schema()) {
-            schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
-        }
-
-        s_get_native_schema(SchemaForMarshaling {
-            schema_objects.data(),
-            static_cast<int>(schema_objects.size()),
-            schema_properties.data()
-        }, managed_callback);
+        send_schema_to_managed(realm->schema(), managed_callback);
     });
 }
 

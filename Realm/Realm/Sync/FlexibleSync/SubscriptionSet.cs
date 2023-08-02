@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;
@@ -114,7 +115,7 @@ namespace Realms.Sync
         /// <paramref name="name"/> if the subscription set contains a subscription with the provided name;
         /// <c>null</c> otherwise.
         /// </returns>
-        public Subscription Find(string name) => _handle.Find(name);
+        public Subscription? Find(string name) => _handle.Find(name);
 
         /// <summary>
         /// Finds a subscription by query.
@@ -126,7 +127,7 @@ namespace Realms.Sync
         /// the provided <paramref name="query"/>; <c>null</c> if the subscription set doesn't contain
         /// a match.
         /// </returns>
-        public Subscription Find<T>(IQueryable<T> query)
+        public Subscription? Find<T>(IQueryable<T> query)
             where T : IRealmObject
         {
             var results = Argument.EnsureType<RealmResults<T>>(query, $"{nameof(query)} must be a query obtained by calling Realm.All.", nameof(query));
@@ -296,6 +297,7 @@ namespace Realms.Sync
         /// <summary>
         /// Waits for the server to acknowledge the subscription set and return the matching objects.
         /// </summary>
+        /// <param name="cancellationToken">An optional cancellation token that can be used to cancel the wait operation.</param>
         /// <remarks>
         /// If the <see cref="State"/> of the subscription set is <see cref="SubscriptionSetState.Complete"/>
         /// the returned <see cref="Task"/> will complete immediately. If the <see cref="State"/> is
@@ -309,7 +311,7 @@ namespace Realms.Sync
         /// An awaitable task, whose successful completion indicates that the server has processed the
         /// subscription change and has sent all the data that matches the new subscriptions.
         /// </returns>
-        public Task WaitForSynchronizationAsync() => _handle.WaitForStateChangeAsync();
+        public Task WaitForSynchronizationAsync(CancellationToken? cancellationToken = null) => _handle.WaitForStateChangeAsync(cancellationToken);
 
         /// <inheritdoc/>
         public IEnumerator<Subscription> GetEnumerator() => new Enumerator(this);

@@ -28,22 +28,22 @@ using namespace realm::binding;
 
 namespace realm {
 struct MarshallableCollectionChangeSet {
-    marshaled_vector<size_t> deletions;
-    marshaled_vector<size_t> insertions;
-    marshaled_vector<size_t> modifications;
-    marshaled_vector<size_t> modifications_new;
+    MarshaledVector<size_t> deletions;
+    MarshaledVector<size_t> insertions;
+    MarshaledVector<size_t> modifications;
+    MarshaledVector<size_t> modifications_new;
 
-    marshaled_vector<CollectionChangeSet::Move> moves;
+    MarshaledVector<CollectionChangeSet::Move> moves;
 
     bool cleared;
 
-    marshaled_vector<size_t> properties;
+    MarshaledVector<int32_t> properties;
 };
 
 struct MarshallableDictionaryChangeSet {
-    marshaled_vector<realm_value_t> deletions;
-    marshaled_vector<realm_value_t> insertions;
-    marshaled_vector<realm_value_t> modifications;
+    MarshaledVector<realm_value_t> deletions;
+    MarshaledVector<realm_value_t> insertions;
+    MarshaledVector<realm_value_t> modifications;
 };
 
 struct ManagedNotificationTokenContext {
@@ -58,14 +58,14 @@ using DictionaryNotificationCallbackT = void(void* managed_results, Marshallable
 extern std::function<ObjectNotificationCallbackT> s_object_notification_callback;
 extern std::function<DictionaryNotificationCallbackT> s_dictionary_notification_callback;
 
-inline size_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
+inline int32_t get_property_index(const ObjectSchema* schema, const ColKey column_key) {
     if (!schema)
         return 0;
 
     auto const& props = schema->persisted_properties;
     for (size_t i = 0; i < props.size(); ++i) {
         if (props[i].column_key == column_key) {
-            return i;
+            return int32_t(i);
         }
     }
 
@@ -103,7 +103,7 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
         auto modifications = get_indexes_vector(changes.modifications);
         auto modifications_new = get_indexes_vector(changes.modifications_new);
 
-        std::vector<size_t> properties;
+        std::vector<int32_t> properties;
 
         for (auto& pair : changes.columns) {
             if (!pair.second.empty()) {
@@ -112,13 +112,13 @@ static inline void handle_changes(ManagedNotificationTokenContext* context, Coll
         }
 
         MarshallableCollectionChangeSet marshallable_changes{
-            { deletions.data(), deletions.size() },
-            { insertions.data(), insertions.size() },
-            { modifications.data(), modifications.size() },
-            { modifications_new.data(), modifications_new.size() },
-            { changes.moves.data(), changes.moves.size() },
-            { changes.collection_was_cleared },
-            { properties.data(), properties.size() }
+            deletions,
+            insertions,
+            modifications,
+            modifications_new,
+            changes.moves,
+            changes.collection_was_cleared,
+            properties
         };
 
         s_object_notification_callback(context->managed_object, &marshallable_changes, shallow);

@@ -1214,106 +1214,111 @@ namespace Realms.Tests.Database
             Func<CollectionsObject, IDictionary<string, T>> dictAccessor,
             TestCaseData<T> testData)
         {
-            var testObject = new CollectionsObject();
-            var set = accessor(testObject);
-
-            testData.Seed(set);
-
-            _realm.Write(() =>
+            TestHelpers.RunAsyncTest(async () =>
             {
-                _realm.Add(testObject);
-            });
+                var testObject = new CollectionsObject();
+                var set = accessor(testObject);
 
-            var managedSet = accessor(testObject);
-            Assert.That(set, Is.Not.SameAs(managedSet));
+                testData.Seed(set);
 
-            // Assert RealmCollection.IndexOf
-            var managedCollection = managedSet.AsRealmCollection();
-            for (var i = 0; i < managedCollection.Count; i++)
-            {
-                var element = managedCollection[i];
-                Assert.That(managedCollection.IndexOf(element), Is.EqualTo(i));
-            }
-
-            // Now we're testing set operations on RealmSet/HashSet
-            testData.AssertCount(managedSet);
-            testData.AssertExceptWith(managedSet);
-            testData.AssertIntersectWith(managedSet);
-            testData.AssertIsProperSubsetOf(managedSet);
-            testData.AssertIsProperSupersetOf(managedSet);
-            testData.AssertIsSubsetOf(managedSet);
-            testData.AssertIsSupersetOf(managedSet);
-            testData.AssertOverlaps(managedSet);
-            testData.AssertSymmetricExceptWith(managedSet);
-            testData.AssertUnionWith(managedSet);
-
-            // Now we're testing set operations on RealmSet/RealmSet
-            var otherSet = _realm.Write(() =>
-            {
-                var otherObj = _realm.Add(new CollectionsObject());
-                var result = accessor(otherObj);
-
-                result.UnionWith(testData.OtherCollection);
-
-                return result;
-            });
-
-            testData.AssertExceptWith(managedSet, otherSet);
-            testData.AssertIntersectWith(managedSet, otherSet);
-            testData.AssertIsProperSubsetOf(managedSet, otherSet);
-            testData.AssertIsProperSupersetOf(managedSet, otherSet);
-            testData.AssertIsSubsetOf(managedSet, otherSet);
-            testData.AssertIsSupersetOf(managedSet, otherSet);
-            testData.AssertOverlaps(managedSet, otherSet);
-            testData.AssertSymmetricExceptWith(managedSet, otherSet);
-            testData.AssertUnionWith(managedSet, otherSet);
-
-            var otherList = _realm.Write(() =>
-            {
-                var otherObj = _realm.Add(new CollectionsObject());
-                var result = listAccessor(otherObj);
-
-                foreach (var item in testData.OtherCollection)
+                _realm.Write(() =>
                 {
-                    result.Add(item);
+                    _realm.Add(testObject);
+                });
+
+                var managedSet = accessor(testObject);
+                Assert.That(set, Is.Not.SameAs(managedSet));
+
+                // Assert RealmCollection.IndexOf
+                var managedCollection = managedSet.AsRealmCollection();
+                for (var i = 0; i < managedCollection.Count; i++)
+                {
+                    var element = managedCollection[i];
+                    Assert.That(managedCollection.IndexOf(element), Is.EqualTo(i));
                 }
 
-                return result;
-            });
+                // Now we're testing set operations on RealmSet/HashSet
+                testData.AssertCount(managedSet);
+                testData.AssertExceptWith(managedSet);
+                testData.AssertIntersectWith(managedSet);
+                testData.AssertIsProperSubsetOf(managedSet);
+                testData.AssertIsProperSupersetOf(managedSet);
+                testData.AssertIsSubsetOf(managedSet);
+                testData.AssertIsSupersetOf(managedSet);
+                testData.AssertOverlaps(managedSet);
+                testData.AssertSymmetricExceptWith(managedSet);
+                testData.AssertUnionWith(managedSet);
 
-            testData.AssertExceptWith(managedSet, otherList);
-            testData.AssertIntersectWith(managedSet, otherList);
-            testData.AssertIsProperSubsetOf(managedSet, otherList);
-            testData.AssertIsProperSupersetOf(managedSet, otherList);
-            testData.AssertIsSubsetOf(managedSet, otherList);
-            testData.AssertIsSupersetOf(managedSet, otherList);
-            testData.AssertOverlaps(managedSet, otherList);
-            testData.AssertSymmetricExceptWith(managedSet, otherList);
-            testData.AssertUnionWith(managedSet, otherList);
-
-            // Dictionary.Values is backed by RealmResults
-            var otherResults = _realm.Write(() =>
-            {
-                var otherObj = _realm.Add(new CollectionsObject());
-                var result = dictAccessor(otherObj);
-
-                foreach (var item in testData.OtherCollection)
+                // Now we're testing set operations on RealmSet/RealmSet
+                var otherSet = _realm.Write(() =>
                 {
-                    result.Add(Guid.NewGuid().ToString(), item);
-                }
+                    var otherObj = _realm.Add(new CollectionsObject());
+                    var result = accessor(otherObj);
 
-                return result.Values;
+                    result.UnionWith(testData.OtherCollection);
+
+                    return result;
+                });
+
+                testData.AssertExceptWith(managedSet, otherSet);
+                testData.AssertIntersectWith(managedSet, otherSet);
+                testData.AssertIsProperSubsetOf(managedSet, otherSet);
+                testData.AssertIsProperSupersetOf(managedSet, otherSet);
+                testData.AssertIsSubsetOf(managedSet, otherSet);
+                testData.AssertIsSupersetOf(managedSet, otherSet);
+                testData.AssertOverlaps(managedSet, otherSet);
+                testData.AssertSymmetricExceptWith(managedSet, otherSet);
+                testData.AssertUnionWith(managedSet, otherSet);
+
+                var otherList = _realm.Write(() =>
+                {
+                    var otherObj = _realm.Add(new CollectionsObject());
+                    var result = listAccessor(otherObj);
+
+                    foreach (var item in testData.OtherCollection)
+                    {
+                        result.Add(item);
+                    }
+
+                    return result;
+                });
+
+                testData.AssertExceptWith(managedSet, otherList);
+                testData.AssertIntersectWith(managedSet, otherList);
+                testData.AssertIsProperSubsetOf(managedSet, otherList);
+                testData.AssertIsProperSupersetOf(managedSet, otherList);
+                testData.AssertIsSubsetOf(managedSet, otherList);
+                testData.AssertIsSupersetOf(managedSet, otherList);
+                testData.AssertOverlaps(managedSet, otherList);
+                testData.AssertSymmetricExceptWith(managedSet, otherList);
+                testData.AssertUnionWith(managedSet, otherList);
+
+                // Dictionary.Values is backed by RealmResults
+                var otherResults = _realm.Write(() =>
+                {
+                    var otherObj = _realm.Add(new CollectionsObject());
+                    var result = dictAccessor(otherObj);
+
+                    foreach (var item in testData.OtherCollection)
+                    {
+                        result.Add(Guid.NewGuid().ToString(), item);
+                    }
+
+                    return result.Values;
+                });
+
+                testData.AssertExceptWith(managedSet, otherResults);
+                testData.AssertIntersectWith(managedSet, otherResults);
+                testData.AssertIsProperSubsetOf(managedSet, otherResults);
+                testData.AssertIsProperSupersetOf(managedSet, otherResults);
+                testData.AssertIsSubsetOf(managedSet, otherResults);
+                testData.AssertIsSupersetOf(managedSet, otherResults);
+                testData.AssertOverlaps(managedSet, otherResults);
+                testData.AssertSymmetricExceptWith(managedSet, otherResults);
+                testData.AssertUnionWith(managedSet, otherResults);
+
+                await testData.AssertThreadSafeReference(managedSet);
             });
-
-            testData.AssertExceptWith(managedSet, otherResults);
-            testData.AssertIntersectWith(managedSet, otherResults);
-            testData.AssertIsProperSubsetOf(managedSet, otherResults);
-            testData.AssertIsProperSupersetOf(managedSet, otherResults);
-            testData.AssertIsSubsetOf(managedSet, otherResults);
-            testData.AssertIsSupersetOf(managedSet, otherResults);
-            testData.AssertOverlaps(managedSet, otherResults);
-            testData.AssertSymmetricExceptWith(managedSet, otherResults);
-            testData.AssertUnionWith(managedSet, otherResults);
         }
 
         private void RunManagedNotificationsTests<T>(Func<CollectionsObject, ISet<T>> accessor, TestCaseData<T> testData, T newValue)
@@ -1610,6 +1615,26 @@ namespace Realms.Tests.Database
 
                     return callbacks[expectedCallbackCount - 1];
                 }
+            }
+
+            public async Task AssertThreadSafeReference(ISet<T> target)
+            {
+                Assert.That(target, Is.TypeOf<RealmSet<T>>());
+
+                Seed(target);
+
+                var tsr = ThreadSafeReference.Create(target);
+                var originalThreadId = Environment.CurrentManagedThreadId;
+
+                await Task.Run(() =>
+                {
+                    Assert.That(Environment.CurrentManagedThreadId, Is.Not.EqualTo(originalThreadId));
+
+                    using var bgRealm = Realm.GetInstance(target.AsRealmCollection().Realm.Config);
+                    var bgSet = bgRealm.ResolveReference(tsr);
+
+                    Assert.That(bgSet, Is.EquivalentTo(new HashSet<T>(InitialValues)));
+                });
             }
 
             public void Seed(ICollection<T> target, IEnumerable<T>? values = null)
