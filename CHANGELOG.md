@@ -24,6 +24,19 @@
 * Fixed a race condition between canceling an async write transaction and closing the Realm file, which could result in an `ObjectDisposedException : Safe handle has been closed` being thrown. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
 * Fixed an issue where in the extremely rare case that an exception is thrown by `Realm.RefreshAsync`, that exception would have been ignored and `false` would have been returned. ([PR #3400](https://github.com/realm/realm-dotnet/pull/3400))
 * Fixed the nullability annotation of `SubscriptionSet.Find` to correctly indicate that `null` is returned if the subscription doesn't exist in the subscription set. (PR [#3403](https://github.com/realm/realm-dotnet/pull/3403))
+* Fixed an issue where executing `Filter` queries using remapped properties would only work with the native name rather than the managed one. Now both will work - e.g.:
+  ```csharp
+  partial class MyModel : IRealmObject
+  {
+    [MapTo("Bar")]
+    public int Foo { get; set; }
+  }
+
+  // Both of these are valid now
+  realm.All<MyModel>().Filter("Foo > 5");
+  realm.All<MyModel>().Filter("Bar > 5");
+  ```
+  (Issue [#3149](https://github.com/realm/realm-dotnet/issues/3149))
 
 ### Compatibility
 * Realm Studio: 13.0.0 or later.
