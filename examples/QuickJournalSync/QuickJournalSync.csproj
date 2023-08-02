@@ -10,6 +10,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<CodeAnalysisRuleSet>stylecop.ruleset</CodeAnalysisRuleSet>
 		<Nullable>enable</Nullable>
+		<WindowsPackageType>None</WindowsPackageType>
 
 		<!-- Display name -->
 		<ApplicationTitle>QuickJournalSync</ApplicationTitle>
