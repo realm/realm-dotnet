@@ -307,6 +307,56 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void SetReference_ResolveDeletedParentObject_ShouldReturnNull()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var obj = new CollectionsObject();
+                obj.StringSet.Add("a");
+                obj.StringSet.Add("b");
+
+                _realm.Write(() => _realm.Add(obj));
+
+                var setReference = ThreadSafeReference.Create(obj.StringSet);
+
+                _realm.Write(() => _realm.Remove(obj));
+
+                await Task.Run(() =>
+                {
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherSet = otherRealm.ResolveReference(setReference);
+
+                    Assert.That(otherSet, Is.Null);
+                });
+            });
+        }
+
+        [Test]
+        public void DictionaryReference_ResolveDeletedParentObject_ShouldReturnNull()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var obj = new CollectionsObject();
+                obj.DoubleDict.Add("a", 5);
+                obj.DoubleDict.Add("b", 3);
+
+                _realm.Write(() => _realm.Add(obj));
+
+                var dictReference = ThreadSafeReference.Create(obj.DoubleDict);
+
+                _realm.Write(() => _realm.Remove(obj));
+
+                await Task.Run(() =>
+                {
+                    using var otherRealm = GetRealm(_realm.Config);
+                    var otherDict = otherRealm.ResolveReference(dictReference);
+
+                    Assert.That(otherDict, Is.Null);
+                });
+            });
+        }
+
+        [Test]
         public void QueryReference_WhenFilterApplied_ShouldWork()
         {
             TestHelpers.RunAsyncTest(async () =>
