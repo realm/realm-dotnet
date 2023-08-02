@@ -79,6 +79,9 @@ namespace Realms.Tests.Database
             TestHelpers.RunAsyncTest(async () =>
             {
                 var tcs = new TaskCompletionSource();
+
+                // Access the _realm on the original thread before accessing it on the bg thread;
+                _ = _realm;
                 var bgTask = Task.Run(async () =>
                 {
                     using var realm = GetRealm(_realm.Config);
