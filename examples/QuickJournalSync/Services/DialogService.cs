@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Alerts;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using QuickJournalSync.Views;
@@ -7,32 +8,31 @@ namespace QuickJournalSync.Services
 {
     public static class DialogService
     {
+        private static Page? MainPage => Application.Current?.MainPage;
+
         public static Task ShowAlertAsync(string title, string message, string accept)
         {
-            if (Application.Current?.MainPage == null)
-            {
-                throw new Exception("Cannot show an alert without a MainPage");
-            }
+            CheckIfMainPageAvailable();
 
-            return Application.Current.MainPage.DisplayAlert(title, message, accept);
+            return MainPage.DisplayAlert(title, message, accept);
         }
 
         public static Action ShowActivityIndicator()
         {
-            if (Application.Current?.MainPage == null)
-            {
-                throw new Exception("Cannot show an activity indicator without a MainPage");
-            }
+            CheckIfMainPageAvailable();
 
             var popup = new BusyPopup();
-            Application.Current.MainPage.ShowPopup(popup);
+            MainPage.ShowPopup(popup);
             return () => popup.Close();
         }
 
-        public static Task ShowToast(string text)
+        [MemberNotNull(nameof(MainPage))]
+        private static void CheckIfMainPageAvailable()
         {
-            var toast = Toast.Make(text, ToastDuration.Short);
-            return toast.Show();
+            if (MainPage == null)
+            {
+                throw new InvalidOperationException("Cannot show dialogs without a Main Page!");
+            }
         }
     }
 }

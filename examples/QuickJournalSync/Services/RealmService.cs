@@ -7,7 +7,7 @@ namespace QuickJournalSync.Services
 {
     public static class RealmService
     {
-        private static readonly string _appId = "";
+        private static readonly string _appId = "application-quickjournal-amhqr";
 
         private static bool _serviceInitialised;
 
@@ -66,7 +66,7 @@ namespace QuickJournalSync.Services
 
             await _app.LogInAsync(Credentials.EmailPassword(email, password));
 
-            using var realm = await GetRealmAsync();
+            using var realm = await GetRealmAsync();  //TODO Should we do this like in the code example? (put a try catch around this to catch TaskCanceledException)...?
         }
 
         public static async Task LogoutAsync()
@@ -88,7 +88,7 @@ namespace QuickJournalSync.Services
         {
             if (_app == null)
             {
-                throw new Exception("Remember to initialize RealmService!");
+                throw new InvalidOperationException("Remember to initialize RealmService!");
             }
         }
 
