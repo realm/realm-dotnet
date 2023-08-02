@@ -8,7 +8,7 @@
 
     <ShellContent
         Title="QuickJournal"
-        ContentTemplate="{DataTemplate local:JournalEntriesPage}"
+        ContentTemplate="{DataTemplate local:EntriesPage}"
         Route="main" />
 
 </Shell>
