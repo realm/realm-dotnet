@@ -526,7 +526,8 @@ namespace Realms
 
         #endregion IList
 
-        private class Enumerator : IEnumerator<T>
+        // ReSharper disable once MemberCanBePrivate.Global - this needs to be public for the dynamic API
+        public class Enumerator : IEnumerator<T>
         {
             private readonly RealmCollectionBase<T> _enumerating;
             private readonly bool _shouldDisposeHandle;
