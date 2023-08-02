@@ -48,6 +48,8 @@ namespace Realms.Native
     {
         public StringValue name;
 
+        public StringValue managed_name;
+
         public StringValue object_type;
 
         public StringValue link_origin_property_name;

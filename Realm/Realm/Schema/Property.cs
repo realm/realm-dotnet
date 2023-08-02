@@ -169,7 +169,8 @@ namespace Realms.Schema
         internal Property(in SchemaProperty nativeProperty)
         {
             Name = nativeProperty.name!;
-            ManagedName = nativeProperty.name!;
+            string? managedName = nativeProperty.managed_name;
+            ManagedName = !string.IsNullOrEmpty(managedName) ? managedName! : Name;
             Type = nativeProperty.type;
             ObjectType = nativeProperty.object_type;
             LinkOriginPropertyName = nativeProperty.link_origin_property_name;
@@ -180,6 +181,7 @@ namespace Realms.Schema
         internal SchemaProperty ToNative(Arena arena) => new()
         {
             name = StringValue.AllocateFrom(Name, arena),
+            managed_name = StringValue.AllocateFrom(ManagedName != Name ? ManagedName : string.Empty, arena),
             type = Type,
             object_type = StringValue.AllocateFrom(ObjectType, arena),
             link_origin_property_name = StringValue.AllocateFrom(LinkOriginPropertyName, arena),
