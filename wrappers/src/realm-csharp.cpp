@@ -15,13 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
+#include <stdlib.h>
 #include "realm_export_decls.hpp"
 
 extern "C" {
-REALM_EXPORT void delete_pointer(void* pointer)
+REALM_EXPORT void realm_free(void* pointer)
 {
-        delete pointer;
+        free(pointer);
 }
 } // extern "C"
 

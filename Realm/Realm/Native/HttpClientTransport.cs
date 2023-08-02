@@ -56,20 +56,19 @@ namespace Realms.Native
         {
             public NativeHttpMethod method;
 
-            private PrimitiveValue url;
+            private StringValue url;
 
             public UInt64 timeout_ms;
 
-            public IntPtr /* StringStringPair[] */ headers;
-            public IntPtr headers_len;
+            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
 
-            private PrimitiveValue body;
+            private StringValue body;
 
             private IntPtr managed_http_client;
 
-            public string Url => url.AsString();
+            public string Url => url!;
 
-            public string Body => body.AsString();
+            public string? Body => body;
 
             public HttpClient HttpClient
             {
@@ -93,18 +92,9 @@ namespace Realms.Native
 
             public CustomErrorCode custom_status_code;
 
-            [MarshalAs(UnmanagedType.LPWStr)]
-            private string body;
-            private IntPtr body_len;
+            public MarshaledVector<KeyValuePair<StringValue, StringValue>> headers;
 
-            public string Body
-            {
-                set
-                {
-                    body = value;
-                    body_len = (IntPtr)value.Length;
-                }
-            }
+            public StringValue body;
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -114,10 +104,7 @@ namespace Realms.Native
         private static extern void install_callbacks(execute_request execute);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_http_transport_respond", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void respond(
-            HttpClientResponse response,
-            [MarshalAs(UnmanagedType.LPArray), In] StringStringPair[]? headers, int headers_len,
-            IntPtr callback_ptr);
+        private static extern void respond(HttpClientResponse response, IntPtr callback_ptr);
 
 #pragma warning restore SA1300 // Element should begin with upper-case letter
 
@@ -130,55 +117,49 @@ namespace Realms.Native
             install_callbacks(execute);
         }
 
+        private static HttpRequestMessage BuildRequest(HttpClientRequest request)
+        {
+            var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.Url);
+            foreach (var header in request.headers)
+            {
+                message.Headers.TryAddWithoutValidation(header.Key!, header.Value);
+            }
+
+            if (request.method != NativeHttpMethod.get)
+            {
+                message.Content = new StringContent(request.Body!, Encoding.UTF8, "application/json");
+            }
+
+            return message;
+        }
+
         [MonoPInvokeCallback(typeof(execute_request))]
         private static async void ExecuteRequest(HttpClientRequest request, IntPtr callback)
         {
             try
             {
+                using var arena = new Arena();
                 try
                 {
                     var httpClient = request.HttpClient;
 
-                    using var message = new HttpRequestMessage(request.method.ToHttpMethod(), request.Url);
-                    foreach (var header in StringStringPair.UnmarshalDictionary(request.headers, request.headers_len.ToInt32()))
-                    {
-                        message.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                    }
-
-                    if (request.method != NativeHttpMethod.get)
-                    {
-                        message.Content = new StringContent(request.Body, Encoding.UTF8, "application/json");
-                    }
-
+                    using var message = BuildRequest(request);
                     using var cts = new CancellationTokenSource((int)request.timeout_ms);
 
                     var response = await httpClient.SendAsync(message, cts.Token).ConfigureAwait(false);
-                    var headers = new List<StringStringPair>(response.Headers.Count());
-                    foreach (var header in response.Headers)
-                    {
-                        headers.Add(new StringStringPair
-                        {
-                            Key = header.Key,
-                            Value = header.Value.FirstOrDefault()
-                        });
-                    }
 
-                    foreach (var header in response.Content.Headers)
-                    {
-                        headers.Add(new StringStringPair
-                        {
-                            Key = header.Key,
-                            Value = header.Value.FirstOrDefault()
-                        });
-                    }
+                    var headers = response.Headers.Concat(response.Content.Headers)
+                        .Select(h => new KeyValuePair<StringValue, StringValue>(StringValue.AllocateFrom(h.Key, arena), StringValue.AllocateFrom(h.Value.FirstOrDefault(), arena)))
+                        .ToArray();
 
                     var nativeResponse = new HttpClientResponse
                     {
                         http_status_code = (int)response.StatusCode,
-                        Body = await response.Content.ReadAsStringAsync().ConfigureAwait(false),
+                        headers = MarshaledVector<KeyValuePair<StringValue, StringValue>>.AllocateFrom(headers, arena),
+                        body = StringValue.AllocateFrom(await response.Content.ReadAsStringAsync().ConfigureAwait(false), arena),
                     };
 
-                    respond(nativeResponse, headers.ToArray(), headers.Count, callback);
+                    respond(nativeResponse, callback);
                 }
                 catch (HttpRequestException rex)
                 {
@@ -196,40 +177,40 @@ namespace Realms.Native
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.UnknownHttp,
-                        Body = sb.ToString(),
+                        body = StringValue.AllocateFrom(sb.ToString(), arena),
                     };
 
-                    respond(nativeResponse, null, 0, callback);
+                    respond(nativeResponse, callback);
                 }
                 catch (TaskCanceledException)
                 {
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Timeout,
-                        Body = $"Operation failed to complete within {request.timeout_ms} ms.",
+                        body = StringValue.AllocateFrom($"Operation failed to complete within {request.timeout_ms} ms.", arena),
                     };
 
-                    respond(nativeResponse, null, 0, callback);
+                    respond(nativeResponse, callback);
                 }
                 catch (ObjectDisposedException ode)
                 {
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.HttpClientDisposed,
-                        Body = ode.Message,
+                        body = StringValue.AllocateFrom(ode.Message, arena),
                     };
 
-                    respond(nativeResponse, null, 0, callback);
+                    respond(nativeResponse, callback);
                 }
                 catch (Exception ex)
                 {
                     var nativeResponse = new HttpClientResponse
                     {
                         custom_status_code = CustomErrorCode.Unknown,
-                        Body = ex.Message,
+                        body = StringValue.AllocateFrom(ex.Message, arena),
                     };
 
-                    respond(nativeResponse, null, 0, callback);
+                    respond(nativeResponse, callback);
                 }
             }
             catch (Exception outerEx)

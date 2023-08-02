@@ -24,6 +24,8 @@
 
 #include "marshalling.hpp"
 
+namespace realm::binding {
+
 inline Results* get_empty_results()
 {
     Results results = {};
@@ -83,3 +85,4 @@ inline Results* get_filtered_results(const SharedRealm& realm, const ConstTableR
 
     return new Results(realm, query.and_query(std::move(parsed_query)), std::move(new_order));
 }
+} // namespace realm::binding

@@ -27,30 +27,22 @@
 #include "sync_session_cs.hpp"
 #include <realm/sync/client_base.hpp>
 
+namespace realm::binding {
 enum class NotifiableProperty : uint8_t {
     ConnectionState = 0,
 };
 
-using namespace realm;
-using namespace realm::binding;
-
-using SharedSyncSession = std::shared_ptr<SyncSession>;
-using ErrorCallbackT = void(SharedSyncSession* session, realm_sync_error error, void* managed_sync_config);
 using WaitCallbackT = void(void* task_completion_source, int32_t error_code, realm_value_t message);
 using PropertyChangedCallbackT = void(void* managed_session_handle, NotifiableProperty property);
 
-namespace realm {
-namespace binding {
-    extern std::function<ErrorCallbackT> s_session_error_callback;
-    std::function<ProgressCallbackT> s_progress_callback;
-    std::function<WaitCallbackT> s_wait_callback;
-    std::function<PropertyChangedCallbackT> s_property_changed_callback;
-    std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
-    std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
-}
-}
-extern "C" {
+std::function<SessionErrorCallbackT> s_session_error_callback;
+std::function<ProgressCallbackT> s_progress_callback;
+std::function<WaitCallbackT> s_wait_callback;
+std::function<PropertyChangedCallbackT> s_property_changed_callback;
+std::function<NotifyBeforeClientResetCallbackT> s_notify_before_callback;
+std::function<NotifyAfterClientResetCallbackT> s_notify_after_callback;
 
+extern "C" {
 REALM_EXPORT std::shared_ptr<SyncUser>* realm_syncsession_get_user(const SharedSyncSession& session)
 {
     if (session->user() == nullptr) {
@@ -103,7 +95,7 @@ REALM_EXPORT void realm_syncsession_destroy(SharedSyncSession* session)
     delete session;
 }
 
-REALM_EXPORT void realm_syncsession_install_callbacks(ErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, PropertyChangedCallbackT* property_changed_callback, NotifyBeforeClientResetCallbackT notify_before, NotifyAfterClientResetCallbackT notify_after)
+REALM_EXPORT void realm_syncsession_install_callbacks(SessionErrorCallbackT* session_error_callback, ProgressCallbackT* progress_callback, WaitCallbackT* wait_callback, PropertyChangedCallbackT* property_changed_callback, NotifyBeforeClientResetCallbackT notify_before, NotifyAfterClientResetCallbackT notify_after)
 {
     s_session_error_callback = wrap_managed_callback(session_error_callback);
     s_progress_callback = wrap_managed_callback(progress_callback);
@@ -227,5 +219,5 @@ REALM_EXPORT void realm_syncsession_shutdown_and_wait(const SharedSyncSession& s
     });
 }
 
-}
-
+} // extern "C"
+} // namespace realm::binding

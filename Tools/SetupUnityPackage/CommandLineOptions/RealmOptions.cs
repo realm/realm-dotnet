@@ -50,6 +50,8 @@ namespace SetupUnityPackage
             new DependencyInfo("Remotion.Linq", "lib/netstandard1.0/Remotion.Linq.dll"),
             new DependencyInfo("System.Runtime.CompilerServices.Unsafe", "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll"),
             new DependencyInfo("System.Buffers", "lib/netstandard2.0/System.Buffers.dll"),
+            new DependencyInfo("System.Memory", "lib/netstandard2.0/System.Memory.dll"),
+            new DependencyInfo("System.Numerics.Vectors", "lib/netstandard2.0/System.Numerics.Vectors.dll"),
         };
 
         private static readonly IEnumerable<DependencyInfo> _weaverDependencies = new[]

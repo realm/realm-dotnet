@@ -24,11 +24,69 @@
 
 #include "error_handling.hpp"
 #include "timestamp_helpers.hpp"
-#include "shared_realm_cs.hpp"
 #include "utf8.hpp"
 
-namespace realm {
-namespace binding {
+namespace realm::binding {
+
+template <typename T>
+struct MarshaledVector
+{
+    const T* items;
+    size_t count;
+
+    MarshaledVector(const std::vector<T>& vector)
+        : items(vector.data())
+        , count(vector.size())
+    {
+    }
+
+    MarshaledVector(const std::vector<T>&&) = delete;
+
+    MarshaledVector()
+        : items(nullptr)
+        , count(0)
+    {
+    }
+
+    size_t size() const noexcept { return count; }
+
+    struct iterator {
+    public:
+        using iterator_category = std::random_access_iterator_tag;
+        using difference_type = ptrdiff_t;
+        using value_type = T;
+        using pointer = const T*;
+        using reference = const T&;
+
+        reference operator*() const noexcept { return *m_ptr; }
+        pointer operator->() const noexcept { return m_ptr; }
+
+        iterator& operator++() noexcept { m_ptr++; return *this; }
+
+        iterator operator++(int)
+        {
+            iterator tmp = *this;
+            ++(*this);
+            return tmp;    
+        }
+
+        friend bool operator== (const iterator& a, const iterator& b) { return a.m_ptr == b.m_ptr; };
+        friend bool operator!= (const iterator& a, const iterator& b) { return a.m_ptr != b.m_ptr; }; 
+
+    private:
+        friend struct MarshaledVector<T>;
+
+        iterator(pointer ptr)
+        : m_ptr(ptr)
+        {
+        }
+
+        pointer m_ptr;
+    };
+
+    iterator begin() const noexcept { return {items}; }
+    iterator end() const noexcept { return {items + count}; }
+};
 
 enum class realm_value_type : uint8_t {
     RLM_TYPE_NULL,
@@ -103,11 +161,11 @@ typedef struct realm_value {
     };
     realm_value_type type;
 
-    bool is_null() {
+    bool is_null() const {
         return type == realm_value_type::RLM_TYPE_NULL;
     }
 
-    bool boolean() {
+    bool boolean() const {
         return integer == 1;
     }
 } realm_value_t;
@@ -152,20 +210,14 @@ typedef struct realm_sync_error_compensating_write_info {
     realm_value_t primary_key;
 } realm_sync_error_compensating_write_info_t;
 
-template <typename T>
-struct marshaled_vector {
-    T* data;
-    size_t count;
-};
-
 struct realm_sync_error {
     int32_t error_code;
     realm_string_t message;
     realm_string_t log_url;
     bool is_client_reset;
 
-    marshaled_vector<std::pair<char*, char*>> user_info_pairs;
-    marshaled_vector<realm_sync_error_compensating_write_info_t> compensating_writes;
+    MarshaledVector<std::pair<realm_string_t, realm_string_t>> user_info_pairs;
+    MarshaledVector<realm_sync_error_compensating_write_info_t> compensating_writes;
 };
 
 static inline realm_string_t to_capi(StringData data)
@@ -186,7 +238,7 @@ static inline realm_value_t to_capi_value(const std::string& str)
     return val;
 }
 
-static inline realm_value_t to_capi_value(const StringData str)
+static inline realm_value_t to_capi_value(const StringData& str)
 {
     realm_value_t val{};
     if (str.is_null()) {
@@ -199,7 +251,7 @@ static inline realm_value_t to_capi_value(const StringData str)
     return val;
 }
 
-static inline std::string capi_to_std(realm_string_t str)
+static inline std::string capi_to_std(const realm_string_t& str)
 {
     if (str.data) {
         return std::string{ str.data, 0, str.size };
@@ -207,27 +259,27 @@ static inline std::string capi_to_std(realm_string_t str)
     return std::string{};
 }
 
-static inline StringData from_capi(realm_string_t str)
+static inline StringData from_capi(const realm_string_t& str)
 {
     return StringData{ str.data, str.size };
 }
 
-static inline realm_binary_t to_capi(BinaryData bin)
+static inline realm_binary_t to_capi(const BinaryData& bin)
 {
     return realm_binary_t{ reinterpret_cast<const unsigned char*>(bin.data()), bin.size() };
 }
 
-static inline BinaryData from_capi(realm_binary_t bin)
+static inline BinaryData from_capi(const realm_binary_t& bin)
 {
     return BinaryData{ reinterpret_cast<const char*>(bin.data), bin.size };
 }
 
-static inline realm_timestamp_t to_capi(Timestamp ts)
+static inline realm_timestamp_t to_capi(const Timestamp& ts)
 {
     return realm_timestamp_t{ ts.get_seconds(), ts.get_nanoseconds() };
 }
 
-static inline realm_value_t to_capi_value(Timestamp ts)
+static inline realm_value_t to_capi_value(const Timestamp& ts)
 {
     realm_value_t val{};
     val.timestamp = to_capi(ts);
@@ -235,7 +287,7 @@ static inline realm_value_t to_capi_value(Timestamp ts)
     return val;
 }
 
-static inline Timestamp from_capi(realm_timestamp_t ts)
+static inline Timestamp from_capi(const realm_timestamp_t& ts)
 {
     return Timestamp{ ts.seconds, ts.nanoseconds };
 }
@@ -246,27 +298,27 @@ static inline realm_decimal128_t to_capi(const Decimal128& dec)
     return realm_decimal128_t{ {raw->w[0], raw->w[1]} };
 }
 
-static inline Decimal128 from_capi(realm_decimal128_t dec)
+static inline Decimal128 from_capi(const realm_decimal128_t& dec)
 {
     return Decimal128{ Decimal128::Bid128{{dec.w[0], dec.w[1]}} };
 }
 
-static inline GeoPoint from_capi(geo_point point)
+static inline GeoPoint from_capi(const geo_point& point)
 {
     return GeoPoint{ point.longitude, point.latitude };
 }
 
-static inline GeoBox from_capi(geo_box box)
+static inline GeoBox from_capi(const geo_box& box)
 {
     return GeoBox{ GeoPoint{box.left, box.bottom}, GeoPoint{box.right, box.top} };
 }
 
-static inline GeoCircle from_capi(geo_circle circle)
+static inline GeoCircle from_capi(const geo_circle& circle)
 {
     return GeoCircle{ circle.radius_radians, from_capi(circle.center) };
 }
 
-static inline GeoPolygon from_capi(geo_polygon polygon)
+static inline GeoPolygon from_capi(const geo_polygon& polygon)
 {
     std::vector<std::vector<GeoPoint>> rings;
     rings.reserve(polygon.num_rings);
@@ -287,7 +339,7 @@ static inline GeoPolygon from_capi(geo_polygon polygon)
     return GeoPolygon{ rings };
 }
 
-static inline realm_object_id_t to_capi(ObjectId oid)
+static inline realm_object_id_t to_capi(const ObjectId& oid)
 {
     const auto& bytes = oid.to_bytes();
     realm_object_id_t result = {};
@@ -299,7 +351,7 @@ static inline realm_object_id_t to_capi(ObjectId oid)
     return result;
 }
 
-static inline realm_value_t to_capi_value(ObjectId oid)
+static inline realm_value_t to_capi_value(const ObjectId& oid)
 {
     realm_value_t val{};
     val.object_id = to_capi(oid);
@@ -307,14 +359,14 @@ static inline realm_value_t to_capi_value(ObjectId oid)
     return val;
 }
 
-static inline ObjectId from_capi(realm_object_id_t oid)
+static inline ObjectId from_capi(const realm_object_id_t& oid)
 {
     std::array<uint8_t, 12> bytes = {};
     std::copy(std::begin(oid.bytes), std::end(oid.bytes), bytes.begin());
     return ObjectId(std::move(bytes));
 }
 
-static inline realm_uuid_t to_capi(UUID uuid)
+static inline realm_uuid_t to_capi(const UUID& uuid)
 {
     const auto& bytes = uuid.to_bytes();
     realm_uuid_t result{};
@@ -326,7 +378,7 @@ static inline realm_uuid_t to_capi(UUID uuid)
     return result;
 }
 
-static inline UUID from_capi(realm_uuid_t uuid)
+static inline UUID from_capi(const realm_uuid_t& uuid)
 {
     std::array<uint8_t, 16> bytes = {};
     std::copy(std::begin(uuid.bytes), std::end(uuid.bytes), bytes.begin());
@@ -410,7 +462,7 @@ static inline Mixed from_capi(Object* obj, bool isMixedColumn)
     return Mixed{ ObjLink{obj->get_obj().get_table()->get_key(), obj->get_obj().get_key()} };
 }
 
-static inline Mixed from_capi(realm_value_t val)
+static inline Mixed from_capi(const realm_value_t& val)
 {
     switch (val.type) {
     case realm_value_type::RLM_TYPE_NULL:
@@ -442,38 +494,14 @@ static inline Mixed from_capi(realm_value_t val)
     }
 }
 
-static inline realm_value_t to_capi(Obj obj, SharedRealm realm)
-{
-    auto table_key = obj.get_table()->get_key();
-    auto schema = realm->schema().find(table_key);
-    if (schema == realm->schema().end())
-    {
-        // These shenanigans are only necessary because realm->schema() doesn't automatically update.
-        // TODO: remove this code when https://github.com/realm/realm-core/issues/4584 is resolved
-        CSharpBindingContext* cs_binding_context = dynamic_cast<CSharpBindingContext*>(realm->m_binding_context.get());
-        schema = cs_binding_context->m_realm_schema.find(table_key);
-        if (schema == cs_binding_context->m_realm_schema.end())
-        {
-            cs_binding_context->m_realm_schema = ObjectStore::schema_from_group(realm->read_group());
-            schema = cs_binding_context->m_realm_schema.find(table_key);
-        }
-    }
-
-    auto object = new Object(realm, *schema, std::move(obj));
-
-    realm_value_t val{};
-    val.type = realm_value_type::RLM_TYPE_LINK;
-    val.link.object = object;
-    val.link.table_key = table_key;
-    return val;
-}
+realm_value_t to_capi(Obj obj, SharedRealm realm);
 
 static inline realm_value_t to_capi(ObjLink obj_link, SharedRealm realm)
 {
     return to_capi(realm->read_group().get_object(obj_link), realm);
 }
 
-static inline realm_value_t to_capi(Mixed value)
+static inline realm_value_t to_capi(const Mixed& value)
 {
     realm_value_t val{};
     if (value.is_null()) {
@@ -543,7 +571,7 @@ static inline realm_value_t to_capi(Mixed value)
     return val;
 }
 
-inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
+inline realm_value_t to_capi(const object_store::Dictionary& dictionary, const Mixed& val)
 {
     if (val.is_null()) {
         return to_capi(std::move(val));
@@ -563,38 +591,12 @@ inline realm_value_t to_capi(object_store::Dictionary& dictionary, Mixed val)
     }
 }
 
-static inline bool are_equal(realm_value_t realm_value, Mixed mixed_value)
+static inline bool are_equal(const realm_value_t& realm_value, const Mixed& mixed_value)
 {
     // from_capi returns TypedLink for objects, but the mixed_value may contain just Link - let's ensure that we're comparing apples to apples
     return (mixed_value.is_type(realm::DataType::Type::Link) && realm_value.type == realm_value_type::RLM_TYPE_LINK && mixed_value == from_capi(realm_value.link.object, false)) ||
         mixed_value == from_capi(realm_value);
 }
-
-struct StringValue
-{
-    const char* value;
-};
-
-template <typename T>
-struct MarshaledVector
-{
-    const T* items;
-    size_t count;
-
-    MarshaledVector(const std::vector<T>& vector)
-        : items(vector.data())
-        , count(vector.size())
-    {
-    }
-
-    MarshaledVector(const std::vector<T>&&) = delete;
-
-    MarshaledVector()
-        : items(nullptr)
-        , count(0)
-    {
-    }
-};
 
 template<typename T, typename Collection>
 inline T get(Collection& collection, size_t ndx, NativeException::Marshallable& ex)
@@ -663,5 +665,4 @@ inline auto wrap_managed_callback(TReturn(*func)(TArgs... args))
         }
     };
 }
-} // namespace binding
-} // namespace realm
+} // namespace realm::binding

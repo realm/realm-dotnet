@@ -24,15 +24,16 @@
 #include <realm/object-store/object_schema.hpp>
 #include <realm/object-store/property.hpp>
 #include <realm/parser/query_parser.hpp>
+#include "marshalling.hpp"
 
-using namespace realm;
+namespace realm::binding {
 
 struct SchemaProperty
 {
-    const char* name;
+    realm_string_t name;
+    realm_string_t object_type;
+    realm_string_t link_origin_property_name;
     PropertyType type;
-    const char* object_type;
-    const char* link_origin_property_name;
     bool is_primary;
     IndexType index;
     
@@ -41,22 +42,21 @@ struct SchemaProperty
 
 struct SchemaObject
 {
-    const char* name;
-    int properties_start;
-    int properties_end;
+    realm_string_t name;
+    MarshaledVector<SchemaProperty> properties;
+    realm_string_t primary_key;
     ObjectSchema::ObjectType table_type;
     
     static SchemaObject for_marshalling(const ObjectSchema&, std::vector<SchemaProperty>&);
 };
 
-struct SchemaForMarshaling
+struct NativeSchema
 {
-    SchemaObject* objects;
-    int objects_len;
-    
-    SchemaProperty* properties;
-    
+    MarshaledVector<SchemaObject> objects;
 };
+
+using GetNativeSchemaT = void(NativeSchema schema, void* managed_callback);
+extern std::function<GetNativeSchemaT> s_get_native_schema;
 
 REALM_FORCEINLINE IndexType get_index_type(const Property& property)
 {
@@ -72,10 +72,10 @@ REALM_FORCEINLINE IndexType get_index_type(const Property& property)
 REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property& property)
 {
     return {
-        property.name.c_str(),
+        to_capi(property.name),
+        to_capi(property.object_type),
+        to_capi(property.link_origin_property_name),
         property.type,
-        property.object_type.c_str(),
-        property.link_origin_property_name.c_str(),
         property.is_primary,
         get_index_type(property),
     };
@@ -83,20 +83,23 @@ REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const Property&
 
 REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const ObjectSchema& object, std::vector<SchemaProperty>& properties)
 {
-    SchemaObject ret;
-    ret.name = object.name.c_str();
-    ret.table_type = object.table_type;
-    
-    ret.properties_start = static_cast<int>(properties.size());
+    properties.reserve(object.persisted_properties.size() + object.computed_properties.size());
     for (const auto& property : object.persisted_properties) {
         properties.push_back(SchemaProperty::for_marshalling(property));
     }
     for (const auto& property : object.computed_properties) {
         properties.push_back(SchemaProperty::for_marshalling(property));
     }
-    ret.properties_end = static_cast<int>(properties.size());
-    
-    return ret;
+
+    return {
+        to_capi(object.name),
+        properties,
+        object.primary_key.size() > 0 ? to_capi(object.primary_key) : realm_string_t{nullptr, 0},
+        object.table_type,
+    };
 }
 
-util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
+util::Optional<Schema> create_schema(MarshaledVector<SchemaObject> objects);
+
+void send_schema_to_managed(const Schema& schema, void* managed_callback);
+} // namespace realm::binding

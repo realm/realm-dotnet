@@ -29,31 +29,21 @@
 #include <realm/object-store/thread_safe_reference.hpp>
 #include <realm/exceptions.hpp>
 
-using namespace realm;
-using namespace realm::binding;
-
-using GetNativeSchemaT = void(SchemaForMarshaling schema, void* managed_callback);
-
-namespace realm {
-namespace binding {
-    extern std::function<GetNativeSchemaT> s_get_native_schema;
-
-    REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object)
-    {
-        KeyPathArray keyPathArray;
-        for (auto& prop : object.persisted_properties) {
-            // We want to filter out all collection properties. By providing keypaths with just the top-level properties
-            // means we won't get deep change notifications either.
-            bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
-            if (is_scalar) {
-                KeyPath keyPath;
-                keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
-                keyPathArray.push_back(keyPath);
-            }
+namespace realm::binding {
+REALM_FORCEINLINE KeyPathArray construct_key_path_array(const ObjectSchema& object)
+{
+    KeyPathArray keyPathArray;
+    for (auto& prop : object.persisted_properties) {
+        // We want to filter out all collection properties. By providing keypaths with just the top-level properties
+        // means we won't get deep change notifications either.
+        bool is_scalar = (unsigned short)(prop.type & ~PropertyType::Collection) == (unsigned short)prop.type;
+        if (is_scalar) {
+            KeyPath keyPath;
+            keyPath.push_back(std::make_pair(object.table_key, prop.column_key));
+            keyPathArray.push_back(keyPath);
         }
-        return keyPathArray;
     }
-}
+    return keyPathArray;
 }
 
 extern "C" {
@@ -126,17 +116,9 @@ extern "C" {
     REALM_EXPORT void object_get_schema(const Object& object, void* managed_callback, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
-            std::vector<SchemaObject> schema_objects;
-            std::vector<SchemaProperty> schema_properties;
-
             auto& object_schema = object.get_object_schema();
-            schema_objects.push_back(SchemaObject::for_marshalling(object_schema, schema_properties));
-
-            s_get_native_schema(SchemaForMarshaling{
-                schema_objects.data(),
-                static_cast<int>(schema_objects.size()),
-                schema_properties.data()
-            }, managed_callback);
+            Schema schema({object_schema});
+            send_schema_to_managed(schema, managed_callback);
         });
     }
 
@@ -332,4 +314,5 @@ extern "C" {
         });
     }
 
-}   // extern "C"
+} // extern "C"
+} // namespace realm::binding
