@@ -8,4 +8,3 @@ namespace QuickJournal;
 public class MainActivity : MauiAppCompatActivity
 {
 }
-

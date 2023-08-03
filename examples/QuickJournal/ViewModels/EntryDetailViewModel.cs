@@ -1,23 +1,21 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using QuickJournal.Messages;
 using QuickJournal.Models;
 
 namespace QuickJournal.ViewModels
 {
     [QueryProperty("Entry", nameof(Entry))]
-    public partial class JournalEntryDetailViewModel : ObservableObject
+    public partial class EntryDetailViewModel : ObservableObject
     {
         [ObservableProperty]
-        private JournalEntry entry;
+        private JournalEntry entry = null!;
 
         [RelayCommand]
         public void OnPageClosed()
         {
-            WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(entry));
+            WeakReferenceMessenger.Default.Send(new EntryModifiedMessage(Entry));
         }
     }
 }
-

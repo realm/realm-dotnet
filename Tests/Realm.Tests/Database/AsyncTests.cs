@@ -37,10 +37,7 @@ namespace Realms.Tests.Database
             {
                 Assert.That(SynchronizationContext.Current != null);
 
-                var obj = _realm.Write(() =>
-                {
-                    return _realm.Add(new IntPrimaryKeyWithValueObject());
-                });
+                var obj = _realm.Write(() => _realm.Add(new IntPrimaryKeyWithValueObject()));
 
                 var reference = ThreadSafeReference.Create(obj);
 
@@ -73,6 +70,44 @@ namespace Realms.Tests.Database
                     sw.Stop();
                     return sw.ElapsedTicks;
                 }
+            });
+        }
+
+        [Test]
+        public void RefreshAsync_OnABackgroundThread_RunsSynchronously()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var tcsBgRealmOpened = new TaskCompletionSource();
+                var tcsWriteComplete = new TaskCompletionSource();
+
+                // Access the _realm on the original thread before accessing it on the bg thread;
+                _ = _realm;
+                var bgTask = Task.Run(async () =>
+                {
+                    using var realm = GetRealm(_realm.Config);
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+
+                    tcsBgRealmOpened.TrySetResult();
+                    tcsWriteComplete.Task.Wait();
+
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(0));
+
+                    await realm.RefreshAsync();
+
+                    Assert.That(realm.All<IntPrimaryKeyWithValueObject>().Count(), Is.EqualTo(1));
+                });
+
+                await tcsBgRealmOpened.Task;
+
+                _realm.Write(() =>
+                {
+                    _realm.Add(new IntPrimaryKeyWithValueObject());
+                });
+
+                tcsWriteComplete.TrySetResult();
+
+                await bgTask;
             });
         }
 
@@ -133,7 +168,7 @@ namespace Realms.Tests.Database
         {
             TestHelpers.RunAsyncTest(async () =>
             {
-                Transaction transaction = null!;
+                Transaction transaction;
                 using (var realm = GetRealm(_realm.Config))
                 {
                     var peopleQuery = realm.All<Person>();
@@ -434,6 +469,76 @@ namespace Realms.Tests.Database
                 _realm.Dispose();
 
                 await TestHelpers.AssertThrows<TaskCanceledException>(() => writeTask);
+            });
+        }
+
+        [Test]
+        public void WriteAsync_OnBackgroundThread_RunsSynchronously()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                Assert.That(_realm.All<Person>(), Is.Empty);
+
+                await Task.Run(async () =>
+                {
+                    Assert.That(SynchronizationContext.Current, Is.Null);
+
+                    using var realm = GetRealm(_realm.Config);
+                    await realm.WriteAsync(() =>
+                    {
+                        realm.Add(new Person { FirstName = "Peter" });
+                    });
+                });
+
+                _realm.Refresh();
+
+                var people = _realm.All<Person>().ToArray();
+                Assert.That(people.Length, Is.EqualTo(1));
+                Assert.That(people.Single().FirstName, Is.EqualTo("Peter"));
+            });
+        }
+
+        [Test]
+        public void BeginWriteAsync_OnBackgroundThread_RunsSynchronously()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                Assert.That(_realm.All<Person>(), Is.Empty);
+
+                await Task.Run(async () =>
+                {
+                    Assert.That(SynchronizationContext.Current, Is.Null);
+
+                    using var realm = GetRealm(_realm.Config);
+                    var transaction = await realm.BeginWriteAsync();
+
+                    realm.Add(new Person { FirstName = "Peter" });
+
+                    await transaction.CommitAsync();
+                });
+
+                _realm.Refresh();
+
+                var people = _realm.All<Person>().ToArray();
+                Assert.That(people.Length, Is.EqualTo(1));
+                Assert.That(people.Single().FirstName, Is.EqualTo("Peter"));
+            });
+        }
+
+        [Test]
+        public void WriteAsync_CanceledInsideCallback()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                var cts = new CancellationTokenSource();
+
+                await TestHelpers.AssertThrows<TaskCanceledException>(() => _realm.WriteAsync(() =>
+                {
+                    _realm.Add(new Person());
+                    cts.Cancel();
+                }, cts.Token));
+
+                Assert.That(_realm.All<Person>(), Is.Empty);
             });
         }
     }

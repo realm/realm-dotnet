@@ -19,9 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Baas;
 using NUnit.Framework;
@@ -471,7 +473,7 @@ namespace Realms.Tests.Sync
                 var isDiscardLocal = config.ClientResetHandler.ClientResetMode == ClientResyncMode.Discard;
                 var objectsCount = isDiscardLocal ? 1 : 2;
 
-                await TestHelpers.WaitForConditionAsync(() => objs.Count() == objectsCount);
+                await WaitForConditionAsync(() => objs.Count() == objectsCount);
 
                 if (isDiscardLocal)
                 {
@@ -1244,6 +1246,127 @@ namespace Realms.Tests.Sync
             Assert.That(session.User.App.BaseUri, Is.EqualTo(fakeConfig.BaseUri));
         }
 
+        private static void AddSomeObjects(Realm realm, int count = 10)
+        {
+            realm.Write(() =>
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    realm.Add(new SyncAllTypesObject
+                    {
+                        Int32Property = i,
+                        ByteArrayProperty = GetBytes(10_000)
+                    });
+                }
+            });
+        }
+
+        [Test]
+        public void Session_WaitForUpload_CanBeCancelled()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetIntegrationRealmAsync();
+                AddSomeObjects(realm);
+
+                var cts = new CancellationTokenSource(1);
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                await AssertThrows<TaskCanceledException>(() => GetSession(realm).WaitForUploadAsync(cts.Token));
+
+                sw.Stop();
+
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(5));
+            });
+        }
+
+        [Test]
+        public void Session_WaitForUpload_WithCancelledToken()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var realm = await GetIntegrationRealmAsync();
+                AddSomeObjects(realm);
+
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                await AssertThrows<TaskCanceledException>(() => GetSession(realm).WaitForUploadAsync(cts.Token));
+
+                sw.Stop();
+
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(2));
+            });
+        }
+
+        [Test]
+        public void Session_WaitForDownload_CanBeCancelled()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var writerRealm = await GetIntegrationRealmAsync(partition: partition);
+                AddSomeObjects(writerRealm);
+
+                await WaitForUploadAsync(writerRealm);
+
+                var config = await GetIntegrationConfigAsync(partition: partition);
+                var readerRealm = GetRealm(config);
+
+                var cts = new CancellationTokenSource(1);
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                await AssertThrows<TaskCanceledException>(() => GetSession(readerRealm).WaitForDownloadAsync(cts.Token));
+
+                sw.Stop();
+
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(5));
+                Assert.That(readerRealm.All<SyncAllTypesObject>().Count(), Is.Zero);
+
+                await GetSession(readerRealm).WaitForDownloadAsync();
+                Assert.That(readerRealm.All<SyncAllTypesObject>().Count(), Is.EqualTo(10));
+            });
+        }
+
+        [Test]
+        public void Session_WaitForDownload_WithCancelledToken()
+        {
+            SyncTestHelpers.RunBaasTestAsync(async () =>
+            {
+                var partition = Guid.NewGuid().ToString();
+                var writerRealm = await GetIntegrationRealmAsync(partition: partition);
+                AddSomeObjects(writerRealm);
+
+                await WaitForUploadAsync(writerRealm);
+
+                var config = await GetIntegrationConfigAsync(partition: partition);
+                var readerRealm = GetRealm(config);
+
+                var cts = new CancellationTokenSource(1);
+                cts.Cancel();
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                await AssertThrows<TaskCanceledException>(() => GetSession(readerRealm).WaitForDownloadAsync(cts.Token));
+
+                sw.Stop();
+
+                Assert.That(sw.ElapsedMilliseconds, Is.LessThan(2));
+                Assert.That(readerRealm.All<SyncAllTypesObject>().Count(), Is.Zero);
+
+                await GetSession(readerRealm).WaitForDownloadAsync();
+                Assert.That(readerRealm.All<SyncAllTypesObject>().Count(), Is.EqualTo(10));
+            });
+        }
+
         private static ClientResetHandlerBase GetClientResetHandler(
             Type type,
             BeforeResetCallback? beforeCb = null,
@@ -1297,7 +1420,7 @@ namespace Realms.Tests.Sync
 
         private static AfterResetCallback GetOnAfterHandler(TaskCompletionSource tcs, Action<Realm, Realm> assertions)
         {
-            return new AfterResetCallback((frozen, live) =>
+            return (frozen, live) =>
             {
                 try
                 {
@@ -1308,12 +1431,12 @@ namespace Realms.Tests.Sync
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            };
         }
 
         private static BeforeResetCallback GetOnBeforeHandler(TaskCompletionSource tcs, Action<Realm> assertions)
         {
-            return new BeforeResetCallback(frozen =>
+            return frozen =>
             {
                 try
                 {
@@ -1323,12 +1446,12 @@ namespace Realms.Tests.Sync
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            };
         }
 
         private static ClientResetCallback GetManualResetHandler(TaskCompletionSource tcs, Action<ClientResetException> assertions)
         {
-            return new ClientResetCallback(clientResetException =>
+            return clientResetException =>
             {
                 try
                 {
@@ -1339,7 +1462,7 @@ namespace Realms.Tests.Sync
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            };
         }
 
         /// <summary>

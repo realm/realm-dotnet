@@ -8,17 +8,14 @@ using Realms;
 
 namespace QuickJournal.ViewModels
 {
-    public partial class JournalEntriesViewModel : ObservableObject
+    public partial class EntriesViewModel : ObservableObject
     {
         private readonly Realm realm;
 
         [ObservableProperty]
         private IQueryable<JournalEntry>? entries;
 
-        [ObservableProperty]
-        private string test;
-
-        public JournalEntriesViewModel()
+        public EntriesViewModel()
         {
             realm = Realm.GetInstance();
             Entries = realm.All<JournalEntry>();
@@ -27,7 +24,7 @@ namespace QuickJournal.ViewModels
             // This could have been implemeted hooking up on the back button behaviour
             // (with Shell.BackButtonBehaviour), but there is a current bug in MAUI
             // that would make the application crash (https://github.com/dotnet/maui/pull/11438)
-            WeakReferenceMessenger.Default.Register< EntryModifiedMessage>(this, EntryModifiedHandler);
+            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);
         }
 
         [RelayCommand]
@@ -82,4 +79,3 @@ namespace QuickJournal.ViewModels
         }
     }
 }
-

@@ -214,6 +214,30 @@ namespace Realms.Tests.Database
         }
 
         [Test]
+        public void Transaction_PerformAction_WhenDisposed_Throws()
+        {
+            TestHelpers.RunAsyncTest(async () =>
+            {
+                using var realm = GetRealm();
+                using var ts = realm.BeginWrite();
+                ts.Dispose();
+
+                Assert.That(ts.State, Is.EqualTo(TransactionState.RolledBack));
+                var ex = Assert.Throws<Exception>(() => ts.Commit())!;
+                Assert.That(ex.Message, Does.Contain("Cannot commit"));
+
+                ex = Assert.Throws<Exception>(() => ts.Rollback())!;
+                Assert.That(ex.Message, Does.Contain("Cannot roll back"));
+
+                ex = await TestHelpers.AssertThrows<Exception>(() => ts.CommitAsync());
+                Assert.That(ex.Message, Does.Contain("Cannot commit"));
+
+                // Double dispose should be a no-op
+                Assert.DoesNotThrow(() => ts.Dispose());
+            });
+        }
+
+        [Test]
         public void TransactionStateIsCorrectAsync()
         {
             TestHelpers.RunAsyncTest(async () =>
