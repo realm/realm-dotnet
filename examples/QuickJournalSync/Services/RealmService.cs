@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using MongoDB.Bson;
 using QuickJournalSync.Models;
 using Realms;
 using Realms.Sync;
@@ -118,6 +119,53 @@ namespace QuickJournalSync.Services
             };
         }
 
+        public static async Task SimulateSessionError()
+        {
+            var realm = GetMainThreadRealm();
+
+            // Here we are adding an object that has a UserId different from the id of the current user.
+            // This means that the object is outside of the current query subscriptions, and as such will provoke a session error.
+            await realm.WriteAsync(() =>
+            {
+                return realm.Add(new JournalEntry
+                {
+                    CreatedDate = DateTimeOffset.Now,
+                    UserId = ObjectId.GenerateNewId().ToString(),
+                });
+            });
+        }
+
+        public static async Task SimulateSubscriptionError()
+        {
+            const string subErrorName = "subError";
+            var realm = GetMainThreadRealm();
+
+            // Here we are adding a subscription on a property (Title) that is not in the list of queryable fields on the service.
+            // This will raise a SubscriptionException when waiting for the synchronization of the subscriptions.
+            // In order for this to work you need to disable Development Mode, otherwise Title will be added in the queryable fields
+            // automatically, and there will be no error.
+            realm.Subscriptions.Update(() =>
+            {
+                var queryFake = realm.All<JournalEntry>().Where(j => j.Title == "test");
+                realm.Subscriptions.Add(queryFake, new SubscriptionOptions { Name = subErrorName });
+            });
+
+            try
+            {
+                await realm.Subscriptions.WaitForSynchronizationAsync();
+            }
+            catch (SubscriptionException ex)
+            {
+                Console.WriteLine($"Subscription Error: {ex}");
+
+                // Removing the invalid subscription
+                realm.Subscriptions.Update(() =>
+                {
+                    realm.Subscriptions.Remove(subErrorName);
+                });
+            }
+        }
+
         private static void HandleSessionErrorCallback(Session session, SessionException error)
         {
             Console.WriteLine($"Session error! {error}");
@@ -125,10 +173,7 @@ namespace QuickJournalSync.Services
 
         private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            // Why it does not get called?
             var session = (Session)sender!;
-
-            Console.WriteLine("SYNC-SESSION CHANGE:" + e.PropertyName);
 
             if (e.PropertyName == nameof(Session.ConnectionState))
             {
@@ -136,5 +181,12 @@ namespace QuickJournalSync.Services
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }
         }
+
+        /** Possible todos:
+         * - Add a button to generate a compensating query
+         * - Add a button to generate client reset?
+         * - Add label with last connection state
+         * - Add label with list of errors printed (like telemetry)
+         */
     }
 }

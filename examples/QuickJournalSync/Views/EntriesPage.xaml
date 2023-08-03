@@ -5,6 +5,7 @@
              xmlns:vm="clr-namespace:QuickJournalSync.ViewModels"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Title="QuickJournalSync"
+             BackgroundColor="#E3FCF7"
              x:Name="entriesPage">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Logout" IconImageSource="logout.png" Order="Primary" Command="{Binding LogoutCommand}"/>
@@ -27,26 +28,40 @@
             Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
     <ContentPage.Content>
-        <ListView ItemsSource="{Binding Entries}"
-                  SelectionMode="None">
-            <ListView.Behaviors>
-            <toolkit:EventToCommandBehavior
-                EventName="ItemTapped"
-                EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" 
-                Command="{Binding EditEntryCommand}"/>
-            </ListView.Behaviors>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextCell Text="{Binding Title}"
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="3*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <ListView ItemsSource="{Binding Entries}"
+                  SelectionMode="None"
+                  Grid.Row="0">
+                <ListView.Behaviors>
+                    <toolkit:EventToCommandBehavior
+                        EventName="ItemTapped"
+                        EventArgsConverter="{StaticResource ItemTappedEventArgsConverter}" 
+                        Command="{Binding EditEntryCommand}"/>
+                </ListView.Behaviors>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextCell Text="{Binding Title}"
                               Detail="{Binding CreatedDate, StringFormat='{0:dddd, MMMM d yyyy}'}">
-                        <TextCell.ContextActions>
-                            <MenuItem Text="Delete" IsDestructive="true" 
+                            <TextCell.ContextActions>
+                                <MenuItem Text="Delete" IsDestructive="true" 
                                        Command="{Binding Path=BindingContext.DeleteEntryCommand, Source={x:Reference entriesPage}}" 
                                        CommandParameter="{Binding .}" />
-                        </TextCell.ContextActions>
-                    </TextCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                            </TextCell.ContextActions>
+                        </TextCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <VerticalStackLayout BackgroundColor="#E3FCF7"
+                Padding="15" Spacing="15"
+                Grid.Row="1">
+                <Label Text="{Binding ConnectionState, StringFormat='Last connection state: {0}'}" HorizontalTextAlignment="Center" />
+                <Button Text="Simulate Session Error" Command="{Binding SimulateSessionErrorCommand}"/>
+                <Button Text="Simulate Subscription Error" Command="{Binding SimulateSubscriptionErrorCommand}"/>
+            </VerticalStackLayout>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>

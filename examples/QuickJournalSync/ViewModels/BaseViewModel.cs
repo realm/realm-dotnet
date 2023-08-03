@@ -5,20 +5,20 @@ namespace QuickJournalSync.ViewModels
     public partial class BaseViewModel : ObservableObject
     {
         [ObservableProperty]
-        protected bool isBusy;
+        protected bool _isBusy;
 
-        protected Action? currentDismissAction;
+        protected Action? _currentDismissAction;
 
         partial void OnIsBusyChanged(bool value)
         {
             if (value)
             {
-                currentDismissAction = Services.DialogService.ShowActivityIndicator();
+                _currentDismissAction = Services.DialogService.ShowActivityIndicator();
             }
             else
             {
-                currentDismissAction?.Invoke();
-                currentDismissAction = null;
+                _currentDismissAction?.Invoke();
+                _currentDismissAction = null;
             }
         }
     }

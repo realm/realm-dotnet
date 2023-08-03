@@ -6,20 +6,25 @@ using QuickJournalSync.Messages;
 using QuickJournalSync.Models;
 using QuickJournalSync.Services;
 using Realms;
+using Realms.Sync;
 
 namespace QuickJournalSync.ViewModels
 {
     public partial class EntriesViewModel : BaseViewModel
     {
-        private readonly Realm realm;
+        private readonly Realm _realm;
 
         [ObservableProperty]
-        private IQueryable<JournalEntry>? entries;
+        private IQueryable<JournalEntry>? _entries;
+
+        [ObservableProperty]
+        private ConnectionState _connectionState;
 
         public EntriesViewModel()
         {
-            realm = RealmService.GetMainThreadRealm();
-            Entries = realm.All<JournalEntry>();
+            _realm = RealmService.GetMainThreadRealm();
+            ConnectionState = _realm.SyncSession.ConnectionState;
+            Entries = _realm.All<JournalEntry>();
         }
 
         [RelayCommand]
@@ -31,7 +36,7 @@ namespace QuickJournalSync.ViewModels
             // This could have been implemeted hooking up on the back button behaviour
             // (with Shell.BackButtonBehaviour), but there is a current bug in MAUI
             // that would make the application crash (https://github.com/dotnet/maui/pull/11438)
-            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);  //TODO Check if we want to remove this
+            WeakReferenceMessenger.Default.Register<EntryModifiedMessage>(this, EntryModifiedHandler);
         }
 
         [RelayCommand]
@@ -44,9 +49,9 @@ namespace QuickJournalSync.ViewModels
         [RelayCommand]
         public async Task AddEntry()
         {
-            var entry = await realm.WriteAsync(() =>
+            var entry = await _realm.WriteAsync(() =>
             {
-                return realm.Add(new JournalEntry
+                return _realm.Add(new JournalEntry
                 {
                     CreatedDate = DateTimeOffset.Now,
                 });
@@ -64,9 +69,9 @@ namespace QuickJournalSync.ViewModels
         [RelayCommand]
         public async Task DeleteEntry(JournalEntry entry)
         {
-            await realm.WriteAsync(() =>
+            await _realm.WriteAsync(() =>
             {
-                realm.Remove(entry);
+                _realm.Remove(entry);
             });
         }
 
@@ -80,9 +85,22 @@ namespace QuickJournalSync.ViewModels
             await Shell.Current.GoToAsync($"//login");
         }
 
-        private void HandleSyncConnectionStateChanged(object? sender, Realms.Sync.ConnectionState e)
+        [RelayCommand]
+        public async Task SimulateSessionError()
         {
-            MainThread.BeginInvokeOnMainThread(() => DialogService.ShowToast(e.ToString()));
+            await RealmService.SimulateSessionError();
+        }
+
+        [RelayCommand]
+        public async Task SimulateSubscriptionError()
+        {
+            await RealmService.SimulateSubscriptionError();
+        }
+
+        private void HandleSyncConnectionStateChanged(object? sender, ConnectionState newConnectionState)
+        {
+            ConnectionState = newConnectionState;
+            //MainThread.BeginInvokeOnMainThread(() => DialogService.ShowToast(newConnectionState.ToString()));
         }
 
         private async Task GoToEntry(JournalEntry entry)
