@@ -48,10 +48,7 @@ namespace QuickJournalSync.ViewModels
             {
                 return realm.Add(new JournalEntry
                 {
-                    Metadata = new EntryMetadata
-                    {
-                        CreatedDate = DateTimeOffset.Now,
-                    }
+                    CreatedDate = DateTimeOffset.Now,
                 });
             });
 
