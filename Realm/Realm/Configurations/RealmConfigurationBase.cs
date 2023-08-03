@@ -147,6 +147,7 @@ namespace Realms
 
             // optionalPath is guaranteed to be non-null here, but .NET Standard 2.0 doesn't have correct annotations for
             // string.IsNullOrEmpty.
+            // ReSharper disable once RedundantSuppressNullableWarningExpression
             if (optionalPath!.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);

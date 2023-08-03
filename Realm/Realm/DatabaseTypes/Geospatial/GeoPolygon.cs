@@ -107,7 +107,7 @@ namespace Realms
             foreach (var polygon in linearRings)
             {
                 Argument.Ensure(polygon.Count > 3, $"Each linear ring (both the outer one and any holes) must have at least 4 points, but {LinearRingToString(polygon)} only had {polygon.Count}.", nameof(linearRings));
-                Argument.Ensure(polygon[0] == polygon[polygon.Count - 1], $"The first and the last points of the polygon {LinearRingToString(polygon)} must be the same.", nameof(linearRings));
+                Argument.Ensure(polygon[0] == polygon[^1], $"The first and the last points of the polygon {LinearRingToString(polygon)} must be the same.", nameof(linearRings));
             }
 
             _linearRings = linearRings;

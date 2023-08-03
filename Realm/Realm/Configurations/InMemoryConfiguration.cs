@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Realms.Native;
-using Realms.Schema;
 
 namespace Realms
 {

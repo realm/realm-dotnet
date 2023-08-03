@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace System.Threading.Tasks
-{
 #if NETSTANDARD2_0
 
+namespace System.Threading.Tasks
+{
     internal class TaskCompletionSource : TaskCompletionSource<object?>
     {
         public void TrySetResult() => TrySetResult(null);
     }
+}
 
 #endif
-}

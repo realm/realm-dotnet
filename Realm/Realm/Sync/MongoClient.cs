@@ -33,7 +33,7 @@ namespace Realms.Sync
     /// </summary>
     public class MongoClient
     {
-        internal User User { get; }
+        private User User { get; }
 
         /// <summary>
         /// Gets the service name for this client.
@@ -59,7 +59,7 @@ namespace Realms.Sync
             return new Database(this, name);
         }
 
-        internal static bool IsNameValid(string name)
+        private static bool IsNameValid(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

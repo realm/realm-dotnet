@@ -205,7 +205,7 @@ jobs:
       with:
         name: Realm.UnityWeaver.${{ needs.build-packages.outputs.package_version }}
         path: ${{ github.workspace }}/Realm/packages/
-    - run: dotnet tool install ilspycmd -g
+    - run: dotnet tool install ilspycmd -g --version 8.0.0.7345
     - name: Verify Namespaces
       run: |
         $isFailure = $false

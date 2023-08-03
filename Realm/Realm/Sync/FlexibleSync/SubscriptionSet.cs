@@ -50,8 +50,6 @@ namespace Realms.Sync
     {
         private SubscriptionSetHandle _handle;
 
-        private bool IsClosed => _handle.IsClosed;
-
         /// <summary>
         /// Gets the number of elements in the collection.
         /// </summary>

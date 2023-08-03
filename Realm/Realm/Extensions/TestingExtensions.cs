@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms.Exceptions.Sync;
 using Realms.Helpers;
 using Realms.Sync.Exceptions;

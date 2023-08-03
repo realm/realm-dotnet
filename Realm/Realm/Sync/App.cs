@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -148,7 +147,7 @@ namespace Realms.Sync
         public static App Create(AppConfiguration config)
         {
             Argument.NotNull(config, nameof(config));
-            var syncTimeouts = config.SyncTimeoutOptions ?? new();
+            var syncTimeouts = config.SyncTimeoutOptions;
 
             if (config.MetadataPersistenceMode.HasValue)
             {

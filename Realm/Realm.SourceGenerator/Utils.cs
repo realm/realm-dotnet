@@ -28,7 +28,7 @@ namespace Realms.SourceGenerator
 {
     internal static class Utils
     {
-        private static List<SpecialType> _validRealmIntegerArgumentTypes = new()
+        private static readonly HashSet<SpecialType> _validRealmIntegerArgumentTypes = new()
         {
             SpecialType.System_Byte,
             SpecialType.System_Int16,
@@ -36,7 +36,7 @@ namespace Realms.SourceGenerator
             SpecialType.System_Int64
         };
 
-        private static List<SpecialType> _validIntegerTypes = new()
+        private static readonly HashSet<SpecialType> _validIntegerTypes = new()
         {
             SpecialType.System_Char,
             SpecialType.System_Byte,
@@ -82,7 +82,7 @@ namespace Realms.SourceGenerator
             return _validIntegerTypes.Contains(symbol.SpecialType);
         }
 
-        public static bool IsValidRealmIntgerType(this ITypeSymbol symbol)
+        public static bool IsValidRealmIntegerType(this ITypeSymbol symbol)
         {
             return _validRealmIntegerArgumentTypes.Contains(symbol.SpecialType);
         }
@@ -91,7 +91,7 @@ namespace Realms.SourceGenerator
         {
             var namedSymbol = symbol as INamedTypeSymbol;
 
-            return namedSymbol != null && namedSymbol.IsGenericType
+            return namedSymbol is { IsGenericType: true }
                 && namedSymbol.ConstructUnboundGenericType().ToDisplayString() == "Realms.RealmInteger<>";
         }
 
@@ -174,32 +174,23 @@ namespace Realms.SourceGenerator
             return symbol.GetMembers("PropertyChanged").OfType<IEventSymbol>().Any();
         }
 
-        public static bool IsObjectEqualsOverride(this IMethodSymbol method)
+        private static bool IsObjectEqualsOverride(this IMethodSymbol method)
         {
-            return method != null &&
-                method.IsOverride &&
-                method.ReturnType.SpecialType == SpecialType.System_Boolean &&
-                method.Parameters.Length == 1 &&
+            return method is { IsOverride: true, ReturnType.SpecialType: SpecialType.System_Boolean, Parameters.Length: 1 } &&
                 method.Parameters[0].Type.SpecialType == SpecialType.System_Object &&
                 IsObjectMethodOverride(method);
         }
 
-        public static bool IsGetHashCodeOverride(this IMethodSymbol method)
+        private static bool IsGetHashCodeOverride(this IMethodSymbol method)
         {
-            return method != null &&
-                   method.IsOverride &&
-                   method.ReturnType.SpecialType == SpecialType.System_Int32 &&
-                   method.Parameters.IsEmpty &&
-                   IsObjectMethodOverride(method);
+            return method is { IsOverride: true, ReturnType.SpecialType: SpecialType.System_Int32, Parameters.IsEmpty: true } &&
+                IsObjectMethodOverride(method);
         }
 
-        public static bool IsToStringOverride(this IMethodSymbol method)
+        private static bool IsToStringOverride(this IMethodSymbol method)
         {
-            return method != null &&
-                   method.IsOverride &&
-                   method.ReturnType.SpecialType == SpecialType.System_String &&
-                   method.Parameters.IsEmpty &&
-                   IsObjectMethodOverride(method);
+            return method is { IsOverride: true, ReturnType.SpecialType: SpecialType.System_String, Parameters.IsEmpty: true } &&
+                IsObjectMethodOverride(method);
         }
 
         private static bool IsObjectMethodOverride(IMethodSymbol method)

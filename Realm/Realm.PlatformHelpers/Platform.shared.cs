@@ -60,8 +60,7 @@ namespace Realms.PlatformHelpers
                     var entryAssembly = AppDomain.CurrentDomain.GetAssemblies()
                         .FirstOrDefault(a => a.CustomAttributes.Any(att =>
                             att.AttributeType.FullName == "Android.Runtime.ResourceDesignerAttribute" &&
-                            att.NamedArguments.FirstOrDefault(arg => arg.MemberName == "IsApplication").TypedValue.Value is bool isApplication &&
-                            isApplication));
+                            att.NamedArguments?.FirstOrDefault(arg => arg.MemberName == "IsApplication").TypedValue.Value is true));
 
                     bundleId = entryAssembly?.GetName().Name;
                 }

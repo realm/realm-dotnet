@@ -63,7 +63,7 @@ jobs:
     steps:
       - #@ template.replace(checkoutCode("recursive", False))
       - #@ template.replace(fetchPackageArtifacts("needs.build-packages.outputs.package_version", packages = nugetPackages))
-      - run: dotnet tool install ilspycmd -g
+      - run: dotnet tool install ilspycmd -g --version 8.0.0.7345
       - name: Verify Namespaces
         run: |
           $isFailure = $false

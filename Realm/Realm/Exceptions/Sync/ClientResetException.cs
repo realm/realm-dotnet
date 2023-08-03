@@ -42,7 +42,7 @@ namespace Realms.Sync.Exceptions
             _originalFilePath = Path.GetFullPath(userInfo[OriginalFilePathKey]!);
             _app = app;
             BackupFilePath = Path.GetFullPath(userInfo[BackupFilePathKey]!);
-            HelpLink = "https://docs.mongodb.com/realm/dotnet/client-reset/";
+            HelpLink = "https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset/";
         }
 
         /// <summary>
