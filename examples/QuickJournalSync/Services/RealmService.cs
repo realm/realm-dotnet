@@ -4,6 +4,7 @@ using MongoDB.Bson;
 using QuickJournalSync.Models;
 using Realms;
 using Realms.Sync;
+using Realms.Sync.ErrorHandling;
 using Realms.Sync.Exceptions;
 
 namespace QuickJournalSync.Services
@@ -12,6 +13,7 @@ namespace QuickJournalSync.Services
     {
         private static readonly string _appId = "application-quickjournal-amhqr";
         private static object _mainRealmLock = new ();
+        private static object _mainRealmLock = new();
 
         private static bool _serviceInitialised;
 
@@ -50,7 +52,9 @@ namespace QuickJournalSync.Services
             {
                 if (_mainThreadRealm is null)
                 {
-                    _mainThreadRealm = Realm.GetInstance(GetRealmConfig(HandleSessionErrorCallback));
+                    var mainThreadConfig = GetRealmConfig(sessionErrorCallback: HandleSessionErrorCallback,
+                        clientResetHandler: MakeClientResetHandler());
+                    _mainThreadRealm = Realm.GetInstance(mainThreadConfig);
                     _session = _mainThreadRealm.SyncSession;
                     _session.PropertyChanged += HandleSyncSessionPropertyChanged;
                 }
@@ -106,39 +110,37 @@ namespace QuickJournalSync.Services
             }
         }
 
-        private static FlexibleSyncConfiguration GetRealmConfig(SyncConfigurationBase.SessionErrorCallback? callback = null)
+        private static FlexibleSyncConfiguration GetRealmConfig(SyncConfigurationBase.SessionErrorCallback? sessionErrorCallback = null,
+            ClientResetHandlerBase? clientResetHandler = null)
         {
             if (CurrentUser == null)
             {
                 throw new InvalidOperationException("Cannot get Realm config before login!");
             }
 
-            return new FlexibleSyncConfiguration(CurrentUser)
+            var config = new FlexibleSyncConfiguration(CurrentUser)
             {
                 PopulateInitialSubscriptions = (realm) =>
                 {
                     var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
                     realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
                 },
-                OnSessionError = callback
             };
-        }
 
-        public static async Task SimulateSessionError()
-        {
-            var realm = GetMainThreadRealm();
-
-            // Here we are adding an object that has a UserId different from the id of the current user.
-            // This means that the object is outside of the current query subscriptions, and as such will provoke a session error.
-            await realm.WriteAsync(() =>
+            if (sessionErrorCallback is not null)
             {
-                return realm.Add(new JournalEntry
-                {
-                    CreatedDate = DateTimeOffset.Now,
-                    UserId = ObjectId.GenerateNewId().ToString(),
-                });
-            });
+                config.OnSessionError = sessionErrorCallback;
+            }
+
+            if (clientResetHandler is not null)
+            {
+                config.ClientResetHandler = clientResetHandler;
+            }
+
+            return config;
         }
+
+        #region Subscription Error
 
         public static async Task SimulateSubscriptionError()
         {
@@ -171,10 +173,32 @@ namespace QuickJournalSync.Services
             }
         }
 
+        #endregion
+
+        #region Session Error
+
+        public static async Task SimulateSessionError()
+        {
+            var realm = GetMainThreadRealm();
+
+            // Here we are adding an object that has a UserId different from the id of the current user.
+            // This means that the object is outside of the current query subscriptions, and as such will provoke a session error.
+            await realm.WriteAsync(() =>
+            {
+                return realm.Add(new JournalEntry
+                {
+                    CreatedDate = DateTimeOffset.Now,
+                    UserId = ObjectId.GenerateNewId().ToString(),
+                });
+            });
+        }
+
         private static void HandleSessionErrorCallback(Session session, SessionException error)
         {
             Console.WriteLine($"Session error! {error}");
         }
+
+        #endregion
 
         private static void HandleSyncSessionPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -186,5 +210,44 @@ namespace QuickJournalSync.Services
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }
         }
+
+        #region ClientReset
+
+        private static ClientResetHandlerBase MakeClientResetHandler()
+        {
+            return new RecoverOrDiscardUnsyncedChangesHandler()
+            {
+                OnBeforeReset = HandleBeforeClientReset,
+                OnAfterRecovery = HandleAfterClientResetRecovery,
+                OnAfterDiscard = HandleAfterClientResetDiscard,
+                ManualResetFallback = HandleManualReset,
+            };
+        }
+
+        private static void HandleBeforeClientReset(Realm beforeFrozen)
+        {
+            // Callback invoked right before a Client Reset.
+            Console.WriteLine("Before Reset Callback called");
+        }
+
+        private static void HandleAfterClientResetRecovery(Realm beforeFrozen, Realm after)
+        {
+            // Callback invoked right after a Client Reset just succeeded.
+            Console.WriteLine("After Reset Discard Callback called");
+        }
+
+        private static void HandleAfterClientResetDiscard(Realm beforeFrozen, Realm after)
+        {
+            // Callback invoked right after a Client Reset that fell back to discard unsynced changes.
+            Console.WriteLine("After Reset Discard Callback called");
+        }
+
+        private static void HandleManualReset(ClientResetException clientResetException)
+        {
+            // Callback invoked if automatic Client Reset handling fails.
+            Console.WriteLine("Manual Reset Callback called");
+        }
+
+        #endregion
     }
 }
