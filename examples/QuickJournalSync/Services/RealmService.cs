@@ -12,7 +12,6 @@ namespace QuickJournalSync.Services
     public static class RealmService
     {
         private static readonly string _appId = "application-quickjournal-amhqr";
-        private static object _mainRealmLock = new ();
         private static object _mainRealmLock = new();
 
         private static bool _serviceInitialised;
@@ -163,7 +162,7 @@ namespace QuickJournalSync.Services
             }
             catch (SubscriptionException ex)
             {
-                Console.WriteLine($"Subscription Error: {ex}");
+                LogAndShowToast($"Subscription Error: {ex}");
 
                 // Removing the invalid subscription
                 realm.Subscriptions.Update(() =>
@@ -195,7 +194,7 @@ namespace QuickJournalSync.Services
 
         private static void HandleSessionErrorCallback(Session session, SessionException error)
         {
-            Console.WriteLine($"Session error! {error}");
+            LogAndShowToast($"Session error! {error}");
         }
 
         #endregion
@@ -206,7 +205,7 @@ namespace QuickJournalSync.Services
 
             if (e.PropertyName == nameof(Session.ConnectionState))
             {
-                Console.WriteLine($"New connection state: {session.ConnectionState}");
+                LogAndShowToast($"New connection state: {session.ConnectionState}");
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }
         }
@@ -227,27 +226,33 @@ namespace QuickJournalSync.Services
         private static void HandleBeforeClientReset(Realm beforeFrozen)
         {
             // Callback invoked right before a Client Reset.
-            Console.WriteLine("Before Reset Callback called");
+            LogAndShowToast("Before Reset Callback called");
         }
 
         private static void HandleAfterClientResetRecovery(Realm beforeFrozen, Realm after)
         {
             // Callback invoked right after a Client Reset just succeeded.
-            Console.WriteLine("After Reset Discard Callback called");
+            LogAndShowToast("After Reset Discard Callback called");
         }
 
         private static void HandleAfterClientResetDiscard(Realm beforeFrozen, Realm after)
         {
             // Callback invoked right after a Client Reset that fell back to discard unsynced changes.
-            Console.WriteLine("After Reset Discard Callback called");
+            LogAndShowToast("After Reset Discard Callback called");
         }
 
-        private static void HandleManualReset(ClientResetException clientResetException)
+        private static async void HandleManualReset(ClientResetException clientResetException)
         {
             // Callback invoked if automatic Client Reset handling fails.
-            Console.WriteLine("Manual Reset Callback called");
+            LogAndShowToast("Manual Reset Callback called");
         }
 
         #endregion
+
+        private static void LogAndShowToast(string text)
+        {
+            Console.WriteLine(text);
+            MainThread.BeginInvokeOnMainThread(async () => await DialogService.ShowToast(text));
+        }
     }
 }
