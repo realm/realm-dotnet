@@ -11,6 +11,7 @@ namespace QuickJournalSync.Services
     public static class RealmService
     {
         private static readonly string _appId = "application-quickjournal-amhqr";
+        private static object _mainRealmLock = new ();
 
         private static bool _serviceInitialised;
 
@@ -45,16 +46,20 @@ namespace QuickJournalSync.Services
 
         public static Realm GetMainThreadRealm()
         {
-            //TODO Maybe put a lock around this?
-            if (_mainThreadRealm is null)
+            lock (_mainRealmLock)
             {
-                _mainThreadRealm = Realm.GetInstance(GetRealmConfig());
-                _session = _mainThreadRealm.SyncSession;
-                _session.PropertyChanged += HandleSyncSessionPropertyChanged;
+                if (_mainThreadRealm is null)
+                {
+                    _mainThreadRealm = Realm.GetInstance(GetRealmConfig(HandleSessionErrorCallback));
+                    _session = _mainThreadRealm.SyncSession;
+                    _session.PropertyChanged += HandleSyncSessionPropertyChanged;
+                }
             }
 
             return _mainThreadRealm;
         }
+
+        public static Realm GetBackgroundThreadRealm() => Realm.GetInstance(GetRealmConfig());
 
         public static async Task RegisterAsync(string email, string password)
         {
@@ -101,7 +106,7 @@ namespace QuickJournalSync.Services
             }
         }
 
-        private static FlexibleSyncConfiguration GetRealmConfig()
+        private static FlexibleSyncConfiguration GetRealmConfig(SyncConfigurationBase.SessionErrorCallback? callback = null)
         {
             if (CurrentUser == null)
             {
@@ -115,7 +120,7 @@ namespace QuickJournalSync.Services
                     var query = realm.All<JournalEntry>().Where(j => j.UserId == CurrentUser.Id);
                     realm.Subscriptions.Add(query, new SubscriptionOptions { Name = "myEntries" });
                 },
-                OnSessionError = HandleSessionErrorCallback  //TODO Is this good here? 
+                OnSessionError = callback
             };
         }
 
@@ -181,12 +186,5 @@ namespace QuickJournalSync.Services
                 SyncConnectionStateChanged?.Invoke(null, session.ConnectionState);
             }
         }
-
-        /** Possible todos:
-         * - Add a button to generate a compensating query
-         * - Add a button to generate client reset?
-         * - Add label with last connection state
-         * - Add label with list of errors printed (like telemetry)
-         */
     }
 }
