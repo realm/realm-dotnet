@@ -30,7 +30,7 @@
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="3*" />
+                <RowDefinition Height="2*" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <ListView ItemsSource="{Binding Entries}"
@@ -61,6 +61,7 @@
                 <Label Text="{Binding ConnectionState, StringFormat='Connection state: {0}'}" HorizontalTextAlignment="Center" />
                 <Button Text="Simulate Session Error" Command="{Binding SimulateSessionErrorCommand}"/>
                 <Button Text="Simulate Subscription Error" Command="{Binding SimulateSubscriptionErrorCommand}"/>
+                <Button Text="Simulate Client Reset" Command="{Binding SimulateClientResetCommand}"/>
             </VerticalStackLayout>
         </Grid>
     </ContentPage.Content>

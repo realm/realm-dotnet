@@ -97,6 +97,15 @@ namespace QuickJournalSync.ViewModels
             await RealmService.SimulateSubscriptionError();
         }
 
+        [RelayCommand]
+        public async Task SimulateClientReset()
+        {
+            // More information about manual testing of client reset at https://www.mongodb.com/docs/realm/sdk/dotnet/sync/client-reset/#test-client-reset-handling.
+            await DialogService.ShowAlertAsync("Client Reset",
+                "You can simulate a client reset by terminating an re-enabling Device Sync.",
+                "OK");
+        }
+
         private void HandleSyncConnectionStateChanged(object? sender, ConnectionState newConnectionState)
         {
             ConnectionState = newConnectionState;
